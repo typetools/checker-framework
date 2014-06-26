@@ -71,6 +71,8 @@ public class FlowExpressionParseUtil {
      * synonym for "this".
      */
     protected static final Pattern selfPattern = Pattern.compile("^(this)$");
+    /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
+    protected static final Pattern itselfPattern = Pattern.compile("^(itself)$");
     /** Matches 'super' */
     protected static final Pattern superPattern = Pattern.compile("^(super)$");
     /** Matches an identifier */
@@ -143,6 +145,13 @@ public class FlowExpressionParseUtil {
         if (selfMatcher.matches() && allowSelf && !recursiveCall) {
             s = context.receiver.toString(); // it is possible that s == "this" after this call
             selfMatcher = selfPattern.matcher(s); // Refresh the matcher
+        }
+
+        Matcher itselfMatcher = itselfPattern.matcher(s);
+        if (recursiveCall && itselfMatcher.matches()) {
+            // Only look for matches to 'itself' after a recursive call
+            // to give the opportunity to find an identifier named 'itself'
+            s = path.getLeaf().toString();
         }
 
         Matcher identifierMatcher = identifierPattern.matcher(s);
@@ -236,6 +245,13 @@ public class FlowExpressionParseUtil {
                     }
                     return new ClassName(classType);
                 } catch (Throwable t2) {
+
+                    if (!recursiveCall && itselfMatcher.matches()) {
+                        return parse(s, context, path, allowSelf,
+                                allowIdentifier, allowParameter, allowDot,
+                                allowMethods, allowArrays, allowLiterals, true);
+                    }
+
                     throw constructParserException(s);
                 }
             }
