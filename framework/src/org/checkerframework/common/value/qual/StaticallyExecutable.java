@@ -7,12 +7,12 @@ import java.lang.annotation.Target;
 
 /**
  * 
- * {@link StaticallyExecutable} is a method annotation that indicates the method can
- * attempt to be resolved. Classes covered by this checker (wrappers and
- * Strings) are automatically considered StaticallyExecutable, and no other classes are
- * currently intended to be able to be constructed at compile-time. This is why @StaticallyExecutable
- * is currently restricted to Methods and not Constructors
+ * {@link StaticallyExecutable} is a method annotation that indicates that
+ * the compiler is allowed to run the method at compile time, if all of
+ * the method's arguments are compile-time constants.
+ * It is used by the Constant Value Checker.
  * 
+ * @checker_framework_manual #value-checker Constant Value Checker
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD })
