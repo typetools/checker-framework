@@ -131,8 +131,9 @@ public void bar() {
        @IntVal({9}) c = foo(a, b); 
 }
 \end{Verbatim}
-\caption{An example of using the @StaticallyExecutable annotation to
-       continue constant propagation through a method call}
+\caption{An example of using the
+  \<@\refqualclass{checker/value/qual}{StaticallyExecutable}> annotation to
+  continue constant propagation through a method call}
 \label{fig-value-multivalue}
 \end{figure}
 
@@ -155,4 +156,5 @@ value of the function will be @UnknownVal instead of being able to be
 resolved to a specific value annotation.
 
 
-%%  LocalWords:  9cm UnknownVal 5cm
+%%  LocalWords:  9cm UnknownVal 5cm StringValue BottomVal 9cm 5cm
+%  LocalWords:  StaticallyExecutable
