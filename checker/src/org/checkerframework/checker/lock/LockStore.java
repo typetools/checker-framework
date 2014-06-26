@@ -1,5 +1,9 @@
 package org.checkerframework.checker.lock;
 
+/*>>>
+import org.checkerframework.checker.nullness.qual.Nullable;
+*/
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
