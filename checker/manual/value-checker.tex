@@ -33,9 +33,9 @@ It is permitted to write type annotations, and this section describes them.
 Each type annotation is parameterized by a set of values, and its meaning
 is that at run time, the annotated expression's value will be one of the
 given values.  For example, an expression of type 
-\<@\refqualclass{checker/value/qual}{StringValue}("a", "b")> must be
+\<\refqualclass{checker/value/qual}{StringValue}("a", "b")> must be
 \<"a">, \<"b">, or \<null> at run time.
-There is also an <@\refqualclass{checker/value/qual}{UnknownVal}> annotation,
+There is also an \refqualclass{checker/value/qual}{UnknownVal} annotation,
 meaning that the expression's value is not known at compile time, and 
 \refqualclass{checker/value/qual}{BottomVal}, meaning that the expression
 is dead or always has the value \<null>.
@@ -74,7 +74,7 @@ run-time value.  This set is limited to 10 entries for
 performance reasons. Therefore, if a variable, due to program logic,
 could be more than 10 different values at any given point the Value
 Checker gives up and it is annotated as
-\<@\refqualclass{checker/value/qual}{UnknownVal}> instead.
+\refqualclass{checker/value/qual}{UnknownVal} instead.
 
 \begin{figure}
 \begin{Verbatim}
@@ -117,7 +117,7 @@ and does not affect the code that is generated.
 The Constant Value Checker statically executes the use of operators that do
 not throw exceptions (e.g., \<+>, \<->, \code{<\relax<}, \<!=>), and also
 calls to methods annotated with
-\<@\refqualclass{checker/value/qual}{StaticallyExecutable}>.
+\refqualclass{checker/value/qual}{StaticallyExecutable}.
 
 \begin{figure}
 \begin{Verbatim}
@@ -132,16 +132,16 @@ public void bar() {
 }
 \end{Verbatim}
 \caption{An example of using the
-  \<@\refqualclass{checker/value/qual}{StaticallyExecutable}> annotation to
+  \refqualclass{checker/value/qual}{StaticallyExecutable} annotation to
   continue constant propagation through a method call}
 \label{fig-value-multivalue}
 \end{figure}
 
-@StaticallyExecutable methods must
+A \<@StaticallyExecutable> method must
 be \refqualclass{dataflow/qual}{Pure} (side-effect-free and
 deterministic).
 
-Additionally, @StaticallyExecutable methods and any methods they call must be on
+Additionally, a \<@StaticallyExecutable> method and any method it calls must be on
 the classpath for the compiler because they are reflectively called at
 compile-time to perform the constant value analysis.
 
