@@ -5,35 +5,45 @@ The Constant Value Checker is a constant propagation analysis: for
 each variable, it determines whether that variable's value can be
 known at compile time.
 
-To run just the Value Checker, supply the
+There are two ways to run the Constant Value Checker.
+Typically, it is automatically run by another type checker.
+When using the Value Checker as part of another checker, its
+jdk.astub file must be present in the other checker's directory.
+
+Alternately, it is also possible to run just the Value Checker, by
+supplying the
 \code{-processor org.checkerframework.checker.value.ValueChecker}
 command-line option to javac.
 
-If using the Value Checker as part of another checker, note that its
-jdk.astub file must be present in the other checker's directory.
 
-\section{Annotations}
-\subsection{Value Annotations}
+\section{Annotations\label{value-checker-annotations}}
 
-The Value Checker uses annotations to evaluate values for all Java
-primitives, their wrappers (e.g. int, and Integer), Strings, and the
-length field of arrays. The types covered correspond to the names of
-the annotations as shown in Figure~\ref{fig-value-hierarchy}
+The Constant Value Checker comes with type annotations for indicating the
+value of an expression (Section~\ref{value-checker-type-annotations}), and
+method annotations for indicating methods that the Value Checker can execute.
+(Section~\ref{staticallyexecutable-annotation}).
 
-\begin{figure}
-\includeimage{value-hierarchy3}{9cm}
-\caption{The overall annotation hierarchy of the Value
-annotations. Qualifiers in gray are used
-internally by the type system but should never be written by a
-programmer.}
-\label{fig-value-hierarchy}
-\end{figure}
 
-Each annotation has an array of values representing all the values the
-annotated type could be. This array is limited to 10 entries for
-performance reasons. Therefore, if a variable, due to program logic,
-could be more than 10 different values at any given point the Value
-Checker gives up and it is annotated as \<@UnknownVal> instead.
+\subsection{Type Annotations\label{value-checker-type-annotations}}
+
+Typically, the programmer does not write any type annotations.  Rather, the
+type annotations are inferred by the Value Checker.
+
+It is permitted to write type annotations, and this section describes them.
+Each type annotation is parameterized by a set of values, and its meaning
+is that at run time, the annotated expression's value will be one of the
+given values.  For example, an expression of type 
+\<@\refqualclass{checker/value/qual}{StringValue}("a", "b")> must be
+\<"a">, \<"b">, or \<null> at run time.
+There is also an <@\refqualclass{checker/value/qual}{UnknownVal}> annotation,
+meaning that the expression's value is not known at compile time, and 
+\refqualclass{checker/value/qual}{BottomVal}, meaning that the expression
+is dead or always has the value \<null>.
+
+Figure~\ref{fig-value-hierarchy} lists all the annotations and shows their
+subtyping relationships.
+For two annotations of the same type, subtypes have a smaller set of
+possible values, as also shown in the figure.
 
 In addition to the hierarchy shown above, an annotation is also
 considered a subtype of another annotation if its value array is a
@@ -42,11 +52,29 @@ Figure~\ref{fig-value-subtype}. This allows the possible values of
 variables to continue to be statically evaluated even when code branches cannot be
 predicted at compile-time as in Figure~\ref{fig-value-multivalue}.
 
+
 \begin{figure}
-\includeimage{value-subtype}{2.5cm}
-\caption{Subtyping relationship between value annotations of the same type.}
-\label{fig-value-subtype}
+\begin{center}
+\includeimagenocentering{value-hierarchy3}{9cm}
+\qquad\qquad
+\includeimagenocentering{value-subtype}{2.5cm}
+\vspace{-1.5\baselineskip}
+\end{center}
+
+\caption{The type qualifier hierarchy of the Value Checker
+annotations. Qualifiers in gray are used
+internally by the type system but should never be written by a
+programmer.  On the right is an example of the subtyping relationship
+between two annotations of the same type.}
+\label{fig-value-hierarchy}
 \end{figure}
+
+Each annotation's parameter's indicate all the possible values for the
+run-time value.  This set is limited to 10 entries for
+performance reasons. Therefore, if a variable, due to program logic,
+could be more than 10 different values at any given point the Value
+Checker gives up and it is annotated as
+\<@\refqualclass{checker/value/qual}{UnknownVal}> instead.
 
 \begin{figure}
 \begin{Verbatim}
@@ -78,15 +106,18 @@ shown in Figure~\ref{fig-value-subtyping}.
 \label{fig-value-subtyping}
 \end{figure}
 
-\subsection{@StaticallyExecutable}
-In addition to the value annotations on variables discussed above, the
-Value Checker also uses a method annotation,
-@StaticallyExecutable. The Constant Value Checker attempts to perform
-compile-time evaluation of calls to methods annotated with
-@StaticallyExecutable. If all arguments and the receiver for a
-@StaticallyExecutable method are constant-value types then the return
-value of that call is also assigned a constant-value type based on
-evaluating the method call.
+\subsection{Compile-time execution of expressions\label{staticallyexecutable-annotation}}
+
+Whenever all the operands of an expression are compile-time constants, the
+Constant Value Checker attempts to execute the expression.  The purpose of
+this is to give the expression a type annotation indicating its possible
+values.  This is independent of any optimizations performed by the compiler
+and does not affect the code that is generated.
+
+The Constant Value Checker statically executes the use of operators that do
+not throw exceptions (e.g., \<+>, \<->, \code{<\relax<}, \<!=>), and also
+calls to methods annotated with
+\<@\refqualclass{checker/value/qual}{StaticallyExecutable}>.
 
 \begin{figure}
 \begin{Verbatim}
@@ -106,21 +137,16 @@ public void bar() {
 \end{figure}
 
 @StaticallyExecutable methods must
-be \refqualclass{dataflow/qual}{Pure} (side-effect free and
+be \refqualclass{dataflow/qual}{Pure} (side-effect-free and
 deterministic).
 
 Additionally, @StaticallyExecutable methods and any methods they call must be on
 the classpath for the compiler because they are reflectively called at
 compile-time to perform the constant value analysis.
 
-\subsection{Operators}
-The Constant Value Checker also attempts to resolve the use of
-operators (e.g. +, -, <<, !=). If all the operands of an operator are
-constant-value types then the result of that operator is also
-assigned a constant-value type corresponding to statically executing
-the operator. 
 
-\section{Warnings}
+\section{Warnings\label{value-checker-warnings}}
+
 The Value Checker may issue warnings, mostly based on failing to
 resolve methods marked as @StaticallyExecutable but which were not able to be
 resolved when the checker was run. These will be displayed as warnings when
