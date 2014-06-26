@@ -51,11 +51,13 @@
 % This avoids Hevea's built in conversion.
 \newcommand{\includeimage}[2]{
 \begin{center}
-\ifhevea\imgsrc{#1.png}\else
-\resizebox{!}{#2}{\includegraphics{figures/#1}}
+\includeimagenocentering{#1}{#2}
 \vspace{-1.5\baselineskip}
-\fi
 \end{center}}
+
+\newcommand{\includeimagenocentering}[2]{
+\ifhevea\imgsrc{#1.png}\else
+\resizebox{!}{#2}{\includegraphics{figures/#1}}\fi}
 
 
 % At least 80% of every float page must be taken up by
