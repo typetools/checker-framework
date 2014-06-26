@@ -7,14 +7,14 @@ import java.lang.annotation.Target;
 
 /**
  * 
- * {@link Analyzable} is a method annotation that indicates the method can
+ * {@link StaticallyExecutable} is a method annotation that indicates the method can
  * attempt to be resolved. Classes covered by this checker (wrappers and
- * Strings) are automatically considered Analyzable, and no other classes are
- * currently intended to be able to be constructed at compile-time. This is why @Analyzable
+ * Strings) are automatically considered StaticallyExecutable, and no other classes are
+ * currently intended to be able to be constructed at compile-time. This is why @StaticallyExecutable
  * is currently restricted to Methods and not Constructors
  * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD })
-public @interface Analyzable {
+public @interface StaticallyExecutable{
 }
