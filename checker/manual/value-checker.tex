@@ -5,18 +5,17 @@ The Constant Value Checker is a constant propagation analysis: for
 each variable, it determines whether that variable's value can be
 known at compile time.
 
-
-The Constant Value Checker is automatically run by every other type
-checker, but it is rarely used directly by programmers.
-
 To run just the Value Checker, supply the
 \code{-processor org.checkerframework.checker.value.ValueChecker}
 command-line option to javac.
 
+If using the Value Checker as part of another checker, note that its
+jdk.astub file must be present in the other checker's directory.
+
 \section{Annotations}
 \subsection{Value Annotations}
 
-The Value Checker uses annotations to track values for all Java
+The Value Checker uses annotations to evaluate values for all Java
 primitives, their wrappers (e.g. int, and Integer), Strings, and the
 length field of arrays. The types covered correspond to the names of
 the annotations as shown in Figure~\ref{fig-value-hierarchy}
@@ -40,7 +39,7 @@ In addition to the hierarchy shown above, an annotation is also
 considered a subtype of another annotation if its value array is a
 subset of the value array of the other annotation (see
 Figure~\ref{fig-value-subtype}. This allows the possible values of
-variables to continue to be tracked even when code branches cannot be
+variables to continue to be statically evaluated even when code branches cannot be
 predicted at compile-time as in Figure~\ref{fig-value-multivalue}.
 
 \begin{figure}
@@ -61,7 +60,7 @@ public void foo(boolean b) {
    i = i + 1;     // i is now @IntVal({2,3})
 }
 \end{Verbatim}
-\caption{An example of the Value Checker accumulating possible values
+\caption{An example of the Constant Value Checker accumulating possible values
     of a variable.}
 \label{fig-value-multivalue}
 \end{figure}
@@ -79,30 +78,51 @@ shown in Figure~\ref{fig-value-subtyping}.
 \label{fig-value-subtyping}
 \end{figure}
 
-\subsection{@Analyzable}
+\subsection{@StaticallyExecutable}
 In addition to the value annotations on variables discussed above, the
-Value Checker also uses a method annotation, @Analyzable. The Constant
-Value Checker resolves operators (e.g. !, +, ==) and method calls when
-performed on expressions with constant value types to track the values
-returned. 
+Value Checker also uses a method annotation,
+@StaticallyExecutable. The Constant Value Checker attempts to perform
+compile-time evaluation of calls to methods annotated with
+@StaticallyExecutable. If all arguments and the receiver for a
+@StaticallyExecutable method are constant-value types then the return
+value of that call is also assigned a constant-value type based on
+evaluating the method call.
 
-Annotating a method with @Analyzable causes the Constant Value Checker
-to be able to track the return value of that method; if all arguments
-to a call of an @Analyzable method are constant-value types then the
-return value of that call is also assigned a constant-value type
-corresponding to execution of the call.
+\begin{figure}
+\begin{Verbatim}
+public void @StaticallyExeutable @Pure foo(int a, int b){
+       return (a + b);
+}
 
-@Analyzable methods must
+public void bar() {
+       int a = 5; // a is @IntVal({5})
+       int b = 4; // b is @IntVal({4})
+       @IntVal({9}) c = foo(a, b); 
+}
+\end{Verbatim}
+\caption{An example of using the @StaticallyExecutable annotation to
+       continue constant propagation through a method call}
+\label{fig-value-multivalue}
+\end{figure}
+
+@StaticallyExecutable methods must
 be \refqualclass{dataflow/qual}{Pure} (side-effect free and
 deterministic).
 
-Additionally, @Analyzable methods and any methods they call must be on
+Additionally, @StaticallyExecutable methods and any methods they call must be on
 the classpath for the compiler because they are reflectively called at
 compile-time to perform the constant value analysis.
 
+\subsection{Operators}
+The Constant Value Checker also attempts to resolve the use of
+operators (e.g. +, -, <<, !=). If all the operands of an operator are
+constant-value types then the result of that operator is also
+assigned a constant-value type corresponding to statically executing
+the operator. 
+
 \section{Warnings}
 The Value Checker may issue warnings, mostly based on failing to
-resolve methods marked as @Analyzable but which were not able to be
+resolve methods marked as @StaticallyExecutable but which were not able to be
 resolved when the checker was run. These will be displayed as warnings when
 the checker is run but the only negative effect is that the return
 value of the function will be @UnknownVal instead of being able to be
