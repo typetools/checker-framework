@@ -23,7 +23,7 @@ import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.value.qual.Analyzable;
+import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
@@ -113,7 +113,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         STRINGVAL = AnnotationUtils.fromClass(elements, StringVal.class);
         FLOATVAL = AnnotationUtils.fromClass(elements, FloatVal.class);
         BOTTOMVAL = AnnotationUtils.fromClass(elements, BottomVal.class);
-        ANALYZABLE = AnnotationUtils.fromClass(elements, Analyzable.class);
+        ANALYZABLE = AnnotationUtils.fromClass(elements, StaticallyExecutable.class);
         UNKNOWNVAL = AnnotationUtils.fromClass(elements, UnknownVal.class);
         constantAnnotations = new ArrayList<AnnotationMirror>(9);
         constantAnnotations.add(DOUBLEVAL);
@@ -798,21 +798,21 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * Simple method to take a MemberSelectTree representing a method call
-         * and determine if the method's return is annotated with @Analyzable.
+         * and determine if the method's return is annotated with @StaticallyExecutable.
          * 
          * @param method
          * 
          * @return
          */
-        private boolean methodIsAnalyzable(Element method) {
-            return getDeclAnnotation(method, Analyzable.class) != null;
+        private boolean methodIsStaticallyExecutable(Element method) {
+            return getDeclAnnotation(method, StaticallyExecutable.class) != null;
         }
 
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
             super.visitMethodInvocation(tree, type);
 
-            if (isClassCovered(type) && methodIsAnalyzable(TreeUtils.elementFromUse(tree))) {
+            if (isClassCovered(type) && methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree))) {
                 ExpressionTree methodTree = tree.getMethodSelect();
 
                 // First, check that all argument values are known
