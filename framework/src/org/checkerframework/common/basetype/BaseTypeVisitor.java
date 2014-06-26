@@ -949,7 +949,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
                     AnnotationMirror inferredAnno = value == null ? null : value
                             .getType().getAnnotationInHierarchy(anno);
-                    if (!checkExpressionAllowed(tree, expr, flowExprContext) ||
+                    if (!skipContractCheck(tree, expr, flowExprContext) &&
                         !checkContract(expr, anno, inferredAnno, store)) {
 
                         checker.report(Result.failure(
@@ -965,7 +965,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Additional checks to ensure that a condition with
+     * Whether to skip a contract check based on whether the condition with
      * given expression {@code expr} is valid for the
      * tree {@code tree} under the context {@code flowExprContext}.
      *
@@ -973,12 +973,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *  @param expr The expression condition to consider.
      *  @param flowExprContext The current context.
      *
-     *  @return Whether the expression is valid.
+     *  @return Whether to skip the contract check.
      */
-    protected boolean checkExpressionAllowed(Tree tree, FlowExpressions.Receiver expr, FlowExpressionContext flowExprContext) {
-        // Intended to be overridden, but code may be added here.
+    protected boolean skipContractCheck(Tree tree, FlowExpressions.Receiver expr, FlowExpressionContext flowExprContext) {
+        // Do not add code here. Overridden versions of this method
+        // will always have a weaker condition than simply 'return false',
+        // so calling super.skipContractCheck is not useful.
 
-        return true;
+        return false;
     }
 
     /**

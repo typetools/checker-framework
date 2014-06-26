@@ -268,7 +268,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * Additional checks to ensure that the @GuardedBy
+     * Whether to skip a contract check based on whether the @GuardedBy
      * expression {@code expr} is valid for the tree {@code tree}
      * under the context {@code flowExprContext}
      * if the the current path is within the expression
@@ -279,56 +279,53 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      *  @param expr The expression of the @GuardedBy annotation.
      *  @param flowExprContext The current context.
      *
-     *  @return Whether the @GuardedBy expression is valid.
+     *  @return Whether to skip the contract check.
      */
     @Override
-    protected boolean checkExpressionAllowed(Tree tree, FlowExpressions.Receiver expr, FlowExpressionContext flowExprContext) {
-        if (super.checkExpressionAllowed(tree, expr, flowExprContext)) {
+    protected boolean skipContractCheck(Tree tree, FlowExpressions.Receiver expr, FlowExpressionContext flowExprContext) {
+        String fieldName = null;
 
-            String fieldName = null;
+        try {
 
-            try {
+            Node nodeNode = atypeFactory.getNodeForTree(tree);
 
-                Node nodeNode = atypeFactory.getNodeForTree(tree);
+            if (nodeNode instanceof FieldAccessNode) {
 
-                if (nodeNode instanceof FieldAccessNode) {
+                fieldName = ((FieldAccessNode) nodeNode).getFieldName();
 
-                    fieldName = ((FieldAccessNode) nodeNode).getFieldName();
+                if (fieldName != null) {
+                    FlowExpressions.Receiver fieldExpr = FlowExpressionParseUtil.parse(fieldName,
+                            flowExprContext, getCurrentPath());
 
-                    if (fieldName != null) {
-                        FlowExpressions.Receiver fieldExpr = FlowExpressionParseUtil.parse(fieldName,
-                                flowExprContext, getCurrentPath());
+                    if (fieldExpr.equals(expr)) {
+                        // Avoid issuing warnings when accessing the field that is guarding the receiver.
+                        // e.g. avoid issuing a warning when accessing bar below:
+                        // void foo(@GuardedBy("bar") myClass this){ synchronized(bar){ ... }}
 
-                        if (fieldExpr.equals(expr)) {
-                            // Avoid issuing warnings when accessing the field that is guarding the receiver.
-                            // e.g. avoid issuing a warning when accessing bar below:
-                            // void foo(@GuardedBy("bar") myClass this){ synchronized(bar){ ... }}
+                        // Also avoid issuing a warning in this scenario:
+                        // @GuardedBy("bar") Object bar;
+                        // ...
+                        // synchronized(bar){ ... }
 
-                            // Also avoid issuing a warning in this scenario:
-                            // @GuardedBy("bar") Object bar;
-                            // ...
-                            // synchronized(bar){ ... }
+                        // Cover only the most common case: synchronized(variableName).
+                        // If the expression in the synchronized statement is more complex,
+                        // we do want a warning to be issued so the user can take a closer look
+                        // and see if the variable is safe to be used this way.
 
-                            // Cover only the most common case: synchronized(variableName).
-                            // If the expression in the synchronized statement is more complex,
-                            // we do want a warning to be issued so the user can take a closer look
-                            // and see if the variable is safe to be used this way.
+                        TreePath path = getCurrentPath().getParentPath();
 
-                            TreePath path = getCurrentPath().getParentPath();
+                        if (path != null) {
+                            path = path.getParentPath();
 
-                            if (path != null) {
-                                path = path.getParentPath();
-
-                                if (path != null && path.getLeaf().getKind() == Tree.Kind.SYNCHRONIZED) {
-                                    return true;
-                                }
+                            if (path != null && path.getLeaf().getKind() == Tree.Kind.SYNCHRONIZED) {
+                                return true;
                             }
                         }
                     }
                 }
-            } catch (FlowExpressionParseException e) {
-                // errors are reported at declaration site
             }
+        } catch (FlowExpressionParseException e) {
+            // errors are reported at declaration site
         }
 
         return false;
