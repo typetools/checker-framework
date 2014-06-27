@@ -48,7 +48,7 @@ possible values, as also shown in the figure.
 In addition to the hierarchy shown above, an annotation is also
 considered a subtype of another annotation if its value array is a
 subset of the value array of the other annotation (see
-Figure~\ref{fig-value-subtype}. This allows the possible values of
+Figure~\ref{fig-value-subtype}). This allows the possible values of
 variables to continue to be statically evaluated even when code branches cannot be
 predicted at compile-time as in Figure~\ref{fig-value-multivalue}.
 
@@ -69,7 +69,7 @@ between two annotations of the same type.}
 \label{fig-value-hierarchy}
 \end{figure}
 
-Each annotation's parameter's indicate all the possible values for the
+Each annotation's parameters indicate all the possible values for the
 run-time value.  This set is limited to 10 entries for
 performance reasons. Therefore, if a variable, due to program logic,
 could be more than 10 different values at any given point the Value
