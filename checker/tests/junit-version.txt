@@ -1,0 +1,5 @@
+junit.jar is junit-4.11.jar downloaded on 07.09.2013 from:
+http://cloud.github.com/downloads/junit-team/junit/junit-4.11.jar
+
+To reduce the impact of a version update, I renamed the
+file to junit.jar and added this file to document the version.
