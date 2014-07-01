@@ -1,3 +1,17 @@
+Version 1.8.3, 1 July 2014
+
+Updated the Initialization Checker section in the manual with
+a new introduction paragraph.
+
+Removed the Maven plugin section from the manual as the plugin is
+no longer maintained and the final release was on June 2, 2014.
+The javac_maven script (and batch file) are available to use
+the Checker Framework from Maven.
+
+Fix for Issue 331.
+
+----------------------------------------------------------------------
+
 Version 1.8.2, 2 Jun 2014
 
 Converted from using rt.jar to ct.sym for creating the annotated jdk.
