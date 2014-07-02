@@ -346,6 +346,7 @@
         scp -r $CF/release/* &lt;your-username&gt;@buffalo.cs.washington.edu:///scratch/jsr308-release/scripts<br/>
         ssh &lt;your-username&gt;@buffalo.cs.washington.edu<br/>
         cd /scratch/jsr308-release/scripts<br/>
+        export HGUSER=&lt;your-username&gt<br/>
         python release_build.py all<br/>
         python release_push.py<br/>
     </code>
@@ -359,6 +360,13 @@
     <li><span class="glyphicon glyphicon-eye-close"></span>- Indicates a mostly automated step with possible prompts.  Most of these steps become fully-automated when --auto is used. </li>
     <li><span class="glyphicon glyphicon-hdd"></span>- Indicates the step is fully-automated.</li>
 </ul>
+
+<b>Note that many prompts will cause scripts to exit if you say 'no'.</b> This will require you to re-run
+the script from the beginning, which may take a long time. It is better to say 'yes' to
+the script prompts and follow the indicated steps even if they are redundant/you have done them
+already. Also, be sure to carefully read all instructions on the command-line before typing yes.
+This is because the scripts do not ask you to say 'yes' after each step, so you may
+miss a step if you only read the paragraph asking you to say 'yes'.
 
 <table class="table">
     <tr>
@@ -448,7 +456,16 @@
                     At this point make sure hevea.sty and comment.sty are in the
                     <code>/scratch/jsr308-release/build/checker-framework/checker/manual</code> directory.
                     Otherwise copy <code>/usr/share/texlive/texmf/tex/latex/hevea/hevea.sty</code> and
-                    <a href="http://ctan.math.utah.edu/ctan/tex-archive/macros/latex/contrib/comment/comment.sty">http://ctan.math.utah.edu/ctan/tex-archive/macros/latex/contrib/comment/comment.sty</a> into it.                    
+                    <a href="http://ctan.math.utah.edu/ctan/tex-archive/macros/latex/contrib/comment/comment.sty">http://ctan.math.utah.edu/ctan/tex-archive/macros/latex/contrib/comment/comment.sty</a> into it.
+                    It's easiest to save a copy of comment.sty in your home directory in case you need it again.<br /><br />
+
+                    Also, there is a bug in <code>release.xml</code> where tutorial/webpages/security-error-cmd.html
+                    does not get updated with new version numbers (e.g. 1.8.3 -> 1.8.4). You should do that
+                    now.<br /><br />
+
+                    Note that any changes you make in this step are lost if you restart the <code>release_build</code> process
+                    and instruct it to clean the repositories (which you should say yes to). That's why it's
+                    a good idea to keep copies of the work you do here readily available in your home directory.
                 </li>
             </ul>
         </td>
@@ -490,8 +507,15 @@
             ensure we have not missed any relevant messages in the changelog.  The release script will
             indicate what changelog you should edit in case there are missing changes.  These changes
             will be committed when you run the release_push.py script.<br/><br/>
-            Also, please verify that all changelog messages follow the guidelines found in:<b/>
-            <a href="#changelog_guide">Changelog Guidelines</a>
+            Also, please verify that all changelog messages follow the guidelines found in:<b>
+            <a href="#changelog_guide">Changelog Guidelines</a></b><br /><br />
+
+            If <code>release_build</code> fails later on and you need to restart it, I recommend you make copies of
+            the changelogs you modified on your local machine, push the changes to those changelogs,
+            and then restart the build process saying "yes" to cleaning the repositories. However, this
+            really should not happen because the changelogs need to have been updated immediately after
+            code freeze, days in advance of the release day, and you should not need to update the logs
+            again here.
         </td>
     </tr>
     <tr>
@@ -500,7 +524,12 @@
             <strong>Build Step 5: Verify manual changes.</strong><br/>
             This step will write out all of the changes that happened to the individual projects'
             manuals to a temporary file.  Please review these changes for errors.  You can edit them
-            in the build repository and they will be committed by the release_push.py script.
+            in the build repository and they will be committed by the release_push.py script.<br /><br />
+
+            It's a good idea to build the manual on your local machine's enlistment and verify
+            that the PDF does not have lines that are longer than the page width (some lines
+            go beyond the right margin - this is acceptable), except for lines containing command lines
+            or code - some of these inevitably are longer than the page width.
         </td>
     </tr>
     <tr>
@@ -612,6 +641,26 @@
         <td colspan="2">
             <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
             <strong>Push Step 5. Push dev website to live website</strong><br/>
+
+            Before you say yes to this step, there are two bugs that need to be worked around at this point:<br/><br/>
+
+            There is currently a bug where the Checker Framework home page has an extraneous = sign.
+            Open /cse/www2/types/dev/checker-framework/index.html in a text editor and look for the
+            line mentioning annotation-tools.zip and remove the = sign next to the date. Also this is
+            a good time to change the "Last updated" date at the end of this web page, as this is not
+            done automatically.<br/><br/>
+
+            Another bug is that the checker-framework/checker/examples directory does not get copied
+            into the zip file. Open /cse/www2/types/dev/checker-framework/current/checker-framework.zip
+            using XArchiver or a similar visual tool, and add the example files to the zip file under the
+            checker-framework-<version>/checker/examples directory. We have not been including the
+            examples under the units-extension subdirectory, but check with Jonathan whether they
+            need to be included in this release.<br/><br/>
+
+            This is also a good time to verify that /cse/www2/types/dev/checker-framework/current/checker-framework.zip
+            is complete. Open it using XArchiver or a similar visual tool and double-check that all the
+            directories have files in them.<br/><br/>
+
             This step copies the development release directories to the live release directories.  It then adds
             the appropriate permissions to the release.  Symlinks need to be updated to point to the live
             website rather than the development website.  A straight copy of the directory will NOT update the
@@ -670,6 +719,11 @@
             This is a manual step that releases the staged Maven artifacts to the actual Central repository.
             This is also an irreversible step.  Once you have released these artifacts they will be forever
             available to the Java community through the Central repository.  Follow the prompts.
+            The Maven artifacts (such as checker-qual.jar) are still needed, but the Maven plug-in
+            is no longer maintained. Before releasing the staged artifacts, make sure that the
+            Checker Framework maven plug-in directory (and only that directory) is removed from
+            the staged artifacts before releasing them. Later we will fix this so that this directory
+            is not included in the first place.
         </td>
     </tr>
     <tr>
@@ -687,6 +741,19 @@
             <strong>Push Step 12. Announce the release.</strong><br/>
             A prompt describes the email you should send to all relevant mailing lists.  Please
             fill out the email and announce the release.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-open"></span>
+            <strong>Push Step 13. Push Eclipse plugin files.</strong><br/>
+            If you built the Eclipse plugin on your local machine, there are
+            a few changed files with version number changes that need to be pushed.
+            Do <b>not</b> push the
+            <code>.classpath</code> file. The following files should be pushed:
+            <code>checker-framework-eclipse-feature/feature.xml</code>,
+            <code>checker-framework-eclipse-plugin/META-INF/MANIFEST.MF</code> and
+            <code>checker-framework-eclipse-update-site/site.xml</code>
         </td>
     </tr>
 
@@ -712,7 +779,12 @@
             <li>List all issues (in Google Code issue trackers) resolved in this release.  There is a step
                 in the release that asks you to change all &quot;Pushed&quot; issues to &quot;Fixed&quot;; these
                 issues should all be included in the changelog.  Search for the word &quot;issues&quot; in the
-                changelog to see an example
+                changelog to see an example. Here is an example
+<a href="https://code.google.com/p/checker-framework/issues/list?can=1&q=status%3Apushed&sort=-closed&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary+Closed&cells=tiles">query</a>
+                to help find these issues for the Checker Framework only. It is a good idea to ask the core
+                team of developers if they have any issues they have pushed but have not marked as pushed,
+                and generally if they have any changes they would like to be listed in the changelog that
+                they have not done so.
             </li>
 
             <li>You may need to be aware of projects for which we don't want an announcement.  For instance,
@@ -810,7 +882,7 @@
 
     <section id="fi_bug_fixes">
         <h3>Bug Fixes</h3>
-        The only known bug at the moment is a failed 'hg strip' that happens once in a while when the script is
+        A known bug at the moment is a failed 'hg strip' that happens once in a while when the script is
         cleaning the build/interm repositories.  Running the script a few times clears this.  It happens at the
         beginning of the script so this doesn't take long but it would be good to figure out why the command
         fails and fix it up.

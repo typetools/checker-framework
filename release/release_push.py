@@ -230,8 +230,8 @@ def main(argv):
 
     print_step( "Push Step 3: Run development sanity tests" )
     continue_or_exit(
-       "Please build and install the Eclipse plugin using the latest artifacts. See:\n" +
-       "https://code.google.com/p/checker-framework/source/browse/eclipse/developer-README\n\n" +
+       "Please build and install the Eclipse plugin using the latest artifacts. See\n" +
+       "README-developers.html under the checker-framework/release directory\n\n" +
 
        "Please run the Eclipse version of  the Checker Framework Tutorial. See:\n"      +
        dev_checker_website + "\n\n" +
@@ -283,13 +283,13 @@ def main(argv):
     else:
         print( "Test mode: Skipping copy to live site!" )
 
-     print( "Push Step 6. Check live site links" )
-     if prompt_yes_no( "Run link Checker on LIVE site?", True ):
-         check_all_links( live_jsr308_website, live_afu_website, live_checker_website, "live" )
+    print( "Push Step 6. Check live site links" )
+    if prompt_yes_no( "Run link Checker on LIVE site?", True ):
+        check_all_links( live_jsr308_website, live_afu_website, live_checker_website, "live" )
 
-     print_step( "Push Step 7: Run javac sanity test on the live release." )
-     if prompt_yes_no( "Run javac sanity test on live release?", True ):
-         javac_sanity_check( live_checker_website, new_checker_version )
+    print_step( "Push Step 7: Run javac sanity test on the live release." )
+    if prompt_yes_no( "Run javac sanity test on live release?", True ):
+        javac_sanity_check( live_checker_website, new_checker_version )
 
     print_step("Push Step 8: Deploy the Eclipse Plugin to the live site." )
     continue_or_exit( "Follow the instruction under 'UW Website' in checker-framework/eclipse/developer-README to " +
@@ -311,7 +311,8 @@ def main(argv):
                 "To drop, log into https://oss.sonatype.org using your " +
                 "Sonatype credentials and follow the 'DROP' instructions at: " + SONATYPE_DROPPING_DIRECTIONS_URL )
     else:
-        msg = ( "Please 'release' the artifacts. "                    +
+        msg = ( "Please 'release' the artifacts, but first ensure that the Checker Framework maven plug-in directory" +
+                "(and only that directory) is removed from the artifacts." +
                 "To release, log into https://oss.sonatype.org using your " +
                 "Sonatype credentials and follow the 'close' instructions at: " + SONATYPE_RELEASE_DIRECTIONS_URL )
 
@@ -319,12 +320,26 @@ def main(argv):
     prompt_until_yes()
 
     print_step( "Push Step 11. Update pushed issues." )
-    continue_or_exit( "Please log in to google code and mark all issues that were 'pushed' to 'fixed'." )
+    continue_or_exit( "Please log in to google code and mark all issues that were 'pushed' to 'fixed' (as well all issues mentioned as fixed in the changelogs)." )
 
     print_step( "Push Step 12. Announce the release." )
     continue_or_exit( "Please announce the release using the email structure below:\n" +
                        get_announcement_email( new_checker_version ) )
 
+    print_step( "Push Step 13. Push Eclipse plugin files." )
+    if test_mode:
+        msg = ( "Test Mode: You are in test_mode.  If you built the Eclipse plugin on"   +
+                "your local machine, you may want to revert any files that were modified." )
+    else:
+        msg = ( "If you built the Eclipse plugin on your local machine, there are a few" +
+                "changed files with version number changes that need to be pushed.\n" +
+                "Do not push the .classpath file. The following files should be pushed:\n" +
+                "checker-framework-eclipse-feature/feature.xml\n" +
+                "checker-framework-eclipse-plugin/META-INF/MANIFEST.MF\n" +
+                "checker-framework-eclipse-update-site/site.xml" )
+
+    print( msg )
+    prompt_until_yes()
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

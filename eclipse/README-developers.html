@@ -69,7 +69,10 @@
 <div class="col-md-9 col-md-offset" id="content">
 <p>
     This document explains how to build and release the Eclipse plugin for the Checker Framework.
-    In general the process consists of 4 steps:
+    It is easiest to perform these steps on your local machine rather than on a server such as buffalo.
+    However one must take special care to keep one's local Checker Framework repository's Eclipse
+    directory clean.
+    In general the process consists of 7 steps:
 </p>
 <ol>
     <li>Copy Checker Framework artifacts to the plugin's lib directory.</li>
@@ -78,6 +81,8 @@
     <li>Install and test the plugin locally.</li>
     <li>Copy the release to the deployment directory.</li>
     <li>Update symlinks to point to the latest plugin release.</li>
+    <li>After the Checker Framework release process is complete, push the files
+    with version number changes from your local repository.</li>
 </ol>
 <p>
     This document also contains sections with development tips and possible future improvements.
@@ -115,6 +120,8 @@
                     <li>Select File->Import</li>
                     <li>Select the <code>checker-framework/eclipse</code> directory from your Checker Framework clone</li>
                     <li>Select all three projects and import</li>
+                    <li>If these projects were ever built on your machine before, make sure to "Clean all projects" and
+                        then manually verify that the project directories have no extraneous files.</li>
                 </ol>
                 <div class="alert alert-warning">
                     Note: The classpath and project files are checked in but the classpath is relative to the
@@ -127,7 +134,9 @@
             <td>3.</td>
             <td><strong>Download the versions of Eclipse on which you'd like to test</strong><br>
                 Since Eclipse tries to cache everything in existence and not let go of it (even if you uninstall it),
-                We typically test on fresh Eclipse installations.  See the <a href="#testing">Testing the Plugin</a>
+                we typically test on fresh Eclipse installations.  It is recommended that you keep
+                a fresh install of Eclipse in a directory that stays untouched, and make a copy of
+                that directory each time.  See the <a href="#testing">Testing the Plugin</a>
                 section for more details.
             </td>
 
@@ -456,6 +465,9 @@
                    ln -sf /cse/www2/types/checker-framework/checker-plugin/update-site-DATE<br>
                    &nbsp;&nbsp;&nbsp;&nbsp;/cse/www2/types/checker-framework/checker-plugin/update-site<br><br>
                 </code>
+                Verify that this change had an effect by doing <code>ls</code> on <code>update-site</code> and
+                seeing if it points to the new directory. If not, do <code>rm /cse/www2/types/checker-framework/checker-plugin/update-site</code>
+                and run the <code>ln</code> command line again.
             </td>
         </tr>
 
@@ -471,11 +483,27 @@
         <tr id="test_remotely">
             <td colspan="2">
                 <strong>Release Step 4: Test the deployed plugin.</strong><br>
-                Websites served via /cse/www2/types must have group (types_www) read privileges.
-                Execute:
-                <code>chmod -R g+r /cse/www2/types/checker-framework/checker-plugin/update-site</code>
+                Follow the steps in the <a href="#testing">testing</a> section, this time
+                using the live site, and ensure no unexpected errors/exceptions occur.
+                If the live site is up and you verified that the symbolic link for <code>update-site</code>
+                is correctly pointing to the new plug-in directory and you still see the old
+                version in this step, it may be that Eclipse has cached part of the update site
+                locally and is not retrieving the site again. Try again with a fresh copy of Eclipse.
             </td>
         </tr>
+
+        <tr id="push_changed_eclipse_files">
+            <td colspan="2">
+                <strong>Release Step 5: Push changed Eclipse plug-in files.</strong><br>
+                 After the entire Checker Framework release process is complete, push the files
+                 with version number changes from your local repository. Do <b>not</b> push the
+                 <code>.classpath</code> file. The following files should be pushed:
+                 <code>checker-framework-eclipse-feature/feature.xml</code>,
+                 <code>checker-framework-eclipse-plugin/META-INF/MANIFEST.MF</code> and
+                 <code>checker-framework-eclipse-update-site/site.xml</code>
+            </td>
+        </tr>
+
     </table>
 </section>
 
