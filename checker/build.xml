@@ -70,7 +70,7 @@
         <delete file="jdk/jdk9.jar"/>
 
         <delete dir="${dist}"/>
-        <delete dir="dist" />
+        <delete dir="dist" failonerror="false"/>
     </target>
 
     <target name="clean-nojdk" description="Remove generated files, but not the jdkX.jar files">
