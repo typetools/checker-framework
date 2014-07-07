@@ -1,5 +1,6 @@
 package org.checkerframework.checker.compilermsgs;
 
+import com.sun.source.tree.Tree;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.propkey.PropertyKeyAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -21,8 +22,12 @@ public class CompilerMessagesAnnotatedTypeFactory extends PropertyKeyAnnotatedTy
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
+        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
+
         return new ListTreeAnnotator(
-                super.createTreeAnnotator(),
+                new PropagationTreeAnnotator(this),
+                implicitsTreeAnnotator,
                 new KeyLookupTreeAnnotator(this, CompilerMessageKey.class)
         );
     }
