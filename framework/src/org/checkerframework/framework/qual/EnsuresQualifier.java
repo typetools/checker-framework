@@ -22,6 +22,7 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+@InheritedAnnotation
 public @interface EnsuresQualifier {
     /**
      * The Java expressions for which the qualifier holds after successful
