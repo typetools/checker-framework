@@ -17,7 +17,7 @@ class OverrideANNA {
 
   static class Sub extends Super {
     @Override
-    //:: error: (contracts.postcondition.override.invalid)
+    //:: error: (contracts.postcondition.not.satisfied)
     void setf(@Raw @UnknownInitialization Sub this) { }
   }
 
