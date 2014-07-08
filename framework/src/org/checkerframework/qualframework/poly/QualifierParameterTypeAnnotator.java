@@ -25,7 +25,7 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
     public QualifierParameterTypeAnnotator(
             QualifierParameterAnnotationConverter<Q> annotationConverter,
             QualifierHierarchy<Wildcard<Q>> containmentHierarchy) {
-        super(annotationConverter, new QualParams<>());
+        super(annotationConverter, new QualParams<Q>());
         this.containmentHierarchy = containmentHierarchy;
     }
 
