@@ -68,12 +68,12 @@ class ContractsOverriding {
         String g;
 
         @Override
-        //:: error: (contracts.postcondition.override.invalid)
+        //:: error: (contracts.postcondition.not.satisfied)
         void m1() {
         }
 
         @Override
-        //:: error: (contracts.postcondition.override.invalid)
+        //:: error: (contracts.postcondition.not.satisfied)
         void m2() {
         }
 
@@ -120,14 +120,14 @@ class ContractsOverriding {
         String g;
 
         @Override
-        //:: error: (contracts.conditional.postcondition.true.override.invalid)
         boolean m1() {
+            //:: error: (contracts.conditional.postcondition.not.satisfied)
             return true;
         }
 
         @Override
-        //:: error: (contracts.conditional.postcondition.true.override.invalid)
         boolean m2() {
+            //:: error: (contracts.conditional.postcondition.not.satisfied)
             return true;
         }
 
@@ -148,8 +148,19 @@ class ContractsOverriding {
         @Override
         // invalid result
         @EnsuresOddIf(expression="f", result=false)
-        //:: error: (contracts.conditional.postcondition.true.override.invalid)
         boolean m5() {
+            f = odd;
+            return true;
+        }
+
+        @EnsuresOddIf(expression="f", result=false)
+        boolean m6() {
+            f = odd;
+            return true;
+        }
+
+        @EnsuresQualifierIf(expression = "this.f", qualifier = Odd.class, result=true)
+        boolean m7() {
             f = odd;
             return true;
         }

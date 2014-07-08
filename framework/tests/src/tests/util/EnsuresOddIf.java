@@ -7,6 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
+import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
  * A conditional postcondition annotation to indicate that a method ensures
@@ -19,6 +20,7 @@ import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+@InheritedAnnotation
 public @interface EnsuresOddIf {
     String[] expression();
 

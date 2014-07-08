@@ -21,7 +21,7 @@ class OverrideANNA {
   static class Sub extends Super {
     @Override
     @EnsuresNonNull("f")
-    //:: error: (contracts.postcondition.override.invalid)
+    //:: error: (contracts.postcondition.not.satisfied)
     void setfg(@Raw @UnknownInitialization Sub this) {
       f = new Object();
     }
