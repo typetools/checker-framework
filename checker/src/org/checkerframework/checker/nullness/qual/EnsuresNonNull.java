@@ -8,6 +8,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 
 /**
@@ -27,6 +28,7 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
 @PostconditionAnnotation(qualifier = NonNull.class)
+@InheritedAnnotation
 public @interface EnsuresNonNull {
     /**
      * The Java expressions that are ensured to be {@link NonNull} on successful
