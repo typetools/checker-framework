@@ -212,7 +212,7 @@ public class TypeHierarchy {
             if (lhsBase.getKind() == TypeKind.WILDCARD && rhs.getKind() != TypeKind.WILDCARD) {
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType)lhsBase;
                 if (wildcard.isTypeArgHack()) {
-                    AnnotatedTypeMirror bnd = ((AnnotatedTypeVariable)wildcard.getExtendsBound()).getEffectiveUpperBound();
+                    AnnotatedTypeMirror bnd = wildcard.getEffectiveExtendsBound();
                     return isSubtypeImpl(rhs, bnd);
                 }
                 if (wildcard.getSuperBound() != null &&
@@ -590,13 +590,7 @@ public class TypeHierarchy {
                     return false;
                 }
             }
-            if (((AnnotatedWildcardType)lhs).isTypeArgHack()) {
-                // If it is the hack wildcard, also skip over the type variable.
-                lhs = ((AnnotatedTypeVariable)((AnnotatedWildcardType)lhs)
-                        .getEffectiveExtendsBound()).getEffectiveUpperBound();
-            } else {
-                lhs = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
-            }
+            lhs = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
             if (lhs == null)
                 return true;
 
