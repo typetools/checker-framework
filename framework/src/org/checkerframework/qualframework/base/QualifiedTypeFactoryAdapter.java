@@ -16,7 +16,6 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.Pair;
 
-import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
@@ -27,7 +26,7 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedPara
  */
 class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     /** The underlying {@link QualifiedTypeFactory}. */
-    private QualifiedTypeFactory<Q> underlying;
+    private final QualifiedTypeFactory<Q> underlying;
 
     public QualifiedTypeFactoryAdapter(QualifiedTypeFactory<Q> underlying,
             CheckerAdapter<Q> checker) {
@@ -316,6 +315,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     }
 
 
+    @Override
     public void postTypeVarSubstitution(AnnotatedTypeVariable varDecl,
             AnnotatedTypeVariable varUse, AnnotatedTypeMirror value) {
         TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
