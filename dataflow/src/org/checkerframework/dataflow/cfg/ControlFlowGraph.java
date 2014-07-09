@@ -178,9 +178,9 @@ public class ControlFlowGraph {
                 worklist.removeLast();
             } else {
                 visited.add(cur);
-                Deque<Block> successsors = getSuccessors(cur);
-                successsors.removeAll(visited);
-                worklist.addAll(successsors);
+                Deque<Block> successors = getSuccessors(cur);
+                successors.removeAll(visited);
+                worklist.addAll(successors);
             }
         }
 
