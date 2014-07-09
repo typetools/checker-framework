@@ -54,7 +54,7 @@ public abstract class Checker<Q> implements QualifierContext<Q> {
 
     /**
      * Constructs the {@link QualifiedTypeFactory} for use by this {@link
-     * Checker}. 
+     * Checker}.
      */
     protected abstract QualifiedTypeFactory<Q> createTypeFactory();
 
