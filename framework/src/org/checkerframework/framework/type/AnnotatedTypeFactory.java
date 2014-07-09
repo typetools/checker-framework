@@ -1409,13 +1409,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         if (!typeVarMapping.isEmpty()) {
             for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
-                if (typeVarMapping.get(tv) == null) {
+                // TODO: call to getTypeParmaeterDeclaration should not be needed, as
+                // methodType should only contain declarations.
+                if (typeVarMapping.get(tv.getTypeParameterDeclaration()) == null) {
                     ErrorReporter.errorAbort("AnnotatedTypeFactory.methodFromUse:" +
                             "mismatch between declared method type variables and the inferred method type arguments! " +
                             "Method type variables: " + methodType.getTypeVariables() + "; " +
                             "Inferred method type arguments: " + typeVarMapping);
                 }
-                typeargs.add(typeVarMapping.get(tv));
+                typeargs.add(typeVarMapping.get(tv.getTypeParameterDeclaration()));
             }
             methodType = (AnnotatedExecutableType)methodType.substitute(typeVarMapping);
         }
@@ -1747,7 +1749,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public final AnnotatedTypeMirror toAnnotatedType(TypeMirror t, boolean declaration) {
         return AnnotatedTypeMirror.createType(t, this, declaration);
     }
-
 
     /**
      * Determines an empty annotated type of the given tree. In other words,
@@ -2392,7 +2393,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar) {
         WildcardType wc = types.getWildcardType(typeVar.getUnderlyingType(), null);
         AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
-        wctype.setExtendsBound(typeVar);
+        wctype.setExtendsBound(typeVar.getEffectiveUpperBound());
         wctype.addAnnotations(typeVar.getAnnotations());
         wctype.setTypeArgHack();
         return wctype;

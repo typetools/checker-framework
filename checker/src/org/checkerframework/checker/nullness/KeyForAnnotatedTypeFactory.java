@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 
@@ -102,26 +103,31 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // System.out.println("looking at call: " + call);
     Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(call);
     AnnotatedExecutableType method = mfuPair.first;
+    ExecutableElement methElem = method.getElement();
+    AnnotatedExecutableType declMethod = this.getAnnotatedType(methElem);
 
     Map<AnnotatedTypeMirror, AnnotatedTypeMirror> mappings = new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>();
 
     // Modify parameters
     List<AnnotatedTypeMirror> params = method.getParameterTypes();
-    for (AnnotatedTypeMirror param : params) {
-      AnnotatedTypeMirror subst = substituteCall(call, param);
+    List<AnnotatedTypeMirror> declParams = declMethod.getParameterTypes();
+    assert params.size() == declParams.size();
+
+    for (int i = 0; i < params.size(); ++i) {
+      AnnotatedTypeMirror param = params.get(i);
+      AnnotatedTypeMirror subst = substituteCall(call, declParams.get(i), param);
       mappings.put(param, subst);
     }
 
     // Modify return type
     AnnotatedTypeMirror returnType = method.getReturnType();
     if (returnType.getKind() != TypeKind.VOID ) {
-      AnnotatedTypeMirror subst = substituteCall(call, returnType);
+      AnnotatedTypeMirror subst = substituteCall(call, declMethod.getReturnType(), returnType);
       mappings.put(returnType, subst);
     }
 
     // TODO: upper bounds, throws?
-
-    method = (AnnotatedExecutableType)method.substitute(mappings);
+    method = method.substitute(mappings);
 
     // System.out.println("adapted method: " + method);
 
@@ -150,12 +156,12 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   // TODO: doc
   // TODO: "this" should be implicitly prepended
   // TODO: substitutions also need to be applied to argument types
-  private AnnotatedTypeMirror substituteCall(MethodInvocationTree call, AnnotatedTypeMirror inType) {
+  private AnnotatedTypeMirror substituteCall(MethodInvocationTree call, AnnotatedTypeMirror declInType, AnnotatedTypeMirror inType) {
 
     // System.out.println("input type: " + inType);
     AnnotatedTypeMirror outType = inType.getCopy(true);
 
-    AnnotationMirror anno = inType.getAnnotation(KeyFor.class);
+    AnnotationMirror anno = declInType.getAnnotation(KeyFor.class);
     if (anno != null) {
 
       List<String> inMaps = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
@@ -196,23 +202,33 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       outType.addAnnotation(newAnno);
     }
 
-    if (outType.getKind() == TypeKind.DECLARED) {
+    if (declInType.getKind() == TypeKind.DECLARED &&
+      outType.getKind() == TypeKind.DECLARED) {
       AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) outType;
+      AnnotatedDeclaredType declDeclaredType = (AnnotatedDeclaredType) declInType;
       Map<AnnotatedTypeMirror, AnnotatedTypeMirror> mapping = new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>();
 
+      List<AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
+      List<AnnotatedTypeMirror> declTypeArgs = declDeclaredType.getTypeArguments();
+
+      assert typeArgs.size() == declTypeArgs.size();
+
       // Get the substituted type arguments
-      for (AnnotatedTypeMirror typeArgument : declaredType.getTypeArguments()) {
-        AnnotatedTypeMirror substTypeArgument = substituteCall(call, typeArgument);
+      for (int i = 0; i < typeArgs.size(); ++i) {
+        AnnotatedTypeMirror typeArgument = typeArgs.get(i);
+        AnnotatedTypeMirror substTypeArgument = substituteCall(call, declTypeArgs.get(i), typeArgument);
         mapping.put(typeArgument, substTypeArgument);
       }
 
       outType = declaredType.substitute(mapping);
-    } else if (outType.getKind() == TypeKind.ARRAY) {
-      AnnotatedArrayType  arrayType = (AnnotatedArrayType) outType;
+    } else if (declInType.getKind() == TypeKind.ARRAY &
+            outType.getKind() == TypeKind.ARRAY) {
+      AnnotatedArrayType arrayType = (AnnotatedArrayType) outType;
+      AnnotatedArrayType declArrayType = (AnnotatedArrayType) declInType;
 
       // Get the substituted component type
       AnnotatedTypeMirror elemType = arrayType.getComponentType();
-      AnnotatedTypeMirror substElemType = substituteCall(call, elemType);
+      AnnotatedTypeMirror substElemType = substituteCall(call, declArrayType.getComponentType(), elemType);
 
       arrayType.setComponentType(substElemType);
       // outType aliases arrayType

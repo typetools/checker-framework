@@ -12,6 +12,8 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
 import com.sun.source.tree.ClassTree;
@@ -92,11 +94,12 @@ class GeneralQualifierHierarchy extends MultiGraphQualifierHierarchy {
         return null;
     }
 
-    // Not needed - raises error.
+    // Not needed - should raise error. Unfortunately, in inference we ask for bottom annotations.
+    // Return a dummy value that does no harm.
     @Override
     public Set<AnnotationMirror> getBottomAnnotations() {
-        ErrorReporter.errorAbort("GeneralQualifierHierarchy.getBottomAnnotations() was called! It shouldn't be called.");
-        return null;
+        // ErrorReporter.errorAbort("GeneralQualifierHierarchy.getBottomAnnotations() was called! It shouldn't be called.");
+        return AnnotationUtils.createAnnotationSet();
     }
 
     // Not needed - raises error.

@@ -12,5 +12,10 @@ public final class MissingBoundAnnotations {
     return theKeys;
   }
 
+  public static <K extends Comparable<? super K>,V> Collection<@KeyFor("#1") K> sortedKeySetSimpler(ArrayList<@KeyFor("#1") K> theKeys) {
+    Collections.sort (theKeys);
+    return theKeys;
+  }
+
 }
 

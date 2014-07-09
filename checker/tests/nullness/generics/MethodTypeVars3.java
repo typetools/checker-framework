@@ -26,7 +26,11 @@ class MethodTypeVars3 {
                 dom.put(node, new ArrayList<T>(nodes));
             }
         }
-        
+
         return dom;
+    }
+
+    <XXX extends Object> void test(Map<XXX, List<XXX>> dom, XXX node) {
+        dom.put(node, new ArrayList<XXX>(Collections.singleton(node)));
     }
 }

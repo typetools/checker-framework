@@ -14,7 +14,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
-import com.sun.source.util.SimpleTreeVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -199,7 +198,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns a {@link TreeAnnotator} that adds annotations to a type based
      * on the contents of a tree.
      *
-     * Subclasses may override this method to specify more appriopriate
+     * Subclasses may override this method to specify more appropriate
      * {@link TreeAnnotator}
      *
      * @return a tree annotator
