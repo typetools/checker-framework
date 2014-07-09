@@ -2,7 +2,6 @@ package org.checkerframework.qualframework.poly;
 
 import java.util.*;
 
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import com.sun.source.tree.ExpressionTree;
@@ -93,7 +92,7 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
     /** Visitor to apply {@code qualifierAsMemberOf} at every location within a
      * {@link QualifiedTypeMirror}.
      */
-    private QualifierMapVisitor<QualParams<Q>, QualParams<Q>, QualParams<Q>> AS_MEMBER_OF_VISITOR =
+    private final QualifierMapVisitor<QualParams<Q>, QualParams<Q>, QualParams<Q>> AS_MEMBER_OF_VISITOR =
         new QualifierMapVisitor<QualParams<Q>, QualParams<Q>, QualParams<Q>>() {
             @Override
             public QualParams<Q> process(QualParams<Q> memberQual, QualParams<Q> objectQual) {
@@ -113,7 +112,7 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
      * QualifiedTypeMirror}.  This is used in {@code methodFromUse} to
      * substitute in the newly-inferred values for method qualifier parameters.
      */
-    private QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>> SUBSTITUTE_VISITOR =
+    private final QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>> SUBSTITUTE_VISITOR =
         new QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>>() {
             @Override
             public QualParams<Q> process(QualParams<Q> params, Map<String, Wildcard<Q>> substs) {
