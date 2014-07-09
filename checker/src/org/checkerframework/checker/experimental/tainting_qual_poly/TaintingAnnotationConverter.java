@@ -5,16 +5,11 @@ import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.QualifiedNameable;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.javacutil.AnnotationUtils;
-
-import org.checkerframework.qualframework.base.AnnotationConverter;
 
 import org.checkerframework.qualframework.poly.QualifierParameterAnnotationConverter;
 import org.checkerframework.qualframework.poly.CombiningOperation;
@@ -26,8 +21,7 @@ import org.checkerframework.qualframework.poly.Wildcard;
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
 public class TaintingAnnotationConverter implements QualifierParameterAnnotationConverter<Tainting> {
-    private Map<String, Wildcard<Tainting>> lookup;
-    private CombiningOperation<Tainting> lubOp;
+    private final CombiningOperation<Tainting> lubOp;
 
     private static final Tainting BOTTOM = Tainting.UNTAINTED;
     private static final Tainting TOP = Tainting.TAINTED;
@@ -109,7 +103,6 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
         String name = AnnotationUtils.annotationName(anno);
 
         if (name.startsWith(MULTI_ANNO_NAME_PREFIX)) {
-            Map<String, Wildcard<Tainting>> result = new HashMap<>();
             AnnotationMirror[] subAnnos = AnnotationUtils.getElementValue(
                     anno, "value", AnnotationMirror[].class, true);
             for (AnnotationMirror subAnno : subAnnos) {
