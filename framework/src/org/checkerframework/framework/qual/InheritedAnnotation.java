@@ -7,15 +7,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A meta-annotation to allow multiple conditional postcondition annotations.
- *
- * @author Stefan Heule
- * @see EnsuresQualifierIf
+ * A meta-annotation that specifies if an annotation should be inherited.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD })
-@InheritedAnnotation
-public @interface EnsuresQualifiersIf {
-    EnsuresQualifierIf[] value();
+@Target(ElementType.ANNOTATION_TYPE)
+public @interface InheritedAnnotation {
 }

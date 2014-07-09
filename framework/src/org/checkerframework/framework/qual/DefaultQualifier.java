@@ -36,7 +36,7 @@ import java.lang.annotation.Target;
  * @see DefaultFor
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.SOURCE)
 @Target({PACKAGE, TYPE, CONSTRUCTOR, METHOD, FIELD, LOCAL_VARIABLE, PARAMETER})
 public @interface DefaultQualifier {
 

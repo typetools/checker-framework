@@ -5,10 +5,6 @@
 // I changed expected logic to handle multiple appearances
 // of the same qualifier in different positions.
 
-// Note that I added "-processor org/checkerframework/checker.nullness.NullnessChecker"
-// to the invocation of the compiler!
-// TODO: add a @Processor method-annotation to parameterize
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -53,12 +49,12 @@ public class Driver {
                 continue;
             if (method.getReturnType() != String.class)
                 throw new IllegalArgumentException("Test method needs to return a string: " + method);
-            String testClass = testClassOf(method);
+            String testClass = PersistUtil.testClassOf(method);
 
             try {
                 String compact = (String)method.invoke(object);
-                String fullFile = wrap(compact);
-                ClassFile cf = compileAndReturn(fullFile, testClass);
+                String fullFile = PersistUtil.wrap(compact);
+                ClassFile cf = PersistUtil.compileAndReturn(fullFile, testClass);
                 List<TypeAnnotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(cf);
                 ReferenceInfoUtil.compare(expected, actual, cf);
                 out.println("PASSED:  " + method.getName());
@@ -137,72 +133,6 @@ public class Driver {
         return list;
     }
 
-    private String testClassOf(Method m) {
-        TestClass tc = m.getAnnotation(TestClass.class);
-        if (tc != null) {
-            return tc.value();
-        } else {
-            return "Test";
-        }
-    }
-
-    private ClassFile compileAndReturn(String fullFile, String testClass) throws Exception {
-        File source = writeTestFile(fullFile);
-        File clazzFile = compileTestFile(source, testClass);
-        return ClassFile.read(clazzFile);
-    }
-
-    protected File writeTestFile(String fullFile) throws IOException {
-        File f = new File("Test.java");
-        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(f)));
-        out.println(fullFile);
-        out.close();
-        return f;
-    }
-
-    protected File compileTestFile(File f, String testClass) {
-        int rc = com.sun.tools.javac.Main.compile(new String[] { "-source", "1.8", "-g", "-processor", "org.checkerframework.checker.nullness.NullnessChecker", f.getPath() });
-        if (rc != 0) {
-            throw new Error("compilation failed. rc=" + rc);
-        }
-        String path;
-        if (f.getParent() != null) {
-            path = f.getParent();
-        } else {
-            path = "";
-        }
-
-        return new File(path + testClass + ".class");
-    }
-
-    private String wrap(String compact) {
-        StringBuilder sb = new StringBuilder();
-
-        // Automatically import java.util
-        sb.append("\nimport java.util.*;");
-        sb.append("\nimport java.lang.annotation.*;\n");
-
-        // And the Nullness qualifiers
-        sb.append("import org.checkerframework.framework.qual.DefaultQualifier;\n");
-        sb.append("import org.checkerframework.checker.nullness.qual.*;\n");
-
-        sb.append("\n");
-        boolean isSnippet = !(compact.startsWith("class")
-                              || compact.contains(" class"))
-                            && !compact.contains("interface")
-                            && !compact.contains("enum");
-        if (isSnippet)
-            sb.append("class Test {\n");
-
-        sb.append(compact);
-        sb.append("\n");
-
-        if (isSnippet)
-            sb.append("}\n\n");
-
-        return sb.toString();
-    }
-
     public static final int NOT_SET = -888;
 
 }
@@ -231,12 +161,3 @@ public class Driver {
     TADescription[] value() default {};
 }
 
-/**
- * The name of the class that should be analyzed.
- * Should only need to be provided when analyzing inner classes.
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-@interface TestClass {
-    String value() default "Test";
-}

@@ -26,6 +26,7 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD })
+@InheritedAnnotation
 public @interface EnsuresQualifierIf {
     /**
      * The Java expressions for which the qualifier holds if the method
