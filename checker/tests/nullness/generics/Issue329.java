@@ -31,9 +31,7 @@ abstract class Issue329NN {
     }
 
     void f2(Flag<@Nullable String> flag) {
-        // This error is missed because BaseTypeVisitor.checkTypeArguments
-        // ignores wildcards.
-        //TODO:: error: (type.argument.type.incompatible)
+        //:: error: (type.argument.type.incompatible)
         setExtension(getValue(flag));
     }
 }
