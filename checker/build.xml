@@ -70,6 +70,7 @@
         <delete file="jdk/jdk9.jar"/>
 
         <delete dir="${dist}"/>
+        <delete dir="dist" failonerror="false"/>
     </target>
 
     <target name="clean-nojdk" description="Remove generated files, but not the jdkX.jar files">
@@ -242,6 +243,7 @@
             <package name="org.checkerframework.stubparser.*"/>
             -->
             <package name="org.checkerframework.framework.*"/>
+            <package name="org.checkerframework.qualframework.*"/>
             <package name="org.checkerframework.common.*"/>
             <package name="org.checkerframework.checker.*"/>
 
@@ -272,6 +274,8 @@
         <!-- Only unjar the stubparser - everything else is recompiled. -->
         <unjar src="${stubparser.lib}" dest="${build}" />
 
+        <mkdir dir="dist" />
+
         <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/">
             <manifest>
                 <attribute name="Main-Class" value="org.checkerframework.framework.util.CheckerMain"/>
@@ -283,6 +287,8 @@
     <!-- TODO: include jdk dependencies for qualifiers. -->
     <target name="checker-qual-jar" depends="build"
             description="Create checker-qual.jar file for annotations">
+        <mkdir dir="dist" />
+
         <jar destfile="${checker.qual.lib}" basedir="${build}">
             <include name="**/qual/*"/>
             <!-- Exclude test-only qualifiers -->
@@ -397,6 +403,13 @@
               </fileset>
           </batchtest>
       </junit>
+    </target>
+
+    <target name="compilermsg-tests" depends="jar,build-tests"
+            description="Run tests for the Compiler Message Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.CompilermsgTest"/>
+        </antcall>
     </target>
 
     <target name="fenum-tests" depends="jar,build-tests"
@@ -553,6 +566,20 @@
             description="Run tests for the Tainting Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.TaintingTest"/>
+        </antcall>
+    </target>
+
+    <target name="tainting_qual-tests" depends="jar,build-tests"
+            description="Run tests for the qualifier API Tainting Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.TaintingQualTest"/>
+        </antcall>
+    </target>
+
+    <target name="tainting_qual_poly-tests" depends="jar,build-tests"
+            description="Run tests for the qualifier polymorphism Tainting Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.TaintingQualPolyTest"/>
         </antcall>
     </target>
 
@@ -733,7 +760,7 @@
             description="Run the compiler message keys checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.checker.compilermsgs.CompilerMessagesChecker"/>
-            <param name="checker-args" value="-Awarns -Apropfiles=${framework.loc}/src/org/checkerframework/framework/source/messages.properties:./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/javari/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffect/messages.properties"/>
+            <param name="checker-args" value="-Awarns -AsuppressWarnings=purity -Apropfiles=${framework.loc}/src/org/checkerframework/framework/source/messages.properties:./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/javari/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffect/messages.properties"/>
         </antcall>
     </target>
 
@@ -863,6 +890,8 @@
 
     <target name="dist-nojdk" depends="-prep-dist,jar"
             description="Build checker.jar, checker-qual.jar WITHOUT updating jdkX.jar.  Move all relevant files to the binary directory.">
+
+        <mkdir dir="dist" />
 
         <copy tofile="dist/javac.jar" file="${javac.lib}"
               overwrite="true" failonerror="true" />

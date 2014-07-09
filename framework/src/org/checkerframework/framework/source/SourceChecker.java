@@ -31,6 +31,8 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 
@@ -38,6 +40,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorHandler;
@@ -234,13 +237,16 @@ import com.sun.tools.javac.util.Log;
     // org.checkerframework.framework.type.GenericAnnotatedTypeFactory.analyze
     "flowdotdir",
 
+    // Enable additional output in the flow .dot files.
+    "verbosecfg",
+
     // Whether to output resource statistics at JVM shutdown
     // org.checkerframework.framework.source.SourceChecker.shutdownHook()
     "resourceStats",
 
 })
 public abstract class SourceChecker
-    extends AbstractTypeProcessor implements ErrorHandler {
+    extends AbstractTypeProcessor implements ErrorHandler, CFContext {
 
     // TODO A checker should export itself through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
@@ -342,6 +348,7 @@ public abstract class SourceChecker
      * @return the {@link ProcessingEnvironment} that was supplied to this
      *         checker
      */
+    @Override   // from CFChecker
     public ProcessingEnvironment getProcessingEnvironment() {
         return this.processingEnv;
     }
@@ -350,6 +357,33 @@ public abstract class SourceChecker
     /* package-visible */
     void setProcessingEnvironment(ProcessingEnvironment env) {
         this.processingEnv = env;
+    }
+
+    /** @return the {@link CFContext} used by this checker */
+    public CFContext getContext() {
+        return this;
+    }
+
+    @Override
+    public SourceChecker getChecker() {
+        return this;
+    }
+
+    // getProcessingEnvironment is defined above.
+
+    @Override
+    public Elements getElementUtils() {
+        return getProcessingEnvironment().getElementUtils();
+    }
+
+    @Override
+    public Types getTypeUtils() {
+        return getProcessingEnvironment().getTypeUtils();
+    }
+
+    @Override
+    public SourceVisitor<?, ?> getVisitor() {
+        return this.visitor;
     }
 
     /**

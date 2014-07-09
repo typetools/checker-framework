@@ -4,6 +4,9 @@ package org.checkerframework.dataflow.cfg;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
@@ -14,18 +17,14 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
-
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
 
 /**
  * A control flow graph (CFG for short) of a single method.
@@ -162,55 +161,59 @@ public class ControlFlowGraph {
     }
 
     /**
-     * @return The list of all basic block in this control flow graph, in depth-first
-     *         ordering, which is the reverse of depth-first postorder sequence.
+     * @return The list of all basic block in this control flow graph
+     * in reversed depth-first postorder sequence.
+     *
+     * Blocks may appear more than once in the sequence.
      */
     public List<Block> getDepthFirstOrderedBlocks() {
-        Set<Block> visited = new HashSet<Block>();
-        List<Block> dfsOrder = new LinkedList<>();
+        List<Block> dfsOrderResult = new LinkedList<>();
+        Set<Block> visited = new HashSet<>();
         Deque<Block> worklist = new LinkedList<>();
-
         worklist.add(entryBlock);
-
         while (!worklist.isEmpty()) {
-            Block next = worklist.removeFirst();
-            addDFSPostorder(next, visited, worklist);
-            dfsOrder.add(next);
+            Block cur = worklist.getLast();
+            if (visited.contains(cur)) {
+                dfsOrderResult.add(cur);
+                worklist.removeLast();
+            } else {
+                visited.add(cur);
+                Deque<Block> successsors = getSuccessors(cur);
+                successsors.removeAll(visited);
+                worklist.addAll(successsors);
+            }
         }
 
-        return dfsOrder;
+        Collections.reverse(dfsOrderResult);
+        return dfsOrderResult;
     }
 
-    private void addDFSPostorder(Block cur, Set<Block> visited,
-            Deque<Block> worklist) {
-        if (!visited.contains(cur)) {
-            visited.add(cur);
-
-            Deque<Block> succs = new LinkedList<>();
-            if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
-                ConditionalBlock ccur = ((ConditionalBlock) cur);
-                succs.add(ccur.getThenSuccessor());
-                succs.add(ccur.getElseSuccessor());
-            } else {
-                assert cur instanceof SingleSuccessorBlock;
-                Block b = ((SingleSuccessorBlock) cur).getSuccessor();
-                if (b != null) {
-                    succs.add(b);
-                }
-            }
-
-            if (cur.getType() == BlockType.EXCEPTION_BLOCK) {
-                ExceptionBlock ecur = (ExceptionBlock) cur;
-                for (Set<Block> exceptionSuccSet : ecur.getExceptionalSuccessors().values()) {
-                    succs.addAll(exceptionSuccSet);
-                }
-            }
-
-            // I want a "addAllFirst" here, write it myself:
-            for (Iterator<Block> iter = succs.descendingIterator(); iter.hasNext(); ) {
-                worklist.addFirst(iter.next());
+    /**
+     * Get a list of all successor Blocks for cur
+     * @param cur
+     * @return A Deque of successor Blocks
+     */
+    private Deque<Block> getSuccessors(Block cur) {
+        Deque<Block> succs = new LinkedList<>();
+        if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
+            ConditionalBlock ccur = ((ConditionalBlock) cur);
+            succs.add(ccur.getThenSuccessor());
+            succs.add(ccur.getElseSuccessor());
+        } else {
+            assert cur instanceof SingleSuccessorBlock;
+            Block b = ((SingleSuccessorBlock) cur).getSuccessor();
+            if (b != null) {
+                succs.add(b);
             }
         }
+
+        if (cur.getType() == BlockType.EXCEPTION_BLOCK) {
+            ExceptionBlock ecur = (ExceptionBlock) cur;
+            for (Set<Block> exceptionSuccSet : ecur.getExceptionalSuccessors().values()) {
+                succs.addAll(exceptionSuccSet);
+            }
+        }
+        return succs;
     }
 
     /**

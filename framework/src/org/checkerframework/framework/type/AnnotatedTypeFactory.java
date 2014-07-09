@@ -620,7 +620,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return AnnotatedTypes.deepCopy(elementCache.get(elt));
         }
         if (elt.getKind() == ElementKind.PACKAGE)
-            return toAnnotatedType(elt.asType());
+            return toAnnotatedType(elt.asType(), false);
         AnnotatedTypeMirror type;
         Tree decl = declarationFromElement(elt);
 
@@ -629,7 +629,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (decl == null && indexTypes != null && indexTypes.containsKey(elt)) {
             type = AnnotatedTypes.deepCopy(indexTypes.get(elt));
         } else if (decl == null && (indexTypes == null || !indexTypes.containsKey(elt))) {
-            type = toAnnotatedType(elt.asType());
+            type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
             TypeFromElement.annotate(type, elt);
 
             if (elt instanceof ExecutableElement
@@ -659,7 +659,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds @FromByteCode to methods and constructors declared in class files
+     * Adds @FromByteCode to methods, constructors, and fields declared in class files
      * that are not already annotated with @FromStubFile
      *
      * @param elt
@@ -671,8 +671,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         if (elt.getKind() == ElementKind.CONSTRUCTOR ||
-                elt.getKind() == ElementKind.METHOD) {
-            // Only add @FromByteCode to Methods and Constructors
+                elt.getKind() == ElementKind.METHOD || elt.getKind() == ElementKind.FIELD) {
+            // Only add @FromByteCode to methods, constructors, and fields
             if (ElementUtils.isElementFromByteCode(elt)) {
                 Set<AnnotationMirror> annos = indexDeclAnnos.get(ElementUtils
                         .getVerboseName(elt));
@@ -893,6 +893,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         annotateImplicit(element, type);
     }
 
+    /**
+     * A callback method for the AnnotatedTypeFactory subtypes to customize
+     * AnnotatedTypeMirror.substitute().
+     *
+     * @param varDecl   a declaration of a type variable
+     * @param varUse    a use of the same type variable
+     * @param value     the new type to substitute in for the type variable
+     */
+    public void postTypeVarSubstitution(AnnotatedTypeVariable varDecl,
+            AnnotatedTypeVariable varUse, AnnotatedTypeMirror value) {
+        if (!varUse.annotations.isEmpty()
+                && !AnnotationUtils.areSame(varUse.annotations, varDecl.annotations)) {
+            value.replaceAnnotations(varUse.annotations);
+        }
+    }
+
 
     /**
      * Adapt the upper bounds of the type variables of a class relative
@@ -912,9 +928,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param type The use of the type
      * @param element The corresponding element
-     * @return The adapted type variables
+     * @return The adapted bounds of the type parameters
      */
-    public List<AnnotatedTypeVariable> typeVariablesFromUse(
+    public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(
             AnnotatedDeclaredType type, TypeElement element) {
 
         AnnotatedDeclaredType generic = getAnnotatedType(element);
@@ -923,6 +939,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         assert targs.size() == tvars.size() : "Mismatch in type argument size between " + type + " and " + generic;
 
+        //System.err.printf("TVFU\n  type: %s\n  generic: %s\n", type, generic);
+
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> mapping =
                 new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
 
@@ -930,13 +948,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             mapping.put((AnnotatedTypeVariable)tvars.get(i), targs.get(i));
         }
 
-        List<AnnotatedTypeVariable> res = new LinkedList<AnnotatedTypeVariable>();
+        List<AnnotatedTypeParameterBounds> res = new LinkedList<>();
 
         for (AnnotatedTypeMirror atm : tvars) {
             AnnotatedTypeVariable atv = (AnnotatedTypeVariable)atm;
-            atv.setUpperBound(atv.getUpperBound().substitute(mapping));
-            atv.setLowerBound(atv.getLowerBound().substitute(mapping));
-            res.add(atv);
+            // TODO: this maybe needs to use getEffective*Bound, not sure
+            AnnotatedTypeMirror upper = atv.getUpperBound().substitute(mapping);
+            AnnotatedTypeMirror lower = atv.getLowerBound().substitute(mapping);
+            res.add(new AnnotatedTypeParameterBounds(upper, lower));
         }
         return res;
     }
@@ -1400,7 +1419,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 }
                 typeargs.add(typeVarMapping.get(tv.getTypeParameterDeclaration()));
             }
-            methodType = methodType.substitute(typeVarMapping);
+            methodType = (AnnotatedExecutableType)methodType.substitute(typeVarMapping);
         }
 
         return Pair.of(methodType, typeargs);
@@ -1448,7 +1467,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             for (AnnotatedTypeVariable tv : con.getTypeVariables()) {
                 typeargs.add(typeVarMapping.get(tv));
             }
-            con = con.substitute(typeVarMapping);
+            con = (AnnotatedExecutableType)con.substitute(typeVarMapping);
         }
 
         return Pair.of(con, typeargs);
@@ -1481,7 +1500,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (!TreeUtils.isDiamondTree(tree)) {
             type = (AnnotatedDeclaredType) fromTypeTree(tree.getIdentifier());
         } else {
-            type = (AnnotatedDeclaredType) toAnnotatedType(InternalUtils.typeOf(tree));
+            type = (AnnotatedDeclaredType) toAnnotatedType(InternalUtils.typeOf(tree), false);
         }
 
         if (tree.getClassBody() != null) {
@@ -1584,7 +1603,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         PrimitiveType primitiveType =
             types.unboxedType(type.getUnderlyingType());
         AnnotatedPrimitiveType pt = (AnnotatedPrimitiveType)
-            AnnotatedTypeMirror.createType(primitiveType, this);
+            AnnotatedTypeMirror.createType(primitiveType, this, false);
         pt.addAnnotations(type.getAnnotations());
         return pt;
     }
@@ -1723,11 +1742,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * AnnotatedTypeMirror} using {@link AnnotatedTypeMirror#createType}.
      *
      * @param t the {@link TypeMirror}
+     * @param declaration   true if the result should be marked as a type declaration
      * @return an {@link AnnotatedTypeMirror} that has {@code t} as its
      * underlying type
      */
-    public final AnnotatedTypeMirror toAnnotatedType(TypeMirror t) {
-        return AnnotatedTypeMirror.createType(t, this);
+    public final AnnotatedTypeMirror toAnnotatedType(TypeMirror t, boolean declaration) {
+        return AnnotatedTypeMirror.createType(t, this, declaration);
     }
 
     /**
@@ -1743,10 +1763,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the type of {@code node}, without any annotations
      */
     public AnnotatedTypeMirror type(Tree node) {
+        boolean isDeclaration = TreeUtils.isTypeDeclaration(node);
 
         // Attempt to obtain the type via JCTree.
         if (InternalUtils.typeOf(node) != null) {
-            AnnotatedTypeMirror result = toAnnotatedType(InternalUtils.typeOf(node));
+            AnnotatedTypeMirror result = toAnnotatedType(InternalUtils.typeOf(node), isDeclaration);
             return result;
         }
 
@@ -1757,7 +1778,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TypeMirror t = trees.getTypeMirror(path);
         assert validType(t) : "Invalid type " + t + " for node " + t;
 
-        return toAnnotatedType(t);
+        return toAnnotatedType(t, isDeclaration);
     }
 
     /**
@@ -2181,7 +2202,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns true if the element appears in a stub file
-     * (Currently only works for methods and constructors)
+     * (Currently only works for methods, constructors, and fields)
      */
     public boolean isFromStubFile(Element element) {
         return this.getDeclAnnotation(element, FromStubFile.class) != null;
@@ -2190,7 +2211,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Returns true if the element is from byte code
      * and the if the element did not appear in a stub file
-     * (Currently only works for methods and constructors )
+     * (Currently only works for methods, constructors, and fields)
      */
     public boolean isFromByteCode(Element element) {
         if (isFromStubFile(element)) return false;
@@ -2371,7 +2392,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar) {
         WildcardType wc = types.getWildcardType(typeVar.getUnderlyingType(), null);
-        AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this);
+        AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
         wctype.setExtendsBound(typeVar.getEffectiveUpperBound());
         wctype.addAnnotations(typeVar.getAnnotations());
         wctype.setTypeArgHack();
@@ -2380,7 +2401,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     public AnnotatedWildcardType getWildcardBoundedBy(AnnotatedTypeMirror upper) {
         WildcardType wc = types.getWildcardType(upper.getUnderlyingType(), null);
-        AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this);
+        AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
         wctype.setExtendsBound(upper);
         return wctype;
     }

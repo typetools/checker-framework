@@ -1,7 +1,12 @@
 package org.checkerframework.checker.lock;
 
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
+
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.cfg.node.ExplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
@@ -13,6 +18,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -32,6 +40,7 @@ import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 
 /**
  * The LockVisitor enforces the subtyping rules of LockHeld and LockPossiblyHeld
@@ -68,7 +77,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, String errorKey,
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey,
             boolean isLocalVariableAssignement) {
 
         if (valueType instanceof AnnotatedNullType) {
@@ -239,6 +248,16 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
                                     // The receivers match. Add to the preconditions set.
                                     for(String lockExpression : guardedByValue) {
+
+                                        if (lockExpression.equals("itself")) {
+                                            // This is critical. That's because right now we know that, since
+                                            // we are dealing with the receiver of the method, "itself" corresponds
+                                            // to "this". However once super.checkPreconditions is called, that
+                                            // knowledge is lost and it will think that "itself" is referring to
+                                            // the variable the precondition we are about to add is attached to.
+                                            lockExpression = "this";
+                                        }
+
                                         additionalPreconditions.add(Pair.of(lockExpression, checkerLockHeldClass.toString().substring(10 /* "interface " */)));
                                     }
                                 }
@@ -250,6 +269,70 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         super.checkPreconditions(tree, invokedElement, methodCall, additionalPreconditions);
+    }
+
+    /**
+     * Whether to skip a contract check based on whether the @GuardedBy
+     * expression {@code expr} is valid for the tree {@code tree}
+     * under the context {@code flowExprContext}
+     * if the the current path is within the expression
+     * of a synchronized block (e.g. bar in
+     * synchronized(bar){ ... }
+     *
+     *  @param tree The tree that is @GuardedBy.
+     *  @param expr The expression of the @GuardedBy annotation.
+     *  @param flowExprContext The current context.
+     *
+     *  @return Whether to skip the contract check.
+     */
+    @Override
+    protected boolean skipContractCheck(Tree tree, FlowExpressions.Receiver expr, FlowExpressionContext flowExprContext) {
+        String fieldName = null;
+
+        try {
+
+            Node nodeNode = atypeFactory.getNodeForTree(tree);
+
+            if (nodeNode instanceof FieldAccessNode) {
+
+                fieldName = ((FieldAccessNode) nodeNode).getFieldName();
+
+                if (fieldName != null) {
+                    FlowExpressions.Receiver fieldExpr = FlowExpressionParseUtil.parse(fieldName,
+                            flowExprContext, getCurrentPath());
+
+                    if (fieldExpr.equals(expr)) {
+                        // Avoid issuing warnings when accessing the field that is guarding the receiver.
+                        // e.g. avoid issuing a warning when accessing bar below:
+                        // void foo(@GuardedBy("bar") myClass this){ synchronized(bar){ ... }}
+
+                        // Also avoid issuing a warning in this scenario:
+                        // @GuardedBy("bar") Object bar;
+                        // ...
+                        // synchronized(bar){ ... }
+
+                        // Cover only the most common case: synchronized(variableName).
+                        // If the expression in the synchronized statement is more complex,
+                        // we do want a warning to be issued so the user can take a closer look
+                        // and see if the variable is safe to be used this way.
+
+                        TreePath path = getCurrentPath().getParentPath();
+
+                        if (path != null) {
+                            path = path.getParentPath();
+
+                            if (path != null && path.getLeaf().getKind() == Tree.Kind.SYNCHRONIZED) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (FlowExpressionParseException e) {
+            // errors are reported at declaration site
+        }
+
+        return false;
     }
 
 }

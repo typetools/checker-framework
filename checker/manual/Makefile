@@ -22,6 +22,7 @@ linear-checker.tex \
 igj-checker.tex \
 javari-checker.tex \
 subtyping-checker.tex \
+value-checker.tex \
 external-checkers.tex \
 typestate-checker.tex \
 generics.tex \
@@ -93,8 +94,9 @@ very_clean: clean
 
 .PHONY: checklink
 checklink:
-	${INV}/scripts/checklink -q -e `cat ${INV}/scripts/checklink-args.txt` manual.html
+	${INV}/scripts/checklink -q -e `grep -v '^#' ${INV}/scripts/checklink-args.txt` manual.html
 
+.PHONY: tags
 tags: TAGS
 TAGS: ${TEX_FILES}
 	etags ${TEX_FILES}

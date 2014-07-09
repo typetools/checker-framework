@@ -75,6 +75,7 @@
         <delete dir="${build}"/>
         <delete dir="${dist.doc}"/>
         <delete dir="${temp.dir}"/>
+        <delete dir="dist" />
 
         <delete file="${framework.lib}"/>
     </target>
@@ -196,6 +197,7 @@
             <package name="org.checkerframework.stubparser.*"/>
             -->
             <package name="org.checkerframework.framework.*"/>
+            <package name="org.checkerframework.qualframework.*"/>
             <package name="org.checkerframework.checker.*"/>
 
             <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
@@ -213,6 +215,8 @@
         <unjar src="${stubparser.lib}" dest="${build}" />
         <unjar src="${javacutil.lib}" dest="${build}" />
         <unjar src="${dataflow.lib}" dest="${build}" />
+
+        <mkdir dir="dist" />
 
         <jar destfile="${framework.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/">
             <manifest>

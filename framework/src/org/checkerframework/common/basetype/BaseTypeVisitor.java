@@ -8,6 +8,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -58,6 +59,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
@@ -825,8 +827,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedExecutableType invokedMethod = mfuPair.first;
         List<AnnotatedTypeMirror> typeargs = mfuPair.second;
 
-        checkTypeArguments(node, invokedMethod.getTypeVariables(),
-                typeargs, node.getTypeArguments());
+        List<AnnotatedTypeParameterBounds> paramBounds = new ArrayList<>();
+        for (AnnotatedTypeVariable param : invokedMethod.getTypeVariables()) {
+            paramBounds.add(param.getBounds());
+        }
+
+        checkTypeArguments(node, paramBounds, typeargs, node.getTypeArguments());
 
         List<AnnotatedTypeMirror> params =
             AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
@@ -883,7 +889,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!atypeFactory.isSupportedQualifier(anno)) {
                 return;
             }
-            String fieldName = null;
 
             if (flowExprContext == null) {
                 Node nodeNode = atypeFactory.getNodeForTree(tree);
@@ -900,8 +905,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
                     flowExprContext = new FlowExpressionContext(
                             internalReceiver, null, atypeFactory);
-
-                    fieldName = ((FieldAccessNode) nodeNode).getFieldName();
                 }
                 else if (nodeNode instanceof LocalVariableNode) {
                     // Adapted from org.checkerframework.dataflow.cfg.CFGBuilder.CFGTranslationPhaseOne.visitVariable
@@ -936,36 +939,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // Try local variables first
                     CFAbstractValue<?> value = store.getValueOfLocalVariableByName(s);
 
-                    boolean theFieldIsTheLock = false;
-
                     if (value == null) // Not a recognized local variable
                     {
                         expr = FlowExpressionParseUtil.parse(expression,
                                 flowExprContext, getCurrentPath());
-
-                        if (fieldName != null)
-                        {
-                            FlowExpressions.Receiver fieldExpr = FlowExpressionParseUtil.parse(fieldName,
-                                    flowExprContext, getCurrentPath());
-
-                            if (fieldExpr.equals(expr)) {
-                                // Avoid issuing warnings when accessing the field that is guarding the receiver.
-                                // e.g. avoid issuing a warning when accessing bar below:
-                                // void foo(@GuardedBy("bar") myClass this){ synchronized(bar){ ... }}
-                                theFieldIsTheLock = true;
-                            }
-                        }
 
                         value = store.getValue(expr);
                     }
 
                     AnnotationMirror inferredAnno = value == null ? null : value
                             .getType().getAnnotationInHierarchy(anno);
-                    if (!theFieldIsTheLock &&
+                    if (!skipContractCheck(tree, expr, flowExprContext) &&
                         !checkContract(expr, anno, inferredAnno, store)) {
 
                         checker.report(Result.failure(
                                 methodCall ? "contracts.precondition.not.satisfied" : "contracts.precondition.not.satisfied.field",
+                                tree.toString(),
                                 expr == null ? expression : expr.toString()), tree);
                     }
                 } catch (FlowExpressionParseException e) {
@@ -973,6 +962,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
             }
         }
+    }
+
+    /**
+     * Whether to skip a contract check based on whether the condition with
+     * given expression {@code expr} is valid for the
+     * tree {@code tree} under the context {@code flowExprContext}.
+     *
+     *  @param tree The tree that is being analyzed.
+     *  @param expr The expression condition to consider.
+     *  @param flowExprContext The current context.
+     *
+     *  @return Whether to skip the contract check.
+     */
+    protected boolean skipContractCheck(Tree tree, FlowExpressions.Receiver expr, FlowExpressionContext flowExprContext) {
+        // Do not add code here. Overridden versions of this method
+        // will always have a weaker condition than simply 'return false',
+        // so calling super.skipContractCheck is not useful.
+
+        return false;
     }
 
     /**
@@ -1110,8 +1118,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         checkArguments(params, passedArguments);
 
-        checkTypeArguments(node, constructor.getTypeVariables(),
-                typeargs, node.getTypeArguments());
+        List<AnnotatedTypeParameterBounds> paramBounds = new ArrayList<>();
+        for (AnnotatedTypeVariable param : constructor.getTypeVariables()) {
+            paramBounds.add(param.getBounds());
+        }
+
+        checkTypeArguments(node, paramBounds, typeargs, node.getTypeArguments());
 
         boolean valid = validateTypeOf(node);
 
@@ -1643,33 +1655,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * not.
      *
      * @param toptree the tree for error reporting, only used for inferred type arguments
-     * @param typevars the type variables from a class or method declaration
+     * @param paramBounds the bounds of the type parameters from a class or method declaration
      * @param typeargs the type arguments from the type or method invocation
      * @param typeargTrees the type arguments as trees, used for error reporting
      */
     // TODO: see updated version below that performs more well-formedness checks.
     protected void checkTypeArguments(Tree toptree,
-            List<? extends AnnotatedTypeVariable> typevars,
+            List<? extends AnnotatedTypeParameterBounds> paramBounds,
             List<? extends AnnotatedTypeMirror> typeargs,
             List<? extends Tree> typeargTrees) {
 
         // System.out.printf("BaseTypeVisitor.checkTypeArguments: %s, TVs: %s, TAs: %s, TATs: %s\n",
-        //         toptree, typevars, typeargs, typeargTrees);
+        //         toptree, paramBounds, typeargs, typeargTrees);
 
         // If there are no type variables, do nothing.
-        if (typevars.isEmpty())
+        if (paramBounds.isEmpty())
             return;
 
-        assert typevars.size() == typeargs.size() :
+        assert paramBounds.size() == typeargs.size() :
             "BaseTypeVisitor.checkTypeArguments: mismatch between type arguments: " +
-            typeargs + " and type variables" + typevars;
+            typeargs + " and type parameter bounds" + paramBounds;
 
-        Iterator<? extends AnnotatedTypeVariable> varIter = typevars.iterator();
+        Iterator<? extends AnnotatedTypeParameterBounds> boundsIter = paramBounds.iterator();
         Iterator<? extends AnnotatedTypeMirror> argIter = typeargs.iterator();
 
-        while (varIter.hasNext()) {
+        while (boundsIter.hasNext()) {
 
-            AnnotatedTypeVariable typeVar = varIter.next();
+            AnnotatedTypeParameterBounds bounds = boundsIter.next();
             AnnotatedTypeMirror typearg = argIter.next();
 
             // TODO skip wildcards for now to prevent a crash
@@ -1678,39 +1690,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (typearg.getKind() == TypeKind.WILDCARD)
                 continue;
 
-            if (typeVar.getEffectiveUpperBound() != null) {
+            if (typeargTrees == null || typeargTrees.isEmpty()) {
+                // The type arguments were inferred and we mark the whole method.
+                // The inference fails if we provide invalid arguments,
+                // therefore issue an error for the arguments.
+                // I hope this is less confusing for users.
+                commonAssignmentCheck(bounds.getUpperBound(),
+                        typearg, toptree,
+                        "type.argument.type.incompatible", false);
+            } else {
+                commonAssignmentCheck(bounds.getUpperBound(), typearg,
+                        typeargTrees.get(typeargs.indexOf(typearg)),
+                        "type.argument.type.incompatible", false);
+            }
+
+            if (!atypeFactory.getTypeHierarchy().isSubtype(bounds.getLowerBound(), typearg)) {
                 if (typeargTrees == null || typeargTrees.isEmpty()) {
                     // The type arguments were inferred and we mark the whole method.
-                    // The inference fails if we provide invalid arguments,
-                    // therefore issue an error for the arguments.
-                    // I hope this is less confusing for users.
-                    commonAssignmentCheck(typeVar.getEffectiveUpperBound(),
-                            typearg, toptree,
-                            "type.argument.type.incompatible", false);
+                    checker.report(Result.failure("type.argument.type.incompatible",
+                            typearg, bounds),
+                            toptree);
                 } else {
-                    commonAssignmentCheck(typeVar.getEffectiveUpperBound(), typearg,
-                            typeargTrees.get(typeargs.indexOf(typearg)),
-                            "type.argument.type.incompatible", false);
+                    checker.report(Result.failure("type.argument.type.incompatible",
+                            typearg, bounds),
+                            typeargTrees.get(typeargs.indexOf(typearg)));
                 }
             }
-
-            // Should we compare lower bounds instead of the annotations on the
-            // type variables?
-            if (!typeVar.getAnnotations().isEmpty()) {
-                if (!typearg.getEffectiveAnnotations().equals(typeVar.getEffectiveAnnotations())) {
-                    if (typeargTrees == null || typeargTrees.isEmpty()) {
-                        // The type arguments were inferred and we mark the whole method.
-                        checker.report(Result.failure("type.argument.type.incompatible",
-                                typearg, typeVar),
-                                toptree);
-                    } else {
-                        checker.report(Result.failure("type.argument.type.incompatible",
-                                typearg, typeVar),
-                                typeargTrees.get(typeargs.indexOf(typearg)));
-                    }
-                }
-            }
-
         }
     }
 
