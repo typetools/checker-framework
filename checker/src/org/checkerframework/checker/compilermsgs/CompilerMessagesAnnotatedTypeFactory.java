@@ -1,10 +1,13 @@
 package org.checkerframework.checker.compilermsgs;
 
 import com.sun.source.tree.Tree;
+
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.propkey.PropertyKeyAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.type.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.ListTreeAnnotator;
+import org.checkerframework.framework.type.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.TreeAnnotator;
 
 /**
