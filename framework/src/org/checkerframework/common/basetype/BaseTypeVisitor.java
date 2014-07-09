@@ -1267,11 +1267,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Tree assignmentContext = ctx == null ? null : ctx.first;
         boolean isLocalVariableAssignment = false;
         if (assignmentContext != null) {
-            if (assignmentContext instanceof VariableTree) {
+            if (assignmentContext.getKind() == Tree.Kind.VARIABLE) {
                 isLocalVariableAssignment = assignmentContext instanceof IdentifierTree
                         && !TreeUtils.isFieldAccess(assignmentContext);
             }
-            if (assignmentContext instanceof VariableTree) {
+            // TODO: The first check is overwritten by the second?!
+            if (assignmentContext.getKind() == Tree.Kind.VARIABLE) {
                 isLocalVariableAssignment = TreeUtils
                         .enclosingMethod(getCurrentPath()) != null;
             }
