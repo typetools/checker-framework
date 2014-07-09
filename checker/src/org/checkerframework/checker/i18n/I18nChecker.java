@@ -23,8 +23,7 @@ public class I18nChecker extends AggregateChecker {
 
     @Override
     protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
-        Collection<Class<? extends SourceChecker>> checkers
-            = new ArrayList<Class<? extends SourceChecker>>();
+        Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>(2);
         checkers.add(I18nSubchecker.class);
         checkers.add(LocalizableKeyChecker.class);
         return checkers;
