@@ -49,7 +49,7 @@ class CollectionsAnnotationsMin {
         addNull2(new PriorityQueue1<@NonNull Object>());
         addNull2b(new PriorityQueue1<@NonNull Object>(), new Object());
 
-        //:: error: (type.argument.type.incompatible)
+        //:: error: (type.argument.type.incompatible) :: error: (argument.type.incompatible)
         addNull3(new PriorityQueue1<@NonNull Object>());
 
         //:: error: (argument.type.incompatible)
