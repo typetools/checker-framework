@@ -16,13 +16,11 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 
-import org.checkerframework.checker.i18n.qual.LocalizableKey;
 import org.checkerframework.checker.igj.qual.AssignsFields;
 import org.checkerframework.checker.igj.qual.I;
 import org.checkerframework.checker.igj.qual.Immutable;
 import org.checkerframework.checker.igj.qual.Mutable;
 import org.checkerframework.checker.igj.qual.ReadOnly;
-import org.checkerframework.checker.propkey.PropertyKeyAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.*;
