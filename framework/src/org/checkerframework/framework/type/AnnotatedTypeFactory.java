@@ -634,8 +634,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror type;
         Tree decl = declarationFromElement(elt);
 
-        addFromByteCode(elt);
-
         if (decl == null && indexTypes != null && indexTypes.containsKey(elt)) {
             type = AnnotatedTypes.deepCopy(indexTypes.get(elt));
         } else if (decl == null && (indexTypes == null || !indexTypes.containsKey(elt))) {
@@ -2265,30 +2263,34 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *            The element for which to determine annotations.
      */
     public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
-        Set<AnnotationMirror> results = AnnotationUtils.createAnnotationSet();
-
         if (cacheDeclAnnos.containsKey(elt)) {
             //Found in cache, return result.
             return cacheDeclAnnos.get(elt);
         }
 
-        // First, retrieve annotations from stub files.
+        Set<AnnotationMirror> results = AnnotationUtils.createAnnotationSet();
+        // Retrieving the annotations from the element.
+        results.addAll(elt.getAnnotationMirrors());
+        // If indexDeclAnnos == null, return the annotations in the element.
         if (indexDeclAnnos != null) {
+            // Adding @FromByteCode annotation to indexDeclAnnos entry with key
+            // elt, if elt is from bytecode.
+            addFromByteCode(elt);
+
+            // Retrieving annotations from stub files.
             String eltName = ElementUtils.getVerboseName(elt);
             Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
             if (stubAnnos != null) {
                 results.addAll(stubAnnos);
             }
+
+            // Retrieve the annotations from the overridden method's element.
+            inheritOverriddenDeclAnnos(elt, results);
+
+            // Add the element and its annotations to the cache.
+            cacheDeclAnnos.put(elt, results);
         }
 
-        // Then, retrieve the annotations from the element.
-        results.addAll(elt.getAnnotationMirrors());
-
-        // Then, retrieve the annotations from the overridden method's element.
-        inheritOverriddenDeclAnnos(elt, results);
-
-        // Add the element and its annotations to the cache. Return results.
-        cacheDeclAnnos.put(elt, results);
         return results;
     }
 
