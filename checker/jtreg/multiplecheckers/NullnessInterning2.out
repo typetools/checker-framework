@@ -1,0 +1,3 @@
+NullnessInterning.java:22:13: compiler.warn.proc.messager: (not.interned)
+NullnessInterning.java:22:18: compiler.warn.proc.messager: (not.interned)
+2 warnings
