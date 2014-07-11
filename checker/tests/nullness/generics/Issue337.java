@@ -7,9 +7,15 @@ abstract class Test<R> {
     abstract R getThing(String key);
 
     @Nullable R m1(@Nullable String key) {
-        // TODO this is unexpected
-        //:: error: (conditional.type.incompatible)
-        return (key == null) ? null : getThing(key);
+        return (key == null) ?
+            null :
+            getThing(key);
+    }
+
+    @Nullable R m1b(@Nullable String key) {
+        return (key != null) ?
+            getThing(key) :
+            null;
     }
 
     @Nullable R m2(@Nullable String key) {
@@ -17,6 +23,13 @@ abstract class Test<R> {
             //:: error: (argument.type.incompatible)
             getThing(key) :
             null;
+    }
+
+    @Nullable R m2b(@Nullable String key) {
+        return (key != null) ?
+            null :
+            //:: error: (argument.type.incompatible)
+            getThing(key);
     }
 
 }
