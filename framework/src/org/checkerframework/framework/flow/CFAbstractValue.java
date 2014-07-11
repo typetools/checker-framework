@@ -11,7 +11,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
 
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.qual.Pure;
@@ -27,7 +26,6 @@ import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * An implementation of an abstract value used by the Checker Framework org.checkerframework.dataflow
@@ -75,147 +73,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         AnnotatedTypeMirror otherType = other.getType();
         AnnotatedTypeMirror type = getType();
 
-        AnnotatedTypeMirror lubAnnotatedType = leastUpperBound(type, otherType);
+        GenericAnnotatedTypeFactory<V, ?, ?, ?> factory = analysis.getTypeFactory();
+        ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+        AnnotatedTypeMirror lubAnnotatedType = AnnotatedTypes.leastUpperBound(processingEnv, factory,
+                type, otherType);
 
         return analysis.createAbstractValue(lubAnnotatedType);
-    }
-
-    /**
-     * Computes and returns the least upper bound of two
-     * {@link AnnotatedTypeMirror}.
-     *
-     * <p>
-     * TODO: The code in this method is rather similar to
-     * {@link CFAbstractValue#mostSpecific(CFAbstractValue, CFAbstractValue)}.
-     * Can code be reused?
-     */
-    public AnnotatedTypeMirror leastUpperBound(AnnotatedTypeMirror type,
-            AnnotatedTypeMirror otherType) {
-        GenericAnnotatedTypeFactory<V, ?, ?, ?> factory = analysis
-                .getTypeFactory();
-        ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-        QualifierHierarchy qualifierHierarchy = factory.getQualifierHierarchy();
-
-        AnnotatedTypeMirror lubAnnotatedType;
-
-        if (type.getKind() == TypeKind.ARRAY
-                && otherType.getKind() == TypeKind.ARRAY) {
-            // for arrays, we have:
-            // lub(@A1 A @A2[],@B1 B @B2[]) = lub(@A1 A, @B1 B) lub(@A2,@B2) []
-            AnnotatedArrayType a = (AnnotatedArrayType) type;
-            AnnotatedArrayType b = (AnnotatedArrayType) otherType;
-            AnnotatedTypeMirror componentLub = leastUpperBound(
-                    a.getComponentType(), b.getComponentType());
-            if (componentLub.getUnderlyingType().getKind() == TypeKind.NONE) {
-                // If the components do not have an upper bound, then Object
-                // is still an upper bound of the array types.
-                Elements elements = analysis.getEnv().getElementUtils();
-                TypeMirror underlyingType = elements.getTypeElement(
-                        "java.lang.Object").asType();
-                lubAnnotatedType = AnnotatedTypeMirror.createType(
-                        underlyingType, factory, false);
-            } else {
-                TypeMirror underlyingType = TypesUtils.createArrayType(
-                        analysis.getTypes(), componentLub.getUnderlyingType());
-                lubAnnotatedType = AnnotatedTypeMirror.createType(
-                        underlyingType, factory, false);
-                AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) lubAnnotatedType;
-                aLubAnnotatedType.setComponentType(componentLub);
-            }
-        } else {
-            TypeMirror lubType = InternalUtils.leastUpperBound(processingEnv,
-                    type.getUnderlyingType(), otherType.getUnderlyingType());
-            lubAnnotatedType = AnnotatedTypeMirror.createType(lubType, factory, false);
-        }
-
-        Set<AnnotationMirror> annos1;
-        Set<AnnotationMirror> annos2;
-        if (QualifierHierarchy.canHaveEmptyAnnotationSet(lubAnnotatedType)) {
-            annos1 = type.getAnnotations();
-            annos2 = otherType.getAnnotations();
-        } else {
-            annos1 = type.getEffectiveAnnotations();
-            annos2 = otherType.getEffectiveAnnotations();
-        }
-
-        lubAnnotatedType.addAnnotations(qualifierHierarchy.leastUpperBounds(
-                type, otherType, annos1, annos2));
-
-        TypeKind kind = lubAnnotatedType.getKind();
-        if (kind == TypeKind.WILDCARD) {
-            AnnotatedWildcardType wLubAnnotatedType = (AnnotatedWildcardType) lubAnnotatedType;
-            AnnotatedTypeMirror extendsBound = wLubAnnotatedType
-                    .getExtendsBound();
-            extendsBound.clearAnnotations();
-            Collection<AnnotationMirror> extendsBound1 = getUpperBound(type);
-            Collection<AnnotationMirror> extendsBound2 = getUpperBound(otherType);
-            extendsBound.addAnnotations(qualifierHierarchy.leastUpperBounds(
-                    extendsBound1, extendsBound2));
-        } else if (kind == TypeKind.TYPEVAR) {
-            AnnotatedTypeVariable tLubAnnotatedType = (AnnotatedTypeVariable) lubAnnotatedType;
-            AnnotatedTypeMirror upperBound = tLubAnnotatedType.getUpperBound();
-            Collection<AnnotationMirror> upperBound1 = getUpperBound(type);
-            Collection<AnnotationMirror> upperBound2 = getUpperBound(otherType);
-
-            // TODO: how is it possible that uppBound1 or 2 does not have any
-            // annotations?
-            if (upperBound1.size() != 0 && upperBound2.size() != 0) {
-                upperBound.clearAnnotations();
-                upperBound.addAnnotations(qualifierHierarchy.leastUpperBounds(
-                        upperBound1, upperBound2));
-            }
-
-            // if only one of the input types were type variables, then we want
-            // the effective annotations and take the lub of them
-            if (type.getKind() != TypeKind.TYPEVAR || otherType.getKind() != TypeKind.TYPEVAR) {
-                if (otherType.getKind() == TypeKind.NULL) {
-                    if (type.getKind() != TypeKind.TYPEVAR) {
-                        AnnotatedTypeMirror tmp = otherType;
-                        otherType = type;
-                        type = tmp;
-                    }
-                    lubAnnotatedType.clearAnnotations();
-                    lubAnnotatedType.addAnnotations(type.getAnnotations());
-                    for (AnnotationMirror top : qualifierHierarchy
-                            .getTopAnnotations()) {
-                        AnnotationMirror o = otherType
-                                .getAnnotationInHierarchy(top);
-                        assert o != null : "null should have all annotations.";
-                        if (AnnotationUtils.areSame(o,
-                                qualifierHierarchy.getBottomAnnotation(top))) {
-                            // if the annotation on 'null' is the bottom
-                            // annotation, take whatever is present on the type
-                            // variable (even if it is nothing)..
-                            // (already done)
-                        } else {
-                            // .. otherwise, take the LUB of the effective
-                            // annotations.
-                            lubAnnotatedType
-                                    .replaceAnnotation(qualifierHierarchy.leastUpperBound(
-                                            o,
-                                            type.getEffectiveAnnotationInHierarchy(top)));
-                        }
-                    }
-                }
-            }
-        } else if (kind == TypeKind.ARRAY
-                && !(type.getKind() == TypeKind.ARRAY && otherType.getKind() == TypeKind.ARRAY)) {
-            AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) lubAnnotatedType;
-            // lub(a,b) is an array, but not both a and b are arrays -> either a
-            // or b must be the null type.
-            AnnotatedArrayType array;
-            if (type.getKind() == TypeKind.ARRAY) {
-                assert otherType.getKind() == TypeKind.NULL;
-                array = (AnnotatedArrayType) type;
-            } else {
-                assert otherType.getKind() == TypeKind.ARRAY;
-                assert type.getKind() == TypeKind.NULL;
-                array = (AnnotatedArrayType) otherType;
-            }
-            // copy over annotations
-            copyArrayComponentAnnotations(array, aLubAnnotatedType);
-        }
-        return lubAnnotatedType;
     }
 
     private static void copyArrayComponentAnnotations(AnnotatedArrayType source,
@@ -456,17 +319,4 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         return getType().toString();
     }
 
-    /**
-     * Returns a string representation of an {@link AnnotationMirror}.
-     */
-    protected static String annotationToString(AnnotationMirror a) {
-        String fullString = a.toString();
-        int indexOfParen = fullString.indexOf("(");
-        String annoName = fullString;
-        if (indexOfParen >= 0) {
-            annoName = fullString.substring(0, indexOfParen);
-        }
-        return fullString.substring(annoName.lastIndexOf('.') + 1,
-                fullString.length());
-    }
 }
