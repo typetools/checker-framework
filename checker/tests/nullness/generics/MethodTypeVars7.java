@@ -16,6 +16,41 @@ abstract class MethodTypeVars7 {
             !value.toString().isEmpty() ? value : defaultValue;
     }
 
+    <T> T validate2(@Nullable T value, T defaultValue) {
+        return value == null ||
+            value.toString().isEmpty() ? defaultValue : value;
+    }
+
+    <T> T validate3(@Nullable T value, T defaultValue) {
+        return value != null ? value : defaultValue;
+    }
+
+    <T> T validate4(@Nullable T value, T defaultValue) {
+        return value == null ? defaultValue : value;
+    }
+
+    <T> T validatefail(@Nullable T value, T defaultValue) {
+        //:: error: (return.type.incompatible)
+        return value == null ||
+            !value.toString().isEmpty() ? value : defaultValue;
+    }
+
+    <T> T validate2fail(@Nullable T value, T defaultValue) {
+        //:: error: (return.type.incompatible)
+        return value != null &&
+            value.toString().isEmpty() ? defaultValue : value;
+    }
+
+    <T> T validate3fail(@Nullable T value, T defaultValue) {
+        //:: error: (return.type.incompatible)
+        return value == null ? value : defaultValue;
+    }
+
+    <T> T validate4fail(@Nullable T value, T defaultValue) {
+        //:: error: (return.type.incompatible)
+        return value != null ? defaultValue : value;
+    }
+
     String test1(@Nullable String t1, @NonNull String t2) {
         @Nullable String s1 = validate(t1, null);
         @Nullable String s2 = validate(t2, null);
