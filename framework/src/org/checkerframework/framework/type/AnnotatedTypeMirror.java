@@ -933,6 +933,7 @@ public abstract class AnnotatedTypeMirror {
             return declaration;
         }
 
+        @Override
         public AnnotatedDeclaredType asUse() {
             if (!this.isDeclaration()) {
                 return this;
@@ -1689,6 +1690,7 @@ public abstract class AnnotatedTypeMirror {
             this.declaration = declaration;
         }
 
+        @Override
         public AnnotatedTypeVariable asUse() {
             if (!this.isDeclaration()) {
                 return this;
@@ -2305,11 +2307,6 @@ public abstract class AnnotatedTypeMirror {
          *         annotations on the type variable considered.
          */
         public AnnotatedTypeMirror getEffectiveExtendsBound() {
-            if (typeArgHack) {
-                AnnotatedTypeMirror effbnd = AnnotatedTypes.deepCopy(((AnnotatedTypeVariable)getExtendsBound()).getUpperBound());
-                effbnd.replaceAnnotations(annotations);
-                return effbnd;
-            }
             AnnotatedTypeMirror effbnd = AnnotatedTypes.deepCopy(getExtendsBound());
             effbnd.replaceAnnotations(annotations);
             return effbnd;
