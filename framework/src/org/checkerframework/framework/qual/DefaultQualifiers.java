@@ -27,7 +27,7 @@ import java.lang.annotation.*;
  */
 // TODO: use repeating annotations (will make source depend on Java 8).
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.SOURCE)
 @Target({PACKAGE, TYPE, CONSTRUCTOR, METHOD, FIELD, LOCAL_VARIABLE, PARAMETER})
 public @interface DefaultQualifiers {
     /** The default qualifier settings */

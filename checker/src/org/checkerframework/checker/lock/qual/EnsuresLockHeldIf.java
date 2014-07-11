@@ -7,6 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
+import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
  * Indicates that the given expressions are @LockHeld
@@ -21,6 +22,7 @@ import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
 @ConditionalPostconditionAnnotation(qualifier = LockHeld.class)
+@InheritedAnnotation
 public @interface EnsuresLockHeldIf {
     /**
      * Java expression(s) that are LockHeld after the method returns the

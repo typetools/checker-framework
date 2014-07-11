@@ -10,6 +10,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
+import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
  * Indicates that the given expressions are non-null, 
@@ -61,6 +62,7 @@ import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
 @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
+@InheritedAnnotation
 public @interface EnsuresNonNullIf {
     /**
      * Java expression(s) that are non-null after the method returns the

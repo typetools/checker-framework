@@ -39,6 +39,7 @@ import javax.tools.Diagnostic.Kind;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.FromByteCode;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
@@ -162,6 +163,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private Map<String, Set<AnnotationMirror>> indexDeclAnnos;
 
     /**
+     * A cache used to store elements whose declaration annotations
+     * have already been stored by calling the method getDeclAnnotations.
+     */
+    private Map<Element, Set<AnnotationMirror>> cacheDeclAnnos;
+
+    /**
      * The checker to use for option handling and resource management.
      */
     protected final BaseTypeChecker checker;
@@ -216,6 +223,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.supportedQuals = createSupportedTypeQualifiers();
 
         this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
+
+        this.cacheDeclAnnos = new HashMap<Element, Set<AnnotationMirror>>();
     }
 
     /**
@@ -574,12 +583,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Called by getAnnotatedType(Tree) for each ClassTree after determining the type.
      * The default implementation uses this to store the defaulted AnnotatedTypeMirrors
-     * back into the corresponding Elements.
+     * and inherited declaration annotations back into the corresponding Elements.
      * Subclasses might want to override this method if storing defaulted types is
      * not desirable.
      */
     protected void postProcessClassTree(ClassTree tree) {
         TypesIntoElements.store(processingEnv, this, tree);
+        DeclarationsIntoElements.store(processingEnv, this, tree);
     }
 
     /**
@@ -623,8 +633,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return toAnnotatedType(elt.asType(), false);
         AnnotatedTypeMirror type;
         Tree decl = declarationFromElement(elt);
-
-        addFromByteCode(elt);
 
         if (decl == null && indexTypes != null && indexTypes.containsKey(elt)) {
             type = AnnotatedTypes.deepCopy(indexTypes.get(elt));
@@ -2195,9 +2203,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public AnnotationMirror getDeclAnnotation(Element elt,
             Class<? extends Annotation> anno) {
         String annoName = anno.getCanonicalName().intern();
-        String eltName = ElementUtils.getVerboseName(elt);
-        List<? extends AnnotationMirror> annotationMirrors = elt.getAnnotationMirrors();
-        return getDeclAnnotation(eltName, annoName, annotationMirrors, true);
+        return getDeclAnnotation(elt, annoName, true);
     }
 
     /**
@@ -2223,71 +2229,109 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * name equals the passed annotationName if one exists, null otherwise. This
      * is the private implementation of the same-named, public method.
      */
-    private AnnotationMirror getDeclAnnotation(String eltName,
-            /*@Interned*/ String annoName,
-            List<? extends AnnotationMirror> annotationMirrors,
-            boolean checkAliases) {
+    private AnnotationMirror getDeclAnnotation(Element elt,
+            /*@Interned*/ String annoName, boolean checkAliases) {
+        Set<AnnotationMirror> declAnnos = getDeclAnnotations(elt);
 
-        Pair<AnnotationMirror, Set</*@Interned*/ String>> aliases = checkAliases ? declAliases.get(annoName) : null;
-
-        // 1. Look in the stub files.
-        if (indexDeclAnnos != null) {
-            // The field might still null if this method gets called from the
-            // StubParser. TODO: better solution?
-            Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
-
-            if (stubAnnos != null) {
-                for (AnnotationMirror am : stubAnnos) {
-                    if (AnnotationUtils.areSameByName(am, annoName)) {
-                        return am;
-                    }
-                }
-            }
-        }
-
-        // 2. Look at the real annotations.
-        for (AnnotationMirror am : annotationMirrors) {
+        for (AnnotationMirror am : declAnnos) {
             if (AnnotationUtils.areSameByName(am, annoName)) {
                 return am;
             }
         }
-
-        // 3. Look through aliases.
-        if (aliases != null) {
-            for (String alias : aliases.second) {
-                AnnotationMirror declAnnotation = getDeclAnnotation(eltName,
-                        alias, annotationMirrors, false);
-                if (declAnnotation != null) {
-                    return aliases.first;
+        // Look through aliases.
+        if (checkAliases) {
+            Pair<AnnotationMirror, Set</*@Interned*/ String>> aliases =
+                    declAliases.get(annoName);
+            if (aliases != null) {
+                for (String alias : aliases.second) {
+                    AnnotationMirror declAnnotation = getDeclAnnotation(elt,
+                            alias, false);
+                    if (declAnnotation != null) {
+                        return aliases.first;
+                    }
                 }
             }
         }
-
-        // Not found in any of the three locations
+        // Not found.
         return null;
     }
 
     /**
      * Returns all of the actual annotation mirrors used to annotate this element
-     * (includes stub files).
+     * (includes stub files and declaration annotations from overridden methods).
      *
      * @param elt
      *            The element for which to determine annotations.
      */
     public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
-        Set<AnnotationMirror> results = new HashSet<AnnotationMirror>();
-
-        // First look in the stub files.
-        String eltName = ElementUtils.getVerboseName(elt);
-        Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
-        if (stubAnnos != null) {
-            results.addAll(stubAnnos);
+        if (cacheDeclAnnos.containsKey(elt)) {
+            //Found in cache, return result.
+            return cacheDeclAnnos.get(elt);
         }
 
-        // Then look at the real annotations.
+        Set<AnnotationMirror> results = AnnotationUtils.createAnnotationSet();
+        // Retrieving the annotations from the element.
         results.addAll(elt.getAnnotationMirrors());
+        // If indexDeclAnnos == null, return the annotations in the element.
+        if (indexDeclAnnos != null) {
+            // Adding @FromByteCode annotation to indexDeclAnnos entry with key
+            // elt, if elt is from bytecode.
+            addFromByteCode(elt);
+
+            // Retrieving annotations from stub files.
+            String eltName = ElementUtils.getVerboseName(elt);
+            Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
+            if (stubAnnos != null) {
+                results.addAll(stubAnnos);
+            }
+
+            // Retrieve the annotations from the overridden method's element.
+            inheritOverriddenDeclAnnos(elt, results);
+
+            // Add the element and its annotations to the cache.
+            cacheDeclAnnos.put(elt, results);
+        }
 
         return results;
+    }
+
+    /**
+     * Adds into {@code results} the declaration annotations found in all
+     * elements that the method element {@code elt} overrides.
+     *
+     * @param elt
+     *          Method element.
+     * @param results
+     *          {@code elt} local declaration annotations. The ones found
+     *          in stub files and in the element itself.
+     */
+
+    private void inheritOverriddenDeclAnnos(Element elt,
+            Set<AnnotationMirror> results) {
+        Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods = null;
+        if (elt instanceof ExecutableElement) {
+            overriddenMethods = AnnotatedTypes.overriddenMethods(elements,
+                    this, (ExecutableElement) elt);
+        }
+
+        if (overriddenMethods != null) {
+            for (Map.Entry<AnnotatedDeclaredType, ExecutableElement>
+                    pair : overriddenMethods.entrySet()) {
+                AnnotatedDeclaredType overriddenType = pair.getKey();
+                AnnotatedExecutableType overriddenMethod = AnnotatedTypes
+                        .asMemberOf(types, this, overriddenType,pair.getValue());
+                ExecutableElement parentElt = overriddenMethod.getElement();
+
+                List<Pair<AnnotationMirror, AnnotationMirror>>
+                        inheritableParentAnnotations =
+                        getDeclAnnotationWithMetaAnnotation(parentElt,
+                                InheritedAnnotation.class);
+                for (Pair<AnnotationMirror, AnnotationMirror>
+                        parentAnnotation : inheritableParentAnnotations) {
+                    results.add(parentAnnotation.first);
+                }
+            }
+        }
     }
 
     /**
@@ -2306,17 +2350,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public List<Pair<AnnotationMirror, AnnotationMirror>> getDeclAnnotationWithMetaAnnotation(
             Element element, Class<? extends Annotation> metaAnnotation) {
         List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
-        List<AnnotationMirror> annotationMirrors = new ArrayList<>();
-
-        // Consider real annotations.
-        annotationMirrors.addAll(element.getAnnotationMirrors());
-
-        // Consider stub annotations.
-        String eltName = ElementUtils.getVerboseName(element);
-        Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
-        if (stubAnnos != null) {
-            annotationMirrors.addAll(stubAnnos);
-        }
+        Set<AnnotationMirror> annotationMirrors = getDeclAnnotations(element);
 
         // Go through all annotations found.
         for (AnnotationMirror annotation : annotationMirrors) {
@@ -2358,17 +2392,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public List<Pair<AnnotationMirror, AnnotationMirror>> getAnnotationWithMetaAnnotation(
             Element element, Class<? extends Annotation> metaAnnotation) {
         List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
-        List<AnnotationMirror> annotationMirrors = new ArrayList<>();
+        Set<AnnotationMirror> annotationMirrors = AnnotationUtils.createAnnotationSet();
 
         // Consider real annotations.
         annotationMirrors.addAll(getAnnotatedType(element).getAnnotations());
 
-        // Consider stub annotations.
-        String eltName = ElementUtils.getVerboseName(element);
-        Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
-        if (stubAnnos != null) {
-            annotationMirrors.addAll(stubAnnos);
-        }
+        // Consider declaration annotations
+        annotationMirrors.addAll(getDeclAnnotations(element));
 
         // Go through all annotations found.
         for (AnnotationMirror annotation : annotationMirrors) {
