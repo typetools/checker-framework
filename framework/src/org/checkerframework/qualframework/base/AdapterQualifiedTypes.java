@@ -13,8 +13,8 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExec
 /** {@link QualifiedTypes} implementation that wraps {@link AnnotatedTypes}.
  */
 class AdapterQualifiedTypes<Q> implements QualifiedTypes<Q> {
-    private QualifiedTypeFactoryAdapter<Q> typeFactory;
-    private TypeMirrorConverter<Q> converter;
+    private final QualifiedTypeFactoryAdapter<Q> typeFactory;
+    private final TypeMirrorConverter<Q> converter;
 
     public AdapterQualifiedTypes(QualifiedTypeFactoryAdapter<Q> typeFactory) {
         this.typeFactory = typeFactory;

@@ -1,7 +1,6 @@
 package org.checkerframework.checker.regex;
 
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 

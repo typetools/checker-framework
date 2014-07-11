@@ -1,5 +1,5 @@
 package java.util.concurrent.locks;
- 
+
 import org.checkerframework.checker.lock.qual.*;
 
 public class ReentrantLock {
@@ -12,7 +12,7 @@ public class ReentrantLock {
 
     @EnsuresLockHeldIf(expression="this", result=true)
     boolean tryLock();
-    
+
     @EnsuresLockHeldIf(expression="this", result=true)
     boolean tryLock(long timeout, TimeUnit unit);
 
@@ -30,7 +30,7 @@ public class ReentrantReadWriteLock$ReadLock {
 
     @EnsuresLockHeldIf(expression="this", result=true)
     boolean tryLock();
-    
+
     @EnsuresLockHeldIf(expression="this", result=true)
     boolean tryLock(long timeout, TimeUnit unit);
 }
@@ -45,7 +45,7 @@ public class ReentrantReadWriteLock$WriteLock {
 
     @EnsuresLockHeldIf(expression="this", result=true)
     boolean tryLock();
-    
+
     @EnsuresLockHeldIf(expression="this", result=true)
     boolean tryLock(long timeout, TimeUnit unit);
 

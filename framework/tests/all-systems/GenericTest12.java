@@ -2,7 +2,7 @@
 abstract class GenericTest12 {
   interface Task<V> {}
 
-  abstract <V> Task<V> create(Runnable runnable, V result);
+  abstract <M> Task<M> create(Runnable runnable, M result);
 
   void submit(Runnable runnable) {
     Task<Void> task = create(runnable, null);
