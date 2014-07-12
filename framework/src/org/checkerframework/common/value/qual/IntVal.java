@@ -9,9 +9,12 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
+ * An annotation indicating the possible values for a byte, short, char,
+ * int, or long type.
+ * If an expression's type has this annotation, then at run time, the
+ * expression evaluates to one of the annotation's arguments.
  * 
- * Annotation for byte, short, char, int and long types
- * 
+ * @checker_framework_manual #constant-value-checker Constant Value Checker
  */
 @TypeQualifier
 @SubtypeOf({ UnknownVal.class })

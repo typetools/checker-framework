@@ -12,6 +12,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * 
  * TODO Length of an array
  * 
+ * @checker_framework_manual #constant-value-checker Constant Value Checker
  */
 @TypeQualifier
 @SubtypeOf({ UnknownVal.class })

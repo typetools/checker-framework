@@ -9,11 +9,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
+ * An annotation indicating the possible values for a String type.
+ * If an expression's type has this annotation, then at run time, the
+ * expression evaluates to one of the annotation's arguments.
  * 
- * Represents a String object where the literal value of the String is known. If
- * there are multiple possibilities of what the literal value may be, these are
- * all included in the list of values.
- * 
+ * @checker_framework_manual #constant-value-checker Constant Value Checker
  */
 @TypeQualifier
 @SubtypeOf({ UnknownVal.class })
