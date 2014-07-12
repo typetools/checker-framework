@@ -1,18 +1,14 @@
 package org.checkerframework.qualframework.base;
 
-import com.sun.source.tree.Tree;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 
 /** Adapter class for {@link Checker}, extending
  * {@link BaseTypeChecker org.checkerframework.common.basetype.BaseTypeChecker}.
  */
 public class CheckerAdapter<Q> extends BaseTypeChecker {
     /** The underlying qualifier-based checker. */
-    private Checker<Q> underlying;
+    private final Checker<Q> underlying;
     /** The {@link TypeMirrorConverter} used by this {@link CheckerAdapter} and
      * its components. */
     private TypeMirrorConverter<Q> typeMirrorConverter;
@@ -44,6 +40,7 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
      * obtain the {@link QualifiedTypeFactoryAdapter} using lazy
      * initialization.
      */
+    @Override
     public QualifiedTypeFactoryAdapter<Q> getTypeFactory() {
         // TODO: check if lazy init is actually necessary for typeFactory.
         if (typeFactory == null) {
@@ -73,7 +70,6 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
                 this);
 
         if (underlyingFactory instanceof DefaultQualifiedTypeFactory) {
-            @SuppressWarnings("unchecked")
             DefaultQualifiedTypeFactory<Q> defaultFactory =
                 (DefaultQualifiedTypeFactory<Q>)underlyingFactory;
             defaultFactory.setAdapter(factoryAdapter);

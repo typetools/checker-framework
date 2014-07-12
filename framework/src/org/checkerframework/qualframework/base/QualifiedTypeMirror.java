@@ -3,12 +3,9 @@ package org.checkerframework.qualframework.base;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 
 import org.checkerframework.qualframework.util.ExtendedArrayType;
 import org.checkerframework.qualframework.util.ExtendedDeclaredType;
@@ -26,7 +23,7 @@ import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
 /**
  * A {@link ExtendedTypeMirror} with a qualifier for the top level and for
- * each component of the type.  For example, the qualified version of 
+ * each component of the type.  For example, the qualified version of
  * <code>int[]</code> has one qualifier on the top-level {@link
  * QualifiedArrayType} and another on the {@link QualifiedPrimitiveType}
  * representing <code>int</code>.
@@ -208,7 +205,7 @@ public abstract class QualifiedTypeMirror<Q> {
             return false;
         }
 
-        return true; 
+        return true;
     }
 
     /** Helper function for checkTypeMirrorListsMatch.  Returns a boolean
@@ -309,7 +306,7 @@ public abstract class QualifiedTypeMirror<Q> {
         }
     }
 
-    
+
     public static final class QualifiedDeclaredType<Q> extends QualifiedTypeMirror<Q> {
         private final List<? extends QualifiedTypeMirror<Q>> typeArguments;
 
@@ -645,7 +642,7 @@ public abstract class QualifiedTypeMirror<Q> {
                     .append(getUnderlyingType().asElement().getSimpleName());
             return sb.toString();
         }
-        
+
         // Use superclass 'equals' and 'hashCode'
 
         public QualifiedParameterDeclaration<Q> getDeclaration() {
@@ -861,7 +858,7 @@ public abstract class QualifiedTypeMirror<Q> {
                     .append(getUnderlyingType().asElement().getSimpleName());
             return sb.toString();
         }
-        
+
         // Use superclass 'equals' and 'hashCode'
     }
 }

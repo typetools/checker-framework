@@ -3,7 +3,6 @@ package org.checkerframework.qualframework.base;
 import java.util.List;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
 
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -12,7 +11,6 @@ import com.sun.source.tree.Tree;
 import org.checkerframework.javacutil.Pair;
 
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;

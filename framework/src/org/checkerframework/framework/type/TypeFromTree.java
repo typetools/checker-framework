@@ -186,11 +186,11 @@ abstract class TypeFromTree extends
             // e.g. see Ternary test case for Nullness Checker.
             // TODO: Can we adapt asSuper to handle those correctly?
 
-            if (trueType!=null && trueType.equals(falseType)) {
+            if (trueType != null && trueType.equals(falseType)) {
                 return trueType;
             }
 
-            List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>();
+            List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>(2);
             types.add(trueType);
             types.add(falseType);
             AnnotatedTypes.annotateAsLub(f.processingEnv, f, alub, types);

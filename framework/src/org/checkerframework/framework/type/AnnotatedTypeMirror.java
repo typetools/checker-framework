@@ -933,6 +933,7 @@ public abstract class AnnotatedTypeMirror {
             return declaration;
         }
 
+        @Override
         public AnnotatedDeclaredType asUse() {
             if (!this.isDeclaration()) {
                 return this;
@@ -1689,6 +1690,7 @@ public abstract class AnnotatedTypeMirror {
             this.declaration = declaration;
         }
 
+        @Override
         public AnnotatedTypeVariable asUse() {
             if (!this.isDeclaration()) {
                 return this;
@@ -2029,6 +2031,22 @@ public abstract class AnnotatedTypeMirror {
             return this.getUnderlyingType().hashCode();
         }
 
+        /**
+         * This method returns the type parameter declaration corresponding
+         * to this type variable.
+         * TODO: this should be a separate class, something like AnnotatedTypeParameter,
+         * which is not a subtype of AnnotatedTypeMirror.
+         * At the moment, it is a ATV without qualifiers, suitable for use in
+         * class/method type argument mappings.
+         *
+         * @return The type parameter declaration.
+         */
+        public AnnotatedTypeVariable getTypeParameterDeclaration() {
+            AnnotatedTypeVariable res = this.getCopy(false);
+            res.declaration = true;
+            return res;
+        }
+
         /* TODO: provide strict equality comparison.
         @Override
         public boolean equals(Object o) {
@@ -2291,11 +2309,6 @@ public abstract class AnnotatedTypeMirror {
          *         annotations on the type variable considered.
          */
         public AnnotatedTypeMirror getEffectiveExtendsBound() {
-            if (typeArgHack) {
-                AnnotatedTypeMirror effbnd = AnnotatedTypes.deepCopy(((AnnotatedTypeVariable)getExtendsBound()).getUpperBound());
-                effbnd.replaceAnnotations(annotations);
-                return effbnd;
-            }
             AnnotatedTypeMirror effbnd = AnnotatedTypes.deepCopy(getExtendsBound());
             effbnd.replaceAnnotations(annotations);
             return effbnd;
