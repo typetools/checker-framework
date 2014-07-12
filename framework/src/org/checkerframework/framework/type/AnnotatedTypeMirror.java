@@ -2042,7 +2042,9 @@ public abstract class AnnotatedTypeMirror {
          * @return The type parameter declaration.
          */
         public AnnotatedTypeVariable getTypeParameterDeclaration() {
-            return this.getCopy(false);
+            AnnotatedTypeVariable res = this.getCopy(false);
+            res.declaration = true;
+            return res;
         }
 
         /* TODO: provide strict equality comparison.
