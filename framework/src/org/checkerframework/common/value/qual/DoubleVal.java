@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * 
- * TODO Double or double value
+ * Annotation for double and float values
  * 
  */
 @TypeQualifier
