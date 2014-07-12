@@ -7,8 +7,9 @@ known at compile time.
 
 There are two ways to run the Constant Value Checker.
 Typically, it is automatically run by another type checker.
-When using the Value Checker as part of another checker, its
-jdk.astub file must be present in the other checker's directory.
+When using the Value Checker as part of another checker, the
+statically-executable.astub file in the Value Checker directory must
+be passed as a stub file for the checker.
 
 Alternately, it is also possible to run just the Value Checker, by
 supplying the
@@ -55,7 +56,7 @@ predicted at compile-time as in Figure~\ref{fig-value-multivalue}.
 
 \begin{figure}
 \begin{center}
-\includeimagenocentering{value-hierarchy3}{9cm}
+\includeimagenocentering{value-hierarchy}{9cm}
 \qquad\qquad
 \includeimagenocentering{value-subtype}{2.5cm}
 \vspace{-1.5\baselineskip}
