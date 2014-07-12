@@ -14,6 +14,10 @@ public class Operators {
     public static boolean LOGICAL_COMPLEMENT(Boolean a) {
         return !a;
     }
+    public static boolean LOGICAL_COMPLEMENT(boolean a) {
+        return !a;
+    }
+
 
     public static long BITWISE_COMPLEMENT(Long a) {
         return ~a;
@@ -183,6 +187,15 @@ public class Operators {
         return a || b;
     }
 
+    public static boolean CONDITIONAL_AND(boolean a, boolean b) {
+        return a && b;
+    }
+
+    public static boolean CONDITIONAL_OR(boolean a, boolean b) {
+        return a || b;
+    }
+
+
     public static double PLUS(Double a, Double b) {
         return a + b;
     }
@@ -198,6 +211,23 @@ public class Operators {
     public static float PLUS(Float a, Float b) {
         return a + b;
     }
+
+    public static double PLUS(double a, double b) {
+        return a + b;
+    }
+
+    public static long PLUS(long a, long b) {
+        return a + b;
+    }
+
+    public static int PLUS(int a, int b) {
+        return a + b;
+    }
+
+    public static float PLUS(float a, float b) {
+        return a + b;
+    }
+
 
     public static String PLUS(String a, String b) {
         return a + b;
@@ -219,6 +249,22 @@ public class Operators {
         return a - b;
     }
 
+    public static double MINUS(double a, double b) {
+        return a - b;
+    }
+
+    public static long MINUS(long a, long b) {
+        return a - b;
+    }
+
+    public static int MINUS(int a, int b) {
+        return a - b;
+    }
+
+    public static float MINUS(float a, float b) {
+        return a - b;
+    }
+
     public static double MULTIPLY(Double a, Double b) {
         return a * b;
     }
@@ -232,6 +278,22 @@ public class Operators {
     }
 
     public static float MULTIPLY(Float a, Float b) {
+        return a * b;
+    }
+
+    public static double MULTIPLY(double a, double b) {
+        return a * b;
+    }
+
+    public static long MULTIPLY(long a, long b) {
+        return a * b;
+    }
+
+    public static int MULTIPLY(int a, int b) {
+        return a * b;
+    }
+
+    public static float MULTIPLY(float a, float b) {
         return a * b;
     }
 
@@ -251,6 +313,22 @@ public class Operators {
         return a / b;
     }
 
+public static double DIVIDE(double a, double b) {
+        return a / b;
+    }
+
+    public static long DIVIDE(long a, long b) {
+        return a / b;
+    }
+
+    public static int DIVIDE(int a, int b) {
+        return a / b;
+    }
+
+    public static float DIVIDE(float a, float b) {
+        return a / b;
+    }
+
     public static double REMAINDER(Double a, Double b) {
         return a % b;
     }
@@ -267,11 +345,31 @@ public class Operators {
         return a % b;
     }
 
+    public static double REMAINDER(double a, double b) {
+        return a % b;
+    }
+
+    public static long REMAINDER(long a, long b) {
+        return a % b;
+    }
+
+    public static int REMAINDER(int a, int b) {
+        return a % b;
+    }
+
+    public static float REMAINDER(float a, float b) {
+        return a % b;
+    }
+
     public static long LEFT_SHIFT(Long a, Long b) {
         return a << b;
     }
 
     public static int LEFT_SHIFT(Integer a, Integer b) {
+        return a << b;
+    }
+
+    public static int LEFT_SHIFT(int a, int b) {
         return a << b;
     }
 
@@ -283,6 +381,14 @@ public class Operators {
         return a >> b;
     }
 
+    public static long RIGHT_SHIFT(long a, long b) {
+        return a >> b;
+    }
+
+    public static int RIGHT_SHIFT(int a, int b) {
+        return a >> b;
+    }
+
     public static long UNSIGNED_RIGHT_SHIFT(Long a, Long b) {
         return a >>> b;
     }
@@ -291,7 +397,19 @@ public class Operators {
         return a >>> b;
     }
 
+    public static long UNSIGNED_RIGHT_SHIFT(long a, long b) {
+        return a >>> b;
+    }
+
+    public static int UNSIGNED_RIGHT_SHIFT(int a, int b) {
+        return a >>> b;
+    }
+
     public static boolean AND(Boolean a, Boolean b) {
+        return a & b;
+    }
+
+    public static boolean AND(boolean a, boolean b) {
         return a & b;
     }
 
@@ -300,6 +418,14 @@ public class Operators {
     }
 
     public static int AND(Integer a, Integer b) {
+        return a & b;
+    }
+
+    public static long AND(long a, long b) {
+        return a & b;
+    }
+
+    public static int AND(int a, int b) {
         return a & b;
     }
 
@@ -315,6 +441,19 @@ public class Operators {
         return a | b;
     }
 
+    public static boolean OR(boolean a, boolean b) {
+        return a | b;
+    }
+
+    public static long OR(long a, long b) {
+        return a | b;
+    }
+
+    public static int OR(int a, int b) {
+        return a | b;
+    }
+
+
     public static boolean XOR(Boolean a, Boolean b) {
         return a ^ b;
     }
@@ -324,6 +463,18 @@ public class Operators {
     }
 
     public static int XOR(Integer a, Integer b) {
+        return a ^ b;
+    }
+
+    public static boolean XOR(boolean a, boolean b) {
+        return a ^ b;
+    }
+
+    public static long XOR(long a, long b) {
+        return a ^ b;
+    }
+
+    public static int XOR(int a, int b) {
         return a ^ b;
     }
 
@@ -402,10 +553,19 @@ public class Operators {
     public static boolean EQUAL_TO(Boolean a, Boolean b) {
         return a == b;
     }
+    public static boolean EQUAL_TO(boolean a, boolean b) {
+        return a == b;
+    }
+
 
     public static boolean NOT_EQUAL_TO(Boolean a, Boolean b) {
         return a != b;
     }
+
+    public static boolean NOT_EQUAL_TO(boolean a, boolean b) {
+        return a != b;
+    }
+
 
     public static boolean EQUAL_TO(String a, String b) {
         return a == b;
