@@ -129,11 +129,11 @@ import com.sun.tools.javac.util.Log;
     // They will eventually be replaced by their complements.
 
     // TODO: Checking of bodies of @SideEffectFree, @Deterministic, and
-    // @Pure methods is temporarily disabled unless -AenablePurity is
+    // @Pure methods is temporarily disabled unless -AcheckPurityAnnotations is
     // supplied on the command line.
     // Re-enable it after making the analysis more precise.
     // org.checkerframework.common.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
-    "enablePurity",
+    "checkPurityAnnotations",
 
     // TODO: Temporary option to make array subtyping invariant,
     // which will be the new default soon.

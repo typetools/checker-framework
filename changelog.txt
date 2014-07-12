@@ -1,3 +1,7 @@
+  Rename -AenablePurity command-line flag to -AcheckPurityAnnotations
+
+----------------------------------------------------------------------
+
 Version 1.8.3, 1 July 2014
 
 Updated the Initialization Checker section in the manual with
