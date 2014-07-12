@@ -20,7 +20,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @TypeQualifier
 @InvisibleQualifier
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
-@SubtypeOf({ ArrayLen.class, BoolVal.class, CharVal.class, DoubleVal.class,
+@SubtypeOf({ ArrayLen.class, BoolVal.class, DoubleVal.class,
         IntVal.class, StringVal.class })
 @Target({})
 // empty target prevents programmers from writing this in a program
