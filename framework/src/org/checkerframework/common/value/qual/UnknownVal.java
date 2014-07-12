@@ -10,10 +10,14 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
+ * UnknownVal is a type annotation indicating that the value is not
+ * known at compile type.
+ * <p>
  * 
- * {@link UnknownVal} is a type annotation that indicates that the value is not
- * known.
- * 
+ * This annotation may not be written in source code; it is an implementation
+ * detail of the Constant Value Checker.
+ *
+ * @checker_framework_manual #constant-value-checker Constant Value Checker
  */
 @TypeQualifier
 @SubtypeOf({})
