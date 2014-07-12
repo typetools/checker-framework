@@ -13,8 +13,8 @@
 \def\codesize{\relax}           % for "pslatex"
 %HEVEA \def\codesize{\relax}
 
-\newcommand{\code}[1]{\ifmmode{\mbox{\codesize\ttfamily{#1}}}\else{\codesize\ttfamily #1}\fi}
 %%BEGIN LATEX
+\newcommand{\code}[1]{\ifmmode{\mbox{\codesize\ttfamily{#1}}}\else{\codesize\ttfamily #1}\fi}
 %\DeclareRobustCommand{\code}[1]{\codesize{\path{#1}}}
 %%END LATEX
 %%HEVEA \newcommand{\code}[1]{\codesize{\texttt{#1}}}
@@ -49,14 +49,18 @@
 % Make images larger and thus less pixelated.  This is not really a solution.
 %HEVEA\@addimagenopt{-mag 2000}
 % This avoids Hevea's built in conversion.
-\newcommand{\includeimage}[2]{
+% The argument is the HEIGHT, not the width.
+\newcommand{\includeimage}[2]{%
 \begin{center}
-\includeimagenocentering{#1}{#2}
+\includeimagenocentering{#1}{#2}%
+%BEGIN LATEX
 \vspace{-1.5\baselineskip}
+%END LATEX
 \end{center}}
 
-\newcommand{\includeimagenocentering}[2]{
-\ifhevea\imgsrc{#1.png}\else
+% The argument is the HEIGHT, not the width.
+\newcommand{\includeimagenocentering}[2]{%
+\ifhevea\imgsrc{#1.png}\else%
 \resizebox{!}{#2}{\includegraphics{figures/#1}}\fi}
 
 

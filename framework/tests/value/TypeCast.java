@@ -11,17 +11,13 @@ class TypeCast {
         short f = 98;
         byte g = 98;
 
-        //:: warning: (cast.unsafe)
-        @CharVal({ 'b' }) char h = (char) a;
-        //:: warning: (cast.unsafe)
+        @IntVal({ 'b' }) char h = (char) a;
         h = (char) b;
         //:: warning: (cast.unsafe)
         h = (char) c;
         //:: warning: (cast.unsafe)
         h = (char) d;
-        //:: warning: (cast.unsafe)
         h = (char) f;
-        //:: warning: (cast.unsafe)
         h = (char) g;
 
         @IntVal({ 98 }) int i = (int) b;

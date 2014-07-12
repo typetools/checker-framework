@@ -599,11 +599,11 @@ miss a step if you only read the paragraph asking you to say 'yes'.
             Runs the link the checker on all websites at:<br/>
             <a href="http://types.cs.washington.edu/dev/">http://types.cs.washington.edu/dev/</a><br/>
             The output of the link checker is written to files in the /tmp directory whose locations
-            will be output at the command prompt.  Review the link checker output.<br/>
-            <div class="alert alert-warning">
-                <strong>Note:</strong> There will be many broken links within the jdk-api directory
-                see <a href="#fi_jdk-api_fixup">Open JDK/JSR308 Javadoc</a>
-            </div>
+            will be output at the command prompt.  There should be no link checker errors.  If there
+            are any, then fix the broken links.  In rare instances (such as when a link is correct
+            but the link checker is unable to check it), you may add a suppression to the
+            <tt>checklink-args.txt</tt> file.  In extremely rare instances (such as when a website 
+            happens to be down at the time you ran the link checker), you may ignore an error.<br/>
         </td>
     </tr>
 

@@ -347,9 +347,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 boolean anyPurityAnnotation = PurityUtils.hasPurityAnnotation(
                         atypeFactory, node);
                 boolean checkPurityAlways = checker.hasOption("suggestPureMethods");
-                boolean enablePurity = checker.hasOption("enablePurity");
+                boolean checkPurityAnnotations = checker.hasOption("checkPurityAnnotations");
 
-                if (enablePurity && (anyPurityAnnotation || checkPurityAlways)) {
+                if (checkPurityAnnotations && (anyPurityAnnotation || checkPurityAlways)) {
                     // check "no" purity
                     List<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
                     // @Deterministic makes no sense for a void method or constructor
