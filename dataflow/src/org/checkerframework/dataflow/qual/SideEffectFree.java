@@ -48,8 +48,8 @@ import java.lang.annotation.Target;
  * <p>
  *
  * In fact, the rules are so conservative that checking is currently
- * disabled by default, but can be enabled via the <tt>-AenablePurity</tt>
- * command-line option.
+ * disabled by default, but can be enabled via the
+ * <tt>-AcheckPurityAnnotations</tt> command-line option.
  * <p>
  *
  * @checker_framework_manual #type-refinement-purity Side effects, determinism, purity, and flow-sensitive analysis
