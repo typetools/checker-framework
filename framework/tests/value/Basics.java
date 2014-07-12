@@ -18,10 +18,10 @@ class Basics {
         if (true) {
             a = 'b';
         }
-        @CharVal({ 'a', 'b' }) Character b = a;
+        @IntVal({ 'a', 'b' }) Character b = a;
 
         //:: error: (assignment.type.incompatible)
-        @CharVal({ 'a' }) Character c = a;
+        @IntVal({ 'a' }) Character c = a;
     }
 
     public void charTest() {
@@ -29,10 +29,10 @@ class Basics {
         if (true) {
             a = 'b';
         }
-        @CharVal({ 'a', 'b' }) char b = a;
+        @IntVal({ 'a', 'b' }) char b = a;
 
         //:: error: (assignment.type.incompatible)
-        @CharVal({ 'a' }) char c = a;
+        @IntVal({ 'a' }) char c = a;
     }
 
     public void DoubleTest() {
@@ -64,10 +64,10 @@ class Basics {
         if (true) {
             a = 2.0f;
         }
-        @FloatVal({ 0, 2 }) Float b = a;
+        @DoubleVal({ 0, 2 }) Float b = a;
 
         //:: error: (assignment.type.incompatible)
-        @FloatVal({ 0 }) Float c = a;
+        @DoubleVal({ 0 }) Float c = a;
 
     }
 
@@ -76,10 +76,10 @@ class Basics {
         if (true) {
             a = 2.0f;
         }
-        @FloatVal({ 0, 2 }) float b = a;
+        @DoubleVal({ 0, 2 }) float b = a;
 
         //:: error: (assignment.type.incompatible)
-        @FloatVal({ 'a' }) float c = a;
+        @DoubleVal({ 'a' }) float c = a;
 
     }
 

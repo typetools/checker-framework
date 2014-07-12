@@ -20,7 +20,7 @@ public class Flow2Test extends ParameterizedCheckerTest {
         super(testFile,
                 tests.util.FlowTestChecker.class,
                 "flow",
-                "-Anomsgtext", "-AenablePurity");
+                "-Anomsgtext", "-AcheckPurityAnnotations");
     }
 
     @Parameters

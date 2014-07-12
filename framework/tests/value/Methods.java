@@ -16,12 +16,12 @@ class Methods {
             f = 1;
             e = "world";
         }
-        @CharVal({ 'e', 'l', 'o', 'r' }) char g = e.charAt(f);
+        @IntVal({ 'e', 'l', 'o', 'r' }) char g = e.charAt(f);
 
         //:: error: (assignment.type.incompatible)
-        @CharVal({ 'l' }) char h = e.charAt(i);
+        @IntVal({ 'l' }) char h = e.charAt(i);
 
-        @CharVal({ 'l' }) char j = e.charAt(k);
+        @IntVal({ 'l' }) char j = e.charAt(k);
     }
 
     public static void Boolean() {
@@ -30,16 +30,16 @@ class Methods {
     }
 
     public static void Byte() {
-        @ByteVal({ 127 }) byte a = Byte.MAX_VALUE;
-        @ByteVal({ -128 }) byte b = Byte.MIN_VALUE;
+        @IntVal({ 127 }) byte a = Byte.MAX_VALUE;
+        @IntVal({ -128 }) byte b = Byte.MIN_VALUE;
 
         String c = "59";
         int d = 10;
-        @ByteVal({ 59 }) byte e = Byte.valueOf(c, d);
+        @IntVal({ 59 }) byte e = Byte.valueOf(c, d);
     }
 
     public static void Character() {
-        @CharVal({ 'c' }) char a = Character.toLowerCase('C');
+        @IntVal({ 'c' }) char a = Character.toLowerCase('C');
 
         //:: error: (assignment.type.incompatible)
         @BoolVal({ false }) boolean b = Character.isWhitespace('\t');
@@ -54,7 +54,7 @@ class Methods {
     public static void Float() {
         @IntVal({ Float.MIN_EXPONENT }) int a = Float.MIN_EXPONENT;
         String b = "59.32";
-        @FloatVal({ 59.32f }) float c = Float.valueOf(b);
+        @DoubleVal({ 59.32f }) float c = Float.valueOf(b);
     }
 
     public static void Integer() {
@@ -64,16 +64,16 @@ class Methods {
     }
 
     public static void Long() {
-        @LongVal({ Long.MAX_VALUE }) long a = Long.MAX_VALUE;
+        @IntVal({ Long.MAX_VALUE }) long a = Long.MAX_VALUE;
         String b = "53";
-        @LongVal({ 53L }) long c = Long.valueOf(53L);
+        @IntVal({ 53L }) long c = Long.valueOf(53L);
     }
 
     public static void Short() {
-        @ShortVal({ Short.MIN_VALUE }) short a = Short.MIN_VALUE;
+        @IntVal({ Short.MIN_VALUE }) short a = Short.MIN_VALUE;
 
         String b = "53";
-        @ShortVal({ 53 }) short c = Short.valueOf(b);
+        @IntVal({ 53 }) short c = Short.valueOf(b);
     }
 
     public static void String() {

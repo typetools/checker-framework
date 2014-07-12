@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * 
- * TODO Integer or int value
+ * Annotation for byte, short, char, int and long types
  * 
  */
 @TypeQualifier
@@ -18,5 +18,5 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_PARAMETER, ElementType.TYPE_USE })
 public @interface IntVal {
-    int[] value();
+    long[] value();
 }

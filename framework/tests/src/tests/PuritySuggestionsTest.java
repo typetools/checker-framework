@@ -19,7 +19,7 @@ public class PuritySuggestionsTest extends ParameterizedCheckerTest {
         super(testFile,
                 FlowTestChecker.class,
                 "flow",
-                "-Anomsgtext", "-AsuggestPureMethods", "-AenablePurity");
+                "-Anomsgtext", "-AsuggestPureMethods", "-AcheckPurityAnnotations");
     }
 
     @Parameters

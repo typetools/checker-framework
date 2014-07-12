@@ -7,12 +7,13 @@ known at compile time.
 
 There are two ways to run the Constant Value Checker.
 Typically, it is automatically run by another type checker.
-When using the Value Checker as part of another checker, its
-jdk.astub file must be present in the other checker's directory.
+When using the Value Checker as part of another checker, the
+statically-executable.astub file in the Value Checker directory must
+be passed as a stub file for the checker.
 
 Alternately, it is also possible to run just the Value Checker, by
-supplying the
-\code{-processor org.checkerframework.checker.value.ValueChecker}
+supplying the \\
+\code{-processor org.checkerframework.checker.value.ValueChecker} \\
 command-line option to javac.
 
 
@@ -20,7 +21,7 @@ command-line option to javac.
 
 The Constant Value Checker comes with type annotations for indicating the
 value of an expression (Section~\ref{value-checker-type-annotations}), and
-method annotations for indicating methods that the Value Checker can execute.
+method annotations for indicating methods that the Value Checker can execute
 (Section~\ref{staticallyexecutable-annotation}).
 
 
@@ -55,10 +56,12 @@ predicted at compile-time as in Figure~\ref{fig-value-multivalue}.
 
 \begin{figure}
 \begin{center}
-\includeimagenocentering{value-hierarchy3}{9cm}
+\includeimagenocentering{value-hierarchy}{3.5cm}
 \qquad\qquad
-\includeimagenocentering{value-subtype}{2.5cm}
+\includeimagenocentering{value-subtype}{1.8cm}
+%BEGIN LATEX
 \vspace{-1.5\baselineskip}
+%END LATEX
 \end{center}
 
 \caption{The type qualifier hierarchy of the Value Checker
@@ -101,7 +104,7 @@ up to the type of the other. The full extent of this subtyping is
 shown in Figure~\ref{fig-value-subtyping}.
 
 \begin{figure}
-\includeimage{value-subtyping}{9cm}
+\includeimage{value-subtyping}{3cm}
 \caption{Subtyping of different numeric value annotations.}
 \label{fig-value-subtyping}
 \end{figure}
@@ -133,7 +136,7 @@ public void bar() {
 \end{Verbatim}
 \caption{An example of using the
   \refqualclass{checker/value/qual}{StaticallyExecutable} annotation to
-  continue constant propagation through a method call.}
+  continue constant propagation through a method call.\strut}
 \label{fig-staticallyexecutable}
 \end{figure}
 
