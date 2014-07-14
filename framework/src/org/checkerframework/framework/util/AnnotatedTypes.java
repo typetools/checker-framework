@@ -455,7 +455,7 @@ public class AnnotatedTypes {
     public static <ATM extends AnnotatedTypeMirror> ATM deepCopy(ATM type) {
         // TODO: Test this, specify behavior, merge/compare to ATM.copy
         ATM result = (ATM) type.substitute(Collections.<AnnotatedTypeMirror,
-                AnnotatedTypeMirror>emptyMap());
+                AnnotatedTypeMirror>emptyMap(), true);
         return result;
     }
 
