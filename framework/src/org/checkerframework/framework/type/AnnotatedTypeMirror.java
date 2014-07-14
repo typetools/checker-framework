@@ -1190,14 +1190,14 @@ public abstract class AnnotatedTypeMirror {
             this.actualType = type;
         }
 
-        final private List<AnnotatedTypeMirror> paramTypes =
-            new ArrayList<AnnotatedTypeMirror>();
+        private final List<AnnotatedTypeMirror> paramTypes =
+                new ArrayList<AnnotatedTypeMirror>();
         private AnnotatedDeclaredType receiverType;
         private AnnotatedTypeMirror returnType;
-        final private List<AnnotatedTypeMirror> throwsTypes =
-            new ArrayList<AnnotatedTypeMirror>();
-        final private List<AnnotatedTypeVariable> typeVarTypes =
-            new ArrayList<AnnotatedTypeVariable>();
+        private final List<AnnotatedTypeMirror> throwsTypes =
+                new ArrayList<AnnotatedTypeMirror>();
+        private final List<AnnotatedTypeVariable> typeVarTypes =
+                new ArrayList<AnnotatedTypeVariable>();
 
         /**
          * @return true if this type represents a varargs method
