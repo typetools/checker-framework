@@ -67,11 +67,11 @@ checker/manual/figures/signature-types-with-canonicalname.dia
 checker/manual/*.png
 
 # dataflow manual
-checker/manual/dataflow-manual/dataflow.aux
-checker/manual/dataflow-manual/dataflow.dvi
-checker/manual/dataflow-manual/dataflow.log
-checker/manual/dataflow-manual/dataflow.out
-checker/manual/dataflow-manual/dataflow.pdf
+dataflow/manual/dataflow.aux
+dataflow/manual/dataflow.dvi
+dataflow/manual/dataflow.log
+dataflow/manual/dataflow.out
+dataflow/manual/dataflow.pdf
 
 checker/tests/nullness-extra/*.class
 checker/tests/nullness-extra/compat/Out.txt
