@@ -5,6 +5,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 abstract class MethodTypeVars7 {
+
     abstract <T> T val(@Nullable T value, T defaultValue);
 
     void tests(@Nullable String t1, @NonNull String t2) {
@@ -14,6 +15,14 @@ abstract class MethodTypeVars7 {
     <T> T validate(@Nullable T value, T defaultValue) {
         return value != null &&
             !value.toString().isEmpty() ? value : defaultValue;
+    }
+
+    <T> T validateIf(@Nullable T value, T defaultValue) {
+        if (value != null && !value.toString().isEmpty()) {
+            return value;
+        } else {
+            return defaultValue;
+        }
     }
 
     <T> T validate2(@Nullable T value, T defaultValue) {
