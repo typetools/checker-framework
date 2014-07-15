@@ -1099,6 +1099,9 @@ public class AnnotatedTypes {
      * Add the 'intersection' of the types provided to alub.  This is a similar
      * method to the one provided
      * TODO: the above sentence should be finished somehow...
+     *
+     * Using ArrayList as parameter type to ensure efficient update.
+     * TODO: describe when parameter gets modified.
      */
     private static void addAnnotations(Elements elements, AnnotatedTypeFactory atypeFactory,
             AnnotatedTypeMirror alub,
@@ -1141,14 +1144,8 @@ public class AnnotatedTypes {
                 shouldAnnoOrig = true;
             }
 
-            if (shouldAnnoOrig) {
-                Set<AnnotationMirror> present = AnnotationUtils.createAnnotationSet();
-                present.addAll(typei.getAnnotations());
-                present.removeAll(atypeFactory.getQualifierHierarchy().getBottomAnnotations());
-                putOnOrig.addAll(present);
-            }
-
             if (typei.getKind() == TypeKind.WILDCARD) {
+                putOnOrig.addAll(typei.getAnnotations());
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType) typei;
                 if (wildcard.getExtendsBound() != null)
                     types.set(i, wildcard.getEffectiveExtendsBound());
@@ -1156,6 +1153,7 @@ public class AnnotatedTypes {
                     types.set(i, wildcard.getEffectiveSuperBound());
             }
             if (typei.getKind() == TypeKind.TYPEVAR) {
+                putOnOrig.addAll(typei.getAnnotations());
                 AnnotatedTypeVariable typevar = (AnnotatedTypeVariable) types.get(i);
                 if (typevar.getUpperBound() != null)
                     types.set(i, typevar.getEffectiveUpperBound());
