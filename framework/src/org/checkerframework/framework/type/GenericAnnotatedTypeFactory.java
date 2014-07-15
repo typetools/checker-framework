@@ -14,7 +14,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
-import com.sun.source.util.SimpleTreeVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -199,7 +198,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns a {@link TreeAnnotator} that adds annotations to a type based
      * on the contents of a tree.
      *
-     * Subclasses may override this method to specify more appriopriate
+     * Subclasses may override this method to specify more appropriate
      * {@link TreeAnnotator}
      *
      * @return a tree annotator
@@ -612,7 +611,7 @@ public abstract class GenericAnnotatedTypeFactory<
         }
     }
 
-    // Maintain a deque of analyses to accomodate nested classes.
+    // Maintain a deque of analyses to accommodate nested classes.
     protected final Deque<FlowAnalysis> analyses;
     // Maintain for every class the store that is used when we analyze initialization code
     protected Store initializationStore;
@@ -813,12 +812,15 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns the inferred value (by the org.checkerframework.dataflow analysis) for a given tree.
      */
     public Value getInferredValueFor(Tree tree) {
+        if (tree == null) {
+            ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.getInferredValueFor called with null tree. Don't!");
+            return null; // dead code
+        }
         Value as = null;
-        if (!analyses.isEmpty() && tree != null) {
+        if (!analyses.isEmpty()) {
             as = analyses.getFirst().getValue(tree);
         }
         if (as == null &&
-                tree != null &&
                 // TODO: this comparison shouldn't be needed, but
                 // Daikon check-nullness started failing without it.
                 flowResult != null) {

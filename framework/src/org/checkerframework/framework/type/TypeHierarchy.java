@@ -212,7 +212,7 @@ public class TypeHierarchy {
             if (lhsBase.getKind() == TypeKind.WILDCARD && rhs.getKind() != TypeKind.WILDCARD) {
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType)lhsBase;
                 if (wildcard.isTypeArgHack()) {
-                    AnnotatedTypeMirror bnd = ((AnnotatedTypeVariable)wildcard.getExtendsBound()).getEffectiveUpperBound();
+                    AnnotatedTypeMirror bnd = wildcard.getEffectiveExtendsBound();
                     return isSubtypeImpl(rhs, bnd);
                 }
                 if (wildcard.getSuperBound() != null &&
