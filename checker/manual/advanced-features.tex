@@ -349,6 +349,13 @@ such as \code{class C<T extends D> \ttlcb\ ... \ttrcb}, then the user
 intends some restriction on instantiation and can write a qualifier on the
 upper bound as desired.
 
+This rule means that the upper bound of \code{class C<T>} is defaulted
+differently than the upper bound of \code{class C<T extends Object>}.  It
+would be more confusing for ``\code{Object}'' to be defaulted differently in \code{class C<T extends Object>} and in an
+instantiation \code{C<Object>}, and for the upper bounds to be defaulted
+differently in \code{class C<T extends Object>} 
+and \code{class C<T extends Date>}.
+
 \item
 Implicit \emph{lower} bounds are defaulted to the bottom type, again to allow
 maximal instantiation.  Note that Java does not allow a programmer to
