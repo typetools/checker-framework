@@ -154,7 +154,7 @@ import com.sun.source.util.TreePath;
             builder.setValue("value", valuesList);
             return builder.build();
         } else {
-            if (values.size() >= MAX_VALUES) {
+            if (values.size() > MAX_VALUES) {
                 checker.report(Result.warning("too.many.values", MAX_VALUES),
                         visitorState.getClassTree());
             }
