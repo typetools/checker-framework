@@ -73,7 +73,7 @@ import com.sun.source.util.TreePath;
 
     /** Annotation constants */
     protected final AnnotationMirror INTVAL, DOUBLEVAL, BOOLVAL, ARRAYLEN,
-            STRINGVAL, BOTTOMVAL, UNKNOWNVAL, ANALYZABLE;
+            STRINGVAL, BOTTOMVAL, UNKNOWNVAL, STATICALLY_EXECUTABLE;
 
     protected static final Set<Modifier> PUBLIC_STATIC_FINAL_SET = new HashSet<Modifier>(
             3);
@@ -105,7 +105,7 @@ import com.sun.source.util.TreePath;
         DOUBLEVAL = AnnotationUtils.fromClass(elements, DoubleVal.class);
         STRINGVAL = AnnotationUtils.fromClass(elements, StringVal.class);
         BOTTOMVAL = AnnotationUtils.fromClass(elements, BottomVal.class);
-        ANALYZABLE = AnnotationUtils.fromClass(elements,
+        STATICALLY_EXECUTABLE = AnnotationUtils.fromClass(elements,
                 StaticallyExecutable.class);
         UNKNOWNVAL = AnnotationUtils.fromClass(elements, UnknownVal.class);
         constantAnnotations = new ArrayList<AnnotationMirror>(9);
@@ -115,7 +115,7 @@ import com.sun.source.util.TreePath;
         constantAnnotations.add(STRINGVAL);
         constantAnnotations.add(BOTTOMVAL);
         constantAnnotations.add(ARRAYLEN);
-        constantAnnotations.add(ANALYZABLE);
+        constantAnnotations.add(STATICALLY_EXECUTABLE);
         constantAnnotations.add(UNKNOWNVAL);
 
         orderedNumberAnnotations = new ArrayList<AnnotationMirror>();
