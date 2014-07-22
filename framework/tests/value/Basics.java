@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-//:: warning: (too.many.values)
+//:: warning: (too.many.values.accumulated)
 class Basics {
 
     public void boolTest() {
@@ -144,8 +144,14 @@ class Basics {
             b = 7;
         case 8:
             b = 8;
+        case 9:
+            b = 9;
         }
-
-    
     } 
+
+    void tooManyValuesAnnotation(){
+        //:: error: (too.many.values.given)
+        @IntVal({1,2,3,4,5,6,7,8,9,10,11,12}) int a = 8;
+    }
+ 
 }
