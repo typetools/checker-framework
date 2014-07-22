@@ -161,36 +161,41 @@ Some examples of these:
   the classpath.
 \item \code{``Test.java:11: warning: [method.find.failed] Failed to find
   a method named foo with argument types [@IntVal(3) int] in class
-  null. Treating result as @UnknownVal''}: means the checker could not
-  find the method \code{foo(int)} specified for resolving a \<@StaticallyExecutable>
-  method, but could find the class. This is usually due to providing
-  an out-dated version of the class-file that does not contain the
-  \<@StaticallyExecutable> method.
+  null. Treating result as @UnknownVal''}: 
+
+  The checker could not find the method \code{foo(int)} specified for
+  resolving a \<@StaticallyExecutable> method, but could find the
+  class. This is usually due to providing an out-dated version of the
+  class-file that does not contain the \<@StaticallyExecutable>
+  method.
 \item \code{``Test.java:12: warning: [method.evaluation.exception]
   Failed to evaluate method public static int Test.foo(int) because it
   threw an exception: java.lang.ArithmeticException: / by
-  zero. Treating result as @UnknownVal''} means an exception was thrown
-  when trying to statically execute the method. In this case it was a
-  divide-by-zero exception. If the arguments to the method each only
-  had one value in their annotations then this exception will always
-  occur when the program is actually run as well. If there are
-  multiple possible values then this warning may indicate a
-  false-positive because the exception is not actually thrown at
-  run-time.
+  zero. Treating result as @UnknownVal''}: 
+
+  An exception was thrown when trying to statically execute the
+  method. In this case it was a divide-by-zero exception. If the
+  arguments to the method each only had one value in their annotations
+  then this exception will always occur when the program is actually
+  run as well. If there are multiple possible values then this warning
+  may indicate a false-positive because the exception is not actually
+  thrown at run-time.
 \item \code{''Basics.java:154: error: [too.many.values.given] An
   annotation was written containing more 10 values, the maximum length
   allowed. Reduce the number of values given or change the annotation
-  to @UnknownVal.''} means an annotation was written with more than
-  the maximum number of values. Since the Constant Value Checker
-  automatically changes types to \<@UnknownVal> after they exceed this
-  maximum, it is an error to explicitly write annotations with more
-  values than will be tracked.
+  to @UnknownVal.''}:  
+
+  An annotation was written with more than the maximum number of
+  values. Since the Constant Value Checker automatically changes types
+  to \<@UnknownVal> after they exceed this maximum, it is an error to
+  explicitly write annotations with more values than will be tracked.
 \item \code{''Basics.java:4: warning: [too.many.values.accumulated] An
   annotations value array became longer than 10, the maximum length
-  allowed. Now treating the type as @UnknownVal.''} means a type had
-  more possible values than the maximum number tracked by the Constant
-  Value Tracker. When this happens, the annotated type of the variable
-  is automatically changed to \<@UnkownVal>.
+  allowed. Now treating the type as @UnknownVal.''}:
+
+  A type had more possible values than the maximum number tracked by
+  the Constant Value Tracker. When this happens, the annotated type of
+  the variable is automatically changed to \<@UnkownVal>.
 
  
 
