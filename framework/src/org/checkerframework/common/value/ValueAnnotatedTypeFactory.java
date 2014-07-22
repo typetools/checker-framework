@@ -47,8 +47,9 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -147,7 +148,8 @@ import com.sun.source.util.TreePath;
     }
 
     public AnnotationMirror createAnnotation(String name, Set<?> values) {
-        if (values.size() > 0 && values.size() < MAX_VALUES) {
+        
+        if (values.size() > 0 && values.size() <= MAX_VALUES) {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
                     name);
             List<Object> valuesList = new ArrayList<Object>(values);
@@ -155,8 +157,8 @@ import com.sun.source.util.TreePath;
             return builder.build();
         } else {
             if (values.size() > MAX_VALUES) {
-                checker.report(Result.warning("too.many.values", MAX_VALUES),
-                        visitorState.getClassTree());
+                checker.report(Result.warning("too.many.values.accumulated", MAX_VALUES),
+                               checker.getVisitor().getCurrentPath().getLeaf());
             }
             return UNKNOWNVAL;
         }
@@ -664,6 +666,7 @@ import com.sun.source.util.TreePath;
                 return null;
             }
         }
+
 
         @Override public Void visitBinary(BinaryTree tree,
                 AnnotatedTypeMirror type) {
