@@ -43,6 +43,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.TypeQualifier;
+import org.checkerframework.framework.type.explicit.ElementAnnotationUtil;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
@@ -1659,10 +1660,10 @@ public abstract class AnnotatedTypeMirror {
      *
      */
     public static class AnnotatedTypeVariable extends AnnotatedTypeMirror
-    implements AnnotatedReferenceType {
+            implements AnnotatedReferenceType {
 
         private AnnotatedTypeVariable(TypeVariable type,
-                AnnotatedTypeFactory factory, boolean declaration) {
+                                      AnnotatedTypeFactory factory, boolean declaration) {
             super(type, factory);
             this.declaration = declaration;
         }
@@ -1678,6 +1679,12 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public boolean isDeclaration() {
             return declaration;
+        }
+
+        @Override
+        public void addAnnotation(AnnotationMirror a) {
+            super.addAnnotation(a);
+            fixupBoundAnnotations();
         }
 
         /**
@@ -1747,15 +1754,15 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedTypeMirror getLowerBound() {
             if (lowerBound == null && ((TypeVariable)actualType).getLowerBound() != null) { // lazy init
                 setLowerBound(createType(((TypeVariable)actualType).getLowerBound(), atypeFactory, false));
-                fixupBoundAnnotations();
             }
+            fixupBoundAnnotations();
             return lowerBound;
         }
 
         /**
          * @return the effective lower bound:  the lower bound,
          * with annotations on the type variable considered.
-        */
+         */
         public AnnotatedTypeMirror getEffectiveLowerBound() {
             // See comments in `getEffectiveUpperBound` for an explanation of this implementation.
             AnnotatedTypeVariable thisUse = this.getCopy(true);
@@ -1784,38 +1791,71 @@ public abstract class AnnotatedTypeMirror {
         // The type of "@Nullable X" has to be "@Nullable X extends @Nullable Object",
         // because otherwise the annotations are inconsistent.
         private void fixupBoundAnnotations() {
-            if (!annotations.isEmpty() && upperBound != null) {
-                // TODO: there seems to be some (for me) unexpected sharing
-                // between upper bounds. Without the copying in the next line, test
-                // case KeyForChecked fails, because the annotation on the return type
-                // type variable changes the upper bound of the parameter type variable.
-                // Should such a copy be made somewhere else and for more?
-                upperBound = upperBound.getCopy(true);
-                // TODO: this direct replacement forbids us to check well-formedness,
-                // which is done in
-                // org.checkerframework.common.basetype.BaseTypeVisitor.TypeValidator.visitTypeVariable(AnnotatedTypeVariable, Tree)
-                // and assumed in nullness test Wellformed.
-                // Which behavior do we want?
-                upperBound.replaceAnnotations(annotations);
-            }
-            if (upperBound != null && upperBound.getAnnotations().isEmpty()) {
-                // new Throwable().printStackTrace();
-                // upperBound.addAnnotations(typeFactory.qualHierarchy.getRootAnnotations());
-                // TODO: this should never happen.
-            }
-            if (((TypeVariable)actualType).getLowerBound() instanceof NullType &&
-                    lowerBound != null && upperBound != null) {
-                Set<AnnotationMirror> lAnnos = lowerBound.getEffectiveAnnotations();
-                Set<AnnotationMirror> uAnnos = upperBound.getEffectiveAnnotations();
-                QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
 
-                for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-                    AnnotationMirror lAnno = qualifierHierarchy.getAnnotationInHierarchy(lAnnos, top);
-                    AnnotationMirror uAnno = qualifierHierarchy.getAnnotationInHierarchy(uAnnos, top);
-                    fixupBoundAnnotationsImpl(qualifierHierarchy,
-                            lowerBound, upperBound, annotations,
-                            top, lAnno, uAnno);
+            if(lowerBound != null) {
+                if (lowerBound.getKind() != TypeKind.TYPEVAR) {
+                    lowerBound = lowerBound.getCopy(true);
+                    //TODO JB: Ask Werner, can lower bounds be intersections?  Do we need to do something clever?
+
+                    //Terrible kludge to support GeneralAnnotatedTypeFactory
+                    if (ElementAnnotationUtil.isNullnessGeneralAtf(atypeFactory)) {
+                        final List<AnnotationMirror> annos = ElementAnnotationUtil.getNullnessAndInitAnnos(this, atypeFactory);
+                        lowerBound.clearAnnotations();
+                        lowerBound.addAnnotations(annos);
+
+                    } else {
+                        final QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+                        for (final AnnotationMirror top : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
+                            if (lowerBound.getAnnotationInHierarchy(top) == null) {
+                                lowerBound.addAnnotation(qualifierHierarchy.getBottomAnnotation(top));
+
+                            } else {
+                                //TODO JB: CHECK BOTTOM IS BELOW TOP AND ISSUE A WARNING? OR DO THIS IN isValidType
+
+                            }
+
+                        }
+
+                    }
                 }
+            }
+
+            //We allow the above replacement first because primary annotations might not have annotations for
+            //all hierarchies, so we don't want to avoid placing bottom on the lower bound for those hierarchies that
+            //don't have a qualifier in primaryAnnotations
+            if( !annotations.isEmpty() ) {
+                if(upperBound!=null) {
+                    replaceUpperBoundAnnotations();
+                }
+
+                //Note:
+                // if the lower bound is a type variable
+                // then when we place annotations on the primary annotation
+                //   this will actually cause the type variable to be exact and
+                //   propagate the primary annotation to the type variable because
+                //   primary annotations overwrite the upper and lower bounds of type variables
+                //   when getUpperBound/getLowerBound is called
+                if(lowerBound != null) {
+                    lowerBound.replaceAnnotations(annotations);
+                }
+            }
+        }
+
+
+        /**
+         * Replaces (or adds if none exist) the primary annotation of all upper bounds of typeVar,
+         * the AnnotatedTypeVariable with the annotations provided.  The AnnotatedTypeVariable will only
+         * have multiple upper bounds if the upper bound is an intersection.
+         */
+        private void replaceUpperBoundAnnotations() {
+            upperBound = upperBound.getCopy(true);
+            if (upperBound.getKind() == TypeKind.INTERSECTION) {
+                final List<AnnotatedDeclaredType> bounds = ((AnnotatedIntersectionType) upperBound).directSuperTypes();
+                for (final AnnotatedDeclaredType bound : bounds) {
+                    bound.replaceAnnotations(annotations);
+                }
+            } else {
+                upperBound.replaceAnnotations(annotations);
             }
         }
 
@@ -1852,16 +1892,16 @@ public abstract class AnnotatedTypeMirror {
          */
         public AnnotatedTypeMirror getUpperBound() {
             if (upperBound == null && ((TypeVariable)actualType).getUpperBound() != null) { // lazy init
-                setUpperBound(createType(((TypeVariable)actualType).getUpperBound(), atypeFactory, false));
-                fixupBoundAnnotations();
+                setUpperBound(createType(((TypeVariable) actualType).getUpperBound(), atypeFactory, false));
             }
+            fixupBoundAnnotations();
             return upperBound;
         }
 
         /**
          * @return the effective upper bound:  the upper bound,
          * with annotations on the type variable considered.
-        */
+         */
         public AnnotatedTypeMirror getEffectiveUpperBound() {
             // Given a declaration `T extends @U Upper super @L Lower` and a use `@A T`, the
             // "effective upper bound" of `@A T` is the LUB of all types that could possibly result
@@ -1900,7 +1940,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeVariable getCopy(boolean copyAnnotations) {
             AnnotatedTypeVariable type =
-                new AnnotatedTypeVariable(((TypeVariable)actualType), atypeFactory, declaration);
+                    new AnnotatedTypeVariable(((TypeVariable)actualType), atypeFactory, declaration);
             if (copyAnnotations)
                 type.addAnnotations(annotations);
             if (!inUpperBounds) {
@@ -1982,7 +2022,7 @@ public abstract class AnnotatedTypeMirror {
             copyFields(type, true);*/
 
             Map<AnnotatedTypeMirror, AnnotatedTypeMirror> newMappings =
-                new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>(mappings);
+                    new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>(mappings);
             newMappings.put(this, type);
             if (lowerBound != null) {
                 type.setLowerBound(lowerBound.substitute(newMappings, forDeepCopy));
@@ -2947,36 +2987,5 @@ public abstract class AnnotatedTypeMirror {
             return super.visitArray(type, mapping);
         }
     };
-
-    /**
-     * Implementation that handles a single hierarchy (identified by top).
-     */
-    private static void fixupBoundAnnotationsImpl(QualifierHierarchy qualifierHierarchy,
-            AnnotatedTypeMirror lowerBound, AnnotatedTypeMirror upperBound,
-            Collection<AnnotationMirror> allAnnotations,
-            AnnotationMirror top,
-            AnnotationMirror lAnno, AnnotationMirror uAnno) {
-        if (lAnno == null) {
-            AnnotationMirror a = qualifierHierarchy.getAnnotationInHierarchy(allAnnotations, top);
-            if (a != null) {
-                lowerBound.replaceAnnotation(a);
-                return;
-            } else {
-                lAnno = qualifierHierarchy.getBottomAnnotation(top);
-                lowerBound.replaceAnnotation(lAnno);
-            }
-        }
-
-        if (uAnno == null) {
-            // TODO: The subtype tests below fail with empty annotations.
-            // Is there anything better to do here?
-        } else if (qualifierHierarchy.isSubtype(lAnno, uAnno)) {
-            // Nothing to do if lAnnos is a subtype of uAnnos.
-        } else if (qualifierHierarchy.isSubtype(uAnno, lAnno)) {
-            lowerBound.replaceAnnotation(uAnno);
-        } else {
-            ErrorReporter.errorAbort("AnnotatedTypeMirror.fixupBoundAnnotations: default annotation on lower bound ( " + lAnno + ") is inconsistent with explicit upper bound: " + upperBound);
-        }
-    }
 
 }
