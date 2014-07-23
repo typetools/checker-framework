@@ -95,7 +95,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
 
     /**
      * Returns the annotations on the upper bound of type {@code t}.
-     */
+     */  //TODO_JB: INTERSECTIONS AREN'T TAKEN CARE OF
     private static Collection<AnnotationMirror> getUpperBound(
             AnnotatedTypeMirror t) {
         if (t.getKind() == TypeKind.WILDCARD) {
@@ -184,19 +184,20 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      * @return true iff result could be set to a uniquely most specific type
      */
     private static boolean mostSpecific(QualifierHierarchy qualHierarchy,
-            AnnotatedTypeMirror a, AnnotatedTypeMirror b,
-            AnnotatedTypeMirror backup, AnnotatedTypeMirror result) {
-        boolean canContainEmpty = QualifierHierarchy
-                .canHaveEmptyAnnotationSet(a)
+                                        AnnotatedTypeMirror a, AnnotatedTypeMirror b,
+                                        AnnotatedTypeMirror backup, AnnotatedTypeMirror result) {
+        boolean canContainEmpty = QualifierHierarchy.canHaveEmptyAnnotationSet(a)
                 && QualifierHierarchy.canHaveEmptyAnnotationSet(b)
                 && QualifierHierarchy.canHaveEmptyAnnotationSet(result);
+
         for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
-            AnnotationMirror aAnno = canContainEmpty  ? a
-                    .getAnnotationInHierarchy(top) : a
-                    .getEffectiveAnnotationInHierarchy(top);
-            AnnotationMirror bAnno = canContainEmpty ? b
-                    .getAnnotationInHierarchy(top) : b
-                    .getEffectiveAnnotationInHierarchy(top);
+            AnnotationMirror aAnno =
+                canContainEmpty ? a.getAnnotationInHierarchy(top)
+                                : a.getEffectiveAnnotationInHierarchy(top);
+
+            AnnotationMirror bAnno =
+                canContainEmpty ? b.getAnnotationInHierarchy(top)
+                                : b.getEffectiveAnnotationInHierarchy(top);
 
             if (qualHierarchy.isSubtype(a, b, aAnno, bAnno)) {
                 if (aAnno == null) {
@@ -228,19 +229,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             Collection<AnnotationMirror> extendsBound2 = getUpperBound(b);
             extendsBound.addAnnotations(mostSpecific(qualHierarchy,
                     extendsBound1, extendsBound2));
-        } else if (kind == TypeKind.TYPEVAR) {
-            AnnotatedTypeVariable tResult = (AnnotatedTypeVariable) result;
-            AnnotatedTypeMirror upperBound = tResult.getUpperBound();
-            Collection<AnnotationMirror> upperBound1 = getUpperBound(a);
-            Collection<AnnotationMirror> upperBound2 = getUpperBound(b);
 
-            // TODO: how is it possible that uppBound1 or 2 does not have any
-            // annotations?
-            if (upperBound1.size() != 0 && upperBound2.size() != 0) {
-                upperBound.clearAnnotations();
-                upperBound.addAnnotations(mostSpecific(qualHierarchy,
-                        upperBound1, upperBound2));
-            }
+            //TODO: LOWER BOUND?
+
+        } else if (kind == TypeKind.TYPEVAR) {
+            updateTypeVariableResult((AnnotatedTypeVariable) result, a, b, qualHierarchy);
+
         } else if (a.getKind() == TypeKind.ARRAY
                 && b.getKind() == TypeKind.ARRAY) {
             AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) result;
@@ -293,6 +287,47 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         }
         return result;
     }
+
+    private static void updateTypeVariableResult(
+            final AnnotatedTypeVariable result,
+            final AnnotatedTypeMirror a, final AnnotatedTypeMirror b,
+            final QualifierHierarchy qualHierarchy ) {
+
+        AnnotatedTypeMirror upperBound = result.getUpperBound();
+        AnnotatedTypeMirror lowerBound = result.getLowerBound();
+
+        Collection<AnnotationMirror> upperBound1 = getUpperBound(a);
+        Collection<AnnotationMirror> upperBound2 = getUpperBound(b);
+
+        // TODO: how is it possible that uppBound1 or 2 does not have any
+        // annotations?
+        if (upperBound1.size() != 0 && upperBound2.size() != 0) {
+            upperBound.clearAnnotations();
+            upperBound.addAnnotations(mostSpecific(qualHierarchy,
+                    upperBound1, upperBound2));
+        }
+
+        final AnnotatedTypeMirror lowerBoundA =
+                (a instanceof AnnotatedTypeVariable ) ? ((AnnotatedTypeVariable) a).getLowerBound()
+                        : null;
+
+        final AnnotatedTypeMirror lowerBoundB =
+                (b instanceof AnnotatedTypeVariable ) ? ((AnnotatedTypeVariable) b).getLowerBound()
+                        : null;
+
+        if( lowerBoundA != null && lowerBoundB != null ) {
+            //TODO: In this case don't we want the less specific annotation in order to have a narrower range?
+            //TODO: WHAT IF WE INFERRED A MORE COMPLEX LOWER BOUND, TODO ASK WERNER
+            lowerBound.addAnnotations(mostSpecific(qualHierarchy, lowerBoundA.getAnnotations(), lowerBoundB.getAnnotations()));
+        } else if( lowerBoundA != null ) {
+            lowerBound.replaceAnnotations( lowerBoundA.getAnnotations() );
+        } else if( lowerBoundB != null ) {
+            lowerBound.replaceAnnotations( lowerBoundB.getAnnotations() );
+        } else {
+            //Bottom should be placed on the bound.  This should happen where result is created
+        }
+    }
+
 
     @Override
     public boolean equals(Object obj) {
