@@ -61,6 +61,7 @@ public class QualifierDefaults {
     // TODO apply from package elements also
     // TODO try to remove some dependencies (e.g. on factory)
 
+    private boolean applyToTypeVar = false;
     private final Elements elements;
     private final AnnotatedTypeFactory atypeFactory;
 
@@ -279,6 +280,7 @@ public class QualifierDefaults {
         //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
         if (elt != null) {
+            applyToTypeVar = elt.getKind() == ElementKind.LOCAL_VARIABLE && type.getKind() == TypeKind.TYPEVAR;
             applyDefaultsElement(elt, type);
         }
     }
@@ -395,7 +397,7 @@ public class QualifierDefaults {
      */
     private void applyDefaultsElement(final Element annotationScope, final AnnotatedTypeMirror type) {
         AMLocTreeSet defaults = defaultsAt(annotationScope);
-        DefaultApplierElement applier = new DefaultApplierElement(atypeFactory, annotationScope, type);
+        DefaultApplierElement applier = new DefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
 
         for (Pair<AnnotationMirror, DefaultLocation> def : defaults) {
             applier.apply(def.first, def.second);
@@ -416,12 +418,14 @@ public class QualifierDefaults {
         private DefaultLocation location;
 
         private final DefaultApplierElementImpl impl;
+        private final boolean applyToTypeVar;
 
-        public DefaultApplierElement(AnnotatedTypeFactory atypeFactory, Element scope, AnnotatedTypeMirror type) {
+        public DefaultApplierElement(AnnotatedTypeFactory atypeFactory, Element scope, AnnotatedTypeMirror type, boolean applyToTypeVar) {
             this.atypeFactory = atypeFactory;
             this.scope = scope;
             this.type = type;
             this.impl = new DefaultApplierElementImpl();
+            this.applyToTypeVar = applyToTypeVar;
         }
 
         public void apply(AnnotationMirror toApply, DefaultLocation location) {
@@ -437,8 +441,7 @@ public class QualifierDefaults {
          * @param qual A default qualifier to apply
          * @return true if this application should proceed
          */
-        private static boolean shouldBeAnnotated(final AnnotatedTypeMirror type,
-                final AnnotationMirror qual) {
+        private static boolean shouldBeAnnotated(final AnnotatedTypeMirror type, final boolean applyToTypeVar) {
 
             return !( type == null ||
                     // TODO: executables themselves should not be annotated
@@ -446,16 +449,12 @@ public class QualifierDefaults {
                     // type.getKind() == TypeKind.EXECUTABLE ||
                     type.getKind() == TypeKind.NONE ||
                     type.getKind() == TypeKind.WILDCARD ||
-                    type.getKind() == TypeKind.TYPEVAR  ||
+                    (type.getKind() == TypeKind.TYPEVAR  && !applyToTypeVar) ||
                     type instanceof AnnotatedNoType );
 
         }
 
         private static void doApply(AnnotatedTypeMirror type, AnnotationMirror qual) {
-
-            if (!shouldBeAnnotated(type, qual)) {
-                return;
-            }
 
             // Add the default annotation, but only if no other
             // annotation is present.
@@ -485,7 +484,7 @@ public class QualifierDefaults {
 
             @Override
             public Void scan(AnnotatedTypeMirror t, AnnotationMirror qual) {
-                if (!shouldBeAnnotated(t, qual)) {
+                if (!shouldBeAnnotated(t, applyToTypeVar)) {
                     return super.scan(t, qual);
                 }
 
