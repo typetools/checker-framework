@@ -7,24 +7,15 @@ import com.sun.source.tree.Tree;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.source.Result;
 import com.sun.source.tree.AnnotationTree;
-import org.checkerframework.common.value.qual.ArrayLen;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
-import org.checkerframework.common.value.qual.BoolVal;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.AssignmentTree;
-import org.checkerframework.common.value.qual.BottomVal;
-import org.checkerframework.common.value.qual.DoubleVal;
-import org.checkerframework.common.value.qual.IntVal;
-import org.checkerframework.common.value.qual.StringVal;
-import org.checkerframework.common.value.qual.UnknownVal;
-
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * @author plvines
  * 
- *         TODO
+ *         Visitor for the Constant Value type-system.
  * 
  */
 public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
@@ -38,6 +29,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         return new ValueAnnotatedTypeFactory(checker);
     }
 
+    /**
+     * Checks to ensure any constant value annotation has <= MAX_VALUES number of values provided. Otherwise issues an error.
+     */
     @Override
     public Void visitAnnotation(AnnotationTree tree, Void p){
         
