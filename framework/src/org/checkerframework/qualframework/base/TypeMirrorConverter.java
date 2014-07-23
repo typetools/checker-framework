@@ -79,6 +79,16 @@ class TypeMirrorConverter<Q> {
      * annotated-to-qualified conversions. */
     private HashMap<Integer, Q> indexToQual;
 
+    /** Cache @Key annotation mirrors so they are not to be recreated on every conversion */
+    public LinkedHashMap<Integer, AnnotationMirror> keyToAnnoCache = new LinkedHashMap<Integer, AnnotationMirror>(10, .75f, true) {
+         private static final long serialVersionUID = 1L;
+         private static final int MAX_SIZE = 100;
+         @Override
+         protected boolean removeEldestEntry(Map.Entry<Integer, AnnotationMirror> eldest) {
+            return size() > MAX_SIZE;
+         }
+    };
+
     @TypeQualifier
     @SubtypeOf({})
     public static @interface Key {
@@ -115,12 +125,17 @@ class TypeMirrorConverter<Q> {
     /** Constructs a new {@link Key} annotation with the provided index, using
      * <code>desc.toString()</code> to set the {@link Key.desc} field. */
     private AnnotationMirror createKey(int index, Object desc) {
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Key.class.getCanonicalName());
-        builder.setValue("index", index);
-        builder.setValue("desc", "" + desc);
-        return builder.build();
+        if (keyToAnnoCache.containsKey(index)) {
+            return keyToAnnoCache.get(index);
+        } else {
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Key.class.getCanonicalName());
+            builder.setValue("index", index);
+            builder.setValue("desc", "" + desc);
+            AnnotationMirror result = builder.build();
+            keyToAnnoCache.put(index, result);
+            return result;
+        }
     }
-
 
     /** Returns the index that represents <code>qual</code>.  If
      * <code>qual</code> has not been assigned an index yet, a new index will
