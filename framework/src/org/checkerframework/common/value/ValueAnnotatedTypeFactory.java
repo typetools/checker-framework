@@ -36,7 +36,6 @@ import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -49,7 +48,6 @@ import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -84,7 +82,6 @@ import com.sun.source.util.TreePath;
                                                 // allowed in an annotation's
                                                 // array
     protected final List<AnnotationMirror> constantAnnotations;
-    protected final List<AnnotationMirror> orderedNumberAnnotations;
     protected Set<String> coveredClassStrings;
 
     /**
@@ -118,10 +115,6 @@ import com.sun.source.util.TreePath;
         constantAnnotations.add(STATICALLY_EXECUTABLE);
         constantAnnotations.add(UNKNOWNVAL);
 
-        orderedNumberAnnotations = new ArrayList<AnnotationMirror>();
-        orderedNumberAnnotations.add(DOUBLEVAL);
-        orderedNumberAnnotations.add(INTVAL);
-
         coveredClassStrings = new HashSet<String>(19);
         coveredClassStrings.add("int");
         coveredClassStrings.add("java.lang.Integer");
@@ -147,8 +140,17 @@ import com.sun.source.util.TreePath;
         }
     }
 
+    /**
+     * Creates an annotation of the name given with the set of values given.
+     * Issues a checker warning and return UNKNOWNVAL if values.size >
+     * MAX_VALUES
+     * 
+     * @param name
+     * @param values
+     * @return annotation given by name with values=values, or UNKNOWNVAL
+     */
     public AnnotationMirror createAnnotation(String name, Set<?> values) {
-        
+
         if (values.size() > 0 && values.size() <= MAX_VALUES) {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
                     name);
@@ -157,8 +159,9 @@ import com.sun.source.util.TreePath;
             return builder.build();
         } else {
             if (values.size() > MAX_VALUES) {
-                checker.report(Result.warning("too.many.values.accumulated", MAX_VALUES),
-                               checker.getVisitor().getCurrentPath().getLeaf());
+                checker.report(Result.warning("too.many.values.accumulated",
+                        MAX_VALUES), checker.getVisitor().getCurrentPath()
+                        .getLeaf());
             }
             return UNKNOWNVAL;
         }
@@ -231,18 +234,23 @@ import com.sun.source.util.TreePath;
             }
             // Annotations are in this hierarchy, but they are not the same
             else {
-                // If either is UNKNOWNVAL, ARRAYLEN, or BOOLEAN then the LUB is
+                // If either is UNKNOWNVAL, ARRAYLEN, STRINGVAL, or BOOLEAN then the LUB is
                 // UnknownVal
                 if (!isNumberAnnotation(a1) || !isNumberAnnotation(a2)) {
                     return UNKNOWNVAL;
                 } else {
-                    // At this point they must both be in the set
-                    // {IntVal, DoubleVal} which means they
-                    // can be LUB'd by casting upwards
+                    // At this point one of them must be a DoubleVal and one an IntVal
+                    AnnotationMirror higher;
+                    AnnotationMirror lower;
 
-                    AnnotationMirror[] sorted = getHighestAnnotation(a1, a2);
-                    AnnotationMirror higher = sorted[0];
-                    AnnotationMirror lower = sorted[1];
+                    if (AnnotationUtils.areSameIgnoringValues(a2, DOUBLEVAL)) {
+                        higher = a2;
+                        lower = a1;
+                    } else {
+                        higher = a1;
+                        lower = a2;
+                    }
+
                     String anno = "org.checkerframework.common.value.qual.";
                     List<Number> valuesToCast;
 
@@ -253,41 +261,14 @@ import com.sun.source.util.TreePath;
                             AnnotationUtils.getElementValueArray(higher,
                                     "value", Object.class, true));
 
-                    if (AnnotationUtils
-                            .areSameIgnoringValues(higher, DOUBLEVAL)) {
-                        for (Number n : valuesToCast) {
-                            newValues.add(new Double(n.doubleValue()));
-                        }
-                        anno += "DoubleVal";
-                    } else if (AnnotationUtils.areSameIgnoringValues(higher,
-                            INTVAL)) {
-                        for (Number n : valuesToCast) {
-                            newValues.add(new Long(n.intValue()));
-                        }
-                        anno += "IntVal";
+                    for (Number n : valuesToCast) {
+                        newValues.add(new Double(n.doubleValue()));
                     }
+                    anno += "DoubleVal";
+
                     return createAnnotation(anno, newValues);
                 }
             }
-        }
-
-        private AnnotationMirror[] getHighestAnnotation(AnnotationMirror a1,
-                AnnotationMirror a2) {
-            AnnotationMirror[] higherFirst = new AnnotationMirror[2];
-            for (AnnotationMirror m : orderedNumberAnnotations) {
-                if (AnnotationUtils.areSameIgnoringValues(a1, m)) {
-                    higherFirst[0] = a1;
-                    higherFirst[1] = a2;
-                    return higherFirst;
-                } else if (AnnotationUtils.areSameIgnoringValues(a2, m)) {
-                    higherFirst[0] = a2;
-                    higherFirst[1] = a1;
-                    return higherFirst;
-                }
-            }
-
-            // No number-type annotation was found
-            return null;
         }
 
         /**
@@ -318,25 +299,18 @@ import com.sun.source.util.TreePath;
                         rhs, "value", Object.class, true);
                 return lhsValues.containsAll(rhsValues);
             }
-            // Not the same type but if they are chars, doubles, or
-            // ints they might be compatible due to implicit casting
-
-            AnnotationMirror[] sorted = getHighestAnnotation(lhs, rhs);
-            // We may be able to implicitly cast up, if both of the annotations
-            // are number subtypes or chars, and if lhs is the higher of the two
-            if (sorted != null && sorted[0] == lhs
-                    && isNumberAnnotation(sorted[1])) {
-                List<Number> rhsValues;
+            // not the same type, but if they are DOUBLEVAL and INTVAL they might still be subtypes
+            if (AnnotationUtils.areSameIgnoringValues(lhs, DOUBLEVAL)
+                    && AnnotationUtils.areSameIgnoringValues(rhs, INTVAL)) {
+                List<Long> rhsValues;
                 rhsValues = AnnotationUtils.getElementValueArray(rhs, "value",
-                        Number.class, true);
-
-                List<Number> lhsValues = AnnotationUtils.getElementValueArray(
-                        lhs, "value", Number.class, true);
-
+                        Long.class, true);
+                List<Double> lhsValues = AnnotationUtils.getElementValueArray(
+                        lhs, "value", Double.class, true);
                 boolean same = false;
-                for (Number rhsN : rhsValues) {
-                    for (Number lhsN : lhsValues) {
-                        if (lhsN.doubleValue() == rhsN.doubleValue()) {
+                for (Long rhsLong : rhsValues) {
+                    for (Double lhsDbl : lhsValues) {
+                        if (lhsDbl.doubleValue() == rhsLong.doubleValue()) {
                             same = true;
                             break;
                         }
@@ -463,12 +437,6 @@ import com.sun.source.util.TreePath;
             return super.visitNewArray(tree, type);
         }
 
-        /**
-         * Do one level, pop from list, recurse if not done
-         * 
-         * @param dimensions
-         * @param type
-         */
         /**
          * Recursive method to handle array initializations. Recursively
          * descends the initializer to find each dimension's size and create the
@@ -643,6 +611,28 @@ import com.sun.source.util.TreePath;
             return null;
         }
 
+        /**
+         * This method resolves a unary operator by converting it to a
+         * reflective call to one of the operators defined in Operators.java.
+         * The values in the annotations of the arguments will be converted to
+         * the type of argClass. Thus argClass should always result in a
+         * lossless casting (e.g. int to long).
+         * 
+         * @param lhsType
+         *            the annotated type mirror of the LHS argument
+         * @param rhsType
+         *            the annotated type mirror of the RHS argument
+         * @param operation
+         *            the String name of the operation
+         * @param argClass
+         *            the Class of the operations arguments (used for reflective
+         *            code)
+         * @param tree
+         *            location to provide to error message
+         * 
+         * 
+         * @return
+         */
         private AnnotationMirror evaluateUnaryOperator(
                 AnnotationMirror argAnno, String operation, Class<?> argClass,
                 UnaryTree tree) {
@@ -666,7 +656,6 @@ import com.sun.source.util.TreePath;
                 return null;
             }
         }
-
 
         @Override public Void visitBinary(BinaryTree tree,
                 AnnotatedTypeMirror type) {
@@ -775,10 +764,10 @@ import com.sun.source.util.TreePath;
 
         /**
          * This method resolves a binary operator by converting it to a
-         * reflective call to one of the operators defined in
-         * BinaryOperators.java. The values in the annotations of the arguments
-         * will be converted to the type of argClass. Thus argClass should
-         * always result in a lossless casting (e.g. int to long).
+         * reflective call to one of the operators defined in Operators.java.
+         * The values in the annotations of the arguments will be converted to
+         * the type of argClass. Thus argClass should always result in a
+         * lossless casting (e.g. int to long).
          * 
          * @param lhsType
          *            the annotated type mirror of the LHS argument
@@ -789,7 +778,8 @@ import com.sun.source.util.TreePath;
          * @param argClass
          *            the Class of the operations arguments (used for reflective
          *            code)
-         * 
+         * @param tree
+         *            location for error reporting
          * @return
          */
         private AnnotationMirror evaluateBinaryOperator(
@@ -896,14 +886,10 @@ import com.sun.source.util.TreePath;
                             }
                         }
                     } catch (ClassNotFoundException e) {
-                        if (recType != null) {
-                            checker.report(Result.warning("class.find.failed",
-                                    recType), tree);
-                        } else {
-                            checker.report(Result.warning("class.find.failed",
-                                    (TreeUtils.elementFromUse(tree))
-                                            .getEnclosingElement()), tree);
-                        }
+                        checker.report(Result.warning("class.find.failed",
+                                (TreeUtils.elementFromUse(tree))
+                                        .getEnclosingElement()), tree);
+
                     } catch (NoSuchMethodException e) {
                         checker.report(Result
                                 .warning("method.find.failed",
@@ -919,6 +905,17 @@ import com.sun.source.util.TreePath;
             return null;
         }
 
+        /**
+         * Method for reflectively obtaining a method object so it can
+         * (potentially) be statically executed by the checker for constant
+         * propagation
+         * 
+         * @param tree
+         * @return the Method object corresponding to the method being invoke in
+         *         tree
+         * @throws ClassNotFoundException
+         * @throws NoSuchMethodException
+         */
         private Method getMethodObject(MethodInvocationTree tree)
                 throws ClassNotFoundException, NoSuchMethodException {
             Method method;
@@ -970,6 +967,8 @@ import com.sun.source.util.TreePath;
          * @param retType
          *            the AnnotatedTypeMirror of the tree being evaluated, used
          *            to determine the type of AnnotationMirr to return
+         * @param tree
+         *            location for error reporting
          * 
          * @return an AnnotationMirror of the type specified by retType's
          *         underlyingType and with its value array populated by all the
@@ -1023,6 +1022,8 @@ import com.sun.source.util.TreePath;
          *            this will contain the results for all possible
          *            combinations of argument and receiver values invoking the
          *            method
+         * @param tree
+         *            location for error reporting
          */
         private void evaluateMethodHelper(
                 ArrayDeque<List<Object>> argArrayDeque,
@@ -1069,19 +1070,14 @@ import com.sun.source.util.TreePath;
                     checker.report(
                             Result.warning("method.evaluation.failed", method),
                             tree);
-                    results = new ArrayList<Object>(); // fail by setting the
-                    // results list to
-                    // empty. Since we
-                    // failed on the invoke,
-                    // all calls of this
-                    // method will fail, so
-                    // the final results
-                    // list will be an empty
-                    // list. That will cause
-                    // an UnknownVal
-                    // annotation to be
-                    // created, which seems
-                    // appropriate here
+                    results = new ArrayList<Object>();
+                    /*
+                     * fail by setting the results list to empty. Since we
+                     * failed on the invoke, all calls of this method will fail,
+                     * so the final results list will be an empty list. That
+                     * will cause an UnknownVal annotation to be created, which
+                     * seems appropriate here
+                     */
                 }
             }
 
@@ -1163,6 +1159,8 @@ import com.sun.source.util.TreePath;
          * @param retType
          *            AnnotatedTypeMirror of the tree being evaluate, used to
          *            determine what the return AnnotationMirror should be
+         * @param tree
+         *            location for error reporting
          * 
          * @return an AnnotationMirror containing all the possible values of the
          *         New call based on combinations of argument values
@@ -1199,6 +1197,8 @@ import com.sun.source.util.TreePath;
          *            a List of all values returned. Once all calls are finished
          *            this will contain the results for all possible
          *            combinations of argument values invoking the constructor
+         * @param tree
+         *            location for error reporting
          */
         private void evaluateNewClassHelper(
                 ArrayDeque<List<Object>> argArrayDeque,
@@ -1219,21 +1219,14 @@ import com.sun.source.util.TreePath;
                     checker.report(
                             Result.warning("constructor.invocation.failed"),
                             tree);
-                    results = new ArrayList<Object>();// fail by setting the
-                    // results list to
-                    // empty. Since we
-                    // failed on the
-                    // newInstance, all
-                    // calls of this
-                    // constructor will
-                    // fail, so the final
-                    // results list will be
-                    // an empty list. That
-                    // will cause an
-                    // UnknownVal annotation
-                    // to be created, which
-                    // seems appropriate
-                    // here
+                    results = new ArrayList<Object>();
+                    /*
+                     * fail by setting the results list to empty. Since we
+                     * failed on the newInstance, all calls of this constructor
+                     * will fail, so the final results list will be an empty
+                     * list. That will cause an UnknownVal annotation to be
+                     * created, which seems appropriate here
+                     */
                 }
             }
             // If there are still lists of argument values left in the deque
@@ -1255,10 +1248,12 @@ import com.sun.source.util.TreePath;
 
         @Override public Void visitMemberSelect(MemberSelectTree tree,
                 AnnotatedTypeMirror type) {
-            // NOTE: None of the objects, except arrays, being handled by this
-            // system possess non-static fields, so I am assuming I can simply
-            // reflectively call the fields on a reflectively generated object
-            // representing the class
+            /*
+             * NOTE: None of the objects, except arrays, being handled by this
+             * system possess non-static fields, so I am assuming I can simply
+             * reflectively call the fields on a reflectively generated object
+             * representing the class
+             */
             super.visitMemberSelect(tree, type);
             AnnotatedTypeMirror receiverType = getAnnotatedType(tree
                     .getExpression());
@@ -1340,6 +1335,8 @@ import com.sun.source.util.TreePath;
          *            the AnnotatedTypeMirror of the tree being evaluated, used
          *            to create the return annotation and to reflectively create
          *            the Class object to get the field from
+         * @param tree
+         *            location for error reporting
          * 
          * @return
          */
@@ -1368,10 +1365,22 @@ import com.sun.source.util.TreePath;
             }
         }
 
+        /**
+         * Overloaded method for convenience of dealing with
+         * AnnotatedTypeMirrors. See isClassCovered(TypeMirror type) below
+         * 
+         * @param type
+         * @return
+         */
         private boolean isClassCovered(AnnotatedTypeMirror type) {
             return isClassCovered(type.getUnderlyingType());
         }
 
+        /**
+         * 
+         * @param type
+         * @return true if the type name is in coveredClassStrings
+         */
         private boolean isClassCovered(TypeMirror type) {
             return coveredClassStrings.contains(type.toString());
         }
@@ -1385,6 +1394,8 @@ import com.sun.source.util.TreePath;
          * Long.class)
          * 
          * @param stringType
+         * @param tree
+         *            location for error reporting
          * 
          * @return
          */
@@ -1428,6 +1439,12 @@ import com.sun.source.util.TreePath;
 
         }
 
+        /**
+         * 
+         * @param anno
+         * @return the Class object for the value array of an annotation or null
+         *         if the annotation has no value array
+         */
         private Class<?> getAnnotationValueClass(AnnotationMirror anno) {
             if (AnnotationUtils.areSameIgnoringValues(anno, INTVAL)) {
                 return Long.class;
@@ -1452,6 +1469,8 @@ import com.sun.source.util.TreePath;
          * "java.lang.Integer" give int.class)
          * 
          * @param stringType
+         * @param tree
+         *            location for error reporting
          * 
          * @return
          */
@@ -1499,6 +1518,8 @@ import com.sun.source.util.TreePath;
          * on the underlying type of each element
          * 
          * @param typeList
+         * @param tree
+         *            location for error reporting
          * 
          * @return
          */
@@ -1522,6 +1543,8 @@ import com.sun.source.util.TreePath;
          * @param typeMirror
          *            the AnnotatedTypeMirror to pull values from and use to
          *            determine what type to cast the values to
+         * @param tree
+         *            location for error reporting
          * 
          * @return List of Object where each element is the same type as the
          *         underlyingType of typeMirror
@@ -1544,6 +1567,8 @@ import com.sun.source.util.TreePath;
          * @param typeMirror
          *            the AnnotatedTypeMirror to pull values from and use to
          *            determine what type to cast the values to
+         * @param tree
+         *            location for error reporting
          * 
          * @return List of Object where each element is the same type as the
          *         underlyingType of typeMirror
@@ -1588,6 +1613,9 @@ import com.sun.source.util.TreePath;
          * @param argTypes
          *            a List of AnnotatedTypeMirror elements
          * 
+         * @param tree
+         *            location for error reporting
+         *
          * @return an ArrayDeque containing List of Object where each list
          *         corresponds to the annotation values of an
          *         AnnotatedTypeMirror passed in.
@@ -1611,6 +1639,9 @@ import com.sun.source.util.TreePath;
          * @param newClass
          *            is in {int.class, short.class, byte.class, float.class} or
          *            their respective wrappers
+         * @param tree
+         *            location for error reporting
+         *
          */
         private void fixAnnotationValueObjectType(List<Object> listToFix,
                 Class<?> origClass, Class<?> newClass) {
@@ -1672,6 +1703,8 @@ import com.sun.source.util.TreePath;
          *            is evaluated using getClass to derived a Class object for
          *            passing to the other resultAnnotationHandler function
          * @param results
+         * @param tree
+         *            location for error reporting
          * 
          * @return
          */
@@ -1872,6 +1905,14 @@ import com.sun.source.util.TreePath;
             }
         }
 
+        /**
+         * Extract annotation in the Constant Value Checker's type hierarchy (if
+         * one exists)
+         * 
+         * @param atm
+         * 
+         * @return
+         */
         private AnnotationMirror getValueAnnotation(AnnotatedTypeMirror atm) {
             AnnotationMirror anno = atm.getAnnotationInHierarchy(UNKNOWNVAL);
             if (anno == null) {
@@ -1900,14 +1941,15 @@ import com.sun.source.util.TreePath;
         }
     }
 
+    /**
+     * 
+     * @param anno
+     * 
+     * @return true if anno is an IntVal or DoubleVal, false otheriwse
+     */
     private boolean isNumberAnnotation(AnnotationMirror anno) {
-        for (AnnotationMirror m : orderedNumberAnnotations) {
-            if (AnnotationUtils.areSameIgnoringValues(anno, m)) {
-                return true;
-            }
-        }
-
-        return false;
+        return AnnotationUtils.areSameIgnoringValues(anno, INTVAL)
+                || AnnotationUtils.areSameIgnoringValues(anno, DOUBLEVAL);
     }
 
 }
