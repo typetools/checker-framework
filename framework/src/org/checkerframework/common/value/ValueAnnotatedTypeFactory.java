@@ -158,12 +158,7 @@ import com.sun.source.util.TreePath;
             builder.setValue("value", valuesList);
             return builder.build();
         } else {
-            if (values.size() > MAX_VALUES) {
-                checker.report(Result.warning("too.many.values.accumulated",
-                        MAX_VALUES), checker.getVisitor().getCurrentPath()
-                        .getLeaf());
-            }
-            return UNKNOWNVAL;
+           return UNKNOWNVAL;
         }
     }
 
