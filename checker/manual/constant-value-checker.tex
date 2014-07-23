@@ -189,14 +189,6 @@ Some examples of these:
   values. Since the Constant Value Checker automatically changes types
   to \<@UnknownVal> after they exceed this maximum, it is an error to
   explicitly write annotations with more values than will be tracked.
-\item \code{''Basics.java:4: warning: [too.many.values.accumulated] An
-  annotations value array became longer than 10, the maximum length
-  allowed. Now treating the type as @UnknownVal.''}:
-
-  A type had more possible values than the maximum number tracked by
-  the Constant Value Tracker. When this happens, the annotated type of
-  the variable is automatically changed to \<@UnkownVal>.
-
  
 
 \end{itemize}

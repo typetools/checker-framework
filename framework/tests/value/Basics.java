@@ -1,6 +1,5 @@
 import org.checkerframework.common.value.qual.*;
 
-//:: warning: (too.many.values.accumulated)
 class Basics {
 
     public void boolTest() {
@@ -123,33 +122,7 @@ class Basics {
         @StringVal({ "test1" }) String c = (java.lang.String) b;
     }
 
-    void tooManyValues(int a){
-        int b = -1;
-        switch(a){
-        case 0: 
-            b = 0;
-        case 1:
-            b = 1;
-        case 2:
-            b = 2;
-        case 3:
-            b = 3;
-        case 4:
-            b = 4;
-        case 5:
-            b = 5;
-        case 6:
-            b = 6;
-        case 7:
-            b = 7;
-        case 8:
-            b = 8;
-        case 9:
-            b = 9;
-        }
-    } 
-
-    void tooManyValuesAnnotation(){
+   void tooManyValues(){
         //:: error: (too.many.values.given)
         @IntVal({1,2,3,4,5,6,7,8,9,10,11,12}) int a = 8;
     }
