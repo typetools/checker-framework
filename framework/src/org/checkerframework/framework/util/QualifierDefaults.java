@@ -60,7 +60,9 @@ public class QualifierDefaults {
     // TODO add visitor state to get the default annotations from the top down?
     // TODO apply from package elements also
     // TODO try to remove some dependencies (e.g. on factory)
-
+    //Whether or not to apply defaults to local variables that are also type variables
+    //for type systems that do not employ dataflow, this field should be false
+    private boolean typevarDefaulting = true;
     private boolean applyToTypeVar = false;
     private final Elements elements;
     private final AnnotatedTypeFactory atypeFactory;
@@ -122,6 +124,14 @@ public class QualifierDefaults {
         for (DefaultLocation location : locations) {
             addAbsoluteDefault(absoluteDefaultAnno, location);
         }
+    }
+
+    public boolean getTypevarDefaulting() {
+        return typevarDefaulting;
+    }
+
+    public void setTypevarDefaulting(final boolean doDefaults) {
+        typevarDefaulting = doDefaults;
     }
 
     /**
@@ -280,7 +290,8 @@ public class QualifierDefaults {
         //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
         if (elt != null) {
-            applyToTypeVar = elt.getKind() == ElementKind.LOCAL_VARIABLE && type.getKind() == TypeKind.TYPEVAR;
+            applyToTypeVar = elt.getKind() == ElementKind.LOCAL_VARIABLE && type.getKind() == TypeKind.TYPEVAR
+                          && typevarDefaulting;
             applyDefaultsElement(elt, type);
         }
     }
@@ -418,6 +429,8 @@ public class QualifierDefaults {
         private DefaultLocation location;
 
         private final DefaultApplierElementImpl impl;
+
+        //This flag is turned on, to allow defaulting of local variables that are also typevariables
         private final boolean applyToTypeVar;
 
         public DefaultApplierElement(AnnotatedTypeFactory atypeFactory, Element scope, AnnotatedTypeMirror type, boolean applyToTypeVar) {

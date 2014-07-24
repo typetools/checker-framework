@@ -52,30 +52,19 @@ import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceVisitor;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TypeHierarchy;
-import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.PluginUtil;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.*;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -1586,13 +1575,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             varTypeString = varType.toString(true);
         }
 
-        if (isLocalVariableAssignement && varType.getKind() == TypeKind.TYPEVAR
-                && varType.getAnnotations().isEmpty()) {
-            // If we have an unbound local variable that is a type variable,
-            // then we allow the assignment.
-            return;
-        }
-
         if (checker.hasOption("showchecks")) {
             long valuePos = positions.getStartPosition(root, valueTree);
             System.out.printf(
@@ -1835,8 +1817,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedExecutableType constructor, Tree src) {
         AnnotatedDeclaredType ret = (AnnotatedDeclaredType) constructor.getReturnType();
 
+        //When an interface is used as the identifier in an anonymous class (e.g. new Comparable() {})
+        //the constructor method will be Object.init() {} which has an Object return type
+        //When TypeHierarchy attempts to convert it to the supertype (e.g. Comparable) it will return
+        //null from asSuper and return false for the check.  Instead, copy the primary annotations
+        //to the declared type and then do a subtyping check
+        if( dt.getUnderlyingType().asElement().getKind().isInterface() &&
+            TypesUtils.isObject(ret.getUnderlyingType()) ) {
+
+            final AnnotatedDeclaredType retAsDt = AnnotatedTypes.deepCopy(dt);
+            retAsDt.replaceAnnotations(ret.getAnnotations());
+            ret = retAsDt;
+        }
+
         boolean b = atypeFactory.getTypeHierarchy().isSubtype(dt, ret) ||
-                atypeFactory.getTypeHierarchy().isSubtype(ret, dt);
+                    atypeFactory.getTypeHierarchy().isSubtype(ret, dt);
 
         if (!b) {
             checker.report(Result.failure("constructor.invocation.invalid",
@@ -1876,6 +1871,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         } finally {
             visitorState.setAssignmentContext(preAssCtxt);
         }
+    }
+
+    /**
+     * @return true if both types are type variables and outer contains inner
+     */
+    protected boolean testTypevarContainment(final AnnotatedTypeMirror inner,
+                                             final AnnotatedTypeMirror outer) {
+        if(inner.getKind() == TypeKind.TYPEVAR && outer.getKind() == TypeKind.TYPEVAR ) {
+
+            final AnnotatedTypeVariable innerAtv = (AnnotatedTypeVariable) inner;
+            final AnnotatedTypeVariable outerAtv = (AnnotatedTypeVariable) outer;
+
+            if (AnnotatedTypes.isMethodOverride(elements, innerAtv, outerAtv)) {
+                final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
+                return typeHierarchy.isSubtype(innerAtv.getEffectiveUpperBound(), outerAtv.getEffectiveUpperBound())
+                    && typeHierarchy.isSubtype(outerAtv.getEffectiveLowerBound(), innerAtv.getEffectiveLowerBound());
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -1932,8 +1947,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Check the return value.
         if ((overrider.getReturnType().getKind() != TypeKind.VOID)) {
-            boolean success = atypeFactory.getTypeHierarchy().isSubtype(overrider.getReturnType(),
-                    overridden.getReturnType());
+            final AnnotatedTypeMirror overriderReturn  = overrider.getReturnType();
+            final AnnotatedTypeMirror overriddenReturn = overridden.getReturnType();
+            boolean success = atypeFactory.getTypeHierarchy().isSubtype(overriderReturn, overriddenReturn);
+
+            //If both the overridden method have type variables as return types and both types were
+            //defined in their respective methods then, they can be covariant or invariant
+            //use super/subtypes for the overrides locations
+            if( !success ) {
+                success = testTypevarContainment(overriderReturn, overriddenReturn);
+            }
+
             if (checker.hasOption("showchecks")) {
                 long valuePos = positions.getStartPosition(root, overriderTree.getReturnType());
                 System.out.printf(
@@ -1962,6 +1986,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             overridden.getParameterTypes();
         for (int i = 0; i < overriderParams.size(); ++i) {
             boolean success = atypeFactory.getTypeHierarchy().isSubtype(overriddenParams.get(i), overriderParams.get(i));
+
+            if(!success) {
+                success = testTypevarContainment(overriddenParams.get(i), overriderParams.get(i));
+            }
             if (checker.hasOption("showchecks")) {
                 long valuePos = positions.getStartPosition(root, overriderTree.getParameters().get(i));
                 System.out.printf(

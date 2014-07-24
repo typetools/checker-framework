@@ -301,4 +301,25 @@ public final class TypesUtils {
         JavacTypes t = (JavacTypes) types;
         return t.getArrayType(componentType);
     }
+
+    public static boolean isBoxOf(TypeMirror declaredType, TypeMirror primitiveType) {
+        if(declaredType.getKind() != TypeKind.DECLARED) {
+            return false;
+        }
+
+        String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
+        switch (primitiveType.getKind()) {
+            case BOOLEAN:  return qualifiedName.equals("java.lang.Boolean");
+            case BYTE:     return qualifiedName.equals("java.lang.Byte");
+            case CHAR:     return qualifiedName.equals("java.lang.Character");
+            case DOUBLE:   return qualifiedName.equals("java.lang.Double");
+            case FLOAT:    return qualifiedName.equals("java.lang.Float");
+            case INT:      return qualifiedName.equals("java.lang.Integer");
+            case LONG:     return qualifiedName.equals("java.lang.Long");
+            case SHORT:    return qualifiedName.equals("java.lang.Short");
+
+            default:
+                return false;
+        }
+    }
 }
