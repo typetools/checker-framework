@@ -4,8 +4,7 @@ package org.checkerframework.framework.flow;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -16,13 +15,11 @@ import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.flow.util.MostSpecificTypeVariableAnnotator;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -169,7 +166,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 .getQualifierHierarchy();
         AnnotatedTypeMirror otherType = other.getType();
 
-        if (mostSpecific(qualHierarchy, getType(), otherType,
+        if (mostSpecific(analysis.getTypeFactory(), getType(), otherType,
                 backup == null ? null : backup.getType(), result)) {
             return analysis.createAbstractValue(result);
         } else {
@@ -183,80 +180,88 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      *
      * @return true iff result could be set to a uniquely most specific type
      */
-    private static boolean mostSpecific(QualifierHierarchy qualHierarchy,
+    private static boolean mostSpecific(AnnotatedTypeFactory typeFactory,
                                         AnnotatedTypeMirror a, AnnotatedTypeMirror b,
                                         AnnotatedTypeMirror backup, AnnotatedTypeMirror result) {
         boolean canContainEmpty = QualifierHierarchy.canHaveEmptyAnnotationSet(a)
                 && QualifierHierarchy.canHaveEmptyAnnotationSet(b)
                 && QualifierHierarchy.canHaveEmptyAnnotationSet(result);
 
-        for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
-            AnnotationMirror aAnno =
-                canContainEmpty ? a.getAnnotationInHierarchy(top)
-                                : a.getEffectiveAnnotationInHierarchy(top);
+        final TypeKind resultKind = result.getKind();
+        if( resultKind == TypeKind.TYPEVAR ) {
+            MostSpecificTypeVariableAnnotator.mostSpecificTypeVariable(
+                    typeFactory.getProcessingEnv().getTypeUtils(),
+                    typeFactory.getTypeHierarchy(),
+                    typeFactory.getQualifierHierarchy(),
+                    a, b, (AnnotatedTypeVariable) result);
 
-            AnnotationMirror bAnno =
-                canContainEmpty ? b.getAnnotationInHierarchy(top)
-                                : b.getEffectiveAnnotationInHierarchy(top);
+        } else {
+            final QualifierHierarchy qualHierarchy = typeFactory.getQualifierHierarchy();
+            for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+                AnnotationMirror aAnno =
+                        canContainEmpty ? a.getAnnotationInHierarchy(top)
+                                        : a.getEffectiveAnnotationInHierarchy(top);
 
-            if (qualHierarchy.isSubtype(a, b, aAnno, bAnno)) {
-                if (aAnno == null) {
-                    result.removeAnnotationInHierarchy(top);
+                AnnotationMirror bAnno =
+                        canContainEmpty ? b.getAnnotationInHierarchy(top)
+                                        : b.getEffectiveAnnotationInHierarchy(top);
+
+                if (qualHierarchy.isSubtype(a, b, aAnno, bAnno)) {
+                    if (aAnno == null) {
+                        result.removeAnnotationInHierarchy(top);
+                    } else {
+                        result.addAnnotation(aAnno);
+                    }
+                } else if (qualHierarchy.isSubtype(a, b, bAnno, aAnno)) {
+                    if (bAnno == null) {
+                        result.removeAnnotationInHierarchy(top);
+                    } else {
+                        result.addAnnotation(bAnno);
+                    }
                 } else {
-                    result.addAnnotation(aAnno);
+                    if (backup != null) {
+                        result.addAnnotation(backup.getAnnotationInHierarchy(top));
+                    } else {
+                        return false;
+                    }
                 }
-            } else if (qualHierarchy.isSubtype(a, b, bAnno, aAnno)) {
-                if (bAnno == null) {
-                    result.removeAnnotationInHierarchy(top);
+            }
+
+            if (resultKind == TypeKind.WILDCARD) {
+                AnnotatedWildcardType wResult = (AnnotatedWildcardType) result;
+                AnnotatedTypeMirror extendsBound = wResult.getExtendsBound();
+                extendsBound.clearAnnotations();
+                Collection<AnnotationMirror> extendsBound1 = getUpperBound(a);
+                Collection<AnnotationMirror> extendsBound2 = getUpperBound(b);
+                extendsBound.addAnnotations(mostSpecific(qualHierarchy,
+                        extendsBound1, extendsBound2));
+
+                //TODO: LOWER BOUND?
+
+            } else if (a.getKind() == TypeKind.ARRAY
+                    && b.getKind() == TypeKind.ARRAY) {
+                AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) result;
+                // for arrays, we have:
+                // ms(@A1 A @A2[],@B1 A @B2[]) = ms(@A1,@B1) A
+                // ms(@A2,@B2) []
+                AnnotatedArrayType aa = (AnnotatedArrayType) a;
+                AnnotatedArrayType bb = (AnnotatedArrayType) b;
+
+                return mostSpecific(typeFactory, aa.getComponentType(),
+                        bb.getComponentType(), null,
+                        aLubAnnotatedType.getComponentType());
+            } else if (resultKind == TypeKind.ARRAY) {
+                AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) result;
+                // copy annotations from the input array (either a or b)
+                if (a.getKind() == TypeKind.ARRAY) {
+                    copyArrayComponentAnnotations((AnnotatedArrayType) a, aLubAnnotatedType);
                 } else {
-                    result.addAnnotation(bAnno);
-                }
-            } else {
-                if (backup != null) {
-                    result.addAnnotation(backup.getAnnotationInHierarchy(top));
-                } else {
-                    return false;
+                    assert b.getKind() == TypeKind.ARRAY;
+                    copyArrayComponentAnnotations((AnnotatedArrayType) b, aLubAnnotatedType);
                 }
             }
         }
 
-        TypeKind kind = result.getKind();
-        if (kind == TypeKind.WILDCARD) {
-            AnnotatedWildcardType wResult = (AnnotatedWildcardType) result;
-            AnnotatedTypeMirror extendsBound = wResult.getExtendsBound();
-            extendsBound.clearAnnotations();
-            Collection<AnnotationMirror> extendsBound1 = getUpperBound(a);
-            Collection<AnnotationMirror> extendsBound2 = getUpperBound(b);
-            extendsBound.addAnnotations(mostSpecific(qualHierarchy,
-                    extendsBound1, extendsBound2));
-
-            //TODO: LOWER BOUND?
-
-        } else if (kind == TypeKind.TYPEVAR) {
-            updateTypeVariableResult((AnnotatedTypeVariable) result, a, b, qualHierarchy);
-
-        } else if (a.getKind() == TypeKind.ARRAY
-                && b.getKind() == TypeKind.ARRAY) {
-            AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) result;
-            // for arrays, we have:
-            // ms(@A1 A @A2[],@B1 A @B2[]) = ms(@A1,@B1) A
-            // ms(@A2,@B2) []
-            AnnotatedArrayType aa = (AnnotatedArrayType) a;
-            AnnotatedArrayType bb = (AnnotatedArrayType) b;
-
-            return mostSpecific(qualHierarchy, aa.getComponentType(),
-                    bb.getComponentType(), null,
-                    aLubAnnotatedType.getComponentType());
-        } else if (kind == TypeKind.ARRAY) {
-            AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) result;
-            // copy annotations from the input array (either a or b)
-            if (a.getKind() == TypeKind.ARRAY) {
-                copyArrayComponentAnnotations((AnnotatedArrayType) a, aLubAnnotatedType);
-            } else {
-                assert b.getKind() == TypeKind.ARRAY;
-                copyArrayComponentAnnotations((AnnotatedArrayType) b, aLubAnnotatedType);
-            }
-        }
         return true;
     }
 
@@ -287,47 +292,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         }
         return result;
     }
-
-    private static void updateTypeVariableResult(
-            final AnnotatedTypeVariable result,
-            final AnnotatedTypeMirror a, final AnnotatedTypeMirror b,
-            final QualifierHierarchy qualHierarchy ) {
-
-        AnnotatedTypeMirror upperBound = result.getUpperBound();
-        AnnotatedTypeMirror lowerBound = result.getLowerBound();
-
-        Collection<AnnotationMirror> upperBound1 = getUpperBound(a);
-        Collection<AnnotationMirror> upperBound2 = getUpperBound(b);
-
-        // TODO: how is it possible that uppBound1 or 2 does not have any
-        // annotations?
-        if (upperBound1.size() != 0 && upperBound2.size() != 0) {
-            upperBound.clearAnnotations();
-            upperBound.addAnnotations(mostSpecific(qualHierarchy,
-                    upperBound1, upperBound2));
-        }
-
-        final AnnotatedTypeMirror lowerBoundA =
-                (a instanceof AnnotatedTypeVariable ) ? ((AnnotatedTypeVariable) a).getLowerBound()
-                        : null;
-
-        final AnnotatedTypeMirror lowerBoundB =
-                (b instanceof AnnotatedTypeVariable ) ? ((AnnotatedTypeVariable) b).getLowerBound()
-                        : null;
-
-        if( lowerBoundA != null && lowerBoundB != null ) {
-            //TODO: In this case don't we want the less specific annotation in order to have a narrower range?
-            //TODO: WHAT IF WE INFERRED A MORE COMPLEX LOWER BOUND, TODO ASK WERNER
-            lowerBound.addAnnotations(mostSpecific(qualHierarchy, lowerBoundA.getAnnotations(), lowerBoundB.getAnnotations()));
-        } else if( lowerBoundA != null ) {
-            lowerBound.replaceAnnotations( lowerBoundA.getAnnotations() );
-        } else if( lowerBoundB != null ) {
-            lowerBound.replaceAnnotations( lowerBoundB.getAnnotations() );
-        } else {
-            //Bottom should be placed on the bound.  This should happen where result is created
-        }
-    }
-
 
     @Override
     public boolean equals(Object obj) {
