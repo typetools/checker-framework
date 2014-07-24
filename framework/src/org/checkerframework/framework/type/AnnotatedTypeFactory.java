@@ -56,6 +56,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.explicit.ElementAnnotationUtil;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
@@ -389,7 +390,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return  the type relations class to check type subtyping
      */
     protected TypeHierarchy createTypeHierarchy() {
-        return new TypeHierarchy(checker, getQualifierHierarchy());
+        return new DefaultTypeHierarchy(checker, getQualifierHierarchy(),
+                                        checker.hasOption("ignoreRawTypeArguments"),
+                                        checker.hasOption("invariantArrays"));
     }
 
     public final TypeHierarchy getTypeHierarchy() {
@@ -638,7 +641,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             type = AnnotatedTypes.deepCopy(indexTypes.get(elt));
         } else if (decl == null && (indexTypes == null || !indexTypes.containsKey(elt))) {
             type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
-            TypeFromElement.annotate(type, elt);
+            ElementAnnotationUtil.applyElementAnnotations(type, elt, this);
 
             if (elt instanceof ExecutableElement
                     || elt instanceof VariableElement) {
@@ -1043,7 +1046,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (type.getAnnotations().isEmpty() &&
                         type.getUpperBound().getAnnotations().isEmpty() &&
                         tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
-                    // TODO does this ever happen?
+                    ElementAnnotationUtil.applyElementAnnotations(type, tpelt, p);
                     TypeFromElement.annotate(type, tpelt);
                 }
                 super.visitTypeVariable(type, p);

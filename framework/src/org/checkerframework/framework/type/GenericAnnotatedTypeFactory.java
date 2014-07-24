@@ -833,34 +833,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * Applies the annotations inferred by the org.checkerframework.dataflow analysis to the type {@code type}.
      */
     protected void applyInferredAnnotations(AnnotatedTypeMirror type, Value as) {
-        AnnotatedTypeMirror inferred = as.getType();
-        for (AnnotationMirror top : getQualifierHierarchy().getTopAnnotations()) {
-            AnnotationMirror inferredAnnotation;
-            if (QualifierHierarchy.canHaveEmptyAnnotationSet(type)) {
-                inferredAnnotation = inferred.getAnnotationInHierarchy(top);
-            } else {
-                inferredAnnotation = inferred.getEffectiveAnnotationInHierarchy(top);
-            }
-            if (inferredAnnotation == null) {
-                // We inferred "no annotation" for this hierarchy.
-                type.removeAnnotationInHierarchy(top);
-            } else {
-                // We inferred an annotation.
-                AnnotationMirror present = type
-                        .getAnnotationInHierarchy(top);
-                if (present != null) {
-                    if (getQualifierHierarchy().isSubtype(
-                            inferredAnnotation, present)) {
-                        // TODO: why is the above check needed?
-                        // Shouldn't inferred qualifiers always be
-                        // subtypes?
-                        type.replaceAnnotation(inferredAnnotation);
-                    }
-                } else {
-                    type.addAnnotation(inferredAnnotation);
-                }
-            }
-        }
+        DefaultInferredTypesApplier.applyInferredType(getQualifierHierarchy(), type, as.getType());
     }
 
     @Override

@@ -19,12 +19,11 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.TypeQualifiers;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TypeHierarchy;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -50,6 +49,7 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         this.postInit();
 
+        this.defaults.setTypevarDefaulting(false);
         this.defaults.addAbsoluteDefault(UNKNOWN, DefaultLocation.ALL);
     }
 
@@ -248,86 +248,73 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   protected TypeHierarchy createTypeHierarchy() {
-      return new KeyForTypeHierarchy(checker, getQualifierHierarchy());
+      return new KeyForTypeHierarchy(checker, getQualifierHierarchy(),
+                                     checker.hasOption("ignoreRawTypeArguments"),
+                                     checker.hasOption("invariantArrays"));
   }
 
-  private class KeyForTypeHierarchy extends TypeHierarchy {
+  protected class KeyForTypeHierarchy extends DefaultTypeHierarchy {
 
-      public KeyForTypeHierarchy(BaseTypeChecker checker, QualifierHierarchy qualifierHierarchy) {
-          super(checker, qualifierHierarchy);
+      public KeyForTypeHierarchy(BaseTypeChecker checker, QualifierHierarchy qualifierHierarchy,
+                                 boolean ignoreRawTypes, boolean invariantArrayComponents) {
+          super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents);
       }
 
       @Override
-      public final boolean isSubtype(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
-          if (lhs.getKind() == TypeKind.TYPEVAR &&
-                  rhs.getKind() == TypeKind.TYPEVAR) {
-              // TODO: Investigate whether there is a nicer and more proper way to
-              // get assignments between two type variables working.
-              if (lhs.getAnnotations().isEmpty()) {
-                  return true;
-              }
-          }
+      public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, VisitHistory visited) {
           // Otherwise Covariant would cause trouble.
-          if (rhs.hasAnnotation(KeyForBottom.class)) {
+          if (subtype.hasAnnotation(KeyForBottom.class)) {
               return true;
           }
-          return super.isSubtype(rhs, lhs);
+          return super.isSubtype(subtype, supertype, visited);
       }
 
-      @Override
-      protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
-          if (ignoreRawTypeArguments(rhs, lhs)) {
-              return true;
-          }
 
-          List<AnnotatedTypeMirror> rhsTypeArgs = rhs.getTypeArguments();
-          List<AnnotatedTypeMirror> lhsTypeArgs = lhs.getTypeArguments();
-
-          if (rhsTypeArgs.isEmpty() || lhsTypeArgs.isEmpty())
-              return true;
-
-          TypeElement lhsElem = (TypeElement) lhs.getUnderlyingType().asElement();
-          // TypeElement rhsElem = (TypeElement) lhs.getUnderlyingType().asElement();
-          // the following would be needed if Covariant were per type parameter
-          // AnnotatedDeclaredType lhsDecl = currentATF.fromElement(lhsElem);
-          // AnnotatedDeclaredType rhsDecl = currentATF.fromElement(rhsElem);
-          // List<AnnotatedTypeMirror> lhsTVs = lhsDecl.getTypeArguments();
-          // List<AnnotatedTypeMirror> rhsTVs = rhsDecl.getTypeArguments();
-
-          // TODO: implementation of @Covariant should be done in the standard TypeHierarchy
-          int[] covarVals = null;
-          if (lhsElem.getAnnotation(Covariant.class) != null) {
-              covarVals = lhsElem.getAnnotation(Covariant.class).value();
-          }
-
-
-          if (lhsTypeArgs.size() != rhsTypeArgs.size()) {
-              // This test fails e.g. for casts from a type with one type
-              // argument to a type with two type arguments.
-              // See test case nullness/generics/GenericsCasts
-              // TODO: shouldn't the type be brought to a common type before
-              // this?
-              return true;
-          }
-
-          for (int i = 0; i < lhsTypeArgs.size(); ++i) {
-              boolean covar = false;
-              if (covarVals != null) {
-                  for (int cvv = 0; cvv < covarVals.length; ++cvv) {
-                      if (covarVals[cvv] == i) {
-                          covar = true;
-                      }
+      protected boolean isCovariant(final int typeArgIndex, final int[] covariantArgIndexes) {
+          if(covariantArgIndexes != null) {
+              for (int covariantIndex : covariantArgIndexes) {
+                  if (typeArgIndex == covariantIndex) {
+                      return true;
                   }
               }
+          }
 
-              if (covar) {
-                  if (!isSubtype(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
-                      // TODO: still check whether isSubtypeAsTypeArgument returns true.
-                      // This handles wildcards better.
-                      return isSubtypeAsTypeArgument(rhsTypeArgs.get(i), lhsTypeArgs.get(i));
-              } else {
-                  if (!isSubtypeAsTypeArgument(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
-                      return false;
+          return false;
+      }
+      @Override
+      public Boolean visitTypeArgs(AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype,
+                                      VisitHistory visited,  boolean subtypeIsRaw, boolean supertypeIsRaw) {
+          final boolean ignoreTypeArgs = ignoreRawTypes && (subtypeIsRaw || supertypeIsRaw);
+
+          if( !ignoreTypeArgs ) {
+
+              //TODO: Make an option for honoring this annotation in DefaultTypeHierarchy?
+              final TypeElement supertypeElem = (TypeElement) supertype.getUnderlyingType().asElement();
+              int[] covariantArgIndexes = null;
+              if (supertypeElem.getAnnotation(Covariant.class) != null) {
+                  covariantArgIndexes = supertypeElem.getAnnotation(Covariant.class).value();
+              }
+
+              final List<? extends AnnotatedTypeMirror> subtypeTypeArgs   = subtype.getTypeArguments();
+              final List<? extends AnnotatedTypeMirror> supertypeTypeArgs = supertype.getTypeArguments();
+
+              if( subtypeTypeArgs.isEmpty() || supertypeTypeArgs.isEmpty() ) {
+                  return true;
+              }
+
+              if (supertypeTypeArgs.size() > 0) {
+                  for (int i = 0; i < supertypeTypeArgs.size(); i++) {
+                      final AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);
+                      final AnnotatedTypeMirror subTypeArg   = subtypeTypeArgs.get(i);
+
+                      if(subtypeIsRaw || supertypeIsRaw) {
+                          rawnessComparer.isValid(subtype, supertype, visited);
+                      } else {
+                          if (!isContainedBy(subTypeArg, superTypeArg, visited, isCovariant(i, covariantArgIndexes))) {
+                              return false;
+                          }
+                      }
+                  }
               }
           }
 
