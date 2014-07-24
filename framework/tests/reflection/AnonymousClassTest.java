@@ -7,6 +7,8 @@ import java.lang.reflect.Method;
 
 public class AnonymousClassTest {
     /**
+     * To build/run outside of the JUnit tests:
+     * 
      * Build with $CHECKERFRAMEWOKR/framework/tests/build/ on the classpath.
      * Need to either use Java 8 or the langtools compiler,
      * because annotations on cast are used.

@@ -170,6 +170,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private Map<Element, Set<AnnotationMirror>> cacheDeclAnnos;
 
     /**
+     * A set containing declaration annotations that should be inherited.
+     * A declaration annotation will be inherited if it is in this set,
+     * or if it has the meta-annotation @InheritedAnnotation.
+     */
+    private final Set<AnnotationMirror> inheritedAnnotations = AnnotationUtils.
+            createAnnotationSet();
+
+    /**
      * The checker to use for option handling and resource management.
      */
     protected final BaseTypeChecker checker;
@@ -245,6 +253,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         addAliasedDeclAnnotation(org.jmlspecs.annotation.Pure.class,
                 org.checkerframework.dataflow.qual.Pure.class,
                 AnnotationUtils.fromClass(elements, org.checkerframework.dataflow.qual.Pure.class));
+
+        addInheritedAnnotation(AnnotationUtils.fromClass(elements,
+                org.checkerframework.dataflow.qual.Pure.class));
+        addInheritedAnnotation(AnnotationUtils.fromClass(elements,
+                org.checkerframework.dataflow.qual.SideEffectFree.class));
+        addInheritedAnnotation(AnnotationUtils.fromClass(elements,
+                org.checkerframework.dataflow.qual.Deterministic.class));
+        addInheritedAnnotation(AnnotationUtils.fromClass(elements,
+                org.checkerframework.dataflow.qual.TerminatesExecution.class));
+        addInheritedAnnotation(AnnotationUtils.fromClass(elements,
+                org.checkerframework.dataflow.qual.LockingFree.class));
 
         if (this.getClass().equals(AnnotatedTypeFactory.class)) {
             this.buildIndexTypes();
@@ -1749,6 +1768,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Adds the annotation {@code annotation} in the set of declaration
+     * annotations that should be inherited. A declaration annotation
+     * will be inherited if it is in this list,  or if it has the
+     * meta-annotation @InheritedAnnotation.
+     */
+    protected void addInheritedAnnotation(AnnotationMirror annotation) {
+        inheritedAnnotations.add(annotation);
+    }
+
+    /**
      * A convenience method that converts a {@link TypeMirror} to an {@link
      * AnnotatedTypeMirror} using {@link AnnotatedTypeMirror#createType}.
      *
@@ -2320,18 +2349,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (overriddenMethods != null) {
             for (Map.Entry<AnnotatedDeclaredType, ExecutableElement>
                     pair : overriddenMethods.entrySet()) {
+                // Getting annotations from super implementation.
                 AnnotatedDeclaredType overriddenType = pair.getKey();
                 AnnotatedExecutableType overriddenMethod = AnnotatedTypes
                         .asMemberOf(types, this, overriddenType,pair.getValue());
-                ExecutableElement parentElt = overriddenMethod.getElement();
+                ExecutableElement superElt = overriddenMethod.getElement();
+                Set<AnnotationMirror> superAnnos = getDeclAnnotations(superElt);
 
-                List<Pair<AnnotationMirror, AnnotationMirror>>
-                        inheritableParentAnnotations =
-                        getDeclAnnotationWithMetaAnnotation(parentElt,
-                                InheritedAnnotation.class);
-                for (Pair<AnnotationMirror, AnnotationMirror>
-                        parentAnnotation : inheritableParentAnnotations) {
-                    results.add(parentAnnotation.first);
+                for (AnnotationMirror annotation : superAnnos) {
+                    AnnotationMirror inheritedAnnotation = getDeclAnnotation(
+                            annotation.getAnnotationType().asElement(),
+                            InheritedAnnotation.class);
+
+                    if (inheritedAnnotation != null ||
+                            AnnotationUtils.containsSameIgnoringValues(
+                                    inheritedAnnotations, annotation)) {
+                        results.add(annotation);
+                    }
                 }
             }
         }
