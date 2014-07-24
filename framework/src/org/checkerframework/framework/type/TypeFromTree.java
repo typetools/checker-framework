@@ -22,6 +22,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.explicit.ElementAnnotationUtil;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -186,11 +187,11 @@ abstract class TypeFromTree extends
             // e.g. see Ternary test case for Nullness Checker.
             // TODO: Can we adapt asSuper to handle those correctly?
 
-            if (trueType!=null && trueType.equals(falseType)) {
+            if (trueType != null && trueType.equals(falseType)) {
                 return trueType;
             }
 
-            List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>();
+            List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>(2);
             types.add(trueType);
             types.add(falseType);
             AnnotatedTypes.annotateAsLub(f.processingEnv, f, alub, types);
@@ -459,7 +460,7 @@ abstract class TypeFromTree extends
             result.clearAnnotations();
             Element elt = TreeUtils.elementFromDeclaration(node);
 
-            TypeFromElement.annotate(result, elt);
+            ElementAnnotationUtil.applyElementAnnotations(result, elt, f);
             return result;
 
             /* An alternative I played around with. It unfortunately
@@ -481,7 +482,7 @@ abstract class TypeFromTree extends
             // However, the underlying javac Type doesn't contain
             // type argument annotations.
             Element elt = TreeUtils.elementFromDeclaration(node);
-            TypeFromElement.annotate(result, elt);
+            ElementAnnotationUtils.applyElementAnnotations(result, elt, f);
 
             return result;*/
         }
@@ -496,7 +497,7 @@ abstract class TypeFromTree extends
                 (AnnotatedExecutableType)f.toAnnotatedType(elt.asType(), false);
             result.setElement(elt);
 
-            TypeFromElement.annotate(result, elt);
+            ElementAnnotationUtil.applyElementAnnotations(result, elt, f);
 
             return result;
         }
@@ -523,7 +524,7 @@ abstract class TypeFromTree extends
             TypeElement elt = TreeUtils.elementFromDeclaration(node);
             AnnotatedTypeMirror result = f.toAnnotatedType(elt.asType(), true);
 
-            TypeFromElement.annotate(result, elt);
+            ElementAnnotationUtil.applyElementAnnotations(result, elt, f);
 
             return result;
         }
@@ -625,8 +626,8 @@ abstract class TypeFromTree extends
             AnnotatedTypeVariable result = (AnnotatedTypeVariable) f.type(node);
             List<? extends AnnotationMirror> annotations = InternalUtils.annotationsFromTree(node);
 
-            result.addAnnotations(annotations);
-            result.getUpperBound().addAnnotations(annotations);
+            result.getLowerBound().replaceAnnotations(annotations);
+            result.getUpperBound().replaceAnnotations(annotations);
 
             switch (bounds.size()) {
             case 0: break;

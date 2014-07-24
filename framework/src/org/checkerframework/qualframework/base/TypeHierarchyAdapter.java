@@ -1,21 +1,23 @@
 package org.checkerframework.qualframework.base;
 
-import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
+import org.checkerframework.framework.type.TypeHierarchy_orig;
+
+import javax.lang.model.element.AnnotationMirror;
 
 /** Adapter class for {@link TypeHierarchy}, extending
  * {@link org.checkerframework.framework.type.TypeHierarchy org.checkerframework.framework.type.TypeHierarchy}.
  */
-class TypeHierarchyAdapter<Q> extends org.checkerframework.framework.type.TypeHierarchy {
-    private TypeHierarchy<Q> underlying;
+class TypeHierarchyAdapter<Q> extends TypeHierarchy_orig implements org.checkerframework.framework.type.TypeHierarchy {
+    private final TypeHierarchy<Q> underlying;
+
     /** A copy of {@link underlying} with a more precise type, or null if
      * {@link underlying} is not a {@link DefaultTypeHierarchy} instance.
      */
     private DefaultTypeHierarchy<Q> defaultUnderlying;
-    private TypeMirrorConverter<Q> converter;
+    private final TypeMirrorConverter<Q> converter;
 
     public TypeHierarchyAdapter(TypeHierarchy<Q> underlying,
             TypeMirrorConverter<Q> converter,
@@ -46,6 +48,11 @@ class TypeHierarchyAdapter<Q> extends org.checkerframework.framework.type.TypeHi
         return underlying.isSubtype(
                 converter.getQualifiedType(subtype),
                 converter.getQualifiedType(supertype));
+    }
+
+    @Override
+    public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top) {
+        return false;
     }
 
     boolean superIsSubtype(QualifiedTypeMirror<Q> subtype, QualifiedTypeMirror<Q> supertype) {

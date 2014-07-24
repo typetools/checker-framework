@@ -2,11 +2,10 @@
 import java.util.Collections;
 import java.util.List;
 
-public class InferListParam<V> {
-    
-    protected List<Integer> fieldValues;
+class InferListParam<V> {
+    List<Integer> fieldValues;
 
-    public InferListParam() {
+    InferListParam() {
         fieldValues = Collections.emptyList();
     }
 }

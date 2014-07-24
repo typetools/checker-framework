@@ -3,8 +3,6 @@ package org.checkerframework.checker.experimental.tainting_qual;
 import java.util.Collection;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.QualifiedNameable;
 
 import org.checkerframework.javacutil.AnnotationUtils;
 

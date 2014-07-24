@@ -2,7 +2,6 @@ package org.checkerframework.framework.flow;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -85,7 +84,7 @@ public class CFCFGBuilder extends CFGBuilder {
     public ControlFlowGraph run(
             CompilationUnitTree root, ProcessingEnvironment env,
             UnderlyingAST underlyingAST) {
-        declaredClasses = new LinkedList<>();
+        declaredClasses.clear();
         CFTreeBuilder builder = new CFTreeBuilder(env);
         PhaseOneResult phase1result = new CFCFGTranslationPhaseOne().process(
                 root, env, underlyingAST, exceptionalExitLabel, builder, factory);
