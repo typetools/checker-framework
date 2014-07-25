@@ -1066,7 +1066,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         type.getUpperBound().getAnnotations().isEmpty() &&
                         tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
                     ElementAnnotationUtil.applyElementAnnotations(type, tpelt, p);
-                    TypeFromElement.annotate(type, tpelt);
                 }
                 super.visitTypeVariable(type, p);
                 visited.remove(tpelt);
