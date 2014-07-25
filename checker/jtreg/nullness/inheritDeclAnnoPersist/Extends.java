@@ -23,6 +23,17 @@ public class Extends {
         return TestWrapper.wrap("@Override void setg() {}\n");
     }
 
+    // Issue 342
+    // We do not want that behavior with related annotations. @Pure should
+    // override @SideEffectFree.
+    @ADescriptions({
+        @ADescription(annotation = "org/checkerframework/dataflow/qual/Pure"),
+        @ADescription(annotation = "org/checkerframework/dataflow/qual/SideEffectFree")
+    })
+    public String m3() {
+        return TestWrapper.wrap("@Pure @Override void seth() {}\n");
+    }
+
 }
 
 class TestWrapper {
