@@ -344,6 +344,14 @@ public abstract class SourceChecker
     /** The line separator */
     private final static String LINE_SEPARATOR = System.getProperty("line.separator").intern();
 
+    @Override
+    public final void init(ProcessingEnvironment env) {
+        super.init(env);
+        // The processingEnvironment field will also be set by the superclass' init method.
+        // This is used to trigger AggregateChecker's setProcessingEnvironment.
+        setProcessingEnvironment(env);
+    }
+
     /**
      * @return the {@link ProcessingEnvironment} that was supplied to this
      *         checker
