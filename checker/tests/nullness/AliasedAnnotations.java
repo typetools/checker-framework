@@ -12,8 +12,8 @@ public class AliasedAnnotations {
     @edu.umd.cs.findbugs.annotations.NonNull Object nn3 = null;
     //:: error: (assignment.type.incompatible)
     @javax.annotation.Nonnull Object nn4 = null;
-    //:: error: (assignment.type.incompatible)
-    @javax.validation.constraints.NotNull Object nn5 = null;
+    // Invalid location for NonNull :: error: (assignment.type.incompatible)
+    // @javax.validation.constraints.NotNull Object nn5 = null;
     //:: error: (assignment.type.incompatible)
     @org.eclipse.jdt.annotation.NonNull Object nn6 = null;
     //:: error: (assignment.type.incompatible)
@@ -33,60 +33,55 @@ public class AliasedAnnotations {
     //:: error: (dereference.of.nullable)
     nble.toString();
   }
-  
+
   void useNullableAnnotations3(@edu.umd.cs.findbugs.annotations.Nullable  Object nble) {
     //:: error: (dereference.of.nullable)
     nble.toString();
   }
-  
+
   void useNullableAnnotations4(@edu.umd.cs.findbugs.annotations.CheckForNull  Object nble) {
     //:: error: (dereference.of.nullable)
     nble.toString();
   }
-  
+
   void useNullableAnnotations5(@edu.umd.cs.findbugs.annotations.UnknownNullness  Object nble) {
     //:: error: (dereference.of.nullable)
     nble.toString();
   }
-  
+
   void useNullableAnnotations6(@javax.annotation.Nullable  Object nble) {
     //:: error: (dereference.of.nullable)
     nble.toString();
   }
-  
+
   void useNullableAnnotations7(@javax.annotation.CheckForNull  Object nble) {
     //:: error: (dereference.of.nullable)
     nble.toString();
   }
-  
+
   void useNullableAnnotations9(@org.eclipse.jdt.annotation.Nullable  Object nble) {
     //:: error: (dereference.of.nullable)
     nble.toString();
   }
-  
+
   void useNullableAnnotations10(@org.jetbrains.annotations.Nullable  Object nble) {
     //:: error: (dereference.of.nullable)
     nble.toString();
   }
-  
-  void useNullableAnnotations11(@org.netbeans.api.annotations.common.CheckForNull  Object nble) {
-    //:: error: (dereference.of.nullable)
-    nble.toString();
-  }
-  
+
   void useNullableAnnotations12(@org.netbeans.api.annotations.common.NullAllowed  Object nble) {
     //:: error: (dereference.of.nullable)
     nble.toString();
   }
-  
+
   void useNullableAnnotations13(@org.netbeans.api.annotations.common.NullUnknown  Object nble) {
     //:: error: (dereference.of.nullable)
     nble.toString();
   }
-  
+
   void useNullableAnnotations14(@org.jmlspecs.annotation.Nullable  Object nble) {
     //:: error: (dereference.of.nullable)
     nble.toString();
   }
-  
+
 }
