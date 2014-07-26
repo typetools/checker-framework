@@ -1,4 +1,4 @@
-package edu.umd.cs.findbugs.annotations;
+package com.sun.istack.internal;
 
 import java.lang.annotation.*;
 
@@ -8,5 +8,5 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
 @TypeQualifier
-public @interface CheckForNull {
+public @interface Nullable {
 }

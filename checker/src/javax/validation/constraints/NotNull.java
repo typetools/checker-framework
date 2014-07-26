@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER})
 @TypeQualifier
 public @interface NotNull {
     // The following annotation attributes are allowed in source code,
