@@ -1,8 +1,10 @@
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 class Super {
     Object f;
     Object g;
+    Object h;
 
     @EnsuresNonNull("f")
     void setf() {
@@ -11,6 +13,11 @@ class Super {
 
     void setg() {
         g = null;
+    }
+
+    @SideEffectFree
+    void seth() {
+        h = null;
     }
 
 }

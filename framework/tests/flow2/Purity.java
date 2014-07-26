@@ -191,14 +191,12 @@ class Purity {
      }
      class Sub extends Super {
          @Pure int m1(int arg) { return 0; }
-         //:: error: (purity.invalid.overriding)
          int m2(int arg) { return 0; }
          @Pure int m3(int arg) { return 0; }
          int m4(int arg) { return 0; }
      }
  
      class MyClass extends Object {
-         //:: error: (purity.invalid.overriding)
          public int hashCode() { return 42; }
      }
 
