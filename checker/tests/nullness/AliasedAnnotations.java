@@ -7,7 +7,7 @@ public class AliasedAnnotations {
     //:: error: (assignment.type.incompatible)
     @org.checkerframework.checker.nullness.qual.NonNull Object nn1 = null;
     //:: error: (assignment.type.incompatible)
-    @com.sun.istack.NotNull Object nn2 = null;
+    @com.sun.istack.internal.NotNull Object nn2 = null;
     //:: error: (assignment.type.incompatible)
     @edu.umd.cs.findbugs.annotations.NonNull Object nn3 = null;
     //:: error: (assignment.type.incompatible)
@@ -29,7 +29,7 @@ public class AliasedAnnotations {
     nble.toString();
   }
 
-  void useNullableAnnotations2(@com.sun.istack.Nullable  Object nble) {
+  void useNullableAnnotations2(@com.sun.istack.internal.Nullable  Object nble) {
     //:: error: (dereference.of.nullable)
     nble.toString();
   }
