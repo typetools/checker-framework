@@ -73,6 +73,7 @@ public class PersistUtil {
         // And the Nullness qualifiers
         sb.append("import org.checkerframework.framework.qual.DefaultQualifier;\n");
         sb.append("import org.checkerframework.checker.nullness.qual.*;\n");
+        sb.append("import org.checkerframework.dataflow.qual.*;\n");
 
         sb.append("\n");
         boolean isSnippet = !(compact.startsWith("class")
