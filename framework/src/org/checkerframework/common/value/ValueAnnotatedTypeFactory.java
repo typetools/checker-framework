@@ -142,7 +142,7 @@ import com.sun.source.util.TreePath;
 
     /**
      * Creates an annotation of the name given with the set of values given.
-     * Issues a checker warning and return UNKNOWNVAL if values.size >
+     * Issues a checker warning and return UNKNOWNVAL if values.size &gt;
      * MAX_VALUES
      * 
      * @param name

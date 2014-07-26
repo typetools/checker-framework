@@ -30,7 +30,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     }
 
     /**
-     * Checks to ensure any constant value annotation has <= MAX_VALUES number of values provided. Otherwise issues an error.
+     * Issues an error if any constant-value annotation has &gt; MAX_VALUES number of values provided.
      */
     @Override
     public Void visitAnnotation(AnnotationTree tree, Void p){
