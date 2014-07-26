@@ -94,7 +94,7 @@ public class NullnessAnnotatedTypeFactory
 
         // If you update the following, also update ../../../manual/nullness-checker.tex .
         // Aliases for @Nonnull:
-        addAliasedAnnotation(com.sun.istack.NotNull.class, NONNULL);
+        addAliasedAnnotation(com.sun.istack.internal.NotNull.class, NONNULL);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.NonNull.class, NONNULL);
         addAliasedAnnotation(javax.annotation.Nonnull.class, NONNULL);
         addAliasedAnnotation(javax.validation.constraints.NotNull.class, NONNULL);
@@ -104,7 +104,7 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(org.jmlspecs.annotation.NonNull.class, NONNULL);
 
         // Aliases for @Nullable:
-        addAliasedAnnotation(com.sun.istack.Nullable.class, NULLABLE);
+        addAliasedAnnotation(com.sun.istack.internal.Nullable.class, NULLABLE);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.CheckForNull.class, NULLABLE);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.Nullable.class, NULLABLE);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.UnknownNullness.class, NULLABLE);
