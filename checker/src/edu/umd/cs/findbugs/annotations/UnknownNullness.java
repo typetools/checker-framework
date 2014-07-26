@@ -5,8 +5,8 @@ import java.lang.annotation.*;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Retention(RetentionPolicy.CLASS)
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
 @TypeQualifier
 public @interface UnknownNullness {
 }
