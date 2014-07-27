@@ -21,8 +21,16 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.qual.PolyAll;
-import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
+import org.checkerframework.framework.type.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.ListTreeAnnotator;
+import org.checkerframework.framework.type.PropagationTreeAnnotator;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TreeAnnotator;
+import org.checkerframework.framework.type.TypeAnnotator;
 import org.checkerframework.framework.util.DependentTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -116,6 +124,12 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(org.netbeans.api.annotations.common.NullAllowed.class, NULLABLE);
         addAliasedAnnotation(org.netbeans.api.annotations.common.NullUnknown.class, NULLABLE);
         addAliasedAnnotation(org.jmlspecs.annotation.Nullable.class, NULLABLE);
+
+        // Add Java 7 compatibility annotations:
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.NullableDecl.class, NULLABLE);
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.PolyNullDecl.class, POLYNULL);
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.NonNullDecl.class, NONNULL);
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.MonotonicNonNullDecl.class, MONOTONIC_NONNULL);
 
         // TODO: These heuristics are just here temporarily. They all either
         // need to be replaced, or carefully checked for correctness.
