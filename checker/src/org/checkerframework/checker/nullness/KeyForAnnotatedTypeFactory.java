@@ -19,11 +19,11 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -50,6 +50,9 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
 
         this.defaults.addAbsoluteDefault(UNKNOWN, DefaultLocation.ALL);
+
+        // Add Java 7 compatibility annotation:
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.KeyForDecl.class, KEYFOR);
     }
 
   /* TODO: we currently do not substitute field types.
