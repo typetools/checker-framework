@@ -14,11 +14,15 @@ import org.checkerframework.checker.nullness.qual.Covariant;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -37,12 +41,13 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
 @TypeQualifiers({ KeyFor.class, UnknownKeyFor.class, KeyForBottom.class})
-public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class KeyForAnnotatedTypeFactory extends
+    GenericAnnotatedTypeFactory<CFValue, CFStore, KeyForTransfer, KeyForAnalysis> {
 
     protected final AnnotationMirror UNKNOWN, KEYFOR;
 
     public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(checker, false);
+        super(checker, true);
 
         KEYFOR = AnnotationUtils.fromClass(elements, KeyFor.class);
         UNKNOWN = AnnotationUtils.fromClass(elements, UnknownKeyFor.class);
