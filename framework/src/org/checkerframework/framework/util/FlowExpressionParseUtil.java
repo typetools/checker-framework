@@ -42,10 +42,12 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type.ClassType;
 
@@ -221,6 +223,20 @@ public class FlowExpressionParseUtil {
                     receiverType = ((DeclaredType)receiverType).getEnclosingType();
                 }
 
+                if (fieldElem == null) { // Try static fields of the enclosing class
+                    Element classElem = context.atypeFactory.getTreeUtils().getElement(TreeUtils.pathTillClass(path));
+                    receiverType = ElementUtils.getType(classElem);
+
+                    // Search for field in each enclosing class.
+                    while (receiverType.getKind() == TypeKind.DECLARED) {
+                        fieldElem = resolver.findField(s, receiverType, path);
+                        if (fieldElem != null) {
+                            break;
+                        }
+                        receiverType = ((DeclaredType)receiverType).getEnclosingType();
+                    }
+                }
+
                 if (fieldElem == null || fieldElem.getKind() != ElementKind.FIELD) {
                     throw constructParserException(s); // TODO: It is poor design to use exceptions to pass information around. We should change this.
                 }
@@ -255,7 +271,7 @@ public class FlowExpressionParseUtil {
                     throw constructParserException(s);
                 }
             }
-        } else if (parameterMatcher.matches() && allowParameter) {
+        } else if (parameterMatcher.matches() && allowParameter && context.arguments != null) {
             // parameter syntax
             int idx = -1;
             try {
