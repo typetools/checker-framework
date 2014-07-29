@@ -1,0 +1,156 @@
+\htmlhr
+\chapter{Constant Value Checker\label{constant-value-checker}}
+
+The Constant Value Checker is a constant propagation analysis: for
+each variable, it determines whether that variable's value can be
+known at compile time.
+
+There are two ways to run the Constant Value Checker.
+Typically, it is automatically run by another type checker.
+When using the Constant Value Checker as part of another checker, the
+\code{statically-executable.astub} file in the Constant Value Checker directory must
+be passed as a stub file for the checker.
+
+Alternately, it is also possible to run just the Constant Value Checker, by
+supplying the \\
+\code{-processor org.checkerframework.checker.value.ValueChecker} \\
+command-line option to javac.
+
+
+\section{Annotations\label{constant-value-checker-annotations}}
+
+The Constant Value Checker uses type annotations to indicate the value of
+an expression (Section~\ref{constant-value-checker-type-annotations}), and
+it uses method annotations to indicate methods that the Constant Value
+Checker can execute at compile time
+(Section~\ref{staticallyexecutable-annotation}).
+
+
+\subsection{Type Annotations\label{constant-value-checker-type-annotations}}
+
+Typically, the programmer does not write any type annotations.  Rather, the
+type annotations are inferred by the Constant Value Checker.
+It is also permitted to write type annotations.  This is only necessary in
+locations where the Constant Value Checker does not infer annotations:  on fields
+and method signatures.
+
+The type annotations are
+\refqualclass{checker/value/qual}{BoolVal},
+\refqualclass{checker/value/qual}{IntVal},
+\refqualclass{checker/value/qual}{DoubleVal}, and
+\refqualclass{checker/value/qual}{StringVal}.
+
+Each type annotation takes as an argument a set of values, and its meaning
+is that at run time, the expression evaluates to one of the values.  For
+example, an expression of type
+\<\refqualclass{checker/value/qual}{StringVal}("a", "b")> evaluates to
+one of the values \<"a">, \<"b">, or \<null>.
+The set is limited to 10 entries; if a variable
+could be more than 10 different values, the Constant Value
+Checker gives up and its type becomes
+\refqualclass{checker/value/qual}{UnknownVal} instead.
+
+% \refqualclass{checker/value/qual}{BottomVal}, meaning that the expression
+% is dead or always has the value \<null>.
+
+Figure~\ref{fig-value-hierarchy} shows the 
+subtyping relationship among the type annotations.
+For two annotations of the same type, subtypes have a smaller set of
+possible values, as also shown in the figure.
+Because \<int> can be casted to \<double>, an \<@IntVal> annotation is a
+subtype of a \<@DoubleVal> annotation with the same values.
+
+\begin{figure}
+\begin{center}
+\includeimagenocentering{value-hierarchy}{3cm}
+\qquad\qquad
+\includeimagenocentering{value-subtyping}{2.75cm}
+%BEGIN LATEX
+\vspace{-1.5\baselineskip}
+%END LATEX
+\end{center}
+
+\caption{The type qualifier hierarchy of the Constant Value Checker
+annotations. Qualifiers in gray are used
+internally by the type system but should never be written by a
+programmer.  On the right are examples of additional subtyping
+relationships that depend on the annotations' arguments.}
+\label{fig-value-hierarchy}
+\end{figure}
+
+Figure~\ref{fig-value-multivalue} shows how the Constant Value Checker
+infers type annotations.
+
+\begin{figure}
+\begin{Verbatim}
+public void foo(boolean b) {
+    int i = 1;     // i has type:  @IntVal({1}) int
+    if (b) {  
+        i = 2;     // i now has type:  @IntVal({2}) int
+    }        
+                   // i now has type:  @IntVal({1,2}) int
+    i = i + 1;     // i now has type:  @IntVal({2,3}) int
+}
+\end{Verbatim}
+\caption{The Constant Value Checker infers different types
+  for a variable on different lines of the program.}
+\label{fig-value-multivalue}
+\end{figure}
+
+
+
+\subsection{Compile-time execution of expressions\label{staticallyexecutable-annotation}}
+
+Whenever all the operands of an expression are compile-time constants (that
+is, their types have constant-value type annotations), the Constant Value
+Checker attempts to execute the expression.  This is independent of any
+optimizations performed by the compiler and does not affect the code that
+is generated.
+
+The Constant Value Checker statically executes operators that do
+not throw exceptions (e.g., \<+>, \<->, \code{<\relax<}, \<!=>), and also
+calls to methods annotated with
+\refqualclass{checker/value/qual}{StaticallyExecutable}.
+
+\begin{figure}
+\begin{Verbatim}
+@StaticallyExecutable @Pure
+public int foo(int a, int b) {
+    return a + b;
+}
+
+public void bar() {
+    int a = 5;          // a has type:  @IntVal({5}) int
+    int b = 4;          // b has type:  @IntVal({4}) int
+    int c = foo(a, b);  // c has type:  @IntVal({9}) int
+}
+\end{Verbatim}
+\caption{The 
+  \refqualclass{checker/value/qual}{StaticallyExecutable} annotation enables
+  constant propagation through method calls.}
+\label{fig-staticallyexecutable}
+\end{figure}
+
+A \<@StaticallyExecutable> method must
+be \refqualclass{dataflow/qual}{Pure} (side-effect-free and
+deterministic).
+Additionally, a \<@StaticallyExecutable> method and any method it calls must be on
+the classpath for the compiler because they are reflectively called at
+compile-time to perform the constant value analysis.
+
+
+\section{Warnings\label{value-checker-warnings}}
+
+The Constant Value Checker issues a warning if it cannot load and run, at
+compile time, a method marked as \<@StaticallyExecutable>.  If it issues
+such a warning, then the return value of the method will be \<@UnknownVal>
+instead of being able to be resolved to a specific value annotation.
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% End: 
+
+%%  LocalWords:  9cm UnknownVal 5cm StringValue BottomVal 9cm 5cm astub
+%  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
+%%  LocalWords:  3cm 75cm classpath

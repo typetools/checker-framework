@@ -1,0 +1,121 @@
+This is an extension of the qualifier API that adds qualifier polymorphism.
+Instead of a single primary qualifier, each type includes a set of qualifier
+parameters.  For example, `Number<<Main=TAINTED>>` is a valid type in this
+system, consisting of the class `Number` with its `Main` qualifier parameter
+set to the qualifier `TAINTED` from some underlying qualifier system.
+
+In this system, each type (including primitive types) is declared to accept
+zero or more qualifier parameters.  Every valid use of a type must provide an
+actual qualifier for each parameter.  Thus, if a class is declared as:
+    class C<<Q, R>> { ... }
+then a valid use of `C` must provide qualifiers for `Q` and `R`, as in
+`C<<Q=TAINTED, R=UNTAINTED>>`.  Qualifier parameters are identified by name,
+not by position, so `C<<R=UNTAINTED, Q=TAINTED>>` means the same as the
+previous example.
+
+Valid qualifiers include:
+ - Qualifiers from the underlying qualifier system.  These are called "ground
+   qualifiers" in the implementation.
+ - Qualifier variables introduced by qualifier parameter declarations in outer
+   scopes.  For example, within the declaration of `C` above, `Q` and `R` can
+   be used as qualifier variables.
+ - A combination of ground qualifiers and qualifier variables, using a custom
+   combining operation defined by the type system.  For example, in some type
+   systems `Q + TAINTED` may be a valid combined qualifier.
+ - Wildcard qualifiers, indicating an unknown qualifier between a certain upper
+   and lower bound.  For example, `? extends TAINTED` and `? super R` are both
+   valid wildcard qualifiers.  When the upper or lower bound is not specified,
+   it defaults to the top or bottom of the qualifier hierarchy, respectively.
+   The bounds of a wildcard must be ground qualifiers, qualifier variables, or
+   combined qualifiers, not other wildcards.
+
+
+Implementation:
+
+The qualifier polymorphism system uses four classes to represent different
+types of qualifiers:
+
+ - Q: The ground qualifier representation provided by the type system.  This
+   appears as a type parameter in most other classes.
+
+ - PolyQual: A qualifier from the extended qualifier hierarchy consisting of
+   ground qualifiers (PolyQual.Ground, which wraps a single `Q`), qualifier
+   variables (PolyQual.QualVar), and combined qualifiers (PolyQual.Combined).
+   Wildcards are handled separately.
+
+ - Wildcard: A wildcard qualifier.  The upper and lower bounds are PolyQual
+   objects.
+
+ - QualParams: A map from qualifier parameter names to Wildcard objects.
+
+Corresponding to these, there are four QualifierHierarchies:
+
+ - The ground qualifier hierarchy, a QualifierHierarchy<Q> provided by the type
+   system.
+
+ - PolyQualHierarchy: A QualifierHierarchy<PolyQual> that implements the
+   standard subtyping hierarchy:
+    * ground qualifiers are ordered according to the ground qualifier
+      hierarchy;
+    * a qualifier variable is a subtype of its upper bound and a supertypes of
+      its lower bound; and
+    * a combined qualifier is a subtype of all component ground qualifiers and
+      the upper bounds of all component qualifier variables, and similarly for
+      its lower bound.
+   More generally, `A <: B` iff for every substitution `S` mapping every
+   qualifier variable in `A` and `B` to a ground qualifier within the bounds of
+   that variable, `A[S] <: B[S]` (where `Q[S]` denotes applying substitution
+   `S` within qualifier `Q`).
+
+ - ContainmentHierarchy: A QualifierHierarchy<Wildcard> where W is a subtype of
+   V if W is contained in V (denoted `W <= V` in JLS 4.5.1).
+
+ - QualifierParameterHierarchy: A QualifierHierarchy<QualParams> that applies a
+   ContainmentHierarchy subtyping check to each pair of corresponding
+   qualifiers from two QualParams objects.  For example, `<<Q=Q1>> <: <<Q=Q2>>`
+   iff `Q1 <= Q2`.  This qualifier hierarchy is the one used directly by the
+   TypeHierarchy for subtyping checks.
+
+Additional components that should be provided by the type system:
+
+ - QualifierParameterAnnotationConverter: Extension of AnnotationConverter that
+   adds the `getDeclaredParameters` method.  Any type system using qualifier
+   polymorphism must implement this interface (instead of the standard
+   AnnotationConverter interface).
+
+ - CombiningOperation: A commutative, associative operation with identity that
+   operates on ground qualifiers.  The type system must define a
+   CombiningOperation implementation (or use the provided Lub or Glb classes)
+   if its AnnotationConverter generates Combined qualifiers.  Note that the
+   type system may use different CombiningOperations in different places (such
+   as using Lub in wildcard upper bounds and Glb in lower bounds), though it is
+   not possible to use "combinations of combinations", such as
+   `(Q +_lub R) +_glb S`.
+
+In addition to the extra hierarchies and qualifier representations, the
+qualifier polymorphism system also provides:
+
+ - QualifierParameterTypeFactory: QualifiedTypeFactory implementation that adds
+   special handling for qualifier polymorphism.  Type systems using qualifier
+   polymorphism must extend this class (instead of extending the ordinary
+   QualifiedTypeFactory.)
+
+ - QualifierParameterTreeAnnotator: TreeAnnotator subclass that adds special
+   handling for qualifier polymorphism.  Type systems using qualifier
+   polymorphism should extend this instead of extending TreeAnnotator.
+
+ - QualifierParameterTypeAnnotator: TypeAnnotator subclass that adds special
+   handling for qualifier polymorphism.  Type systems using qualifier
+   polymorphism should extend this instead of extending TypeAnnotator.
+
+ - InferenceContext: A helper class that implements method qualifier parameter
+   inference.
+
+
+To create a checker using this framework:
+ - Extend QualifierParameterTypeFactory instead of QualifiedTypeFactory.
+ - Override QPTF.createGroundQualifierHierarchy instead of
+   QTF.createQualifierHierarchy.
+ - Override QPTF.combineForSubstitution.
+ - Implement QualifierParameterAnnotationConverter instead of
+   AnnotationConverter.
