@@ -142,6 +142,8 @@ public interface NodeVisitor<R, P> {
 
     R visitObjectCreation(ObjectCreationNode n, P p);
 
+    R visitMemberReference(FunctionalInterfaceNode n, P p);
+
     R visitArrayCreation(ArrayCreationNode n, P p);
 
     // Type, package and class names
