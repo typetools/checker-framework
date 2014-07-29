@@ -1136,11 +1136,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return super.visitNewClass(node, p);
     }
 
+    private static boolean lambdaMessage = false;
     @Override
     public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
-        checker.report(Result.failure("lambda.unimplemented"), node);
+        if (!lambdaMessage) {
+            checker.message(Kind.WARNING, "This version of the Checker Framework does not type-check lambda expressions.");
+            lambdaMessage = true;
+        }
+
         return null;
     }
+
+    /* TODO: add once lambda is fully integrated.
+    @Override
+    public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+        System.out.println("Params: " + node.getParameters());
+        System.out.println("Body: " + node.getBody());
+        return super.visitLambdaExpression(node, p);
+    }
+
+    @Override
+    public Void visitMemberReference(MemberReferenceTree node, Void p) {
+        // node.getQualifierExpression()
+        // node.getTypeArguments()
+        return super.visitMemberReference(node, p);
+    }*/
 
     /**
      * Checks that the type of the return expression is a subtype of the
@@ -1348,21 +1368,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         return super.visitNewArray(node, p);
     }
-
-    /* TODO: add once lambda is fully integrated.
-    @Override
-    public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
-        System.out.println("Params: " + node.getParameters());
-        System.out.println("Body: " + node.getBody());
-        return super.visitLambdaExpression(node, p);
-    }
-
-    @Override
-    public Void visitMemberReference(MemberReferenceTree node, Void p) {
-        // node.getQualifierExpression()
-        // node.getTypeArguments()
-        return super.visitMemberReference(node, p);
-    }*/
 
     /**
      * Do not override this method!
