@@ -132,10 +132,11 @@
         </tr>
         <tr>
             <td>5.</td>
-            <td><strong>Copy your .hgrc file to your home directory in Buffalo.</strong><br/>
+            <td><strong>Copy login related settings from your .hgrc file to a .hgrc in your home directory
+                    in Buffalo.</strong><br/>
                 On your local machine, you probably have an .hgrc file in your home directory
-                with login information for Mercurial. Copy this file to your home directory on
-                Buffalo.<br/>
+                with login information for Mercurial. Copy the login related parts of this file to
+                your home directory on Buffalo. Copying the entire file may lead to path issues.<br/>
             </td>
         </tr>
         <tr>
@@ -346,6 +347,7 @@
         scp -r $CF/release/* &lt;your-username&gt;@buffalo.cs.washington.edu:///scratch/jsr308-release/scripts<br/>
         ssh &lt;your-username&gt;@buffalo.cs.washington.edu<br/>
         cd /scratch/jsr308-release/scripts<br/>
+        umask g+w
         export HGUSER=&lt;your-username&gt<br/>
         python release_build.py all<br/>
         python release_push.py<br/>
@@ -395,6 +397,8 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         <td colspan="2">
             <span style="float: right;" class="glyphicon glyphicon-eye-open"></span>
             <strong>Build Step 0: Run release_build</strong><br/>
+            Ensure that newly created files are group writable. For example: <br />
+            <code>umask g+w<br/><br /></code>
             Ensure the HGUSER is set. For example: <br />
             <code>export HGUSER=jthaine<br/><br /></code>
             Run the following command: <br/>
