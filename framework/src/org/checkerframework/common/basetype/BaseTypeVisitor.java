@@ -32,6 +32,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
+import com.sun.source.tree.LambdaExpressionTree;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -1133,6 +1134,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         return super.visitNewClass(node, p);
+    }
+
+    @Override
+    public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+        checker.report(Result.failure("lambda.unimplemented"), node);
+        return null;
     }
 
     /**
