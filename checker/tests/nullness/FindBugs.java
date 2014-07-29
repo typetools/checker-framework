@@ -6,7 +6,7 @@ public class FindBugs {
         return null;
     }
 
-    @NonNull MyList<@Nullable Object> getListOfNulls() {
+    @NonNull MyList<@org.checkerframework.checker.nullness.qual.Nullable Object> getListOfNulls() {
         //:: error: (return.type.incompatible)
         return null;    // error
     }
@@ -16,13 +16,13 @@ public class FindBugs {
         //:: error: (dereference.of.nullable)
         o.toString();   // error
 
-        MyList<@Nullable Object> l = getListOfNulls();
+        MyList<@org.checkerframework.checker.nullness.qual.Nullable Object> l = getListOfNulls();
         l.toString();
         //:: error: (dereference.of.nullable)
         l.get().toString();    // error
     }
 }
 
-class MyList<T extends @Nullable Object> {
+class MyList<T extends @org.checkerframework.checker.nullness.qual.Nullable Object> {
     T get() { throw new RuntimeException(); }
 }
