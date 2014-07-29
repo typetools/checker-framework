@@ -12,10 +12,8 @@ When using the Constant Value Checker as part of another checker, the
 be passed as a stub file for the checker.
 
 Alternately, it is also possible to run just the Constant Value Checker, by
-supplying the \\
-\code{-processor org.checkerframework.checker.value.ValueChecker} \\
-command-line option to javac.
-
+supplying the following command-line option to javac:
+\code{-processor org.checkerframework.checker.value.ValueChecker -Astubs=statically-executable.astub} 
 
 \section{Annotations\label{constant-value-checker-annotations}}
 
@@ -65,11 +63,7 @@ subtype of a \<@DoubleVal> annotation with the same values.
 \includeimagenocentering{value-hierarchy}{3cm}
 \qquad\qquad
 \includeimagenocentering{value-subtyping}{2.75cm}
-%BEGIN LATEX
-\vspace{-1.5\baselineskip}
-%END LATEX
 \end{center}
-
 \caption{The type qualifier hierarchy of the Constant Value Checker
 annotations. Qualifiers in gray are used
 internally by the type system but should never be written by a
@@ -96,7 +90,6 @@ public void foo(boolean b) {
   for a variable on different lines of the program.}
 \label{fig-value-multivalue}
 \end{figure}
-
 
 
 \subsection{Compile-time execution of expressions\label{staticallyexecutable-annotation}}
@@ -136,7 +129,20 @@ be \refqualclass{dataflow/qual}{Pure} (side-effect-free and
 deterministic).
 Additionally, a \<@StaticallyExecutable> method and any method it calls must be on
 the classpath for the compiler because they are reflectively called at
-compile-time to perform the constant value analysis.
+compile-time to perform the constant value analysis. Any standard
+library methods (such as those annotated as \<@StaticallyExecutable> in
+statically-executable.astub) will already be on the
+classpath.
+To use \<@StaticallyExecutable> on methods in your own code, you should
+first compile the code without the Constant Value Checker and then add
+the location of the resulting \code{.class} files to the
+classpath. This can be done by either adding the destination path to
+your environment variable \code{\$CLASSPATH} or by passing the
+argument \code{-classpath path/to/class/files} to the call. The latter
+would look similar to:
+\code{-processor org.checkerframework.checker.value.ValueChecker
+-Astubs=statically-executable.astub -classpath \$CLASSPATH:\$MY\_PROJECT/build/} 
+
 
 
 \section{Warnings\label{value-checker-warnings}}
@@ -145,11 +151,48 @@ The Constant Value Checker issues a warning if it cannot load and run, at
 compile time, a method marked as \<@StaticallyExecutable>.  If it issues
 such a warning, then the return value of the method will be \<@UnknownVal>
 instead of being able to be resolved to a specific value annotation.
+Some examples of these:
 
+\begin{itemize}
+\item \code{``Test.java:11: warning: [class.find.failed] Failed to find
+  class named Test.}  means the checker could not find the class
+  specified for resolving a \<@StaticallyExecutable> method. Typically
+  this is caused by not providing the path of a class-file needed to
+  the classpath.
+\item \code{``Test.java:11: warning: [method.find.failed] Failed to find
+  a method named foo with argument types [@IntVal(3) int] in class
+  null. Treating result as @UnknownVal''}: 
 
-%%% Local Variables: 
-%%% mode: latex
-%%% End: 
+  The checker could not find the method \code{foo(int)} specified for
+  resolving a \<@StaticallyExecutable> method, but could find the
+  class. This is usually due to providing an out-dated version of the
+  class-file that does not contain the \<@StaticallyExecutable>
+  method.
+\item \code{``Test.java:12: warning: [method.evaluation.exception]
+  Failed to evaluate method public static int Test.foo(int) because it
+  threw an exception: java.lang.ArithmeticException: / by
+  zero. Treating result as @UnknownVal''}: 
+
+  An exception was thrown when trying to statically execute the
+  method. In this case it was a divide-by-zero exception. If the
+  arguments to the method each only had one value in their annotations
+  then this exception will always occur when the program is actually
+  run as well. If there are multiple possible values then this warning
+  may indicate a false-positive because the exception is not actually
+  thrown at run-time.
+\item \code{''Basics.java:154: error: [too.many.values.given] An
+  annotation was written containing more 10 values, the maximum length
+  allowed. Reduce the number of values given or change the annotation
+  to @UnknownVal.''}:  
+
+  An annotation was written with more than the maximum number of
+  values. Since the Constant Value Checker automatically changes types
+  to \<@UnknownVal> after they exceed this maximum, it is an error to
+  explicitly write annotations with more values than will be tracked.
+ 
+
+\end{itemize}
+
 
 %%  LocalWords:  9cm UnknownVal 5cm StringValue BottomVal 9cm 5cm astub
 %  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
