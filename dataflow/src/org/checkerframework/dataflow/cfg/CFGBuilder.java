@@ -39,6 +39,7 @@ import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.FloatLiteralNode;
 import org.checkerframework.dataflow.cfg.node.FloatingDivisionNode;
 import org.checkerframework.dataflow.cfg.node.FloatingRemainderNode;
+import org.checkerframework.dataflow.cfg.node.FunctionalInterfaceNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
@@ -4015,6 +4016,26 @@ public class CFGBuilder {
         }
 
         @Override
+        public Node visitLambdaExpression(LambdaExpressionTree tree, Void p) {
+            Node node = new FunctionalInterfaceNode(tree);
+            extendWithNode(node);
+            return node;
+        }
+
+        @Override
+        public Node visitMemberReference(MemberReferenceTree tree, Void p) {
+            Tree enclosingExpr = tree.getQualifierExpression();
+            if (enclosingExpr != null) {
+                scan(enclosingExpr, p);
+            }
+
+            Node node = new FunctionalInterfaceNode(tree);
+            extendWithNode(node);
+
+            return node;
+        }
+
+        @Override
         public Node visitWildcard(WildcardTree tree, Void p) {
             assert false : "WildcardTree is unexpected in AST to CFG translation";
             return null;
@@ -4023,18 +4044,6 @@ public class CFGBuilder {
         @Override
         public Node visitOther(Tree tree, Void p) {
             assert false : "Unknown AST element encountered in AST to CFG translation.";
-            return null;
-        }
-
-        @Override
-        public Node visitLambdaExpression(LambdaExpressionTree node, Void p) {
-            assert false : "Lambda expressions not yet handled in AST to CFG translation.";
-            return null;
-        }
-
-        @Override
-        public Node visitMemberReference(MemberReferenceTree node, Void p) {
-            assert false : "Member references not yet handled in AST to CFG translation.";
             return null;
         }
     }
