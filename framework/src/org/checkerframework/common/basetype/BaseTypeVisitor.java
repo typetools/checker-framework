@@ -32,6 +32,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
+import com.sun.source.tree.LambdaExpressionTree;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -1135,6 +1136,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return super.visitNewClass(node, p);
     }
 
+    private static boolean lambdaMessage = false;
+    @Override
+    public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+        if (!lambdaMessage) {
+            checker.message(Kind.WARNING, "This version of the Checker Framework does not type-check lambda expressions.");
+            lambdaMessage = true;
+        }
+
+        return null;
+    }
+
+    /* TODO: add once lambda is fully integrated.
+    @Override
+    public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+        System.out.println("Params: " + node.getParameters());
+        System.out.println("Body: " + node.getBody());
+        return super.visitLambdaExpression(node, p);
+    }
+
+    @Override
+    public Void visitMemberReference(MemberReferenceTree node, Void p) {
+        // node.getQualifierExpression()
+        // node.getTypeArguments()
+        return super.visitMemberReference(node, p);
+    }*/
+
     /**
      * Checks that the type of the return expression is a subtype of the
      * enclosing method required return type.  If not, it issues a
@@ -1341,21 +1368,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         return super.visitNewArray(node, p);
     }
-
-    /* TODO: add once lambda is fully integrated.
-    @Override
-    public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
-        System.out.println("Params: " + node.getParameters());
-        System.out.println("Body: " + node.getBody());
-        return super.visitLambdaExpression(node, p);
-    }
-
-    @Override
-    public Void visitMemberReference(MemberReferenceTree node, Void p) {
-        // node.getQualifierExpression()
-        // node.getTypeArguments()
-        return super.visitMemberReference(node, p);
-    }*/
 
     /**
      * Do not override this method!
