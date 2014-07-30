@@ -1,5 +1,15 @@
   Rename -AenablePurity command-line flag to -AcheckPurityAnnotations
 
+  Methods now inherit declaration annotations from methods they override 
+  if the declaration annotation is marked with the meta annotation 
+  @InheritedAnnotation or specified by a checker.  This includes the
+  purity annotations.
+
+  Constant Value Checker:
+    This new checker is a constant propagation analysis: for each 
+    variable that can be known at compile time, it determines that 
+    variables value.
+
 ----------------------------------------------------------------------
 
 Version 1.8.3, 1 July 2014
