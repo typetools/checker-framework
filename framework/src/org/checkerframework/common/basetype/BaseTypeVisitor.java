@@ -33,6 +33,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -1140,7 +1141,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
         if (!lambdaMessage) {
-            checker.message(Kind.WARNING, "This version of the Checker Framework does not type-check lambda expressions.");
+            checker.report(Result.warning("lambda.unimplemented"), node);
             lambdaMessage = true;
         }
 
@@ -1153,14 +1154,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         System.out.println("Params: " + node.getParameters());
         System.out.println("Body: " + node.getBody());
         return super.visitLambdaExpression(node, p);
-    }
+    }*/
 
     @Override
     public Void visitMemberReference(MemberReferenceTree node, Void p) {
+        // node.getTypeArguments()
         // node.getQualifierExpression()
         // node.getTypeArguments()
         return super.visitMemberReference(node, p);
-    }*/
+    }
 
     /**
      * Checks that the type of the return expression is a subtype of the
