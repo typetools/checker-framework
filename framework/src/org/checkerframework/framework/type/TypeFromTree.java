@@ -16,6 +16,8 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -371,6 +373,22 @@ abstract class TypeFromTree extends
                     }
                 }
             }
+            return type;
+        }
+
+        @Override
+        public AnnotatedTypeMirror visitMemberReference(MemberReferenceTree node,
+                AnnotatedTypeFactory f) {
+
+            AnnotatedDeclaredType type = (AnnotatedDeclaredType) f.toAnnotatedType(InternalUtils.typeOf(node), false);
+            return type;
+        }
+
+        @Override
+        public AnnotatedTypeMirror visitLambdaExpression(LambdaExpressionTree node,
+                AnnotatedTypeFactory f) {
+
+            AnnotatedDeclaredType type = (AnnotatedDeclaredType) f.toAnnotatedType(InternalUtils.typeOf(node), false);
             return type;
         }
 
