@@ -2,12 +2,11 @@
 class Lambda {
 
     void context() {
-        //:: error: (lambda.unimplemented)
+        //:: warning: (lambda.unimplemented)
         FuncParam<String, String> func = in -> {
             return  in.toString();
         };
 
-        //:: error: (lambda.unimplemented)
         FuncParam<String, String> func2 = in -> in.toString();
     }
 
