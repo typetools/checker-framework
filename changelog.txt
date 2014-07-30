@@ -1,3 +1,5 @@
+Version 1.8.4, 1 August 2014
+
   Rename -AenablePurity command-line flag to -AcheckPurityAnnotations
 
   Methods now inherit declaration annotations from methods they override 
@@ -9,6 +11,11 @@
     This new checker is a constant propagation analysis: for each 
     variable that can be known at compile time, it determines that 
     variables value.
+
+  Added a command-line option -AoutputArgsToFile to output all
+  command-line options passed to the compiler to a file.  See
+  section 24.8.4 of the manual for more information.  This is
+  especially useful when debugging Maven compilation.
 
 ----------------------------------------------------------------------
 
