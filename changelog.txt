@@ -5,29 +5,33 @@ determines which variable values can be known at compile time.
 
 Overriding methods now inherit declaration annotations from methods they
 override, if the declaration annotation is meta-annotate with
-@InheritedAnnotation.  In particular, the purity annotations @SideEffectFree, @Deterministic, and @Pure are inherited.
+@InheritedAnnotation.  In particular, the purity annotations @SideEffectFree,
+@Deterministic, and @Pure are inherited.
 
-Renamed the -AenablePurity command-line flag to -AcheckPurityAnnotations.
+Command-line options:
+ * Renamed the -AenablePurity command-line flag to -AcheckPurityAnnotations.
+ * Added a command-line option -AoutputArgsToFile to output all command-line
+   options passed to the compiler to a file.  This is especially useful when
+   debugging Maven compilation.
 
-Added a command-line option -AoutputArgsToFile to output all command-line
-options passed to the compiler to a file.  This is especially useful when
-debugging Maven compilation.
+Annotations:
+These changes are relevant only to people who wish to use pluggable
+type-checking with a standard Java 7 toolset.  (If you are not having
+trouble with your Java 7 JVM, then you don't care about them.)
+ * Made clean-room reimplementations of nullness-related annotations
+   compatible with Java 7 JVMs, by removing TYPE_USE as a target.
+ * Added a new set of Java 7 compatibility annotations for the Nullness Checker
+   in the org.checkerframework.checker.nullness.compatqual package. These
+   annotations do not require Java 8 but can only be placed in annotation
+   locations valid in Java 7.
 
-Added a new set of Java 7 compatibility annotations for the Nullness Checker
-in the org.checkerframework.checker.nullness.compatqual package. These
-annotations do not require Java 8 but can only be placed in annotation
-locations valid in Java 7.
-
-Made clean-room reimplementations of nullness related annotations Java 7
-compatible by removing TYPE_USE as a target.
-
+Java 8 support:
 The Checker Framework no longer crashes when type-checking code with lambda
-expressions, though full support for type-checking lambda expressions will
-appear in a future release. Until full type-checking support is released,
-a lambda.unsupported warning will be issued when type-checking code
-containing lambda expressions.
+expressions, but it does issue a lambda.unsupported warning when
+type-checking code containing lambda expressions.  Full support for
+type-checking lambda expressions will appear in a future release.
 
-Fix for Issue 343.
+Fixed Issue 343.
 
 ----------------------------------------------------------------------
 
