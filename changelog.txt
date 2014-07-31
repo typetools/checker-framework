@@ -13,6 +13,22 @@ Added a command-line option -AoutputArgsToFile to output all command-line
 options passed to the compiler to a file.  This is especially useful when
 debugging Maven compilation.
 
+Added a new set of Java 7 compatibility annotations for the Nullness Checker
+in the org.checkerframework.checker.nullness.compatqual package. These
+annotations do not require Java 8 but can only be placed in annotation
+locations valid in Java 7.
+
+Made clean-room reimplementations of nullness related annotations Java 7
+compatible by removing TYPE_USE as a target.
+
+The Checker Framework no longer crashes when type-checking code with lambda
+expressions, though full support for type-checking lambda expressions will
+appear in a future release. Until full type-checking support is released,
+a lambda.unsupported warning will be issued when type-checking code
+containing lambda expressions.
+
+Fix for Issue 343.
+
 ----------------------------------------------------------------------
 
 Version 1.8.3, 1 July 2014
