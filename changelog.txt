@@ -1,21 +1,17 @@
 Version 1.8.4, 1 August 2014
 
-  Rename -AenablePurity command-line flag to -AcheckPurityAnnotations
+The new Constant Value Checker is a constant propagation analysis:  it
+determines which variable values can be known at compile time.
 
-  Methods now inherit declaration annotations from methods they override 
-  if the declaration annotation is marked with the meta annotation 
-  @InheritedAnnotation or specified by a checker.  This includes the
-  purity annotations.
+Overriding methods now inherit declaration annotations from methods they
+override, if the declaration annotation is meta-annotate with
+@InheritedAnnotation.  In particular, the purity annotations @SideEffectFree, @Deterministic, and @Pure are inherited.
 
-  Constant Value Checker:
-    This new checker is a constant propagation analysis: for each 
-    variable that can be known at compile time, it determines that 
-    variables value.
+Renamed the -AenablePurity command-line flag to -AcheckPurityAnnotations.
 
-  Added a command-line option -AoutputArgsToFile to output all
-  command-line options passed to the compiler to a file.  See
-  section 24.8.4 of the manual for more information.  This is
-  especially useful when debugging Maven compilation.
+Added a command-line option -AoutputArgsToFile to output all command-line
+options passed to the compiler to a file.  This is especially useful when
+debugging Maven compilation.
 
 ----------------------------------------------------------------------
 
