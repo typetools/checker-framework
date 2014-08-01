@@ -33,20 +33,20 @@ locations where the Constant Value Checker does not infer annotations:  on field
 and method signatures.
 
 The type annotations are
-\refqualclass{checker/value/qual}{BoolVal},
-\refqualclass{checker/value/qual}{IntVal},
-\refqualclass{checker/value/qual}{DoubleVal}, and
-\refqualclass{checker/value/qual}{StringVal}.
+\refqualclass{common/value/qual}{BoolVal},
+\refqualclass{common/value/qual}{IntVal},
+\refqualclass{common/value/qual}{DoubleVal}, and
+\refqualclass{common/value/qual}{StringVal}.
 
 Each type annotation takes as an argument a set of values, and its meaning
 is that at run time, the expression evaluates to one of the values.  For
 example, an expression of type
-\<\refqualclass{checker/value/qual}{StringVal}("a", "b")> evaluates to
+\<\refqualclass{common/value/qual}{StringVal}("a", "b")> evaluates to
 one of the values \<"a">, \<"b">, or \<null>.
 The set is limited to 10 entries; if a variable
 could be more than 10 different values, the Constant Value
 Checker gives up and its type becomes
-\refqualclass{checker/value/qual}{UnknownVal} instead.
+\refqualclass{common/value/qual}{UnknownVal} instead.
 
 % \refqualclass{checker/value/qual}{BottomVal}, meaning that the expression
 % is dead or always has the value \<null>.
@@ -103,7 +103,7 @@ is generated.
 The Constant Value Checker statically executes operators that do
 not throw exceptions (e.g., \<+>, \<->, \code{<\relax<}, \<!=>), and also
 calls to methods annotated with
-\refqualclass{checker/value/qual}{StaticallyExecutable}.
+\refqualclass{common/value/qual}{StaticallyExecutable}.
 
 \begin{figure}
 \begin{Verbatim}
@@ -119,7 +119,7 @@ public void bar() {
 }
 \end{Verbatim}
 \caption{The 
-  \refqualclass{checker/value/qual}{StaticallyExecutable} annotation enables
+  \refqualclass{common/value/qual}{StaticallyExecutable} annotation enables
   constant propagation through method calls.}
 \label{fig-staticallyexecutable}
 \end{figure}
