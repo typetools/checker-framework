@@ -824,7 +824,7 @@ def mvn_sign_and_deploy( url, repo_id, pom_file, file, classifier, pgp_user, pgp
     if classifier is not None:
         cmd += " -Dclassifier=" + classifier
 
-    cmd += ( " -Dgpg.keyname=%s -Dgpg.passphrase=%s" % ( pgp_user, pgp_passphrase ) )
+    cmd += ( " -Dgpg.keyname=%s '-Dgpg.passphrase=%s'" % ( pgp_user, pgp_passphrase ) )
 
     execute(cmd)
 
