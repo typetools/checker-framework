@@ -1,4 +1,37 @@
-  Rename -AenablePurity command-line flag to -AcheckPurityAnnotations
+Version 1.8.4, 1 August 2014
+
+The new Constant Value Checker is a constant propagation analysis:  it
+determines which variable values can be known at compile time.
+
+Overriding methods now inherit declaration annotations from methods they
+override, if the declaration annotation is meta-annotate with
+@InheritedAnnotation.  In particular, the purity annotations @SideEffectFree,
+@Deterministic, and @Pure are inherited.
+
+Command-line options:
+ * Renamed the -AenablePurity command-line flag to -AcheckPurityAnnotations.
+ * Added a command-line option -AoutputArgsToFile to output all command-line
+   options passed to the compiler to a file.  This is especially useful when
+   debugging Maven compilation.
+
+Annotations:
+These changes are relevant only to people who wish to use pluggable
+type-checking with a standard Java 7 toolset.  (If you are not having
+trouble with your Java 7 JVM, then you don't care about them.)
+ * Made clean-room reimplementations of nullness-related annotations
+   compatible with Java 7 JVMs, by removing TYPE_USE as a target.
+ * Added a new set of Java 7 compatibility annotations for the Nullness Checker
+   in the org.checkerframework.checker.nullness.compatqual package. These
+   annotations do not require Java 8 but can only be placed in annotation
+   locations valid in Java 7.
+
+Java 8 support:
+The Checker Framework no longer crashes when type-checking code with lambda
+expressions, but it does issue a lambda.unsupported warning when
+type-checking code containing lambda expressions.  Full support for
+type-checking lambda expressions will appear in a future release.
+
+Fixed Issue 343.
 
 ----------------------------------------------------------------------
 
