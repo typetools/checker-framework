@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="tests/src"/>
+	<classpathentry kind="src" path="tests/test-lubglb"/>
+	<classpathentry kind="src" path="tests/test-polyall"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/stubparser"/>
+	<classpathentry exported="true" kind="lib" path="tests/junit.jar"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/jsr308-langtools"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/dataflow"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/javacutil"/>
+	<classpathentry kind="output" path="build"/>
+</classpath>
