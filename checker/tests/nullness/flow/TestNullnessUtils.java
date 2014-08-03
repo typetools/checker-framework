@@ -4,6 +4,7 @@ import org.checkerframework.checker.nullness.qual.*;
 /**
  * Test class org.checkerframework.checker.nullness.NullnessUtils.
  */
+//@non-308-skip-test
 class TestNullnessUtils {
     void testRef1(@Nullable Object o) {
         // one way to use as a cast:
