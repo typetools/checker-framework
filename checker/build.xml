@@ -165,6 +165,32 @@
             <fileset refid="checker.src.astub.files"/>
         </copy>
 
+        <pathconvert pathsep=" " property="qual.src.files.spaceseparated">
+            <path>
+                <fileset dir="${src}">
+                    <include name="**/qual/*.java"/>
+                </fileset>
+                <!-- Recompile dependent projects with annotations-in-comments
+                     enabled, in order to get classes with qualified types. -->
+                <fileset dir="${javacutil.loc}/${src}">
+                    <include name="**/qual/*.java"/>
+                <!-- Exclude ManualTaglet to not depend on javadoc. -->
+                    <exclude name="**/javacutil/dist/**"/>
+                </fileset>
+                <!-- Do not re-compile the stubparser, as it is not lint clean.
+                <fileset dir="${stubparser.loc}/${src}">
+                    <include name="**/*.java"/>
+                </fileset>
+                -->
+                <fileset dir="${dataflow.loc}/${src}">
+                    <include name="**/qual/*.java"/>
+                </fileset>
+                <fileset dir="${framework.loc}/${src}">
+                    <include name="**/qual/*.java"/>
+                </fileset>
+            </path>
+        </pathconvert>
+
         <pathconvert pathsep=" " property="src.files.spaceseparated">
             <path>
                 <fileset dir="${src}">
@@ -191,7 +217,8 @@
             </path>
         </pathconvert>
 
-        <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
+        <echo message="Compiling qualifiers."/>
+        <echo message="${qual.src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
               classpath="${javac.lib}:${framework.lib}:${junit.lib}"
@@ -210,6 +237,29 @@
             <arg line="@${tmpdir}/srcfiles-checker.txt"/>
             <arg line="-version"/>
             <arg line="-XDTA:noannotationsincomments"/>
+            <arg line="-Xlint"/>
+            <arg line="-Werror"/>
+        </java>
+
+        <echo message="Compiling all source files."/>
+        <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
+        <java fork="true"
+              failonerror="true"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}"
+              classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <arg value="-g"/>
+            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
+            <arg value="-source"/>
+            <arg value="7"/>
+            <arg value="-target"/>
+            <arg value="7"/>
+            <!-- To not get a warning about bootstrap classpath -->
+            <arg value="-Xlint:-options"/>
+            <arg line="-sourcepath ${src}"/>
+            <arg line="-d ${build}"/>
+            <arg line="@${tmpdir}/srcfiles-checker.txt"/>
+            <arg line="-version"/>
             <arg line="-Xlint"/>
             <arg line="-Werror"/>
         </java>
@@ -331,6 +381,7 @@
             <arg value="7"/>
             <arg value="-target"/>
             <arg value="7"/>
+            <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${tests}"/>
             <arg line="-d ${tests.build}"/>
@@ -747,6 +798,13 @@
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
+            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
+            <arg value="-source"/>
+            <arg value="7"/>
+            <arg value="-target"/>
+            <arg value="7"/>
+            <!-- To not get a warning about bootstrap classpath -->
+            <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${src}:${checker-jdk}"/>
             <arg line="-d ${build}"/>
             <arg line="@${tmpdir}/srcfiles-checker.txt"/>
