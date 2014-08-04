@@ -336,18 +336,20 @@
         <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/">
             <manifest>
                 <attribute name="Main-Class" value="org.checkerframework.framework.util.CheckerMain"/>
+                <attribute name="Implementation-Version" value="${build.version}"/>
+                <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
             </manifest>
         </jar>
     </target>
 
     <!-- This creates checker-qual.jar -->
-    <!-- TODO: include jdk dependencies for qualifiers. -->
     <target name="checker-qual-jar" depends="build"
             description="Create checker-qual.jar file for annotations">
         <mkdir dir="dist" />
 
         <jar destfile="${checker.qual.lib}" basedir="${build}">
             <include name="**/qual/*"/>
+            <include name="**/compatqual/*"/>
             <!-- Exclude test-only qualifiers -->
             <exclude name="lubglb/qual/*"/>
             <exclude name="polyall/qual/*"/>
@@ -356,6 +358,10 @@
             <include name="**/NullnessUtil*"/>
             <include name="**/RegexUtil*"/>
             <include name="**/UnitsTools*"/>
+            <manifest>
+                <attribute name="Implementation-Version" value="${build.version}"/>
+                <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
+            </manifest>
         </jar>
     </target>
 
