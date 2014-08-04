@@ -101,9 +101,6 @@ public abstract class AggregateChecker extends SourceChecker {
     // Whether all checkers were successfully initialized.
     private boolean allCheckersInited = false;
 
-    // Same functionality as the same field in SourceChecker
-    int errsOnLastExit = 0;
-
     // AbstractTypeProcessor delegation
     @Override
     public final void typeProcess(TypeElement element, TreePath tree) {
