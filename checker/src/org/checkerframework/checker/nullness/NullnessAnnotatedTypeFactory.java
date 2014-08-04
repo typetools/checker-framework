@@ -125,11 +125,15 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(org.netbeans.api.annotations.common.NullUnknown.class, NULLABLE);
         addAliasedAnnotation(org.jmlspecs.annotation.Nullable.class, NULLABLE);
 
-        // Add Java 7 compatibility annotations:
+        // Add compatibility annotations:
         addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.NullableDecl.class, NULLABLE);
         addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.PolyNullDecl.class, POLYNULL);
         addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.NonNullDecl.class, NONNULL);
         addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.MonotonicNonNullDecl.class, MONOTONIC_NONNULL);
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.NullableType.class, NULLABLE);
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.PolyNullType.class, POLYNULL);
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.NonNullType.class, NONNULL);
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType.class, MONOTONIC_NONNULL);
 
         // TODO: These heuristics are just here temporarily. They all either
         // need to be replaced, or carefully checked for correctness.

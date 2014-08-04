@@ -20,12 +20,10 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.AnnotationBuilder;
@@ -56,8 +54,9 @@ public class KeyForAnnotatedTypeFactory extends
 
         this.defaults.addAbsoluteDefault(UNKNOWN, DefaultLocation.ALL);
 
-        // Add Java 7 compatibility annotation:
+        // Add compatibility annotations:
         addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.KeyForDecl.class, KEYFOR);
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.KeyForType.class, KEYFOR);
     }
 
   /* TODO: we currently do not substitute field types.
