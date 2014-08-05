@@ -195,7 +195,7 @@ import com.sun.tools.javac.util.Log;
     "printAllQualifiers",
 
     // Output detailed message in simple-to-parse format, useful
-    // for tools parsing our output
+    // for tools parsing Checker Framework output.
     // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
     "detailedmsgtext",
 
@@ -911,11 +911,22 @@ public abstract class SourceChecker
             fmtString = defaultFormat;
         } else if (this.processingEnv.getOptions() != null /*nnbug*/
                 && this.processingEnv.getOptions().containsKey("detailedmsgtext")) {
+            // The -Adetailedmsgtext command-line option was given, so output
+            // a stylized error message for easy parsing by a tool.
+
             StringBuilder sb = new StringBuilder();
+
+            // The parts, separated by " $$ " (DETAILS_SEPARATOR), are:
+
+            // (1) error key
             // TODO: should we also have some type system identifier here?
             // E.g. Which subclass of SourceChecker we are? Or also the SuppressWarnings keys?
             sb.append(defaultFormat);
             sb.append(DETAILS_SEPARATOR);
+
+            // (2) number of additional tokens, and those tokens; this
+            // depends on the error message, and an example is the found
+            // and expected types
             if (args != null) {
                 sb.append(args.length);
                 sb.append(DETAILS_SEPARATOR);
@@ -929,6 +940,8 @@ public abstract class SourceChecker
                 sb.append(DETAILS_SEPARATOR);
             }
 
+            // (3) The error position, as starting and ending characters in
+            // the source file.
             final Tree tree;
             if (source instanceof Element) {
                 tree = trees.getTree( (Element) source );
@@ -940,7 +953,9 @@ public abstract class SourceChecker
             sb.append( treeToFilePositionString( tree, currentRoot, processingEnv ) );
             sb.append(DETAILS_SEPARATOR);
 
+            // (4) The human-readable error message. 
             sb.append(fullMessageOf(msgKey, defaultFormat));
+
             fmtString = sb.toString();
 
         } else {
