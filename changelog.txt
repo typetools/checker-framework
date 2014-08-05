@@ -241,7 +241,7 @@ Manual:
 Version 1.6.7, 28 August 2013
 
 User-visible framework improvements:
-  Improve the error message produced by -Adetailedmsg
+  Improve the error message produced by -Adetailedmsgtext
 
 Bug fixes:
   Fix issue #245: anonymous classes were skipped by default
