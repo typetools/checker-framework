@@ -967,9 +967,11 @@ switch, which is used to pass options to an annotation processor.
 qualifiers like \code{@Unqualified} which are usually not shown.
 (Use the \code{@InvisibleQualifier} meta-annotation on a qualifier to hide it.)
 
-\item \code{-Adetailedmsgtext}: print a more detailed error message in addition
-to the full message text when reporting errors or warnings.  This is useful
-for tools that wish to parse the Checker Framework output.
+\item \code{-Adetailedmsgtext}: Output error/warning messages in a
+  stylyized format that is easy for tools to parse.  This is useful for
+  tools that run the Checker Framework and parse its output, such as IDE
+  plugins.  See the source code of \<SourceChecker.java> for details about
+  the format.
 
 \item \code{-AprintErrorStack}: print a stack trace whenever an
 internal Checker Framework error occurs.
