@@ -44,6 +44,15 @@ public class AnnotationUtils {
     // Class cannot be instantiated.
     private AnnotationUtils() { throw new AssertionError("Class AnnotationUtils cannot be instantiated."); }
 
+    // TODO: hack to clear out static state.
+    // {@link org.checkerframework.qualframework.util.QualifierContext} should
+    // handle instantiation of utility classes.
+    public static void clear() {
+        annotationsFromNames.clear();
+        annotationMirrorNames.clear();
+        annotationClassNames.clear();
+    }
+
     // **********************************************************************
     // Factory Methods to create instances of AnnotationMirror
     // **********************************************************************
