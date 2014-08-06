@@ -12,7 +12,6 @@ public class GenericsBoundsRange<@Regex(3) T extends @Regex(1) String> {
     public T t;
 
     public GenericsBoundsRange(T t ) {
-        t = t;
         Matcher matcher = Pattern.compile(t).matcher("some str");
         if( matcher.matches() ) {
             matcher.group(0);
