@@ -42,6 +42,7 @@ import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorHandler;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -709,6 +710,11 @@ public abstract class SourceChecker
         this.messages = getMessages();
 
         this.visitor = createSourceVisitor();
+
+        // TODO: hack to clear out static caches.
+        // When the {@link org.checkerframework.qualframework.util.QualifierContext}
+        // gets used by all utilities, this shouldn't be an issue anymore.
+        AnnotationUtils.clear();
     }
 
     /**
@@ -953,7 +959,7 @@ public abstract class SourceChecker
             sb.append( treeToFilePositionString( tree, currentRoot, processingEnv ) );
             sb.append(DETAILS_SEPARATOR);
 
-            // (4) The human-readable error message. 
+            // (4) The human-readable error message.
             sb.append(fullMessageOf(msgKey, defaultFormat));
 
             fmtString = sb.toString();
