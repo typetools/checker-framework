@@ -19,7 +19,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by jburke on 7/16/14.
+ * //TODO: NOTE WHY IT'S OK TO USE EXTENDS BOUNDS TO GET ANNOS THAT ARE USED FOR PRIMARY ANNOTATIONS
+ * //TODO: IT'S BECAUSE REFINEMENTS ARE ONLY USED IN LOCATIONS WHERE WE CARE ABOUT THE UPPER BOUND
+ * //TODO: AND THAT IS MORE CONSERVATIVE AS WELL
  */
 public class MostSpecificTypeVariableAnnotator {
 
@@ -34,19 +36,16 @@ public class MostSpecificTypeVariableAnnotator {
 
             } else if(typeHierarchy.isSubtype(type2, type1, top)) {
                 annotateTypeVarResult(qualifierHierarchy, types, result, type2, top);
+
             } else {
-                final Pair<AnnotatedTypeVariable, AnnotatedWildcardType> capturePair = getCapturePair(type1, type2);
-                if(capturePair != null) {
-                    annotateTypeVarResultWithCapture(
-                            qualifierHierarchy, types, result, capturePair.first, capturePair.second, top);
-                } else {
-                    ErrorReporter.errorAbort(
-                            "Trying to annotate using two incomparable types!\n"
-                          + "type1=" + type1 + "\n"
-                          + "type2=" + type2 + "\n"
-                          + "result=" + result
-                    );
-                }
+
+                ErrorReporter.errorAbort(
+                        "Trying to annotate using two incomparable types!\n"
+                      + "type1=" + type1 + "\n"
+                      + "type2=" + type2 + "\n"
+                      + "result=" + result
+                );
+
             }
         }
     }
@@ -56,7 +55,7 @@ public class MostSpecificTypeVariableAnnotator {
                                               final AnnotatedTypeVariable result,
                                               final AnnotatedTypeMirror mostSpecific,
                                               final AnnotationMirror top) {
-        final AnnotatedTypeMirror source = findSourceAtm(types, qualifierHierarchy, result, mostSpecific, top, false);
+        final AnnotatedTypeMirror source = findSourceAtm(types, qualifierHierarchy, result, mostSpecific, top);
         final AnnotationMirror sourcePrimaryAnno = source.getAnnotationInHierarchy(top);
 
         //Indicates that source is a non-primary-annotated type variable declared by the same type parameter of result
@@ -74,34 +73,18 @@ public class MostSpecificTypeVariableAnnotator {
             }
 
             if(declLowerBoundAnno != null) {
-                result.getLowerBound().addAnnotation(resultDecl.getLowerBound().getAnnotationInHierarchy(top));
+                result.getLowerBound().addAnnotation(declLowerBoundAnno);
             }
         } else {
             result.replaceAnnotation(sourcePrimaryAnno);
         }
     }
 
-    private static void annotateTypeVarResultWithCapture(final QualifierHierarchy qualifierHierarchy,
-                                                         final Types types,
-                                                         final AnnotatedTypeVariable result,
-                                                         final AnnotatedTypeVariable capture,
-                                                         final AnnotatedWildcardType wildcard,
-                                                         final AnnotationMirror top) {
-
-        //If the primary annotation of oen of the types were a subtype of the other, than
-        //mostSpecificTypeVariable would already have handled this case.  Therefore, we assume
-        //that we must consider the bounds.
-        //FOR NOW: Use the captured type since it should be as specific as the declaration
-        annotateTypeVarResult(qualifierHierarchy, types, result, capture, top);
-
-    }
-
     private static AnnotatedTypeMirror findSourceAtm(final Types types,
                                                      final QualifierHierarchy qualifierHierarchy,
                                                      final AnnotatedTypeVariable result,
                                                      final AnnotatedTypeMirror toSearch,
-                                                     final AnnotationMirror top,
-                                                     final boolean isCapture) {
+                                                     final AnnotationMirror top) {
         AnnotatedTypeMirror source = toSearch;
         while( source.getAnnotationInHierarchy(top) == null &&
                !types.isSameType(result.getUnderlyingType(), source.getUnderlyingType()) ) {
@@ -109,6 +92,10 @@ public class MostSpecificTypeVariableAnnotator {
             switch(source.getKind()) {
                 case TYPEVAR:
                     source = ((AnnotatedTypeVariable) source).getEffectiveUpperBound();
+                    break;
+
+                case WILDCARD:
+                    source = ((AnnotatedWildcardType) source).getEffectiveExtendsBound();
                     break;
 
                 case INTERSECTION:
@@ -149,28 +136,28 @@ public class MostSpecificTypeVariableAnnotator {
         return result;
     }
 
-    private static Pair<AnnotatedTypeVariable, AnnotatedWildcardType> getCapturePair(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
-        final AnnotatedTypeVariable potentialCapture;
-        final AnnotatedWildcardType wildcard;
-        switch( AtmCombo.valueOf(type1, type2) ) {
-            case TYPEVAR_WILDCARD:
-                potentialCapture = (AnnotatedTypeVariable) type1;
-                wildcard = (AnnotatedWildcardType) type2;
-                break;
-
-            case WILDCARD_TYPEVAR:
-                wildcard = (AnnotatedWildcardType) type1;
-                potentialCapture = (AnnotatedTypeVariable) type2;
-                break;
-
-            default:
-                return null;
-        }
-
-        if(InternalUtils.isCaptured(potentialCapture.getUnderlyingType())) {
-            return Pair.of(potentialCapture, wildcard);
-        }
-
-        return null;
-    }
+//    private static Pair<AnnotatedTypeVariable, AnnotatedWildcardType> getCapturePair(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
+//        final AnnotatedTypeVariable potentialCapture;
+//        final AnnotatedWildcardType wildcard;
+//        switch( AtmCombo.valueOf(type1, type2) ) {
+//            case TYPEVAR_WILDCARD:
+//                potentialCapture = (AnnotatedTypeVariable) type1;
+//                wildcard = (AnnotatedWildcardType) type2;
+//                break;
+//
+//            case WILDCARD_TYPEVAR:
+//                wildcard = (AnnotatedWildcardType) type1;
+//                potentialCapture = (AnnotatedTypeVariable) type2;
+//                break;
+//
+//            default:
+//                return null;
+//        }
+//
+//        if(InternalUtils.isCaptured(potentialCapture.getUnderlyingType())) {
+//            return Pair.of(potentialCapture, wildcard);
+//        }
+//
+//        return null;
+//    }
 }
