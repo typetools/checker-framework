@@ -1883,7 +1883,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             final AnnotatedTypeVariable innerAtv = (AnnotatedTypeVariable) inner;
             final AnnotatedTypeVariable outerAtv = (AnnotatedTypeVariable) outer;
 
-            if (AnnotatedTypes.isMethodOverride(elements, innerAtv, outerAtv)) {
+            if (AnnotatedTypes.areCorrespondingTypeVariables(elements, innerAtv, outerAtv)) {
                 final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
                 return typeHierarchy.isSubtype(innerAtv.getEffectiveUpperBound(), outerAtv.getEffectiveUpperBound())
                     && typeHierarchy.isSubtype(outerAtv.getEffectiveLowerBound(), innerAtv.getEffectiveLowerBound());

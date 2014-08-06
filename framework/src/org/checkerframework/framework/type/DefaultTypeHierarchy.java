@@ -32,10 +32,10 @@ import java.util.*;
  */
 public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, VisitHistory> implements TypeHierarchy {
     //used for processingEnvironment when needed
-    private final BaseTypeChecker checker;
+    protected final BaseTypeChecker checker;
 
-    private final QualifierHierarchy qualifierHierarchy;
-    private final StructuralEqualityComparer equalityComparer;
+    protected final QualifierHierarchy qualifierHierarchy;
+    protected final StructuralEqualityComparer equalityComparer;
     protected final DefaultRawnessComparer rawnessComparer;
 
     protected final boolean ignoreRawTypes;
@@ -447,7 +447,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                     final AnnotatedTypeMirror subTypeArg   = subtypeTypeArgs.get(i);
 
                     if(subtypeRaw || supertypeRaw) {
-                        if(!rawnessComparer.isValid(superTypeArg, subTypeArg, visited)) {
+                        if(!rawnessComparer.isValid(superTypeArg, subTypeArg, visited) && !isContainedBy(subTypeArg, superTypeArg, visited, this.covariantTypeArgs )) {
                             return false;
                         }
 
@@ -590,7 +590,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     @Override
     public Boolean visitTypevar_Typevar(AnnotatedTypeVariable subtype, AnnotatedTypeVariable supertype, VisitHistory visited) {
 
-        if(haveSameDeclaration(subtype, supertype)) {
+        if(AnnotatedTypes.haveSameDeclaration(checker.getTypeUtils(), subtype, supertype)) {
             //subtype and supertype are uses of the same type parameter
             boolean subtypeHasAnno   = subtype.getAnnotationInHierarchy(currentTop)   != null;
             boolean supertypeHasAnno = supertype.getAnnotationInHierarchy(currentTop) != null;
@@ -607,7 +607,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         }
 
         //TODO: DOCUMENT
-        if( AnnotatedTypes.isMethodOverride(checker.getProcessingEnvironment().getElementUtils(), subtype,supertype) ) {
+        if( AnnotatedTypes.areCorrespondingTypeVariables(checker.getProcessingEnvironment().getElementUtils(), subtype, supertype) ) {
             if( areEqual(subtype, supertype) ) {
                 return true;
             }
@@ -762,14 +762,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         }
 
         return belowSuperBound;
-    }
-
-    /**
-     * Do these two type variables share a declaration.
-     */
-    private boolean haveSameDeclaration(final AnnotatedTypeVariable typeVar1, final AnnotatedTypeVariable typeVar2) {
-        final Types types = checker.getProcessingEnvironment().getTypeUtils();
-        return types.isSameType(typeVar1.getUnderlyingType(), typeVar2.getUnderlyingType());
     }
 
     /**
