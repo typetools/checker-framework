@@ -27,17 +27,12 @@ import javax.lang.model.util.Types;
 
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
+import org.checkerframework.framework.flow.util.LubTypeVariableAnnotator;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.TypeQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 
@@ -1089,7 +1084,21 @@ public class AnnotatedTypes {
                 lub.clearAnnotations();
             }
 
-            addAnnotations(elements, atypeFactory, lub, subtypes);
+            if(lub.getKind() == TypeKind.TYPEVAR) {
+                //TODO: TERRIBLE HACK UNTIL WE FIX LUB
+                final AnnotatedTypeVariable lubAtv = (AnnotatedTypeVariable) lub;
+                final List<AnnotatedTypeVariable> subtypesAsTvs =
+                    LubTypeVariableAnnotator.getSubtypesAsTypevars(lubAtv, subtypes);
+
+                if(subtypesAsTvs != null) {
+                    LubTypeVariableAnnotator.annotateTypeVarAsLub(lubAtv, subtypesAsTvs, atypeFactory);
+                } else {
+                    addAnnotations(elements, atypeFactory, lub, subtypes);
+                }
+
+            } else {
+                addAnnotations(elements, atypeFactory, lub, subtypes);
+            }
         }
     }
 
@@ -1708,21 +1717,34 @@ public class AnnotatedTypes {
         return false;
     }
 
-    public static boolean isMethodOverride(Elements elements, AnnotatedTypeVariable subtype, AnnotatedTypeVariable supertype) {
-        final TypeParameterElement subtypeParamElem  = (TypeParameterElement) subtype.getUnderlyingType().asElement();
-        final TypeParameterElement superypeParamElem = (TypeParameterElement) supertype.getUnderlyingType().asElement();
+
+    /**
+     * Do these two type variables share a declaration.
+     */
+    public static boolean haveSameDeclaration(Types types, final AnnotatedTypeVariable typeVar1, final AnnotatedTypeVariable typeVar2) {
+        return types.isSameType(typeVar1.getUnderlyingType(), typeVar2.getUnderlyingType());
+    }
+
+    public static boolean areCorrespondingTypeVariables(Elements elements, AnnotatedTypeVariable subtype, AnnotatedTypeVariable supertype) {
+        final TypeParameterElement subtypeParamElem   = (TypeParameterElement) subtype.getUnderlyingType().asElement();
+        final TypeParameterElement supertypeParamElem = (TypeParameterElement) supertype.getUnderlyingType().asElement();
 
 
         if( subtypeParamElem.getGenericElement() instanceof ExecutableElement
-         && superypeParamElem.getGenericElement() instanceof ExecutableElement ) {
+         && supertypeParamElem.getGenericElement() instanceof ExecutableElement ) {
             final ExecutableElement subtypeExecutable   = (ExecutableElement) subtypeParamElem.getGenericElement();
-            final ExecutableElement supertypeExecutable = (ExecutableElement) superypeParamElem.getGenericElement();
+            final ExecutableElement supertypeExecutable = (ExecutableElement) supertypeParamElem.getGenericElement();
 
             final TypeElement subtypeClass = (TypeElement) subtypeExecutable.getEnclosingElement();
             final TypeElement supertypeClass = (TypeElement) supertypeExecutable.getEnclosingElement();
 
-            return elements.overrides(subtypeExecutable, supertypeExecutable, subtypeClass)
-                || elements.overrides(supertypeExecutable, subtypeExecutable, supertypeClass);
+            boolean methodIsOverriden = elements.overrides(subtypeExecutable, supertypeExecutable, subtypeClass)
+                                     || elements.overrides(supertypeExecutable, subtypeExecutable, supertypeClass);
+            if(methodIsOverriden) {
+                boolean haveSameIndex = subtypeExecutable.getTypeParameters().indexOf(subtypeParamElem) ==
+                                        supertypeExecutable.getTypeParameters().indexOf(supertypeParamElem);
+                return haveSameIndex;
+            }
         }
 
         return false;
