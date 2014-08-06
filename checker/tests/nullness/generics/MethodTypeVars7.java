@@ -39,14 +39,14 @@ abstract class MethodTypeVars7 {
     }
 
     <T> T validatefail(@Nullable T value, T defaultValue) {
-        //:: error: (return.type.incompatible)
         return value == null ||
+            //:: error: (return.type.incompatible)
             !value.toString().isEmpty() ? value : defaultValue;
     }
 
     <T> T validate2fail(@Nullable T value, T defaultValue) {
-        //:: error: (return.type.incompatible)
         return value != null &&
+            //:: error: (return.type.incompatible)
             value.toString().isEmpty() ? defaultValue : value;
     }
 
