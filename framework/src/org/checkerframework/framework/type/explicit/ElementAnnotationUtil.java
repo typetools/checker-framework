@@ -96,14 +96,6 @@ public class ElementAnnotationUtil {
         if( applier != null ) {
             applier.extractAndApply();
         }
-
-        if( type instanceof AnnotatedTypeVariable ) {
-            //For good measure, we force the lower bound to be created and have a reasonable annotation on it
-            //this isn't strictly necessary as when getLowerBound is called fixAnnotatedTypeVariableBounds
-            //but this should make the initialization of type variable more predictable and more
-            //easily debugged
-            fixAnnotatedTypeVariableBounds((AnnotatedTypeVariable) type, typeFactory);
-        }
     }
 
     /**
