@@ -7,6 +7,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.Bottom;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.type.*;
@@ -65,6 +66,7 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
 
         this.typeAnnotator.addTypeName(java.lang.Void.class, BOTTOM);
+        this.defaults.addAbsoluteDefault(BOTTOM, DefaultLocation.LOWER_BOUNDS);
     }
 
     @Override

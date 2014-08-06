@@ -19,6 +19,7 @@ import com.sun.source.tree.Tree;
 @TypeQualifier
 @InvisibleQualifier
 @SubtypeOf(KeyFor.class)
+@DefaultFor({DefaultLocation.LOWER_BOUNDS})
 @ImplicitFor(trees = {Tree.Kind.NULL_LITERAL},
   typeNames = {java.lang.Void.class})
 public @interface KeyForBottom {}
