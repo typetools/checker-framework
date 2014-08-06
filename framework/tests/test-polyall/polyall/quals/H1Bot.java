@@ -6,9 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
+import org.checkerframework.framework.qual.*;
 
 import com.sun.source.tree.Tree;
 
@@ -17,5 +15,6 @@ import com.sun.source.tree.Tree;
 @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
+@DefaultFor({DefaultLocation.LOWER_BOUNDS})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface H1Bot {}

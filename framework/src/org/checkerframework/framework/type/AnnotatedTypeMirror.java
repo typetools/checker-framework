@@ -1799,34 +1799,6 @@ public abstract class AnnotatedTypeMirror {
         // because otherwise the annotations are inconsistent.
         private void fixupBoundAnnotations() {
 
-            if(lowerBound != null) {
-                if (lowerBound.getKind() != TypeKind.TYPEVAR) {
-                    lowerBound = lowerBound.getCopy(true);
-                //TODO JB: Ask Werner, can lower bounds be intersections?  Do we need to do something clever?
-
-                    //Terrible kludge to support GeneralAnnotatedTypeFactory
-                    if (ElementAnnotationUtil.isNullnessGeneralAtf(atypeFactory)) {
-                        final List<AnnotationMirror> annos = ElementAnnotationUtil.getNullnessAndInitAnnos(this, atypeFactory);
-                        lowerBound.clearAnnotations();
-                        lowerBound.addAnnotations(annos);
-
-                    } else {
-                        final QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-                        for (final AnnotationMirror top : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
-                            if (lowerBound.getAnnotationInHierarchy(top) == null) {
-                                lowerBound.addAnnotation(qualifierHierarchy.getBottomAnnotation(top));
-
-                            } else {
-                                //TODO JB: CHECK BOTTOM IS BELOW TOP AND ISSUE A WARNING? OR DO THIS IN isValidType
-
-                            }
-
-                        }
-
-                    }
-                }
-            }
-
             //We allow the above replacement first because primary annotations might not have annotations for
             //all hierarchies, so we don't want to avoid placing bottom on the lower bound for those hierarchies that
             //don't have a qualifier in primaryAnnotations
@@ -1855,7 +1827,6 @@ public abstract class AnnotatedTypeMirror {
          * have multiple upper bounds if the upper bound is an intersection.
          */
         private void replaceUpperBoundAnnotations() {
-            upperBound = upperBound.getCopy(true);
             if (upperBound.getKind() == TypeKind.INTERSECTION) {
                 final List<AnnotatedDeclaredType> bounds = ((AnnotatedIntersectionType) upperBound).directSuperTypes();
                 for (final AnnotatedDeclaredType bound : bounds) {
@@ -1957,6 +1928,9 @@ public abstract class AnnotatedTypeMirror {
                 inUpperBounds = false;
                 type.inUpperBounds = false;
             }
+
+            type.setLowerBound(getLowerBound());
+
             return type;
         }
 
@@ -2050,21 +2024,15 @@ public abstract class AnnotatedTypeMirror {
             if (declaration) {
                 sb.append("/*DECL*/ ");
             }
-            sb.append(formatAnnotationString(annotations, printInvisible));
+
             sb.append(actualType);
             if (!isPrintingBound) {
                 try {
                     isPrintingBound = true;
-                    if (getLowerBoundField() != null && getLowerBoundField().getKind() != TypeKind.NULL) {
-                        sb.append(" super ");
-                        sb.append(getLowerBoundField().toString(printInvisible));
-                    }
-                    // If the upper bound annotation is not the default, perhaps
-                    // print the upper bound even if its kind is TypeKind.NULL.
-                    if (getUpperBoundField() != null && getUpperBoundField().getKind() != TypeKind.NULL) {
-                        sb.append(" extends ");
-                        sb.append(getUpperBoundField().toString(printInvisible));
-                    }
+                    sb.append("[");
+                    printBound("super",   getLowerBoundField(), printInvisible, sb);
+                    printBound("extends", getUpperBoundField(), printInvisible, sb);
+                    sb.append("]");
                 } finally {
                     isPrintingBound = false;
                 }
@@ -2465,14 +2433,8 @@ public abstract class AnnotatedTypeMirror {
             if (!isPrintingBound) {
                 try {
                     isPrintingBound = true;
-                    if (getSuperBoundField() != null && getSuperBoundField().getKind() != TypeKind.NULL) {
-                        sb.append(" super ");
-                        sb.append(getSuperBoundField().toString(printInvisible));
-                    }
-                    if (getExtendsBoundField() != null && getExtendsBoundField().getKind() != TypeKind.NONE) {
-                        sb.append(" extends ");
-                        sb.append(getExtendsBoundField().toString(printInvisible));
-                    }
+                    printBound("super",   getSuperBoundField(),   printInvisible, sb);
+                    printBound("extends", getExtendsBoundField(), printInvisible, sb);
                 } finally {
                     isPrintingBound = false;
                 }
@@ -3004,6 +2966,25 @@ public abstract class AnnotatedTypeMirror {
                 type.setComponentType(other);
             }
             return super.visitArray(type, mapping);
+        }
+    }
+
+    /** print to sb keyWord followed by field.  NULL types are substituted with
+     * their annotations followed by " Void"
+     */
+    private static void printBound(final String keyWord, final AnnotatedTypeMirror field,
+                            final boolean printInvisible, final StringBuilder sb) {
+        sb.append(" ");
+        sb.append(keyWord);
+        sb.append(" ");
+
+        if(field == null) {
+            sb.append("<null>");
+        } else if(field.getKind() != TypeKind.NULL) {
+            sb.append(field.toString(printInvisible));
+        } else {
+            sb.append(formatAnnotationString(field.getAnnotations(), printInvisible));
+            sb.append("Void");
         }
     }
 

@@ -42,14 +42,13 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected final AnnotationMirror UNKNOWN, KEYFOR;
 
     public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(checker, false);
+        super(checker, true);
 
         KEYFOR = AnnotationUtils.fromClass(elements, KeyFor.class);
         UNKNOWN = AnnotationUtils.fromClass(elements, UnknownKeyFor.class);
 
         this.postInit();
 
-        this.defaults.setTypevarDefaulting(false);
         this.defaults.addAbsoluteDefault(UNKNOWN, DefaultLocation.ALL);
     }
 
