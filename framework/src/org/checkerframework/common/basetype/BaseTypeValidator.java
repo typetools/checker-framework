@@ -340,18 +340,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
                 upper.replaceAnnotations(onVar);
             }*/
 
-            if (type.getLowerBoundField() != null) {
-                AnnotatedTypeMirror lower = type.getLowerBoundField();
-                for (AnnotationMirror aOnVar : onVar) {
-                    if (lower.isAnnotatedInHierarchy(aOnVar) &&
-                            !atypeFactory.getQualifierHierarchy().isSubtype(
-                                    lower.getAnnotationInHierarchy(aOnVar),
-                                    aOnVar)) {
-                        this.reportError(type, tree);
-                    }
-                }
-                lower.replaceAnnotations(onVar);
-            }
+
         }
 
         return super.visitTypeVariable(type, tree);
