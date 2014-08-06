@@ -22,7 +22,7 @@ import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE_TYPE_ARGUMENT
  */
 class ParamApplier extends IndexedElementAnnotationApplier {
 
-    public static int RECEIVER_PARAM_INDEX = -1;
+    public static int RECEIVER_PARAM_INDEX = Integer.MIN_VALUE;
 
     public static boolean accepts(final AnnotatedTypeMirror type, final Element element) {
         return element.getKind() == ElementKind.PARAMETER;
@@ -37,7 +37,7 @@ class ParamApplier extends IndexedElementAnnotationApplier {
 
     /**
      * @return The index of element its parent method's parameter list.
-     * -1 if the element is the receiver parameter.
+     * Integer.MIN_VALUE if the element is the receiver parameter.
      */
     @Override
     public int getElementIndex() {

@@ -152,12 +152,8 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
         if( !annos.isEmpty() ) {
             final AnnotatedTypeMirror lowerBound = typeParam.getLowerBound();
 
-            //Replace only the bottom annotation then use add so that we still end up with an invalid type in
-            //the event of multiple annos.  This is to preserve current behavior but we might want to report
-            //an error earlier
-            lowerBound.replaceAnnotation(annos.get(0));
-            for(int i = 1; i < annos.size(); i++) {
-                lowerBound.addAnnotation(annos.get(i));
+            for(AnnotationMirror anno : annos) {
+                lowerBound.addAnnotation(anno);
             }
         }
     }
@@ -175,8 +171,8 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
                     ErrorReporter.errorAbort("Invalid bound index on element annotation ( " + anno + " ) " +
                             "for type ( " + typeParam + " ) with upper bound ( " + typeParam.getUpperBound() + " )");
                 }
-
                 annotateViaTypeAnnoPosition(intersectionTypes.get(boundIndex), anno);
+
             } else {
                 annotateViaTypeAnnoPosition(upperBoundType, anno);
 
