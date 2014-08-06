@@ -238,16 +238,19 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public AnnotatedDeclaredType getSelfType(Tree tree) {
-        AnnotatedDeclaredType act = getCurrentClassType(tree);
-        AnnotatedDeclaredType methodReceiver = getCurrentMethodReceiver(tree);
-
-        if (methodReceiver == null) {
-            methodReceiver = act;
-        }/* else if (methodReceiver.hasAnnotation(MUTABLE)) {
-            methodReceiver.replaceAnnotation(THISMUTABLE);
-        }*/
-
-        return methodReceiver;
+//TODO: SINCE THIS DOESN'T SEEM LIKE IT DOES ANYTHING USEFUL I NOW CALL THE SUPERTYPE IMPLEMENTATION
+//        AnnotatedDeclaredType act = getCurrentClassType(tree);
+//        AnnotatedDeclaredType methodReceiver = getCurrentMethodReceiver(tree);
+//
+//        if (methodReceiver == null) {
+//            methodReceiver = act;
+//        }/* else if (methodReceiver.hasAnnotation(MUTABLE)) {
+//            methodReceiver.replaceAnnotation(THISMUTABLE);
+//        }*/
+//
+//
+//        return methodReceiver;
+        return super.getSelfType(tree);
     }
 
     @Override
