@@ -625,9 +625,7 @@ abstract class TypeFromTree extends
 
             AnnotatedTypeVariable result = (AnnotatedTypeVariable) f.type(node);
             List<? extends AnnotationMirror> annotations = InternalUtils.annotationsFromTree(node);
-
-            result.getLowerBound().replaceAnnotations(annotations);
-            result.getUpperBound().replaceAnnotations(annotations);
+            result.getLowerBound().addAnnotations(annotations);
 
             switch (bounds.size()) {
             case 0: break;
