@@ -37,19 +37,19 @@ public class LubGlbChecker extends BaseTypeChecker {
         QualifierHierarchy qh = ((BaseTypeVisitor<?>)visitor).getTypeFactory().getQualifierHierarchy();
 
         // System.out.println("LUB of D and E: " + qh.leastUpperBound(D, E));
-        assert qh.leastUpperBound(D, E).equals(C) :
+        assert AnnotationUtils.areSame(qh.leastUpperBound(D, E), C) :
             "LUB of D and E is not C!";
 
         // System.out.println("LUB of E and D: " + qh.leastUpperBound(E, D));
-        assert qh.leastUpperBound(E, D).equals(C) :
+        assert AnnotationUtils.areSame(qh.leastUpperBound(E, D), C) :
             "LUB of E and D is not C!";
 
         // System.out.println("GLB of B and C: " + qh.greatestLowerBound(B, C));
-        assert qh.greatestLowerBound(B, C).equals(D) :
+        assert AnnotationUtils.areSame(qh.greatestLowerBound(B, C), D) :
             "GLB of B and C is not D!";
 
         // System.out.println("GLB of C and B: " + qh.greatestLowerBound(C, B));
-        assert qh.greatestLowerBound(C, B).equals(D) :
+        assert AnnotationUtils.areSame(qh.greatestLowerBound(C, B), D) :
             "GLB of C and B is not D!";
     }
 }
