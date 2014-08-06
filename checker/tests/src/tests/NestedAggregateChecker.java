@@ -8,6 +8,7 @@ import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.checker.regex.RegexChecker;
 import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
+
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -15,8 +16,8 @@ public class NestedAggregateChecker extends AggregateChecker {
     @Override
     protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
         return Arrays.asList(
-                NullnessChecker.class,
                 FenumChecker.class,
+                NullnessChecker.class,
                 RegexChecker.class
         );
     }
