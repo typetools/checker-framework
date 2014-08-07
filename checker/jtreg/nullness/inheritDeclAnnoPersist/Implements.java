@@ -2,7 +2,7 @@
  * @test
  * @summary Test that inherited declaration annotations are stored in bytecode.
  *
- * @compile ../PersistUtil.java Driver.java ReferenceInfoUtil.java Implements.java Interface.java
+ * @compile -source 7 -target 7 ../PersistUtil.java Driver.java ReferenceInfoUtil.java Implements.java Interface.java
  * @run main Driver Implements
  */
 

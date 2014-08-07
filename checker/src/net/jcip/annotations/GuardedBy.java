@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD,
-    ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE })
+    ElementType.PARAMETER, ElementType.LOCAL_VARIABLE })
 @PreconditionAnnotation(qualifier = LockHeld.class)
 @PostconditionAnnotation(qualifier = LockHeld.class)
 public @interface GuardedBy {

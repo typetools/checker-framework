@@ -52,6 +52,8 @@ public class RegexTransfer extends
             ClassNameNode cn = (ClassNameNode) receiver;
             String receiverName = cn.getElement().toString();
             // RegexUtil.isRegex(s, groups) method
+            // (No special case is needed for isRegex(String) because of
+            // the annotatation on that method's definition.)
             if (isRegexUtil(receiverName)
                     && method.toString().equals(
                             "isRegex(java.lang.String,int)")) {
@@ -85,6 +87,8 @@ public class RegexTransfer extends
             }
 
             // RegexUtil.asRegex(s, groups) method
+            // (No special case is needed for asRegex(String) because of
+            // the annotatation on that method's definition.)
             if (isRegexUtil(receiverName)
                     && method.toString().equals(
                             "asRegex(java.lang.String,int)")) {
