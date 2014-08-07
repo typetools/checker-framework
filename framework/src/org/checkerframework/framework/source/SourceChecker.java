@@ -42,6 +42,7 @@ import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorHandler;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -195,7 +196,7 @@ import com.sun.tools.javac.util.Log;
     "printAllQualifiers",
 
     // Output detailed message in simple-to-parse format, useful
-    // for tools parsing our output
+    // for tools parsing Checker Framework output.
     // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
     "detailedmsgtext",
 
@@ -343,6 +344,14 @@ public abstract class SourceChecker
 
     /** The line separator */
     private final static String LINE_SEPARATOR = System.getProperty("line.separator").intern();
+
+    @Override
+    public final void init(ProcessingEnvironment env) {
+        super.init(env);
+        // The processingEnvironment field will also be set by the superclass' init method.
+        // This is used to trigger AggregateChecker's setProcessingEnvironment.
+        setProcessingEnvironment(env);
+    }
 
     /**
      * @return the {@link ProcessingEnvironment} that was supplied to this
@@ -706,6 +715,11 @@ public abstract class SourceChecker
         this.messages = getMessages();
 
         this.visitor = createSourceVisitor();
+
+        // TODO: hack to clear out static caches.
+        // When the {@link org.checkerframework.qualframework.util.QualifierContext}
+        // gets used by all utilities, this shouldn't be an issue anymore.
+        AnnotationUtils.clear();
     }
 
     /**
@@ -908,11 +922,22 @@ public abstract class SourceChecker
             fmtString = defaultFormat;
         } else if (this.processingEnv.getOptions() != null /*nnbug*/
                 && this.processingEnv.getOptions().containsKey("detailedmsgtext")) {
+            // The -Adetailedmsgtext command-line option was given, so output
+            // a stylized error message for easy parsing by a tool.
+
             StringBuilder sb = new StringBuilder();
+
+            // The parts, separated by " $$ " (DETAILS_SEPARATOR), are:
+
+            // (1) error key
             // TODO: should we also have some type system identifier here?
             // E.g. Which subclass of SourceChecker we are? Or also the SuppressWarnings keys?
             sb.append(defaultFormat);
             sb.append(DETAILS_SEPARATOR);
+
+            // (2) number of additional tokens, and those tokens; this
+            // depends on the error message, and an example is the found
+            // and expected types
             if (args != null) {
                 sb.append(args.length);
                 sb.append(DETAILS_SEPARATOR);
@@ -926,6 +951,8 @@ public abstract class SourceChecker
                 sb.append(DETAILS_SEPARATOR);
             }
 
+            // (3) The error position, as starting and ending characters in
+            // the source file.
             final Tree tree;
             if (source instanceof Element) {
                 tree = trees.getTree( (Element) source );
@@ -937,7 +964,9 @@ public abstract class SourceChecker
             sb.append( treeToFilePositionString( tree, currentRoot, processingEnv ) );
             sb.append(DETAILS_SEPARATOR);
 
+            // (4) The human-readable error message.
             sb.append(fullMessageOf(msgKey, defaultFormat));
+
             fmtString = sb.toString();
 
         } else {

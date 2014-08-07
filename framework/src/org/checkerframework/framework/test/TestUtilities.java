@@ -1,15 +1,20 @@
 package org.checkerframework.framework.test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
 
 public final class TestUtilities {
 
@@ -41,13 +46,22 @@ public final class TestUtilities {
         }
         while (in.hasNext()) {
             String nextLine = in.nextLine();
-            if (nextLine.contains("@skip-test")) {
+            if (nextLine.contains("@skip-test") ||
+                    (!isJSR308Compiler && nextLine.contains("@non-308-skip-test"))) {
                 in.close();
                 return false;
             }
         }
         in.close();
         return true;
+    }
+
+    public static final boolean isJSR308Compiler;
+    static {
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        OutputStream err = new ByteArrayOutputStream();
+        compiler.run(null, null, err, "-version");
+        isJSR308Compiler = err.toString().contains("jsr308");
     }
 
     /**

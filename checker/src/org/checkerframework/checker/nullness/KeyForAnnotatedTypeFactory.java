@@ -15,10 +15,12 @@ import org.checkerframework.checker.nullness.qual.Covariant;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.TypeQualifiers;
+
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -37,7 +39,8 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
 @TypeQualifiers({ KeyFor.class, UnknownKeyFor.class, KeyForBottom.class})
-public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class KeyForAnnotatedTypeFactory extends
+    GenericAnnotatedTypeFactory<CFValue, CFStore, KeyForTransfer, KeyForAnalysis> {
 
     protected final AnnotationMirror UNKNOWN, KEYFOR;
 
@@ -50,6 +53,10 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
 
         this.defaults.addAbsoluteDefault(UNKNOWN, DefaultLocation.ALL);
+
+        // Add compatibility annotations:
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.KeyForDecl.class, KEYFOR);
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.KeyForType.class, KEYFOR);
     }
 
   /* TODO: we currently do not substitute field types.

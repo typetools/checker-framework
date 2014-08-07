@@ -106,8 +106,11 @@ this:
 Disabling a test case
 =====================
 
-Write @skip-test before a method or class -- either alone, or in a JavaDoc
-comment, or in a Java comment.
+Write @skip-test anywhere in a test file to disable that test.
+
+Write @non-308-skip-test anywhere in a test file to disable that test if
+the jsr308-langtools compiler is not used. (This is useful for tests that
+depend on annotations-in-comments that would fail with the stock compiler.)
 
 To disable all tests for a given type system, temporarily move away a file;
 for example,

@@ -497,7 +497,7 @@ tIDE (Section~\ref{tide}), and about customizing other IDEs and build tools.)
 Remember that you must be using the
 Type Annotations version of \<javac>, which you already installed (see Section~\ref{installation}).
 
-A concrete examples (using the Nullness Checker) is:
+A concrete example (using the Nullness Checker) is:
 
 %BEGIN LATEX
 \begin{smaller}
@@ -508,13 +508,6 @@ A concrete examples (using the Nullness Checker) is:
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
-
-
-\noindent
-Note that the two invocations above are equivalent.  Each one invokes the
-Checker Framework compiler, automatically adds 
-the annotated JDK to the classpath.  For more information on annotated
-JDKs, see Section~\ref{skeleton-using}.
 
 The checker is run on only the Java files that javac compiles.
 This includes all Java files specified on the command line (or
@@ -626,6 +619,12 @@ Stub and JDK libraries; see Section~\ref{debugging-options-libraries}
  \<-Afilenames>,
  \<-Ashowchecks>
 Progress tracing; see Section~\ref{debugging-options-progress}
+
+\item
+\<-AoutputArgsToFile>
+Output the compiler command-line arguments to a file.  Useful when this is not
+fully in your control, such as when the Checker Framework is run from Maven.
+See Section~\ref{debugging-options-output-args}
 
 \item
  \<-Aflowdotdir>,

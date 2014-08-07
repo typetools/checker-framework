@@ -64,9 +64,16 @@ public abstract class AggregateChecker extends SourceChecker {
         }
     }
 
+    /** processingEnv needs to be set on each checker since
+        we are not calling init on the checker, which leaves
+        it null.
+        If one of checkers is an AggregateChecker, it's
+        visitors will try use checker's processing env which
+        should not be null.
+    **/
     @Override
-    public final void init(ProcessingEnvironment env) {
-        super.init(env);
+    protected void setProcessingEnvironment(ProcessingEnvironment env) {
+        super.setProcessingEnvironment(env);
         for (SourceChecker checker : checkers) {
             checker.setProcessingEnvironment(env);
         }
@@ -98,9 +105,6 @@ public abstract class AggregateChecker extends SourceChecker {
 
     // Whether all checkers were successfully initialized.
     private boolean allCheckersInited = false;
-
-    // Same functionality as the same field in SourceChecker
-    int errsOnLastExit = 0;
 
     // AbstractTypeProcessor delegation
     @Override

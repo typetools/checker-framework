@@ -10,7 +10,7 @@ public class JCIPAnnotations {
     Object unguardedField;
 
     @LockingFree
-    void guardedReceiver(@GuardedBy("lock") JCIPAnnotations this) { }
+    void guardedReceiver(@org.checkerframework.checker.lock.qual.GuardedBy("lock") JCIPAnnotations this) { }
     @LockingFree
     void unguardedReceiver(JCIPAnnotations this) { }
 
@@ -36,7 +36,7 @@ public class JCIPAnnotations {
         guardedStaticArg(x);
     }
 
-    void testGuardedAccess(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") Object x) {
+    void testGuardedAccess(@org.checkerframework.checker.lock.qual.GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") Object x) {
         //:: error: (contracts.precondition.not.satisfied.field)
         this.guardedField.toString();
         //:: error: (contracts.precondition.not.satisfied.field)
@@ -65,7 +65,7 @@ public class JCIPAnnotations {
         }
     }
 
-    void testSemiGuardedAccess(@GuardedBy("lock") JCIPAnnotations this, Object x) {
+    void testSemiGuardedAccess(@org.checkerframework.checker.lock.qual.GuardedBy("lock") JCIPAnnotations this, Object x) {
         //:: error: (contracts.precondition.not.satisfied.field)
         this.guardedField.toString();
         //:: error: (contracts.precondition.not.satisfied.field)

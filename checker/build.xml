@@ -165,6 +165,32 @@
             <fileset refid="checker.src.astub.files"/>
         </copy>
 
+        <pathconvert pathsep=" " property="qual.src.files.spaceseparated">
+            <path>
+                <fileset dir="${src}">
+                    <include name="**/qual/*.java"/>
+                </fileset>
+                <!-- Recompile dependent projects with annotations-in-comments
+                     enabled, in order to get classes with qualified types. -->
+                <fileset dir="${javacutil.loc}/${src}">
+                    <include name="**/qual/*.java"/>
+                <!-- Exclude ManualTaglet to not depend on javadoc. -->
+                    <exclude name="**/javacutil/dist/**"/>
+                </fileset>
+                <!-- Do not re-compile the stubparser, as it is not lint clean.
+                <fileset dir="${stubparser.loc}/${src}">
+                    <include name="**/*.java"/>
+                </fileset>
+                -->
+                <fileset dir="${dataflow.loc}/${src}">
+                    <include name="**/qual/*.java"/>
+                </fileset>
+                <fileset dir="${framework.loc}/${src}">
+                    <include name="**/qual/*.java"/>
+                </fileset>
+            </path>
+        </pathconvert>
+
         <pathconvert pathsep=" " property="src.files.spaceseparated">
             <path>
                 <fileset dir="${src}">
@@ -191,6 +217,31 @@
             </path>
         </pathconvert>
 
+        <echo message="Compiling qualifiers."/>
+        <echo message="${qual.src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
+        <java fork="true"
+              failonerror="true"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}"
+              classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <arg value="-g"/>
+            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
+            <arg value="-source"/>
+            <arg value="7"/>
+            <arg value="-target"/>
+            <arg value="7"/>
+            <!-- To not get a warning about bootstrap classpath -->
+            <arg value="-Xlint:-options"/>
+            <arg line="-sourcepath ${src}"/>
+            <arg line="-d ${build}"/>
+            <arg line="@${tmpdir}/srcfiles-checker.txt"/>
+            <arg line="-version"/>
+            <arg line="-XDTA:noannotationsincomments"/>
+            <arg line="-Xlint"/>
+            <arg line="-Werror"/>
+        </java>
+
+        <echo message="Compiling all source files."/>
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
@@ -198,11 +249,17 @@
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
+            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
+            <arg value="-source"/>
+            <arg value="7"/>
+            <arg value="-target"/>
+            <arg value="7"/>
+            <!-- To not get a warning about bootstrap classpath -->
+            <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${src}"/>
             <arg line="-d ${build}"/>
             <arg line="@${tmpdir}/srcfiles-checker.txt"/>
             <arg line="-version"/>
-            <arg line="-XDTA:noannotationsincomments"/>
             <arg line="-Xlint"/>
             <arg line="-Werror"/>
         </java>
@@ -279,18 +336,20 @@
         <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/">
             <manifest>
                 <attribute name="Main-Class" value="org.checkerframework.framework.util.CheckerMain"/>
+                <attribute name="Implementation-Version" value="${build.version}"/>
+                <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
             </manifest>
         </jar>
     </target>
 
     <!-- This creates checker-qual.jar -->
-    <!-- TODO: include jdk dependencies for qualifiers. -->
     <target name="checker-qual-jar" depends="build"
             description="Create checker-qual.jar file for annotations">
         <mkdir dir="dist" />
 
         <jar destfile="${checker.qual.lib}" basedir="${build}">
             <include name="**/qual/*"/>
+            <include name="**/compatqual/*"/>
             <!-- Exclude test-only qualifiers -->
             <exclude name="lubglb/qual/*"/>
             <exclude name="polyall/qual/*"/>
@@ -299,6 +358,10 @@
             <include name="**/NullnessUtil*"/>
             <include name="**/RegexUtil*"/>
             <include name="**/UnitsTools*"/>
+            <manifest>
+                <attribute name="Implementation-Version" value="${build.version}"/>
+                <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
+            </manifest>
         </jar>
     </target>
 
@@ -319,6 +382,13 @@
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
+            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
+            <arg value="-source"/>
+            <arg value="7"/>
+            <arg value="-target"/>
+            <arg value="7"/>
+            <!-- To not get a warning about bootstrap classpath -->
+            <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${tests}"/>
             <arg line="-d ${tests.build}"/>
             <arg line="${src.tests}"/>
@@ -401,6 +471,13 @@
               </fileset>
           </batchtest>
       </junit>
+    </target>
+
+    <target name="aggregate-tests" depends="jar,build-tests"
+            description="Run tests for the aggregate checkers">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NestedAggregateCheckerTest"/>
+        </antcall>
     </target>
 
     <target name="compilermsg-tests" depends="jar,build-tests"
@@ -725,6 +802,13 @@
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
+            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
+            <arg value="-source"/>
+            <arg value="7"/>
+            <arg value="-target"/>
+            <arg value="7"/>
+            <!-- To not get a warning about bootstrap classpath -->
+            <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${src}:${checker-jdk}"/>
             <arg line="-d ${build}"/>
             <arg line="@${tmpdir}/srcfiles-checker.txt"/>
