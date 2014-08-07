@@ -169,6 +169,8 @@ public class RegexUtil {
   @SuppressWarnings("regex")    // RegexUtil
   */
   /*@Pure*/
+  // No @EnsuresQualifierIf annotation because this method is special-cased
+  // in RegexTransfer.
   public static boolean isRegex(String s, int groups) {
     Pattern p;
     try {
@@ -189,7 +191,8 @@ public class RegexUtil {
   @SuppressWarnings("regex")    // RegexUtil
   */
   /*@Pure*/
-  public static boolean isRegex(char c) {
+  @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)
+  public static boolean isRegex(final char c) {
     return isRegex(Character.toString(c));
   }
 
@@ -283,6 +286,7 @@ public class RegexUtil {
    * @throws Error if argument is not a regex
    */
   /*@SideEffectFree*/
+  // The return type annotation is a conservative bound.
   public static /*@Regex*/ String asRegex(String s) {
     return asRegex(s, 0);
   }
