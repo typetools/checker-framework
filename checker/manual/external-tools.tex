@@ -54,13 +54,13 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-1.8.3/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-1.8.4/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.  Now, whenever
     you run \code{javac}, you will use the updated compiler.  If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.3
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.4
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -76,7 +76,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.3
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.4
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -95,11 +95,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.3
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.4
   alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.3\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.4\
   doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
 \end{Verbatim}
 
@@ -118,7 +118,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-1.8.3
+  javac 1.8.0-jsr308-1.8.4
 \end{Verbatim}
 
 
@@ -364,6 +364,29 @@ difficult or impossible to pass via the \code{pom.xml}, hence the need for this 
 
 If you would like to call this file something other than \code{argfile},
 please modify the \code{javac\_maven} script accordingly.
+
+\subsection{Debugging the Maven compiler command-line arguments\label{debugging-maven-args}}
+
+Maven will sometimes hide important Checker Framework and/or Java compiler debugging output.
+If Maven is not producing the expected output when using it with the Type Annotations compiler
+and Checker Framework, it is possible to output the compiler command-line arguments produced
+by Maven to a file.  This file can then be used as a script to execute the compiler in the
+same way Maven would have but without running Maven.  This is done through the
+\<-AoutputArgsToFile> command-line parameter.  To use it with Maven, modify (or copy) the
+\code{javac\_maven} script such that the last line in the script ends with:
+
+\begin{verbatim}
+[...] "-AoutputArgsToFile=<path to filename>" "$@"
+\end{verbatim}
+
+For \code{javac\_maven.bat}, modify (or copy) it such that the last line ends with:
+
+\begin{verbatim}
+[...] -AoutputArgsToFile=<path to filename> %*
+\end{verbatim}
+
+Please see Section~\ref{debugging-options-output-args} for more details on how to use
+the resulting file.
 
 \end{enumerate}
 

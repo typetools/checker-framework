@@ -76,10 +76,10 @@ public final class NullnessUtils {
      */
     public static
     @EnsuresNonNull("#1")
-    <T extends @Nullable Object>
-    @NonNull T castNonNull(T ref) {
+    <T extends /*@Nullable*/ Object>
+    /*@NonNull*/ T castNonNull(T ref) {
         assert ref != null : "Misuse of castNonNull: called with a null argument";
-        return (@NonNull T) ref;
+        return (/*@NonNull*/ T) ref;
     }
 
     /**
@@ -91,10 +91,10 @@ public final class NullnessUtils {
      */
     public static
     @EnsuresNonNull("#1")
-    <T extends @Nullable Object>
-    @NonNull T @NonNull []
-            castNonNullDeep(T @Nullable [] arr) {
-        return (@NonNull T[]) castNonNullArray(arr);
+    <T extends /*@Nullable*/ Object>
+    /*@NonNull*/ T /*@NonNull*/ []
+            castNonNullDeep(T /*@Nullable*/ [] arr) {
+        return (/*@NonNull*/ T[]) castNonNullArray(arr);
     }
 
     /**
@@ -106,10 +106,10 @@ public final class NullnessUtils {
      */
     public static
     @EnsuresNonNull("#1")
-    <T extends @Nullable Object>
-    @NonNull T @NonNull [][]
-            castNonNullDeep(T @Nullable [] @Nullable [] arr) {
-        return (@NonNull T[][]) castNonNullArray(arr);
+    <T extends /*@Nullable*/ Object>
+    /*@NonNull*/ T /*@NonNull*/ [][]
+            castNonNullDeep(T /*@Nullable*/ [] /*@Nullable*/ [] arr) {
+        return (/*@NonNull*/ T[][]) castNonNullArray(arr);
     }
 
     /**
@@ -121,10 +121,10 @@ public final class NullnessUtils {
      */
     public static
     @EnsuresNonNull("#1")
-    <T extends @Nullable Object>
-    @NonNull T @NonNull [][][]
-            castNonNullDeep(T @Nullable [] @Nullable [] @Nullable [] arr) {
-        return (@NonNull T[][][]) castNonNullArray(arr);
+    <T extends /*@Nullable*/ Object>
+    /*@NonNull*/ T /*@NonNull*/ [][][]
+            castNonNullDeep(T /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] arr) {
+        return (/*@NonNull*/ T[][][]) castNonNullArray(arr);
     }
 
     /**
@@ -136,10 +136,10 @@ public final class NullnessUtils {
      */
     public static
     @EnsuresNonNull("#1")
-    <T extends @Nullable Object>
-    @NonNull T @NonNull [][][][]
-            castNonNullDeep(T @Nullable [] @Nullable [] @Nullable [] @Nullable [] arr) {
-        return (@NonNull T[][][][]) castNonNullArray(arr);
+    <T extends /*@Nullable*/ Object>
+    /*@NonNull*/ T /*@NonNull*/ [][][][]
+            castNonNullDeep(T /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] arr) {
+        return (/*@NonNull*/ T[][][][]) castNonNullArray(arr);
     }
 
     /**
@@ -151,24 +151,24 @@ public final class NullnessUtils {
      */
     public static
     @EnsuresNonNull("#1")
-    <T extends @Nullable Object>
-    @NonNull T @NonNull [][][][][]
-            castNonNullDeep(T @Nullable [] @Nullable [] @Nullable [] @Nullable [] @Nullable [] arr) {
-        return (@NonNull T[][][][][]) castNonNullArray(arr);
+    <T extends /*@Nullable*/ Object>
+    /*@NonNull*/ T /*@NonNull*/ [][][][][]
+            castNonNullDeep(T /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] arr) {
+        return (/*@NonNull*/ T[][][][][]) castNonNullArray(arr);
     }
 
     private static
-    <T extends @Nullable Object>
-    @NonNull T @NonNull [] castNonNullArray(T @Nullable [] arr) {
+    <T extends /*@Nullable*/ Object>
+    /*@NonNull*/ T /*@NonNull*/ [] castNonNullArray(T /*@Nullable*/ [] arr) {
         assert arr != null : "Misuse of castNonNullArray: called with a null array argument";
         for (int i = 0; i < arr.length; ++i) {
             assert arr[i] != null : "Misuse of castNonNull: called with a null array element";
             checkIfArray(arr[i]);
         }
-        return (@NonNull T[]) arr;
+        return (/*@NonNull*/ T[]) arr;
     }
 
-    private static void checkIfArray(@NonNull Object ref) {
+    private static void checkIfArray(/*@NonNull*/ Object ref) {
         assert ref != null : "Misuse of checkIfArray: called with a null argument";
         Class<?> comp = ref.getClass().getComponentType();
         if (comp != null) {

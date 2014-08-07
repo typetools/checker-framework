@@ -21,8 +21,16 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.qual.PolyAll;
-import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
+import org.checkerframework.framework.type.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.ListTreeAnnotator;
+import org.checkerframework.framework.type.PropagationTreeAnnotator;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TreeAnnotator;
+import org.checkerframework.framework.type.TypeAnnotator;
 import org.checkerframework.framework.util.DependentTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -94,7 +102,7 @@ public class NullnessAnnotatedTypeFactory
 
         // If you update the following, also update ../../../manual/nullness-checker.tex .
         // Aliases for @Nonnull:
-        addAliasedAnnotation(com.sun.istack.NotNull.class, NONNULL);
+        addAliasedAnnotation(com.sun.istack.internal.NotNull.class, NONNULL);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.NonNull.class, NONNULL);
         addAliasedAnnotation(javax.annotation.Nonnull.class, NONNULL);
         addAliasedAnnotation(javax.validation.constraints.NotNull.class, NONNULL);
@@ -104,7 +112,7 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(org.jmlspecs.annotation.NonNull.class, NONNULL);
 
         // Aliases for @Nullable:
-        addAliasedAnnotation(com.sun.istack.Nullable.class, NULLABLE);
+        addAliasedAnnotation(com.sun.istack.internal.Nullable.class, NULLABLE);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.CheckForNull.class, NULLABLE);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.Nullable.class, NULLABLE);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.UnknownNullness.class, NULLABLE);
@@ -116,6 +124,16 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(org.netbeans.api.annotations.common.NullAllowed.class, NULLABLE);
         addAliasedAnnotation(org.netbeans.api.annotations.common.NullUnknown.class, NULLABLE);
         addAliasedAnnotation(org.jmlspecs.annotation.Nullable.class, NULLABLE);
+
+        // Add compatibility annotations:
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.NullableDecl.class, NULLABLE);
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.PolyNullDecl.class, POLYNULL);
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.NonNullDecl.class, NONNULL);
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.MonotonicNonNullDecl.class, MONOTONIC_NONNULL);
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.NullableType.class, NULLABLE);
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.PolyNullType.class, POLYNULL);
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.NonNullType.class, NONNULL);
+        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType.class, MONOTONIC_NONNULL);
 
         // TODO: These heuristics are just here temporarily. They all either
         // need to be replaced, or carefully checked for correctness.
