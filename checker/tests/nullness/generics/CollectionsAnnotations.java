@@ -17,7 +17,7 @@ class PriorityQueue1<E extends @NonNull Object> implements Collection1<E> {
    }
 }
 
-class PriorityQueue2<@NonNull E> implements Collection1<E> {
+class PriorityQueue2<E extends @NonNull Object> implements Collection1<E> {
    public void add(E elt) {
       // just to dereference elt
       elt.hashCode();
