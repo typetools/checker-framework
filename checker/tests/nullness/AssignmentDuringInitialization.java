@@ -1,3 +1,6 @@
+// This test covers Issue345 at:
+// https://code.google.com/p/checker-framework/issues/detail?id=345
+/* @skip-test */
 public class AssignmentDuringInitialization {
     String f1;
     String f2;
