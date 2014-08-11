@@ -1,5 +1,6 @@
 package org.checkerframework.framework.type.explicit;
 
+import com.sun.tools.javac.code.Attribute.TypeCompound;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.PluginUtil;
 import com.sun.tools.javac.code.Attribute;
@@ -32,7 +33,7 @@ abstract class TargetedElementAnnotationApplier implements ElementAnnotationAppl
      */
     public static enum TargetClass {
         TARGETED, VALID, INVALID
-    };
+    }
 
     /**
      * The type to which we wish to apply annotations.
@@ -107,7 +108,7 @@ abstract class TargetedElementAnnotationApplier implements ElementAnnotationAppl
      */
     protected void handleInvalid(List<Attribute.TypeCompound> invalid) {
         if( !invalid.isEmpty() ) {
-            ErrorReporter.errorAbort(this.getClass().getName().toString() + ".handleInvalid: " +
+            ErrorReporter.errorAbort(this.getClass().getName() + ".handleInvalid: " +
                     "Invalid variable and element passed to extractAndApply (" + type + ", " + element +
                     " Annos ( " + PluginUtil.join(", ", invalid) + " ) ");
         }
@@ -123,7 +124,7 @@ abstract class TargetedElementAnnotationApplier implements ElementAnnotationAppl
 
         final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToCompound = new LinkedHashMap<>();
         for( TargetClass targetClass : TargetClass.values()) {
-            targetClassToCompound.put(targetClass, new ArrayList<>());
+            targetClassToCompound.put(targetClass, new ArrayList<TypeCompound>());
         }
 
         for(final Attribute.TypeCompound typeCompound : typeCompounds) {
