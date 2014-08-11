@@ -188,7 +188,8 @@ public abstract class AnnotatedTypeMirror {
 
        //Note: isSameType never returns true for wildcards.  That is isSameType(myWildcard, myWildcard)
        //will return false.  This means, only referentially equal wildcards will return true in this method
-       //because of the first line.  Two wildcards that are structurally equivalent will NOT equal each other
+       //because of the == test on the first line.  Two wildcards that are structurally equivalent
+       //will NOT equal each other
        if (atypeFactory.types.isSameType(this.actualType, t.actualType)
                && AnnotationUtils.areSame(getAnnotations(), t.getAnnotations()))
            return true;
@@ -1802,7 +1803,7 @@ public abstract class AnnotatedTypeMirror {
             //We allow the above replacement first because primary annotations might not have annotations for
             //all hierarchies, so we don't want to avoid placing bottom on the lower bound for those hierarchies that
             //don't have a qualifier in primaryAnnotations
-            if( !annotations.isEmpty() ) {
+            if(!annotations.isEmpty()) {
                 if(upperBound!=null) {
                     replaceUpperBoundAnnotations();
                 }
