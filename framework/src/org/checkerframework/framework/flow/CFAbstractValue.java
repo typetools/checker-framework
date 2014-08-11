@@ -189,11 +189,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
 
         final TypeKind resultKind = result.getKind();
         if( resultKind == TypeKind.TYPEVAR ) {
-            MostSpecificTypeVariableAnnotator.mostSpecificTypeVariable(
-                    typeFactory.getProcessingEnv().getTypeUtils(),
-                    typeFactory.getTypeHierarchy(),
-                    typeFactory.getQualifierHierarchy(),
-                    a, b, (AnnotatedTypeVariable) result);
+            return MostSpecificTypeVariableAnnotator.mostSpecificTypeVariable(
+                        typeFactory.getProcessingEnv().getTypeUtils(),
+                        typeFactory.getTypeHierarchy(),
+                        typeFactory.getQualifierHierarchy(),
+                        a, b, backup, (AnnotatedTypeVariable) result);
 
         } else {
             final QualifierHierarchy qualHierarchy = typeFactory.getQualifierHierarchy();

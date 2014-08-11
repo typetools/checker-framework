@@ -6,8 +6,18 @@ import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 
 import javax.lang.model.element.AnnotationMirror;
 
+/**
+ * Utility class for applying the annotations inferred by dataflow to a given type.
+ */
 public class DefaultInferredTypesApplier {
 
+    /**
+     * For each top in qualifier hierarchy, traverse inferred and copy the required annotations over to
+     * type.
+     * @param qualifierHierarchy
+     * @param type The type to which annotations are being applied
+     * @param inferred The type inferred by data flow
+     */
     public static void applyInferredType(final QualifierHierarchy qualifierHierarchy,
                                          final AnnotatedTypeMirror type, final AnnotatedTypeMirror inferred) {
         final InferredTypeApplyingVisitor applier = new InferredTypeApplyingVisitor(qualifierHierarchy);
@@ -16,6 +26,11 @@ public class DefaultInferredTypesApplier {
         }
     }
 
+    /**
+     * Traverses type pairs, copies the annotations from the first type to the second (inferred type)
+     * Traversal is necessary to add annotations to the bounds of wildcards and type variables when the
+     * type to annotate is a wildcard
+     */
     private static class InferredTypeApplyingVisitor extends AbstractAtmComboVisitor<Void, AnnotationMirror> {
 
         private QualifierHierarchy qualifierHierarchy;
@@ -123,7 +138,7 @@ public class DefaultInferredTypesApplier {
             return null;
         }
 
-        protected void applyPrimary(/*@Nullable*/ final AnnotatedTypeMirror bound, final AnnotationMirror anno) {
+        protected void applyPrimary(final AnnotatedTypeMirror bound, final AnnotationMirror anno) {
             if(bound != null) {
                 bound.replaceAnnotation(anno);
             }
