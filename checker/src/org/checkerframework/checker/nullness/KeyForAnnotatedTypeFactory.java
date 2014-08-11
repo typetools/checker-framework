@@ -268,6 +268,17 @@ public class KeyForAnnotatedTypeFactory extends
 
       @Override
       public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, VisitHistory visited) {
+
+          //TODO: THIS IS FROM THE OLD TYPE HIERARCHY.  WE SHOULD FIX DATA-FLOW/PROPAGATION TO DO THE RIGHT THING
+          if (supertype.getKind() == TypeKind.TYPEVAR &&
+              subtype.getKind() == TypeKind.TYPEVAR) {
+              // TODO: Investigate whether there is a nicer and more proper way to
+              // get assignments between two type variables working.
+              if (supertype.getAnnotations().isEmpty()) {
+                  return true;
+              }
+          }
+
           // Otherwise Covariant would cause trouble.
           if (subtype.hasAnnotation(KeyForBottom.class)) {
               return true;
