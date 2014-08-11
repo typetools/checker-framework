@@ -18,7 +18,7 @@ public class DefaultInferredTypesApplier {
      * @param type The type to which annotations are being applied
      * @param inferred The type inferred by data flow
      */
-    public static void applyInferredType(final QualifierHierarchy qualifierHierarchy,
+    public void applyInferredType(final QualifierHierarchy qualifierHierarchy,
                                          final AnnotatedTypeMirror type, final AnnotatedTypeMirror inferred) {
         final InferredTypeApplyingVisitor applier = new InferredTypeApplyingVisitor(qualifierHierarchy);
         for(final AnnotationMirror top : qualifierHierarchy.getTopAnnotations())  {
@@ -31,7 +31,7 @@ public class DefaultInferredTypesApplier {
      * Traversal is necessary to add annotations to the bounds of wildcards and type variables when the
      * type to annotate is a wildcard
      */
-    private static class InferredTypeApplyingVisitor extends AbstractAtmComboVisitor<Void, AnnotationMirror> {
+    protected static class InferredTypeApplyingVisitor extends AbstractAtmComboVisitor<Void, AnnotationMirror> {
 
         private QualifierHierarchy qualifierHierarchy;
 
