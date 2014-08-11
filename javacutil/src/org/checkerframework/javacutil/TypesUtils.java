@@ -302,12 +302,16 @@ public final class TypesUtils {
         return t.getArrayType(componentType);
     }
 
+    /**
+     * Returns true if declaredType is a Class that is used to box primitive type
+     * (e.g. declaredType=java.lang.Double and primitiveType=22.5d )
+     */
     public static boolean isBoxOf(TypeMirror declaredType, TypeMirror primitiveType) {
         if(declaredType.getKind() != TypeKind.DECLARED) {
             return false;
         }
 
-        String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
+        final String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
         switch (primitiveType.getKind()) {
             case BOOLEAN:  return qualifiedName.equals("java.lang.Boolean");
             case BYTE:     return qualifiedName.equals("java.lang.Byte");

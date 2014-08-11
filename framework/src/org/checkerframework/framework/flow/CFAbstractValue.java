@@ -295,13 +295,18 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         return result;
     }
 
-
+    /**
+     * Refines the result annotated type variable with the most specific of type1 and type2.
+     * @return True if the result was annotated in all hierarchy, false if the result could not be
+     *         annotated in one or more annotation hierarchies
+     */
     public static boolean mostSpecificTypeVariable(final Types types,
                                                    final TypeHierarchy typeHierarchy,
                                                    final QualifierHierarchy qualifierHierarchy,
                                                    final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2,
                                                    final AnnotatedTypeMirror backup,
                                                    final AnnotatedTypeVariable result) {
+        boolean annotated = true;
         for(final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
             if(typeHierarchy.isSubtype(type1, type2, top)) {
                 annotateTypeVarResult(qualifierHierarchy, types, result, type1, top);
@@ -313,14 +318,19 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 if(backup != null) {
                     annotateTypeVarResult(qualifierHierarchy, types, result, backup, top);
                 } else {
-                    return false;
+                    annotated = false;
                 }
             }
         }
 
-        return true;
+        return annotated;
     }
 
+    /**
+     * Annotates result in the hierarchy denoted by top using the type mostSpecific as
+     * a template.  Note, if mostSpecific is a type variable, wildcard, or intersection
+     * the annotation may come from the bounds of that type.
+     */
     private static void annotateTypeVarResult(final QualifierHierarchy qualifierHierarchy,
                                               final Types types,
                                               final AnnotatedTypeVariable result,
@@ -334,8 +344,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         if(types.isSameType(source.getUnderlyingType(), result.getUnderlyingType()) && sourcePrimaryAnno == null) {
             final AnnotatedTypeVariable resultDecl = (AnnotatedTypeVariable) source;
 
-            //TODO: can we just do nothing since I think only primary annotation come into play?
-            //TODO: this mimics the old behavior, figure out the right behavior
             final AnnotationMirror declUpperBoundAnno = resultDecl.getUpperBound().getAnnotationInHierarchy(top);
             final AnnotationMirror declLowerBoundAnno = resultDecl.getLowerBound().getAnnotationInHierarchy(top);
 
@@ -351,6 +359,19 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         }
     }
 
+    /**
+     * The source atm, is the location of the annotated type mirror that defines the types "upper bound".
+     * For types that are exact (i.e. NOT TYPEVAR, WILDCARD, and INTERSECTION) this annotation is the primary
+     * annotation.  For TYPEVAR, and WILDCARD it is the first annotation encountered while traversing their
+     * upper bounds to get the concrete type.  Recall, the concrete type might be a few layers deep
+     * (e.g. ? extends Y extends @SourceAnno Object).  For INTERSECTION types, we choose the most specific
+     * annotation on its bounds.
+     * Finally, if a TYPEVAR is a use of the same type variable as result, this becomes the source since
+     * we will want to annotate the result with the same primary annotation or, if the primary annotation
+     * is not present, the same bounds.
+     *
+     * @return The annotated type mirror that contains the upper bound primary annotation of toSearch
+     */
     private static AnnotatedTypeMirror findSourceAtm(final Types types,
                                                      final QualifierHierarchy qualifierHierarchy,
                                                      final AnnotatedTypeVariable result,
@@ -391,6 +412,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         return source;
     }
 
+    /**
+     * For the given intersection type in the hierarchy of top, find the direct supertype that has the
+     * most specific annotation.
+     */
     private static AnnotatedTypeMirror mostSpecificSupertype(final QualifierHierarchy qualifierHierarchy,
                                                              final AnnotatedIntersectionType isect,
                                                              final AnnotationMirror top) {

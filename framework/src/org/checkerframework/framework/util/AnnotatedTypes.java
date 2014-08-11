@@ -1700,6 +1700,8 @@ public class AnnotatedTypes {
 
     /**
      * @return true if atm is an Annotation interface, i.e. an implementation of java.lang.annotation.Annotation
+     * e.g. @interface MyAnno - implementsAnnotation would return true when called on an
+     * AnnotatedDeclaredType representing a use of MyAnno
      */
     public static boolean implementsAnnotation(final AnnotatedTypeMirror atm) {
         if(atm.getKind() != TypeKind.DECLARED) {
@@ -1719,30 +1721,40 @@ public class AnnotatedTypes {
 
 
     /**
-     * Do these two type variables share a declaration.
+     * @return true if the typeVar1 and typeVar2 are two uses of the same type variable
      */
     public static boolean haveSameDeclaration(Types types, final AnnotatedTypeVariable typeVar1, final AnnotatedTypeVariable typeVar2) {
         return types.isSameType(typeVar1.getUnderlyingType(), typeVar2.getUnderlyingType());
     }
 
-    public static boolean areCorrespondingTypeVariables(Elements elements, AnnotatedTypeVariable subtype, AnnotatedTypeVariable supertype) {
-        final TypeParameterElement subtypeParamElem   = (TypeParameterElement) subtype.getUnderlyingType().asElement();
-        final TypeParameterElement supertypeParamElem = (TypeParameterElement) supertype.getUnderlyingType().asElement();
+    /**
+     * When overriding a method, you must include the same number of type parameters as the base method.  By index,
+     * these parameters are considered equivalent to the type parameters of the overridden method.
+     * Necessary conditions:
+     *    Both type variables are defined in methods
+     *    One of the two methods overrides the other
+     *    Within their method declaration, both types have the same type parameter index
+     *
+     * @return  returns true if type1 and type2 are corresponding type variables (that is, either one "overrides" the other).
+     */
+    public static boolean areCorrespondingTypeVariables(Elements elements, AnnotatedTypeVariable type1, AnnotatedTypeVariable type2) {
+        final TypeParameterElement type1ParamElem   = (TypeParameterElement) type1.getUnderlyingType().asElement();
+        final TypeParameterElement type2ParamElem = (TypeParameterElement) type2.getUnderlyingType().asElement();
 
 
-        if( subtypeParamElem.getGenericElement() instanceof ExecutableElement
-         && supertypeParamElem.getGenericElement() instanceof ExecutableElement ) {
-            final ExecutableElement subtypeExecutable   = (ExecutableElement) subtypeParamElem.getGenericElement();
-            final ExecutableElement supertypeExecutable = (ExecutableElement) supertypeParamElem.getGenericElement();
+        if( type1ParamElem.getGenericElement() instanceof ExecutableElement
+         && type2ParamElem.getGenericElement() instanceof ExecutableElement ) {
+            final ExecutableElement type1Executable   = (ExecutableElement) type1ParamElem.getGenericElement();
+            final ExecutableElement type2Executable = (ExecutableElement) type2ParamElem.getGenericElement();
 
-            final TypeElement subtypeClass = (TypeElement) subtypeExecutable.getEnclosingElement();
-            final TypeElement supertypeClass = (TypeElement) supertypeExecutable.getEnclosingElement();
+            final TypeElement type1Class = (TypeElement) type1Executable.getEnclosingElement();
+            final TypeElement type2Class = (TypeElement) type2Executable.getEnclosingElement();
 
-            boolean methodIsOverriden = elements.overrides(subtypeExecutable, supertypeExecutable, subtypeClass)
-                                     || elements.overrides(supertypeExecutable, subtypeExecutable, supertypeClass);
+            boolean methodIsOverriden = elements.overrides(type1Executable, type2Executable, type1Class)
+                                     || elements.overrides(type2Executable, type1Executable, type2Class);
             if(methodIsOverriden) {
-                boolean haveSameIndex = subtypeExecutable.getTypeParameters().indexOf(subtypeParamElem) ==
-                                        supertypeExecutable.getTypeParameters().indexOf(supertypeParamElem);
+                boolean haveSameIndex = type1Executable.getTypeParameters().indexOf(type1ParamElem) ==
+                                        type2Executable.getTypeParameters().indexOf(type2ParamElem);
                 return haveSameIndex;
             }
         }

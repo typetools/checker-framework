@@ -1889,6 +1889,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * @return true if both types are type variables and outer contains inner
+     * Outer contains inner implies:
+     *     inner.upperBound <: outer.upperBound
+     *     outer.lowerBound <: inner.lowerBound
      */
     protected boolean testTypevarContainment(final AnnotatedTypeMirror inner,
                                              final AnnotatedTypeMirror outer) {

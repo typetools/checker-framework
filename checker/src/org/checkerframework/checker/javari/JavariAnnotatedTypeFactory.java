@@ -785,7 +785,8 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private class JavariTypeHierarchy extends DefaultTypeHierarchy  {
 
-        public JavariTypeHierarchy(BaseTypeChecker checker, QualifierHierarchy qualifierHierarchy, boolean ignoreRawTypes, boolean invariantArrayComponents) {
+        public JavariTypeHierarchy(BaseTypeChecker checker, QualifierHierarchy qualifierHierarchy,
+                                   boolean ignoreRawTypes, boolean invariantArrayComponents) {
             super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents);
         }
 
@@ -799,7 +800,8 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         protected boolean isContainedBy(AnnotatedTypeMirror inside, AnnotatedTypeMirror outside,
                                         VisitHistory visited, boolean canBeCovariant) {
-            return outside.hasEffectiveAnnotation(QREADONLY) || super.isContainedBy(inside, outside, visited, canBeCovariant);
+            return outside.hasEffectiveAnnotation(QREADONLY)
+               || super.isContainedBy(inside, outside, visited, canBeCovariant);
         }
     }
 
