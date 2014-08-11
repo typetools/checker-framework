@@ -25,10 +25,11 @@ import java.util.Set;
  */
 public class MostSpecificTypeVariableAnnotator {
 
-    public static void mostSpecificTypeVariable(final Types types,
+    public static boolean mostSpecificTypeVariable(final Types types,
                                                 final TypeHierarchy typeHierarchy,
                                                 final QualifierHierarchy qualifierHierarchy,
                                                 final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2,
+                                                final AnnotatedTypeMirror backup,
                                                 final AnnotatedTypeVariable result) {
         for(final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
             if(typeHierarchy.isSubtype(type1, type2, top)) {
@@ -38,16 +39,22 @@ public class MostSpecificTypeVariableAnnotator {
                 annotateTypeVarResult(qualifierHierarchy, types, result, type2, top);
 
             } else {
-
-                ErrorReporter.errorAbort(
-                        "Trying to annotate using two incomparable types!\n"
-                      + "type1=" + type1 + "\n"
-                      + "type2=" + type2 + "\n"
-                      + "result=" + result
-                );
+                if(backup != null) {
+                    annotateTypeVarResult(qualifierHierarchy, types, result, backup, top);
+                } else {
+                    return false;
+                }
+//                ErrorReporter.errorAbort(
+//                        "Trying to annotate using two incomparable types!\n"
+//                      + "type1=" + type1 + "\n"
+//                      + "type2=" + type2 + "\n"
+//                      + "result=" + result
+//                );
 
             }
         }
+
+        return true;
     }
 
     private static void annotateTypeVarResult(final QualifierHierarchy qualifierHierarchy,
