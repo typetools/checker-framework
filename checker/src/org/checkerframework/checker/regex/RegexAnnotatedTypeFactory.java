@@ -351,7 +351,7 @@ public class RegexAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<CFVal
                 final Integer lhsRegexCount = getMinimumRegexCount(lhs);
                 final Integer rhsRegexCount = getMinimumRegexCount(rhs);
 
-                if ( lhsRegexCount != null && rhsRegexCount != null) {
+                if (lhsRegexCount != null && rhsRegexCount != null) {
                     int lCount = getGroupCount(lhs.getAnnotation(Regex.class));
                     int rCount = getGroupCount(rhs.getAnnotation(Regex.class));
                     type.removeAnnotationInHierarchy(REGEX);

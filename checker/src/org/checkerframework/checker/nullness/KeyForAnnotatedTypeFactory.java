@@ -303,7 +303,7 @@ public class KeyForAnnotatedTypeFactory extends
                                       VisitHistory visited,  boolean subtypeIsRaw, boolean supertypeIsRaw) {
           final boolean ignoreTypeArgs = ignoreRawTypes && (subtypeIsRaw || supertypeIsRaw);
 
-          if( !ignoreTypeArgs ) {
+          if (!ignoreTypeArgs) {
 
               //TODO: Make an option for honoring this annotation in DefaultTypeHierarchy?
               final TypeElement supertypeElem = (TypeElement) supertype.getUnderlyingType().asElement();

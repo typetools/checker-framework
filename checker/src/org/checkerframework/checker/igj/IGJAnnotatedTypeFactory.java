@@ -937,7 +937,7 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             boolean ignoreTypeArgs = ignoreRawTypes && (subtypeIsRaw || supertypeIsRaw);
 
-            if( !ignoreTypeArgs ) {
+            if(!ignoreTypeArgs) {
                 if (supertype.hasEffectiveAnnotation(MUTABLE)) {
                     return super.visitTypeArgs(subtype, supertype, visited,  subtypeIsRaw, supertypeIsRaw);
                 }
@@ -969,7 +969,7 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         protected boolean isContainedBy(AnnotatedTypeMirror inside, AnnotatedTypeMirror outside,
                                         VisitHistory visited, boolean canBeCovariant) {
             //seems weird to have both inside and outside checked for BOTTOM_QUAL
-            if(inside.hasEffectiveAnnotation(BOTTOM_QUAL) || outside.hasEffectiveAnnotation(BOTTOM_QUAL)) {
+            if (inside.hasEffectiveAnnotation(BOTTOM_QUAL) || outside.hasEffectiveAnnotation(BOTTOM_QUAL)) {
                 return true;
             }
 

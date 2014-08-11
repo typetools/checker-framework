@@ -123,7 +123,7 @@ abstract class TargetedElementAnnotationApplier implements ElementAnnotationAppl
     protected Map<TargetClass, List<Attribute.TypeCompound>> sift(final Iterable<Attribute.TypeCompound> typeCompounds) {
 
         final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToCompound = new LinkedHashMap<>();
-        for( TargetClass targetClass : TargetClass.values()) {
+        for (TargetClass targetClass : TargetClass.values()) {
             targetClassToCompound.put(targetClass, new ArrayList<TypeCompound>());
         }
 
@@ -156,7 +156,7 @@ abstract class TargetedElementAnnotationApplier implements ElementAnnotationAppl
      */
     @Override
     public void extractAndApply( ) {
-        if( !isAccepted() ) {
+        if (!isAccepted()) {
             ErrorReporter.errorAbort("LocalVariableExtractor.extractAndApply: " +
                     "Invalid variable and element passed to " + this.getClass().getName() + "::extractAndApply (" +
                     type + ", " + element );

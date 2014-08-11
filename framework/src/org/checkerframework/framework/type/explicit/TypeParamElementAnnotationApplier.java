@@ -86,19 +86,19 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
         final List<TypeCompound> lowerBoundAnnos = new ArrayList<>();
 
 
-        for( final TypeCompound anno : targeted) {
+        for(final TypeCompound anno : targeted) {
             final AnnotationMirror aliasedAnno = typeFactory.aliasedAnnotation(anno);
             final AnnotationMirror canonicalAnno = (aliasedAnno != null) ? aliasedAnno : anno;
 
-            if( anno.position.parameter_index != paramIndex ||
+            if (anno.position.parameter_index != paramIndex ||
                 !typeFactory.isSupportedQualifier(canonicalAnno)) {
                 continue;
             }
 
-            if( ElementAnnotationUtil.isOnNestedType(anno) ) {
+            if (ElementAnnotationUtil.isOnNestedType(anno)) {
                 applyComponentAnnotation(anno);
 
-            } else  if( anno.position.type == upperBoundTarget() ) {
+            } else if(anno.position.type == upperBoundTarget()) {
                 upperBoundAnnos.add(anno);
 
             } else {
@@ -116,7 +116,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
      * annotation.
      */
     private void applyUpperBounds( final List<TypeCompound> upperBounds) {
-        if(!upperBounds.isEmpty()) {
+        if (!upperBounds.isEmpty()) {
             final AnnotatedTypeMirror upperBoundType = typeParam.getUpperBound();
 
 
@@ -149,10 +149,10 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
      * the multiple annotations so that an type.invalid exception is raised later.
      */
     private void applyLowerBounds(final List<? extends AnnotationMirror> annos) {
-        if( !annos.isEmpty() ) {
+        if (!annos.isEmpty()) {
             final AnnotatedTypeMirror lowerBound = typeParam.getLowerBound();
 
-            for(AnnotationMirror anno : annos) {
+            for (AnnotationMirror anno : annos) {
                 lowerBound.addAnnotation(anno);
             }
         }
@@ -161,13 +161,13 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
     private void applyComponentAnnotation(final TypeCompound anno) {
         final AnnotatedTypeMirror upperBoundType = typeParam.getUpperBound();
 
-        if( anno.position.type == upperBoundTarget() ) {
+        if (anno.position.type == upperBoundTarget()) {
 
-            if( upperBoundType.getKind() == TypeKind.INTERSECTION ) {
+            if (upperBoundType.getKind() == TypeKind.INTERSECTION) {
                 final List<? extends AnnotatedTypeMirror> intersectionTypes = upperBoundType.directSuperTypes();
                 final int boundIndex = anno.position.bound_index + getBoundIndexOffset(intersectionTypes);
 
-                if(boundIndex < 0 || boundIndex > intersectionTypes.size()) {
+                if (boundIndex < 0 || boundIndex > intersectionTypes.size()) {
                     ErrorReporter.errorAbort("Invalid bound index on element annotation ( " + anno + " ) " +
                             "for type ( " + typeParam + " ) with upper bound ( " + typeParam.getUpperBound() + " )");
                 }

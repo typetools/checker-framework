@@ -25,7 +25,7 @@ class VariableApplier extends TargetedElementAnnotationApplier {
     /**
      * @return True if this is a variable declaration including fields an enum constants
      */
-    public static boolean accepts( final AnnotatedTypeMirror typeMirror, final Element element ) {
+    public static boolean accepts(final AnnotatedTypeMirror typeMirror, final Element element) {
         return contains(element.getKind(), acceptedKinds) || element.getKind().isField();
     }
 
@@ -68,7 +68,7 @@ class VariableApplier extends TargetedElementAnnotationApplier {
 
     @Override
     protected void handleTargeted(final List<Attribute.TypeCompound> targeted) {
-        for( final Attribute.TypeCompound anno : targeted) {
+        for (final Attribute.TypeCompound anno : targeted) {
             annotateViaTypeAnnoPosition(type, anno);
         }
     }
