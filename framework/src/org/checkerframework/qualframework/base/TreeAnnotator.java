@@ -1,11 +1,7 @@
 package org.checkerframework.qualframework.base;
 
-import javax.lang.model.type.TypeMirror;
-
 import com.sun.source.tree.*;
 import com.sun.source.util.SimpleTreeVisitor;
-
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 

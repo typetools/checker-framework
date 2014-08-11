@@ -56,6 +56,8 @@ public enum DefaultLocation {
      */
     RETURNS,
 
+    LOWER_BOUNDS,
+
     /**
      * Apply default annotations to unannotated upper bounds:  both
      * explicit ones in <tt>extends</tt> clauses, and implicit upper bounds

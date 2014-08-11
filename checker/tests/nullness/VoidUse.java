@@ -9,7 +9,7 @@ public class VoidUse {
   // is Nullable. Should this fail? The upper bound of the
   // wildcard is implicitly Nullable (because of the bound in
   // Class), therefore it passes.
-  //TODO:: error: (assignment.type.incompatible)
+  //:: error: (assignment.type.incompatible)
   private Class<?> main_class1 = Void.TYPE;
 
   private Class<? extends @Nullable Object> main_class2 = Void.TYPE;
@@ -44,11 +44,11 @@ public class VoidUse {
   }
 
   // Test case for issue #230
-  Class<?> voidClass() {
+  Class<? extends @Nullable Object> voidClass() {
     return void.class;
   }
 
-  Class<?> VoidClass() {
+  Class<? extends @Nullable Object> VoidClass() {
     return Void.class;
   }
 

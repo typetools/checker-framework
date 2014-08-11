@@ -260,7 +260,7 @@ public class CFGDOTVisualizer {
             sb = sb2;
 
             if (verbose) {
-                Node lastNode = null;
+                Node lastNode;
                 switch (bb.getType()) {
                     case REGULAR_BLOCK:
                         List<Node> blockContents = ((RegularBlock) bb).getContents();
@@ -269,6 +269,8 @@ public class CFGDOTVisualizer {
                     case EXCEPTION_BLOCK:
                         lastNode = ((ExceptionBlock) bb).getNode();
                         break;
+                    default:
+                        lastNode = null;
                 }
                 if (lastNode != null) {
                     sb2.append("\\n~~~~~~~~~\\n");
