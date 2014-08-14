@@ -47,13 +47,15 @@ public class JavacRunner implements CheckersRunner
     private final Iterable<String> processors;
     private final String classpath;
     private final DiagnosticCollector<JavaFileObject> collector;
+    private final boolean hasQuals;
 
-    public JavacRunner(String[] fileNames, String[] processors, String classpath)
+    public JavacRunner(String[] fileNames, String[] processors, String classpath,boolean hasQuals)
     {
         this.collector = new DiagnosticCollector<JavaFileObject>();
         this.fileNames = Arrays.asList(fileNames);
         this.processors = Arrays.asList(processors);
         this.classpath = classpath;
+        this.hasQuals = hasQuals;
     }
 
     /**
@@ -76,7 +78,7 @@ public class JavacRunner implements CheckersRunner
         // The following code uses the compiler's internal APIs, which are
         // volatile. (see warning in JavacTool source)
         JavacTool tool = JavacTool.create();
-        JavacFileManager manager = tool.getStandardFileManager(collector, null, null);
+        JavacFileManager manager = null; //tool.getStandardFileManager(collector, null, null);
 
         Iterable<? extends JavaFileObject> fileObjs = manager.getJavaFileObjectsFromStrings(fileNames);
 
@@ -169,7 +171,7 @@ public class JavacRunner implements CheckersRunner
         if (store.getBoolean(CheckerPreferences.PREF_CHECKER_A_FILENAMES))
             opts.add("-Afilenames");
 
-        if (store.getBoolean(CheckerPreferences.PREF_CHECKER_IMPLICIT_IMPORTS))
+        if (store.getBoolean(CheckerPreferences.PREF_CHECKER_IMPLICIT_IMPORTS) && hasQuals)
         {
             StringBuilder builder = new StringBuilder();
             for (String annClass : IMPLICIT_ARGS)

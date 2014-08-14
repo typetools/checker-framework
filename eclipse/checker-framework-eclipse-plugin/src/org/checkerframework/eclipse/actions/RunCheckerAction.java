@@ -26,24 +26,26 @@ public abstract class RunCheckerAction extends CheckerHandler
     protected boolean usePrefs;
     protected boolean useCustom;
     protected boolean useSingleCustom;
+    protected boolean hasQuals;
 
     /** true if this action is used from editor */
     protected boolean usedInEditor;
 
     protected RunCheckerAction() {
-        super();
-        this.checkerName = null;
-        this.usePrefs = true;
-        this.useCustom = false;
-        this.useSingleCustom = false;
+        this(null, true);
     }
 
     protected RunCheckerAction(String checkerName) {
+        this(checkerName, true);
+    }
+
+    protected RunCheckerAction(String checkerName, boolean hasQuals) {
         super();
         this.checkerName = checkerName;
         this.useCustom = false;
         this.usePrefs = false;
         this.useSingleCustom = false;
+        this.hasQuals = hasQuals;
     }
 
     /**
@@ -89,7 +91,7 @@ public abstract class RunCheckerAction extends CheckerHandler
                 actualNames = PluginUtil.join(",", names);
             }
 
-            checkerJob = new CheckerWorker(elements, actualNames);
+            checkerJob = new CheckerWorker(elements, actualNames, hasQuals);
 
             checkerJob.setUser(true);
             checkerJob.setPriority(Job.BUILD);

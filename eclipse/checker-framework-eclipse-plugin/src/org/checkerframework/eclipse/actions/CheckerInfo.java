@@ -1,8 +1,17 @@
 package org.checkerframework.eclipse.actions;
 
+import org.checkerframework.checker.guieffect.GuiEffectChecker;
+import org.checkerframework.checker.igj.IGJChecker;
+import org.checkerframework.checker.propkey.PropertyKeyChecker;
+import org.checkerframework.checker.signature.SignatureChecker;
+import org.checkerframework.checker.units.UnitsChecker;
+import org.checkerframework.common.subtyping.SubtypingChecker;
+import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.eclipse.util.PluginUtil;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.checker.fenum.FenumChecker;
@@ -53,19 +62,27 @@ public class CheckerInfo
         if(checkers == null) {
 
             final List<CheckerInfo> checkerList = Arrays.asList(
-                    new CheckerInfo("Nullness Checker",  NullnessChecker.class),
-                    new CheckerInfo("Javari Checker",    JavariChecker.class),
-                    new CheckerInfo("Interning Checker", InterningChecker.class),
+                new CheckerInfo("Nullness Checker",  NullnessChecker.class),
+                new CheckerInfo("Interning Checker", InterningChecker.class),
+                new CheckerInfo("Lock Checker",      LockChecker.class),
 
-                    new CheckerInfo("Fenum Checker",         FenumChecker.class),
-                    new CheckerInfo("Format String Checker", FormatterChecker.class),
+                new CheckerInfo("Fenum Checker",     FenumChecker.class),
+                new CheckerInfo("Tainting Checker",  TaintingChecker.class),
+                new CheckerInfo("Regex Checker",     RegexChecker.class),
 
-                    new CheckerInfo("Linear Checker",    LinearChecker.class),
-                    new CheckerInfo("Lock Checker",      LockChecker.class),
-                    new CheckerInfo("Regex Checker",     RegexChecker.class),
-                    new CheckerInfo("Tainting Checker",  TaintingChecker.class),
+                new CheckerInfo("Format String Checker", FormatterChecker.class),
+                new CheckerInfo("Property File Checker", PropertyKeyChecker.class),
+                new CheckerInfo("Signature Checker",     SignatureChecker.class),
 
-                    new CheckerInfo("I18n Checker",      I18nChecker.class)
+                new CheckerInfo("GUI Effect Checker", GuiEffectChecker.class),
+                new CheckerInfo("Units Checker",      UnitsChecker.class),
+                new CheckerInfo("Linear Checker",     LinearChecker.class),
+
+                new CheckerInfo("IGJ Immutability Checker",    IGJChecker.class),
+                new CheckerInfo("Javari Immutability Checker", JavariChecker.class),
+                new CheckerInfo("Subtyping Checker",           SubtypingChecker.class),
+
+                new CheckerInfo("Constant Value Checker", ValueChecker.class)
             );
 
             final Map<String, CheckerInfo> modifiableCheckers = new LinkedHashMap<String, CheckerInfo>();
@@ -110,13 +127,11 @@ public class CheckerInfo
      * @param label
      * @param checker
      */
-    public CheckerInfo(final String label, final Class<? extends SourceChecker> checker)
-    {
+    public CheckerInfo(final String label, final Class<? extends SourceChecker> checker) {
         this(label, checker.getCanonicalName(), checkerToQuals(checker));
     }
 
-    public CheckerInfo(final String label, final String processor, final String qualsPath)
-    {
+    public CheckerInfo(final String label, final String processor, final String qualsPath) {
         this.label = label;
         this.processor = processor;
         this.qualsPath = qualsPath;
@@ -147,8 +162,7 @@ public class CheckerInfo
      * 
      * @return the quals path
      */
-    public String getQualsPath()
-    {
+    public String getQualsPath() {
         return this.qualsPath;
     }
 }
