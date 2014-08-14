@@ -77,7 +77,8 @@
 <ol>
     <li>Copy Checker Framework artifacts to the plugin's lib directory.</li>
     <li>Update the version numbers of the plugin.</li>
-    <li>Build the plugin .</li>
+    <li>Check to make sure all checkers from the Checker Framework manual are included in the plugin.</li>
+    <li>Build the plugin.</li>
     <li>Install and test the plugin locally.</li>
     <li>Copy the release to the deployment directory.</li>
     <li>Update symlinks to point to the latest plugin release.</li>
@@ -390,9 +391,38 @@
             </td>
         </tr>
 
+        <tr id="update_checkers">
+            <td colspan="2">
+                <strong>Build Step 2: Update the list of checkers</strong><br>
+                Note, if you have already built the plugin, the quickest way to check the list of checkers is to:
+
+                <ol>
+                    <li>Open an Eclipse instance with the plugin installed.</li>
+                    <li>Right click a folder or source file.</li>
+                    <li>Select &quot;Run built-in checker&quot;.</li>
+                    <li>Verify that the displayed list contains all of the checkers in the Checker Framework manual.</li>
+                </ol>
+                Alternatively, you can verify the list of checkers using the following process:
+
+                <ol>
+                    <li>In your Eclipse with RCP IDE, open the plugin.xml editor.</li>
+                    <li>Select the plugin.xml tab.</li>
+                    <li>Search for <strong>commandId=&quot;checkers.eclipse.runnullness&quot;</strong>.</li>
+                    <li>For each Checker in the Checker Framework manual, ensure there is
+                        an entry in the command list that you found using the previous search.</li>
+                    <li>Search for <strong>defaultHandler= &quot;org.checkerframework.eclipse.actions.CheckerActions$NullnessAction&quot;</strong>.</li>
+                    <li>For each command, ensure there is a corresponding handler in the list found
+                        by the previous search.
+                    </li>
+                    <li>Go to class: CheckerActions</li>
+                    <li>For each handler/command, ensure there is a corresponding CheckerAction.</li>
+                </ol>
+            </td>
+        </tr>
+
         <tr id="build_plugin">
             <td colspan="2">
-                <strong>Build Step 2: Build the plugin, feature, and Update Site</strong><br>
+                <strong>Build Step 3: Build the plugin, feature, and Update Site</strong><br>
                 <ol>
                     <li>Open the site.xml editor.</li>
                     <li>Select the &quot;Site Map&quot; tab.</li>
@@ -671,6 +701,7 @@
             <li><a href="#building_the_plugin">Building the Plugin</a>
                 <ul class="nav">
                     <li><a href="#copy_artifacts">Copy Artifacts</a></li>
+                    <li><a href="#update_checkers">Update Checker List</a></li>
                     <li><a href="#update_version">Update Versions</a></li>
                     <li><a href="#build_plugin">Build All</a></li>
                 </ul>
