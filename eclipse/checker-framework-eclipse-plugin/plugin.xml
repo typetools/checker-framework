@@ -147,6 +147,11 @@
             style="push">
            </command>
            <command
+            commandId="checkers.eclipse.runi18n"
+            label="I18n Checker"
+            style="push">
+           </command>
+           <command
             commandId="checkers.eclipse.runguieffectchecker"
             label="Gui Effect Checker"
             style="push">
