@@ -6,6 +6,39 @@ import org.checkerframework.checker.javari.qual.Mutable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.FromByteCode;
+import org.checkerframework.framework.qual.FromStubFile;
+import org.checkerframework.framework.qual.InheritedAnnotation;
+import org.checkerframework.framework.qual.PolymorphicQualifier;
+import org.checkerframework.framework.qual.StubFiles;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeQualifiers;
+import org.checkerframework.framework.source.SourceChecker;
+import org.checkerframework.framework.stub.StubParser;
+import org.checkerframework.framework.stub.StubResource;
+import org.checkerframework.framework.stub.StubUtil;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.GraphQualifierHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.trees.DetachedVarSymbol;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,39 +69,6 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
-
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.qual.InheritedAnnotation;
-import org.checkerframework.framework.qual.FromByteCode;
-import org.checkerframework.framework.qual.FromStubFile;
-import org.checkerframework.framework.qual.PolymorphicQualifier;
-import org.checkerframework.framework.qual.StubFiles;
-import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifiers;
-import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.stub.StubParser;
-import org.checkerframework.framework.stub.StubResource;
-import org.checkerframework.framework.stub.StubUtil;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.javacutil.AnnotationProvider;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 
 //The following imports are from com.sun, but they are all
 //@jdk.Exported and therefore somewhat safe to use.
@@ -166,7 +166,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * A cache used to store elements whose declaration annotations
      * have already been stored by calling the method getDeclAnnotations.
      */
-    private Map<Element, Set<AnnotationMirror>> cacheDeclAnnos;
+    private final Map<Element, Set<AnnotationMirror>> cacheDeclAnnos;
 
     /**
      * A set containing declaration annotations that should be inherited.
