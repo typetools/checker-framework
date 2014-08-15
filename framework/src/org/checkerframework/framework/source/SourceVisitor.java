@@ -4,11 +4,11 @@ package org.checkerframework.framework.source;
 import org.checkerframework.checker.nullness.qual.*;
 */
 
+import org.checkerframework.javacutil.ErrorReporter;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-
-import org.checkerframework.javacutil.ErrorReporter;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
@@ -53,10 +53,20 @@ public abstract class SourceVisitor<R, P>
         ErrorReporter.setHandler(checker);
     }
 
-    // Entry point for visitors, called once per
-    // CompilationUnitTree.
-    public R visit(CompilationUnitTree root, TreePath path, P p) {
+    /*
+     * Set the CompilationUnitTree to be used during any visits.
+     * For any later calls of {@see com.sun.source.util.TreePathScanner.scan(TreePath, P)},
+     * the CompilationUnitTree of the TreePath has to be equal to {@code root}.
+     */
+    public void setRoot(CompilationUnitTree root) {
         this.root = root;
-        return this.scan(path, p);
+    }
+
+    /*
+     * Entry point for a type processor: the TreePath leaf is
+     * a top-level type tree within root.
+     */
+    public void visit(TreePath path) {
+        this.scan(path, null);
     }
 }
