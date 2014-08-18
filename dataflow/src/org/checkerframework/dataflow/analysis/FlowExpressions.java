@@ -1,14 +1,5 @@
 package org.checkerframework.dataflow.analysis;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ExplicitThisLiteralNode;
@@ -29,6 +20,15 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 /**
  * Collection of classes and helper functions to represent Java expressions
@@ -198,7 +198,7 @@ public class FlowExpressions {
         /**
          * Returns true if and only if the value this expression stands for
          * cannot be changed by a method call. This is the case for local
-         * variables, the self reference as wel as final field accesses for
+         * variables, the self reference as well as final field accesses for
          * whose receiver {@link #isUnmodifiableByOtherCode} is true.
          */
         public abstract boolean isUnmodifiableByOtherCode();
