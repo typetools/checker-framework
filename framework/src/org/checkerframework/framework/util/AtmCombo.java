@@ -627,10 +627,10 @@ public enum AtmCombo {
             case WILDCARD_WILDCARD:
                 return visitor.visitWildcard_Wildcard( (AnnotatedWildcardType) type1, (AnnotatedWildcardType) type2, initialParam );
 
+            default:
+                // Reaching this point indicates that there is an AtmCombo missing
+                ErrorReporter.errorAbort("Unhandled AtmCombo ( " + combo + " ) " );
+                return null; //dead code
         }
-
-        //Reaching this point indicates that there is an AtmCombo missing from the preceding switch statement
-        ErrorReporter.errorAbort("Unhandled AtmCombo ( " + combo + " ) " );
-        return null; //dead code
     }
 }
