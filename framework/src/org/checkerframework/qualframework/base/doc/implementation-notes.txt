@@ -1,0 +1,60 @@
+This document contains some general notes on the current (2014-03-21) shim
+implementation of the qualifier-based checker API:
+ - "Adapters": A description of the design of the adapter classes for
+   integrating qualifier-based and annotation-based code.
+ - "Native Qualifier-Based Implementation": A brief note on a strategy for
+   incrementally replacing the current implementation with native
+   qualifier-based code.
+
+
+Adapters
+========
+
+The shim implementation of the qualifier API uses a set of "adapter" classes to
+connect a qualifier-based checker to the annotation-based framework.  Each
+adapter class performs translation in both directions, so that annotation-based
+framework code can use qualifier-based checker components and qualifier-based
+components can invoke existing annotation-based functionality.
+
+For example, QualifiedTypeFactoryAdapter is an adapter for QualifiedTypeFactory
+that extends BaseTypeAnnotatedTypeFactory.  QTFAdapter overrides
+getAnnotatedType to invoke the getQualifiedType method on the underlying
+QualifiedTypeFactory and then convert the resulting QualifiedTypeMirror to an
+AnnotatedTypeMirror, thus allowing annotation-based framework code to use a
+qualifier-based type factory.  QTFAdapter also provides a package-visible
+method superGetAnnotatedType that invokes super.getAnnotatedType and converts
+the result from AnnotatedTypeMirror to QualifiedTypeMirror, so that the default
+implementation of getQualifiedType can re-use the default logic from
+BaseTypeATF.getAnnotatedType.
+
+The main framework package for the qualifier API contains an adapter class for
+each checker component with an annotation-based equivalent.  Also, some
+qualifier-based component implementations include a setAdapter method to
+provide the component with a reference to its adapter, so the component can
+invoke existing annotation-based logic using the adapter's "super" methods
+(superGetAnnotatedType, etc.).  The adapter classes themselves and the
+setAdapter methods are considered implementation details (since they will
+eventually be replaced with native qualifier-based implementations), so they
+are given package visibility to hide them from users of the qualifier API.  The
+only exception is the CheckerAdapter class, which must be visible because
+checkers must extend it to provide an entry point for the '-processor' flag of
+javac.
+
+
+
+Native Qualifier-Based Implementation
+=====================================
+
+The shim layer is intended to be a temporary solution, which will be discarded
+once a native qualifier-based implementation has been written.  This rewrite
+can be done incrementally by replacing one reverse wrapper method at a time
+with an equivalent checker-based implementation.  Once all reverse wrappers in
+an adapter have been rewritten, the qualifier-based implementations can be
+moved somewhere more appropriate and the reference from the main class to its
+adapter can be eliminated.  At this point, the main class is independent of the
+annotation-based framework, though the adapter class may still be necessary as
+long as other parts of the implementation are still using annotation-based
+implementations.  For example, QualifierHierarchy does not call any methods of
+its adapter, but the QualifierHierarchyAdapter class is still needed to allow
+DefaultTypeHierarchy to use the reverse wrapper methods of its
+TypeHierarchyAdapter.
