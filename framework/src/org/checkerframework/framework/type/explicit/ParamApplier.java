@@ -1,5 +1,6 @@
 package org.checkerframework.framework.type.explicit;
 
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
@@ -21,6 +22,10 @@ import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE_TYPE_ARGUMENT
  * Adds annotations to one formal parameter of a method.
  */
 class ParamApplier extends IndexedElementAnnotationApplier {
+
+    public static void apply(AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory) {
+        new ParamApplier(type, element).extractAndApply();
+    }
 
     public static int RECEIVER_PARAM_INDEX = Integer.MIN_VALUE;
 
@@ -122,5 +127,4 @@ class ParamApplier extends IndexedElementAnnotationApplier {
     protected boolean isAccepted() {
         return accepts(type, element);
     }
-
 }
