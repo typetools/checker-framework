@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util;
 
 import com.sun.source.tree.CompilationUnitTree;
-import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import java.io.*;
 import java.util.Arrays;
@@ -123,6 +122,8 @@ public class ComboLog {
                         foundCombos.add(combo);
                     }
                 } while (line != null);
+
+                reader.close();
             }
 
         } catch (IOException e) {
