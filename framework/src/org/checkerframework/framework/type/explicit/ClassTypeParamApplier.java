@@ -17,6 +17,10 @@ import javax.lang.model.element.ElementKind;
  */
 class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
 
+    public static void apply(AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory) {
+        new ClassTypeParamApplier(type, element, typeFactory).extractAndApply();
+    }
+
     /**
      * @return True if element represents a type parameter for a class.
      */
