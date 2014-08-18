@@ -2236,6 +2236,12 @@ public abstract class AnnotatedTypeMirror {
             super(type, factory);
         }
 
+        @Override
+        public void addAnnotation(AnnotationMirror a) {
+            super.addAnnotation(a);
+            fixupBoundAnnotations();
+        }
+
         /**
          * Sets the super bound of this wild card
          *
@@ -2256,24 +2262,29 @@ public abstract class AnnotatedTypeMirror {
          * explicitly declared, {@code null} is returned.
          */
         public AnnotatedTypeMirror getSuperBound() {
-            if (superBound == null
-                    && ((WildcardType)actualType).getSuperBound() != null) {
+            if ( superBound == null ) {
                 // lazy init
-                AnnotatedTypeMirror annosupertype = createType(((WildcardType)actualType).getSuperBound(), atypeFactory, false);
+                TypeMirror underlyingSuperBound = ((WildcardType)actualType).getSuperBound();
+                if (underlyingSuperBound == null) {
+                    // Take the upper bound of the type variable the wildcard is bound to.
+                    com.sun.tools.javac.code.Type.WildcardType wct = (com.sun.tools.javac.code.Type.WildcardType) actualType;
+                    com.sun.tools.javac.util.Context ctx = ((com.sun.tools.javac.processing.JavacProcessingEnvironment) atypeFactory.processingEnv).getContext();
+                    underlyingSuperBound = com.sun.tools.javac.code.Types.instance(ctx).wildLowerBound(wct);
+                }
+
+                AnnotatedTypeMirror annosupertype = createType(underlyingSuperBound, atypeFactory, false);
                 setSuperBound(annosupertype);
-                fixupBoundAnnotations();
             }
+            fixupBoundAnnotations();
             return this.superBound;
         }
 
+        /**
+         * @return the lower bound of this wildcard. If no lower bound is
+         * explicitly declared, {@code null} is returned.
+         */
         public AnnotatedTypeMirror getEffectiveSuperBound() {
-            AnnotatedTypeMirror spb = getSuperBound();
-            if (spb == null) {
-                return null;
-            }
-            AnnotatedTypeMirror effbnd = AnnotatedTypes.deepCopy(spb);
-            effbnd.replaceAnnotations(annotations);
-            return effbnd;
+            return AnnotatedTypes.deepCopy(getSuperBound());
         }
 
         /**
@@ -2309,60 +2320,24 @@ public abstract class AnnotatedTypeMirror {
                 AnnotatedTypeMirror annoexttype = createType(extType, atypeFactory, false);
                 // annoexttype.setElement(this.element);
                 setExtendsBound(annoexttype);
-                fixupBoundAnnotations();
             }
+            fixupBoundAnnotations();
             return this.extendsBound;
         }
 
-        private void fixupBoundAnnotations() {
-            /*System.out.println("AWC.fix: " + this + " elem: " + this.element);
-            atypeFactory.annotateImplicit(this.element, this.extendsBound);
-            atypeFactory.annotateImplicit(this.element, this.superBound);*/
-        }
-
-        /**
-         * @return the effective extends bound: the extends bound, with
-         *         annotations on the type variable considered.
-         */
         public AnnotatedTypeMirror getEffectiveExtendsBound() {
-            AnnotatedTypeMirror effbnd = AnnotatedTypes.deepCopy(getExtendsBound());
-            effbnd.replaceAnnotations(annotations);
-            return effbnd;
+            return AnnotatedTypes.deepCopy(getExtendsBound());
         }
 
-        /**
-         * @return the effective upper bound annotations: the annotations on
-         *         this, or if none, those on the upper bound.
-         */
-        public Set<AnnotationMirror> getEffectiveExtendsBoundAnnotations() {
-            Set<AnnotationMirror> result = annotations;
-            // If there are no annotations, return the upper bound.
-            if (result.isEmpty()) {
-                AnnotatedTypeMirror ub = getExtendsBound();
-                if (ub != null) {
-                    return ub.getEffectiveAnnotations();
-                } else {
-                    return Collections.unmodifiableSet(result);
+        private void fixupBoundAnnotations() {
+            if(!this.annotations.isEmpty()) {
+                if (superBound != null) {
+                    superBound.replaceAnnotations(this.annotations);
+                }
+                if (extendsBound != null) {
+                    extendsBound.replaceAnnotations(this.annotations);
                 }
             }
-            result = AnnotationUtils.createAnnotationSet();
-            result.addAll(annotations);
-            Set<AnnotationMirror> boundAnnotations = Collections.emptySet();
-            AnnotatedTypeMirror ub = getExtendsBound();
-            if (ub != null) {
-                boundAnnotations = ub.getEffectiveAnnotations();
-            }
-            // Add all the annotation from the the upper bound, for which there
-            // isn't already another annotation in the set from the same
-            // hierarchy.
-            for (AnnotationMirror boundAnnotation : boundAnnotations) {
-                QualifierHierarchy qualHierarchy = atypeFactory.qualHierarchy;
-                AnnotationMirror top = qualHierarchy.getTopAnnotation(boundAnnotation);
-                if (qualHierarchy.getAnnotationInHierarchy(result, top) == null) {
-                    result.add(boundAnnotation);
-                }
-            }
-            return Collections.unmodifiableSet(result);
         }
 
         @Override
@@ -2378,10 +2353,10 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedWildcardType getCopy(boolean copyAnnotations) {
             AnnotatedWildcardType type = new AnnotatedWildcardType((WildcardType) actualType, atypeFactory);
+            type.setExtendsBound(getExtendsBound().getCopy(true));
+            type.setSuperBound(getSuperBound().getCopy(true));
             if (copyAnnotations)
                 type.addAnnotations(annotations);
-            type.setExtendsBound(getExtendsBound());
-            type.setSuperBound(getSuperBound());
 
             type.typeArgHack = typeArgHack;
 
@@ -2434,8 +2409,10 @@ public abstract class AnnotatedTypeMirror {
             if (!isPrintingBound) {
                 try {
                     isPrintingBound = true;
+                    sb.append("[");
                     printBound("super",   getSuperBoundField(),   printInvisible, sb);
                     printBound("extends", getExtendsBoundField(), printInvisible, sb);
+                    sb.append("]");
                 } finally {
                     isPrintingBound = false;
                 }
@@ -2912,16 +2889,14 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public List<AnnotatedTypeMirror> visitTypeVariable(AnnotatedTypeVariable type, Void p) {
             List<AnnotatedTypeMirror> superTypes = new ArrayList<AnnotatedTypeMirror>();
-            if (type.getEffectiveUpperBound() != null)
-                superTypes.add(AnnotatedTypes.deepCopy(type.getEffectiveUpperBound()));
+            superTypes.add(AnnotatedTypes.deepCopy(type.getEffectiveUpperBound()));
             return superTypes;
         }
 
         @Override
         public List<AnnotatedTypeMirror> visitWildcard(AnnotatedWildcardType type, Void p) {
             List<AnnotatedTypeMirror> superTypes = new ArrayList<AnnotatedTypeMirror>();
-            if (type.getEffectiveExtendsBound() != null)
-                superTypes.add(AnnotatedTypes.deepCopy(type.getEffectiveExtendsBound()));
+            superTypes.add(AnnotatedTypes.deepCopy(type.getEffectiveExtendsBound()));
             return superTypes;
         }
     };
