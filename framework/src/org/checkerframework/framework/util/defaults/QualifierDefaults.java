@@ -13,7 +13,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
@@ -379,7 +378,7 @@ public class QualifierDefaults {
         private final DefaultApplierElementImpl impl;
 
         //This flag is turned on, to allow defaulting of local variables that are also typevariables
-        private boolean applyToTypeVar;
+        private final boolean applyToTypeVar;
 
         public DefaultApplierElement(AnnotatedTypeFactory atypeFactory, Element scope, AnnotatedTypeMirror type, boolean applyToTypeVar) {
             this.atypeFactory = atypeFactory;

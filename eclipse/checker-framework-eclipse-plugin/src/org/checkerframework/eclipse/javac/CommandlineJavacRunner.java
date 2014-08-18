@@ -65,8 +65,13 @@ public class CommandlineJavacRunner implements CheckersRunner {
      */
     protected File checkerJar;
 
+    /**
+     * Whether or not the checker in question has qualifiers that are not supplied by Aquals
+     */
+    protected boolean hasQuals;
+
     public CommandlineJavacRunner(final String[] fileNames, final String [] processors,
-            final String classpath, final String bootClasspath) {
+            final String classpath, final String bootClasspath, final boolean hasQuals) {
         this.fileNames = Arrays.asList(fileNames);
         this.processors = processors;
 
@@ -77,6 +82,8 @@ public class CommandlineJavacRunner implements CheckersRunner {
 
         final IPreferenceStore prefs = CheckerPlugin.getDefault().getPreferenceStore();
         this.verbose = prefs.getBoolean(CheckerPreferences.PREF_CHECKER_VERBOSE);
+
+        this.hasQuals = hasQuals;
     }
 
     /**
@@ -140,7 +147,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
         final Map<PluginUtil.CheckerProp, Object> props = new HashMap<PluginUtil.CheckerProp, Object>();
 
         final IPreferenceStore prefs = CheckerPlugin.getDefault().getPreferenceStore();
-        if (prefs.getBoolean(CheckerPreferences.PREF_CHECKER_IMPLICIT_IMPORTS)) {
+        if (prefs.getBoolean(CheckerPreferences.PREF_CHECKER_IMPLICIT_IMPORTS) && this.hasQuals) {
             props.put(PluginUtil.CheckerProp.IMPLICIT_IMPORTS, implicitAnnotations(processors));
         }
 

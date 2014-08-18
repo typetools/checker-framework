@@ -2,6 +2,7 @@ package org.checkerframework.eclipse.actions;
 
 import org.checkerframework.checker.fenum.FenumChecker;
 import org.checkerframework.checker.formatter.FormatterChecker;
+import org.checkerframework.checker.guieffect.GuiEffectChecker;
 import org.checkerframework.checker.i18n.I18nChecker;
 import org.checkerframework.checker.igj.IGJChecker;
 import org.checkerframework.checker.interning.InterningChecker;
@@ -9,8 +10,13 @@ import org.checkerframework.checker.javari.JavariChecker;
 import org.checkerframework.checker.linear.LinearChecker;
 import org.checkerframework.checker.lock.LockChecker;
 import org.checkerframework.checker.nullness.NullnessChecker;
+import org.checkerframework.checker.propkey.PropertyKeyChecker;
 import org.checkerframework.checker.regex.RegexChecker;
+import org.checkerframework.checker.signature.SignatureChecker;
 import org.checkerframework.checker.tainting.TaintingChecker;
+import org.checkerframework.checker.units.UnitsChecker;
+import org.checkerframework.common.subtyping.SubtypingChecker;
+import org.checkerframework.common.value.ValueChecker;
 
 public class CheckerActions
 {
@@ -75,6 +81,38 @@ public class CheckerActions
         }
     }
 
+    public static class PropertyFileAction extends RunCheckerAction
+    {
+        public PropertyFileAction()
+        {
+            super(PropertyKeyChecker.class.getCanonicalName());
+        }
+    }
+
+    public static class SignatureAction extends RunCheckerAction
+    {
+        public SignatureAction()
+        {
+            super(SignatureChecker.class.getCanonicalName());
+        }
+    }
+
+    public static class GuiEffectAction extends RunCheckerAction
+    {
+        public GuiEffectAction()
+        {
+            super(GuiEffectChecker.class.getCanonicalName());
+        }
+    }
+
+    public static class UnitAction extends RunCheckerAction
+    {
+        public UnitAction()
+        {
+            super(UnitsChecker.class.getCanonicalName());
+        }
+    }
+
     public static class LinearAction extends RunCheckerAction
     {
         public LinearAction()
@@ -112,6 +150,23 @@ public class CheckerActions
         public RegexAction()
         {
             super(RegexChecker.class.getCanonicalName());
+        }
+    }
+
+    public static class SubtypingAction extends RunCheckerAction
+    {
+        public SubtypingAction()
+        {
+            super(SubtypingChecker.class.getCanonicalName());
+        }
+    }
+
+
+    public static class ConstantValueAction extends RunCheckerAction
+    {
+        public ConstantValueAction()
+        {
+            super(ValueChecker.class.getCanonicalName());
         }
     }
 

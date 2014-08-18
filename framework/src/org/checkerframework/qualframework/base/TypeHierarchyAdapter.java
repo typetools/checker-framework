@@ -1,7 +1,6 @@
 package org.checkerframework.qualframework.base;
 
 import org.checkerframework.framework.type.*;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 
 import javax.lang.model.element.AnnotationMirror;
 
