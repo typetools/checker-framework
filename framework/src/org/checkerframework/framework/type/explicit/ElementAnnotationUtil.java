@@ -4,6 +4,7 @@ import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
+import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntryKind;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
@@ -57,44 +58,36 @@ public class ElementAnnotationUtil {
     public static void applyElementAnnotations(final AnnotatedTypeMirror type, final Element element,
                                                final AnnotatedTypeFactory typeFactory) {
 
-        final ElementAnnotationApplier applier;
         if ( element == null ) {
             ErrorReporter.errorAbort("ElementAnnotationUtil.applyElementAnnotations: element cannot be null");
-            applier = null; //dead code
 
         } else if( TypeVarUseApplier.accepts(type, element) ) {
-            applier = new TypeVarUseApplier(type, element, typeFactory);
+            TypeVarUseApplier.apply(type, element, typeFactory);
 
         } else if( VariableApplier.accepts(type, element) ) {
-            applier = new VariableApplier(type,element);
+            VariableApplier.apply(type, element);
 
         } else if ( MethodApplier.accepts(type, element) ) {
-            applier = new MethodApplier( type, element, typeFactory );
+            MethodApplier.apply(type, element, typeFactory);
 
         } else if ( TypeDeclarationApplier.accepts(type, element) ) {
-            applier = new TypeDeclarationApplier( type, element, typeFactory );
+            TypeDeclarationApplier.apply(type, element, typeFactory);
 
         } else if ( ClassTypeParamApplier.accepts(type, element) ) {
-            applier = new ClassTypeParamApplier((AnnotatedTypeVariable) type, element, typeFactory);
+            ClassTypeParamApplier.apply((AnnotatedTypeVariable) type, element, typeFactory);
 
         } else if ( MethodTypeParamApplier.accepts(type, element)) {
-            applier = new MethodTypeParamApplier((AnnotatedTypeVariable) type, element, typeFactory);
+            MethodTypeParamApplier.apply((AnnotatedTypeVariable) type, element, typeFactory);
 
         } else if ( ParamApplier.accepts(type, element) ) {
-            applier = new ParamApplier(type, element);
+            ParamApplier.apply(type, element, typeFactory);
 
-        //Types resulting from capture conversion cannot have explicit annotations
         } else if ( isCaptureConvertedTypeVar(type, element ) ){
-            applier = null;
+            //Types resulting from capture conversion cannot have explicit annotations
 
         } else {
             ErrorReporter.errorAbort("ElementAnnotationUtil.applyElementAnnotations: illegal argument: " +
                     element + " [" + element.getKind() + "]" + " with type " + type);
-            applier = null; //dead code
-        }
-
-        if( applier != null ) {
-            applier.extractAndApply();
         }
     }
 
@@ -443,8 +436,10 @@ public class ElementAnnotationUtil {
      */
     static AnnotatedTypeMirror getTypeAtLocation(AnnotatedTypeMirror type, List<TypeAnnotationPosition.TypePathEntry> location) {
 
-        if (location.isEmpty()) {
+        if (type.getKind() != TypeKind.WILDCARD && location.isEmpty()) {
             return type;
+        } else if (type.getKind() == TypeKind.NULL) {
+            return getLocationTypeANT((AnnotatedNullType) type, location);
         } else if (type.getKind() == TypeKind.DECLARED) {
             return getLocationTypeADT((AnnotatedDeclaredType)type, location);
         } else if (type.getKind() == TypeKind.WILDCARD) {
@@ -452,8 +447,9 @@ public class ElementAnnotationUtil {
         } else if (type.getKind() == TypeKind.ARRAY) {
             return getLocationTypeAAT((AnnotatedArrayType)type, location);
         } else {
-            ErrorReporter.errorAbort("ElementAnnotationUtil.getTypeAtLocation: only declared types and arrays can have annotations with location; " +
-                    "found type: " + type + " location: " + location);
+            ErrorReporter.errorAbort("ElementAnnotationUtil.getTypeAtLocation: only declared types, "
+                                   + "arrays, and null types can have annotations with location; found type: "
+                                   + type + " location: " + location);
             return null; // dead code
         }
     }
@@ -514,16 +510,56 @@ public class ElementAnnotationUtil {
         return cnt;
     }
 
-    private static AnnotatedTypeMirror getLocationTypeAWT(AnnotatedWildcardType type,  List<TypeAnnotationPosition.TypePathEntry> location) {
+    private static AnnotatedTypeMirror getLocationTypeANT(AnnotatedNullType type, List<TypeAnnotationPosition.TypePathEntry> location) {
+        if( location.size() == 1 && location.get(0).tag == TypePathEntryKind.TYPE_ARGUMENT) {
+            return type;
+        }
+
+        ErrorReporter.errorAbort("ElementAnnotationUtil.getLocationTypeANT: " +
+                                 "invalid location " + location + " for type: " + type);
+        return null; //dead code
+    }
+
+    private static boolean isExtendsBounded(final AnnotatedWildcardType wcType) {
+        return wcType.getUnderlyingType().getExtendsBound() != null;
+    }
+
+    private static boolean isSuperBounded(final AnnotatedWildcardType wcType) {
+        return wcType.getUnderlyingType().getSuperBound() != null;
+    }
+
+    private static AnnotatedTypeMirror getLocationTypeAWT(final AnnotatedWildcardType type,
+                                                          final List<TypeAnnotationPosition.TypePathEntry> location) {
 
         if (location.isEmpty()) {
-            return type;
+            //Applying an annotation in front of a wildcard applies it to the bound that is not explicitly written
+            //in the wildcard.  E.g.
+            // @P ? extends Object
+            // In this case, the Type location of @P indicates that it is on the wildcard.  But since the
+            // Checker Framework treats that location as if it applies to the lower bound, we apply the
+            //annotation to the superBound type
+            //That is the type becomease  ? [ super @P <null> extends Object]
+
+            if( isExtendsBounded(type) ) {
+                return type.getSuperBound();
+            } else if( isSuperBounded(type) ) {
+                return type.getExtendsBound();
+            }  else {
+                return type.getSuperBound();
+            }
+
         } else if (location.get(0).tag.equals(TypeAnnotationPosition.TypePathEntryKind.WILDCARD)) {
-            List<AnnotatedTypeMirror> bounds = getWildcardBounds(type);
-            // TODO: what should happen if bounds is empty or has more than one entry?
-            return getTypeAtLocation(bounds.get(0), tail(location));
+            if( isExtendsBounded(type) ) {
+                return getTypeAtLocation(type.getExtendsBound(), tail(location));
+            } else if( isSuperBounded(type) ) {
+                return getTypeAtLocation(type.getSuperBound(), tail(location));
+            }  else {
+                return getTypeAtLocation(type.getExtendsBound(), tail(location));
+            }
         } else {
-            return type;
+            ErrorReporter.errorAbort("ElementAnnotationUtil.getLocationTypeAWT: " +
+                                      "invalid location " + location + " for type: " + type);
+            return null;
         }
     }
 
@@ -548,29 +584,5 @@ public class ElementAnnotationUtil {
 
     private static <T> List<T> tail(List<T> list) {
         return list.subList(1, list.size());
-    }
-
-    private static List<AnnotatedTypeMirror> getWildcardBounds(final AnnotatedWildcardType wildcardType) {
-        AnnotatedTypeMirror bound;
-
-        if (wildcardType.getUnderlyingType().getExtendsBound() != null) {
-            bound = wildcardType.getExtendsBound();
-        } else {
-            bound = wildcardType.getSuperBound();
-        }
-        if (bound == null) {
-            // If neither bound is set explicitly, this will
-            // set a meaningful default (java.lang.Object or the type
-            // variable bound.
-            bound = wildcardType.getExtendsBound();
-        }
-
-        if (bound == null) {
-            return Collections.emptyList();
-        } else if (bound.getKind() == TypeKind.INTERSECTION) {
-            return Collections.unmodifiableList(bound.directSuperTypes());
-        } else {
-            return Collections.singletonList(bound);
-        }
     }
 }

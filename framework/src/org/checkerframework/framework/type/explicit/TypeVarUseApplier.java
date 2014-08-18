@@ -26,6 +26,10 @@ import static org.checkerframework.framework.type.explicit.ElementAnnotationUtil
  */
 class TypeVarUseApplier implements ElementAnnotationApplier {
 
+    public static void apply(final AnnotatedTypeMirror type, final Element element, final AnnotatedTypeFactory typeFactory)  {
+        new TypeVarUseApplier(type, element, typeFactory).extractAndApply();
+    }
+
     private static ElementKind[] acceptedKinds = {
         ElementKind.PARAMETER, ElementKind.FIELD, ElementKind.LOCAL_VARIABLE, ElementKind.RESOURCE_VARIABLE,
         ElementKind.METHOD

@@ -18,6 +18,7 @@ import javax.lang.model.type.TypeVariable;
 
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.Tree.Kind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -573,14 +574,25 @@ abstract class TypeFromTree extends
                 type = f.toAnnotatedType(f.types.getNoType(TypeKind.NONE), false);
             assert AnnotatedTypeFactory.validAnnotatedType(type);
             List<? extends AnnotationMirror> annos = InternalUtils.annotationsFromTree(node);
-            type.addAnnotations(annos);
+
+            if(type.getKind() != TypeKind.WILDCARD) { //TODO: FIGURE THIS OUT BETTER
+                type.addAnnotations(annos);
+            }
 
             if (type.getKind() == TypeKind.TYPEVAR) {
+                //TODO: JONATHAN, WHAT IS GOING ON HERE?
                 ((AnnotatedTypeVariable)type).getUpperBound().addMissingAnnotations(annos);
             }
 
             if (type.getKind() == TypeKind.WILDCARD) {
-                ((AnnotatedWildcardType)type).getExtendsBound().addMissingAnnotations(annos);
+                final ExpressionTree underlyingTree = node.getUnderlyingType();
+                if(underlyingTree.getKind() == Kind.EXTENDS_WILDCARD || underlyingTree.getKind() == Kind.UNBOUNDED_WILDCARD) {
+                    ((AnnotatedWildcardType) type).getSuperBound().addMissingAnnotations(annos);
+                } else if(underlyingTree.getKind() == Kind.SUPER_WILDCARD) {
+                    ((AnnotatedWildcardType) type).getExtendsBound().addMissingAnnotations(annos);
+                } else {
+                    ErrorReporter.errorAbort("Unexpected kind for type!  node=" + node + " type=" + type);
+                }
             }
 
             return type;

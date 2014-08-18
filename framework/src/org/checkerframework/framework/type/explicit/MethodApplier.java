@@ -24,6 +24,10 @@ import java.util.List;
  */
 class MethodApplier extends TargetedElementAnnotationApplier {
 
+    public static void apply(AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory) {
+        new MethodApplier(type, element, typeFactory).extractAndApply();
+    }
+
     public static boolean accepts( final AnnotatedTypeMirror typeMirror, final Element element ) {
         return element instanceof Symbol.MethodSymbol &&
                typeMirror instanceof AnnotatedExecutableType;

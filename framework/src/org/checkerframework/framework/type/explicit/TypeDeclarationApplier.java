@@ -18,6 +18,10 @@ import java.util.List;
  */
 public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
 
+    public static void apply(final AnnotatedTypeMirror type, final Element element, final AnnotatedTypeFactory typeFactory) {
+        new TypeDeclarationApplier(type, element, typeFactory).extractAndApply();
+    }
+
     /**
      * If a type_index == -1 it means that the index refers to the immediate supertype class
      * of the declaration.  There is only ever one of these since java has no multiple inheritance

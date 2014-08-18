@@ -18,6 +18,10 @@ import static com.sun.tools.javac.code.TargetType.*;
  */
 class VariableApplier extends TargetedElementAnnotationApplier {
 
+    public static void apply(final AnnotatedTypeMirror type, final Element element) {
+        new VariableApplier(type, element).extractAndApply();
+    }
+
     private static final ElementKind[] acceptedKinds = {
             ElementKind.LOCAL_VARIABLE, ElementKind.RESOURCE_VARIABLE, ElementKind.EXCEPTION_PARAMETER
     };
