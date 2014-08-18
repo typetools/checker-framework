@@ -10,6 +10,7 @@ import org.checkerframework.framework.qual.DefaultQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.PluginUtil;
@@ -233,7 +234,9 @@ public class QualifierDefaults {
         //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
         if (elt != null) {
-            applyToTypeVar = elt.getKind() == ElementKind.LOCAL_VARIABLE
+            boolean useFlow = (atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>) && ((((GenericAnnotatedTypeFactory) atypeFactory).getUseFlow()));
+            applyToTypeVar = useFlow
+                          && elt.getKind() == ElementKind.LOCAL_VARIABLE
                           && type.getKind() == TypeKind.TYPEVAR
                           && atypeFactory.type(tree).getKind() == TypeKind.TYPEVAR;
             applyDefaultsElement(elt, type);
@@ -572,8 +575,7 @@ public class QualifierDefaults {
                     return visitedNodes.get(type);
                 }
 
-                final AnnotatedTypeMirror lowerBound =
-                        type.getLowerBoundField() == null ? type.getLowerBound() : type.getLowerBound();
+                final AnnotatedTypeMirror lowerBound = type.getLowerBound();
 
                 isLowerBound = true;
                 Void r = scanAndReduce(lowerBound, qual, null);
@@ -628,6 +630,14 @@ public class QualifierDefaults {
                 boolean prevIsTypeVarExtendsExplicit = isTypeVarExtendsExplicit;
 
                 WildcardType wc = (WildcardType) type.getUnderlyingType();
+
+
+                final AnnotatedTypeMirror lowerBound = type.getSuperBound();
+
+                isLowerBound = true;
+                r = scanAndReduce(lowerBound, qual, null);
+                isLowerBound = false;
+                visitedNodes.put(type, r);
 
                 if (wc.isUnbound() &&
                         wc.bound != null) {
