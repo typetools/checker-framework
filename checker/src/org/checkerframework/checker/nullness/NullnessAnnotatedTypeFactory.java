@@ -276,7 +276,7 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
+        return new ListTreeAnnotator( // DebugListTreeAnnotator(new Tree.Kind[] {Tree.Kind.CONDITIONAL_EXPRESSION},
                 new NullnessPropagationAnnotator(this),
                 new ImplicitsTreeAnnotator(this),
                 new NullnessTreeAnnotator(this),
@@ -411,7 +411,7 @@ public class NullnessAnnotatedTypeFactory
         public Void visitCompoundAssignment(CompoundAssignmentTree node,
                 AnnotatedTypeMirror type) {
             type.replaceAnnotation(NONNULL);
-            // Committment will run after for initialization defaults
+            // Commitment will run after for initialization defaults
             return null;
         }
 

@@ -182,14 +182,18 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
             AnnotatedArrayType a = (AnnotatedArrayType) type;
             makeTop(a.getComponentType(), tops);
         } else if (kind == TypeKind.TYPEVAR) {
-            AnnotatedTypeVariable a = (AnnotatedTypeVariable) type;
-            makeTop(a.getUpperBound(), tops);
+            //just set the primary to top, this will override the upper/lower bounds
+
         } else if (kind == TypeKind.WILDCARD) {
             AnnotatedWildcardType a = (AnnotatedWildcardType) type;
+            a.addAnnotations(tops);
             makeTop(a.getExtendsBound(), tops);
+            if(a.getSuperBound() != null) {
+                makeTop(a.getSuperBound(), tops);
+            }
         }
 
-        if (kind != TypeKind.TYPEVAR && kind != TypeKind.WILDCARD) {
+        if (kind != TypeKind.WILDCARD) {
             // don't set top annotations, because [] is top
             type.addAnnotations(tops);
         }

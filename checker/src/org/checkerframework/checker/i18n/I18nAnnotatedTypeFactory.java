@@ -21,7 +21,7 @@ public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public TreeAnnotator createTreeAnnotator() {
+    protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
                 super.createTreeAnnotator(),
                 new I18nTreeAnnotator(this)

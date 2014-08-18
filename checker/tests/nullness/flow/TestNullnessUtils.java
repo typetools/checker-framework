@@ -28,6 +28,18 @@ class TestNullnessUtils {
         // Careful, the non-deep version only casts the main modifier.
         //:: error: (assignment.type.incompatible)
         @NonNull Object [] l2b = NullnessUtils.castNonNull(a);
+        // OK
+        @Nullable Object [] l2c = NullnessUtils.castNonNull(a);
+    }
+
+    void testArr1b(@Nullable Object @Nullable [] a) {
+        // one way to use as a cast:
+        @NonNull Object [] l2 = NullnessUtils.castNonNullDeep(a);
+        // Careful, the non-deep version only casts the main modifier.
+        //:: error: (assignment.type.incompatible)
+        @NonNull Object [] l2b = NullnessUtils.castNonNull(a);
+        // OK
+        @Nullable Object [] l2c = NullnessUtils.castNonNull(a);
     }
 
     void testArr2(@Nullable Object @NonNull [] a) {

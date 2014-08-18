@@ -108,6 +108,10 @@ public abstract class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, A
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
+
+        r = scan(type, p);
+        visitedNodes.put(type, r);
+
         if (p instanceof AnnotatedTypeVariable) {
             AnnotatedTypeVariable tv = (AnnotatedTypeVariable) p;
             r = scan(type.getLowerBound(), tv.getLowerBound());
