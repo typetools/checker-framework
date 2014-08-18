@@ -192,10 +192,16 @@ class AggregateVisitor extends SourceVisitor<Void, Void> {
     }
 
     @Override
-    public Void visit(CompilationUnitTree root, TreePath path, Void p) {
+    public void setRoot(CompilationUnitTree root) {
         for (SourceVisitor<?, ?> avisitor : visitors) {
-            avisitor.visit(root, path, null);
+            avisitor.setRoot(root);
         }
-        return null;
+    }
+
+    @Override
+    public void visit(TreePath path) {
+        for (SourceVisitor<?, ?> avisitor : visitors) {
+            avisitor.visit(path);
+        }
     }
 }
