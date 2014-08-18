@@ -37,6 +37,7 @@ public class CheckerWorker extends Job {
 	private final String javacJreVersion = "1.8.0";
 
 	private final boolean useJavacRunner;
+    private final boolean hasQuals;
 
 	/**
 	 * This constructor is intended for use from an incremental builder that has
@@ -47,20 +48,22 @@ public class CheckerWorker extends Job {
 	 * @param checkerNames
 	 */
 	public CheckerWorker(IJavaProject project, String[] sourceFiles,
-			String checkerNames) {
+			String checkerNames, boolean hasQuals) {
 		super("Running checker on " + sourceFiles.toString());
 		this.project = project;
 		this.sourceFiles = sourceFiles;
 		this.checkerNames = checkerNames;
 		this.useJavacRunner = shouldUseJavacRunner();
+        this.hasQuals = hasQuals;
 	}
 
-	public CheckerWorker(List<IJavaElement> elements, String checkerNames) {
+	public CheckerWorker(List<IJavaElement> elements, String checkerNames, boolean hasQuals) {
 		super("Running checker on " + PluginUtil.join(",", elements));
 		this.project = elements.get(0).getJavaProject();
 		this.checkerNames = checkerNames;
 		this.useJavacRunner = shouldUseJavacRunner();
 
+        this.hasQuals = hasQuals;
 		try {
 			this.sourceFiles = ResourceUtils.sourceFilesOf(elements).toArray(
 					new String[] {});
@@ -126,10 +129,10 @@ public class CheckerWorker extends Job {
 		final CheckersRunner runner;
 		if (useJavacRunner) {
 			runner = new JavacRunner(sourceFiles, checkerNames.split(","),
-					classpaths.fst + File.pathSeparator + classpaths.snd);
+					classpaths.fst + File.pathSeparator + classpaths.snd, hasQuals);
 		} else {
 			runner = new CommandlineJavacRunner(sourceFiles, checkerNames.split(","),
-					classpaths.fst, classpaths.snd);
+					classpaths.fst, classpaths.snd, hasQuals);
 		}
 		runner.run();
 

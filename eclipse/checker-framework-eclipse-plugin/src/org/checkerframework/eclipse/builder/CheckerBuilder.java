@@ -97,7 +97,7 @@ public class CheckerBuilder extends IncrementalProjectBuilder
     {
         Job checkerJob = new CheckerWorker(project,
                 sourceNames.toArray(new String[] {}), PluginUtil.join(",",
-                checkerNames));
+                checkerNames), true);
 
         checkerJob.setUser(true);
         checkerJob.setPriority(Job.BUILD);

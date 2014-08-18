@@ -119,6 +119,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * @param supertype expected supertype
      * @return true if subtype is actually a subtype of supertype
      */
+    @Override
     public boolean isSubtype(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype) {
         for(final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
             if(!isSubtype(subtype, supertype, top)) {
@@ -136,6 +137,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * @param top the hierarchy for which we want to make a comparison
      * @return true if subtype is actually a subtype of supertype
      */
+    @Override
     public boolean isSubtype(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype,
                              final AnnotationMirror top) {
         currentTop = top;
@@ -250,9 +252,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
             case WILDCARD:
                 final AnnotatedWildcardType subtypeWc = (AnnotatedWildcardType) subtype;
-                if(subtypeWc == null) {
-                    return true;
-                }
                 return isBottom(subtypeWc);
 
             //TODO: DO ANYTHING SPECIAL FOR INTERSECTIONS OR UNIONS?

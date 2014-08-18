@@ -5,6 +5,19 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.*;
 */
 
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.TypeQualifiers;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.util.CFContext;
+import org.checkerframework.javacutil.AbstractTypeProcessor;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorHandler;
+import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
@@ -35,19 +48,6 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
-
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.TypeQualifiers;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.CFContext;
-import org.checkerframework.javacutil.AbstractTypeProcessor;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorHandler;
-import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TreeUtils;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -268,8 +268,9 @@ public abstract class SourceChecker
     /** The source tree that is being scanned. */
     protected CompilationUnitTree currentRoot;
 
-    /** The source path that is being scanned. */
-    protected TreePath currentPath;
+    // If an error is detected in a CompilationUnitTree, skip
+    // all future calls of typeProcess with that same CompilationUnitTree.
+    private CompilationUnitTree previousErrorCompilationUnit;
 
     /** The visitor to use. */
     protected SourceVisitor<?, ?> visitor;
@@ -793,14 +794,26 @@ public abstract class SourceChecker
         Log log = Log.instance(context);
         if (log.nerrors > this.errsOnLastExit) {
             this.errsOnLastExit = log.nerrors;
+            previousErrorCompilationUnit = p.getCompilationUnit();
             return;
         }
+        if (p.getCompilationUnit() == previousErrorCompilationUnit) {
+            // If the same compilation unit was seen with an error before,
+            // skip it. This is in particular necessary for Java errors, which
+            // show up once, but further calls to typeProcess will happen.
+            // See Issue 346.
+            return;
+        } else {
+            previousErrorCompilationUnit = null;
+        }
+        if (p.getCompilationUnit() != currentRoot) {
+            currentRoot = p.getCompilationUnit();
+            visitor.setRoot(currentRoot);
+        }
 
-        currentRoot = p.getCompilationUnit();
-        currentPath = p;
         // Visit the attributed tree.
         try {
-            visitor.visit(currentRoot, p, null);
+            visitor.visit(p);
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {

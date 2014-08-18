@@ -147,6 +147,12 @@
             You may clear all Checker Framework error markers by right-clicking on the project and selecting:
             (Checker Framework &#8209;> Clear Checker Markers).
         </p>
+
+        <div class="alert alert-error"><strong>Warning!</strong> When using the <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#subtyping-checker">Subtyping Checker</a>,
+            you must provide the -Aquals argument or an error will be reported.  Follow the instructions in the
+            <a href="#additional_compiler_params">Additional Compiler Params</a> section to
+            add the -Aquals argument.
+        </div>
     </div>
 
     <div class="section">
@@ -262,7 +268,7 @@
             </div>
         </div>
         <p>
-            <strong>Additional compiler parameters</strong><br/>
+            <strong id="additional_compiler_params">Additional compiler parameters</strong><br/>
             The Checker Framework compiler has many options, including all of the standard javac options.  
             You may wish to pass a javac option to the Checker Framework compiler or a Checker Framework option
             not explicitly listed in the "Processor/Build Options" section.  To add custom options,
