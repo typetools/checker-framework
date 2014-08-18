@@ -296,6 +296,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
+        // TODO why is this not needed?
+        // visitedNodes.put(type, null);
 
         // Keep in sync with visitWildcard
         Set<AnnotationMirror> onVar = type.getAnnotations();
@@ -338,18 +340,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
                 upper.replaceAnnotations(onVar);
             }*/
 
-            if (type.getLowerBoundField() != null) {
-                AnnotatedTypeMirror lower = type.getLowerBoundField();
-                for (AnnotationMirror aOnVar : onVar) {
-                    if (lower.isAnnotatedInHierarchy(aOnVar) &&
-                            !atypeFactory.getQualifierHierarchy().isSubtype(
-                                    lower.getAnnotationInHierarchy(aOnVar),
-                                    aOnVar)) {
-                        this.reportError(type, tree);
-                    }
-                }
-                lower.replaceAnnotations(onVar);
-            }
+
         }
 
         return super.visitTypeVariable(type, tree);
@@ -360,6 +351,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
+        // TODO why is this not neede?
+        // visitedNodes.put(type, null);
 
         // Keep in sync with visitTypeVariable
         Set<AnnotationMirror> onVar = type.getAnnotations();
