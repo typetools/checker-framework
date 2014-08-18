@@ -2,8 +2,6 @@ package org.checkerframework.qualframework.base;
 
 import javax.lang.model.type.TypeKind;
 
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
-
 /** Default implementation of {@link TypeHierarchy}.  Applies standard Java
  * subtyping rules to compare Java types, and uses a {@link QualifierHierarchy}
  * to compare qualifiers.

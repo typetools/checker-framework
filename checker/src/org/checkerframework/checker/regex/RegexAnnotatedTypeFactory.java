@@ -435,6 +435,8 @@ public class RegexAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<CFVal
                             }
                         }
                         return maxBound;
+                    default:
+                        // Nothing to do for other cases.
                 }
 
                 return null;
