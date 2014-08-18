@@ -586,9 +586,10 @@ abstract class TypeFromTree extends
 
             if (type.getKind() == TypeKind.WILDCARD) {
                 final ExpressionTree underlyingTree = node.getUnderlyingType();
-                if(underlyingTree.getKind() == Kind.EXTENDS_WILDCARD || underlyingTree.getKind() == Kind.UNBOUNDED_WILDCARD) {
+                if (underlyingTree.getKind() == Tree.Kind.EXTENDS_WILDCARD ||
+                        underlyingTree.getKind() == Tree.Kind.UNBOUNDED_WILDCARD) {
                     ((AnnotatedWildcardType) type).getSuperBound().addMissingAnnotations(annos);
-                } else if(underlyingTree.getKind() == Kind.SUPER_WILDCARD) {
+                } else if (underlyingTree.getKind() == Tree.Kind.SUPER_WILDCARD) {
                     ((AnnotatedWildcardType) type).getExtendsBound().addMissingAnnotations(annos);
                 } else {
                     ErrorReporter.errorAbort("Unexpected kind for type!  node=" + node + " type=" + type);
