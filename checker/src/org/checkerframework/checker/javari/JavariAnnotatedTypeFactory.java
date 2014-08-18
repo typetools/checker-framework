@@ -778,7 +778,7 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Implements the {@code @QReadOnly} behavior on generic types,
-     * creating a new {@link org.checkerframework.framework.type.TypeHierarchy_orig} class that allows a
+     * creating a new {@link org.checkerframework.framework.type.TypeHierarchy} class that allows a
      * comparison of type arguments to succeed if the left hand side
      * is annotated with {@code @QReadOnly} or if the regular
      * comparison succeeds.
