@@ -4,18 +4,6 @@ package org.checkerframework.framework.flow;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
-
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
@@ -35,6 +23,18 @@ import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 
 /**
  * A store for the checker framework analysis tracks the annotations of memory
@@ -172,8 +172,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
               || PurityUtils.isSideEffectFree(atypeFactory, method))) {
             // update field values
             Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
-            for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues
-                    .entrySet()) {
+            for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
                 FlowExpressions.FieldAccess fieldAccess = e.getKey();
                 V otherVal = e.getValue();
 
@@ -298,7 +297,28 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
             // Only store information about final fields (where the receiver is
             // also fixed) if concurrent semantics are enabled.
-            if (sequentialSemantics || fieldAcc.isUnmodifiableByOtherCode()) {
+            boolean isMonotonic = false;
+            if (!sequentialSemantics) { // only compute if necessary
+                AnnotatedTypeFactory atypeFactory = this.analysis.atypeFactory;
+                List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
+                        atypeFactory.getAnnotationWithMetaAnnotation(
+                                fieldAcc.getField(),
+                                MonotonicQualifier.class);
+                for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
+                    AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
+                    Name annotation = AnnotationUtils.getElementValueClassName(
+                            monotonicAnnotation, "value", false);
+                    AnnotationMirror target = AnnotationUtils.fromName(
+                            atypeFactory.getElementUtils(), annotation);
+                    AnnotationMirror valueAM = value.getType().getAnnotationInHierarchy(target);
+                    // Make sure the 'target' annotation is present.
+                    if (valueAM != null && AnnotationUtils.areSame(valueAM, target)) {
+                        isMonotonic = true;
+                        break;
+                    }
+                }
+            }
+            if (sequentialSemantics || isMonotonic || fieldAcc.isUnmodifiableByOtherCode()) {
                 V oldValue = fieldValues.get(fieldAcc);
                 V newValue = value.mostSpecific(oldValue, null);
                 if (newValue != null) {
