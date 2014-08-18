@@ -85,6 +85,9 @@ checker/tests/nullness/generics/*.class
 checker/tests/nullness-temp/*.java
 checker/tests/nullness-temp/*.class
 
+checker/jtreg/multipleexecutions/Main.class
+
+
 # release tmps
 tmp
 
