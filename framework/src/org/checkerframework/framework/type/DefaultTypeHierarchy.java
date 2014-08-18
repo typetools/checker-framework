@@ -354,8 +354,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
             final AnnotatedWildcardType outsideWc = (AnnotatedWildcardType) outside;
 
-            boolean aboveSuperBound = isAboveSuper(inside, outsideWc, visited );
-            boolean belowExtendsBound = checkAndSubtype(inside, outsideWc.getEffectiveExtendsBound(), visited);
+            boolean aboveSuperBound   = checkAndSubtype( outsideWc.getSuperBound(), inside, visited );
+            boolean belowExtendsBound = checkAndSubtype(inside, outsideWc.getExtendsBound(), visited);
             return belowExtendsBound && aboveSuperBound;
 
         } else { //TODO: IF WE NEED TO COMPARE A WILDCARD TO A CAPTURE OF A WILDCARD WE FAIL IN ARE_EQUAL -> DO CAPTURE CONVERSION
@@ -721,47 +721,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
     protected boolean visitWildcardSupertype(AnnotatedTypeMirror subtype, AnnotatedWildcardType supertype, VisitHistory visited) {
         if(supertype.isTypeArgHack()) { //TODO: REMOVE WHEN WE FIX TYPE ARG INFERENCE
-            return isSubtype(subtype, supertype.getEffectiveExtendsBound());
+            return isSubtype(subtype, supertype.getExtendsBound());
         }
-        return isBelowSuper(subtype, supertype, visited);
+        return isSubtype( subtype, supertype.getSuperBound(), visited);
     }
 
 
     protected boolean visitWildcardSubtype(AnnotatedWildcardType subtype, AnnotatedTypeMirror supertype, VisitHistory visited) {
-        return isSubtype(subtype.getEffectiveExtendsBound(), supertype, visited);
-    }
-
-    protected boolean isAboveSuper(final AnnotatedTypeMirror above, final AnnotatedWildcardType wildcard, VisitHistory visited)  {
-        //if this is an extends WILDCARD and there is a null super bound then check to see if there is a primary
-        //annotation, then ensure that the primary annotation is below the primary annotation of the inside var
-        boolean aboveSuperBound = true;
-        if( wildcard.getEffectiveSuperBound() == null ) {
-            if(wildcard.getAnnotationInHierarchy(currentTop) == null) {
-                aboveSuperBound = true; //super bound set to bottom if it's null
-            } else {
-                aboveSuperBound = isPrimarySubtype(wildcard, above);
-            }
-        } else {
-            aboveSuperBound = checkAndSubtype( wildcard.getEffectiveSuperBound(), above, visited );
-        }
-
-        return aboveSuperBound;
-    }
-
-    protected boolean isBelowSuper(final AnnotatedTypeMirror below, final AnnotatedWildcardType wildcard, VisitHistory visited)  {
-        //if this is an extends WILDCARD and there is a null super bound then check to see if there is a primary
-        //annotation, then ensure that the primary annotation is below the primary annotation of the inside var
-        boolean belowSuperBound = true;
-        if( wildcard.getEffectiveSuperBound() == null ) {
-            if(wildcard.getAnnotationInHierarchy(currentTop) == null) {
-                return isBottom(below);
-            }
-            belowSuperBound = isPrimarySubtype(below, wildcard);
-        } else {
-            belowSuperBound = isSubtype( below, wildcard.getEffectiveSuperBound(), visited);
-        }
-
-        return belowSuperBound;
+        return isSubtype(subtype.getExtendsBound(), supertype, visited);
     }
 
     /**

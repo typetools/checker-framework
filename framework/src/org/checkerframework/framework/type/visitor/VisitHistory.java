@@ -1,8 +1,10 @@
 package org.checkerframework.framework.type.visitor;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.StructuralEqualityComparer;
 import org.checkerframework.framework.util.PluginUtil;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -127,7 +129,15 @@ public class VisitHistory {
                     //TODO: capture conversion or inferring void methods
                     return true;  //Handles the case of recursive wildcard types
                 }
-                return equalityComparer.areEqual(thisType, thatType, VisitHistory.this);
+                if(!AnnotationUtils.areSame(thisType.getAnnotations(), thatType.getAnnotations())) {
+                    return false;
+                } else {
+                    //TODO: EXPLAIN CASCADING .contains if we don't do it this way
+                    final AnnotatedWildcardType thisWc = (AnnotatedWildcardType) thisType;
+                    final AnnotatedWildcardType thatWc = (AnnotatedWildcardType) thatType;
+                    return equalityCompare(thisWc.getExtendsBound(), thatWc.getExtendsBound()) &&
+                           equalityCompare(thisWc.getSuperBound(), thatWc.getSuperBound());
+                }
             }
 
             return thisType.equals(thatType);
