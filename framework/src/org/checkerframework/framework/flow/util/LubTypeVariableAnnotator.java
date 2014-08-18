@@ -6,9 +6,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.ErrorReporter;
 
 import static org.checkerframework.framework.util.AnnotatedTypes.*;
