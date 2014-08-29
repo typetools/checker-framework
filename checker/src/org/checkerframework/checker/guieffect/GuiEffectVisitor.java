@@ -183,7 +183,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
         if (targetUIP != null && (targetSafeP != null || targetPolyP != null)
                 || targetSafeP != null && targetPolyP != null) {
-            checker.report(Result.failure("conflicts.annotations"), node);
+            checker.report(Result.failure("annotations.conflicts"), node);
         }
         if (targetPolyP != null && !atypeFactory.isPolymorphicType(targetClassElt)) {
             checker.report(Result.failure("polymorphism.invalid"), node);
