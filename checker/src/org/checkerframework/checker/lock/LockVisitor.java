@@ -88,6 +88,41 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, isLocalVariableAssignement);
     }
 
+    private void reportFailure(String messageKey,
+            MethodTree overriderTree,
+            AnnotatedDeclaredType enclosingType,
+            AnnotatedExecutableType overridden,
+            AnnotatedDeclaredType overriddenType,
+            List<String> overriderLocks,
+            List<String> overriddenLocks
+            ) {
+        // Get the type of the overriding method.
+        AnnotatedExecutableType overrider =
+            atypeFactory.getAnnotatedType(overriderTree);
+
+        if (overrider.getTypeVariables().isEmpty()
+                && !overridden.getTypeVariables().isEmpty()) {
+            overridden = overridden.getErased();
+        }
+        String overriderMeth = overrider.toString();
+        String overriderTyp = enclosingType.getUnderlyingType().asElement().toString();
+        String overriddenMeth = overridden.toString();
+        String overriddenTyp = overriddenType.getUnderlyingType().asElement().toString();
+
+        if (overriderLocks == null || overriddenLocks == null) {
+            checker.report(Result.failure(messageKey,
+                    overriderMeth, overriderTyp,
+                    overriddenMeth, overriddenTyp), overriderTree);
+        }
+        else {
+            checker.report(Result.failure(messageKey,
+                    overriderMeth, overriderTyp,
+                    overriddenMeth, overriddenTyp,
+                    overriderLocks, overriddenLocks), overriderTree);
+        }
+    }
+
+
     // Ensures that subclass methods require a subset of the locks that a parent class method requires
     // Additionally ensures that subclass methods use @HoldingOnEntry (and not @Holding) if the parent
     // class method uses @HoldingOnEntry.
@@ -117,31 +152,20 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         if (!overriddenHoldingOnEntryLocks.isEmpty()) {
             if (!overriderLocks.isEmpty()) {
                 isValid = false;
-                checker.report(Result.failure("override.holding.invalid.holdingonentry",
-                        TreeUtils.elementFromDeclaration(overriderTree),
-                        overridden.getElement()), overriderTree);
+                reportFailure("override.holding.invalid.holdingonentry", overriderTree, enclosingType, overridden, overriddenType, null, null);
             } else if (!overriddenHoldingOnEntryLocks.containsAll(overriderHoldingOnEntryLocks)) {
                 isValid = false;
-                checker.report(Result.failure("override.holding.invalid",
-                        TreeUtils.elementFromDeclaration(overriderTree),
-                        overridden.getElement(),
-                        overriderHoldingOnEntryLocks, overriddenHoldingOnEntryLocks), overriderTree);
+                reportFailure("override.holding.invalid", overriderTree, enclosingType, overridden, overriddenType, overriderHoldingOnEntryLocks, overriddenHoldingOnEntryLocks);
             }
         } else {
             if (!overriderLocks.isEmpty()) {
                 if (!overriddenLocks.containsAll(overriderLocks)) {
                     isValid = false;
-                    checker.report(Result.failure("override.holding.invalid",
-                            TreeUtils.elementFromDeclaration(overriderTree),
-                            overridden.getElement(),
-                            overriderLocks, overriddenLocks), overriderTree);
+                    reportFailure("override.holding.invalid", overriderTree, enclosingType, overridden, overriddenType, overriderLocks, overriddenLocks);
                 }
             } else if (!overriddenLocks.containsAll(overriderHoldingOnEntryLocks)) {
                 isValid = false;
-                checker.report(Result.failure("override.holding.invalid",
-                        TreeUtils.elementFromDeclaration(overriderTree),
-                        overridden.getElement(),
-                        overriderHoldingOnEntryLocks, overriddenLocks), overriderTree);
+                reportFailure("override.holding.invalid", overriderTree, enclosingType, overridden, overriddenType, overriderHoldingOnEntryLocks, overriddenLocks);
             }
         }
 
