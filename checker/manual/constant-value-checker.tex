@@ -15,7 +15,7 @@ be passed as a stub file for the checker.
 \item
 Alternately, you can run just the Constant Value Checker, by
 supplying the following command-line option to javac:
-\code{-processor org.checkerframework.checker.value.ValueChecker -Astubs=statically-executable.astub} 
+\code{-processor org.checkerframework.common.value.ValueChecker -Astubs=statically-executable.astub} 
 \end{itemize}
 
 \section{Annotations\label{constant-value-checker-annotations}}
@@ -144,7 +144,7 @@ classpath. This can be done by either adding the destination path to
 your environment variable \code{CLASSPATH} or by passing the
 argument \code{-classpath path/to/class/files} to the call. The latter
 would look similar to:
-\code{-processor org.checkerframework.checker.value.ValueChecker
+\code{-processor org.checkerframework.common.value.ValueChecker
 -Astubs=statically-executable.astub -classpath \$CLASSPATH:\$MY\_PROJECT/build/} 
 
 
