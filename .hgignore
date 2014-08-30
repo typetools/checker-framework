@@ -87,6 +87,8 @@ checker/tests/nullness-temp/*.class
 
 checker/jtreg/multipleexecutions/Main.class
 
+tutorial/eclipse-projects/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class
+tutorial/eclipse-projects/personalblog-demo/bin/net/eyde/personalblog/struts/action/ReadAction.class
 
 # release tmps
 tmp
