@@ -1945,7 +1945,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 .getPostconditions(overrider.getElement());
         Set<Pair<Receiver, AnnotationMirror>> superPost2 = resolveContracts(superPost, overridden);
         Set<Pair<Receiver, AnnotationMirror>> subPost2 = resolveContracts(subPost, overrider);
-        checkContractsSubset(overriderTyp, overriddenTyp, superPost2, subPost2, "contracts.postcondition.override.invalid");
+        checkContractsSubset(overriderMeth, overriderTyp, overriddenMeth, overriddenTyp, superPost2, subPost2, "contracts.postcondition.override.invalid");
 
         // Check preconditions
         Set<Pair<String, String>> superPre = contracts
@@ -1954,7 +1954,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 .getElement());
         Set<Pair<Receiver, AnnotationMirror>> superPre2 = resolveContracts(superPre, overridden);
         Set<Pair<Receiver, AnnotationMirror>> subPre2 = resolveContracts(subPre, overrider);
-        checkContractsSubset(overriderTyp, overriddenTyp, subPre2, superPre2, "contracts.precondition.override.invalid");
+        checkContractsSubset(overriderMeth, overriderTyp, overriddenMeth, overriddenTyp, subPre2, superPre2, "contracts.precondition.override.invalid");
 
         // Check conditional postconditions
         Set<Pair<String, Pair<Boolean, String>>> superCPost = contracts
@@ -1970,7 +1970,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 superCPostTrue, overridden);
         Set<Pair<Receiver, AnnotationMirror>> subCPostTrue2 = resolveContracts(
                 subCPostTrue, overrider);
-        checkContractsSubset(overriderTyp, overriddenTyp, superCPostTrue2, subCPostTrue2,
+        checkContractsSubset(overriderMeth, overriderTyp, overriddenMeth, overriddenTyp, superCPostTrue2, subCPostTrue2,
                 "contracts.conditional.postcondition.true.override.invalid");
         Set<Pair<String, String>> superCPostFalse = filterConditionalPostconditions(
                 superCPost, false);
@@ -1980,7 +1980,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 superCPostFalse, overridden);
         Set<Pair<Receiver, AnnotationMirror>> subCPostFalse2 = resolveContracts(
                 subCPostFalse, overrider);
-        checkContractsSubset(overriderTyp, overriddenTyp, superCPostFalse2, subCPostFalse2,
+        checkContractsSubset(overriderMeth, overriderTyp, overriddenMeth, overriddenTyp, superCPostFalse2, subCPostFalse2,
                 "contracts.conditional.postcondition.false.override.invalid");
 
         // check purity annotations
@@ -2018,7 +2018,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * following sense: For every expression in {@code mustSubset} there must be the
      * same expression in {@code set}, with the same (or a stronger) annotation.
      */
-    private void checkContractsSubset(String subCl, String superCl, Set<Pair<Receiver, AnnotationMirror>> mustSubset,
+    private void checkContractsSubset(
+            String overriderMeth, String overriderTyp, String overriddenMeth, String overriddenTyp, 
+            Set<Pair<Receiver, AnnotationMirror>> mustSubset,
             Set<Pair<Receiver, AnnotationMirror>> set, /*@CompilerMessageKey*/ String messageKey) {
         for (Pair<Receiver, AnnotationMirror> a : mustSubset) {
             boolean found = false;
@@ -2037,8 +2039,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             if (!found) {
                 MethodTree method = visitorState.getMethodTree();
-                checker.report(Result.failure(messageKey, a.first, method
-                        .getName().toString(), subCl, superCl), method);
+                checker.report(Result.failure(messageKey,
+                        overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
+                         a.second, a.first), method);
             }
         }
     }
