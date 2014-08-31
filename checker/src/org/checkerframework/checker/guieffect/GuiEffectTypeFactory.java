@@ -248,9 +248,9 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     // found a safe override
                     safe_override = overrides;
                     if (isUI && issueConflictWarning)
-                        checker.report(Result.failure("conflicts.override", superclass + "." + safe_override), errorNode);
+                        checker.report(Result.failure("override.effect.invalid", overridingMethod, declaringType, safe_override, superclass), errorNode);
                     if (isPolyUI && issueConflictWarning)
-                        checker.report(Result.failure("conflicts.override.polymorphic", superclass + "." + safe_override), errorNode);
+                        checker.report(Result.failure("override.effect.invalid.polymorphic", overridingMethod, declaringType, safe_override, superclass), errorNode);
                 } else if (eff.isUI()) {
                     // found a ui override
                     ui_override = overrides;
@@ -266,7 +266,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     //    // Need to special case an anonymous class with @UI on the decl, because "new @UI Runnable {...}" parses as @UI on an anon class decl extending Runnable
                     //    boolean isAnonInstantiation = TypesUtils.isAnonymousType(ElementUtils.getType(declaringType)) && getDeclAnnotation(declaringType, UI.class) != null;
                     //    if (!isAnonInstantiation && !hasAnnotationByName(supdecl, UI.class)) {
-                    //        checker.report(Result.failure("conflicts.override", "non-UI instantiation of "+supdecl), errorNode);
+                    //        checker.report(Result.failure("override.effect.invalid", "non-UI instantiation of "+supdecl), errorNode);
+                    //        If uncommenting this, change the above line to match other calls of Result.failure("override.effect.invalid", ...)
                     //    }
                     //}
                 }
@@ -284,9 +285,9 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     // found a safe override
                     safe_override = overrides;
                     if (isUI && issueConflictWarning)
-                        checker.report(Result.failure("conflicts.override", ty + "." + safe_override), errorNode);
+                        checker.report(Result.failure("override.effect.invalid", overridingMethod, declaringType, safe_override, ty), errorNode);
                     if (isPolyUI && issueConflictWarning)
-                        checker.report(Result.failure("conflicts.override.polymorphic", ty + "." + safe_override), errorNode);
+                        checker.report(Result.failure("override.effect.invalid.polymorphic", overridingMethod, declaringType, safe_override, ty), errorNode);
                 } else if (eff.isUI()) {
                     // found a ui override
                     ui_override = overrides;
@@ -301,7 +302,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                         boolean isAnonInstantiation = isAnonymousType(declaringType) &&
                                 fromElement(declaringType).hasAnnotation(UI.class);
                         if (!isAnonInstantiation && !supdecl.hasAnnotation(UI.class)) {
-                            checker.report(Result.failure("conflicts.override", "non-UI instantiation of " + supdecl), errorNode);
+                            checker.report(Result.failure("override.effect.invalid.nonui", overridingMethod, declaringType, poly_override, supdecl), errorNode);
                         }
                     }
                 }
@@ -313,11 +314,13 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
             // There may be more than two parent methods, but for now it's
             // enough to know there are at least 2 in conflict
             checker.report(
-                    Result.warning("conflicts.inheritance",
-                            ui_override.getEnclosingElement().asType().toString() +
-                            "." + ui_override.toString(),
-                            safe_override.getEnclosingElement().asType().toString() +
-                            "." + safe_override.toString()),
+                    Result.warning("override.effect.warning.inheritance",
+                            overridingMethod,
+                            declaringType,
+                            ui_override.toString(),
+                            ui_override.getEnclosingElement().asType().toString(),
+                            safe_override.toString(),
+                            safe_override.getEnclosingElement().asType().toString()),
                             errorNode);
         }
 

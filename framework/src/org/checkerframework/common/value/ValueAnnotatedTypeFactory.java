@@ -886,11 +886,22 @@ import com.sun.source.util.TreePath;
                                         .getEnclosingElement()), tree);
 
                     } catch (NoSuchMethodException e) {
-                        checker.report(Result
-                                .warning("method.find.failed",
-                                        ((MemberSelectTree) methodTree)
-                                                .getIdentifier(), argTypes,
-                                        recType), tree);
+                        // The class we attempted to getMethod from inside the call to getMethodObject.
+                        Element classElem = TreeUtils.elementFromUse(tree).getEnclosingElement();
+
+                        if (classElem == null) {
+                            checker.report(Result
+                                    .warning("method.find.failed",
+                                            ((MemberSelectTree) methodTree)
+                                                    .getIdentifier(), argTypes),tree);
+                        }
+                        else {
+                            checker.report(Result
+                                    .warning("method.find.failed.in.class",
+                                            ((MemberSelectTree) methodTree)
+                                                    .getIdentifier(), argTypes,
+                                                    classElem), tree);
+                        }
                     }
                 }
             }
