@@ -1,4 +1,4 @@
 public class FooConflict implements IFooSafe, IFooUI {
-    //:: warning: (conflicts.inheritance)
+    //:: warning: (override.effect.warning.inheritance)
     @Override public void foo() { }
 }
