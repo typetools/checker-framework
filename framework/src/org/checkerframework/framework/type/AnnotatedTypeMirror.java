@@ -51,10 +51,12 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+
 /**
  * Represents an annotated type in the Java programming language.
  * Types include primitive types, declared types (class and interface types),
@@ -2265,12 +2267,10 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedTypeMirror getExtendsBound() {
             if (extendsBound == null) {
                 // lazy init
-                TypeMirror extType = ((WildcardType)actualType).getExtendsBound();
+                TypeMirror extType = ((WildcardType) actualType).getExtendsBound();
                 if (extType == null) {
                     // Take the upper bound of the type variable the wildcard is bound to.
-                    com.sun.tools.javac.code.Type.WildcardType wct = (com.sun.tools.javac.code.Type.WildcardType) actualType;
-                    com.sun.tools.javac.util.Context ctx = ((com.sun.tools.javac.processing.JavacProcessingEnvironment) atypeFactory.processingEnv).getContext();
-                    extType = com.sun.tools.javac.code.Types.instance(ctx).upperBound(wct);
+                    extType = TypesUtils.wildUpperBound(atypeFactory.processingEnv, actualType);
                 }
                 AnnotatedTypeMirror annoexttype = createType(extType, atypeFactory, false);
                 // annoexttype.setElement(this.element);
