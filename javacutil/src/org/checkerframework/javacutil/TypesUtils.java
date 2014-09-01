@@ -280,12 +280,11 @@ public final class TypesUtils {
     // Version of com.sun.tools.javac.code.Types.wildUpperBound(Type)
     // that works with both jdk8 (called upperBound there) and jdk8u.
     // TODO: contrast to upperBound.
-    // TODO: Type.unannotatedType no longer exists in JDK 9. Find a way that also works with JDK 9.
     public static Type wildUpperBound(ProcessingEnvironment env, TypeMirror tm) {
         Type t = (Type) tm;
         if (t.hasTag(TypeTag.WILDCARD)) {
             Context context = ((JavacProcessingEnvironment) env).getContext();
-            Type.WildcardType w = (Type.WildcardType) t.unannotatedType();
+            Type.WildcardType w = (Type.WildcardType) TypeAnnotationUtils.unannotatedType(env, t);
             if (w.isSuperBound()) {
                 Symtab syms = Symtab.instance(context);
                 return w.bound == null ? syms.objectType : w.bound.bound;
@@ -294,7 +293,7 @@ public final class TypesUtils {
             }
         }
         else {
-            return t.unannotatedType();
+            return TypeAnnotationUtils.unannotatedType(env, t);
         }
     }
 
