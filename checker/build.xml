@@ -191,6 +191,19 @@
             </path>
         </pathconvert>
 
+        <pathconvert pathsep=" " property="compat.qual.src.files.spaceseparated">
+            <!-- TODO: keep this fileset in sync with the files in compat-qual-jar target. How can we extract this in a separate variable? -->
+            <path>
+                <fileset dir="${src}">
+                    <include name="**/compatqual/*.java"/>
+                    <include name="**/FormatUtil*"/>
+                    <include name="**/NullnessUtil*"/>
+                    <include name="**/RegexUtil*"/>
+                    <include name="**/UnitsTools*"/>
+                </fileset>
+            </path>
+        </pathconvert>
+
         <pathconvert pathsep=" " property="src.files.spaceseparated">
             <path>
                 <fileset dir="${src}">
@@ -265,6 +278,33 @@
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
 
+        <echo message="Compiling compatibility qualifiers."/>
+        <echo message="${compat.qual.src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
+        <java fork="true"
+              failonerror="true"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}"
+              classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <arg value="-g"/>
+            <!-- Make sure we only have Java 6 source code and generate Java 6 bytecode. -->
+            <arg value="-source"/>
+            <arg value="6"/>
+            <arg value="-target"/>
+            <arg value="6"/>
+            <!-- To not get a warning about bootstrap classpath -->
+            <arg value="-Xlint:-options"/>
+            <!-- Instead of providing -sourcepath as we do above, use -classpath
+                 to depend on the already compiled classes. Otherwise, dependencies
+                 are compiled with -source 6, which would fail. -->
+            <arg line="-classpath ${build}"/>
+            <arg line="-d ${build}"/>
+            <arg line="@${tmpdir}/srcfiles-checker.txt"/>
+            <arg line="-version"/>
+            <arg line="-Xlint"/>
+            <arg line="-Werror"/>
+        </java>
+        <delete file="${tmpdir}/srcfiles-checker.txt"/>
+
         <!--
         Touch doesn't work on a directory, so can't do:
            <touch file="${build}"/>
@@ -324,7 +364,7 @@
     </target>
 
     <!-- This creates checker.jar -->
-    <target name="jar" depends="build,checker-qual-jar"
+    <target name="jar" depends="build,checker-qual-jar,checker-compat-qual-jar"
             description="Create checker.jar file">
         <delete dir="${build.reports}"/>
 
@@ -349,10 +389,28 @@
 
         <jar destfile="${checker.qual.lib}" basedir="${build}">
             <include name="**/qual/*"/>
-            <include name="**/compatqual/*"/>
             <!-- Exclude test-only qualifiers -->
             <exclude name="lubglb/qual/*"/>
             <exclude name="polyall/qual/*"/>
+            <!-- Watch out for inner anonymous class within utilities -->
+            <include name="**/FormatUtil*"/>
+            <include name="**/NullnessUtil*"/>
+            <include name="**/RegexUtil*"/>
+            <include name="**/UnitsTools*"/>
+            <manifest>
+                <attribute name="Implementation-Version" value="${build.version}"/>
+                <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <!-- This creates checker-compat-qual.jar -->
+    <target name="checker-compat-qual-jar" depends="build"
+            description="Create checker-compat-qual.jar file for compatibility annotations">
+        <mkdir dir="dist" />
+
+        <jar destfile="${checker.compat.qual.lib}" basedir="${build}">
+            <include name="**/compatqual/*"/>
             <!-- Watch out for inner anonymous class within utilities -->
             <include name="**/FormatUtil*"/>
             <include name="**/NullnessUtil*"/>
