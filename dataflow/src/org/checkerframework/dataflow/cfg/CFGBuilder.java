@@ -3717,7 +3717,7 @@ public class CFGBuilder {
             tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
 
             scan(tree.getBlock(), p);
-            extendWithExtendedNode(new UnconditionalJump(doneLabel));
+            extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
 
             tryStack.popFrame();
 
@@ -3726,13 +3726,7 @@ public class CFGBuilder {
                 addLabelForNextNode(catchLabels.get(catchIndex).second);
                 scan(c, p);
                 catchIndex++;
-
-                if (finallyLabel != null) {
-                    // Normal completion of the catch block flows to the finally block.
-                    extendWithExtendedNode(new UnconditionalJump(finallyLabel));
-                } else {
-                    extendWithExtendedNode(new UnconditionalJump(doneLabel));
-                }
+                extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
             }
 
             if (finallyLabel != null) {
@@ -4046,6 +4040,16 @@ public class CFGBuilder {
             assert false : "Unknown AST element encountered in AST to CFG translation.";
             return null;
         }
+    }
+
+    private static <A> A firstNonNull(A first, A second) {
+      if (first != null) {
+        return first;
+      } else if (second != null) {
+        return second;
+      } else {
+        throw new NullPointerException();
+      }
     }
 
     /* --------------------------------------------------------- */
