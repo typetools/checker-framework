@@ -13,7 +13,7 @@ import java.util.Set;
  */
 final public class MostlySingleton<T> implements Set<T> {
     private enum State {
-       EMPTY, SINGLETON, MORE
+        EMPTY, SINGLETON, MORE
     }
     private State state = State.EMPTY;
     private T value;
@@ -23,9 +23,9 @@ final public class MostlySingleton<T> implements Set<T> {
     public int size() {
         switch (state) {
         case EMPTY:
-           return 0;
+            return 0;
         case SINGLETON:
-           return 1;
+            return 1;
         default: // MORE
             return set.size();
         }
@@ -33,18 +33,18 @@ final public class MostlySingleton<T> implements Set<T> {
 
     @Override
     public boolean isEmpty() {
-      return size() == 0;
+        return size() == 0;
     }
 
     @Override
     public boolean contains(Object o) {
         switch (state) {
         case EMPTY:
-           return false;
+            return false;
         case SINGLETON:
             return Objects.equals(o, value);
         default: // MORE
-           return set.contains(o);
+            return set.contains(o);
         }
     }
 
@@ -71,14 +71,14 @@ final public class MostlySingleton<T> implements Set<T> {
     public Iterator<T> iterator() {
         switch (state) {
         case EMPTY:
-           return Collections.emptyIterator();
+            return Collections.emptyIterator();
         case SINGLETON:
             return new Iterator<T>() {
                 private boolean hasNext = true;
 
                 @Override
                 public boolean hasNext() {
-                   return hasNext;
+                    return hasNext;
                 }
 
                 @Override
@@ -92,7 +92,7 @@ final public class MostlySingleton<T> implements Set<T> {
 
                 @Override
                 public void remove() {
-                   throw new UnsupportedOperationException();
+                    throw new UnsupportedOperationException();
                 }
            };
         default: // MORE
@@ -107,22 +107,22 @@ final public class MostlySingleton<T> implements Set<T> {
 
     @Override
     public <T> T[] toArray(T[] a) {
-       throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean remove(Object o) {
-       throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean containsAll(Collection<?> c) {
-       throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean addAll(Collection<? extends T> c) {
-       throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -132,7 +132,7 @@ final public class MostlySingleton<T> implements Set<T> {
 
     @Override
     public boolean removeAll(Collection<?> c) {
-       throw new UnsupportedOperationException();  
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -140,4 +140,3 @@ final public class MostlySingleton<T> implements Set<T> {
         throw new UnsupportedOperationException();
     }
 }
-
