@@ -241,73 +241,19 @@ public class CFGBuilder {
      * Build the control flow graph of some code.
      */
     public static ControlFlowGraph build(
-            TreePath bodyPath, ProcessingEnvironment env,
-            UnderlyingAST underlyingAST, boolean assumeAssertionsEnabled, boolean assumeAssertionsDisabled) {
-        return new CFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled).run(bodyPath, env, underlyingAST);
-    }
-
-    /**
-     * Build the control flow graph of a method.
-     */
-    public static ControlFlowGraph build(
-            TreePath bodyPath, ProcessingEnvironment env,
-            MethodTree tree, ClassTree classTree, boolean assumeAssertionsEnabled, boolean assumeAssertionsDisabled) {
-        return new CFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled).run(bodyPath, env, tree, classTree);
-    }
-
-    /**
-     * Build the control flow graph of some code.
-     */
-    public static ControlFlowGraph build(
-            TreePath bodyPath, ProcessingEnvironment env,
-            UnderlyingAST underlyingAST) {
-        return new CFGBuilder(false, false).run(bodyPath, env, underlyingAST);
-    }
-
-    /**
-     * Build the control flow graph of a method.
-     */
-    public static ControlFlowGraph build(
-            TreePath bodyPath, ProcessingEnvironment env,
-            MethodTree tree, ClassTree classTree) {
-        return new CFGBuilder(false, false).run(bodyPath, env, tree, classTree);
-    }
-
-    /**
-     * Build the control flow graph of some code.
-     */
-    public ControlFlowGraph run(
-            TreePath bodyPath, ProcessingEnvironment env,
-            UnderlyingAST underlyingAST) {
-        declaredClasses = new LinkedList<>();
-        TreeBuilder builder = new TreeBuilder(env);
-        AnnotationProvider annotationProvider = new BasicAnnotationProvider();
-        PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
-                bodyPath, env, underlyingAST, exceptionalExitLabel, builder, annotationProvider);
-        ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
-                .process(phase1result);
-        ControlFlowGraph phase3result = CFGTranslationPhaseThree
-                .process(phase2result);
-        return phase3result;
-    }
-
-    /**
-     * Build the control flow graph of a method.
-     */
-    public ControlFlowGraph run(
-            TreePath bodyPath, ProcessingEnvironment env,
-            MethodTree tree, ClassTree classTree) {
-        UnderlyingAST underlyingAST = new CFGMethod(tree, classTree);
-        return run(bodyPath, env, underlyingAST);
-    }
-
-    /**
-     * Build the control flow graph of some code.
-     */
-    public static ControlFlowGraph build(
             CompilationUnitTree root, ProcessingEnvironment env,
             UnderlyingAST underlyingAST, boolean assumeAssertionsEnabled, boolean assumeAssertionsDisabled) {
         return new CFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled).run(root, env, underlyingAST);
+    }
+
+    /**
+     * Build the control flow graph of some code (method, initializer block, ...).
+     * bodyPath is the TreePath to the body of that code.
+     */
+    public static ControlFlowGraph build(
+            TreePath bodyPath, ProcessingEnvironment env,
+            UnderlyingAST underlyingAST, boolean assumeAssertionsEnabled, boolean assumeAssertionsDisabled) {
+        return new CFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled).run(bodyPath, env, underlyingAST);
     }
 
     /**
@@ -348,6 +294,25 @@ public class CFGBuilder {
         AnnotationProvider annotationProvider = new BasicAnnotationProvider();
         PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
                 root, env, underlyingAST, exceptionalExitLabel, builder, annotationProvider);
+        ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
+                .process(phase1result);
+        ControlFlowGraph phase3result = CFGTranslationPhaseThree
+                .process(phase2result);
+        return phase3result;
+    }
+
+    /**
+     * Build the control flow graph of some code (method, initializer block, ...).
+     * bodyPath is the TreePath to the body of that code.
+     */
+    public ControlFlowGraph run(
+            TreePath bodyPath, ProcessingEnvironment env,
+            UnderlyingAST underlyingAST) {
+        declaredClasses = new LinkedList<>();
+        TreeBuilder builder = new TreeBuilder(env);
+        AnnotationProvider annotationProvider = new BasicAnnotationProvider();
+        PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
+                bodyPath, env, underlyingAST, exceptionalExitLabel, builder, annotationProvider);
         ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
                 .process(phase1result);
         ControlFlowGraph phase3result = CFGTranslationPhaseThree
@@ -4161,3 +4126,4 @@ public class CFGBuilder {
         }
     }
 }
+
