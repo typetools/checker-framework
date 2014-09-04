@@ -1383,7 +1383,7 @@ public class CFGBuilder {
          * one for continue.
          */
         protected Map<Name, Label> continueLabels;
-        
+
         /**
          * Node yielding the value for the lexically enclosing synchronized statement,
          * or null if there is no such statement.
@@ -3120,11 +3120,11 @@ public class CFGBuilder {
 
         @Override
         public Node visitSwitch(SwitchTree tree, Void p) {
-          SwitchBuilder builder = new SwitchBuilder(tree, p);
-          builder.build();
-          return null;
+            SwitchBuilder builder = new SwitchBuilder(tree, p);
+            builder.build();
+            return null;
         }
-        
+
         private class SwitchBuilder {
             final private SwitchTree switchTree;
             final private Label[] caseBodyLabels;
@@ -3136,7 +3136,7 @@ public class CFGBuilder {
                 this.caseBodyLabels = new Label[switchTree.getCases().size() + 1];
                 this.p = p;
             }
-          
+
             public void build() {
                 Label oldBreakTargetL = breakTargetL;
                 breakTargetL = new Label();
@@ -3171,7 +3171,7 @@ public class CFGBuilder {
                 final Label thisBodyL = caseBodyLabels[index];
                 final Label nextBodyL = caseBodyLabels[index+1];
                 final Label nextCaseL = new Label();
-                
+
                 ExpressionTree exprTree = tree.getExpression();
                 if (exprTree != null) {
                     Node expr = scan(exprTree, p);
