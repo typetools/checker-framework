@@ -86,6 +86,7 @@ import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.qual.TerminatesExecution;
+import org.checkerframework.dataflow.util.MostlySingleton;
 
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BasicAnnotationProvider;
@@ -234,6 +235,70 @@ public class CFGBuilder {
 
     public List<ClassTree> getDeclaredClasses() {
         return declaredClasses;
+    }
+
+    /**
+     * Build the control flow graph of some code.
+     */
+    public static ControlFlowGraph build(
+            TreePath bodyPath, ProcessingEnvironment env,
+            UnderlyingAST underlyingAST, boolean assumeAssertionsEnabled, boolean assumeAssertionsDisabled) {
+        return new CFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled).run(bodyPath, env, underlyingAST);
+    }
+
+    /**
+     * Build the control flow graph of a method.
+     */
+    public static ControlFlowGraph build(
+            TreePath bodyPath, ProcessingEnvironment env,
+            MethodTree tree, ClassTree classTree, boolean assumeAssertionsEnabled, boolean assumeAssertionsDisabled) {
+        return new CFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled).run(bodyPath, env, tree, classTree);
+    }
+
+    /**
+     * Build the control flow graph of some code.
+     */
+    public static ControlFlowGraph build(
+            TreePath bodyPath, ProcessingEnvironment env,
+            UnderlyingAST underlyingAST) {
+        return new CFGBuilder(false, false).run(bodyPath, env, underlyingAST);
+    }
+
+    /**
+     * Build the control flow graph of a method.
+     */
+    public static ControlFlowGraph build(
+            TreePath bodyPath, ProcessingEnvironment env,
+            MethodTree tree, ClassTree classTree) {
+        return new CFGBuilder(false, false).run(bodyPath, env, tree, classTree);
+    }
+
+    /**
+     * Build the control flow graph of some code.
+     */
+    public ControlFlowGraph run(
+            TreePath bodyPath, ProcessingEnvironment env,
+            UnderlyingAST underlyingAST) {
+        declaredClasses = new LinkedList<>();
+        TreeBuilder builder = new TreeBuilder(env);
+        AnnotationProvider annotationProvider = new BasicAnnotationProvider();
+        PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
+                bodyPath, env, underlyingAST, exceptionalExitLabel, builder, annotationProvider);
+        ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
+                .process(phase1result);
+        ControlFlowGraph phase3result = CFGTranslationPhaseThree
+                .process(phase2result);
+        return phase3result;
+    }
+
+    /**
+     * Build the control flow graph of a method.
+     */
+    public ControlFlowGraph run(
+            TreePath bodyPath, ProcessingEnvironment env,
+            MethodTree tree, ClassTree classTree) {
+        UnderlyingAST underlyingAST = new CFGMethod(tree, classTree);
+        return run(bodyPath, env, underlyingAST);
     }
 
     /**
@@ -713,7 +778,7 @@ public class CFGBuilder {
         public Set<Label> possibleLabels(TypeMirror thrown) {
             // Work up from the innermost frame until the exception is known to
             // be caught.
-            Set<Label> labels = new HashSet<>();
+            Set<Label> labels = new MostlySingleton<>();
             for (TryFrame frame : frames) {
                 if (frame.possibleLabels(thrown, labels)) {
                     return labels;
@@ -1103,7 +1168,7 @@ public class CFGBuilder {
                     SpecialBlockType.EXCEPTIONAL_EXIT);
 
             // record missing edges that will be added later
-            Set<Tuple<? extends SingleSuccessorBlockImpl, Integer, ?>> missingEdges = new HashSet<>();
+            Set<Tuple<? extends SingleSuccessorBlockImpl, Integer, ?>> missingEdges = new MostlySingleton<>();
 
             // missing exceptional edges
             Set<Tuple<ExceptionBlockImpl, Integer, TypeMirror>> missingExceptionalEdges = new HashSet<>();
@@ -1452,7 +1517,7 @@ public class CFGBuilder {
          * @return The result of phase one.
          */
         public PhaseOneResult process(
-                CompilationUnitTree root, ProcessingEnvironment env,
+                TreePath bodyPath, ProcessingEnvironment env,
                 UnderlyingAST underlyingAST, Label exceptionalExitLabel,
                 TreeBuilder treeBuilder, AnnotationProvider annotationProvider) {
             this.env = env;
@@ -1461,7 +1526,6 @@ public class CFGBuilder {
             this.annotationProvider = annotationProvider;
             elements = env.getElementUtils();
             types = env.getTypeUtils();
-            trees = Trees.instance(env);
 
             // initialize lists and maps
             treeLookupMap = new IdentityHashMap<>();
@@ -1474,7 +1538,6 @@ public class CFGBuilder {
             returnNodes = new ArrayList<>();
 
             // traverse AST of the method body
-            TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
             scan(bodyPath, null);
 
             // add marker to indicate that the next block will be the exit block
@@ -1488,6 +1551,15 @@ public class CFGBuilder {
             return new PhaseOneResult(underlyingAST, treeLookupMap,
                     convertedTreeLookupMap, nodeList,
                     bindings, leaders, returnNodes);
+        }
+
+        public PhaseOneResult process(
+                CompilationUnitTree root, ProcessingEnvironment env,
+                UnderlyingAST underlyingAST, Label exceptionalExitLabel,
+                TreeBuilder treeBuilder, AnnotationProvider annotationProvider) {
+            trees = Trees.instance(env);
+            TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
+            return process(bodyPath, env, underlyingAST, exceptionalExitLabel, treeBuilder, annotationProvider);
         }
 
         /**
