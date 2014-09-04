@@ -94,7 +94,7 @@ final public class MostlySingleton<T> implements Set<T> {
                 public void remove() {
                     throw new UnsupportedOperationException();
                 }
-           };
+            };
         default: // MORE
             return set.iterator();
         }
