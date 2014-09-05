@@ -1,6 +1,7 @@
 package org.checkerframework.checker.nullness;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -23,16 +24,21 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.checker.initialization.InitializationTransfer;
 import org.checkerframework.checker.initialization.qual.Initialized;
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.NonRaw;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -60,6 +66,7 @@ public class NullnessTransfer extends
 
     /** Annotations of the non-null type system. */
     protected final AnnotationMirror NONNULL, NULLABLE;
+    protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR;
 
     public NullnessTransfer(NullnessAnalysis analysis) {
         super(analysis);
@@ -68,6 +75,10 @@ public class NullnessTransfer extends
                 .getElementUtils(), NonNull.class);
         NULLABLE = AnnotationUtils.fromClass(analysis.getTypeFactory()
                 .getElementUtils(), Nullable.class);
+        UNKNOWNKEYFOR = AnnotationUtils.fromClass(analysis.getTypeFactory()
+                .getElementUtils(), UnknownKeyFor.class);
+        KEYFOR = AnnotationUtils.fromClass(analysis.getTypeFactory()
+                .getElementUtils(), KeyFor.class);
     }
 
     /**
@@ -213,6 +224,80 @@ public class NullnessTransfer extends
                 makeNonNull(result, n.getArgument(i));
             }
         }
+
+        return keyForVisitMethodInvocation(n, result, tree, methodArgs);
+    }
+
+    /*
+     * Provided that m is of a type that implements interface java.util.Map:
+     * -Given a call m.containsKey(k), ensures that k is @KeyFor("m") in the thenStore of the transfer result.
+     * -Given a call m.put(k, ...), ensures that k is @KeyFor("m") in the thenStore and elseStore of the transfer result.
+     * -Given a call m.get(k), if k is @KeyFor("m"), ensures that the result is @NonNull in the thenStore and elseStore of the transfer result.
+     */
+    private TransferResult<NullnessValue, NullnessStore> keyForVisitMethodInvocation(
+            MethodInvocationNode n, TransferResult<NullnessValue, NullnessStore> result,
+            MethodInvocationTree tree, List<? extends ExpressionTree> methodArgs){
+        String methodName = n.getTarget().getMethod().toString();
+
+        NullnessAnnotatedTypeFactory atypeFactory = (NullnessAnnotatedTypeFactory) analysis.getTypeFactory();
+
+        // First verify if the method name is containsKey or put. This is an inexpensive check.
+
+        boolean containsKey = methodName.startsWith("containsKey(");
+        boolean put = methodName.startsWith("put(");
+        boolean get = methodName.startsWith("get(");
+
+        if (containsKey || put || get) {
+            // Now verify that the receiver of the method invocation is of a type
+            // that extends that java.util.Map interface. This is a more expensive check.
+
+            javax.lang.model.util.Types types = analysis.getTypes();
+
+            TypeMirror mapInterfaceTypeMirror = types.erasure(TypesUtils.typeFromClass(types, analysis.getEnv().getElementUtils(), Map.class));
+
+            TypeMirror receiverType = types.erasure(n.getTarget().getReceiver().getType());
+
+            if (types.isSubtype(receiverType, mapInterfaceTypeMirror)) {
+
+                FlowExpressionContext flowExprContext = FlowExpressionParseUtil
+                        .buildFlowExprContextForUse(n, analysis.getTypeFactory());
+
+                String mapName = flowExprContext.receiver.toString();
+                Receiver keyReceiver = flowExprContext.arguments.get(0);
+                AnnotationMirror am = atypeFactory.createKeyForAnnotationMirrorWithValue(mapName); // @KeyFor(mapName)
+
+                if (containsKey) {
+                    ConditionalTransferResult<NullnessValue, NullnessStore> conditionalResult = (ConditionalTransferResult<NullnessValue, NullnessStore>) result;
+                    conditionalResult.getThenStore().insertValue(keyReceiver, am);
+
+                } else if (put) {
+                    result.getThenStore().insertValue(keyReceiver, am);
+                    result.getElseStore().insertValue(keyReceiver, am);
+                } else if (get) {
+
+                    AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(methodArgs.get(0));
+
+                    if (type != null) {
+                        AnnotationMirror am1  = type.getAnnotation(KeyFor.class);
+
+                        if (am1 != null) {
+                            if (atypeFactory.keyForValuesSubtypeCheck(am, am1, tree, n)) {
+                                makeNonNull(result, n);
+
+                                NullnessValue oldResultValue = result.getResultValue();
+                                NullnessValue refinedResultValue = analysis.createSingleAnnotationValue(
+                                        NONNULL, oldResultValue.getType().getUnderlyingType());
+                                NullnessValue newResultValue = refinedResultValue.mostSpecific(
+                                        oldResultValue, null);
+                                result.setResultValue(newResultValue);
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         return result;
     }
 
@@ -245,6 +330,7 @@ public class NullnessTransfer extends
         annotatedDummy.addAnnotation(NonNull.class);
         annotatedDummy.addAnnotation(NonRaw.class);
         annotatedDummy.addAnnotation(Initialized.class);
+        annotatedDummy.addAnnotation(UnknownKeyFor.class);
         NullnessValue value = new NullnessValue(analysis, annotatedDummy);
         return value;
     }
