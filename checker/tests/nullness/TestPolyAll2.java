@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.*;
 class TestPolyAll2 {
   // @PolyAll should apply to every type that has no explicit qualifier
 
-  public static boolean noDuplicates1 (@PolyAll @NonNull String[] a) {
+  public static boolean noDuplicates1 (@PolyAll @NonNull @UnknownKeyFor String[] a) {
     // non-null
     a[0].hashCode();
     //:: error: (assignment.type.incompatible)
