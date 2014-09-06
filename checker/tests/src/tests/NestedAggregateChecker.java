@@ -10,13 +10,14 @@ import org.checkerframework.framework.source.SourceChecker;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 public class NestedAggregateChecker extends AggregateChecker {
-    @Override
+    /*@Override
     protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
-        return Arrays.asList(
+        return (List<Class<? extends SourceChecker>>) Arrays.asList(
                 FenumChecker.class,
                 RegexChecker.class
         );
-    }
+    }*/
 }
