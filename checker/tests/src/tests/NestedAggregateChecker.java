@@ -13,11 +13,11 @@ import java.util.Collection;
 import java.util.List;
 
 public class NestedAggregateChecker extends AggregateChecker {
-    /*@Override
+    @Override
     protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
-        return (List<Class<? extends SourceChecker>>) Arrays.asList(
+        return null; /*Arrays.asList(
                 FenumChecker.class,
                 RegexChecker.class
-        );
-    }*/
+        );*/
+    }
 }
