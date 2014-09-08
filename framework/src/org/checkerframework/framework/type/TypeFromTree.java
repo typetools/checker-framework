@@ -8,6 +8,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersec
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.explicit.ElementAnnotationUtil;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -662,7 +663,7 @@ abstract class TypeFromTree extends
             switch (bounds.size()) {
             case 0: break;
             case 1:
-                result.setUpperBound(bounds.get(0));
+                AnnotatedTypeMerger.merge(bounds.get(0), result.getUpperBound());
                 break;
             default:
                 AnnotatedIntersectionType upperBound = (AnnotatedIntersectionType) result.getUpperBound();
