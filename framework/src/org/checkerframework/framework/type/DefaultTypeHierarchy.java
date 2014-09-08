@@ -505,6 +505,18 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         return visitIntersectionSubtype(subtype, supertype,  visited);
     }
 
+    @Override
+    public Boolean visitIntersection_Intersection(AnnotatedIntersectionType subtype, AnnotatedIntersectionType supertype, VisitHistory visited) {
+        return visitIntersectionSubtype(subtype, supertype,  visited);
+    }
+
+
+    @Override
+    public Boolean visitIntersection_Null(AnnotatedIntersectionType subtype, AnnotatedNullType supertype, VisitHistory visited) {
+        //this can occur through capture conversion/comparing bounds
+        return visitIntersectionSubtype(subtype, supertype,  visited);
+    }
+
     //------------------------------------------------------------------------
     //Null as subtype
     @Override
@@ -637,6 +649,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
     @Override
     public Boolean visitWildcard_Declared(AnnotatedWildcardType subtype, AnnotatedDeclaredType supertype, VisitHistory visited) {
+        return visitWildcardSubtype(subtype, supertype,  visited);
+    }
+
+    @Override
+    public Boolean visitWildcard_Intersection(AnnotatedWildcardType subtype, AnnotatedIntersectionType supertype, VisitHistory visited) {
         return visitWildcardSubtype(subtype, supertype,  visited);
     }
 
