@@ -33,12 +33,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.ContractsUtils;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.*;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.*;
 
 import java.lang.annotation.Annotation;
@@ -1679,12 +1676,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             AnnotatedTypeParameterBounds bounds = boundsIter.next();
             AnnotatedTypeMirror typearg = argIter.next();
-
-            // TODO skip wildcards for now to prevent a crash
-            // FIXME this is BAD! See nullness/generics/Issue329.java for
-            // a false negative because of this.
-            if (typearg.getKind() == TypeKind.WILDCARD)
-                continue;
 
             if (typeargTrees == null || typeargTrees.isEmpty()) {
                 // The type arguments were inferred and we mark the whole method.
