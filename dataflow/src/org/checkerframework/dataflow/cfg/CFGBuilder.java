@@ -3271,8 +3271,6 @@ public class CFGBuilder {
             return scan(tree.getExpression(), p);
         }
 
-        // TODO(Charlie): Desugar for loops based on unannotated types for CF-independent
-        // uses.
         @Override
         public Node visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
           // see JLS 14.14.2
