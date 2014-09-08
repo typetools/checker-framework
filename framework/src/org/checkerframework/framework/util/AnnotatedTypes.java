@@ -30,6 +30,7 @@ import com.sun.tools.javac.code.Type;
 import org.checkerframework.framework.flow.util.LubTypeVariableAnnotator;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.TypeQualifier;
+import org.checkerframework.framework.type.AnnotatedTypeCopier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
@@ -446,10 +447,7 @@ public class AnnotatedTypes {
      */
     @SuppressWarnings("unchecked")
     public static <ATM extends AnnotatedTypeMirror> ATM deepCopy(ATM type) {
-        // TODO: Test this, specify behavior, merge/compare to ATM.copy
-        ATM result = (ATM) type.substitute(Collections.<AnnotatedTypeMirror,
-                AnnotatedTypeMirror>emptyMap(), true);
-        return result;
+        return AnnotatedTypeCopier.copy(type);
     }
 
     /**
