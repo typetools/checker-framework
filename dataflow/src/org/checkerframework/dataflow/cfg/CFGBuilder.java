@@ -4043,13 +4043,13 @@ public class CFGBuilder {
     }
 
     private static <A> A firstNonNull(A first, A second) {
-      if (first != null) {
-        return first;
-      } else if (second != null) {
-        return second;
-      } else {
-        throw new NullPointerException();
-      }
+        if (first != null) {
+            return first;
+        } else if (second != null) {
+            return second;
+        } else {
+            throw new NullPointerException();
+        }
     }
 
     /* --------------------------------------------------------- */
