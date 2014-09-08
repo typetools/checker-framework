@@ -1790,7 +1790,7 @@ public class CFGBuilder {
                 return node;
             }
         }
-        
+
         private TreeInfo getTreeInfo(Tree tree) {
             final TypeMirror type = InternalUtils.typeOf(tree);
             final boolean boxed = TypesUtils.isBoxedPrimitive(type);
@@ -1798,30 +1798,30 @@ public class CFGBuilder {
 
             final boolean bool = TypesUtils.isBooleanType(type);
             final boolean numeric = TypesUtils.isNumeric(unboxedType);
-            
+
             return new TreeInfo() {
                 @Override
                 public boolean isNumeric() {
                     return numeric;
                 }
-                
+
                 @Override
                 public boolean isBoxed() {
                     return boxed;
                 }
-                
+
                 @Override
                 public boolean isBoolean() {
                     return bool;
                 }
-                
+
                 @Override
                 public TypeMirror unboxedType() {
                     return unboxedType;
                 }
             };
-        }    
-        
+        }
+
         /**
          * @return the unboxed tree if necessary, as described in JLS 5.1.8
          */
@@ -3006,10 +3006,10 @@ public class CFGBuilder {
                 Node left = scan(leftTree, p);
                 Node right = scan(rightTree, p);
 
-                if (leftInfo.isNumeric() && rightInfo.isNumeric() && 
+                if (leftInfo.isNumeric() && rightInfo.isNumeric() &&
                    !(leftInfo.isBoxed() && rightInfo.isBoxed())) {
                     // JLS 15.21.1 numerical equality
-                    TypeMirror promotedType = binaryPromotedType(leftInfo.unboxedType(), 
+                    TypeMirror promotedType = binaryPromotedType(leftInfo.unboxedType(),
                                                                  rightInfo.unboxedType());
                     left  = binaryNumericPromotion(left,  promotedType);
                     right = binaryNumericPromotion(right, promotedType);
