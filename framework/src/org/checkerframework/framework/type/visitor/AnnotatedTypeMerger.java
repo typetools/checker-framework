@@ -55,4 +55,12 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
             }
         }
     }
+
+    public static void merge(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
+        new AnnotatedTypeMerger().visit(from, to);
+    }
+
+    public static void merge(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to, final AnnotationMirror top) {
+        new AnnotatedTypeMerger(top).visit(from, to);
+    }
 }
