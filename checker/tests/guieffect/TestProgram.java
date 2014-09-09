@@ -57,7 +57,7 @@ public class TestProgram {
         });
         safecons.runAsync(new IGenericTask() {
             @Override
-            //:: error: (conflicts.override)
+            //:: error: (override.effect.invalid.nonui)
             @UIEffect public void doGenericStuff() {
                 UIByPackageDecl.implicitlyUI();
             }

@@ -6,14 +6,17 @@ each variable, it determines whether that variable's value can be
 known at compile time.
 
 There are two ways to run the Constant Value Checker.
+\begin{itemize}
+\item
 Typically, it is automatically run by another type checker.
 When using the Constant Value Checker as part of another checker, the
 \code{statically-executable.astub} file in the Constant Value Checker directory must
 be passed as a stub file for the checker.
-
-Alternately, it is also possible to run just the Constant Value Checker, by
+\item
+Alternately, you can run just the Constant Value Checker, by
 supplying the following command-line option to javac:
-\code{-processor org.checkerframework.checker.value.ValueChecker -Astubs=statically-executable.astub} 
+\code{-processor org.checkerframework.common.value.ValueChecker -Astubs=statically-executable.astub} 
+\end{itemize}
 
 \section{Annotations\label{constant-value-checker-annotations}}
 
@@ -28,7 +31,7 @@ Checker can execute at compile time
 
 Typically, the programmer does not write any type annotations.  Rather, the
 type annotations are inferred by the Constant Value Checker.
-It is also permitted to write type annotations.  This is only necessary in
+The programmer is also permitted to write type annotations.  This is only necessary in
 locations where the Constant Value Checker does not infer annotations:  on fields
 and method signatures.
 
@@ -73,7 +76,7 @@ relationships that depend on the annotations' arguments.}
 \end{figure}
 
 Figure~\ref{fig-value-multivalue} shows how the Constant Value Checker
-infers type annotations.
+infers type annotations (using flow-sensitive type qualifier refinement, Section~\ref{type-refinement}).
 
 \begin{figure}
 \begin{Verbatim}
@@ -128,19 +131,20 @@ A \<@StaticallyExecutable> method must
 be \refqualclass{dataflow/qual}{Pure} (side-effect-free and
 deterministic).
 Additionally, a \<@StaticallyExecutable> method and any method it calls must be on
-the classpath for the compiler because they are reflectively called at
+the classpath for the compiler, because they are reflectively called at
 compile-time to perform the constant value analysis. Any standard
-library methods (such as those annotated as \<@StaticallyExecutable> in
-statically-executable.astub) will already be on the
+library methods (such as those annotated as \<@StaticallyExecutable> in file
+\<statically-executable.astub>) will already be on the
 classpath.
+
 To use \<@StaticallyExecutable> on methods in your own code, you should
 first compile the code without the Constant Value Checker and then add
 the location of the resulting \code{.class} files to the
 classpath. This can be done by either adding the destination path to
-your environment variable \code{\$CLASSPATH} or by passing the
+your environment variable \code{CLASSPATH} or by passing the
 argument \code{-classpath path/to/class/files} to the call. The latter
 would look similar to:
-\code{-processor org.checkerframework.checker.value.ValueChecker
+\code{-processor org.checkerframework.common.value.ValueChecker
 -Astubs=statically-executable.astub -classpath \$CLASSPATH:\$MY\_PROJECT/build/} 
 
 
@@ -154,42 +158,42 @@ instead of being able to be resolved to a specific value annotation.
 Some examples of these:
 
 \begin{itemize}
-\item \code{``Test.java:11: warning: [class.find.failed] Failed to find
-  class named Test.}  means the checker could not find the class
+\item \code{[class.find.failed] Failed to find class named Test.}
+
+  The checker could not find the class
   specified for resolving a \<@StaticallyExecutable> method. Typically
   this is caused by not providing the path of a class-file needed to
   the classpath.
-\item \code{``Test.java:11: warning: [method.find.failed] Failed to find
-  a method named foo with argument types [@IntVal(3) int] in class
-  null. Treating result as @UnknownVal''}: 
+
+\item \code{[method.find.failed] Failed to find a method named foo with argument types [@IntVal(3) int]. Treating result as @UnknownVal}
 
   The checker could not find the method \code{foo(int)} specified for
   resolving a \<@StaticallyExecutable> method, but could find the
-  class. This is usually due to providing an out-dated version of the
+  class. This is usually due to providing an outdated version of the
   class-file that does not contain the \<@StaticallyExecutable>
   method.
-\item \code{``Test.java:12: warning: [method.evaluation.exception]
-  Failed to evaluate method public static int Test.foo(int) because it
-  threw an exception: java.lang.ArithmeticException: / by
-  zero. Treating result as @UnknownVal''}: 
+
+\item \code{[method.evaluation.exception] Failed to evaluate method public static int Test.foo(int) because it threw an exception: java.lang.ArithmeticException: / by zero. Treating result as @UnknownVal}
 
   An exception was thrown when trying to statically execute the
   method. In this case it was a divide-by-zero exception. If the
   arguments to the method each only had one value in their annotations
   then this exception will always occur when the program is actually
-  run as well. If there are multiple possible values then this warning
-  may indicate a false-positive because the exception is not actually
-  thrown at run-time.
-\item \code{''Basics.java:154: error: [too.many.values.given] An
-  annotation was written containing more 10 values, the maximum length
-  allowed. Reduce the number of values given or change the annotation
-  to @UnknownVal.''}:  
+  run as well. If there are multiple possible values then the exception
+  might not be thrown on every execution, depending on the run-time values.
 
-  An annotation was written with more than the maximum number of
-  values. Since the Constant Value Checker automatically changes types
-  to \<@UnknownVal> after they exceed this maximum, it is an error to
-  explicitly write annotations with more values than will be tracked.
- 
+\end{itemize}
+
+There is one other situation in which the Constant Value Checker produces a
+warning message:
+
+\begin{itemize}
+\item \code{[too.many.values.given] Annotation ignored because the maximum
+  number of values tracked is 10.}
+
+  The Constant Value Checker only tracks up to 10 possible values for an
+  expression.  If you write an annotation with more values than will be
+  tracked, the annotation is ignored.
 
 \end{itemize}
 

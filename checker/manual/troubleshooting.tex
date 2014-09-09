@@ -326,11 +326,62 @@ ways to solve the problem:
 \end{itemize}
 
 \item
-If the compiler reports that it cannot find a method from the
-JDK or another external library, then maybe the stub/skeleton file for that
-class is incomplete.  You can edit it to add the missing method.  The
-libraries appear, for example, at \code{checker/jdk/nullness/src/} for the
-Nullness Checker.
+If a checker issues a warning about a property that it accepted (or that
+was checked) on a previous line, then probably there was a side-effecting
+method call in between that could invalidate the property.  For example, in
+this code:
+
+\begin{Verbatim}
+if (currentOutgoing != null && !message.isCompleted()) {
+    if (!sendSuspended && currentOutgoing.continueBuffering(message)) {
+        ...
+    }
+}
+\end{Verbatim}
+
+\noindent
+the Nullness Checker will issue a warning on the second line:
+\begin{Verbatim}
+warning: [dereference.of.nullable] dereference of possibly-null reference currentOutgoing
+    if (!sendSuspended && currentOutgoing.continueBuffering(message))
+                          ^
+\end{Verbatim}
+
+If \<currentOutgoing> is a field rather than a local variable, and
+\<isCompleted()> is not a pure method, then a null pointer
+dereference can occur at the given location, because \<isCompleted()> might set
+the field \<currentOutgoing> to \<null>.
+
+If you want to communicate that
+isCompleted() does not set the field \<currentOutgoing> to \<null>, you can use
+\<\refqualclass{dataflow/qual}{Pure}>,
+\<\refqualclass{dataflow/qual}{SideEffectFree}>,
+or \<\refqualclass{checker/nullness/qual}{EnsuresNonNull}> on the
+declaration of \<isCompleted()>; see Sections~\ref{type-refinement-purity}
+and~\ref{nullness-method-annotations}.
+
+
+\item
+If a checker issues a type-checking error for a call that the library's
+documentation states is correct, then maybe that library method has not yet
+been annotated, so default annotations are being used.
+
+To solve the problem, add the missing annotations to the library (see
+Chapter~\ref{annotating-libraries}).  Depending on the checker, the
+annotations might be expressed in the form of stub files (which appear
+together with the checker's source code, such as in file
+\code{checker/src/org/checkerframework/checker/interning/jdk.astub} for the
+Interning Checker) or in the form of annotated libraries (which appear
+under \code{checker/jdk/}, such as at \code{checker/jdk/nullness/src/} for
+the Nullness Checker.
+
+\item
+If the compiler reports that it cannot find a method from the JDK or
+another external library, then maybe the stub/skeleton file for that class
+is incomplete.
+
+To solve the problem, add the missing annotations to the library, as
+described in the previous item.
 
 The error might take one of these forms:
 

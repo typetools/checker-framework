@@ -100,3 +100,7 @@ public final class ReadAction extends BlogGeneralAction {
         return (/*@Untainted*/ String) userInput;
     }
 }
+
+/* To fix the bug, replace line 48 by:
+        String reqCategory = validate(cleanNull(request.getParameter("cat")));
+*/

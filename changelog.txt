@@ -1,9 +1,15 @@
-Version 1.8.5, 1 September 2014
+Version 1.8.5, 29 August 2014
 
 Eclipse Plugin:
 All checkers in the Checker Framework manual now appear in the
 Eclipse plugin by default.  Users no longer have to include
 checker.jar on their classpath to run any of the built-in checkers.
+
+Improved Java 7 compatibility and introduced Java 7 compliant
+annotations for the Nullness Checker.  Please see the section on
+"Class-file compatibility with Java 7" in the manual for more details.
+
+Fixed Issue 347.
 
 ----------------------------------------------------------------------
 

@@ -124,7 +124,7 @@ See Section~\ref{get-started-with-legacy-code}.
 You should start with a property that matters to you.  Think about what
 aspects of your code cause the most errors, or cost the most time during
 maintenance, or are the most common to be incorrectly-documented.  Focusing
-on what you care about will give you the best benefits. 
+on what you care about will give you the best benefits.
 
 When you first start out with the Checker Framework, it's usually best to
 get experience with an existing type-checker before you write your own new
@@ -154,6 +154,14 @@ verify.
 If null pointer exceptions are most important to you, then by all means use
 the Nullness Checker.  But if you just want to try \emph{some}
 type-checker, there are others that are easier to use.
+
+we do not recommend indiscriminately running all the checkers on your code.
+The reason is that each one has a cost --- not just at compile time, but
+also in terms of code clutter and human time to maintain the annotations.
+If the property is important to you, is difficult for people to reason
+about, or has caused problems in the past, then you should run that
+checker.  For other properties, the benefits may not repay the effort to
+use it.  You will be the best judge of this for your own code, of course.
 
 The \ahrefloc{linear-checker}{Linear Checker} (see
 \chapterpageref{linear-checker}) has not been extensively tested.
@@ -852,7 +860,7 @@ When a user writes an upper bound, as in
 \code{class C<T extends OtherClass> \ttlcb\ ... \ttrcb},
 then the Checker Framework treats this occurrence of \<OtherClass> exactly
 like any other occurrence, and applies the usual defaulting rules.  Use of
-\<Object> is treated consistenly with all other types in this location and
+\<Object> is treated consistently with all other types in this location and
 all other occurrences of \<Object> in the program.
 
 It is uncommon for a user to write \<Object> as an upper bound with no type
@@ -1021,4 +1029,5 @@ annotations-in-comments feature (Section~\ref{annotations-in-comments}).
 %  LocalWords:  multithreading myfield Regex NonEmpty Xmaxerrs Xmaxwarns
 %  LocalWords:  8's igj javari MonotonicNonNull EnsuresNonNull myFieldName
 %  LocalWords:  m1 m2 RequiresNonNull AconcurrentSemantics 8's 8's MyQual
-%  LocalWords:  MyClass MyMoreRestrictiveQual TOPTYPEANNO
+%  LocalWords:  MyClass MyMoreRestrictiveQual TOPTYPEANNO DEFAULTANNO api
+%%  LocalWords:  OtherClass 8's
