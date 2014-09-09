@@ -5,6 +5,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.TypeVisualizer;
 import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.TypesUtils;
 
 import javax.lang.model.type.*;
 import java.util.*;
@@ -274,10 +275,8 @@ public class BoundsInitializer {
             final WildcardType underlyingType = wildcard.getUnderlyingType();
             TypeMirror underlyingSuperBound = underlyingType.getSuperBound();
             if (underlyingSuperBound == null) {
-                // Take the upper bound of the type variable the wildcard is bound to.
-                com.sun.tools.javac.code.Type.WildcardType wct = (com.sun.tools.javac.code.Type.WildcardType) underlyingType;
-                com.sun.tools.javac.util.Context ctx = ((com.sun.tools.javac.processing.JavacProcessingEnvironment) typeFactory.getProcessingEnv()).getContext();
-                underlyingSuperBound = com.sun.tools.javac.code.Types.instance(ctx).wildLowerBound(wct);
+                underlyingSuperBound =
+                        TypesUtils.wildLowerBound(wildcard.atypeFactory.processingEnv, underlyingType);
             }
 
             final AnnotatedTypeMirror superBound = AnnotatedTypeMirror.createType(underlyingSuperBound, typeFactory, false);
@@ -297,9 +296,8 @@ public class BoundsInitializer {
             TypeMirror underlyingExtendsBound = underlyingType.getExtendsBound();
             if (underlyingExtendsBound == null) {
                 // Take the upper bound of the type variable the wildcard is bound to.
-                com.sun.tools.javac.code.Type.WildcardType wct = (com.sun.tools.javac.code.Type.WildcardType) underlyingType;
-                com.sun.tools.javac.util.Context ctx = ((com.sun.tools.javac.processing.JavacProcessingEnvironment) typeFactory.getProcessingEnv()).getContext();
-                underlyingExtendsBound = com.sun.tools.javac.code.Types.instance(ctx).upperBound(wct);
+                underlyingExtendsBound =
+                        TypesUtils.wildUpperBound(wildcard.atypeFactory.processingEnv, underlyingType);
             }
 
             final AnnotatedTypeMirror extendsBound = AnnotatedTypeMirror.createType(underlyingExtendsBound, typeFactory, false);

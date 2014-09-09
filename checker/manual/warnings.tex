@@ -109,7 +109,7 @@ error messages with \code{@SuppressWarnings("mynifty")}.  (An exception is
 the Subtyping Checker, for which you use the annotation name; see
 Section~\ref{subtyping-using}).
 
-A \code{@\sunjavadoc{java/lang/SuppressWarnings.html}{SuppressWarnings}}
+A \sunjavadocanno{java/lang/SuppressWarnings.html}{SuppressWarnings}
 annotation may be placed on program declarations such as a local
 variable declaration, a method, or a class.  It suppresses all warnings
 related to the given checker, for that program element.
@@ -458,8 +458,7 @@ discuss this situation, which you can handle by writing annotations in
 comments.
 
 In other cases, your code needs to be run by people who are not using a Java~8
-JVM\@.  Section~\ref{java5-class-files} discusses this situation, which
-you can handle by passing the \code{-target 5} command-line argument.
+JVM\@.  Sections~\ref{java5-class-files} and~\ref{nullness-java7} discuss this situation.
 
 (\textbf{Note:} These are features of the javac compiler that is
 distributed along with the Checker Framework.  They are \emph{not}
@@ -701,6 +700,68 @@ file that does not contain type annotations.  One reason you might want to
 periodically compile with the \code{-source 5} argument is to ensure that
 your code does not use any Java 8 features other than type annotations in
 comments.
+
+
+\subsection{Class-file compatibility with Java~7\label{java7-classfiles}}
+
+The Checker Framework's type annotations utilize a Java 8 feature that
+allows them to be placed on any type use, including generic type parameters
+as in \code{List<@NonNull String>}.  A downside is that use of these type
+annotations creates a dependency on Java~8, which means that the compiled
+program requires a Java 8 JDK at run time. 
+
+To ensure that your program can run on a Java~7 JVM, you can use
+annotations that are Java~7 declaration annotations.  These can only be
+written at code locations that are legal for both declaration and type
+annotations, such as for fields, method returns, and method parameters.
+
+If you wish to write type annotations at other locations such as generic
+type parameters and \<extends>
+clauses, then you should write them in comments so that a standard Java 7
+compiler will ignore them, and be sure to distributed binaries that were
+created by a standard Java 7 compiler (not the Checker Framework compiler,
+which reads annotations in comments and writes them to classfiles).
+
+For example, if you wish to run the Nullness Checker using with Java~7
+declaration annotations rather than type annotations, you have two options.
+
+\begin{enumerate}
+\item
+Use aliased annotations from other projects.  For example, the aliased
+annotations for the Nullness Checker are listed in
+Section~\ref{nullness-related-work}.
+
+At locations where only type annotations are possible, use the
+``\<*Type>'' compatibility annotations in comments.  For example, the Nullness Checker
+declares these declaration annotations:
+\refqualclass{checker/nullness/compatqual}{NullableType},
+\refqualclass{checker/nullness/compatqual}{NonNullType},
+\refqualclass{checker/nullness/compatqual}{PolyNullType},
+\refqualclass{checker/nullness/compatqual}{MonotonicNullType}, and
+\refqualclass{checker/nullness/compatqual}{KeyForType}.
+
+\item
+Use ``\<*Decl>'' compatibility annotations.  For example, the Nullness Checker
+declares these declaration annotations:
+\refqualclass{checker/nullness/compatqual}{NullableDecl},
+\refqualclass{checker/nullness/compatqual}{NonNullDecl},
+\refqualclass{checker/nullness/compatqual}{PolyNullDecl},
+\refqualclass{checker/nullness/compatqual}{MonotonicNullDecl}, and
+\refqualclass{checker/nullness/compatqual}{KeyForDecl}.
+
+At locations where only type annotations are possible, use the regular
+Checker Framework type annotations in comments.
+\end{enumerate}
+
+Notice that in each case, the declaration annotations and type annotations
+have distinct names.  This enables a programmer to import both sets of
+annotations without a name conflict.
+
+Eventually, when backward compatibility with Java~7 is not important, the
+codebase should be refactored to use only the regular Checker Framework
+annotations, not in comments.
+
+
 
 
 % LocalWords:  quals skipUses un AskipUses Alint annotationname javac's Awarns

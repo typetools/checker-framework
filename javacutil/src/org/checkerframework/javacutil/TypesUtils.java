@@ -1,5 +1,6 @@
 package org.checkerframework.javacutil;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
@@ -11,7 +12,12 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.model.JavacTypes;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
 
 /**
  * A utility class that helps with {@link TypeMirror}s.
@@ -269,6 +275,32 @@ public final class TypesUtils {
             }
         } while (true);
         return type;
+    }
+
+    // Version of com.sun.tools.javac.code.Types.wildUpperBound(Type)
+    // that works with both jdk8 (called upperBound there) and jdk8u.
+    // TODO: contrast to upperBound.
+    public static Type wildUpperBound(ProcessingEnvironment env, TypeMirror tm) {
+        Type t = (Type) tm;
+        if (t.hasTag(TypeTag.WILDCARD)) {
+            Context context = ((JavacProcessingEnvironment) env).getContext();
+            Type.WildcardType w = (Type.WildcardType) TypeAnnotationUtils.unannotatedType(env, t);
+            if (w.isSuperBound()) {
+                Symtab syms = Symtab.instance(context);
+                return w.bound == null ? syms.objectType : w.bound.bound;
+            } else {
+                return wildUpperBound(env, w.type);
+            }
+        }
+        else {
+            return TypeAnnotationUtils.unannotatedType(env, t);
+        }
+    }
+
+    public static Type wildLowerBound(ProcessingEnvironment env, TypeMirror tm) {
+        com.sun.tools.javac.code.Type.WildcardType wct = (com.sun.tools.javac.code.Type.WildcardType) tm;
+        com.sun.tools.javac.util.Context ctx = ((com.sun.tools.javac.processing.JavacProcessingEnvironment) env).getContext();
+        return com.sun.tools.javac.code.Types.instance(ctx).wildLowerBound(wct);
     }
 
     /**

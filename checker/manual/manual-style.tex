@@ -109,11 +109,9 @@
 % In the HTML version, it's a link to the Javadoc.
 \newcommand{\refclass}[2]{\ahref{api/org/checkerframework/#1/#2.html}{\<#2>}}
 
-% Reference to Checker Framework Javadoc for a qualified class
-% (not a method, etc.). 
-% This function outputs an @ and then relies on \refclass for the
-% actual formatting.
-\newcommand{\refqualclass}[2]{\code{@}\refclass{#1}{#2}}
+% Reference to Checker Framework Javadoc for a type qualifier/annotation class
+% (not a method, etc.).  This prepends an @ to the qualifier name.
+\newcommand{\refqualclass}[2]{\ahref{api/org/checkerframework/#1/#2.html}{\<@#2>}}
 
 
 % Reference to Checker Framework Javadoc for a method or field.).
@@ -130,6 +128,8 @@
 % Arg 2: What will appear in the formatted manual.
 % Do not use \url in the body of any macro
 \newcommand{\sunjavadoc}[2]{\ahref{http://types.cs.washington.edu/checker-framework/jdk-api/jdk/#1}{\<#2>}}
+% Like \sunjavadoc, but for annotations and prepends "@".
+\newcommand{\sunjavadocanno}[2]{\ahref{http://types.cs.washington.edu/checker-framework/jdk-api/jdk/#1}{\<@#2>}}
 
 
 \newcommand{\refwithpage}[1]{\ref{#1}, page~\pageref{#1}}

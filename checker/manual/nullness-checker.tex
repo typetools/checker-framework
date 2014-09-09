@@ -24,6 +24,8 @@ type-checkers that work together: the Nullness Checker proper (which is the
 main focus of this chapter), the Initialization Checker
 (Section~\ref{initialization-checker}), and the Map Key Checker
 (Section~\ref{map-key-checker}).
+Their type hierarchies are completely independent, but they work together
+to provide precise nullness checking.
 
 
 \section{What the Nullness Checker checks\label{nullness-checks}}
@@ -2318,46 +2320,6 @@ than the expressions described in
 Section~\ref{java-expressions-as-arguments}.  The Checker Framework
 developers are working to correct this bug.
 
-
-\iffalse
-% TODO finish this description, maybe move out of nullness section
-
-\section{Compatibility with Java~7\label{nullness-java7}}
-
-Some of the nullness annotations used by the Checker Framework
-(see Section~\ref{nullness-annotations}) are Java~8 type annotations.
-Such annotations are allowed in all type use locations, but thereby
-create a dependency on Java~8 classes.
-
-To ease the transition from Java~7, there are two possible routes.
-
-1. Using one of the aliased annotations from other projects, see
-Section~\ref{nullness-related-work}. These annotations are Java~7
-declaration annotations and don't create a dependency on Java~8.
-
-2. Use compatiblity annotations defined by the Nullness Checker:
-\refqualclass{checker/nullness/compatqual}{NullableDecl},
-\refqualclass{checker/nullness/compatqual}{NonNullDecl},
-\refqualclass{checker/nullness/compatqual}{PolyNullDecl},
-\refqualclass{checker/nullness/compatqual}{MonotonicNullDecl}, and
-\refqualclass{checker/nullness/compatqual}{KeyForDecl}.
-By using the \<Decl> suffix, it is possible to use these declaration
-annotations for Java~7 compatibility and at the same time import the
-Java~8 type annotations using the annotations-in-comments feature (see
-Section~\ref{annotations-in-comments}).
-
-Alternatively, use alternative type annotations defined by
-the Nullness Checker:
-\refqualclass{checker/nullness/compatqual}{NullableType},
-\refqualclass{checker/nullness/compatqual}{NonNullType},
-\refqualclass{checker/nullness/compatqual}{PolyNullType},
-\refqualclass{checker/nullness/compatqual}{MonotonicNullType}, and
-\refqualclass{checker/nullness/compatqual}{KeyForType}.
-
-
-TODO: explain the trade-offs more.
-
-\fi
 
 % LocalWords:  NonNull plugin quals un NonNullExampleWithWarnings java ahndrich
 % LocalWords:  NotNull IntelliJ FindBugs Nullable TODO Alint nullable NNEL JSR
