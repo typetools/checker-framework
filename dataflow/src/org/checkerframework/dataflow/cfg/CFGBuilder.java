@@ -3435,7 +3435,7 @@ public class CFGBuilder {
           } else {
               // TODO: Shift any labels after the initialization of the
               // temporary array variable.
- 
+
               TypeMirror arrayType = InternalUtils.typeOf(expression);
 
               // Declare and initialize a temporary array variable
