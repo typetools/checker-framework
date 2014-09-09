@@ -4064,6 +4064,9 @@ public class CFGBuilder {
         }
     }
 
+    /** 
+     * A tuple with 4 named elements.
+     */
     private interface TreeInfo {
         boolean isBoxed();
         boolean isNumeric();
