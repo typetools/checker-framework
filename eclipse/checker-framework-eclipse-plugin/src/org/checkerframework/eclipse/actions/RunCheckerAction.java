@@ -32,7 +32,12 @@ public abstract class RunCheckerAction extends CheckerHandler
     protected boolean usedInEditor;
 
     protected RunCheckerAction() {
-        this(null, true);
+        super();
+        this.checkerName = null;
+        this.usePrefs = true;
+        this.useCustom = false;
+        this.useSingleCustom = false;
+        this.hasQuals = true;
     }
 
     protected RunCheckerAction(String checkerName) {

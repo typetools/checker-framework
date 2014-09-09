@@ -1086,7 +1086,8 @@ could otherwise be statically dispatched.
 
 When you first run a type-checker on your code, it is likely to issue
 warnings or errors.  For each warning, try to understand why the checker
-issues it.  For example, if you are using the
+issues it.  (If you think the warning is wrong, then formulate an argument
+about why your code is actually correct; also see Section~\ref{common-problems-typechecking}.)  For example, if you are using the
 \ahrefloc{nullness-checker}{Nullness Checker}
 (\chapterpageref{nullness-checker}), try to understand why it cannot prove
 that no null pointer exception ever occurs.  There are three general
@@ -1122,6 +1123,8 @@ a bug in the checker, then  please report the bug; see
 If you have trouble understanding a Checker Framework warning message, you
 can search for its text in this manual.
 Oftentimes there is an explanation of what to do.
+
+Also see Chapter~\ref{troubleshooting}, Troubleshooting.
 
 
 % LocalWords:  NonNull zipfile processor classfiles annotationname javac htoc

@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
- * UnknownVal is a type annotation indicating that the value is not
+ * UnknownVal is a type annotation indicating that the expression's value is not
  * known at compile type.
  * <p>
  * 
