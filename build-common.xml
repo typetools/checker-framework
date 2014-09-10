@@ -22,8 +22,12 @@
     <property name="dist.doc" value="doc"/>
     <property name="api.doc" value="${basedir}/../api"/>
 
+    <tstamp>
+        <format property="TIME" pattern="yy-MM-dd-hh-mm-ss-SS" />
+    </tstamp>
+
     <property name="tmpdir"
-              value="${java.io.tmpdir}/${user.name}/${ant.project.name}" />
+        value="${java.io.tmpdir}/${user.name}/${TIME}/${ant.project.name}" />
 
     <property name="compiler.version.goal.jsr308"
               value="javac 1.8.0-jsr308-${build.version}"/>
