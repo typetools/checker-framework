@@ -1785,6 +1785,44 @@ public class CFGBuilder {
             }
         }
 
+        private TreeInfo getTreeInfo(Tree tree) {
+            final TypeMirror type = InternalUtils.typeOf(tree);
+            final boolean boxed = TypesUtils.isBoxedPrimitive(type);
+            final TypeMirror unboxedType = boxed ? types.unboxedType(type) : type;
+
+            final boolean bool = TypesUtils.isBooleanType(type);
+            final boolean numeric = TypesUtils.isNumeric(unboxedType);
+
+            return new TreeInfo() {
+                @Override
+                public boolean isNumeric() {
+                    return numeric;
+                }
+
+                @Override
+                public boolean isBoxed() {
+                    return boxed;
+                }
+
+                @Override
+                public boolean isBoolean() {
+                    return bool;
+                }
+
+                @Override
+                public TypeMirror unboxedType() {
+                    return unboxedType;
+                }
+            };
+        }
+
+        /**
+         * @return the unboxed tree if necessary, as described in JLS 5.1.8
+         */
+        private Node unboxAsNeeded(Node node, boolean boxed) {
+            return boxed ? unbox(node) : node;
+        }
+
         /**
          * Convert the input node to String type, if it isn't already.
          *
@@ -2957,45 +2995,23 @@ public class CFGBuilder {
             case EQUAL_TO:
             case NOT_EQUAL_TO: {
                 // see JLS 15.21
-                TypeMirror leftType = InternalUtils.typeOf(leftTree);
-                TypeMirror rightType = InternalUtils.typeOf(rightTree);
+                TreeInfo leftInfo = getTreeInfo(leftTree);
+                TreeInfo rightInfo = getTreeInfo(rightTree);
+                Node left = scan(leftTree, p);
+                Node right = scan(rightTree, p);
 
-                boolean isLeftNumeric = TypesUtils.isNumeric(leftType);
-                boolean isLeftBoxed = TypesUtils.isBoxedPrimitive(leftType);
-                boolean isLeftBoxedNumeric = isLeftBoxed
-                        && TypesUtils.isNumeric(types.unboxedType(leftType));
-                boolean isLeftBoxedBoolean = isLeftBoxed
-                        && TypesUtils.isBooleanType(leftType);
-
-                boolean isRightNumeric = TypesUtils.isNumeric(rightType);
-                boolean isRightBoxed = TypesUtils.isBoxedPrimitive(rightType);
-                boolean isRightBoxedNumeric = isRightBoxed
-                        && TypesUtils.isNumeric(types.unboxedType(rightType));
-                boolean isRightBoxedBoolean = isRightBoxed
-                        && TypesUtils.isBooleanType(rightType);
-
-                Node left;
-                Node right;
-
-                if (isLeftNumeric && (isRightNumeric || isRightBoxedNumeric)
-                        || isLeftBoxedNumeric && isRightNumeric) {
-                    TypeMirror leftUnboxedType = isLeftBoxedNumeric ? types
-                            .unboxedType(leftType) : leftType;
-                    TypeMirror rightUnboxedType = isRightBoxedNumeric ? types
-                            .unboxedType(rightType) : rightType;
-                    TypeMirror promotedType =
-                        binaryPromotedType(leftUnboxedType, rightUnboxedType);
-                    left = binaryNumericPromotion(scan(leftTree, p), promotedType);
-                    right = binaryNumericPromotion(scan(rightTree, p), promotedType);
-                } else if (isLeftBoxedBoolean && !isRightBoxedBoolean) {
-                    left = unbox(scan(leftTree, p));
-                    right = scan(rightTree, p);
-                } else if (isRightBoxedBoolean && !isLeftBoxedBoolean) {
-                    left = scan(leftTree, p);
-                    right = unbox(scan(rightTree, p));
-                } else {
-                    left = scan(leftTree, p);
-                    right = scan(rightTree, p);
+                if (leftInfo.isNumeric() && rightInfo.isNumeric() &&
+                   !(leftInfo.isBoxed() && rightInfo.isBoxed())) {
+                    // JLS 15.21.1 numerical equality
+                    TypeMirror promotedType = binaryPromotedType(leftInfo.unboxedType(),
+                                                                 rightInfo.unboxedType());
+                    left  = binaryNumericPromotion(left,  promotedType);
+                    right = binaryNumericPromotion(right, promotedType);
+                } else if (leftInfo.isBoolean() && rightInfo.isBoolean() &&
+                          !(leftInfo.isBoxed() && rightInfo.isBoxed())) {
+                    // JSL 15.21.2 boolean equality
+                    left  = unboxAsNeeded(left,  leftInfo.isBoxed());
+                    right = unboxAsNeeded(right, rightInfo.isBoxed());
                 }
 
                 Node node;
@@ -3737,7 +3753,7 @@ public class CFGBuilder {
             tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
 
             scan(tree.getBlock(), p);
-            extendWithExtendedNode(new UnconditionalJump(doneLabel));
+            extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
 
             tryStack.popFrame();
 
@@ -3746,13 +3762,7 @@ public class CFGBuilder {
                 addLabelForNextNode(catchLabels.get(catchIndex).second);
                 scan(c, p);
                 catchIndex++;
-
-                if (finallyLabel != null) {
-                    // Normal completion of the catch block flows to the finally block.
-                    extendWithExtendedNode(new UnconditionalJump(finallyLabel));
-                } else {
-                    extendWithExtendedNode(new UnconditionalJump(doneLabel));
-                }
+                extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
             }
 
             if (finallyLabel != null) {
@@ -4065,6 +4075,26 @@ public class CFGBuilder {
         public Node visitOther(Tree tree, Void p) {
             assert false : "Unknown AST element encountered in AST to CFG translation.";
             return null;
+        }
+    }
+
+    /**
+     * A tuple with 4 named elements.
+     */
+    private interface TreeInfo {
+        boolean isBoxed();
+        boolean isNumeric();
+        boolean isBoolean();
+        TypeMirror unboxedType();
+    }
+
+    private static <A> A firstNonNull(A first, A second) {
+        if (first != null) {
+            return first;
+        } else if (second != null) {
+            return second;
+        } else {
+            throw new NullPointerException();
         }
     }
 
