@@ -1060,7 +1060,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public List<AnnotatedDeclaredType> directSuperTypes() {
             if (supertypes == null) {
-                supertypes = Collections.unmodifiableList(directSuperTypes(this));
+                supertypes = Collections.unmodifiableList(SupertypeFinder.directSuperTypes(this));
             }
             return supertypes;
         }
@@ -2586,26 +2586,8 @@ public abstract class AnnotatedTypeMirror {
         }
     }
 
-
-
     public List<? extends AnnotatedTypeMirror> directSuperTypes() {
-        return directSuperTypes(this);
-    }
-
-    // Version of method below for declared types
-    protected final List<AnnotatedDeclaredType> directSuperTypes(AnnotatedDeclaredType type) {
-        SupertypeFinder superTypeFinder = new SupertypeFinder(type.atypeFactory);
-        List<AnnotatedDeclaredType> supertypes = superTypeFinder.visitDeclared(type, null);
-        atypeFactory.postDirectSuperTypes(type, supertypes);
-        return supertypes;
-    }
-
-    // Version of method above for all types
-    private final List<? extends AnnotatedTypeMirror> directSuperTypes(AnnotatedTypeMirror type) {
-        SupertypeFinder superTypeFinder = new SupertypeFinder(type.atypeFactory);
-        List<? extends AnnotatedTypeMirror> supertypes = superTypeFinder.visit(type, null);
-        atypeFactory.postDirectSuperTypes(type, supertypes);
-        return supertypes;
+        return SupertypeFinder.directSuperTypes(this);
     }
 
     /** print to sb keyWord followed by field.  NULL types are substituted with
