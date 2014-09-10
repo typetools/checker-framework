@@ -86,6 +86,7 @@ import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.qual.TerminatesExecution;
+import org.checkerframework.dataflow.util.MostlySingleton;
 
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BasicAnnotationProvider;
@@ -246,6 +247,16 @@ public class CFGBuilder {
     }
 
     /**
+     * Build the control flow graph of some code (method, initializer block, ...).
+     * bodyPath is the TreePath to the body of that code.
+     */
+    public static ControlFlowGraph build(
+            TreePath bodyPath, ProcessingEnvironment env,
+            UnderlyingAST underlyingAST, boolean assumeAssertionsEnabled, boolean assumeAssertionsDisabled) {
+        return new CFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled).run(bodyPath, env, underlyingAST);
+    }
+
+    /**
      * Build the control flow graph of a method.
      */
     public static ControlFlowGraph build(
@@ -283,6 +294,25 @@ public class CFGBuilder {
         AnnotationProvider annotationProvider = new BasicAnnotationProvider();
         PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
                 root, env, underlyingAST, exceptionalExitLabel, builder, annotationProvider);
+        ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
+                .process(phase1result);
+        ControlFlowGraph phase3result = CFGTranslationPhaseThree
+                .process(phase2result);
+        return phase3result;
+    }
+
+    /**
+     * Build the control flow graph of some code (method, initializer block, ...).
+     * bodyPath is the TreePath to the body of that code.
+     */
+    public ControlFlowGraph run(
+            TreePath bodyPath, ProcessingEnvironment env,
+            UnderlyingAST underlyingAST) {
+        declaredClasses = new LinkedList<>();
+        TreeBuilder builder = new TreeBuilder(env);
+        AnnotationProvider annotationProvider = new BasicAnnotationProvider();
+        PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
+                bodyPath, env, underlyingAST, exceptionalExitLabel, builder, annotationProvider);
         ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
                 .process(phase1result);
         ControlFlowGraph phase3result = CFGTranslationPhaseThree
@@ -713,7 +743,7 @@ public class CFGBuilder {
         public Set<Label> possibleLabels(TypeMirror thrown) {
             // Work up from the innermost frame until the exception is known to
             // be caught.
-            Set<Label> labels = new HashSet<>();
+            Set<Label> labels = new MostlySingleton<>();
             for (TryFrame frame : frames) {
                 if (frame.possibleLabels(thrown, labels)) {
                     return labels;
@@ -1103,7 +1133,7 @@ public class CFGBuilder {
                     SpecialBlockType.EXCEPTIONAL_EXIT);
 
             // record missing edges that will be added later
-            Set<Tuple<? extends SingleSuccessorBlockImpl, Integer, ?>> missingEdges = new HashSet<>();
+            Set<Tuple<? extends SingleSuccessorBlockImpl, Integer, ?>> missingEdges = new MostlySingleton<>();
 
             // missing exceptional edges
             Set<Tuple<ExceptionBlockImpl, Integer, TypeMirror>> missingExceptionalEdges = new HashSet<>();
@@ -1385,12 +1415,6 @@ public class CFGBuilder {
         protected Map<Name, Label> continueLabels;
 
         /**
-         * Node yielding the value for the lexically enclosing switch statement,
-         * or null if there is no such statement.
-         */
-        protected Node switchExpr;
-
-        /**
          * Node yielding the value for the lexically enclosing synchronized statement,
          * or null if there is no such statement.
          */
@@ -1452,7 +1476,7 @@ public class CFGBuilder {
          * @return The result of phase one.
          */
         public PhaseOneResult process(
-                CompilationUnitTree root, ProcessingEnvironment env,
+                TreePath bodyPath, ProcessingEnvironment env,
                 UnderlyingAST underlyingAST, Label exceptionalExitLabel,
                 TreeBuilder treeBuilder, AnnotationProvider annotationProvider) {
             this.env = env;
@@ -1461,7 +1485,6 @@ public class CFGBuilder {
             this.annotationProvider = annotationProvider;
             elements = env.getElementUtils();
             types = env.getTypeUtils();
-            trees = Trees.instance(env);
 
             // initialize lists and maps
             treeLookupMap = new IdentityHashMap<>();
@@ -1474,7 +1497,6 @@ public class CFGBuilder {
             returnNodes = new ArrayList<>();
 
             // traverse AST of the method body
-            TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
             scan(bodyPath, null);
 
             // add marker to indicate that the next block will be the exit block
@@ -1488,6 +1510,15 @@ public class CFGBuilder {
             return new PhaseOneResult(underlyingAST, treeLookupMap,
                     convertedTreeLookupMap, nodeList,
                     bindings, leaders, returnNodes);
+        }
+
+        public PhaseOneResult process(
+                CompilationUnitTree root, ProcessingEnvironment env,
+                UnderlyingAST underlyingAST, Label exceptionalExitLabel,
+                TreeBuilder treeBuilder, AnnotationProvider annotationProvider) {
+            trees = Trees.instance(env);
+            TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
+            return process(bodyPath, env, underlyingAST, exceptionalExitLabel, treeBuilder, annotationProvider);
         }
 
         /**
@@ -1789,6 +1820,44 @@ public class CFGBuilder {
             } else {
                 return node;
             }
+        }
+
+        private TreeInfo getTreeInfo(Tree tree) {
+            final TypeMirror type = InternalUtils.typeOf(tree);
+            final boolean boxed = TypesUtils.isBoxedPrimitive(type);
+            final TypeMirror unboxedType = boxed ? types.unboxedType(type) : type;
+
+            final boolean bool = TypesUtils.isBooleanType(type);
+            final boolean numeric = TypesUtils.isNumeric(unboxedType);
+
+            return new TreeInfo() {
+                @Override
+                public boolean isNumeric() {
+                    return numeric;
+                }
+
+                @Override
+                public boolean isBoxed() {
+                    return boxed;
+                }
+
+                @Override
+                public boolean isBoolean() {
+                    return bool;
+                }
+
+                @Override
+                public TypeMirror unboxedType() {
+                    return unboxedType;
+                }
+            };
+        }
+
+        /**
+         * @return the unboxed tree if necessary, as described in JLS 5.1.8
+         */
+        private Node unboxAsNeeded(Node node, boolean boxed) {
+            return boxed ? unbox(node) : node;
         }
 
         /**
@@ -2963,45 +3032,23 @@ public class CFGBuilder {
             case EQUAL_TO:
             case NOT_EQUAL_TO: {
                 // see JLS 15.21
-                TypeMirror leftType = InternalUtils.typeOf(leftTree);
-                TypeMirror rightType = InternalUtils.typeOf(rightTree);
+                TreeInfo leftInfo = getTreeInfo(leftTree);
+                TreeInfo rightInfo = getTreeInfo(rightTree);
+                Node left = scan(leftTree, p);
+                Node right = scan(rightTree, p);
 
-                boolean isLeftNumeric = TypesUtils.isNumeric(leftType);
-                boolean isLeftBoxed = TypesUtils.isBoxedPrimitive(leftType);
-                boolean isLeftBoxedNumeric = isLeftBoxed
-                        && TypesUtils.isNumeric(types.unboxedType(leftType));
-                boolean isLeftBoxedBoolean = isLeftBoxed
-                        && TypesUtils.isBooleanType(leftType);
-
-                boolean isRightNumeric = TypesUtils.isNumeric(rightType);
-                boolean isRightBoxed = TypesUtils.isBoxedPrimitive(rightType);
-                boolean isRightBoxedNumeric = isRightBoxed
-                        && TypesUtils.isNumeric(types.unboxedType(rightType));
-                boolean isRightBoxedBoolean = isRightBoxed
-                        && TypesUtils.isBooleanType(rightType);
-
-                Node left;
-                Node right;
-
-                if (isLeftNumeric && (isRightNumeric || isRightBoxedNumeric)
-                        || isLeftBoxedNumeric && isRightNumeric) {
-                    TypeMirror leftUnboxedType = isLeftBoxedNumeric ? types
-                            .unboxedType(leftType) : leftType;
-                    TypeMirror rightUnboxedType = isRightBoxedNumeric ? types
-                            .unboxedType(rightType) : rightType;
-                    TypeMirror promotedType =
-                        binaryPromotedType(leftUnboxedType, rightUnboxedType);
-                    left = binaryNumericPromotion(scan(leftTree, p), promotedType);
-                    right = binaryNumericPromotion(scan(rightTree, p), promotedType);
-                } else if (isLeftBoxedBoolean && !isRightBoxedBoolean) {
-                    left = unbox(scan(leftTree, p));
-                    right = scan(rightTree, p);
-                } else if (isRightBoxedBoolean && !isLeftBoxedBoolean) {
-                    left = scan(leftTree, p);
-                    right = unbox(scan(rightTree, p));
-                } else {
-                    left = scan(leftTree, p);
-                    right = scan(rightTree, p);
+                if (leftInfo.isNumeric() && rightInfo.isNumeric() &&
+                   !(leftInfo.isBoxed() && rightInfo.isBoxed())) {
+                    // JLS 15.21.1 numerical equality
+                    TypeMirror promotedType = binaryPromotedType(leftInfo.unboxedType(),
+                                                                 rightInfo.unboxedType());
+                    left  = binaryNumericPromotion(left,  promotedType);
+                    right = binaryNumericPromotion(right, promotedType);
+                } else if (leftInfo.isBoolean() && rightInfo.isBoolean() &&
+                          !(leftInfo.isBoxed() && rightInfo.isBoxed())) {
+                    // JSL 15.21.2 boolean equality
+                    left  = unboxAsNeeded(left,  leftInfo.isBoxed());
+                    right = unboxAsNeeded(right, rightInfo.isBoxed());
                 }
 
                 Node node;
@@ -3125,32 +3172,78 @@ public class CFGBuilder {
         }
 
         @Override
-        public Node visitCase(CaseTree tree, Void p) {
-            assert switchExpr != null : "no switch expression in case";
-
-            Tree exprTree = tree.getExpression();
-            if (exprTree != null) {
-                // a case with a constant expression
-                Label thisBlockL = new Label();
-                Label nextCaseL = new Label();
-
-                Node expr = scan(exprTree, p);
-                CaseNode test = new CaseNode(tree, switchExpr, expr, env.getTypeUtils());
-                extendWithNode(test);
-                extendWithExtendedNode(new ConditionalJump(thisBlockL,
-                        nextCaseL));
-                addLabelForNextNode(thisBlockL);
-                for (StatementTree stmt : tree.getStatements()) {
-                    scan(stmt, p);
-                }
-                addLabelForNextNode(nextCaseL);
-            } else {
-                // the default case
-                for (StatementTree stmt : tree.getStatements()) {
-                    scan(stmt, p);
-                }
-            }
+        public Node visitSwitch(SwitchTree tree, Void p) {
+            SwitchBuilder builder = new SwitchBuilder(tree, p);
+            builder.build();
             return null;
+        }
+
+        private class SwitchBuilder {
+            final private SwitchTree switchTree;
+            final private Label[] caseBodyLabels;
+            final private Void p;
+            private Node switchExpr;
+
+            private SwitchBuilder(SwitchTree tree, Void p) {
+                this.switchTree = tree;
+                this.caseBodyLabels = new Label[switchTree.getCases().size() + 1];
+                this.p = p;
+            }
+
+            public void build() {
+                Label oldBreakTargetL = breakTargetL;
+                breakTargetL = new Label();
+                int cases = caseBodyLabels.length-1;
+                for(int i=0; i<cases; ++i) {
+                    caseBodyLabels[i] = new Label();
+                }
+                caseBodyLabels[cases] = breakTargetL;
+
+                switchExpr = unbox(scan(switchTree.getExpression(), p));
+                extendWithNode(new MarkerNode(switchTree, "start of switch statement", env.getTypeUtils()));
+
+                Integer defaultIndex = null;
+                for(int i=0; i<cases; ++i) {
+                    CaseTree caseTree = switchTree.getCases().get(i);
+                    if (caseTree.getExpression() == null) {
+                        defaultIndex = i;
+                    } else {
+                        buildCase(caseTree, i);
+                    }
+                }
+                if (defaultIndex != null) {
+                    // build the default case last
+                    buildCase(switchTree.getCases().get(defaultIndex), defaultIndex);
+                }
+
+                addLabelForNextNode(breakTargetL);
+                breakTargetL = oldBreakTargetL;
+            }
+
+            private void buildCase(CaseTree tree, int index) {
+                final Label thisBodyL = caseBodyLabels[index];
+                final Label nextBodyL = caseBodyLabels[index+1];
+                final Label nextCaseL = new Label();
+
+                ExpressionTree exprTree = tree.getExpression();
+                if (exprTree != null) {
+                    Node expr = scan(exprTree, p);
+                    CaseNode test = new CaseNode(tree, switchExpr, expr, env.getTypeUtils());
+                    extendWithNode(test);
+                    extendWithExtendedNode(new ConditionalJump(thisBodyL, nextCaseL));
+                }
+                addLabelForNextNode(thisBodyL);
+                for (StatementTree stmt : tree.getStatements()) {
+                    scan(stmt, p);
+                }
+                extendWithExtendedNode(new UnconditionalJump(nextBodyL));
+                addLabelForNextNode(nextCaseL);
+            }
+        }
+
+        @Override
+        public Node visitCase(CaseTree tree, Void p) {
+            throw new AssertionError("case visitor is implemented in SwitchBuilder");
         }
 
         @Override
@@ -3947,26 +4040,6 @@ public class CFGBuilder {
         }
 
         @Override
-        public Node visitSwitch(SwitchTree tree, Void p) {
-            switchExpr = unbox(scan(tree.getExpression(), p));
-
-            extendWithNode(new MarkerNode(tree, "start of switch statement", env.getTypeUtils()));
-
-            Label oldBreakTargetL = breakTargetL;
-            breakTargetL = new Label();
-
-            for (CaseTree caseTree : tree.getCases()) {
-                scan(caseTree, p);
-            }
-
-            addLabelForNextNode(breakTargetL);
-
-            breakTargetL = oldBreakTargetL;
-
-            return null;
-        }
-
-        @Override
         public Node visitSynchronized(SynchronizedTree tree, Void p) {
             // see JLS 14.19
 
@@ -4029,7 +4102,7 @@ public class CFGBuilder {
             tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
 
             scan(tree.getBlock(), p);
-            extendWithExtendedNode(new UnconditionalJump(doneLabel));
+            extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
 
             tryStack.popFrame();
 
@@ -4038,13 +4111,7 @@ public class CFGBuilder {
                 addLabelForNextNode(catchLabels.get(catchIndex).second);
                 scan(c, p);
                 catchIndex++;
-
-                if (finallyLabel != null) {
-                    // Normal completion of the catch block flows to the finally block.
-                    extendWithExtendedNode(new UnconditionalJump(finallyLabel));
-                } else {
-                    extendWithExtendedNode(new UnconditionalJump(doneLabel));
-                }
+                extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
             }
 
             if (finallyLabel != null) {
@@ -4360,6 +4427,26 @@ public class CFGBuilder {
         }
     }
 
+    /**
+     * A tuple with 4 named elements.
+     */
+    private interface TreeInfo {
+        boolean isBoxed();
+        boolean isNumeric();
+        boolean isBoolean();
+        TypeMirror unboxedType();
+    }
+
+    private static <A> A firstNonNull(A first, A second) {
+        if (first != null) {
+            return first;
+        } else if (second != null) {
+            return second;
+        } else {
+            throw new NullPointerException();
+        }
+    }
+
     /* --------------------------------------------------------- */
     /* Utility routines for debugging CFG building */
     /* --------------------------------------------------------- */
@@ -4401,3 +4488,4 @@ public class CFGBuilder {
         }
     }
 }
+
