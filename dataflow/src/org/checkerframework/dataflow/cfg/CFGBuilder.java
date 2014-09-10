@@ -1385,12 +1385,6 @@ public class CFGBuilder {
         protected Map<Name, Label> continueLabels;
 
         /**
-         * Node yielding the value for the lexically enclosing switch statement,
-         * or null if there is no such statement.
-         */
-        protected Node switchExpr;
-
-        /**
          * Node yielding the value for the lexically enclosing synchronized statement,
          * or null if there is no such statement.
          */
@@ -3141,32 +3135,78 @@ public class CFGBuilder {
         }
 
         @Override
-        public Node visitCase(CaseTree tree, Void p) {
-            assert switchExpr != null : "no switch expression in case";
-
-            Tree exprTree = tree.getExpression();
-            if (exprTree != null) {
-                // a case with a constant expression
-                Label thisBlockL = new Label();
-                Label nextCaseL = new Label();
-
-                Node expr = scan(exprTree, p);
-                CaseNode test = new CaseNode(tree, switchExpr, expr, env.getTypeUtils());
-                extendWithNode(test);
-                extendWithExtendedNode(new ConditionalJump(thisBlockL,
-                        nextCaseL));
-                addLabelForNextNode(thisBlockL);
-                for (StatementTree stmt : tree.getStatements()) {
-                    scan(stmt, p);
-                }
-                addLabelForNextNode(nextCaseL);
-            } else {
-                // the default case
-                for (StatementTree stmt : tree.getStatements()) {
-                    scan(stmt, p);
-                }
-            }
+        public Node visitSwitch(SwitchTree tree, Void p) {
+            SwitchBuilder builder = new SwitchBuilder(tree, p);
+            builder.build();
             return null;
+        }
+
+        private class SwitchBuilder {
+            final private SwitchTree switchTree;
+            final private Label[] caseBodyLabels;
+            final private Void p;
+            private Node switchExpr;
+
+            private SwitchBuilder(SwitchTree tree, Void p) {
+                this.switchTree = tree;
+                this.caseBodyLabels = new Label[switchTree.getCases().size() + 1];
+                this.p = p;
+            }
+
+            public void build() {
+                Label oldBreakTargetL = breakTargetL;
+                breakTargetL = new Label();
+                int cases = caseBodyLabels.length-1;
+                for(int i=0; i<cases; ++i) {
+                    caseBodyLabels[i] = new Label();
+                }
+                caseBodyLabels[cases] = breakTargetL;
+
+                switchExpr = unbox(scan(switchTree.getExpression(), p));
+                extendWithNode(new MarkerNode(switchTree, "start of switch statement", env.getTypeUtils()));
+
+                Integer defaultIndex = null;
+                for(int i=0; i<cases; ++i) {
+                    CaseTree caseTree = switchTree.getCases().get(i);
+                    if (caseTree.getExpression() == null) {
+                        defaultIndex = i;
+                    } else {
+                        buildCase(caseTree, i);
+                    }
+                }
+                if (defaultIndex != null) {
+                    // build the default case last
+                    buildCase(switchTree.getCases().get(defaultIndex), defaultIndex);
+                }
+
+                addLabelForNextNode(breakTargetL);
+                breakTargetL = oldBreakTargetL;
+            }
+
+            private void buildCase(CaseTree tree, int index) {
+                final Label thisBodyL = caseBodyLabels[index];
+                final Label nextBodyL = caseBodyLabels[index+1];
+                final Label nextCaseL = new Label();
+
+                ExpressionTree exprTree = tree.getExpression();
+                if (exprTree != null) {
+                    Node expr = scan(exprTree, p);
+                    CaseNode test = new CaseNode(tree, switchExpr, expr, env.getTypeUtils());
+                    extendWithNode(test);
+                    extendWithExtendedNode(new ConditionalJump(thisBodyL, nextCaseL));
+                }
+                addLabelForNextNode(thisBodyL);
+                for (StatementTree stmt : tree.getStatements()) {
+                    scan(stmt, p);
+                }
+                extendWithExtendedNode(new UnconditionalJump(nextBodyL));
+                addLabelForNextNode(nextCaseL);
+            }
+        }
+
+        @Override
+        public Node visitCase(CaseTree tree, Void p) {
+            throw new AssertionError("case visitor is implemented in SwitchBuilder");
         }
 
         @Override
@@ -3647,26 +3687,6 @@ public class CFGBuilder {
 
         @Override
         public Node visitEmptyStatement(EmptyStatementTree tree, Void p) {
-            return null;
-        }
-
-        @Override
-        public Node visitSwitch(SwitchTree tree, Void p) {
-            switchExpr = unbox(scan(tree.getExpression(), p));
-
-            extendWithNode(new MarkerNode(tree, "start of switch statement", env.getTypeUtils()));
-
-            Label oldBreakTargetL = breakTargetL;
-            breakTargetL = new Label();
-
-            for (CaseTree caseTree : tree.getCases()) {
-                scan(caseTree, p);
-            }
-
-            addLabelForNextNode(breakTargetL);
-
-            breakTargetL = oldBreakTargetL;
-
             return null;
         }
 
