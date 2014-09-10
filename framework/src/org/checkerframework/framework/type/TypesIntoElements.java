@@ -1,7 +1,6 @@
 package org.checkerframework.framework.type;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
@@ -95,13 +94,12 @@ public class TypesIntoElements {
         List<Attribute.TypeCompound> tcs = List.nil();
 
         storeTypeParameters(processingEnv, types, atypeFactory, meth.getTypeParameters(), sym);
-        SourceVersion srcvers = processingEnv.getSourceVersion();
 
         {
             // return type
             JCTree ret = ((JCTree.JCMethodDecl) meth).getReturnType();
             if (ret != null) {
-                tapos = TypeAnnotationUtils.methodReturnTAPosition(srcvers, ret.pos);
+                tapos = TypeAnnotationUtils.methodReturnTAPosition(ret.pos);
                 tcs = tcs.appendList(generateTypeCompounds(processingEnv, mtype.getReturnType(), tapos));
             }
         }
@@ -109,7 +107,7 @@ public class TypesIntoElements {
             // receiver
             JCTree recv = ((JCTree.JCMethodDecl) meth).getReceiverParameter();
             if (recv != null) {
-                tapos = TypeAnnotationUtils.methodReceiverTAPosition(srcvers, recv.pos);
+                tapos = TypeAnnotationUtils.methodReceiverTAPosition(recv.pos);
                 tcs = tcs.appendList(generateTypeCompounds(processingEnv, mtype.getReceiverType(), tapos));
             }
         }
@@ -118,7 +116,7 @@ public class TypesIntoElements {
             int pidx = 0;
             java.util.List<AnnotatedTypeMirror> ptypes = mtype.getParameterTypes();
             for (JCTree param : ((JCTree.JCMethodDecl) meth).getParameters()) {
-                tapos = TypeAnnotationUtils.methodParameterTAPosition(srcvers, pidx, param.pos);
+                tapos = TypeAnnotationUtils.methodParameterTAPosition(pidx, param.pos);
                 tcs = tcs.appendList(generateTypeCompounds(processingEnv, ptypes.get(pidx), tapos));
                 ++pidx;
             }
@@ -128,7 +126,7 @@ public class TypesIntoElements {
             int tidx = 0;
             java.util.List<AnnotatedTypeMirror> ttypes = mtype.getThrownTypes();
             for (JCTree thr : ((JCTree.JCMethodDecl) meth).getThrows()) {
-                tapos = TypeAnnotationUtils.methodThrowsTAPosition(srcvers, tidx, thr.pos);
+                tapos = TypeAnnotationUtils.methodThrowsTAPosition(tidx, thr.pos);
                 tcs = tcs.appendList(generateTypeCompounds(processingEnv, ttypes.get(tidx), tapos));
                 ++tidx;
             }
@@ -150,7 +148,7 @@ public class TypesIntoElements {
             type = atypeFactory.getAnnotatedType(var);
         }
 
-        TypeAnnotationPosition tapos = TypeAnnotationUtils.fieldTAPosition(processingEnv.getSourceVersion(), ((JCTree)var).pos);
+        TypeAnnotationPosition tapos = TypeAnnotationUtils.fieldTAPosition(((JCTree)var).pos);
 
         List<Attribute.TypeCompound> tcs;
         tcs = generateTypeCompounds(processingEnv, type, tapos);
@@ -174,7 +172,7 @@ public class TypesIntoElements {
             pos = ((JCTree) ext).pos;
         }
 
-        TypeAnnotationPosition tapos = TypeAnnotationUtils.classExtendsTAPosition(processingEnv.getSourceVersion(), implidx, pos);
+        TypeAnnotationPosition tapos = TypeAnnotationUtils.classExtendsTAPosition(implidx, pos);
 
         List<Attribute.TypeCompound> tcs;
         tcs = generateTypeCompounds(processingEnv, type, tapos);
@@ -186,7 +184,6 @@ public class TypesIntoElements {
             java.util.List<? extends TypeParameterTree> tps, Symbol sym) {
         boolean isClass = sym.getKind().isClass();
         List<Attribute.TypeCompound> tcs = List.nil();
-        SourceVersion srcvers = processingEnv.getSourceVersion();
 
         int tpidx = 0;
         for (TypeParameterTree tp : tps) {
@@ -197,9 +194,9 @@ public class TypesIntoElements {
             // Note: we use the type parameter pos also for the bounds;
             // the bounds may not be explicit and we couldn't look up separate pos.
             if (isClass) {
-                tapos = TypeAnnotationUtils.typeParameterTAPosition(srcvers, tpidx, ((JCTree)tp).pos);
+                tapos = TypeAnnotationUtils.typeParameterTAPosition(tpidx, ((JCTree)tp).pos);
             } else {
-                tapos = TypeAnnotationUtils.methodTypeParameterTAPosition(srcvers, tpidx, ((JCTree)tp).pos);
+                tapos = TypeAnnotationUtils.methodTypeParameterTAPosition(tpidx, ((JCTree)tp).pos);
             }
 
             tcs = tcs.appendList(generateTypeCompounds(processingEnv, type, tapos));
@@ -220,9 +217,9 @@ public class TypesIntoElements {
                 }
 
                 if (isClass) {
-                    tapos = TypeAnnotationUtils.typeParameterBoundTAPosition(srcvers, tpidx, bndidx, ((JCTree)tp).pos);
+                    tapos = TypeAnnotationUtils.typeParameterBoundTAPosition(tpidx, bndidx, ((JCTree)tp).pos);
                 } else {
-                    tapos = TypeAnnotationUtils.methodTypeParameterBoundTAPosition(srcvers, tpidx, bndidx, ((JCTree)tp).pos);
+                    tapos = TypeAnnotationUtils.methodTypeParameterBoundTAPosition(tpidx, bndidx, ((JCTree)tp).pos);
                 }
 
                 tcs = tcs.appendList(generateTypeCompounds(processingEnv, bound, tapos));
@@ -326,7 +323,7 @@ public class TypesIntoElements {
 
             int arg = 0;
             for (AnnotatedTypeMirror ta : type.getTypeArguments()) {
-                TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(processingEnv.getSourceVersion(), tapos);
+                TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(tapos);
                 newpos.location = tapos.location.append(new TypePathEntry(TypePathEntryKind.TYPE_ARGUMENT, arg));
                 res = scanAndReduce(ta, newpos, res);
                 ++ arg;
@@ -334,7 +331,7 @@ public class TypesIntoElements {
 
             AnnotatedTypeMirror encl = type.getEnclosingType();
             if (encl != null && encl.getKind() != TypeKind.NONE) {
-                TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(processingEnv.getSourceVersion(), tapos);
+                TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(tapos);
                 newpos.location = tapos.location.append(TypePathEntry.INNER_TYPE);
                 res = scanAndReduce(encl, newpos, res);
             }
@@ -348,7 +345,7 @@ public class TypesIntoElements {
             List<Attribute.TypeCompound> res;
             res = directAnnotations(type, tapos);
 
-            TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(processingEnv.getSourceVersion(), tapos);
+            TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(tapos);
             newpos.location = tapos.location.append(TypePathEntry.ARRAY);
 
             return reduce(super.visitArray(type, newpos), res);
@@ -378,7 +375,7 @@ public class TypesIntoElements {
 
                 AnnotatedTypeMirror ext = type.getExtendsBoundField();
                 if (ext != null) {
-                    TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(processingEnv.getSourceVersion(), tapos);
+                    TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(tapos);
                     newpos.location = tapos.location.append(TypePathEntry.WILDCARD);
                     res = scanAndReduce(ext, newpos, res);
                 }
@@ -387,7 +384,7 @@ public class TypesIntoElements {
                 res = directAnnotations(type.getExtendsBound(), tapos);
                 AnnotatedTypeMirror sup = type.getSuperBoundField();
                 if (sup != null) {
-                    TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(processingEnv.getSourceVersion(), tapos);
+                    TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(tapos);
                     newpos.location = tapos.location.append(TypePathEntry.WILDCARD);
                     res = scanAndReduce(sup, newpos, res);
                 }
