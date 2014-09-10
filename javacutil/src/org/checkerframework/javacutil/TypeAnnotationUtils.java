@@ -299,21 +299,29 @@ public class TypeAnnotationUtils {
      * @param tc The TAPCall abstraction to encapsulate two methods.
      * @return The created TypeAnnotationPosition.
      */
-    private static <RET> RET call8or9(SourceVersion ver, Call8or9<RET> tc) {
+    private static <RET> RET call8or9(Call8or9<RET> tc) {
         try {
-            boolean isNine;
+            boolean hasNine;
             try {
-                isNine = SourceVersion.valueOf("RELEASE_9") != null;
+                hasNine = SourceVersion.valueOf("RELEASE_9") != null;
             } catch(IllegalArgumentException iae) {
-                isNine = false;
+                hasNine = false;
             }
-            if (isNine) {
+            if (hasNine) {
                 return tc.call9();
-            } else if (ver.equals(SourceVersion.valueOf("RELEASE_8"))) {
-                return tc.call8();
             } else {
-                assert false : "Checker Framework needs a Java 8 or 9 javac.";
-                return null;
+                boolean hasEight;
+                try {
+                    hasEight = SourceVersion.valueOf("RELEASE_8") != null;
+                } catch(IllegalArgumentException iae) {
+                    hasEight = false;
+                }
+                if (hasEight) {
+                    return tc.call8();
+                } else {
+                    assert false : "Checker Framework needs a Java 8 or 9 javac.";
+                    return null;
+                }
             }
         } catch (Throwable t) {
             assert false : "Checker Framework internal error: " + t;
@@ -322,8 +330,8 @@ public class TypeAnnotationUtils {
         }
     }
 
-    public static TypeAnnotationPosition unknownTAPosition(SourceVersion ver) {
-        return call8or9(ver,
+    public static TypeAnnotationPosition unknownTAPosition() {
+        return call8or9(
                 new Call8or9<TypeAnnotationPosition>() {
                     @Override
                     public TypeAnnotationPosition call8() throws InstantiationException, IllegalAccessException {
@@ -339,8 +347,8 @@ public class TypeAnnotationUtils {
             );
     }
 
-    public static TypeAnnotationPosition methodReturnTAPosition(SourceVersion ver, final int pos) {
-        return call8or9(ver,
+    public static TypeAnnotationPosition methodReturnTAPosition(final int pos) {
+        return call8or9(
                 new Call8or9<TypeAnnotationPosition>() {
                     @Override
                     public TypeAnnotationPosition call8() throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException {
@@ -359,8 +367,8 @@ public class TypeAnnotationUtils {
             );
     }
 
-    public static TypeAnnotationPosition methodReceiverTAPosition(SourceVersion ver, final int pos) {
-        return call8or9(ver,
+    public static TypeAnnotationPosition methodReceiverTAPosition(final int pos) {
+        return call8or9(
                 new Call8or9<TypeAnnotationPosition>() {
                     @Override
                     public TypeAnnotationPosition call8() throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException {
@@ -379,8 +387,8 @@ public class TypeAnnotationUtils {
             );
     }
 
-    public static TypeAnnotationPosition methodParameterTAPosition(SourceVersion ver, final int pidx, final int pos) {
-        return call8or9(ver,
+    public static TypeAnnotationPosition methodParameterTAPosition(final int pidx, final int pos) {
+        return call8or9(
                 new Call8or9<TypeAnnotationPosition>() {
                     @Override
                     public TypeAnnotationPosition call8() throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException {
@@ -400,8 +408,8 @@ public class TypeAnnotationUtils {
             );
     }
 
-    public static TypeAnnotationPosition methodThrowsTAPosition(SourceVersion ver, final int tidx, final int pos) {
-        return call8or9(ver,
+    public static TypeAnnotationPosition methodThrowsTAPosition(final int tidx, final int pos) {
+        return call8or9(
                 new Call8or9<TypeAnnotationPosition>() {
                     @Override
                     public TypeAnnotationPosition call8() throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException {
@@ -421,8 +429,8 @@ public class TypeAnnotationUtils {
             );
     }
 
-    public static TypeAnnotationPosition fieldTAPosition(SourceVersion ver, final int pos) {
-        return call8or9(ver,
+    public static TypeAnnotationPosition fieldTAPosition(final int pos) {
+        return call8or9(
                 new Call8or9<TypeAnnotationPosition>() {
                     @Override
                     public TypeAnnotationPosition call8() throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException {
@@ -441,8 +449,8 @@ public class TypeAnnotationUtils {
             );
     }
 
-    public static TypeAnnotationPosition classExtendsTAPosition(SourceVersion ver, final int implidx, final int pos) {
-        return call8or9(ver,
+    public static TypeAnnotationPosition classExtendsTAPosition(final int implidx, final int pos) {
+        return call8or9(
                 new Call8or9<TypeAnnotationPosition>() {
                     @Override
                     public TypeAnnotationPosition call8() throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException {
@@ -462,8 +470,8 @@ public class TypeAnnotationUtils {
             );
     }
 
-    public static TypeAnnotationPosition typeParameterTAPosition(SourceVersion ver, final int tpidx, final int pos) {
-        return call8or9(ver,
+    public static TypeAnnotationPosition typeParameterTAPosition(final int tpidx, final int pos) {
+        return call8or9(
                 new Call8or9<TypeAnnotationPosition>() {
                     @Override
                     public TypeAnnotationPosition call8() throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException {
@@ -483,8 +491,8 @@ public class TypeAnnotationUtils {
             );
     }
 
-    public static TypeAnnotationPosition methodTypeParameterTAPosition(SourceVersion ver, final int tpidx, final int pos) {
-        return call8or9(ver,
+    public static TypeAnnotationPosition methodTypeParameterTAPosition(final int tpidx, final int pos) {
+        return call8or9(
                 new Call8or9<TypeAnnotationPosition>() {
                     @Override
                     public TypeAnnotationPosition call8() throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException {
@@ -504,8 +512,8 @@ public class TypeAnnotationUtils {
             );
     }
 
-    public static TypeAnnotationPosition typeParameterBoundTAPosition(SourceVersion ver, final int tpidx, final int bndidx, final int pos) {
-        return call8or9(ver,
+    public static TypeAnnotationPosition typeParameterBoundTAPosition(final int tpidx, final int bndidx, final int pos) {
+        return call8or9(
                 new Call8or9<TypeAnnotationPosition>() {
                     @Override
                     public TypeAnnotationPosition call8() throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException {
@@ -526,8 +534,8 @@ public class TypeAnnotationUtils {
             );
     }
 
-    public static TypeAnnotationPosition methodTypeParameterBoundTAPosition(SourceVersion ver, final int tpidx, final int bndidx, final int pos) {
-        return call8or9(ver,
+    public static TypeAnnotationPosition methodTypeParameterBoundTAPosition(final int tpidx, final int bndidx, final int pos) {
+        return call8or9(
                 new Call8or9<TypeAnnotationPosition>() {
                     @Override
                     public TypeAnnotationPosition call8() throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException {
@@ -548,8 +556,8 @@ public class TypeAnnotationUtils {
             );
     }
 
-    public static TypeAnnotationPosition copyTAPosition(SourceVersion ver, final TypeAnnotationPosition tapos) {
-        return call8or9(ver,
+    public static TypeAnnotationPosition copyTAPosition(final TypeAnnotationPosition tapos) {
+        return call8or9(
                 new Call8or9<TypeAnnotationPosition>() {
                     @Override
                     public TypeAnnotationPosition call8() throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException {
@@ -586,8 +594,8 @@ public class TypeAnnotationUtils {
         return res;
     }
 
-    public static Type unannotatedType(ProcessingEnvironment env, final Type in) {
-    	return call8or9(env.getSourceVersion(),
+    public static Type unannotatedType(final Type in) {
+    	return call8or9(
                 new Call8or9<Type>() {
                     @Override
                     public Type call8() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
