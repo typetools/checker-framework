@@ -28,6 +28,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
 
@@ -196,11 +197,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 boolean addToWorklistAgain = false;
                 for (Node n : rb.getContents()) {
                     transferResult = callTransferFunction(n, currentInput);
-                    A val = transferResult.getResultValue();
-                    if (val != null) {
-                        final boolean didNodeValuesChange = updateNodeValues(n, val);
-                        addToWorklistAgain = didNodeValuesChange || addToWorklistAgain;
-                    }
+                    addToWorklistAgain |= updateNodeValues(n, transferResult);
                     currentInput = new TransferInput<>(n, this, transferResult);
                     lastNode = n;
                 }
@@ -222,12 +219,9 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 Node node = eb.getNode();
                 TransferResult<A, S> transferResult = callTransferFunction(
                         node, currentInput);
-                A val = transferResult.getResultValue();
-                boolean addToWorklistAgain = false;
-                if (val != null) {
-                    addToWorklistAgain = updateNodeValues(node, val);
-                }
-
+                
+                boolean addToWorklistAgain = updateNodeValues(node, transferResult);
+                
                 // propagate store to successor
                 Block succ = eb.getSuccessor();
                 if (succ != null) {
@@ -333,16 +327,21 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     }
 
     /**
-     * Updates the value of node {@code n} to {@code val}, and returns true if
-     * anything in {@code nodeValues} changed (i.e., if we need to iterate
-     * further).
+     * Updates the value of node {@code node} to the value of the 
+     * {@code transferResult}. Returns true if the node's value changed, or a 
+     * store was updated.
      */
-    protected boolean updateNodeValues(Node n, A val) {
-        A oldVal = nodeValues.get(n);
-        nodeValues.put(n, val);
-        boolean result = ((oldVal == null || val == null) && val != oldVal)
-                || (!oldVal.equals(val));
-        return result;
+    protected boolean updateNodeValues(Node node, TransferResult<A, S> transferResult) {
+      A newVal = transferResult.getResultValue();
+      boolean nodeValueChanged = false;
+      
+      if (newVal != null) {
+          A oldVal = nodeValues.get(node);
+          nodeValues.put(node, newVal);
+          nodeValueChanged = !Objects.equals(oldVal, newVal);
+      }
+
+      return nodeValueChanged || transferResult.storeChanged();
     }
 
     /**
