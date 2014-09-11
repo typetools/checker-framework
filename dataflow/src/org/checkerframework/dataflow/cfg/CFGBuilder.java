@@ -1460,8 +1460,8 @@ public class CFGBuilder {
         /**
          * Performs the actual work of phase one.
          *
-         * @param root
-         *            compilation unit tree containing the method
+         * @param bodyPath
+         *            path to the body of the underlying AST's method
          * @param env
          *            annotation processing environment containing type
          *            utilities
