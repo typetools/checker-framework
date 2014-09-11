@@ -219,9 +219,8 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 Node node = eb.getNode();
                 TransferResult<A, S> transferResult = callTransferFunction(
                         node, currentInput);
-                
                 boolean addToWorklistAgain = updateNodeValues(node, transferResult);
-                
+
                 // propagate store to successor
                 Block succ = eb.getSuccessor();
                 if (succ != null) {
@@ -328,13 +327,13 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
     /**
      * Updates the value of node {@code node} to the value of the 
-     * {@code transferResult}. Returns true if the node's value changed, or a 
+     * {@code transferResult}. Returns true if the node's value changed, or a
      * store was updated.
      */
     protected boolean updateNodeValues(Node node, TransferResult<A, S> transferResult) {
       A newVal = transferResult.getResultValue();
       boolean nodeValueChanged = false;
-      
+
       if (newVal != null) {
           A oldVal = nodeValues.get(node);
           nodeValues.put(node, newVal);
