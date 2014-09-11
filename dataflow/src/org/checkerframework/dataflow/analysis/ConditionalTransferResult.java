@@ -31,6 +31,9 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
      * resulting store if the corresponding {@link org.checkerframework.dataflow.cfg.node.Node} evaluates to
      * {@code true} and {@code elseStore} otherwise.
      *
+     * For the meaning of storeChanged, see
+     * {@link org.checkerframework.dataflow.analysis.TransferResult#storeChanged}.
+     *
      * <p>
      *
      * <em>Exceptions</em>: If the corresponding {@link org.checkerframework.dataflow.cfg.node.Node} throws an
