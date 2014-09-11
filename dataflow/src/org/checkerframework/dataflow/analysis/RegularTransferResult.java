@@ -19,6 +19,7 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
 
     /** The regular result store. */
     protected S store;
+    final private boolean storeChanged;
 
     /**
      * Create a {@code TransferResult} with {@code resultStore} as the resulting
@@ -38,9 +39,14 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
      * outside of this class (including use through aliases). Complete control
      * over the object is transfered to this class.
      */
-    public RegularTransferResult(A value, S resultStore) {
+    public RegularTransferResult(A value, S resultStore, boolean storeChanged) {
         super(value);
-        store = resultStore;
+        this.store = resultStore;
+        this.storeChanged = storeChanged;
+    } 
+
+    public RegularTransferResult(A value, S resultStore) {
+        this(value, resultStore, false);
     }
 
     /**
@@ -64,12 +70,18 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
      * objects is transfered to this class.
      */
     public RegularTransferResult(A value, S resultStore,
-            Map<TypeMirror, S> exceptionalStores) {
+            Map<TypeMirror, S> exceptionalStores, boolean storeChanged) {
         super(value);
         this.store = resultStore;
+        this.storeChanged = storeChanged;
         this.exceptionalStores = exceptionalStores;
     }
 
+    public RegularTransferResult(A value, S resultStore,
+        Map<TypeMirror, S> exceptionalStores) {
+        this(value, resultStore, exceptionalStores, false);
+    }
+    
     @Override
     public S getRegularStore() {
         return store;
@@ -103,5 +115,13 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
         result.append(System.getProperty("line.separator"));
         result.append(")");
         return result.toString();
+    }
+
+    /**
+     * @see org.checkerframework.dataflow.analysis.TransferResult#storeChanged()
+     */
+    @Override
+    public boolean storeChanged() {
+      return storeChanged;
     }
 }
