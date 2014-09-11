@@ -43,7 +43,7 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
         super(value);
         this.store = resultStore;
         this.storeChanged = storeChanged;
-    } 
+    }
 
     public RegularTransferResult(A value, S resultStore) {
         this(value, resultStore, false);
@@ -81,7 +81,7 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
         Map<TypeMirror, S> exceptionalStores) {
         this(value, resultStore, exceptionalStores, false);
     }
-    
+
     @Override
     public S getRegularStore() {
         return store;

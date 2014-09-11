@@ -98,9 +98,9 @@ abstract public class TransferResult<A extends AbstractValue<A>, S extends Store
      *         stores.
      */
     abstract public boolean containsTwoStores();
-    
+
     /**
-     * @return {@code true} if and only if the transfer function returning this 
+     * @return {@code true} if and only if the transfer function returning this
      *         transfer result changed the regularStore, elseStore, or thenStore.
      */
     abstract public boolean storeChanged();
