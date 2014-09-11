@@ -19,7 +19,7 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
         extends TransferResult<A, S> {
 
     private final boolean storeChanged;
-  
+
     /** The 'then' result store. */
     protected S thenStore;
 
@@ -50,11 +50,11 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
         this.elseStore = elseStore;
         this.storeChanged = storeChanged;
     }
-   
+
     public ConditionalTransferResult(A value, S thenStore, S elseStore) {
         this(value, thenStore, elseStore, false);
     }
-    
+
     /**
      * Create a {@code ConditionalTransferResult} with {@code thenStore} as the
      * resulting store if the corresponding {@link org.checkerframework.dataflow.cfg.node.Node} evaluates to
@@ -88,7 +88,7 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
         Map<TypeMirror, S> exceptionalStores) {
         this(value, thenStore, elseStore, exceptionalStores, false);
     }
-    
+
     @Override
     public S getRegularStore() {
         return thenStore.leastUpperBound(elseStore);
