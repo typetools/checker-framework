@@ -3212,7 +3212,9 @@ public class CFGBuilder {
                     }
                 }
                 if (defaultIndex != null) {
-                    // build the default case last
+                    // the checks of all cases must happen before the default case,
+                    // therefore we build the default case last.
+                    // fallthrough is still handled correctly with the caseBodyLabels.
                     buildCase(switchTree.getCases().get(defaultIndex), defaultIndex);
                 }
 

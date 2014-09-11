@@ -13,7 +13,7 @@ import java.util.Set;
  */
 final public class MostlySingleton<T> implements Set<T> {
     private enum State {
-        EMPTY, SINGLETON, MORE
+        EMPTY, SINGLETON, ANY
     }
     private State state = State.EMPTY;
     private T value;
@@ -26,8 +26,10 @@ final public class MostlySingleton<T> implements Set<T> {
             return 0;
         case SINGLETON:
             return 1;
-        default: // MORE
+        case ANY:
             return set.size();
+        default:
+            throw new AssertionError();
         }
     }
 
@@ -43,8 +45,10 @@ final public class MostlySingleton<T> implements Set<T> {
             return false;
         case SINGLETON:
             return Objects.equals(o, value);
-        default: // MORE
+        case ANY:
             return set.contains(o);
+        default:
+            throw new AssertionError();
         }
     }
 
@@ -57,13 +61,15 @@ final public class MostlySingleton<T> implements Set<T> {
             value = e;
             return true;
         case SINGLETON:
-            state = State.MORE;
+            state = State.ANY;
             set = new HashSet<T>();
             set.add(value);
             value = null;
             // fallthrough
-        default: // MORE
+        case ANY:
             return set.add(e);
+        default:
+            throw new AssertionError();
         }
     }
 
@@ -95,8 +101,10 @@ final public class MostlySingleton<T> implements Set<T> {
                     throw new UnsupportedOperationException();
                 }
             };
-        default: // MORE
+        case ANY:
             return set.iterator();
+        default:
+            throw new AssertionError();
         }
     }
 
