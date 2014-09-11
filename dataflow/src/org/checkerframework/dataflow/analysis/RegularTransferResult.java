@@ -54,6 +54,9 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
      * store. If the corresponding {@link org.checkerframework.dataflow.cfg.node.Node} is a boolean node, then
      * {@code resultStore} is used for both the 'then' and 'else' edge.
      *
+     * For the meaning of storeChanged, see
+     * {@link org.checkerframework.dataflow.analysis.TransferResult#storeChanged}.
+     *
      * <p>
      *
      * <em>Exceptions</em>: If the corresponding {@link org.checkerframework.dataflow.cfg.node.Node} throws an
