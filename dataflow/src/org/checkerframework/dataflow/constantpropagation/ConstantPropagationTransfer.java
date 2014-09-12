@@ -15,6 +15,9 @@ import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 
+import com.sun.tools.javac.tree.JCTree.JCIdent;
+
+
 public class ConstantPropagationTransfer
         extends
         AbstractNodeVisitor<TransferResult<Constant, ConstantPropagationStore>, TransferInput<Constant, ConstantPropagationStore>>
@@ -25,6 +28,14 @@ public class ConstantPropagationTransfer
             List<LocalVariableNode> parameters) {
         ConstantPropagationStore store = new ConstantPropagationStore();
         return store;
+    }
+
+    @Override
+    public TransferResult<Constant, ConstantPropagationStore> visitLocalVariable(
+        LocalVariableNode node, TransferInput<Constant, ConstantPropagationStore> before) {
+        ConstantPropagationStore store = before.getRegularStore();
+        Constant value = store.getInformation(node);
+        return new RegularTransferResult<>(value, store);
     }
 
     @Override

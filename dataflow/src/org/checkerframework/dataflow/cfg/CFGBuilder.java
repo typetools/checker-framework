@@ -86,6 +86,7 @@ import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.qual.TerminatesExecution;
+import org.checkerframework.dataflow.util.MostlySingleton;
 
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BasicAnnotationProvider;
@@ -246,6 +247,16 @@ public class CFGBuilder {
     }
 
     /**
+     * Build the control flow graph of some code (method, initializer block, ...).
+     * bodyPath is the TreePath to the body of that code.
+     */
+    public static ControlFlowGraph build(
+            TreePath bodyPath, ProcessingEnvironment env,
+            UnderlyingAST underlyingAST, boolean assumeAssertionsEnabled, boolean assumeAssertionsDisabled) {
+        return new CFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled).run(bodyPath, env, underlyingAST);
+    }
+
+    /**
      * Build the control flow graph of a method.
      */
     public static ControlFlowGraph build(
@@ -283,6 +294,25 @@ public class CFGBuilder {
         AnnotationProvider annotationProvider = new BasicAnnotationProvider();
         PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
                 root, env, underlyingAST, exceptionalExitLabel, builder, annotationProvider);
+        ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
+                .process(phase1result);
+        ControlFlowGraph phase3result = CFGTranslationPhaseThree
+                .process(phase2result);
+        return phase3result;
+    }
+
+    /**
+     * Build the control flow graph of some code (method, initializer block, ...).
+     * bodyPath is the TreePath to the body of that code.
+     */
+    public ControlFlowGraph run(
+            TreePath bodyPath, ProcessingEnvironment env,
+            UnderlyingAST underlyingAST) {
+        declaredClasses = new LinkedList<>();
+        TreeBuilder builder = new TreeBuilder(env);
+        AnnotationProvider annotationProvider = new BasicAnnotationProvider();
+        PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
+                bodyPath, env, underlyingAST, exceptionalExitLabel, builder, annotationProvider);
         ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
                 .process(phase1result);
         ControlFlowGraph phase3result = CFGTranslationPhaseThree
@@ -713,7 +743,7 @@ public class CFGBuilder {
         public Set<Label> possibleLabels(TypeMirror thrown) {
             // Work up from the innermost frame until the exception is known to
             // be caught.
-            Set<Label> labels = new HashSet<>();
+            Set<Label> labels = new MostlySingleton<>();
             for (TryFrame frame : frames) {
                 if (frame.possibleLabels(thrown, labels)) {
                     return labels;
@@ -1103,7 +1133,7 @@ public class CFGBuilder {
                     SpecialBlockType.EXCEPTIONAL_EXIT);
 
             // record missing edges that will be added later
-            Set<Tuple<? extends SingleSuccessorBlockImpl, Integer, ?>> missingEdges = new HashSet<>();
+            Set<Tuple<? extends SingleSuccessorBlockImpl, Integer, ?>> missingEdges = new MostlySingleton<>();
 
             // missing exceptional edges
             Set<Tuple<ExceptionBlockImpl, Integer, TypeMirror>> missingExceptionalEdges = new HashSet<>();
@@ -1385,12 +1415,6 @@ public class CFGBuilder {
         protected Map<Name, Label> continueLabels;
 
         /**
-         * Node yielding the value for the lexically enclosing switch statement,
-         * or null if there is no such statement.
-         */
-        protected Node switchExpr;
-
-        /**
          * Node yielding the value for the lexically enclosing synchronized statement,
          * or null if there is no such statement.
          */
@@ -1436,8 +1460,8 @@ public class CFGBuilder {
         /**
          * Performs the actual work of phase one.
          *
-         * @param root
-         *            compilation unit tree containing the method
+         * @param bodyPath
+         *            path to the body of the underlying AST's method
          * @param env
          *            annotation processing environment containing type
          *            utilities
@@ -1452,7 +1476,7 @@ public class CFGBuilder {
          * @return The result of phase one.
          */
         public PhaseOneResult process(
-                CompilationUnitTree root, ProcessingEnvironment env,
+                TreePath bodyPath, ProcessingEnvironment env,
                 UnderlyingAST underlyingAST, Label exceptionalExitLabel,
                 TreeBuilder treeBuilder, AnnotationProvider annotationProvider) {
             this.env = env;
@@ -1461,7 +1485,6 @@ public class CFGBuilder {
             this.annotationProvider = annotationProvider;
             elements = env.getElementUtils();
             types = env.getTypeUtils();
-            trees = Trees.instance(env);
 
             // initialize lists and maps
             treeLookupMap = new IdentityHashMap<>();
@@ -1474,7 +1497,6 @@ public class CFGBuilder {
             returnNodes = new ArrayList<>();
 
             // traverse AST of the method body
-            TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
             scan(bodyPath, null);
 
             // add marker to indicate that the next block will be the exit block
@@ -1488,6 +1510,15 @@ public class CFGBuilder {
             return new PhaseOneResult(underlyingAST, treeLookupMap,
                     convertedTreeLookupMap, nodeList,
                     bindings, leaders, returnNodes);
+        }
+
+        public PhaseOneResult process(
+                CompilationUnitTree root, ProcessingEnvironment env,
+                UnderlyingAST underlyingAST, Label exceptionalExitLabel,
+                TreeBuilder treeBuilder, AnnotationProvider annotationProvider) {
+            trees = Trees.instance(env);
+            TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
+            return process(bodyPath, env, underlyingAST, exceptionalExitLabel, treeBuilder, annotationProvider);
         }
 
         /**
@@ -1789,6 +1820,44 @@ public class CFGBuilder {
             } else {
                 return node;
             }
+        }
+
+        private TreeInfo getTreeInfo(Tree tree) {
+            final TypeMirror type = InternalUtils.typeOf(tree);
+            final boolean boxed = TypesUtils.isBoxedPrimitive(type);
+            final TypeMirror unboxedType = boxed ? types.unboxedType(type) : type;
+
+            final boolean bool = TypesUtils.isBooleanType(type);
+            final boolean numeric = TypesUtils.isNumeric(unboxedType);
+
+            return new TreeInfo() {
+                @Override
+                public boolean isNumeric() {
+                    return numeric;
+                }
+
+                @Override
+                public boolean isBoxed() {
+                    return boxed;
+                }
+
+                @Override
+                public boolean isBoolean() {
+                    return bool;
+                }
+
+                @Override
+                public TypeMirror unboxedType() {
+                    return unboxedType;
+                }
+            };
+        }
+
+        /**
+         * @return the unboxed tree if necessary, as described in JLS 5.1.8
+         */
+        private Node unboxAsNeeded(Node node, boolean boxed) {
+            return boxed ? unbox(node) : node;
         }
 
         /**
@@ -2963,45 +3032,23 @@ public class CFGBuilder {
             case EQUAL_TO:
             case NOT_EQUAL_TO: {
                 // see JLS 15.21
-                TypeMirror leftType = InternalUtils.typeOf(leftTree);
-                TypeMirror rightType = InternalUtils.typeOf(rightTree);
+                TreeInfo leftInfo = getTreeInfo(leftTree);
+                TreeInfo rightInfo = getTreeInfo(rightTree);
+                Node left = scan(leftTree, p);
+                Node right = scan(rightTree, p);
 
-                boolean isLeftNumeric = TypesUtils.isNumeric(leftType);
-                boolean isLeftBoxed = TypesUtils.isBoxedPrimitive(leftType);
-                boolean isLeftBoxedNumeric = isLeftBoxed
-                        && TypesUtils.isNumeric(types.unboxedType(leftType));
-                boolean isLeftBoxedBoolean = isLeftBoxed
-                        && TypesUtils.isBooleanType(leftType);
-
-                boolean isRightNumeric = TypesUtils.isNumeric(rightType);
-                boolean isRightBoxed = TypesUtils.isBoxedPrimitive(rightType);
-                boolean isRightBoxedNumeric = isRightBoxed
-                        && TypesUtils.isNumeric(types.unboxedType(rightType));
-                boolean isRightBoxedBoolean = isRightBoxed
-                        && TypesUtils.isBooleanType(rightType);
-
-                Node left;
-                Node right;
-
-                if (isLeftNumeric && (isRightNumeric || isRightBoxedNumeric)
-                        || isLeftBoxedNumeric && isRightNumeric) {
-                    TypeMirror leftUnboxedType = isLeftBoxedNumeric ? types
-                            .unboxedType(leftType) : leftType;
-                    TypeMirror rightUnboxedType = isRightBoxedNumeric ? types
-                            .unboxedType(rightType) : rightType;
-                    TypeMirror promotedType =
-                        binaryPromotedType(leftUnboxedType, rightUnboxedType);
-                    left = binaryNumericPromotion(scan(leftTree, p), promotedType);
-                    right = binaryNumericPromotion(scan(rightTree, p), promotedType);
-                } else if (isLeftBoxedBoolean && !isRightBoxedBoolean) {
-                    left = unbox(scan(leftTree, p));
-                    right = scan(rightTree, p);
-                } else if (isRightBoxedBoolean && !isLeftBoxedBoolean) {
-                    left = scan(leftTree, p);
-                    right = unbox(scan(rightTree, p));
-                } else {
-                    left = scan(leftTree, p);
-                    right = scan(rightTree, p);
+                if (leftInfo.isNumeric() && rightInfo.isNumeric() &&
+                   !(leftInfo.isBoxed() && rightInfo.isBoxed())) {
+                    // JLS 15.21.1 numerical equality
+                    TypeMirror promotedType = binaryPromotedType(leftInfo.unboxedType(),
+                                                                 rightInfo.unboxedType());
+                    left  = binaryNumericPromotion(left,  promotedType);
+                    right = binaryNumericPromotion(right, promotedType);
+                } else if (leftInfo.isBoolean() && rightInfo.isBoolean() &&
+                          !(leftInfo.isBoxed() && rightInfo.isBoxed())) {
+                    // JSL 15.21.2 boolean equality
+                    left  = unboxAsNeeded(left,  leftInfo.isBoxed());
+                    right = unboxAsNeeded(right, rightInfo.isBoxed());
                 }
 
                 Node node;
@@ -3125,32 +3172,80 @@ public class CFGBuilder {
         }
 
         @Override
-        public Node visitCase(CaseTree tree, Void p) {
-            assert switchExpr != null : "no switch expression in case";
-
-            Tree exprTree = tree.getExpression();
-            if (exprTree != null) {
-                // a case with a constant expression
-                Label thisBlockL = new Label();
-                Label nextCaseL = new Label();
-
-                Node expr = scan(exprTree, p);
-                CaseNode test = new CaseNode(tree, switchExpr, expr, env.getTypeUtils());
-                extendWithNode(test);
-                extendWithExtendedNode(new ConditionalJump(thisBlockL,
-                        nextCaseL));
-                addLabelForNextNode(thisBlockL);
-                for (StatementTree stmt : tree.getStatements()) {
-                    scan(stmt, p);
-                }
-                addLabelForNextNode(nextCaseL);
-            } else {
-                // the default case
-                for (StatementTree stmt : tree.getStatements()) {
-                    scan(stmt, p);
-                }
-            }
+        public Node visitSwitch(SwitchTree tree, Void p) {
+            SwitchBuilder builder = new SwitchBuilder(tree, p);
+            builder.build();
             return null;
+        }
+
+        private class SwitchBuilder {
+            final private SwitchTree switchTree;
+            final private Label[] caseBodyLabels;
+            final private Void p;
+            private Node switchExpr;
+
+            private SwitchBuilder(SwitchTree tree, Void p) {
+                this.switchTree = tree;
+                this.caseBodyLabels = new Label[switchTree.getCases().size() + 1];
+                this.p = p;
+            }
+
+            public void build() {
+                Label oldBreakTargetL = breakTargetL;
+                breakTargetL = new Label();
+                int cases = caseBodyLabels.length-1;
+                for(int i=0; i<cases; ++i) {
+                    caseBodyLabels[i] = new Label();
+                }
+                caseBodyLabels[cases] = breakTargetL;
+
+                switchExpr = unbox(scan(switchTree.getExpression(), p));
+                extendWithNode(new MarkerNode(switchTree, "start of switch statement", env.getTypeUtils()));
+
+                Integer defaultIndex = null;
+                for(int i=0; i<cases; ++i) {
+                    CaseTree caseTree = switchTree.getCases().get(i);
+                    if (caseTree.getExpression() == null) {
+                        defaultIndex = i;
+                    } else {
+                        buildCase(caseTree, i);
+                    }
+                }
+                if (defaultIndex != null) {
+                    // the checks of all cases must happen before the default case,
+                    // therefore we build the default case last.
+                    // fallthrough is still handled correctly with the caseBodyLabels.
+                    buildCase(switchTree.getCases().get(defaultIndex), defaultIndex);
+                }
+
+                addLabelForNextNode(breakTargetL);
+                breakTargetL = oldBreakTargetL;
+            }
+
+            private void buildCase(CaseTree tree, int index) {
+                final Label thisBodyL = caseBodyLabels[index];
+                final Label nextBodyL = caseBodyLabels[index+1];
+                final Label nextCaseL = new Label();
+
+                ExpressionTree exprTree = tree.getExpression();
+                if (exprTree != null) {
+                    Node expr = scan(exprTree, p);
+                    CaseNode test = new CaseNode(tree, switchExpr, expr, env.getTypeUtils());
+                    extendWithNode(test);
+                    extendWithExtendedNode(new ConditionalJump(thisBodyL, nextCaseL));
+                }
+                addLabelForNextNode(thisBodyL);
+                for (StatementTree stmt : tree.getStatements()) {
+                    scan(stmt, p);
+                }
+                extendWithExtendedNode(new UnconditionalJump(nextBodyL));
+                addLabelForNextNode(nextCaseL);
+            }
+        }
+
+        @Override
+        public Node visitCase(CaseTree tree, Void p) {
+            throw new AssertionError("case visitor is implemented in SwitchBuilder");
         }
 
         @Override
@@ -3271,12 +3366,324 @@ public class CFGBuilder {
             return scan(tree.getExpression(), p);
         }
 
-        // TODO(Charlie): Desugar for loops based on unannotated types for CF-independent
-        // uses.
         @Override
         public Node visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
-            assert false : "EnhancedForLoopTree is not implemented in base CFGBuilder yet";
-            return null;
+          // see JLS 14.14.2
+          Name parentLabel = getLabel(getCurrentPath());
+
+          Label conditionStart = new Label();
+          Label loopEntry = new Label();
+          Label loopExit = new Label();
+
+          // If the loop is a labeled statement, then its continue
+          // target is identical for continues with no label and
+          // continues with the loop's label.
+          Label updateStart;
+          if (parentLabel != null) {
+              updateStart = continueLabels.get(parentLabel);
+          } else {
+              updateStart = new Label();
+          }
+
+          Label oldBreakTargetL = breakTargetL;
+          breakTargetL = loopExit;
+
+          Label oldContinueTargetL = continueTargetL;
+          continueTargetL = updateStart;
+
+          // Distinguish loops over Iterables from loops over arrays.
+
+          TypeElement iterableElement = elements.getTypeElement("java.lang.Iterable");
+          TypeMirror iterableType = types.erasure(iterableElement.asType());
+
+          VariableTree variable = tree.getVariable();
+          VariableElement variableElement =
+              TreeUtils.elementFromDeclaration(variable);
+          ExpressionTree expression = tree.getExpression();
+          StatementTree statement = tree.getStatement();
+
+          TypeMirror exprType = InternalUtils.typeOf(expression);
+
+          if (types.isSubtype(exprType, iterableType)) {
+              // Take the upper bound of a type variable or wildcard
+              exprType = TypesUtils.upperBound(exprType);
+
+              assert (exprType instanceof DeclaredType) : "an Iterable must be a DeclaredType";
+              DeclaredType declaredExprType = (DeclaredType) exprType;
+              declaredExprType.getTypeArguments();
+
+              MemberSelectTree iteratorSelect =
+                  treeBuilder.buildIteratorMethodAccess(expression);
+              handleArtificialTree(iteratorSelect);
+
+              MethodInvocationTree iteratorCall =
+                  treeBuilder.buildMethodInvocation(iteratorSelect);
+              handleArtificialTree(iteratorCall);
+
+              TypeMirror iteratorType = InternalUtils.typeOf(iteratorCall);
+
+              // Declare and initialize a new, unique iterator variable
+              VariableTree iteratorVariable =
+                  treeBuilder.buildVariableDecl(iteratorType, // annotatedIteratorTypeTree,
+                                                uniqueName("iter"),
+                                                variableElement.getEnclosingElement(),
+                                                iteratorCall);
+              handleArtificialTree(iteratorVariable);
+
+              VariableDeclarationNode iteratorVariableDecl =
+                  new VariableDeclarationNode(iteratorVariable);
+              iteratorVariableDecl.setInSource(false);
+
+              extendWithNode(iteratorVariableDecl);
+
+              Node expressionNode = scan(expression, p);
+
+              MethodAccessNode iteratorAccessNode =
+                  new MethodAccessNode(iteratorSelect, expressionNode);
+              iteratorAccessNode.setInSource(false);
+              extendWithNode(iteratorAccessNode);
+              MethodInvocationNode iteratorCallNode =
+                  new MethodInvocationNode(iteratorCall, iteratorAccessNode,
+                                           Collections.<Node>emptyList(), getCurrentPath());
+              iteratorCallNode.setInSource(false);
+              extendWithNode(iteratorCallNode);
+
+              translateAssignment(iteratorVariable,
+                                  new LocalVariableNode(iteratorVariable),
+                                  iteratorCallNode);
+
+              // Test the loop ending condition
+              addLabelForNextNode(conditionStart);
+              IdentifierTree iteratorUse1 =
+                  treeBuilder.buildVariableUse(iteratorVariable);
+              handleArtificialTree(iteratorUse1);
+
+              LocalVariableNode iteratorReceiverNode =
+                  new LocalVariableNode(iteratorUse1);
+              iteratorReceiverNode.setInSource(false);
+              extendWithNode(iteratorReceiverNode);
+
+              MemberSelectTree hasNextSelect =
+                  treeBuilder.buildHasNextMethodAccess(iteratorUse1);
+              handleArtificialTree(hasNextSelect);
+
+              MethodAccessNode hasNextAccessNode =
+                  new MethodAccessNode(hasNextSelect, iteratorReceiverNode);
+              hasNextAccessNode.setInSource(false);
+              extendWithNode(hasNextAccessNode);
+
+              MethodInvocationTree hasNextCall =
+                  treeBuilder.buildMethodInvocation(hasNextSelect);
+              handleArtificialTree(hasNextCall);
+
+              MethodInvocationNode hasNextCallNode =
+                  new MethodInvocationNode(hasNextCall, hasNextAccessNode,
+                                           Collections.<Node>emptyList(), getCurrentPath());
+              hasNextCallNode.setInSource(false);
+              extendWithNode(hasNextCallNode);
+              extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
+
+              // Loop body, starting with declaration of the loop iteration variable
+              addLabelForNextNode(loopEntry);
+              extendWithNode(new VariableDeclarationNode(variable));
+
+              IdentifierTree iteratorUse2 =
+                  treeBuilder.buildVariableUse(iteratorVariable);
+              handleArtificialTree(iteratorUse2);
+
+              LocalVariableNode iteratorReceiverNode2 =
+                  new LocalVariableNode(iteratorUse2);
+              iteratorReceiverNode2.setInSource(false);
+              extendWithNode(iteratorReceiverNode2);
+
+              MemberSelectTree nextSelect =
+                  treeBuilder.buildNextMethodAccess(iteratorUse2);
+              handleArtificialTree(nextSelect);
+
+              MethodAccessNode nextAccessNode =
+                  new MethodAccessNode(nextSelect, iteratorReceiverNode2);
+              nextAccessNode.setInSource(false);
+              extendWithNode(nextAccessNode);
+
+              MethodInvocationTree nextCall =
+                  treeBuilder.buildMethodInvocation(nextSelect);
+              handleArtificialTree(nextCall);
+
+              MethodInvocationNode nextCallNode =
+                  new MethodInvocationNode(nextCall, nextAccessNode,
+                                           Collections.<Node>emptyList(), getCurrentPath());
+              nextCallNode.setInSource(false);
+              extendWithNode(nextCallNode);
+
+              translateAssignment(variable,
+                                  new LocalVariableNode(variable),
+                                  nextCall);
+
+              if (statement != null) {
+                  scan(statement, p);
+              }
+
+              // Loop back edge
+              addLabelForNextNode(updateStart);
+              extendWithExtendedNode(new UnconditionalJump(conditionStart));
+
+          } else {
+              // TODO: Shift any labels after the initialization of the
+              // temporary array variable.
+
+              TypeMirror arrayType = InternalUtils.typeOf(expression);
+
+              // Declare and initialize a temporary array variable
+              VariableTree arrayVariable =
+                  treeBuilder.buildVariableDecl(arrayType,
+                                                uniqueName("array"),
+                                                variableElement.getEnclosingElement(),
+                                                expression);
+              handleArtificialTree(arrayVariable);
+
+              VariableDeclarationNode arrayVariableNode =
+                  new VariableDeclarationNode(arrayVariable);
+              arrayVariableNode.setInSource(false);
+              extendWithNode(arrayVariableNode);
+              Node expressionNode = scan(expression, p);
+
+              translateAssignment(arrayVariable,
+                                  new LocalVariableNode(arrayVariable),
+                                  expressionNode);
+
+              // Declare and initialize the loop index variable
+              TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
+
+              LiteralTree zero =
+                  treeBuilder.buildLiteral(new Integer(0));
+              handleArtificialTree(zero);
+
+              VariableTree indexVariable =
+                  treeBuilder.buildVariableDecl(intType,
+                                                uniqueName("index"),
+                                                variableElement.getEnclosingElement(),
+                                                zero);
+              handleArtificialTree(indexVariable);
+              VariableDeclarationNode indexVariableNode =
+                  new VariableDeclarationNode(indexVariable);
+              indexVariableNode.setInSource(false);
+              extendWithNode(indexVariableNode);
+              IntegerLiteralNode zeroNode =
+                  extendWithNode(new IntegerLiteralNode(zero));
+
+              translateAssignment(indexVariable,
+                                  new LocalVariableNode(indexVariable),
+                                  zeroNode);
+
+              // Compare index to array length
+              addLabelForNextNode(conditionStart);
+              IdentifierTree indexUse1 =
+                  treeBuilder.buildVariableUse(indexVariable);
+              handleArtificialTree(indexUse1);
+              LocalVariableNode indexNode1 =
+                  new LocalVariableNode(indexUse1);
+              indexNode1.setInSource(false);
+              extendWithNode(indexNode1);
+
+              IdentifierTree arrayUse1 =
+                  treeBuilder.buildVariableUse(arrayVariable);
+              handleArtificialTree(arrayUse1);
+              LocalVariableNode arrayNode1 =
+                  extendWithNode(new LocalVariableNode(arrayUse1));
+
+              MemberSelectTree lengthSelect =
+                  treeBuilder.buildArrayLengthAccess(arrayUse1);
+              handleArtificialTree(lengthSelect);
+              FieldAccessNode lengthAccessNode =
+                  new FieldAccessNode(lengthSelect, arrayNode1);
+              lengthAccessNode.setInSource(false);
+              extendWithNode(lengthAccessNode);
+
+              BinaryTree lessThan =
+                  treeBuilder.buildLessThan(indexUse1, lengthSelect);
+              handleArtificialTree(lessThan);
+
+              LessThanNode lessThanNode =
+                  new LessThanNode(lessThan, indexNode1, lengthAccessNode);
+              lessThanNode.setInSource(false);
+              extendWithNode(lessThanNode);
+              extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
+
+              // Loop body, starting with declaration of the loop iteration variable
+              addLabelForNextNode(loopEntry);
+              extendWithNode(new VariableDeclarationNode(variable));
+
+              IdentifierTree arrayUse2 =
+                  treeBuilder.buildVariableUse(arrayVariable);
+              handleArtificialTree(arrayUse2);
+              LocalVariableNode arrayNode2 =
+                  new LocalVariableNode(arrayUse2);
+              arrayNode2.setInSource(false);
+              extendWithNode(arrayNode2);
+
+              IdentifierTree indexUse2 =
+                  treeBuilder.buildVariableUse(indexVariable);
+              handleArtificialTree(indexUse2);
+              LocalVariableNode indexNode2 =
+                  new LocalVariableNode(indexUse2);
+              indexNode2.setInSource(false);
+              extendWithNode(indexNode2);
+
+              ArrayAccessTree arrayAccess =
+                  treeBuilder.buildArrayAccess(arrayUse2, indexUse2);
+              handleArtificialTree(arrayAccess);
+              ArrayAccessNode arrayAccessNode =
+                  new ArrayAccessNode(arrayAccess, arrayNode2, indexNode2);
+              arrayAccessNode.setInSource(false);
+              extendWithNode(arrayAccessNode);
+              translateAssignment(variable,
+                                  new LocalVariableNode(variable),
+                                  arrayAccessNode);
+
+              if (statement != null) {
+                  scan(statement, p);
+              }
+
+              // Loop back edge
+              addLabelForNextNode(updateStart);
+
+              IdentifierTree indexUse3 =
+                  treeBuilder.buildVariableUse(indexVariable);
+              handleArtificialTree(indexUse3);
+              LocalVariableNode indexNode3 =
+                  new LocalVariableNode(indexUse3);
+              indexNode3.setInSource(false);
+              extendWithNode(indexNode3);
+
+              LiteralTree oneTree = treeBuilder.buildLiteral(Integer.valueOf(1));
+              handleArtificialTree(oneTree);
+              Node one = new IntegerLiteralNode(oneTree);
+              one.setInSource(false);
+              extendWithNode(one);
+
+              BinaryTree addOneTree = treeBuilder.buildBinary(intType, Tree.Kind.PLUS,
+                      indexUse3, oneTree);
+              handleArtificialTree(addOneTree);
+              Node addOneNode = new NumericalAdditionNode(addOneTree, indexNode3, one);
+              addOneNode.setInSource(false);
+              extendWithNode(addOneNode);
+
+              AssignmentTree assignTree = treeBuilder.buildAssignment(indexUse3, addOneTree);
+              handleArtificialTree(assignTree);
+              Node assignNode = new AssignmentNode(assignTree, indexNode3, addOneNode);
+              assignNode.setInSource(false);
+              extendWithNode(assignNode);
+
+              extendWithExtendedNode(new UnconditionalJump(conditionStart));
+          }
+
+          // Loop exit
+          addLabelForNextNode(loopExit);
+
+          breakTargetL = oldBreakTargetL;
+          continueTargetL = oldContinueTargetL;
+
+          return null;
         }
 
         @Override
@@ -3635,26 +4042,6 @@ public class CFGBuilder {
         }
 
         @Override
-        public Node visitSwitch(SwitchTree tree, Void p) {
-            switchExpr = unbox(scan(tree.getExpression(), p));
-
-            extendWithNode(new MarkerNode(tree, "start of switch statement", env.getTypeUtils()));
-
-            Label oldBreakTargetL = breakTargetL;
-            breakTargetL = new Label();
-
-            for (CaseTree caseTree : tree.getCases()) {
-                scan(caseTree, p);
-            }
-
-            addLabelForNextNode(breakTargetL);
-
-            breakTargetL = oldBreakTargetL;
-
-            return null;
-        }
-
-        @Override
         public Node visitSynchronized(SynchronizedTree tree, Void p) {
             // see JLS 14.19
 
@@ -3717,7 +4104,7 @@ public class CFGBuilder {
             tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
 
             scan(tree.getBlock(), p);
-            extendWithExtendedNode(new UnconditionalJump(doneLabel));
+            extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
 
             tryStack.popFrame();
 
@@ -3726,13 +4113,7 @@ public class CFGBuilder {
                 addLabelForNextNode(catchLabels.get(catchIndex).second);
                 scan(c, p);
                 catchIndex++;
-
-                if (finallyLabel != null) {
-                    // Normal completion of the catch block flows to the finally block.
-                    extendWithExtendedNode(new UnconditionalJump(finallyLabel));
-                } else {
-                    extendWithExtendedNode(new UnconditionalJump(doneLabel));
-                }
+                extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
             }
 
             if (finallyLabel != null) {
@@ -4048,6 +4429,26 @@ public class CFGBuilder {
         }
     }
 
+    /**
+     * A tuple with 4 named elements.
+     */
+    private interface TreeInfo {
+        boolean isBoxed();
+        boolean isNumeric();
+        boolean isBoolean();
+        TypeMirror unboxedType();
+    }
+
+    private static <A> A firstNonNull(A first, A second) {
+        if (first != null) {
+            return first;
+        } else if (second != null) {
+            return second;
+        } else {
+            throw new NullPointerException();
+        }
+    }
+
     /* --------------------------------------------------------- */
     /* Utility routines for debugging CFG building */
     /* --------------------------------------------------------- */
@@ -4089,3 +4490,4 @@ public class CFGBuilder {
         }
     }
 }
+
