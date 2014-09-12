@@ -41,11 +41,6 @@ public class BoundsInitializer {
         InitializerVisitor visitor = new InitializerVisitor(new TypeVariableStructure(null, typeVar));
         visitor.initializeUpperBound(typeVar);
         visitor.resolveTypeVarReferences(typeVar);
-        List<String> toWrite = Arrays.asList("/*DECL*/ HH", "/*DECL*/ FF", "/*DECL*/ DD");
-        if(toWrite.contains(typeVar.toString().substring(0,11))) {
-            String fileName = typeVar.getUnderlyingType().asElement().toString();
-            TypeVisualizer.drawToPng("/Users/jburke/Documents/tmp/" + fileName + ".png", typeVar);
-        }
     }
 
     /**
@@ -416,6 +411,14 @@ public class BoundsInitializer {
             public final TypeVariable sourceType;
             public ReferenceMap(final TypeVariable sourceType) {
                 this.sourceType = sourceType;
+            }
+
+            public ReferenceMap copy() {
+                final ReferenceMap copy = new ReferenceMap(this.sourceType);
+                for(Entry<BoundPath, AnnotatedTypeVariable> entry : entrySet()) {
+                    copy.put(entry.getKey(), AnnotatedTypeCopier.copy(entry.getValue()));
+                }
+                return copy;
             }
         }
 
