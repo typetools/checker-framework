@@ -2,7 +2,7 @@
  * Sets up recursive bounds where the bounds themselves are type variables.
  */
 
-interface List<EE> {}
+interface List<LL> {}
 interface Map<KEY, VALUE> {}
 
 class Tester<EE extends TT, TT extends List<EE>> {
@@ -21,4 +21,12 @@ class WithWildcard<ZZ extends QQ, QQ extends YY, YY extends Map<QQ, ZZ>> {
 class Test<KK extends FF, FF extends Map<KK, KK>> {
     KK kk;
     FF ff;
+}
+
+class RecursiveTypevarClass<T extends RecursiveTypevarClass<T>> {
+    T t;
+}
+
+class RecursiveImplements implements List<RecursiveImplements> {
+
 }
