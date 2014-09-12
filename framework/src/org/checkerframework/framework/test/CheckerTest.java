@@ -173,6 +173,8 @@ abstract public class CheckerTest {
 
     protected static void checkTestResult(TestRun run, File expectedFile, boolean shouldSucceed,
             String javaFile, final List<String> checkerOptions) {
+        // TODO: the calls to assertSuccess/Failure don't use the returned value and
+        // are therefore useless. What was intended?
         if (shouldSucceed)
             assertSuccess(run);
         else
@@ -343,9 +345,7 @@ abstract public class CheckerTest {
 
             for (String a : notFoundList)
                 failMessage += a + "\n";
-
         }
-
 
         List<String> unexpectedList = new LinkedList<String>();
         unexpectedList.addAll(resultsList);
@@ -372,6 +372,7 @@ abstract public class CheckerTest {
                 failPrefix = "";
             }
             failPrefix += "While type-checking " + filename + ":\n";
+
             Assert.fail(failPrefix + failMessage);
         }
 

@@ -2,29 +2,23 @@ package org.checkerframework.qualframework.util;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.NoType;
 import javax.lang.model.type.NullType;
 import javax.lang.model.type.PrimitiveType;
-import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
@@ -35,7 +29,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
  * ExtendedTypeMirror} interface.  Instances of this class are immutable.
  */
 public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
-    private AnnotatedTypeMirror underlying;
+    private final AnnotatedTypeMirror underlying;
 
     private WrappedAnnotatedTypeMirror(AnnotatedTypeMirror underlying) {
         if (underlying == null) {
@@ -165,7 +159,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
     }
 
     public static class WrappedAnnotatedArrayType extends WrappedAnnotatedReferenceType implements ExtendedArrayType {
-        private WrappedAnnotatedTypeMirror componentType;
+        private final WrappedAnnotatedTypeMirror componentType;
 
         private WrappedAnnotatedArrayType(AnnotatedArrayType underlying) {
             super(underlying);
@@ -195,8 +189,8 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
 
     public static class WrappedAnnotatedDeclaredType extends WrappedAnnotatedReferenceType
             implements ExtendedDeclaredType, ExtendedTypeDeclaration {
-        private WrappedAnnotatedTypeMirror enclosingType;
-        private List<WrappedAnnotatedTypeMirror> typeArguments;
+        private final WrappedAnnotatedTypeMirror enclosingType;
+        private final List<WrappedAnnotatedTypeMirror> typeArguments;
 
         private WrappedAnnotatedDeclaredType(AnnotatedDeclaredType underlying) {
             super(underlying);
@@ -246,11 +240,11 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
     }
 
     public static class WrappedAnnotatedExecutableType extends WrappedAnnotatedTypeMirror implements ExtendedExecutableType {
-        private List<? extends WrappedAnnotatedTypeMirror> parameterTypes;
-        private WrappedAnnotatedTypeMirror receiverType;
-        private WrappedAnnotatedTypeMirror returnType;
-        private List<? extends WrappedAnnotatedTypeMirror> thrownTypes;
-        private List<? extends WrappedAnnotatedTypeVariable> typeParameters;
+        private final List<? extends WrappedAnnotatedTypeMirror> parameterTypes;
+        private final WrappedAnnotatedTypeMirror receiverType;
+        private final WrappedAnnotatedTypeMirror returnType;
+        private final List<? extends WrappedAnnotatedTypeMirror> thrownTypes;
+        private final List<? extends WrappedAnnotatedTypeVariable> typeParameters;
 
         private WrappedAnnotatedExecutableType(AnnotatedExecutableType underlying) {
             super(underlying);
@@ -308,7 +302,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
     }
 
     public static class WrappedAnnotatedIntersectionType extends WrappedAnnotatedTypeMirror implements ExtendedIntersectionType {
-        private List<? extends WrappedAnnotatedTypeMirror> bounds;
+        private final List<? extends WrappedAnnotatedTypeMirror> bounds;
 
         private WrappedAnnotatedIntersectionType(AnnotatedIntersectionType underlying) {
             super(underlying);
@@ -445,7 +439,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
     }
 
     public static class WrappedAnnotatedUnionType extends WrappedAnnotatedTypeMirror implements ExtendedUnionType {
-        private List<? extends WrappedAnnotatedTypeMirror> alternatives;
+        private final List<? extends WrappedAnnotatedTypeMirror> alternatives;
 
         private WrappedAnnotatedUnionType(AnnotatedUnionType underlying) {
             super(underlying);
@@ -474,8 +468,8 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
     }
 
     public static class WrappedAnnotatedWildcardType extends WrappedAnnotatedTypeMirror implements ExtendedWildcardType {
-        private WrappedAnnotatedTypeMirror extendsBound;
-        private WrappedAnnotatedTypeMirror superBound;
+        private final WrappedAnnotatedTypeMirror extendsBound;
+        private final WrappedAnnotatedTypeMirror superBound;
 
         private WrappedAnnotatedWildcardType(AnnotatedWildcardType underlying) {
             super(underlying);

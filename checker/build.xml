@@ -460,7 +460,7 @@
         <mkdir dir="${build.reports}"/>
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
-               printsummary="true"
+               printsummary="false"
                haltonfailure="${halt.on.test.failure}">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
@@ -484,7 +484,7 @@
             description="Run tests for all checkers"/>
 
     <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
-    <target name="all-tests-nojdk" depends="jar, all-tests-nojar"
+    <target name="all-tests-nojdk" depends="jar, jdk.jar.exists, all-tests-nojar"
             description="Run tests for all checkers, WITHOUT updating jdkX.jar">
     </target>
 
@@ -495,8 +495,6 @@
           <target name="all-tests-nojar"/>
       </ant>
 
-      <!-- TODO: for all -nojdk targets:
-           check whether jdk.jar exists and create if not. -->
       <antcall target="nullness-extra-tests-nojdk"/>
 
       <!-- Copied from -run-tests target -->
@@ -504,7 +502,7 @@
 
       <junit fork="${run.tests.should.fork}"
              dir="${basedir}"
-             printsummary="true"
+             printsummary="false"
              haltonfailure="${halt.on.test.failure}">
           <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
           <jvmarg line="-ea"/>
@@ -541,9 +539,9 @@
     </target>
 
     <target name="compilermsg-tests" depends="jar,build-tests"
-            description="Run tests for the Compiler Message Checker">
+            description="Run tests for the Compiler Messages Checker">
         <antcall target="-run-tests">
-            <param name="param" value="tests.CompilermsgTest"/>
+            <param name="param" value="tests.CompilerMessagesTest"/>
         </antcall>
     </target>
 
@@ -612,7 +610,7 @@
     </target>
 
     <target name="nullness-tests-nojdk"
-            depends="jar,build-tests,nullness-base-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-extra-tests-nojdk"
+            depends="jar,jdk.jar.exists,build-tests,nullness-base-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-extra-tests-nojdk"
             description="Run tests for the Nullness Checker, WITHOUT updating jdkX.jar">
     </target>
 
@@ -635,7 +633,7 @@
     <target name="nullness-extra-tests" depends="dist,build-tests,nullness-extra-tests-nojdk"
             description="Run extra tests for the Nullness Checker"/>
 
-    <target name="nullness-extra-tests-nojdk" depends="dist-nojdk,build-tests"
+    <target name="nullness-extra-tests-nojdk" depends="dist-nojdk,jdk.jar.exists,build-tests"
             description="Run extra tests for the Nullness Checker, WITHOUT updating jdkX.jar">
       <exec executable="chmod">
         <arg line="+x ${basedir}/bin/javac"/>
@@ -902,7 +900,7 @@
             description="Run the compiler message keys checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.checker.compilermsgs.CompilerMessagesChecker"/>
-            <param name="checker-args" value="-Awarns -AsuppressWarnings=purity -Apropfiles=${framework.loc}/src/org/checkerframework/framework/source/messages.properties:./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/javari/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffect/messages.properties"/>
+            <param name="checker-args" value="-AprintErrorStack -AsuppressWarnings=purity -Apropfiles=${framework.loc}/src/org/checkerframework/framework/source/messages.properties:./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/javari/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffect/messages.properties"/>
         </antcall>
     </target>
 
@@ -910,7 +908,7 @@
             description="Run the Purity Checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.framework.util.PurityChecker"/>
-            <param name="checker-args" value="-Awarns -AprintErrorStack"/>
+            <param name="checker-args" value="-AprintErrorStack"/>
         </antcall>
     </target>
 
@@ -1030,7 +1028,7 @@
             description="Build checker.jar, checker-qual.jar, and jdkX.jar where X is the major version number of java in JAVA_HOME (only Java 7/8/9 are currently supported).  This comprises all jars needed to run the framework.">
     </target>
 
-    <target name="dist-nojdk" depends="-prep-dist,jar"
+    <target name="dist-nojdk" depends="-prep-dist,jar,jdk.jar.exists"
             description="Build checker.jar, checker-qual.jar WITHOUT updating jdkX.jar.  Move all relevant files to the binary directory.">
 
         <mkdir dir="dist" />
@@ -1038,6 +1036,13 @@
         <copy tofile="dist/javac.jar" file="${javac.lib}"
               overwrite="true" failonerror="true" />
 
+        <copy file="jdk/jdk7.jar" tofile="dist/jdk7.jar" overwrite="true" failonerror="false" />
+        <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar" overwrite="true" failonerror="false" />
+        <copy file="jdk/jdk9.jar" tofile="dist/jdk9.jar" overwrite="true" failonerror="false" />
+    </target>
+
+    <target name="jdk.jar.exists"
+	    description="Check whether an annotated JDK exists.">
         <condition property="an.annotated.jdk.exists">
             <or>
                 <available file="jdk/jdk7.jar"/>
@@ -1048,10 +1053,6 @@
 
         <fail message="No jdk jars were found in the jdk directory.  At least one annotated JDK (jdk/jdk[678].jar) must be built!"
               unless="an.annotated.jdk.exists"/>
-
-        <copy file="jdk/jdk7.jar" tofile="dist/jdk7.jar" overwrite="true" failonerror="false" />
-        <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar" overwrite="true" failonerror="false" />
-        <copy file="jdk/jdk9.jar" tofile="dist/jdk9.jar" overwrite="true" failonerror="false" />
     </target>
 
     <!-- For debugging -->

@@ -1,11 +1,14 @@
 package org.checkerframework.framework.type;
 
+import com.sun.source.tree.Tree.Kind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.explicit.ElementAnnotationUtil;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -188,11 +191,11 @@ abstract class TypeFromTree extends
             // e.g. see Ternary test case for Nullness Checker.
             // TODO: Can we adapt asSuper to handle those correctly?
 
-            if (trueType!=null && trueType.equals(falseType)) {
+            if (trueType != null && trueType.equals(falseType)) {
                 return trueType;
             }
 
-            List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>();
+            List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>(2);
             types.add(trueType);
             types.add(falseType);
             AnnotatedTypes.annotateAsLub(f.processingEnv, f, alub, types);
@@ -477,7 +480,7 @@ abstract class TypeFromTree extends
             result.clearAnnotations();
             Element elt = TreeUtils.elementFromDeclaration(node);
 
-            TypeFromElement.annotate(result, elt);
+            ElementAnnotationUtil.applyElementAnnotations(result, elt, f);
             return result;
 
             /* An alternative I played around with. It unfortunately
@@ -499,7 +502,7 @@ abstract class TypeFromTree extends
             // However, the underlying javac Type doesn't contain
             // type argument annotations.
             Element elt = TreeUtils.elementFromDeclaration(node);
-            TypeFromElement.annotate(result, elt);
+            ElementAnnotationUtils.applyElementAnnotations(result, elt, f);
 
             return result;*/
         }
@@ -514,7 +517,7 @@ abstract class TypeFromTree extends
                 (AnnotatedExecutableType)f.toAnnotatedType(elt.asType(), false);
             result.setElement(elt);
 
-            TypeFromElement.annotate(result, elt);
+            ElementAnnotationUtil.applyElementAnnotations(result, elt, f);
 
             return result;
         }
@@ -541,7 +544,7 @@ abstract class TypeFromTree extends
             TypeElement elt = TreeUtils.elementFromDeclaration(node);
             AnnotatedTypeMirror result = f.toAnnotatedType(elt.asType(), true);
 
-            TypeFromElement.annotate(result, elt);
+            ElementAnnotationUtil.applyElementAnnotations(result, elt, f);
 
             return result;
         }
@@ -572,14 +575,27 @@ abstract class TypeFromTree extends
                 type = f.toAnnotatedType(f.types.getNoType(TypeKind.NONE), false);
             assert AnnotatedTypeFactory.validAnnotatedType(type);
             List<? extends AnnotationMirror> annos = InternalUtils.annotationsFromTree(node);
-            type.addAnnotations(annos);
+
+            if(type.getKind() != TypeKind.WILDCARD) {
+                type.addAnnotations(annos);
+            }
 
             if (type.getKind() == TypeKind.TYPEVAR) {
                 ((AnnotatedTypeVariable)type).getUpperBound().addMissingAnnotations(annos);
             }
 
             if (type.getKind() == TypeKind.WILDCARD) {
-                ((AnnotatedWildcardType)type).getExtendsBound().addMissingAnnotations(annos);
+                final ExpressionTree underlyingTree = node.getUnderlyingType();
+                if(underlyingTree.getKind() == Kind.EXTENDS_WILDCARD
+                || underlyingTree.getKind() == Kind.UNBOUNDED_WILDCARD) {
+                    ((AnnotatedWildcardType) type).getSuperBound().addMissingAnnotations(annos);
+
+                } else if(underlyingTree.getKind() == Kind.SUPER_WILDCARD) {
+                    ((AnnotatedWildcardType) type).getExtendsBound().addMissingAnnotations(annos);
+
+                } else {
+                    ErrorReporter.errorAbort("Unexpected kind for type!  node=" + node + " type=" + type);
+                }
             }
 
             return type;
@@ -642,14 +658,12 @@ abstract class TypeFromTree extends
 
             AnnotatedTypeVariable result = (AnnotatedTypeVariable) f.type(node);
             List<? extends AnnotationMirror> annotations = InternalUtils.annotationsFromTree(node);
-
-            result.addAnnotations(annotations);
-            result.getUpperBound().addAnnotations(annotations);
+            result.getLowerBound().addAnnotations(annotations);
 
             switch (bounds.size()) {
             case 0: break;
             case 1:
-                result.setUpperBound(bounds.get(0));
+                AnnotatedTypeMerger.merge(bounds.get(0), result.getUpperBound());
                 break;
             default:
                 AnnotatedIntersectionType upperBound = (AnnotatedIntersectionType) result.getUpperBound();
