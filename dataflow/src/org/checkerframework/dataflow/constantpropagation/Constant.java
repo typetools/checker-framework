@@ -4,6 +4,8 @@ package org.checkerframework.dataflow.constantpropagation;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import java.util.Objects;
+
 import org.checkerframework.dataflow.analysis.AbstractValue;
 
 public class Constant implements AbstractValue<Constant> {
@@ -71,7 +73,7 @@ public class Constant implements AbstractValue<Constant> {
         if (obj == null || !(obj instanceof Constant))
             return false;
         Constant other = (Constant) obj;
-        return type == other.type && value == other.value;
+        return type == other.type && Objects.equals(value, other.value);
     }
 
     @Override
