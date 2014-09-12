@@ -17,6 +17,7 @@ class WithWildcard<ZZ extends QQ, QQ extends YY, YY extends Map<QQ, ZZ>> {
     }
 }
 
+@SuppressWarnings("initialization.fields.uninitialized")
 class Test<KK extends FF, FF extends Map<KK, KK>> {
     KK kk;
     FF ff;
