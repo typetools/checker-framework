@@ -1677,6 +1677,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeParameterBounds bounds = boundsIter.next();
             AnnotatedTypeMirror typearg = argIter.next();
 
+            if (typearg.getKind() == TypeKind.WILDCARD && bounds.getUpperBound().getKind() == TypeKind.WILDCARD) {
+                //TODO: When capture conversion is implemented, this special case should be removed.
+                //TODO: This may not occur only in places where capture conversion occurs but in those cases
+                //TODO: The containment check provided by this method should be enough
+                continue;
+            }
+
             if (typeargTrees == null || typeargTrees.isEmpty()) {
                 // The type arguments were inferred and we mark the whole method.
                 // The inference fails if we provide invalid arguments,
