@@ -94,6 +94,48 @@ public class TypeVisualizer {
     }
 
     /**
+     * If the name of typeVariable matches one in the list of typeVarNames, then print typeVariable
+     * to a dot file at directory/varName.dot
+     * @return true if the type variable was printed, otherwise false
+     */
+    public static boolean printTypevarToDotIfMatches(final AnnotatedTypeVariable typeVariable,
+                                                     final List<String> typeVarNames,
+                                                     final String directory) {
+        return printTypevarIfMatches(typeVariable, typeVarNames, directory, false);
+    }
+
+    /**
+     * If the name of typeVariable matches one in the list of typeVarNames, then print typeVariable
+     * to a png file at directory/varName.png
+     * @return true if the type variable was printed, otherwise false
+     */
+    public static boolean printTypevarToPngIfMatches(final AnnotatedTypeVariable typeVariable,
+                                                     final List<String> typeVarNames,
+                                                     final String directory) {
+        return printTypevarIfMatches(typeVariable, typeVarNames, directory, true);
+    }
+
+    private static boolean printTypevarIfMatches(final AnnotatedTypeVariable typeVariable,
+                                                 final List<String> typeVarNames,
+                                                 final String directory,
+                                                 final boolean png) {
+        final String dirPath = directory.endsWith(File.separator) ? directory : directory + File.separator;
+        String varName = typeVariable.getUnderlyingType().asElement().toString();
+
+        if(typeVarNames.contains(varName)) {
+            if(png) {
+                TypeVisualizer.drawToPng(dirPath + varName + ".png", typeVariable);
+            } else {
+                TypeVisualizer.drawToDot(dirPath + varName + ".dot", typeVariable);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /**
      * This class exists because there is no LinkedIdentityHashMap.
      *
      * Node is just a wrapper around type mirror that replaces .equals with referential equality.
