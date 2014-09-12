@@ -17,8 +17,7 @@ class Utils {
     // null for simplicity, but could be anything
     Consumer<@Nullable Object> nullConsumer = null;
     // C could be @NonNull Object, so argument is incompatible?
-    // Should this fail?
-    //TODO:: error: (argument.type.incompatible)
+    //:: error: (argument.type.incompatible)
     Consumer<C> result = Utils.<C>cast(nullConsumer);
     return result;
   }
