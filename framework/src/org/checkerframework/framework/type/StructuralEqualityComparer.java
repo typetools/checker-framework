@@ -1,6 +1,7 @@
 package org.checkerframework.framework.type;
 
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
+import org.checkerframework.framework.type.visitor.AtmComboVisitor;
 import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.AtmCombo;
@@ -23,6 +24,32 @@ import static org.checkerframework.framework.type.AnnotatedTypeMirror.*;
  * See also DefaultTypeHierarchy, and VisitHistory
  */
 public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean, VisitHistory> {
+
+    //TODO: REMOVE THIS OVERRIDE WHEN inferTypeArgs NO LONGER GENERATES INCOMPARABLE TYPES
+    //TODO: THE PROBLEM IS THIS CLASS SHOULD FAIL WHEN INCOMPARABLE TYPES ARE COMPARED BUT
+    //TODO: TO CURRENTLY SUPPORT THE BUGGY inferTypeArgs WE FALL BACK TO the RawnessComparer
+    //TODO: WHICH IS CLOSE TO THE OLD TypeHierarchy behavior
+    public AbstractAtmComboVisitor<Boolean, VisitHistory> fallback;
+
+    public StructuralEqualityComparer() {
+        this.fallback = null;
+    }
+
+    public StructuralEqualityComparer(final AbstractAtmComboVisitor<Boolean, VisitHistory> fallback) {
+        this.fallback = fallback;
+    }
+
+
+    @Override
+    protected Boolean defaultAction(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, VisitHistory visitHistory) {
+        //TODO: REMOVE THIS OVERRIDE WHEN inferTypeArgs NO LONGER GENERATES INCOMPARABLE TYPES
+        //TODO: THe rawness comparer is close to the old implementation of TypeHierarchy
+        if(fallback != null) {
+            return fallback.visit(type1, type2, visitHistory);
+        }
+
+        return super.defaultAction(type1, type2, visitHistory);
+    }
 
     /**
      * Returns true if type1 and type2 are structurally equivalent. With one exception,
