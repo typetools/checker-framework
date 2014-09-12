@@ -3,7 +3,6 @@ package org.checkerframework.framework.type;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.PluginUtil;
-import org.checkerframework.framework.util.TypeVisualizer;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -187,15 +186,17 @@ public class BoundsInitializer {
                 initializeSuperBound(wildcard);
 
             } else {
-                throw new RuntimeException("VISIT SUPER");
-                //visit(wildcard.getSuperBound());
+                ErrorReporter.errorAbort("Wildcard super field should not be initialized:\n"
+                                       + "wildcard=" + wildcard.toString()
+                                       + "currentPath=" + currentStructure.currentPath);
             }
 
             if(wildcard.getExtendsBoundField() == null) {
                 initializeExtendsBound(wildcard);
             } else {
-                throw new RuntimeException("VISIT EXTENDS");
-                //visit(wildcard.getExtendsBound());
+                ErrorReporter.errorAbort("Wildcard extends field should not be initialized:\n"
+                                       + "wildcard=" + wildcard.toString()
+                                       + "currentPath=" + currentStructure.currentPath);
             }
 
             return null;
@@ -395,11 +396,31 @@ public class BoundsInitializer {
             final ReferenceMap refMap = new ReferenceMap( typeVar );
 
             for(Entry<BoundPath, TypeVariable> entry : boundStruct.pathToTypeVar.entrySet()) {
-                AnnotatedTypeVariable template = typeVarToStructure.get(entry.getValue()).annotatedTypeVar;
+                TypeVariableStructure targetStructure = typeVarToStructure.get(entry.getValue());
+
+                AnnotatedTypeVariable template = targetStructure.annotatedTypeVar;
                 refMap.put(entry.getKey(), AnnotatedTypeCopier.copy(template));
+
+                addImmediateTypeVarPaths(refMap, entry.getKey(), targetStructure);
             }
 
             return refMap;
+        }
+
+        public void addImmediateTypeVarPaths(ReferenceMap refMap, BoundPath basePath,
+                                             TypeVariableStructure targetStruct) {
+
+            //explain typevar sleds
+            for(BoundPath path : targetStruct.immediateBoundTypeVars) {
+                final BoundPath newPath = basePath.copy();
+                newPath.add(path.getFirst());
+
+                TypeVariable immTypeVar = targetStruct.pathToTypeVar.get(path);
+                TypeVariableStructure immTvStructure = typeVarToStructure.get(immTypeVar);
+
+                AnnotatedTypeVariable template = immTvStructure.annotatedTypeVar;
+                refMap.put(newPath, AnnotatedTypeCopier.copy(template));
+            }
         }
 
         /**
@@ -407,7 +428,7 @@ public class BoundsInitializer {
          * for all atvs that of sourceType
          */
         @SuppressWarnings("serial")
-        private class ReferenceMap extends HashMap<BoundPath, AnnotatedTypeVariable> {
+        private class ReferenceMap extends LinkedHashMap<BoundPath, AnnotatedTypeVariable> {     //TODO: EXPLAINED LINK DUE TO TYPEVAR SLED
             public final TypeVariable sourceType;
             public ReferenceMap(final TypeVariable sourceType) {
                 this.sourceType = sourceType;
@@ -502,6 +523,21 @@ public class BoundsInitializer {
         return lowerBound;
     }
 
+    private static boolean isImmediateBoundPath(final BoundPath path) {
+        if(path.size() == 1) {
+            switch (path.getFirst().kind) {
+                case UpperBound:
+                case LowerBound:
+                    return true;
+
+                default:
+                    //do nothing
+            }
+        }
+
+        return false;
+    }
+
     private static abstract class BoundStructure {
 
         /**
@@ -516,7 +552,7 @@ public class BoundsInitializer {
 
         }
 
-        public final void addTypeVar(final TypeVariable typeVariable) {
+        public void addTypeVar(final TypeVariable typeVariable) {
             pathToTypeVar.put(this.currentPath.copy(), typeVariable);
         }
     }
@@ -548,6 +584,15 @@ public class BoundsInitializer {
          */
         private BoundStructure parent;
 
+        /**
+         * If this type variable is upper or lower bounded by another type variable (not a declared type or intersection)
+         * then this variable will contain the path to that type variable //TODO: Add link to explanation
+         *
+         * e.g. T extends E  => The structure for T will have an immediateBoundTypeVars = List(UpperBound)
+         * The BoundPaths here must exist in pathToTypeVar
+         */
+        public Set<BoundPath> immediateBoundTypeVars = new LinkedHashSet<>();
+
         public TypeVariableStructure(final BoundStructure parent, final AnnotatedTypeVariable annotatedTypeVar) {
             this.parent = parent;
             this.typeVar = annotatedTypeVar.getUnderlyingType();
@@ -560,6 +605,16 @@ public class BoundsInitializer {
 
         public boolean isClosed() {
             return closed;
+        }
+
+        @Override
+        public void addTypeVar(TypeVariable typeVariable) {
+            final BoundPath copy = currentPath.copy();
+            pathToTypeVar.put(copy, typeVariable);
+
+            if (isImmediateBoundPath(copy)) {
+                immediateBoundTypeVars.add(copy);
+            }
         }
     }
 
@@ -587,8 +642,6 @@ public class BoundsInitializer {
 
             return copy;
         }
-
-
     }
 
     private static abstract class BoundPathNode {
@@ -905,7 +958,7 @@ public class BoundsInitializer {
             final AnnotatedDeclaredType parentAdt = (AnnotatedDeclaredType) parent;
 
             List<AnnotatedTypeMirror> typeArgs = parentAdt.getTypeArguments();
-            if(argIndex >= typeArgs.size()) {
+            if(argIndex >= typeArgs.size() ) {
                 ErrorReporter.errorAbort("Invalid type arg index!\n"
                         +  "parent=" + parent + "\n"
                         +  "argIndex=" + argIndex);
