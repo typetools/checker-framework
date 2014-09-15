@@ -1,4 +1,4 @@
-package org.checkerframework.framework.type.explicit;
+package org.checkerframework.framework.util.element;
 
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -15,7 +15,7 @@ import javax.lang.model.element.ElementKind;
 /**
  * Applies the annotations present for a method type parameter onto an AnnotatedTypeVariable.
  */
-class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
+public class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
 
 
     public static void apply(AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory) {
@@ -32,7 +32,7 @@ class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
 
     private final Symbol.MethodSymbol enclosingMethod;
 
-    public MethodTypeParamApplier(AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory) {
+    MethodTypeParamApplier(AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory) {
         super(type, element, typeFactory);
 
         if( !( element.getEnclosingElement() instanceof Symbol.MethodSymbol ) ) {

@@ -7,7 +7,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.explicit.ElementAnnotationUtil;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.QualifierPolymorphism;
@@ -480,7 +479,7 @@ abstract class TypeFromTree extends
             result.clearAnnotations();
             Element elt = TreeUtils.elementFromDeclaration(node);
 
-            ElementAnnotationUtil.applyElementAnnotations(result, elt, f);
+            ElementAnnotationApplier.apply(result, elt, f);
             return result;
 
             /* An alternative I played around with. It unfortunately
@@ -502,7 +501,7 @@ abstract class TypeFromTree extends
             // However, the underlying javac Type doesn't contain
             // type argument annotations.
             Element elt = TreeUtils.elementFromDeclaration(node);
-            ElementAnnotationUtils.applyElementAnnotations(result, elt, f);
+            ElementAnnotationUtils.apply(result, elt, f);
 
             return result;*/
         }
@@ -517,7 +516,7 @@ abstract class TypeFromTree extends
                 (AnnotatedExecutableType)f.toAnnotatedType(elt.asType(), false);
             result.setElement(elt);
 
-            ElementAnnotationUtil.applyElementAnnotations(result, elt, f);
+            ElementAnnotationApplier.apply(result, elt, f);
 
             return result;
         }
@@ -544,7 +543,7 @@ abstract class TypeFromTree extends
             TypeElement elt = TreeUtils.elementFromDeclaration(node);
             AnnotatedTypeMirror result = f.toAnnotatedType(elt.asType(), true);
 
-            ElementAnnotationUtil.applyElementAnnotations(result, elt, f);
+            ElementAnnotationApplier.apply(result, elt, f);
 
             return result;
         }

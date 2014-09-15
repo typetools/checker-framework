@@ -1,11 +1,10 @@
-package org.checkerframework.framework.type.explicit;
+package org.checkerframework.framework.util.element;
 
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import static org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 
-import static org.checkerframework.framework.type.explicit.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
-import static org.checkerframework.framework.type.explicit.ElementAnnotationUtil.getBoundIndexOffset;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.*;
 import static com.sun.tools.javac.code.Attribute.TypeCompound;
 
 import com.sun.tools.javac.code.TargetType;
@@ -44,9 +43,9 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
      */
     abstract protected TargetType upperBoundTarget();
 
-    public TypeParamElementAnnotationApplier( final AnnotatedTypeVariable type,
-                                              final Element element,
-                                              final AnnotatedTypeFactory typeFactory) {
+    TypeParamElementAnnotationApplier( final AnnotatedTypeVariable type,
+                                       final Element element,
+                                       final AnnotatedTypeFactory typeFactory) {
         super(type, element);
         this.typeParam   = type;
         this.typeFactory = typeFactory;
@@ -95,7 +94,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
                 continue;
             }
 
-            if (ElementAnnotationUtil.isOnNestedType(anno)) {
+            if (isOnComponentType(anno)) {
                 applyComponentAnnotation(anno);
 
             } else if(anno.position.type == upperBoundTarget()) {

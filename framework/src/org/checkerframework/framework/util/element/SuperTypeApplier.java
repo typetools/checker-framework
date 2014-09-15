@@ -1,4 +1,4 @@
-package org.checkerframework.framework.type.explicit;
+package org.checkerframework.framework.util.element;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import com.sun.tools.javac.code.Attribute;
@@ -14,14 +14,14 @@ import java.util.List;
  *  of the subtypes class declaration.  This class provides static methods to do this for a list of supertypes.
  *  An instance of this class handles ONE supertype.
  */
-class SuperTypeApplier extends IndexedElementAnnotationApplier {
+public class SuperTypeApplier extends IndexedElementAnnotationApplier {
 
     /**
      * Annotates each supertype with annotations from subtypeElement's extends/implements clauses.
      * @param supertypes Supertypes to annotate
      * @param subtypeElement Element that may have annotations to apply to supertypes
      */
-    static void annotateSupers(List<AnnotatedTypeMirror.AnnotatedDeclaredType> supertypes, TypeElement subtypeElement ) {
+    public static void annotateSupers(List<AnnotatedTypeMirror.AnnotatedDeclaredType> supertypes, TypeElement subtypeElement) {
 
         final boolean isInterface = subtypeElement.getSuperclass().getKind() == TypeKind.NONE;
 
@@ -54,11 +54,11 @@ class SuperTypeApplier extends IndexedElementAnnotationApplier {
     private final int index;
 
     /**
-     * Note: This is not meant to be used in applyElementAnnotations explicitly unlike all other AnnotationAppliers
+     * Note: This is not meant to be used in apply explicitly unlike all other AnnotationAppliers
      * it is intended to be used for annotate super types via the static annotateSuper method, hence the private
      * constructor
      */
-    private SuperTypeApplier(final AnnotatedTypeMirror supertype, final TypeElement subclassElement, final int index) {
+    SuperTypeApplier(final AnnotatedTypeMirror supertype, final TypeElement subclassElement, final int index) {
         super(supertype, subclassElement);
         this.subclassSymbol = (Symbol.ClassSymbol) subclassElement;
         this.index = index;

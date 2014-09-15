@@ -3,7 +3,6 @@ package org.checkerframework.framework.type;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
-import org.checkerframework.framework.type.explicit.ElementAnnotationUtil;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -183,7 +182,7 @@ public class SupertypeFinder extends SimpleAnnotatedTypeVisitor<List<? extends A
                 }
             }
         }
-        ElementAnnotationUtil.annotateSupers(supertypes, typeElement);
+        ElementAnnotationApplier.annotateSupers(supertypes, typeElement);
 
         if (type.wasRaw()) {
             for (AnnotatedDeclaredType adt : supertypes) {
