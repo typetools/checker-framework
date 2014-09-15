@@ -25,7 +25,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.explicit.ElementAnnotationUtil;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
@@ -660,7 +659,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             type = AnnotatedTypes.deepCopy(indexTypes.get(elt));
         } else if (decl == null && (indexTypes == null || !indexTypes.containsKey(elt))) {
             type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
-            ElementAnnotationUtil.applyElementAnnotations(type, elt, this);
+            ElementAnnotationApplier.apply(type, elt, this);
 
             if (elt instanceof ExecutableElement
                     || elt instanceof VariableElement) {
@@ -1065,7 +1064,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (type.getAnnotations().isEmpty() &&
                         type.getUpperBound().getAnnotations().isEmpty() &&
                         tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
-                    ElementAnnotationUtil.applyElementAnnotations(type, tpelt, p);
+                    ElementAnnotationApplier.apply(type, tpelt, p);
                 }
                 super.visitTypeVariable(type, p);
                 visited.remove(tpelt);

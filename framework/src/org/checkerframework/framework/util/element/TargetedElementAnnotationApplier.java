@@ -1,4 +1,4 @@
-package org.checkerframework.framework.type.explicit;
+package org.checkerframework.framework.util.element;
 
 import com.sun.tools.javac.code.Attribute.TypeCompound;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -13,7 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.checkerframework.framework.type.explicit.ElementAnnotationUtil.contains;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.contains;
 
 /**
  * TargetedElementAnnotationApplier filters annotations for an element into 3 groups.
@@ -27,7 +27,7 @@ import static org.checkerframework.framework.type.explicit.ElementAnnotationUtil
  * Note: Subtypes of this class likely want to implement the handleTargeted and handleValid methods though
  * they have default empty implementations for brevity.
  */
-abstract class TargetedElementAnnotationApplier implements ElementAnnotationApplier {
+abstract class TargetedElementAnnotationApplier {
     /**
      * Three annotation types that may be encountered when calling getRawTypeAttributes. see sift().
      */
@@ -83,7 +83,7 @@ abstract class TargetedElementAnnotationApplier implements ElementAnnotationAppl
      * @param type The type to annotate
      * @param element An element identifying type
      */
-    public TargetedElementAnnotationApplier(final AnnotatedTypeMirror type, final Element element) {
+    TargetedElementAnnotationApplier(final AnnotatedTypeMirror type, final Element element) {
         this.type = type;
         this.element = element;
     }
@@ -154,7 +154,6 @@ abstract class TargetedElementAnnotationApplier implements ElementAnnotationAppl
      *
      * This method will throw a runtime exception if isAccepted returns false.
      */
-    @Override
     public void extractAndApply( ) {
         if (!isAccepted()) {
             ErrorReporter.errorAbort("LocalVariableExtractor.extractAndApply: " +

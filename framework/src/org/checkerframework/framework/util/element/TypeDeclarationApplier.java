@@ -1,4 +1,4 @@
-package org.checkerframework.framework.type.explicit;
+package org.checkerframework.framework.util.element;
 
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -7,7 +7,7 @@ import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
 
-import static org.checkerframework.framework.type.explicit.ElementAnnotationUtil.applyAllElementAnnotations;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.applyAllElementAnnotations;
 import static com.sun.tools.javac.code.TargetType.*;
 
 import javax.lang.model.element.Element;
@@ -40,7 +40,7 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
     private final Symbol.ClassSymbol typeSymbol;
     private final AnnotatedDeclaredType declaredType;
 
-    public TypeDeclarationApplier(final AnnotatedTypeMirror type, final Element element, final AnnotatedTypeFactory typeFactory) {
+    TypeDeclarationApplier(final AnnotatedTypeMirror type, final Element element, final AnnotatedTypeFactory typeFactory) {
         super(type, element);
         this.typeFactory = typeFactory;
         this.typeSymbol = (Symbol.ClassSymbol) element;
