@@ -231,7 +231,7 @@ public class CFGBuilder {
      * Class declarations that have been encountered when building the
      * control-flow graph for a method.
      */
-    protected final List<ClassTree> declaredClasses = new LinkedList<>();
+    protected List<ClassTree> declaredClasses;
 
     public List<ClassTree> getDeclaredClasses() {
         return declaredClasses;
@@ -289,7 +289,7 @@ public class CFGBuilder {
     public ControlFlowGraph run(
             CompilationUnitTree root, ProcessingEnvironment env,
             UnderlyingAST underlyingAST) {
-        declaredClasses.clear();
+        declaredClasses = new LinkedList<>();
         TreeBuilder builder = new TreeBuilder(env);
         AnnotationProvider annotationProvider = new BasicAnnotationProvider();
         PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
