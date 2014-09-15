@@ -1,4 +1,4 @@
-package org.checkerframework.framework.type.explicit;
+package org.checkerframework.framework.util.element;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import com.sun.tools.javac.code.Attribute;
@@ -9,14 +9,15 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import java.util.List;
 
-import static org.checkerframework.framework.type.explicit.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
-import static org.checkerframework.framework.type.explicit.ElementAnnotationUtil.contains;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.addAnnotationsFromElement;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.contains;
 import static com.sun.tools.javac.code.TargetType.*;
 
 /**
  *  Applies annotations to variable declaration (providing they are not the use of a TYPE_PARAMETER).
  */
-class VariableApplier extends TargetedElementAnnotationApplier {
+public class VariableApplier extends TargetedElementAnnotationApplier {
 
     public static void apply(final AnnotatedTypeMirror type, final Element element) {
         new VariableApplier(type, element).extractAndApply();
@@ -35,7 +36,7 @@ class VariableApplier extends TargetedElementAnnotationApplier {
 
     private final Symbol.VarSymbol varSymbol;
 
-    public VariableApplier(final AnnotatedTypeMirror type, final Element element) {
+    VariableApplier(final AnnotatedTypeMirror type, final Element element) {
         super(type, element);
         varSymbol = (Symbol.VarSymbol) element;
     }
@@ -77,10 +78,9 @@ class VariableApplier extends TargetedElementAnnotationApplier {
         }
     }
 
-    @Override
     public void extractAndApply() {
         // Add declaration annotations to the local variable type
-        ElementAnnotationUtil.addAnnotationsFromElement(type, varSymbol.getAnnotationMirrors());
+        addAnnotationsFromElement(type, varSymbol.getAnnotationMirrors());
         super.extractAndApply();
     }
 }

@@ -1,4 +1,4 @@
-package org.checkerframework.framework.type.explicit;
+package org.checkerframework.framework.util.element;
 
 
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -8,7 +8,7 @@ import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
 
-import static org.checkerframework.framework.type.explicit.ElementAnnotationUtil.*;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.*;
 import static com.sun.tools.javac.code.TargetType.*;
 
 import com.sun.tools.javac.code.TypeAnnotationPosition;
@@ -22,7 +22,7 @@ import java.util.List;
  * Adds annotations from element to the return type, formal parameter types, type parameters, and
  * throws clauses of the AnnotatedExecutableType type.
  */
-class MethodApplier extends TargetedElementAnnotationApplier {
+public class MethodApplier extends TargetedElementAnnotationApplier {
 
     public static void apply(AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory) {
         new MethodApplier(type, element, typeFactory).extractAndApply();
@@ -41,7 +41,7 @@ class MethodApplier extends TargetedElementAnnotationApplier {
     private final Symbol.MethodSymbol methodSymbol;
     private final AnnotatedExecutableType methodType;
 
-    public MethodApplier(AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory) {
+    MethodApplier(AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory) {
         super(type, element);
         this.typeFactory = typeFactory;
         this.methodSymbol = (Symbol.MethodSymbol) element;
@@ -91,7 +91,7 @@ class MethodApplier extends TargetedElementAnnotationApplier {
      */
     @Override
     public void extractAndApply() {
-        methodType.setElement(methodSymbol); //Preserves previous behavior //TODO JB: Ask Werner WHY this was here in the first place?
+        methodType.setElement(methodSymbol); //Preserves previous behavior
 
         // Add declaration annotations to the return type if
         if( methodType.getReturnType() instanceof AnnotatedTypeVariable) {
@@ -112,7 +112,7 @@ class MethodApplier extends TargetedElementAnnotationApplier {
         applyAllElementAnnotations( methodType.getTypeVariables(),  methodSymbol.getTypeParameters(), typeFactory );
     }
 
-    //NOTE that these are the only locations not handled elsewhere, otherwise we call applyElementAnnotations
+    //NOTE that these are the only locations not handled elsewhere, otherwise we call apply
     @Override
     protected void handleTargeted(final List<Attribute.TypeCompound> targeted) {
 

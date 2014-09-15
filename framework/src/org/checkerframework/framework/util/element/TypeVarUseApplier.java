@@ -1,4 +1,4 @@
-package org.checkerframework.framework.type.explicit;
+package org.checkerframework.framework.util.element;
 
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -8,6 +8,7 @@ import com.sun.tools.javac.code.Attribute;
 import static com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.code.TargetType;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
+import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.javacutil.ErrorReporter;
 
 import javax.lang.model.element.Element;
@@ -19,12 +20,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.checkerframework.framework.type.explicit.ElementAnnotationUtil.*;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.*;
 
 /**
  * Apply annotations to the use of a type parameter declaration
  */
-class TypeVarUseApplier implements ElementAnnotationApplier {
+public class TypeVarUseApplier {
 
     public static void apply(final AnnotatedTypeMirror type, final Element element, final AnnotatedTypeFactory typeFactory)  {
         new TypeVarUseApplier(type, element, typeFactory).extractAndApply();
@@ -70,7 +71,7 @@ class TypeVarUseApplier implements ElementAnnotationApplier {
 
     private AnnotatedTypeFactory typeFactory;
 
-    public TypeVarUseApplier(final AnnotatedTypeMirror type, final Element element, final AnnotatedTypeFactory typeFactory) {
+    TypeVarUseApplier(final AnnotatedTypeMirror type, final Element element, final AnnotatedTypeFactory typeFactory) {
         if(!accepts(type, element)) {
             ErrorReporter.errorAbort("TypeParamUseApplier does not accept type/element combination (" +
                                      " type ( " + type + " ) element ( " + element + " ) ");
@@ -97,11 +98,10 @@ class TypeVarUseApplier implements ElementAnnotationApplier {
      * Applies the bound annotations from the declaration of the type parameter and
      * then applies the explicit annotations written on the type variable
      */
-    @Override
     public void extractAndApply() {
 
         //apply declaration annotations
-        applyElementAnnotations(typeVariable, declarationElem, typeFactory);
+        ElementAnnotationApplier.apply(typeVariable, declarationElem, typeFactory);
 
         final List<Attribute.TypeCompound> annotations = getAnnotations( useElem, declarationElem );
 

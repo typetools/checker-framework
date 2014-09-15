@@ -1,4 +1,4 @@
-package org.checkerframework.framework.type.explicit;
+package org.checkerframework.framework.util.element;
 
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
@@ -13,9 +13,9 @@ import javax.lang.model.element.ElementKind;
 
 /**
  * Applies the annotations present for a class type parameter onto an AnnotatedTypeVariable.  See
- * TypeParamElementAnnotationApplier for details
+ * {@link TypeParamElementAnnotationApplier} for details.
  */
-class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
+public class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
 
     public static void apply(AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory) {
         new ClassTypeParamApplier(type, element, typeFactory).extractAndApply();
@@ -34,7 +34,7 @@ class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
      */
     private final Symbol.ClassSymbol enclosingClass;
 
-    public ClassTypeParamApplier(AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory) {
+    ClassTypeParamApplier(AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory) {
         super(type, element, typeFactory);
 
         if( !( element.getEnclosingElement() instanceof Symbol.ClassSymbol ) ) {

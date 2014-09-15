@@ -1,4 +1,4 @@
-package org.checkerframework.framework.type.explicit;
+package org.checkerframework.framework.util.element;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import com.sun.tools.javac.code.Attribute;
@@ -10,8 +10,8 @@ import java.util.Map;
 /**
  * Some Elements are members of a list (formal method parameters and type parameters).
  * This class ensures that the targeted annotations passed by handleTargeted - see
- * TargetedElementAnnotationApplier - only include those with a position that matches
- * the index returned by getElementIndex.
+ * {@link TargetedElementAnnotationApplier} -
+ * only include those with a position that matches the index returned by getElementIndex.
  */
 abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotationApplier {
 
