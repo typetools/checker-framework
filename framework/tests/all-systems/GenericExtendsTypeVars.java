@@ -23,6 +23,7 @@ class Test<KK extends FF, FF extends Map<KK, KK>> {
     FF ff;
 }
 
+@SuppressWarnings("initialization.fields.uninitialized")
 class RecursiveTypevarClass<T extends RecursiveTypevarClass<T>> {
     T t;
 }
