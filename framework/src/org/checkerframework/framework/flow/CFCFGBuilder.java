@@ -2,6 +2,7 @@ package org.checkerframework.framework.flow;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
