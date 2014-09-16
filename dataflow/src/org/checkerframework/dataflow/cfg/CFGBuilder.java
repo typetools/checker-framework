@@ -4,6 +4,10 @@ package org.checkerframework.dataflow.cfg;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
@@ -98,6 +102,7 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -238,6 +243,16 @@ public class CFGBuilder {
     }
 
     /**
+     * Lambdas encountered when building the control-flow graph for
+     * a method, variable initializer, or initializer.
+     */
+    protected List<LambdaExpressionTree> declaredLambdas;
+
+    public List<LambdaExpressionTree> getDeclaredLambdas() {
+        return declaredLambdas;
+    }
+
+    /**
      * Build the control flow graph of some code.
      */
     public static ControlFlowGraph build(
@@ -290,6 +305,8 @@ public class CFGBuilder {
             CompilationUnitTree root, ProcessingEnvironment env,
             UnderlyingAST underlyingAST) {
         declaredClasses = new LinkedList<>();
+        declaredLambdas = new LinkedList<>();
+
         TreeBuilder builder = new TreeBuilder(env);
         AnnotationProvider annotationProvider = new BasicAnnotationProvider();
         PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
@@ -3986,7 +4003,18 @@ public class CFGBuilder {
             ReturnNode result = null;
             if (ret != null) {
                 Node node = scan(ret, p);
-                result = new ReturnNode(tree, node, env.getTypeUtils(), TreeUtils.enclosingMethod(getCurrentPath()));
+                Tree enclosing = TreeUtils.enclosingOfKind(getCurrentPath(), new HashSet<Kind>(Arrays.asList(Kind.METHOD, Kind.LAMBDA_EXPRESSION)));
+                if (enclosing.getKind() == Kind.LAMBDA_EXPRESSION) {
+                    LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosing;
+                    TreePath lambdaTreePath = TreePath.getPath(getCurrentPath().getCompilationUnit(), lambdaTree);
+                    Context ctx = ((JavacProcessingEnvironment)env).getContext();
+                    Element overriddenElement = com.sun.tools.javac.code.Types.instance(ctx).findDescriptorSymbol(
+                            ((Type)trees.getTypeMirror(lambdaTreePath)).tsym);
+
+                    result = new ReturnNode(tree, node, env.getTypeUtils(), lambdaTree, (MethodSymbol)overriddenElement);
+                } else {
+                    result = new ReturnNode(tree, node, env.getTypeUtils(), (MethodTree)enclosing);
+                }
                 returnNodes.add(result);
                 extendWithNode(result);
             }
@@ -4398,6 +4426,7 @@ public class CFGBuilder {
 
         @Override
         public Node visitLambdaExpression(LambdaExpressionTree tree, Void p) {
+            declaredLambdas.add(tree);
             Node node = new FunctionalInterfaceNode(tree);
             extendWithNode(node);
             return node;
