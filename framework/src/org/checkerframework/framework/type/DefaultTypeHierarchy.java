@@ -425,7 +425,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * point.
      */
     public Boolean visitTypeArgs(final AnnotatedDeclaredType subtype, final AnnotatedDeclaredType supertype,
-                                                        final VisitHistory visited, final boolean subtypeRaw, final boolean supertypeRaw) {
+                                  final VisitHistory visited, final boolean subtypeRaw, final boolean supertypeRaw) {
 
         final boolean ignoreTypeArgs = ignoreRawTypes && (subtypeRaw || supertypeRaw);
 
@@ -444,18 +444,34 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                 for (int i = 0; i < supertypeTypeArgs.size(); i++) {
                     final AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);
                     final AnnotatedTypeMirror subTypeArg   = subtypeTypeArgs.get(i);
-
-                    if(subtypeRaw || supertypeRaw) {
-                        if(!rawnessComparer.isValid(superTypeArg, subTypeArg, visited) && !isContainedBy(subTypeArg, superTypeArg, visited, this.covariantTypeArgs )) {
-                            return false;
-                        }
-
-                    } else {
-                        if( !isContainedBy(subTypeArg, superTypeArg, visited, this.covariantTypeArgs ) ) {
-                            return false;
-                        }
+                    if (!compareTypeArgs(subTypeArg, superTypeArg, supertypeRaw, subtypeRaw, visited)) {
+                        return false;
                     }
                 }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Compare typeArgs is called on a single pair of type args that should share a relationship
+     * subTypeArg <= superTypeArg (subtypeArg is contained by superTypeArg).  However, if either
+     * type is raw then either (subTypeArg <= superTypeArg) or the rawnessComparer.isValid(superTypeArg, subTypeArg, visited)
+     * @return
+     */
+    protected boolean compareTypeArgs(AnnotatedTypeMirror subTypeArg, AnnotatedTypeMirror superTypeArg,
+                                   boolean subtypeRaw, boolean supertypeRaw, VisitHistory visited) {
+
+        if(subtypeRaw || supertypeRaw) {
+            if ( !rawnessComparer.isValid(subTypeArg, superTypeArg, visited)
+              && !isContainedBy(subTypeArg, superTypeArg, visited, this.covariantTypeArgs )) {
+                return false;
+            }
+
+        } else {
+            if( !isContainedBy(subTypeArg, superTypeArg, visited, this.covariantTypeArgs ) ) {
+                return false;
             }
         }
 
