@@ -38,6 +38,18 @@ public class QualifierDefaults {
     // TODO add visitor state to get the default annotations from the top down?
     // TODO apply from package elements also
     // TODO try to remove some dependencies (e.g. on factory)
+
+    /**
+     * This field indicates whether or not a default should be applied to type vars
+     * located in the type being default.  This should only ever be true when the type variable
+     * is a local variable, non-component use, i.e.
+     * <T> void method(@NOT_HERE T tIn) {
+     *     T t = tIn;
+     * }
+     *
+     * The local variable T will be defaulted in order to allow dataflow to refine T.
+     * This variable will be false if dataflow is not in use.
+     */
     private boolean applyToTypeVar = false;
     private final Elements elements;
     private final AnnotatedTypeFactory atypeFactory;
@@ -233,7 +245,9 @@ public class QualifierDefaults {
         //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
         if (elt != null) {
-            boolean useFlow = (atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>) && ((((GenericAnnotatedTypeFactory) atypeFactory).getUseFlow()));
+            boolean useFlow = (atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>)
+                           && ((((GenericAnnotatedTypeFactory) atypeFactory).getUseFlow()));
+
             applyToTypeVar = useFlow
                           && elt.getKind() == ElementKind.LOCAL_VARIABLE
                           && type.getKind() == TypeKind.TYPEVAR

@@ -5,6 +5,13 @@ import org.checkerframework.javacutil.AnnotationUtils;
 
 import javax.lang.model.element.AnnotationMirror;
 
+/**
+ * Represents a mapping from an Annotation to a DefaultLocation it should be applied to during defaulting.
+ * The Comparable ordering of this class first tests location then tests annotation ordering (via
+ * {@link org.checkerframework.javacutil.AnnotationUtils}).
+ *
+ * It also has a handy toString method that is useful for debugging.
+ */
 class Default implements Comparable<Default> {
     public final AnnotationMirror anno;
     public final DefaultLocation location;
