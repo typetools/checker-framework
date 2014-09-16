@@ -6,6 +6,13 @@ import org.checkerframework.checker.javari.qual.Mutable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.FromByteCode;
@@ -44,6 +51,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1428,6 +1436,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
         ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
         AnnotatedTypeMirror receiverType = getReceiverType(tree);
+        return methodFromUse(tree, methodElt, receiverType);
+    }
+
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(ExpressionTree tree,
+            ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
+
         AnnotatedExecutableType methodType = AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt);
         List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
 
@@ -2467,6 +2481,171 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
         wctype.setExtendsBound(upper);
         return wctype;
+    }
+
+
+    public Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(MemberReferenceTree tree) {
+        return getFnInterfaceFromTree((Tree)tree);
+    }
+    public Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(LambdaExpressionTree tree) {
+        return getFnInterfaceFromTree((Tree)tree);
+    }
+
+    /**
+     * Find the declared type of the functional interface and the executable type for its method for a given
+     * MemberReferenceTree or LambdaExpressionTree.
+     *
+     * @param tree the MemberReferenceTree or LambdaExpressionTree
+     * @return the declared type of the functional interface and the executable type
+     */
+    private Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(Tree tree) {
+
+        Context ctx = ((JavacProcessingEnvironment) getProcessingEnv()).getContext();
+        com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+
+        // ========= Overridden Type =========
+        AnnotatedDeclaredType functionalInterfaceType = getFunctionalInterfaceType(tree, javacTypes);
+        makeGroundTargetType(functionalInterfaceType);
+
+        // ========= Overridden Executable =========
+        Element fnElement = javacTypes.findDescriptorSymbol(
+                ((Type) functionalInterfaceType.getUnderlyingType()).asElement());
+
+        // The method viewed from the declared type
+        AnnotatedExecutableType methodExe = (AnnotatedExecutableType)AnnotatedTypes.asMemberOf(
+                types, this, functionalInterfaceType, fnElement);
+
+        return Pair.of(functionalInterfaceType, methodExe);
+    }
+
+    /**
+     * Get the AnnotatedDeclaredType for the FunctionalInterface from assignment context of the method reference
+     * which may be a variable assignment, a method call, or a cast.
+     *
+     * The assignment context is not always correct, so we must search up the AST. It will recursively search
+     * for lambdas nested in lambdas.
+     *
+     * @param lambdaTree the tree of the lambda or method reference.
+     * @return the functional interface type
+     */
+    private AnnotatedDeclaredType getFunctionalInterfaceType(Tree lambdaTree,
+            com.sun.tools.javac.code.Types javacTypes) {
+
+        Tree parentTree = TreePath.getPath(this.root, lambdaTree).getParentPath().getLeaf();
+        switch(parentTree.getKind()) {
+            case TYPE_CAST:
+                TypeCastTree cast = (TypeCastTree) parentTree;
+                assertFunctionalInterface(javacTypes, (Type) trees.getTypeMirror(getPath(cast.getType())), parentTree, lambdaTree);
+                return (AnnotatedDeclaredType)getAnnotatedType(cast.getType());
+
+            case METHOD_INVOCATION:
+                MethodInvocationTree method = (MethodInvocationTree) parentTree;
+                int index = method.getArguments().indexOf(lambdaTree);
+                Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> exe = this.methodFromUse(method);
+                AnnotatedTypeMirror param = exe.first.getParameterTypes().get(index);
+                assertFunctionalInterface(javacTypes, (Type)param.getUnderlyingType(), parentTree, lambdaTree);
+                return (AnnotatedDeclaredType) param;
+
+            case VARIABLE:
+                VariableTree varTree = (VariableTree) parentTree;
+                assertFunctionalInterface(javacTypes, (Type)InternalUtils.typeOf(varTree), parentTree, lambdaTree);
+                return (AnnotatedDeclaredType) getAnnotatedType(varTree.getType());
+
+            case ASSIGNMENT:
+                AssignmentTree assignmentTree = (AssignmentTree) parentTree;
+                assertFunctionalInterface(javacTypes, (Type)InternalUtils.typeOf(assignmentTree), parentTree, lambdaTree);
+                return (AnnotatedDeclaredType) getAnnotatedType(assignmentTree.getVariable());
+
+            case RETURN:
+                Tree enclosing = TreeUtils.enclosingOfKind(TreePath.getPath(this.root, parentTree),
+                        new HashSet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION)));
+
+                if (enclosing.getKind() == Tree.Kind.METHOD) {
+                    MethodTree enclosingMethod = (MethodTree) enclosing;
+                    return (AnnotatedDeclaredType) getAnnotatedType(enclosingMethod.getReturnType());
+                } else {
+                    LambdaExpressionTree enclosingLambda = (LambdaExpressionTree) enclosing;
+                    Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result = getFnInterfaceFromTree(enclosingLambda);
+                    AnnotatedExecutableType methodExe = result.second;
+                    return (AnnotatedDeclaredType) methodExe.getReturnType();
+                }
+            case LAMBDA_EXPRESSION:
+                LambdaExpressionTree enclosingLambda = (LambdaExpressionTree) parentTree;
+                Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result = getFnInterfaceFromTree(enclosingLambda);
+                AnnotatedExecutableType methodExe = result.second;
+                return (AnnotatedDeclaredType) methodExe.getReturnType();
+
+            default:
+                ErrorReporter.errorAbort("Could not find functional interface from assignment context. " +
+                        "Unexpected tree type: " + parentTree.getKind() +
+                        " For lambda tree: " + lambdaTree);
+                return null;
+        }
+    }
+
+    private void assertFunctionalInterface(com.sun.tools.javac.code.Types javacTypes,
+            Type type, Tree contextTree, Tree lambdaTree) {
+
+        if (!javacTypes.isFunctionalInterface(type)) {
+            ErrorReporter.errorAbort(String.format(
+                    "Expected the type of %s tree in assignment context to be a functional interface. " +
+                    "Found type: %s for tree: %s in lambda tree: %s",
+                    contextTree.getKind(), type, contextTree, lambdaTree));
+        }
+    }
+
+    /**
+     * Create the ground target type of the functional interface.
+     *
+     * Basically, it replaces the wildcards with their bounds
+     * doing a capture conversion like glb for extends bounds.
+     *
+     * @see "JLS 9.9"
+     * @param overriddenType the functional interface type
+     */
+    private void makeGroundTargetType(AnnotatedDeclaredType overriddenType) {
+        if (overriddenType.getTypeArguments().size() > 0) {
+            List<AnnotatedTypeParameterBounds> bounds = this.typeVariablesFromUse(overriddenType, (TypeElement)overriddenType.getUnderlyingType().asElement());
+            List<AnnotatedTypeMirror> newTypeArguments = new ArrayList<>(overriddenType.getTypeArguments());
+            for (int i = 0 ; i < overriddenType.getTypeArguments().size() ; i ++) {
+                AnnotatedTypeMirror argType = overriddenType.getTypeArguments().get(i);
+                if (argType.getKind() == TypeKind.WILDCARD) {
+                    AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) argType;
+                    if (isExtendsWildcard(wildcardType)) {
+                        AnnotatedTypeMirror formalTypeParameterBound = bounds.get(i).getUpperBound();
+                        TypeMirror lubBaseType = InternalUtils.greatestLowerBound(this.checker.getProcessingEnvironment(),
+                                formalTypeParameterBound.getUnderlyingType(), wildcardType.getExtendsBound().getUnderlyingType());
+
+                        Set<? extends AnnotationMirror> glb;
+                        if (formalTypeParameterBound.getAnnotations().size() == wildcardType.getExtendsBound().getAnnotations().size()) {
+                            glb = this.getQualifierHierarchy().greatestLowerBounds(
+                                    formalTypeParameterBound.getAnnotations(),
+                                    wildcardType.getExtendsBound().getAnnotations());
+                        } else {
+                            // Arbitrary choice for type systems that create types without any annotations.
+                            glb = wildcardType.getExtendsBound().getAnnotations();
+                        }
+
+                        AnnotatedTypeMirror newArg = this.toAnnotatedType(lubBaseType, false);
+                        newArg.replaceAnnotations(glb);
+                        newTypeArguments.set(i, newArg);
+                    } else {
+                        newTypeArguments.set(i, wildcardType.getSuperBound());
+                    }
+                }
+            }
+            overriddenType.setTypeArguments(newTypeArguments);
+        }
+    }
+
+    /**
+     * Check that a wildcard is an extends wildcard
+     *
+     * @param awt the wildcard type
+     * @return true if awt is an extends wildcard
+     */
+    private boolean isExtendsWildcard(AnnotatedWildcardType awt) {
+        return awt.getUnderlyingType().getSuperBound() == null;
     }
 
     /** Accessor for the element utilities.

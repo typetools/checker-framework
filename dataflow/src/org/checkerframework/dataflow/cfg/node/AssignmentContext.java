@@ -108,6 +108,30 @@ public abstract class AssignmentContext {
     }
 
     /**
+     * An assignment context for lambda return statements.
+     */
+    public static class LambdaReturnContext extends AssignmentContext {
+
+        protected final ExecutableElement method;
+
+        public LambdaReturnContext(ExecutableElement method) {
+            this.method = method;
+        }
+
+        @Override
+        public Element getElementForType() {
+            return method;
+        }
+
+        @Override
+        public Tree getContextTree() {
+            // TODO: what is the right assignment context? We might not have
+            // a tree for the invoked method.
+            return null;
+        }
+    }
+
+    /**
      * Returns an {@link Element} that has the type of this assignment context.
      */
     public abstract Element getElementForType();

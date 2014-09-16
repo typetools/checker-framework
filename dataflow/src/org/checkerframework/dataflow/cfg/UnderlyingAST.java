@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.cfg;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
@@ -15,6 +16,8 @@ public abstract class UnderlyingAST {
     public enum Kind {
         /** The underlying code is a whole method */
         METHOD,
+        /** The underlying code is a lambda expression */
+        LAMBDA,
 
         /**
          * The underlying code is an arbitrary Java statement or expression
@@ -70,6 +73,33 @@ public abstract class UnderlyingAST {
         @Override
         public String toString() {
             return "CFGMethod(\n" + method + "\n)";
+        }
+    }
+
+    /**
+     * If the underlying AST is a lambda.
+     */
+    public static class CFGLambda extends UnderlyingAST {
+
+        private final LambdaExpressionTree lambda;
+
+        public CFGLambda(LambdaExpressionTree lambda) {
+            super(Kind.LAMBDA);
+            this.lambda = lambda;
+        }
+
+        @Override
+        public Tree getCode() {
+            return lambda.getBody();
+        }
+
+        public LambdaExpressionTree getLambdaTree() {
+            return lambda;
+        }
+
+        @Override
+        public String toString() {
+            return "CFGLambda(\n" + lambda + "\n)";
         }
     }
 
