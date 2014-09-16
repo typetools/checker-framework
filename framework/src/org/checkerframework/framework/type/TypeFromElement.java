@@ -207,7 +207,7 @@ public class TypeFromElement {
 
             VariableTree paramDecl = (VariableTree) type.atypeFactory.declarationFromElement(element);
             Tree parentTree = null;
-            if (paramDecl != null) {
+            if (paramDecl != null && type.atypeFactory.getPath(paramDecl) != null) {
                 parentTree = type.atypeFactory.getPath(paramDecl).getParentPath().getLeaf();
             }
 
