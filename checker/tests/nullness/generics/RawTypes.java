@@ -15,7 +15,7 @@ class RawTypes {
     // ok
     Test y = new Test<Integer>();
 
-    //:: error: (type.argument.type.incompatible) :: error: (assignment.type.incompatible)
+    //:: error: (type.argument.type.incompatible)
     Test z = new Test<@Nullable Integer>();
   }
 
