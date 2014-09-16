@@ -56,6 +56,10 @@ public enum DefaultLocation {
      */
     RETURNS,
 
+    /**
+     * Apply default annotations to all unannotated lower bounds
+     * for type variables and wildcards
+     */
     LOWER_BOUNDS,
 
     /**
