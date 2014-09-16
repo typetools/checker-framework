@@ -217,6 +217,26 @@ public class QualifierPolymorphism {
         }
     }
 
+    public void annotate(AnnotatedExecutableType functionalInterface, AnnotatedExecutableType memberReference) {
+        for (AnnotationMirror type : functionalInterface.getReturnType().getAnnotations()) {
+            if (isPolymorphicQualified(type)) {
+                // functional interface has a polymorphic qualifier, so they should not be resolved on memberReference.
+                return;
+            }
+        }
+
+        List<AnnotatedTypeMirror> args = functionalInterface.getParameterTypes();
+        List<AnnotatedTypeMirror> requiredArgs = memberReference.getParameterTypes();
+        Map<AnnotationMirror, Set<? extends AnnotationMirror>> matchingMapping = collector.visit(args, requiredArgs);
+
+        if (matchingMapping != null && !matchingMapping.isEmpty()) {
+            replacer.visit(memberReference, matchingMapping);
+        } else {
+            //TODO: Do we need this (return type?)
+            completer.visit(memberReference);
+        }
+    }
+
     private final AnnotatedTypeScanner<Void, Map<AnnotationMirror, Set<? extends AnnotationMirror>>> replacer
     = new AnnotatedTypeScanner<Void, Map<AnnotationMirror, Set<? extends AnnotationMirror>>>() {
         @Override

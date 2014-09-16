@@ -29,6 +29,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import com.sun.source.tree.MemberReferenceTree;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.TypeQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -626,6 +627,11 @@ public class AnnotatedTypes {
             targs = ((MethodInvocationTree) expr).getTypeArguments();
         } else if (expr instanceof NewClassTree) {
             targs = ((NewClassTree) expr).getTypeArguments();
+        } else if (expr instanceof MemberReferenceTree) {
+            targs = ((MemberReferenceTree) expr).getTypeArguments();
+            if (targs == null) {
+                return new HashMap<>();
+            }
         } else {
             // This case should never happen.
             ErrorReporter.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
@@ -797,6 +803,9 @@ public class AnnotatedTypes {
             args = ((MethodInvocationTree) expr).getArguments();
         } else if (expr instanceof NewClassTree) {
             args = ((NewClassTree) expr).getArguments();
+        } else if (expr instanceof MemberReferenceTree) {
+            // TODO: Need to use the functional interface's method
+            return null;
         } else {
             // TODO
             args = null;
