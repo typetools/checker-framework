@@ -1,6 +1,4 @@
 
-// @skip-test We need to implement this checking
-
 import org.checkerframework.checker.nullness.qual.*;
 
 abstract class References {
@@ -11,20 +9,23 @@ abstract class References {
         FuncA funcA1 = References::aMethod1;
         // No error, covariant parameters
         FuncA funcA2 = References::aMethod2;
-        //:: error: (override.return.invalid)
+        //:: error: (methodref.return.invalid)
         FuncA funcA3 = References::aMethod3;
-        //:: error: (override.return.invalid)
+        //:: error: (methodref.return.invalid)
         FuncA funcA4 = References::aMethod4;
 
-        //:: error: (override.param.invalid)
+        //:: error: (methodref.param.invalid)
         FuncB funcB1 = References::aMethod1;
         // No error
         FuncB funcB2 = References::aMethod2;
-        //:: error: (override.return.invalid)
+        //:: error: (methodref.return.invalid)
         FuncB funcB3 = References::aMethod3;
-        //:: error: (override.return.invalid)
+        //:: error: (methodref.return.invalid)
         FuncB funcB4 = References::aMethod4;
 
+        FuncA typeArg1 = References::<@NonNull String> aMethod5;
+        //:: error: (methodref.param.invalid)
+        FuncB typeArg2 = References::<@NonNull String> aMethod5;
     }
 
     abstract @NonNull String aMethod1(@NonNull String s);
@@ -34,6 +35,8 @@ abstract class References {
     abstract @Nullable String aMethod3(@NonNull String s);
 
     abstract @Nullable String aMethod4(@Nullable String s);
+
+    abstract <T> T aMethod5(T t);
 
     interface FuncA {
         @NonNull String method(References a, @NonNull String b);
