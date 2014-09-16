@@ -284,7 +284,7 @@ public final class TypesUtils {
         Type t = (Type) tm;
         if (t.hasTag(TypeTag.WILDCARD)) {
             Context context = ((JavacProcessingEnvironment) env).getContext();
-            Type.WildcardType w = (Type.WildcardType) TypeAnnotationUtils.unannotatedType(env, t);
+            Type.WildcardType w = (Type.WildcardType) TypeAnnotationUtils.unannotatedType(t);
             if (w.isSuperBound()) {
                 Symtab syms = Symtab.instance(context);
                 return w.bound == null ? syms.objectType : w.bound.bound;
@@ -293,7 +293,7 @@ public final class TypesUtils {
             }
         }
         else {
-            return TypeAnnotationUtils.unannotatedType(env, t);
+            return TypeAnnotationUtils.unannotatedType(t);
         }
     }
 
