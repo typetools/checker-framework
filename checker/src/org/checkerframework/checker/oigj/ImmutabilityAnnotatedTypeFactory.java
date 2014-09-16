@@ -798,23 +798,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return super.visitTypeArgs(subtype, supertype, visited, subtypeIsRaw, supertypeIsRaw);
                 }
 
-                final List<? extends AnnotatedTypeMirror> subtypeTypeArgs = subtype.getTypeArguments();
-                final List<? extends AnnotatedTypeMirror> supertypeTypeArgs = supertype.getTypeArguments();
-
-                if (subtypeTypeArgs.isEmpty() || supertypeTypeArgs.isEmpty()) {
-                    return true;
-                }
-
-                if (supertypeTypeArgs.size() > 0) {
-                    for (int i = 0; i < supertypeTypeArgs.size(); i++) {
-                        final AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);
-                        final AnnotatedTypeMirror subTypeArg = subtypeTypeArgs.get(i);
-
-                        if (!isContainedBy(subTypeArg, superTypeArg, visited, true)) {
-                            return false;
-                        }
-                    }
-                }
+                return super.visitTypeArgs(subtype, supertype, visited, subtypeIsRaw, supertypeIsRaw);
             }
 
             return true;
