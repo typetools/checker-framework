@@ -5,6 +5,10 @@ import org.checkerframework.framework.util.PluginUtil;
 import java.util.Comparator;
 import java.util.TreeSet;
 
+/**
+ * An ordered set of Defaults (see {@link org.checkerframework.framework.util.defaults.Default}
+ * This method provides a little syntactic sugar and a better toString over TreeSet.
+ */
 @SuppressWarnings("serial")
 class DefaultSet extends TreeSet<Default> {
     public DefaultSet() {
