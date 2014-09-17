@@ -30,7 +30,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     }
 
     /**
-     * Issues an error if any constant-value annotation has &gt; MAX_VALUES number of values provided.
+     * Issues a warning if any constant-value annotation has &gt; MAX_VALUES number of values provided.
+     * Works together with ValueAnnotatedTypeFactory.ValueTypeAnnotator.replaceWithUnknownValIfTooManyValues
+     * which treats the value as @UnknownVal in this case.
      */
     @Override
     public Void visitAnnotation(AnnotationTree tree, Void p){
@@ -44,7 +46,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                         int numArgs = ((NewArrayTree)((AssignmentTree)tree.getArguments().get(0)).getExpression()).getInitializers().size();
                         
                         if (numArgs > ValueAnnotatedTypeFactory.MAX_VALUES){
-                            checker.report(Result.failure("too.many.values.given", ValueAnnotatedTypeFactory.MAX_VALUES), this.getCurrentPath().getLeaf());
+                            checker.report(Result.warning("too.many.values.given", ValueAnnotatedTypeFactory.MAX_VALUES), this.getCurrentPath().getLeaf());
                             return null;
                         }
                     }

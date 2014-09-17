@@ -122,9 +122,52 @@ class Basics {
         @StringVal({ "test1" }) String c = (java.lang.String) b;
     }
 
-   void tooManyValues(){
-        //:: error: (too.many.values.given)
+    void tooManyValuesInt(){
+        //:: warning: (too.many.values.given)
         @IntVal({1,2,3,4,5,6,7,8,9,10,11,12}) int a = 8;
+
+        @UnknownVal int b = a; // This should always succeed
+
+        @UnknownVal int c = 0;
+
+        a = c;  // This should succeed if a is treated as @UnknownVal
+
+        //:: warning: (too.many.values.given)
+        @IntVal({1,2,3,4,5,6,7,8,9,10,11,12}) int d = 8;
+
+        d = 2 * d; // This should succeed since d is @UnknownVal
     }
- 
+
+    void tooManyValuesDouble(){
+        //:: warning: (too.many.values.given)
+        @DoubleVal({1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0}) double a = 8.0;
+
+        @UnknownVal double b = a; // This should always succeed
+
+        @UnknownVal double c = 0;
+
+        a = c;  // This should succeed if a is treated as @UnknownVal
+
+        //:: warning: (too.many.values.given)
+        @DoubleVal({1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0}) double d = 8.0;
+
+        d = 2.0 * d; // This should succeed since d is @UnknownVal
+    }
+
+    void tooManyValuesString(){
+        //:: warning: (too.many.values.given)
+        @StringVal({"a","b","c","d","e","f","g","h","i","j","k","l"}) String a = "h";
+
+        @UnknownVal String b = a; // This should always succeed
+
+        @UnknownVal String c = "";
+
+        a = c;  // This should succeed if a is treated as @UnknownVal
+
+        //:: warning: (too.many.values.given)
+        @StringVal({"a","b","c","d","e","f","g","h","i","j","k","l"}) String d = "h";
+
+        d = "b" + d; // This should succeed since d is @UnknownVal
+    }
+
 }
