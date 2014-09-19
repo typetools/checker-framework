@@ -368,7 +368,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     @Override
     public Boolean visitArray_Array(AnnotatedArrayType subtype, AnnotatedArrayType supertype, VisitHistory visited) {
         return isPrimarySubtype(subtype, supertype)
-               && (invariantArrayComponents ? areEqual(subtype, supertype)
+               && (invariantArrayComponents ? areEqual(subtype.getComponentType(), supertype.getComponentType())
                 : isSubtype(subtype.getComponentType(), supertype.getComponentType(), visited));
     }
 
@@ -731,11 +731,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * A union is a supertype if ONE of it's alternatives is a supertype of subtype
      */
     protected boolean visitUnionSupertype(AnnotatedTypeMirror subtype, AnnotatedUnionType supertype, VisitHistory visited) {
-        if(visited.contains(subtype, supertype)) {
-            throw new RuntimeException("YEAH YEAH YEAH YEAH YEAH");
-            //return true;                           //TODO: CREATE TESTS THAT TEST THESE CASES
-        }
-        visited.add(subtype, supertype);
         return isSubtypeOfAny(subtype, supertype.getAlternatives(), visited);
     }
 
@@ -743,11 +738,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * A union type is a subtype if ALL of its alternatives are subtypes of supertype
      */
     protected Boolean visitUnionSubtype(AnnotatedUnionType subtype, AnnotatedTypeMirror supertype, VisitHistory visited) {
-        if(visited.contains(subtype, supertype)) {
-            throw new RuntimeException("YEAH YEAH YEAH YEAH YEAH");
-            //return true;                          //TODO: CREATE TESTS THAT TEST THESE CASES
-        }
-        visited.add(subtype, supertype);
         return areAllSubtypes(subtype.getAlternatives(), supertype, visited);
     }
 
