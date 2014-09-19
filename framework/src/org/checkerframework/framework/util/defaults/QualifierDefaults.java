@@ -428,7 +428,6 @@ public class QualifierDefaults {
         }
 
         private static void doApply(AnnotatedTypeMirror type, AnnotationMirror qual) {
-
             // Add the default annotation, but only if no other
             // annotation is present.
             if (!type.isAnnotatedInHierarchy(qual)) {
@@ -500,7 +499,9 @@ public class QualifierDefaults {
                             t == type) {
 
                         for (AnnotatedTypeMirror atm : ((AnnotatedExecutableType)t).getParameterTypes()) {
-                            doApply(atm, qual);
+                            if(shouldBeAnnotated(atm, false)) {
+                                doApply(atm, qual);
+                            }
                         }
                     }
                     break;
@@ -514,7 +515,11 @@ public class QualifierDefaults {
                     } else if ((scope.getKind() == ElementKind.METHOD) &&
                             t.getKind() == TypeKind.EXECUTABLE &&
                             t == type) {
-                        doApply(((AnnotatedExecutableType)t).getReceiverType(), qual);
+
+                        final AnnotatedDeclaredType receiver = ((AnnotatedExecutableType) t).getReceiverType();
+                        if(shouldBeAnnotated(receiver, false)) {
+                            doApply(receiver, qual);
+                        }
                     }
                     break;
                 }
@@ -522,7 +527,10 @@ public class QualifierDefaults {
                     if (scope.getKind() == ElementKind.METHOD &&
                             t.getKind() == TypeKind.EXECUTABLE &&
                             t == type) {
-                        doApply(((AnnotatedExecutableType)t).getReturnType(), qual);
+                        final AnnotatedTypeMirror returnType = ((AnnotatedExecutableType)t).getReturnType();
+                        if(shouldBeAnnotated(returnType, false)) {
+                            doApply(returnType, qual);
+                        }
                     }
                     break;
                 }
