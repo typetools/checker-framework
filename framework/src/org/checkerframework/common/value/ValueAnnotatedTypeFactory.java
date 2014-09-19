@@ -1972,18 +1972,20 @@ import com.sun.source.util.TreePath;
         }
 
         /**
-         * To make these numerous calls to check if an annotation is UnknownVal
-         * or ArrayLen a little nicer looking
-         * 
+         * Check that the annotation in the Value Checker hierarchy has
+         * a value of some kind.
+         *
          * @param mirror
          *            the AnnotatedTypeMirror to check
-         * 
-         * @return true if the AnnotatedTypeMirror contains the UnknownVal or
-         *         ArrayLen AnnotationMirror, false otherwise
+         *
+         * @return true if the AnnotatedTypeMirror contains the UnknownVal,
+         *         ArrayLen, to BottomVal, false otherwise
          */
         private boolean nonValueAnno(AnnotatedTypeMirror mirror) {
-            return AnnotationUtils.areSameIgnoringValues(
-                    getValueAnnotation(mirror), UNKNOWNVAL)
+            AnnotationMirror valueAnno = getValueAnnotation(mirror);
+            return AnnotationUtils.areSameIgnoringValues(valueAnno, UNKNOWNVAL)
+                    || AnnotationUtils.areSameByClass(valueAnno,
+                            BottomVal.class)
                     || AnnotationUtils
                             .areSameIgnoringValues(
                                     mirror.getAnnotationInHierarchy(ARRAYLEN),
