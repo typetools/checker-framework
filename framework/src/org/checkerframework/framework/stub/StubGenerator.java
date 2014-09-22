@@ -17,6 +17,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
@@ -42,7 +43,6 @@ public class StubGenerator {
     private String currentIndention = "";
 
     /** the package of the class being processed */
-    // As an optimization, it is ended with a '.'
     private String currentPackage = null;
 
 
@@ -79,15 +79,13 @@ public class StubGenerator {
      * package.
      */
     public void skeletonFromField(Element elt) {
-        if(!(elt.getKind() == ElementKind.FIELD) )
+        if (!(elt.getKind() == ElementKind.FIELD))
             return;
 
-        TypeElement conclass = (TypeElement) elt.getEnclosingElement();
-
-        String fullClassName = conclass.getQualifiedName().toString();
-        if (fullClassName.indexOf('.') != -1) {
-            int index = fullClassName.lastIndexOf('.');
-            currentPackage = fullClassName.substring(0, index);
+        String pkg = ElementUtils.getVerboseName((ElementUtils
+                .enclosingPackage(elt)));
+        if (!"".equals(pkg)) {
+            currentPackage = pkg;
             currentIndention = "    ";
             indent();
         }
@@ -107,7 +105,6 @@ public class StubGenerator {
         out.print("package ");
         out.print(currentPackage);
         out.println(";");
-        currentPackage += ".";
 
         for (TypeElement element
                 : ElementFilter.typesIn(packageElement.getEnclosedElements())) {
@@ -126,12 +123,10 @@ public class StubGenerator {
         if(!(elt.getKind() == ElementKind.CONSTRUCTOR || elt.getKind() == ElementKind.METHOD) )
             return;
 
-        TypeElement conclass = (TypeElement) elt.getEnclosingElement();
-
-        String fullClassName = conclass.getQualifiedName().toString();
-        if (fullClassName.indexOf('.') != -1) {
-            int index = fullClassName.lastIndexOf('.');
-            currentPackage = fullClassName.substring(0, index);
+        String newPackage = ElementUtils.getVerboseName(ElementUtils
+                .enclosingPackage(elt));
+        if (!newPackage.equals("")) {
+            currentPackage = newPackage;
             currentIndention = "    ";
             indent();
         }
@@ -151,21 +146,34 @@ public class StubGenerator {
                 && typeElement.getKind() != ElementKind.INTERFACE)
             return;
 
-        String fullClassName = typeElement.getQualifiedName().toString();
-        if (fullClassName.indexOf('.') != -1) {
-            int index = fullClassName.lastIndexOf('.');
-            currentPackage = fullClassName.substring(0, index);
+        String newPackageName = ElementUtils.getVerboseName(ElementUtils
+                .enclosingPackage(typeElement));
+        boolean newPackage = !newPackageName.equals(currentPackage);
+        currentPackage = newPackageName;
 
+        if (newPackage) {
             indent();
 
             out.print("package ");
             out.print(currentPackage);
             out.println(";");
             out.println();
-            currentPackage += ".";
         }
+        String fullClassName = ElementUtils.getQualifiedClassName(typeElement)
+                .toString();
 
-        printClass(typeElement);
+        String className = fullClassName.substring(fullClassName
+                //+1 because currentPackage doesn't include
+                //the . between the package name and the classname
+                .indexOf(currentPackage) + currentPackage.length()+1);
+
+        int index = className.lastIndexOf('.');
+        if (index == -1) {
+            printClass(typeElement);
+        } else {
+            String outer = className.substring(0, index);
+            printClass(typeElement, outer.replace('.', '$'));
+        }
     }
 
     /**
@@ -270,10 +278,17 @@ public class StubGenerator {
      * It indicates whether the field is {@code protected}.
      */
     private void printFieldDecl(VariableElement field) {
+        if ("class".equals(field.getSimpleName().toString())) {
+            error("Cannot write class literals in stub files.");
+            return;
+        }
+
         indent();
         // if protected, indicate that, but not public
         if (field.getModifiers().contains(Modifier.PROTECTED))
             out.print("protected ");
+        if (field.getModifiers().contains(Modifier.STATIC))
+            out.print("static ");
         if (field.getModifiers().contains(Modifier.FINAL))
             out.print("final ");
 
@@ -402,6 +417,10 @@ public class StubGenerator {
         else if (env.getElementUtils().getTypeElement(args[0]) != null)
             generator.skeletonFromType(env.getElementUtils().getTypeElement(args[0]));
         else
-            System.err.println("Couldn't find a package or a class named " + args[0]);
+            error("Couldn't find a package or a class named " + args[0]);
+    }
+
+    private static void error(String string) {
+        System.err.println("StubGenerator: " + string);
     }
 }
