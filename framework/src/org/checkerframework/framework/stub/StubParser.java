@@ -59,6 +59,7 @@ import org.checkerframework.stubparser.ast.expr.ArrayInitializerExpr;
 import org.checkerframework.stubparser.ast.expr.BooleanLiteralExpr;
 import org.checkerframework.stubparser.ast.expr.Expression;
 import org.checkerframework.stubparser.ast.expr.FieldAccessExpr;
+import org.checkerframework.stubparser.ast.expr.IntegerLiteralExpr;
 import org.checkerframework.stubparser.ast.expr.MarkerAnnotationExpr;
 import org.checkerframework.stubparser.ast.expr.MemberValuePair;
 import org.checkerframework.stubparser.ast.expr.NameExpr;
@@ -952,8 +953,8 @@ public class StubParser {
 
     /*
      * Handles expressions in annotations.
-     * Supports String and boolean literals, but not other literals
-     * as documented in the stub file limiation section of the manual.
+     * Supports String, int, and boolean literals, but not other literals
+     * as documented in the stub file limitation section of the manual.
      */
     private void handleExpr(AnnotationBuilder builder, String name,
             Expression expr) {
@@ -988,6 +989,18 @@ public class StubParser {
                 }
             } else {
                 ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " and expected: " + expected);
+            }
+        } else if (expr instanceof IntegerLiteralExpr) {
+            IntegerLiteralExpr ilexpr = (IntegerLiteralExpr) expr;
+            ExecutableElement var = builder.findElement(name);
+            TypeMirror expected = var.getReturnType();
+            if (expected.getKind() == TypeKind.DECLARED) {
+                builder.setValue(name, Integer.valueOf(ilexpr.getValue()));
+            } else if (expected.getKind() == TypeKind.ARRAY) {
+                Integer[] arr = { Integer.valueOf(ilexpr.getValue()) };
+                builder.setValue(name, arr);
+            } else {
+                ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + ilexpr + " and expected: " + expected);
             }
         } else if (expr instanceof StringLiteralExpr) {
             StringLiteralExpr slexpr = (StringLiteralExpr) expr;
@@ -1033,6 +1046,8 @@ public class StubParser {
                     if (constval!=null) {
                         elemarr[i] = constval;
                     }
+                } else if (anaiexpr instanceof IntegerLiteralExpr) {
+                    elemarr[i] = Integer.valueOf(((IntegerLiteralExpr) anaiexpr).getValue());
                 } else if (anaiexpr instanceof StringLiteralExpr) {
                     elemarr[i] = ((StringLiteralExpr) anaiexpr).getValue();
                 } else {
