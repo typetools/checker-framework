@@ -88,7 +88,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, isLocalVariableAssignement);
     }
 
-    private void reportFailure(String messageKey,
+    private void reportFailure(/*@CompilerMessageKey*/ String messageKey,
             MethodTree overriderTree,
             AnnotatedDeclaredType enclosingType,
             AnnotatedExecutableType overridden,

@@ -1,8 +1,12 @@
 package org.checkerframework.framework.flow;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,7 +18,11 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Symbol;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -27,6 +35,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
@@ -59,6 +68,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -195,11 +205,13 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     @Override
     public S initialStore(UnderlyingAST underlyingAST,
             /*@Nullable */ List<LocalVariableNode> parameters) {
-        if (fixedInitialStore != null) return fixedInitialStore;
+        if (fixedInitialStore != null
+                && underlyingAST.getKind() != Kind.LAMBDA) return fixedInitialStore;
 
         S info = analysis.createEmptyStore(sequentialSemantics);
 
         if (underlyingAST.getKind() == Kind.METHOD) {
+
             AnnotatedTypeFactory factory = analysis.getTypeFactory();
             for (LocalVariableNode p : parameters) {
                 AnnotatedTypeMirror anno = factory.getAnnotatedType(p
@@ -216,127 +228,193 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             addInformationFromPreconditions(info, factory, method, methodTree,
                     methodElem);
 
-            // Add knowledge about final fields, or values of non-final fields
-            // if we are inside a constructor (information about initializers)
             final ClassTree classTree = method.getClassTree();
-            TypeMirror classType = InternalUtils.typeOf(classTree);
-            List<Pair<VariableElement, V>> fieldValues = analysis
-                    .getFieldValues();
-            boolean isNotFullyInitializedReceiver = isNotFullyInitializedReceiver(methodTree);
-            for (Pair<VariableElement, V> p : fieldValues) {
-                VariableElement element = p.first;
-                V value = p.second;
-                if (ElementUtils.isFinal(element)
-                        || TreeUtils.isConstructor(methodTree)) {
-                    TypeMirror fieldType = ElementUtils.getType(element);
-                    Receiver receiver;
-                    if (ElementUtils.isStatic(element)) {
-                        receiver = new ClassName(classType);
-                    } else {
-                        receiver = new ThisReference(classType);
-                    }
-                    Receiver field = new FieldAccess(receiver, fieldType,
-                            element);
-                    info.insertValue(field, value);
-                }
+            addFieldValues(info, factory, classTree, methodTree);
+
+            addFinalLocalValues(info, methodElem);
+
+            return info;
+
+        } else if (underlyingAST.getKind() == Kind.LAMBDA) {
+            // Create a copy and keep only the field values (nothing else applies).
+            info = analysis.createCopiedStore(fixedInitialStore);
+            info.localVariableValues.clear();
+            info.classValues.clear();
+            info.arrayValues.clear();
+            info.methodValues.clear();
+
+            AnnotatedTypeFactory factory = analysis.getTypeFactory();
+            for (LocalVariableNode p : parameters) {
+                AnnotatedTypeMirror anno = factory.getAnnotatedType(p
+                        .getElement());
+                info.initializeMethodParameter(p,
+                        analysis.createAbstractValue(anno));
             }
 
-            // add properties about fields (static information from type)
-            for (Tree member : classTree.getMembers()) {
-                if (member instanceof VariableTree) {
-                    VariableTree vt = (VariableTree) member;
-                    final VariableElement element = TreeUtils
-                            .elementFromDeclaration(vt);
-                    AnnotatedTypeMirror type = factory
-                            .getAnnotatedType(element);
-                    TypeMirror fieldType = ElementUtils.getType(element);
-                    Receiver receiver;
-                    if (ElementUtils.isStatic(element)) {
-                        receiver = new ClassName(classType);
-                    } else {
-                        receiver = new ThisReference(classType);
+            CFGLambda lambda = (CFGLambda) underlyingAST;
+            Tree enclosingTree = TreeUtils.enclosingOfKind(factory.getPath(lambda.getLambdaTree()),
+                    new HashSet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.CLASS)));
+
+            Element enclosingElement = null;
+            if (enclosingTree.getKind() == Tree.Kind.METHOD) {
+                // If it is in an initializer, we need to use locals from the initializer.
+                enclosingElement = InternalUtils.symbol(enclosingTree);
+
+            } else if (enclosingTree.getKind() == Tree.Kind.CLASS) {
+
+                // Try to find an enclosing initializer block
+                // Would love to know if there was a better way
+                // Find any enclosing element of the lambda (using trees)
+                // Then go up the elements to find an initializer element (which can't be found with the tree).
+                TreePath loopTree = factory.getPath(lambda.getLambdaTree()).getParentPath();
+                Element anEnclosingElement = null;
+                while (loopTree.getLeaf() != enclosingTree) {
+                    Element sym = InternalUtils.symbol(loopTree.getLeaf());
+                    if (sym != null) {
+                        anEnclosingElement = sym;
+                        break;
                     }
-                    V value = analysis.createAbstractValue(type);
-                    if (value == null) continue;
-                    if (isNotFullyInitializedReceiver) {
-                        // if we are in a constructor (or another method where
-                        // the receiver might not yet be fully initialized),
-                        // then we can still use the static type, but only
-                        // if there is also an initializer that already does
-                        // some initialization.
-                        boolean found = false;
-                        for (Pair<VariableElement, V> fieldValue : fieldValues) {
-                            if (fieldValue.first.equals(element)) {
-                                value = value.leastUpperBound(fieldValue.second);
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            // no initializer found, cannot use static type
-                            continue;
-                        }
-                    }
-                    Receiver field = new FieldAccess(receiver, fieldType,
-                            element);
-                    info.insertValue(field, value);
+                    loopTree = loopTree.getParentPath();
                 }
+                while (!anEnclosingElement.equals(InternalUtils.symbol(enclosingTree))) {
+                    if (anEnclosingElement.getKind() == ElementKind.INSTANCE_INIT
+                            || anEnclosingElement.getKind() == ElementKind.STATIC_INIT) {
+                        enclosingElement = anEnclosingElement;
+                        break;
+                    }
+                    anEnclosingElement = anEnclosingElement.getEnclosingElement();
+                }
+
+            }
+                if (enclosingElement != null) {
+                addFinalLocalValues(info, enclosingElement);
             }
 
-            // add information about effectively final variables (from outer scopes)
-            for (Entry<Element, V> e : analysis.atypeFactory.getFinalLocalValues().entrySet()) {
-
-                Element elem = e.getKey();
-
-                // There is a design flaw where the values of final local values leaks
-                // into other methods of the same class. For example, in
-                // class a { void b(){...} void c(){...} }
-                // final local values from b() would be visible in the store for c(),
-                // even though they should only be visible in b() and in classes
-                // defined inside the method body of b().
-                // This is partly because GenericAnnotatedTypeFactory.performFlowAnalysis
-                // does not call itself recursively to analyze inner classes, but instead
-                // pops classes off of a queue, and the information about known final local
-                // values is stored by GenericAnnotatedTypeFactory.analyze in
-                // GenericAnnotatedTypeFactory.flowResult, which is visible to all classes
-                // in the queue regardless of their level of recursion.
-
-                // We work around this here by ensuring that we only add a final
-                // local value to a method's store if that method is enclosed by
-                // the method where the local variables were declared.
-
-
-                // Find the enclosing method of the element
-
-                Element enclosingMethodOfVariableDeclaration = elem.getEnclosingElement();
-
-                while(enclosingMethodOfVariableDeclaration != null &&
-                      enclosingMethodOfVariableDeclaration.getKind() != ElementKind.METHOD &&
-                      enclosingMethodOfVariableDeclaration.getKind() != ElementKind.CONSTRUCTOR) {
-                    enclosingMethodOfVariableDeclaration = enclosingMethodOfVariableDeclaration.getEnclosingElement();
-                }
-
-                if (enclosingMethodOfVariableDeclaration != null) {
-
-                    // Now find all the enclosing methods of the method we are analyzing. If any one of them matches the above,
-                    // then the final local variable value applies.
-
-                    Element enclosingMethodOfCurrentMethod = methodElem.getEnclosingElement();
-
-                    while(enclosingMethodOfCurrentMethod != null) {
-                        if (enclosingMethodOfVariableDeclaration.equals(enclosingMethodOfCurrentMethod)) {
-                            LocalVariable l = new LocalVariable(elem);
-                            info.insertValue(l, e.getValue());
-                            break;
-                        }
-
-                        enclosingMethodOfCurrentMethod = enclosingMethodOfCurrentMethod.getEnclosingElement();
-                    }
-                }
+            // We want the initialization stuff, but need to throw out any refinements.
+            Map<FieldAccess, V> fieldValuesClone = new HashMap<>(info.fieldValues);
+            for (Entry<FieldAccess, V> fieldValue : fieldValuesClone.entrySet()) {
+                AnnotatedTypeMirror declaredType = factory.getAnnotatedType(fieldValue.getKey().getField());
+                V lubbedValue = analysis.createAbstractValue(declaredType).leastUpperBound(fieldValue.getValue());
+                info.fieldValues.put(fieldValue.getKey(), lubbedValue);
             }
         }
 
         return info;
+    }
+
+    private void addFieldValues(S info, AnnotatedTypeFactory factory, ClassTree classTree, MethodTree methodTree) {
+
+        // Add knowledge about final fields, or values of non-final fields
+        // if we are inside a constructor (information about initializers)
+        TypeMirror classType = InternalUtils.typeOf(classTree);
+        List<Pair<VariableElement, V>> fieldValues = analysis
+                .getFieldValues();
+        for (Pair<VariableElement, V> p : fieldValues) {
+            VariableElement element = p.first;
+            V value = p.second;
+            if (ElementUtils.isFinal(element)
+                    || TreeUtils.isConstructor(methodTree)) {
+                Receiver receiver;
+                if (ElementUtils.isStatic(element)) {
+                    receiver = new ClassName(classType);
+                } else {
+                    receiver = new ThisReference(classType);
+                }
+                TypeMirror fieldType = ElementUtils.getType(element);
+                Receiver field = new FieldAccess(receiver, fieldType,
+                        element);
+                info.insertValue(field, value);
+            }
+        }
+
+        // add properties about fields (static information from type)
+        boolean isNotFullyInitializedReceiver = isNotFullyInitializedReceiver(methodTree);
+        for (Tree member : classTree.getMembers()) {
+            if (member instanceof VariableTree) {
+                VariableTree vt = (VariableTree) member;
+                final VariableElement element = TreeUtils
+                        .elementFromDeclaration(vt);
+                AnnotatedTypeMirror type = factory
+                        .getAnnotatedType(element);
+                TypeMirror fieldType = ElementUtils.getType(element);
+                Receiver receiver;
+                if (ElementUtils.isStatic(element)) {
+                    receiver = new ClassName(classType);
+                } else {
+                    receiver = new ThisReference(classType);
+                }
+                V value = analysis.createAbstractValue(type);
+                if (value == null) continue;
+                if (isNotFullyInitializedReceiver) {
+                    // if we are in a constructor (or another method where
+                    // the receiver might not yet be fully initialized),
+                    // then we can still use the static type, but only
+                    // if there is also an initializer that already does
+                    // some initialization.
+                    boolean found = false;
+                    for (Pair<VariableElement, V> fieldValue : fieldValues) {
+                        if (fieldValue.first.equals(element)) {
+                            value = value.leastUpperBound(fieldValue.second);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        // no initializer found, cannot use static type
+                        continue;
+                    }
+                }
+                Receiver field = new FieldAccess(receiver, fieldType,
+                        element);
+                info.insertValue(field, value);
+            }
+        }
+    }
+
+    private void addFinalLocalValues(S info, Element enclosingElement) {
+        // add information about effectively final variables (from outer scopes)
+        for (Entry<Element, V> e : analysis.atypeFactory.getFinalLocalValues().entrySet()) {
+
+            Element elem = e.getKey();
+
+            // There is a design flaw where the values of final local values leaks
+            // into other methods of the same class. For example, in
+            // class a { void b(){...} void c(){...} }
+            // final local values from b() would be visible in the store for c(),
+            // even though they should only be visible in b() and in classes
+            // defined inside the method body of b().
+            // This is partly because GenericAnnotatedTypeFactory.performFlowAnalysis
+            // does not call itself recursively to analyze inner classes, but instead
+            // pops classes off of a queue, and the information about known final local
+            // values is stored by GenericAnnotatedTypeFactory.analyze in
+            // GenericAnnotatedTypeFactory.flowResult, which is visible to all classes
+            // in the queue regardless of their level of recursion.
+
+            // We work around this here by ensuring that we only add a final
+            // local value to a method's store if that method is enclosed by
+            // the method where the local variables were declared.
+
+
+            // Find the enclosing method of the element
+            Element enclosingMethodOfVariableDeclaration = elem.getEnclosingElement();
+
+            if (enclosingMethodOfVariableDeclaration != null) {
+
+                // Now find all the enclosing methods of the code we are analyzing. If any one of them matches the above,
+                // then the final local variable value applies.
+                Element enclosingMethodOfCurrentMethod = enclosingElement;
+
+                while(enclosingMethodOfCurrentMethod != null) {
+                    if (enclosingMethodOfVariableDeclaration.equals(enclosingMethodOfCurrentMethod)) {
+                        LocalVariable l = new LocalVariable(elem);
+                        info.insertValue(l, e.getValue());
+                        break;
+                    }
+
+                    enclosingMethodOfCurrentMethod = enclosingMethodOfCurrentMethod.getEnclosingElement();
+                }
+            }
+        }
     }
 
     /**

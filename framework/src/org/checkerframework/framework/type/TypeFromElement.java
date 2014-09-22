@@ -12,6 +12,10 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -186,17 +190,56 @@ public class TypeFromElement {
         }
     }
 
+    /**
+     * Add annotations to method parameters.
+     *
+     * Note that annotations for lambda parameters, for lambdas that are found in static,
+     * instance, or field initializers are stored on the last declared constructor.
+     * The last declared constructor is also considered the enclosing element for the parameter.
+     *
+     * This method must distinguish between annotations for parameters on the constructor and
+     * annotations on the parameters for lambdas.
+     */
     private static void annotateParam(AnnotatedTypeMirror type, Element element) {
         Element enclosing = element.getEnclosingElement();
         if (enclosing instanceof ExecutableElement) {
             ExecutableElement execElt = (ExecutableElement) enclosing;
-            if (execElt.getParameters().contains(element)) {
-                int param_index = execElt.getParameters().indexOf(element);
+
+            VariableTree paramDecl = (VariableTree) type.atypeFactory.declarationFromElement(element);
+            Tree parentTree = null;
+            if (paramDecl != null && type.atypeFactory.getPath(paramDecl) != null) {
+                parentTree = type.atypeFactory.getPath(paramDecl).getParentPath().getLeaf();
+            }
+
+
+            Integer param_index = null;
+            boolean lambda = false;
+            if (execElt.getKind() != ElementKind.INSTANCE_INIT
+                    && execElt.getKind() != ElementKind.STATIC_INIT
+                    && execElt.getParameters().contains(element)) {
+                // The parameter is actually for this element
+                param_index = execElt.getParameters().indexOf(element);
+            } else if (parentTree != null && parentTree.getKind() == Kind.LAMBDA_EXPRESSION) {
+                // The parameter is for a lambda
+                LambdaExpressionTree lambdaTree = (LambdaExpressionTree) parentTree;
+                param_index = lambdaTree.getParameters().indexOf(paramDecl);
+                lambda = true;
+            }
+
+            if (param_index != null) {
                 for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).getRawTypeAttributes()) {
                     switch (typeAnno.position.type) {
                     case METHOD_FORMAL_PARAMETER:
+                        // Since lambdas annotations are also stored on the method, need to check
+                        // both the index and the onLambda field to match.
                         if (typeAnno.position.parameter_index == param_index) {
-                            annotate(type, typeAnno);
+                            if (typeAnno.position.onLambda == null) {
+                                if (!lambda) {
+                                    annotate(type, typeAnno);
+                                }
+                            } else if (typeAnno.position.onLambda.equals(parentTree)) {
+                                annotate(type, typeAnno);
+                            }
                         }
                         break;
                     case METHOD_RECEIVER:
@@ -540,6 +583,9 @@ public class TypeFromElement {
                 break;
 
             case METHOD_FORMAL_PARAMETER:
+                if (pos.onLambda != null) {
+                    break;
+                }
                 if (pos.parameter_index >= 0 && pos.parameter_index < params.size()) {
                     annotate(params.get(pos.parameter_index), typeAnno);
                 } else if (strict) {
