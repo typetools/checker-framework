@@ -1654,6 +1654,14 @@ public abstract class AnnotatedTypeMirror {
         public String toString(boolean printInvisible) {
             return toStringAsCanonical(printInvisible);
         }
+
+        @Pure
+        @Override
+        public int hashCode() {
+            return (this.componentType == null ? 0 : this.componentType.toString().hashCode() * 19)
+                + this.annotations.toString().hashCode() * 17
+                + this.actualType.toString().hashCode() * 13;
+        }
     }
 
     /**
