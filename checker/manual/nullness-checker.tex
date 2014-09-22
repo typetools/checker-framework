@@ -24,6 +24,8 @@ type-checkers that work together: the Nullness Checker proper (which is the
 main focus of this chapter), the Initialization Checker
 (Section~\ref{initialization-checker}), and the Map Key Checker
 (Section~\ref{map-key-checker}).
+Their type hierarchies are completely independent, but they work together
+to provide precise nullness checking.
 
 
 \section{What the Nullness Checker checks\label{nullness-checks}}
@@ -181,7 +183,7 @@ Nullness type system.
 multiple inheritance.)
 
 \begin{figure}
-\includeimage{nullness}{2.5cm}
+\includeimage{nullness}{3.5cm}
 \caption{Partial type hierarchy for the Nullness type system.
 Java's \<Object> is expressed as \<@Nullable Object>.  Programmers can omit
 most type qualifiers, because the default annotation
@@ -1252,7 +1254,7 @@ parameter in comments (see Section~\ref{annotations-in-comments}):
 \subsection{Initialization qualifiers\label{initialization-qualifiers}}
 
 \begin{figure}
-\includeimage{initialization}{2.5cm}
+\includeimage{initialization}{4cm}
 \caption{Partial type hierarchy for the Initialization type system.
   \<@UnknownInitialization> and \<@UnderInitialization> each take an
   optional parameter indicating how far initialization has proceeded, and
@@ -1845,7 +1847,7 @@ parameter in comments (see Section~\ref{annotations-in-comments}):
 \subsubsection{Rawness qualifiers\label{rawness-qualifiers}}
 
 \begin{figure}
-\includeimage{rawness}{2.5cm}
+\includeimage{rawness}{3.5cm}
 \caption{Partial type hierarchy for the Rawness Initialization type system.}
 \label{fig-rawness-hierarchy}
 \end{figure}

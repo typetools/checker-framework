@@ -1,5 +1,6 @@
 package org.checkerframework.framework.type;
 
+import com.sun.source.tree.Tree.Kind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -7,6 +8,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersec
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.ConstructorReturnUtil;
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -19,7 +21,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -62,7 +63,6 @@ import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SimpleTreeVisitor;
-import com.sun.tools.javac.code.Attribute.TypeCompound;
 
 /**
  * A utility class used to abstract common functionality from tree-to-type
@@ -313,66 +313,36 @@ abstract class TypeFromTree extends
             result.addAnnotations(InternalUtils.annotationsFromArrayCreation(node, -1));
         }
 
+        /**
+         * The type of a NewClassTree is the type of the Identifier
+         * plus any explicit annotations (including polymorphic qualifiers)
+         * on the constructor.
+         *
+         * @param node the NewClassTree
+         * @param f the type factory
+         * @return the type of the new class
+         */
         @Override
         public AnnotatedTypeMirror visitNewClass(NewClassTree node,
                 AnnotatedTypeFactory f) {
-            // constructorFromUse obviously has Void as return type.
-            // Therefore, use the overall type to return.
+            // constructorFromUse return type has implicits
+            // so use fromNewClass which does diamond inference but does not do any implicits
             AnnotatedDeclaredType type = f.fromNewClass(node);
+
             // Enum constructors lead to trouble.
             // TODO: is there more to check? Can one annotate them?
             if (isNewEnum(type)) {
                 return type;
             }
+
             // Add annotations that are on the constructor declaration.
             // constructorFromUse gives us resolution of polymorphic qualifiers.
             // However, it also applies defaulting, so we might apply too many qualifiers.
             // Therefore, ensure to only add the qualifiers that are explicitly on
             // the constructor, but then take the possibly substituted qualifier.
             AnnotatedExecutableType ex = f.constructorFromUse(node).first;
+            ConstructorReturnUtil.keepOnlyExplicitConstructorAnnotations(f, type, ex);
 
-            ExecutableElement ctor = TreeUtils.elementFromUse(node);
-            // TODO: There will be a nicer way to access this in 308 soon.
-            List<TypeCompound> decall = ((com.sun.tools.javac.code.Symbol)ctor).getRawTypeAttributes();
-            Set<AnnotationMirror> decret = AnnotationUtils.createAnnotationSet();
-            for (TypeCompound da : decall) {
-                if (da.position.type == com.sun.tools.javac.code.TargetType.METHOD_RETURN) {
-                    decret.add(da);
-                }
-            }
-
-            // Collect all polymorphic qualifiers; we should substitute them.
-            Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
-            for (AnnotationMirror anno : type.getAnnotations()) {
-                if (QualifierPolymorphism.isPolymorphicQualified(anno)) {
-                    polys.add(anno);
-                }
-            }
-
-            for (AnnotationMirror cta : ex.getReturnType().getAnnotations()) {
-                AnnotationMirror ctatop = f.getQualifierHierarchy().getTopAnnotation(cta);
-                if (f.isSupportedQualifier(cta) &&
-                        !type.isAnnotatedInHierarchy(cta)) {
-                    for (AnnotationMirror fromDecl : decret) {
-                        if (f.isSupportedQualifier(fromDecl) &&
-                                AnnotationUtils.areSame(ctatop,
-                                        f.getQualifierHierarchy().getTopAnnotation(fromDecl))) {
-                            type.addAnnotation(cta);
-                            break;
-                        }
-                    }
-                }
-
-                // Go through the polymorphic qualifiers and see whether
-                // there is anything left to replace.
-                for (AnnotationMirror pa : polys) {
-                    if (AnnotationUtils.areSame(ctatop,
-                            f.getQualifierHierarchy().getTopAnnotation(pa))) {
-                        type.replaceAnnotation(cta);
-                        break;
-                    }
-                }
-            }
             return type;
         }
 
@@ -455,6 +425,24 @@ abstract class TypeFromTree extends
         }
     }
 
+    private static void inferLambdaParamAnnotations(AnnotatedTypeFactory f, AnnotatedTypeMirror result, Element paramElement) {
+        if (f.declarationFromElement(paramElement) == null
+                || f.getPath(f.declarationFromElement(paramElement)) == null
+                || f.getPath(f.declarationFromElement(paramElement)).getParentPath() == null) {
+
+            return;
+        }
+        Tree declaredInTree = f.getPath(f.declarationFromElement(paramElement)).getParentPath().getLeaf();
+        if (declaredInTree.getKind() == Kind.LAMBDA_EXPRESSION) {
+            LambdaExpressionTree lambdaDecl = (LambdaExpressionTree)declaredInTree;
+            int index = lambdaDecl.getParameters().indexOf(f.declarationFromElement(paramElement));
+            Pair<AnnotatedDeclaredType, AnnotatedExecutableType> res = f.getFnInterfaceFromTree(lambdaDecl);
+            AnnotatedExecutableType fnMethod = res.second;
+            AnnotatedTypeMirror declaredParam = fnMethod.getParameterTypes().get(index);
+            // TODO: Should we infer nested types (e.g. List<@x String>)
+            result.addMissingAnnotations(declaredParam.getAnnotations());
+        }
+    }
 
     /** The singleton TypeFromMember instance. */
     public static final TypeFromMember TypeFromMemberINSTANCE
@@ -478,6 +466,7 @@ abstract class TypeFromTree extends
             Element elt = TreeUtils.elementFromDeclaration(node);
 
             TypeFromElement.annotate(result, elt);
+            inferLambdaParamAnnotations(f, result, elt);
             return result;
 
             /* An alternative I played around with. It unfortunately
