@@ -2300,8 +2300,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     return true; // Dead code
                 case SUPER:
                     receiverDecl = overrider.getReceiverType();
-                    receiverArg = atypeFactory.getSelfType(memberTree);
+                    receiverArg = atypeFactory.getAnnotatedType(memberTree.getQualifierExpression());
+
+                    final AnnotatedTypeMirror selfType = atypeFactory.getSelfType(memberTree);
+                    receiverArg.replaceAnnotations(selfType.getAnnotations());
                     break;
+
                 case BOUND:
                     receiverDecl = overrider.getReceiverType();
                     receiverArg = overridingType;
