@@ -7,7 +7,7 @@ interface Supplier <T extends @NonNull Object> {
 }
 
 class GroundTargetType {
-    //:: error: (methodref.return.invalid)
+    //:: error: (methodref.return.invalid) :: error: (type.argument.type.incompatible)
     Supplier<? extends @Nullable Object> fn = GroundTargetType::myMethod;
 
     static @Nullable Object myMethod() { return null; }
