@@ -19,6 +19,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
+import com.sun.source.tree.Tree.Kind;
 import org.checkerframework.checker.initialization.qual.FBCBottom;
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.NotOnlyInitialized;
@@ -342,46 +343,41 @@ public abstract class InitializationAnnotatedTypeFactory<
     @Override
     public AnnotatedDeclaredType getSelfType(Tree tree) {
         AnnotatedDeclaredType selfType = super.getSelfType(tree);
-        TreePath path = getPath(tree);
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
-        boolean done = false;
-        // Set the correct type for 'this' inside of constructors.
-        while (enclosingMethod != null) {
-            if (!TreeUtils.isConstructor(enclosingMethod)) {
-                // See whether any other enclosing method is a constructor.
-                path = path.getParentPath();
-                enclosingMethod = TreeUtils.enclosingMethod(path);
-                continue;
-            }
 
-            setSelfTypeInInitializationCode(tree, selfType, path);
-            done = true;
-            // Found a constructor -> done.
-            // TODO: should we look whether this constructor is
-            // enclosed within another constructor?
-            break;
-        }
-        // set the correct type for initializer blocks
-        if (!done) {
-            ClassTree enclosingClass = TreeUtils.enclosingClass(path);
-            Tree enclosingBlock = TreeUtils.enclosingOfKind(path, Tree.Kind.BLOCK);
-            List<? extends Tree> classMembers = enclosingClass == null ? null : enclosingClass.getMembers();
-            if (enclosingBlock != null
-                    && classMembers.contains(enclosingBlock)) {
+        TreePath path = getPath(tree);
+        Tree topLevelMember = findTopLevelClassMemberForTree(path);
+        if (topLevelMember != null) {
+            if (topLevelMember.getKind() != Kind.METHOD
+                    || TreeUtils.isConstructor((MethodTree)topLevelMember)) {
+
                 setSelfTypeInInitializationCode(tree, selfType, path);
-                done = true;
-            }
-            if (!done) {
-                // set the correct type for field initializers
-                VariableTree variableTree = (VariableTree) TreeUtils.enclosingOfKind(path, Tree.Kind.VARIABLE);
-                if (variableTree != null && classMembers.contains(variableTree)) {
-                    setSelfTypeInInitializationCode(tree, selfType, path);
-                    done = true;
-                }
             }
         }
 
         return selfType;
+    }
+
+    /**
+     * In the first enclosing class, find the top-level member that contains tree.
+     * TODO: should we look whether these elements are enclosed within another class that
+     * is itself under construction.
+     *
+     * Are there any other type of top level objects?
+     */
+    private Tree findTopLevelClassMemberForTree(TreePath path) {
+        ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+        if (enclosingClass != null) {
+
+            List<? extends Tree> classMembers = enclosingClass.getMembers();
+            TreePath searchPath = path;
+            while (searchPath.getParentPath() != null && searchPath.getParentPath() != enclosingClass) {
+                searchPath = searchPath.getParentPath();
+                if (classMembers.contains(searchPath.getLeaf())) {
+                    return searchPath.getLeaf();
+                }
+            }
+        }
+        return null;
     }
 
     protected void setSelfTypeInInitializationCode(Tree tree,
@@ -804,8 +800,7 @@ public abstract class InitializationAnnotatedTypeFactory<
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror anno1,
                 AnnotationMirror anno2) {
-            assert false : "This code is not needed for this type system so far.";
-            return null;
+            return super.greatestLowerBound(anno1, anno2);
         }
 
     }

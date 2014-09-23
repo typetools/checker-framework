@@ -364,8 +364,7 @@
 
         <copy todir="${dest.dir}" flatten="true">
             <fileset dir="${checker.manual}">
-                <include name="*.png"/>
-                <include name="*.gif"/>
+                <include name="*.svg"/>
             </fileset>
         </copy>
 

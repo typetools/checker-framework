@@ -234,4 +234,9 @@ class Binaries {
 
         @DoubleVal({ 3 }) double e = a * c - 2 * b - (char) 1;
     }
+
+    public void compareWithNull(){
+        String s = "1";
+        boolean b = (s != null);
+    }
 }

@@ -36,6 +36,8 @@ import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -169,6 +171,48 @@ import com.sun.source.util.TreePath;
     @Override public QualifierHierarchy createQualifierHierarchy(
             MultiGraphFactory factory) {
         return new ValueQualifierHierarchy(factory);
+    }
+
+    @Override
+    protected TypeAnnotator createTypeAnnotator() {
+        return new ValueTypeAnnotator(this);
+    }
+
+    private class ValueTypeAnnotator extends TypeAnnotator {
+
+        public ValueTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
+            super(atypeFactory);
+        }
+
+        @Override
+        public Void visitPrimitive(AnnotatedPrimitiveType type, Void p) {
+            replaceWithUnknownValIfTooManyValues((AnnotatedTypeMirror) type);
+
+            return super.visitPrimitive(type, p);
+        }
+
+        @Override
+        public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
+            replaceWithUnknownValIfTooManyValues((AnnotatedTypeMirror) type);
+
+            return super.visitDeclared(type, p);
+        }
+
+        /**
+         * If any constant-value annotation has &gt; MAX_VALUES number of values provided, treats the value as UnknownVal.
+         * Works together with ValueVisitor.visitAnnotation, which issues a warning to the user in this case.
+         */
+        private void replaceWithUnknownValIfTooManyValues(AnnotatedTypeMirror atm){
+            AnnotationMirror anno = atm.getAnnotationInHierarchy(UNKNOWNVAL);
+
+            if (anno != null && anno.getElementValues().size() > 0) {
+                List<Object> values = AnnotationUtils.getElementValueArray(anno, "value", Object.class, false);
+                if (values != null && values.size() > MAX_VALUES) {
+                    atm.replaceAnnotation(UNKNOWNVAL);
+                }
+            }
+        }
+
     }
 
     /**
@@ -1928,18 +1972,20 @@ import com.sun.source.util.TreePath;
         }
 
         /**
-         * To make these numerous calls to check if an annotation is UnknownVal
-         * or ArrayLen a little nicer looking
-         * 
+         * Check that the annotation in the Value Checker hierarchy has
+         * a value of some kind.
+         *
          * @param mirror
          *            the AnnotatedTypeMirror to check
-         * 
-         * @return true if the AnnotatedTypeMirror contains the UnknownVal or
-         *         ArrayLen AnnotationMirror, false otherwise
+         *
+         * @return true if the AnnotatedTypeMirror contains the UnknownVal,
+         *         ArrayLen, to BottomVal, false otherwise
          */
         private boolean nonValueAnno(AnnotatedTypeMirror mirror) {
-            return AnnotationUtils.areSameIgnoringValues(
-                    getValueAnnotation(mirror), UNKNOWNVAL)
+            AnnotationMirror valueAnno = getValueAnnotation(mirror);
+            return AnnotationUtils.areSameIgnoringValues(valueAnno, UNKNOWNVAL)
+                    || AnnotationUtils.areSameByClass(valueAnno,
+                            BottomVal.class)
                     || AnnotationUtils
                             .areSameIgnoringValues(
                                     mirror.getAnnotationInHierarchy(ARRAYLEN),

@@ -1318,12 +1318,17 @@ public abstract class AnnotatedTypeMirror {
          *   null for static methods and constructors of top-level classes
          */
         public /*@Nullable*/ AnnotatedDeclaredType getReceiverType() {
-            if (receiverType == null &&
+            if (receiverType == null
                     // Static methods don't have a receiver
-                    !ElementUtils.isStatic(getElement()) &&
+                    &&  !ElementUtils.isStatic(getElement())
+                    // Array constructors should also not have a receiver. Array members have a getEnclosingElement().getEnclosingElement() of NONE
+                    && (!(getElement().getKind() == ElementKind.CONSTRUCTOR
+                        && getElement().getEnclosingElement().getSimpleName().toString().equals("Array")
+                        && getElement().getEnclosingElement().getEnclosingElement().asType().getKind() == TypeKind.NONE))
                     // Top-level constructors don't have a receiver
-                    (getElement().getKind() != ElementKind.CONSTRUCTOR ||
-                    getElement().getEnclosingElement().getEnclosingElement().getKind() != ElementKind.PACKAGE)) {
+                    && (getElement().getKind() != ElementKind.CONSTRUCTOR
+                        || getElement().getEnclosingElement().getEnclosingElement().getKind() != ElementKind.PACKAGE)) {
+
                 TypeElement encl = ElementUtils.enclosingClass(getElement());
                 if (getElement().getKind() == ElementKind.CONSTRUCTOR) {
                     // Can only reach this branch if we're the constructor of a nested class

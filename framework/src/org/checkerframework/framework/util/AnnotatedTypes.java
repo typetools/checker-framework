@@ -25,6 +25,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import com.sun.source.tree.*;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import org.checkerframework.framework.flow.util.LubTypeVariableAnnotator;
@@ -45,17 +46,6 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ReturnTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 
 /**
@@ -625,6 +615,11 @@ public class AnnotatedTypes {
             targs = ((MethodInvocationTree) expr).getTypeArguments();
         } else if (expr instanceof NewClassTree) {
             targs = ((NewClassTree) expr).getTypeArguments();
+        } else if (expr instanceof MemberReferenceTree) {
+            targs = ((MemberReferenceTree) expr).getTypeArguments();
+            if (targs == null) {
+                return new HashMap<>();
+            }
         } else {
             // This case should never happen.
             ErrorReporter.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
@@ -827,6 +822,11 @@ public class AnnotatedTypes {
                         (expr.getKind() == Tree.Kind.NEW_CLASS ?
                                 ((NewClassTree) expr).getArguments() :
                                 null);
+
+        if (expr instanceof MemberReferenceTree) {
+            // TODO: Need to use the functional interface's method
+            return null;
+        }
 
         if (argumentExprs == null) {
             ErrorReporter.errorAbort("AnnotatedTypes.inferTypeArguments: couldn't determine arguments from tree: " + expr);
