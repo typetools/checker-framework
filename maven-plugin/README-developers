@@ -1,0 +1,128 @@
+Checker Framework Maven plugin developer manual
+
+This document is intended for people who want to use a custom version of
+the Checker Framework together with Maven, or who wish to work on the Maven
+plugin itself.  If you just wish to use the Checker Framework Maven plugin
+then you should follow the directions in the Checker Framework manual (see
+http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#maven-plugin).
+
+Ordinarily, the Maven plugin loads artifacts such as the Checker Framework
+from the repository http://types.cs.washington.edu/m2-repo .  You may wish
+to load your own version of the artifacts.
+ * If you have your own modified version of the Checker Framework (say, it
+   adds a new type-checker or fixes a bug), then follow the instructions for
+   "Using a custom artifact, such as checkers.jar".
+ * If you have modified the Maven plugin itself, then follow the instructions
+   for "Installing the Maven plugin locally".
+
+
+
+Dependencies
+============
+
+The plugin depends on 5 Maven artifacts.  If the artifacts aren't present
+when executing Maven, then the plugin will attempt to download them.
+
+Remember that a Maven artifact is uniquely identified by its group id,
+artifact name, and version.
+
+The artifacts have a shared group id of "org.checkerframework".
+
+The artifact names are:
+  checkerframework-maven-plugin - the Checker Framework maven plugin itself
+  checker-qual - checkers-qual.jar
+  compiler - jsr308-langtools compiler's javac.jar
+  framework - checkers.jar
+  jdk7 - jdk7.jar
+
+The version number is specified by the checkerFrameworkVersion element in your
+pom.xml or, if the checkerFrameworkVersion element is missing, is the version of
+your Maven plugin.  See
+http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#maven-plugin.
+
+
+
+Using a custom artifact, such as checkers.jar
+=============================================
+
+You may wish to test a modified version of checkers.jar or another artifact
+with the Checker Framework Maven plugin.  To do so, you will install the
+artifacts with a new version number.  (You do not have to install the Maven
+plugin locally, though.)  Follow these instructions:
+
+1.  Increment the version number in the poms found in
+checkerframework/maven-plugin/poms.  (Try to choose a change, like adding ".001" at the
+very end, that is unlikely to be the next version that the Checker
+Framework developers choose.)  Make sure that the new version numbers all
+agree.
+
+2.  Run:
+  sh checkerframework/maven-plugin/poms/localInstall.sh
+This command installs all of the jars in checkerframework/checker/dist as artifacts in
+your "local repository" (the local cache of downloaded artifacts) using the
+version number found in the corresponding pom file in checkerframework/maven-plugin/poms.
+
+3.  For the project on which you are applying the Checker Framework, make
+sure the element "checkerFrameworkVersion" matches the version created in step 1.
+
+You can now run
+  mvn checkers:check
+on the project you wish to type-check and it will use your custom version
+of the Maven plugin or any custom version of the dependencies that you have
+installed.
+
+
+
+Installing the Maven plugin locally
+===================================
+
+The following simple commands allow you to build the plugin, install it
+locally, and install it to a repository.
+
+1. Update the Maven plugin version number in
+checkerframework/maven-plugin/pom.xml.  (Try to choose a change, like adding
+".001" at the very end, that is unlikely to be the next version that the
+Checker Framework developers choose.)
+
+2. Build the plugin:
+
+mvn clean package
+
+3. Install the locally-built plugin:
+
+mvn install
+
+4. In the project that you are type-checking, update the Checker Framework
+plugin section of the pom to match the version number created in step 1.
+
+
+
+Notes
+=====
+
+The version numbers of the various pom files are automatically updated by
+the Checker Framework release scripts.
+
+If you are using Maven 3, then adding -U to any command will force Maven to
+overwrite any existing dependencies with newly downloaded dependencies.
+This can be useful when debugging a deployed plugin for which you don't
+want to increase its version number.
+
+At times, you may wish to deploy a version of the plugin to a repository
+other than the Checker Framework respository.  This is useful to share a
+development version of the plugin or for testing purposes.  To deploy an
+artifact to the location //<your path>/maven/m2-repo, use the following
+command (use a different -Dfile argument to deploy a different artifact; see
+checkers/binary/poms/localInstall.sh for example -Dfile arguments).
+
+    mvn deploy:deploy-file \
+    -DartifactId=checkersplugin \
+    -Dfile=checkerframework/maven-plugin/target/checkers-maven-plugin-<latest-version>.jar \
+    -Dversion=<latest-version> \
+    -Durl=file://<your path>/maven/m2-repo \
+    -DgroupId=org.checkerframework \
+    -Dpackaging=jar \
+    -DpomFile=checkerframework/maven-plugin/pom.xml \
+    -DgeneratePom=false 
+
+Note that the url property must start with a protocol such as "file://".
