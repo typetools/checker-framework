@@ -153,4 +153,13 @@
         <jar destfile="${dataflow.lib}" basedir="${build}"/>
     </target>
 
+    <target name="sources-jar">
+        <jar destfile="${dataflow.sources.lib}" basedir="${src}"/>
+    </target>
+
+    <target name="javadoc-jar" depends="javadoc">
+        <jar destfile="${dataflow.javadoc.lib}" basedir="${dist.doc}" includes="**"/>
+    </target>
+
+
 </project>
