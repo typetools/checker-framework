@@ -7,8 +7,6 @@ import org.checkerframework.checker.igj.qual.ReadOnly;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Type;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -36,7 +34,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -80,6 +77,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
@@ -1148,7 +1146,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
 
         Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result = atypeFactory.getFnInterfaceFromTree(node);
-        AnnotatedDeclaredType overriddenType = result.first;
         AnnotatedExecutableType overridden = result.second;
 
         if (node.getBody().getKind() != Tree.Kind.BLOCK) {
@@ -1877,6 +1874,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     // Only issue the methodref.inference.unimplemented message once
     private static boolean typeArgumentInferenceCheck = false;
+
     /**
      * Check that a method reference is allowed.
      * Using the OverrideChecker class.
@@ -1899,8 +1897,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // ========= Overriding Executable =========
         // The ::method element
-        JCTree.JCMemberReference memberReferenceTree = (JCTree.JCMemberReference) overriderTree;
         ExecutableElement overridingElement = (ExecutableElement)InternalUtils.symbol(overriderTree);
+        if (overridingElement == null) {
+            // TODO: this only seems to happen when the standard jdk8 javac is used. Why? What should be done?
+            return true;
+        }
+
         // TODO: Method type argument inference
         AnnotatedExecutableType overrider = atypeFactory.methodFromUse(
                 overriderTree, overridingElement, overridingType).first;
@@ -1947,23 +1949,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         poly.annotate(overridden, overrider);
 
         AnnotatedTypeMirror overridingReturnType;
-        if (((Symbol)overridingElement).isConstructor() && !(overridingType.getKind() == TypeKind.ARRAY)) {
-            // The return type for constructors should only have explicit annotations from the constructor
-            // Recreate some of the logic from TypeFromTree.visitNewClass here.
+        if (overridingElement.getKind() == ElementKind.CONSTRUCTOR) {
+            if (overridingType.getKind() == TypeKind.ARRAY) {
+                // Special casing for the return of array constructor
+                overridingReturnType = overridingType;
+            } else {
+                // The return type for constructors should only have explicit annotations from the constructor
+                // Recreate some of the logic from TypeFromTree.visitNewClass here.
 
-            // The return type of the constructor will be the overriding type.
-            AnnotatedTypeMirror.AnnotatedDeclaredType constructorReturnType = (AnnotatedTypeMirror.AnnotatedDeclaredType)
-                    atypeFactory.fromTypeTree(overriderTree.getQualifierExpression());
+                // The return type of the constructor will be the overriding type.
+                AnnotatedTypeMirror.AnnotatedDeclaredType constructorReturnType = (AnnotatedTypeMirror.AnnotatedDeclaredType)
+                        atypeFactory.fromTypeTree(overriderTree.getQualifierExpression());
 
-            // Keep only explicit annotations and those from @Poly
-            ConstructorReturnUtil.keepOnlyExplicitConstructorAnnotations(atypeFactory, constructorReturnType, overrider);
+                // Keep only explicit annotations and those from @Poly
+                ConstructorReturnUtil.keepOnlyExplicitConstructorAnnotations(atypeFactory, constructorReturnType, overrider);
 
-            // Now add back defaulting.
-            atypeFactory.annotateImplicit(overriderTree.getQualifierExpression(), constructorReturnType);
-            overridingReturnType = constructorReturnType;
-        } else if (((Symbol)overridingElement).isConstructor()) {
-            // Special casing for the return of array constructor
-            overridingReturnType = overridingType;
+                // Now add back defaulting.
+                atypeFactory.annotateImplicit(overriderTree.getQualifierExpression(), constructorReturnType);
+                overridingReturnType = constructorReturnType;
+            }
         } else {
             overridingReturnType = overrider.getReturnType();
         }
@@ -2005,12 +2009,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         private final Tree overriderTree;
         private final Boolean methodReference;
 
-        AnnotatedExecutableType overrider;
-        AnnotatedTypeMirror overridingType;
-        AnnotatedExecutableType overridden;
-        AnnotatedDeclaredType overriddenType;
-        AnnotatedTypeMirror overriddenReturnType;
-        AnnotatedTypeMirror overridingReturnType;
+        private final AnnotatedExecutableType overrider;
+        private final AnnotatedTypeMirror overridingType;
+        private final AnnotatedExecutableType overridden;
+        private final AnnotatedDeclaredType overriddenType;
+        private final AnnotatedTypeMirror overriddenReturnType;
+        private final AnnotatedTypeMirror overridingReturnType;
 
         /**
          * Create an OverrideChecker.
@@ -2024,7 +2028,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
          * @param overrider
          *            the type of the overriding method
          * @param overridingType
-         *            the declared type enclosing the overrider method
+         *            the type enclosing the overrider method, usually an AnnotatedDeclaredType;
+         *            for Method References may be something else.
          * @param overridingReturnType
          *            the return type of the overriding method
          * @param overridden
@@ -2052,8 +2057,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             this.overridingReturnType = overridingReturnType;
 
             overriderMeth = overrider.toString();
-            Type overriderTypeMirror = (com.sun.tools.javac.code.Type)overridingType.getUnderlyingType();
-            overriderTyp = overriderTypeMirror.asElement().toString();
+            if (overridingType.getKind() == TypeKind.DECLARED) {
+                DeclaredType overriderTypeMirror = ((AnnotatedDeclaredType)overridingType).getUnderlyingType();
+                overriderTyp = overriderTypeMirror.asElement().toString();
+            } else {
+                overriderTyp = overridingType.toString();
+            }
             overriddenMeth = overridden.toString();
             overriddenTyp = overriddenType.getUnderlyingType().asElement().toString();
 
@@ -2115,8 +2124,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     .getPostconditions(overrider.getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPost2 = resolveContracts(superPost, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPost2 = resolveContracts(subPost, overrider);
+            @SuppressWarnings("CompilerMessages")
+            /*@CompilerMessageKey*/ String postmsg = "contracts.postcondition." + msgKey + ".invalid";
             checkContractsSubset(overriderMeth, overriderTyp, overriddenMeth, overriddenTyp, superPost2,
-                    subPost2, "contracts.postcondition." + msgKey + ".invalid");
+                    subPost2, postmsg);
 
             // Check preconditions
             Set<Pair<String, String>> superPre = contracts
@@ -2125,8 +2136,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     .getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPre2 = resolveContracts(superPre, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPre2 = resolveContracts(subPre, overrider);
+            @SuppressWarnings("CompilerMessages")
+            /*@CompilerMessageKey*/ String premsg = "contracts.precondition." + msgKey + ".invalid";
             checkContractsSubset(overriderMeth, overriderTyp, overriddenMeth, overriddenTyp, subPre2, superPre2,
-                    "contracts.precondition." + msgKey + ".invalid");
+                    premsg);
 
             // Check conditional postconditions
             Set<Pair<String, Pair<Boolean, String>>> superCPost = contracts
@@ -2142,8 +2155,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     superCPostTrue, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subCPostTrue2 = resolveContracts(
                     subCPostTrue, overrider);
+            @SuppressWarnings("CompilerMessages")
+            /*@CompilerMessageKey*/ String posttruemsg = "contracts.conditional.postcondition.true." + msgKey + ".invalid"; 
             checkContractsSubset(overriderMeth, overriderTyp, overriddenMeth, overriddenTyp, superCPostTrue2, subCPostTrue2,
-                    "contracts.conditional.postcondition.true." + msgKey + ".invalid");
+                    posttruemsg);
+
             Set<Pair<String, String>> superCPostFalse = filterConditionalPostconditions(
                     superCPost, false);
             Set<Pair<String, String>> subCPostFalse = filterConditionalPostconditions(
@@ -2152,9 +2168,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     superCPostFalse, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subCPostFalse2 = resolveContracts(
                     subCPostFalse, overrider);
+            @SuppressWarnings("CompilerMessages")
+            /*@CompilerMessageKey*/ String postfalsemsg = "contracts.conditional.postcondition.false." + msgKey + ".invalid"; 
             checkContractsSubset(overriderMeth, overriderTyp, overriddenMeth, overriddenTyp, superCPostFalse2, subCPostFalse2,
-                    "contracts.conditional.postcondition.false." + msgKey + ".invalid");
-
+                    postfalsemsg);
         }
 
         private boolean checkMemberReferenceReceivers() {
