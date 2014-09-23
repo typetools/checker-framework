@@ -43,6 +43,25 @@
     </ant>
   </target>
 
+  <target name="dist-release">
+      <ant dir="checker">
+          <target name="dist-release"/>
+      </ant>
+
+      <ant dir="javacutil">
+          <target name="sources-jar"/>
+      </ant>
+      <ant dir="javacutil">
+        <target name="javadoc-jar" />
+    </ant>
+      <ant dir="dataflow">
+          <target name="sources-jar"/>
+      </ant>
+      <ant dir="dataflow">
+          <target name="javadoc-jar" />
+      </ant>
+  </target>
+
   <target name="tags"
           description="Generate TAGS file">
     <ant dir="checker">
