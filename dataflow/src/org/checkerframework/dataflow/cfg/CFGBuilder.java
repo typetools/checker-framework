@@ -4178,10 +4178,13 @@ public class CFGBuilder {
 
         @Override
         public Node visitTypeCast(TypeCastTree tree, Void p) {
-            Node operand = scan(tree.getExpression(), p);
-            TypeMirror type = InternalUtils.typeOf(tree.getType());
+            final Node operand = scan(tree.getExpression(), p);
+            final TypeMirror type = InternalUtils.typeOf(tree.getType());
+            final Node node = new TypeCastNode(tree, operand, type);
+            final TypeElement cceElement = elements.getTypeElement("java.lang.ClassCastException");
 
-            return extendWithNode(new TypeCastNode(tree, operand, type));
+            extendWithNodeWithException(node, cceElement.asType());
+            return node;
         }
 
         @Override
