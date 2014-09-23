@@ -4,6 +4,9 @@ package org.checkerframework.dataflow.cfg.node;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import org.checkerframework.dataflow.cfg.node.AssignmentContext.LambdaReturnContext;
 import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodReturnContext;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 
@@ -38,6 +41,14 @@ public class ReturnNode extends Node {
         tree = t;
         result.setAssignmentContext(new MethodReturnContext(methodTree));
     }
+
+    public ReturnNode(ReturnTree t, /*@Nullable*/ Node result, Types types, LambdaExpressionTree lambda, MethodSymbol methodSymbol) {
+        super(types.getNoType(TypeKind.NONE));
+        this.result = result;
+        tree = t;
+        result.setAssignmentContext(new LambdaReturnContext(methodSymbol));
+    }
+
 
     public Node getResult() {
         return result;

@@ -375,7 +375,6 @@ public final class TreeUtils {
         return elt;
     }
 
-
     /**
      * Gets the element for the declaration corresponding to this use of an element.
      * To get the element for a declaration, use {@link

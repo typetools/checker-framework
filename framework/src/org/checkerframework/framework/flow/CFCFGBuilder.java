@@ -86,6 +86,8 @@ public class CFCFGBuilder extends CFGBuilder {
             CompilationUnitTree root, ProcessingEnvironment env,
             UnderlyingAST underlyingAST) {
         declaredClasses.clear();
+        declaredLambdas.clear();
+
         CFTreeBuilder builder = new CFTreeBuilder(env);
         PhaseOneResult phase1result = new CFCFGTranslationPhaseOne().process(
                 root, env, underlyingAST, exceptionalExitLabel, builder, factory);

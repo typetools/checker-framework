@@ -14,6 +14,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
+import com.sun.source.tree.LambdaExpressionTree;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -21,6 +22,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.CFGBuilder;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -528,6 +530,8 @@ public abstract class GenericAnnotatedTypeFactory<
             initializationStaticStore = null;
             initializationStore = null;
 
+            Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue = new LinkedList<>();
+
             try {
                 List<MethodTree> methods = new ArrayList<>();
                 for (Tree m : ct.getMembers()) {
@@ -553,7 +557,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         ExpressionTree initializer = vt.getInitializer();
                         // analyze initializer if present
                         if (initializer != null) {
-                            analyze(queue, new CFGStatement(vt),
+                            analyze(queue, lambdaQueue, new CFGStatement(vt),
                                     fieldValues, classTree, true, false);
                             Value value = flowResult.getValue(initializer);
                             if (value != null) {
@@ -574,7 +578,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         break;
                     case BLOCK:
                         BlockTree b = (BlockTree) m;
-                        analyze(queue, new CFGStatement(b), fieldValues, ct, true, b.isStatic());
+                        analyze(queue, lambdaQueue, new CFGStatement(b), fieldValues, ct, true, b.isStatic());
                         break;
                     default:
                         assert false : "Unexpected member: " + m.getKind();
@@ -586,9 +590,16 @@ public abstract class GenericAnnotatedTypeFactory<
                 // TODO: at this point, we don't have any information about
                 // fields of superclasses.
                 for (MethodTree mt : methods) {
-                    analyze(queue,
+                    analyze(queue, lambdaQueue,
                             new CFGMethod(mt, TreeUtils
                                     .enclosingClass(getPath(mt))), fieldValues, classTree, false, false);
+                }
+
+                while(lambdaQueue.size() > 0) {
+                    Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
+                    analyze(queue, lambdaQueue,
+                            new CFGLambda(lambdaPair.first), fieldValues, classTree, false, false, lambdaPair.second);
+
                 }
 
                 // by convention we store the static initialization store as the regular exit
@@ -630,9 +641,16 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param currentClass The class we are currently looking at.
      * @param isInitializationCode Are we analyzing a (non-static) initializer block of a class.
      */
-    protected void analyze(Queue<ClassTree> queue, UnderlyingAST ast,
+    protected void analyze(Queue<ClassTree> queue, Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue, UnderlyingAST ast,
             List<Pair<VariableElement, Value>> fieldValues, ClassTree currentClass,
             boolean isInitializationCode, boolean isStatic) {
+        analyze(queue, lambdaQueue, ast, fieldValues, currentClass, isInitializationCode, isStatic, null);
+    }
+
+    protected void analyze(Queue<ClassTree> queue, Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue, UnderlyingAST ast,
+            List<Pair<VariableElement, Value>> fieldValues, ClassTree currentClass,
+            boolean isInitializationCode, boolean isStatic,
+            Store lambdaStore) {
         CFGBuilder builder = new CFCFGBuilder(checker, this);
         ControlFlowGraph cfg = builder.run(root, processingEnv, ast);
         FlowAnalysis newAnalysis = createFlowAnalysis(fieldValues);
@@ -640,14 +658,19 @@ public abstract class GenericAnnotatedTypeFactory<
             emptyStore = newAnalysis.createEmptyStore(!checker.hasOption("concurrentSemantics"));
         }
         analyses.addFirst(newAnalysis);
-        Store initStore = isStatic ? initializationStore : initializationStaticStore;
-        if (isInitializationCode) {
-            if (initStore != null) {
-                // we have already seen initialization code and analyzed it, and
-                // the analysis ended with the store initStore.
-                // use it to start the next analysis.
-                TransferFunction transfer = newAnalysis.getTransferFunction();
-                transfer.setFixedInitialStore(initStore);
+        if (lambdaStore != null) {
+            TransferFunction transfer = newAnalysis.getTransferFunction();
+            transfer.setFixedInitialStore(lambdaStore);
+        } else {
+            Store initStore = isStatic ? initializationStore : initializationStaticStore;
+            if (isInitializationCode) {
+                if (initStore != null) {
+                    // we have already seen initialization code and analyzed it, and
+                    // the analysis ended with the store initStore.
+                    // use it to start the next analysis.
+                    TransferFunction transfer = newAnalysis.getTransferFunction();
+                    transfer.setFixedInitialStore(initStore);
+                }
             }
         }
         analyses.getFirst().performAnalysis(cfg);
@@ -667,6 +690,14 @@ public abstract class GenericAnnotatedTypeFactory<
                     .getReturnStatementStores());
         } else if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
             CFGStatement block = (CFGStatement) ast;
+            Store regularExitStore = analyses.getFirst().getRegularExitStore();
+            if (regularExitStore != null) {
+                regularExitStores.put(block.getCode(), regularExitStore);
+            }
+        } else if (ast.getKind() == UnderlyingAST.Kind.LAMBDA) {
+            // TODO: Postconditions?
+
+            CFGLambda block = (CFGLambda) ast;
             Store regularExitStore = analyses.getFirst().getRegularExitStore();
             if (regularExitStore != null) {
                 regularExitStores.put(block.getCode(), regularExitStore);
@@ -696,6 +727,9 @@ public abstract class GenericAnnotatedTypeFactory<
 
         // add classes declared in method
         queue.addAll(builder.getDeclaredClasses());
+        for (LambdaExpressionTree lambda : builder.getDeclaredLambdas()) {
+            lambdaQueue.add(Pair.of(lambda, getStoreBefore(lambda)));
+        }
     }
 
     /** @return The file name used for DOT output. */

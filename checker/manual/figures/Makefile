@@ -4,40 +4,26 @@
 
 DIA?=dia
 
-EPSFILES = fenum.eps igj.eps initialization.eps interning.eps javari.eps nullness.eps nullness-and-rawness.eps rawness.eps regex.eps signature-types.eps formatter-hierarchy.eps formatter-categories.eps value-hierarchy.eps value-subtype.eps value-subtyping.eps
-PDFFILES = fenum.pdf igj.pdf initialization.pdf interning.pdf javari.pdf nullness.pdf nullness-and-rawness.pdf rawness.pdf regex.pdf signature-types.pdf formatter-hierarchy.pdf formatter-categories.pdf value-hierarchy.pdf value-subtype.pdf value-subtyping.pdf
-PNGFILES = fenum.png igj.png initialization.png interning.png javari.png nullness.png nullness-and-rawness.png rawness.png regex.png signature-types.png formatter-hierarchy.png formatter-categories.png value-hierarchy.png value-subtype.png value-subtyping.png
+EPSFILES = fenum.eps igj.eps initialization.eps interning.eps javari.eps nullness.eps nullness-and-rawness.eps rawness.eps regex.eps signature-types.eps formatter-hierarchy.eps formatter-categories.eps
+PDFFILES = fenum.pdf igj.pdf initialization.pdf interning.pdf javari.pdf nullness.pdf nullness-and-rawness.pdf rawness.pdf regex.pdf signature-types.pdf formatter-hierarchy.pdf formatter-categories.pdf value-subtyping.pdf
 
-all: ${EPSFILES} ${PDFFILES} ${PNGFILES} png-copy
+all: ${EPSFILES} ${PDFFILES} png-clean svg-copy
 
-png-copy: ${PNGFILES}
-	cp -pf ${PNGFILES} ..
+png-clean:
+	rm -f *.png
 
-%.eps : %.dia
+svg-copy:
+	cp -pf *.svg ..
+
+%.eps : %.svg
 	$(DIA) -t eps $<
 
 %.pdf : %.eps
 	epstopdf $<
 
-%.png : %.dia
-	$(DIA) -t png $<
-
-# Direct dia translation overlays the "R" and "e" in "ReadOnly".
-igj.png: igj.pdf
-	convert -geometry 406x224 $< $@
-javari.png: javari.pdf
-	convert -geometry 406x224 $< $@
-# Direct dia translation overlays the "" and vowel in "Fully" and "Field".
-signature-types.png: signature-types.pdf
-	convert -geometry 406x224 $< $@
-value-hierarchy.png: value-hierarchy.pdf
-	convert $< $@
-value-subtype.png: value-subtype.pdf
-	convert $< $@
-value-subtyping.png: value-subtyping.pdf
-	convert $< $@
-
+value-subtyping.eps:	
+	
 clean:
-	@\rm *.eps
-	@\rm *.pdf
-	@\rm *.png
+	@\rm ${EPSFILES}
+	@\rm ${PDFFILES}
+	rm -f *.png

@@ -4,8 +4,10 @@ package org.checkerframework.dataflow.analysis;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import com.sun.source.tree.LambdaExpressionTree;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -405,6 +407,16 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 // TODO: document that LocalVariableNode has no block that it
                 // belongs to
             }
+        } else if (underlyingAST.getKind() == Kind.LAMBDA) {
+            LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
+            parameters = new ArrayList<>();
+            for (VariableTree p : lambda.getParameters()) {
+                LocalVariableNode var = new LocalVariableNode(p);
+                parameters.add(var);
+                // TODO: document that LocalVariableNode has no block that it
+                // belongs to
+            }
+
         } else {
             // nothing to do
         }

@@ -21,7 +21,7 @@ public class DefaultInferredTypesApplier {
     public void applyInferredType(final QualifierHierarchy qualifierHierarchy,
                                          final AnnotatedTypeMirror type, final AnnotatedTypeMirror inferred) {
         final InferredTypeApplyingVisitor applier = new InferredTypeApplyingVisitor(qualifierHierarchy);
-        for(final AnnotationMirror top : qualifierHierarchy.getTopAnnotations())  {
+        for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations())  {
             applier.visit(type, inferred, top);
         }
     }
@@ -29,7 +29,7 @@ public class DefaultInferredTypesApplier {
     /**
      * Traverses type pairs, copies the annotations from the first type to the second (inferred type)
      * Traversal is necessary to add annotations to the bounds of wildcards and type variables when the
-     * type to annotate is a wildcard
+     * type to annotate is a wildcard or type variable.
      */
     protected static class InferredTypeApplyingVisitor extends AbstractAtmComboVisitor<Void, AnnotationMirror> {
 
@@ -76,19 +76,37 @@ public class DefaultInferredTypesApplier {
             return null;
         }
 
+        //TODO: REMOVE
         //This is overriden so that we don't have to provide null checks on the wildcard bounds (which are sometimes null)
         @Override
         public Void visit(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotationMirror annotationMirror) {
-            if(type1 != null || type2!= null) {
+            if (type1 != null || type2!= null) {
                 super.visit(type1, type2, annotationMirror);
             }
             return null;
         }
 
+        /**
+         * For TypeVariables it is important that we both compare the primary annotation and bounds.
+         * Dataflow will default local variables that are also type variables as follows:
+         *
+         *   <T> void method(){  @TOP T t; }
+         *
+         * The type @TOP T is equivalent to a type  T[ extends @TOP Object super @TOP Void ]
+         * For the following method:
+         *
+         *   <@BOTTOM T extends @TOP Object> void method(T in_t) {
+         *      T t = in_t;
+         *   }
+         *
+         * The type of in_t is the declared type of T and it is below @TOP t, so t should be refined to the
+         * declared type of T[ extends @TOP Object super @BOTTOM Void].  To do this, we must apply the
+         * the annotations of both bounds to type.  This requires a traversal of type.
+         */
         @Override
         public Void visitTypevar_Typevar(AnnotatedTypeVariable type, AnnotatedTypeVariable inferred, AnnotationMirror top) {
             final AnnotationMirror inferredPrimary = inferred.getAnnotationInHierarchy(top);
-            if(inferredPrimary != null) {
+            if (inferredPrimary != null) {
                 type.replaceAnnotation(inferredPrimary);
             } else {
                 type.removeAnnotationInHierarchy(top);
@@ -101,7 +119,7 @@ public class DefaultInferredTypesApplier {
         @Override
         public Void visitTypevar_Wildcard(AnnotatedTypeVariable type, AnnotatedWildcardType inferred, AnnotationMirror top) {
             final AnnotationMirror inferredPrimary = inferred.getAnnotationInHierarchy(top);
-            if(inferredPrimary != null) {
+            if (inferredPrimary != null) {
                 type.replaceAnnotation(inferredPrimary);
             } else {
                 type.removeAnnotationInHierarchy(top);
@@ -111,11 +129,10 @@ public class DefaultInferredTypesApplier {
             return null;
         }
 
-        //TODO: WILDCARDS WON'T HAVE PRIMARIES EVENTUALLY
         @Override
         public Void visitWildcard_Typevar(AnnotatedWildcardType type, AnnotatedTypeVariable inferred, AnnotationMirror top) {
             final AnnotationMirror inferredPrimary = inferred.getAnnotationInHierarchy(top);
-            if(inferredPrimary != null) {
+            if (inferredPrimary != null) {
                 applyPrimary(type, inferredPrimary);
             } else {
                 type.removeAnnotationInHierarchy(top);
@@ -128,7 +145,7 @@ public class DefaultInferredTypesApplier {
         @Override
         public Void visitWildcard_Wildcard(AnnotatedWildcardType type, AnnotatedWildcardType inferred, AnnotationMirror top) {
             final AnnotationMirror inferredPrimary = inferred.getAnnotationInHierarchy(top);
-            if(inferredPrimary != null) {
+            if (inferredPrimary != null) {
                 applyPrimary(type, inferredPrimary);
             } else {
                 type.removeAnnotationInHierarchy(top);
@@ -139,7 +156,7 @@ public class DefaultInferredTypesApplier {
         }
 
         protected void applyPrimary(final AnnotatedTypeMirror bound, final AnnotationMirror anno) {
-            if(bound != null) {
+            if (bound != null) {
                 bound.replaceAnnotation(anno);
             }
         }
