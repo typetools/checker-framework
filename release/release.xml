@@ -155,6 +155,15 @@
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
+        <!-- checker-qual-compat -->
+        <update file="${checker.binary.poms}/checkerCompatQualPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/checkerCompatQualReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
         <!-- jsr308 compiler -->
         <update file="${checker.binary.poms}/compilerPom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
@@ -308,6 +317,9 @@
 
         <jar destfile="${dest.dir}/checker-qual-source.jar"  basedir="${maven.release.dir}" includes="README-checker-qual"/>
         <jar destfile="${dest.dir}/checker-qual-javadoc.jar" basedir="${maven.release.dir}" includes="README-checker-qual"/>
+
+        <jar destfile="${dest.dir}/checker-compat-qual-source.jar"  basedir="${maven.release.dir}" includes="README-checker-compat-qual"/>
+        <jar destfile="${dest.dir}/checker-compat-qual-javadoc.jar" basedir="${maven.release.dir}" includes="README-checker-compat-qual"/>
 
         <jar destfile="${dest.dir}/compiler-source.jar"  basedir="${maven.release.dir}" includes="README-compiler"/>
         <jar destfile="${dest.dir}/compiler-javadoc.jar" basedir="${maven.release.dir}" includes="README-compiler"/>

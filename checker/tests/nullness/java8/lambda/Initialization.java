@@ -3,7 +3,14 @@
 // fields, initializers, static initializers, constructors.
 
 import org.checkerframework.checker.nullness.qual.*;
-import tests.util.function.*;
+
+interface Function<T extends @Nullable Object, R> {
+    R apply(T t);
+}
+
+interface Consumer<T> {
+    void consume(T t);
+}
 
 // For test purposes, f1 is never initialized
 @SuppressWarnings("initialization.fields.uninitialized")
