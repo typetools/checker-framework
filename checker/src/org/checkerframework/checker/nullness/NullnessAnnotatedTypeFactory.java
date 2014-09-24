@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -569,10 +570,26 @@ public class NullnessAnnotatedTypeFactory
             // KeyFor handling
 
             if (AnnotationUtils.areSameIgnoringValues(lhs, KEYFOR) &&
-                    AnnotationUtils.areSameIgnoringValues(rhs, KEYFOR)) {
-                // If they are both KeyFor annotations, they have to be equal.
-                // TODO: or one a subset of the maps of the other? Ordering of maps?
-                return AnnotationUtils.areSame(lhs, rhs);            }
+                AnnotationUtils.areSameIgnoringValues(rhs, KEYFOR)) {
+                List<String> lhsValues = null;
+                List<String> rhsValues = null;
+
+                Map<? extends ExecutableElement, ? extends AnnotationValue> valMap = lhs.getElementValues();
+
+                if (valMap.isEmpty())
+                    lhsValues = new ArrayList<String>();
+                else
+                    lhsValues = AnnotationUtils.getElementValueArray(lhs, "value", String.class, true);
+
+                valMap = rhs.getElementValues();
+
+                if (valMap.isEmpty())
+                    rhsValues = new ArrayList<String>();
+                else
+                    rhsValues = AnnotationUtils.getElementValueArray(rhs, "value", String.class, true);
+
+                return rhsValues.containsAll(lhsValues);
+            }
             // Ignore annotation values to ensure that annotation is in supertype map.
             if (AnnotationUtils.areSameIgnoringValues(lhs, KEYFOR)) {
                 lhs = KEYFOR;
