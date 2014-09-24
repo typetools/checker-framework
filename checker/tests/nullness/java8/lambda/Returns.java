@@ -1,6 +1,4 @@
 
-import tests.util.function.*;
-
 import org.checkerframework.checker.nullness.qual.*;
 
 // The return of a lambda is a lambda
