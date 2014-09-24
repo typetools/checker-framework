@@ -1,3 +1,11 @@
+Version 1.8.6, 24 September 2014
+
+Method Reference and Lambda Expression Support:
+The Checker Framework now supports type-checking method references
+and lambda expressions to ensure they are congruent with the
+functional interface they are assigned to. The bodies of lambda expressions
+are also now type-checked similarly to regular method bodies.
+
 Version 1.8.5, 29 August 2014
 
 Eclipse Plugin:
