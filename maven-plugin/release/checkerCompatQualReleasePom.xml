@@ -4,14 +4,17 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
 
-    <name>Dataflow</name>
+    <name>Checker Qual</name>
     <url>http://checkerframework.org</url>
     <description>
-        Dataflow is a dataflow framework based on the javac compiler.
+        Checker Qual is the set of annotations (qualifiers) and supporting classes
+        used by the Checker Framework to type check Java source code.  Please
+        see artifact:
+        org.checkerframework:checker
     </description>
 
     <groupId>org.checkerframework</groupId>
-    <artifactId>dataflow</artifactId>
+    <artifactId>checker-compat-qual</artifactId>
 
     <licenses>
         <license>
@@ -29,7 +32,7 @@
 
     <!-- The comments in the version number are used to do a text substitution. Don't remove them.
          See checker-framework/bin/poms/updateVersion.sh -->
-    <version><!-- checker-framework-version -->1.8.5.1<!-- /checker-framework-version --></version>
+    <version><!-- checker-framework-version -->1.8.5<!-- /checker-framework-version --></version>
 
     <scm>
         <url>https://code.google.com/p/checker-framework/</url>
