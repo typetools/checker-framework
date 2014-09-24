@@ -7,7 +7,7 @@ interface ConsumerSupplier {
     Consumer get();
 }
 interface Consumer {
-    void method(/*@Nullable*/ String s);
+    void method(@Nullable String s);
 }
 
 interface SupplierSupplier {
