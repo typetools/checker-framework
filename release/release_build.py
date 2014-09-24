@@ -5,7 +5,7 @@ release_build.py
 
 Created by Jonathan Burke on 2013-08-01.
 
-Copyright (c) 2013 University of Washington. All rights reserved.
+Copyright (c) 2014 University of Washington. All rights reserved.
 """
 
 #See README-maintainers.html for more information
@@ -169,7 +169,7 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
     execute("sh checkPluginUtil.sh", True, False, CHECKER_FRAMEWORK_RELEASE)
 
     #build the checker framework binaries and documents, run checker framework tests
-    execute("ant -Dhalt.on.test.failure=true dist-release", True, False, checker_dir)
+    execute("ant -Dhalt.on.test.failure=true dist-release", True, False, CHECKER_FRAMEWORK)
 
     #make the Checker Framework Manual
     checker_manual_dir = os.path.join(checker_dir, "manual")

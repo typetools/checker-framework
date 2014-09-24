@@ -5,7 +5,7 @@ release_vars.py
 
 Created by Jonathan Burke on 2013-02-05.
 
-Copyright (c) 2012 University of Washington. All rights reserved.
+Copyright (c) 2014 University of Washington. All rights reserved.
 """
 
 # See release_development.html for an explanation of how the release process works
@@ -92,11 +92,22 @@ CHECKER_SOURCE   = os.path.join(CHECKER_BIN_DIR, 'checker-source.jar' )
 CHECKER_JAVADOC  = os.path.join(CHECKER_BIN_DIR, 'checker-javadoc.jar' )
 
 CHECKER_QUAL        = os.path.join(CHECKER_BIN_DIR, 'checker-qual.jar' )
+CHECKER_COMPAT_QUAL = os.path.join(CHECKER_BIN_DIR, 'checker-compat-qual.jar' )
 CHECKER_MANUAL = os.path.join( CHECKER_FRAMEWORK, "checker", "manual" )
 
 JAVAC_BINARY     = os.path.join(CHECKER_BIN_DIR, 'javac.jar')
 JDK7_BINARY      = os.path.join(CHECKER_BIN_DIR, 'jdk7.jar' )
 JDK8_BINARY      = os.path.join(CHECKER_BIN_DIR, 'jdk8.jar' )
+
+JAVACUTIL_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "javacutil", "dist" )
+JAVACUTIL_BINARY      = os.path.join(JAVACUTIL_DIST_DIR, "javacutil.jar")
+JAVACUTIL_SOURCE_JAR  = os.path.join(JAVACUTIL_DIST_DIR, "javacutil-source.jar")
+JAVACUTIL_JAVADOC_JAR = os.path.join(JAVACUTIL_DIST_DIR, "javacutil-javadoc.jar")
+
+DATAFLOW_DIST_DIR = os.path.join(CHECKER_FRAMEWORK, "dataflow", "dist" )
+DATAFLOW_BINARY      = os.path.join(DATAFLOW_DIST_DIR, "dataflow.jar")
+DATAFLOW_SOURCE_JAR  = os.path.join(DATAFLOW_DIST_DIR, "dataflow-source.jar")
+DATAFLOW_JAVADOC_JAR = os.path.join(DATAFLOW_DIST_DIR, "dataflow-javadoc.jar")
 
 FRAMEWORK_BINARY = os.path.join(CHECKER_FRAMEWORK, 'framework', 'dist', 'framework.jar' )
 
@@ -125,17 +136,23 @@ MAVEN_LIVE_REPO = 'file:///cse/www2/types/m2-repo'
 MAVEN_POMS_DIR = os.path.join(MAVEN_PLUGIN_DIR, 'poms')
 CHECKER_BINARY_POM  = os.path.join( MAVEN_POMS_DIR, 'checkerPom.xml'     )
 CHECKER_QUAL_POM    = os.path.join( MAVEN_POMS_DIR, 'checkerQualPom.xml' )
+CHECKER_COMPAT_QUAL_POM  = os.path.join( MAVEN_POMS_DIR, 'checkerCompatQualPom.xml' )
+
 JAVAC_BINARY_POM    = os.path.join( MAVEN_POMS_DIR, 'compilerPom.xml'    )
 JDK7_BINARY_POM     = os.path.join( MAVEN_POMS_DIR, 'jdk7Pom.xml'        )
 JDK8_BINARY_POM     = os.path.join( MAVEN_POMS_DIR, 'jdk8Pom.xml'        )
 
 MAVEN_RELEASE_DIR = os.path.join(MAVEN_PLUGIN_DIR, 'release')
-CHECKER_BINARY_RELEASE_POM  = os.path.join( MAVEN_RELEASE_DIR, 'checkerReleasePom.xml'     )
-CHECKER_QUAL_RELEASE_POM    = os.path.join( MAVEN_RELEASE_DIR, 'checkerQualReleasePom.xml' )
+CHECKER_BINARY_RELEASE_POM       = os.path.join( MAVEN_RELEASE_DIR, 'checkerReleasePom.xml'     )
+CHECKER_QUAL_RELEASE_POM         = os.path.join( MAVEN_RELEASE_DIR, 'checkerQualReleasePom.xml' )
+CHECKER_COMPAT_QUAL_RELEASE_POM  = os.path.join( MAVEN_RELEASE_DIR, 'checkerCompatQualReleasePom.xml' )
+
 JAVAC_BINARY_RELEASE_POM    = os.path.join( MAVEN_RELEASE_DIR, 'compilerReleasePom.xml'    )
 JDK7_BINARY_RELEASE_POM     = os.path.join( MAVEN_RELEASE_DIR, 'jdk7ReleasePom.xml'        )
 JDK8_BINARY_RELEASE_POM     = os.path.join( MAVEN_RELEASE_DIR, 'jdk8ReleasePom.xml'        )
 MAVEN_PLUGIN_RELEASE_POM    = os.path.join( MAVEN_RELEASE_DIR, 'mavenPluginReleasePom.xml' )
+JAVACUTIL_BINARY_RELEASE_POM  = os.path.join( MAVEN_RELEASE_DIR, 'javacutilReleasePom.xml' )
+DATAFLOW_BINARY_RELEASE_POM  = os.path.join( MAVEN_RELEASE_DIR,  'dataflowReleasePom.xml'  )
 
 BUILD_REPOS = ( CHECKER_FRAMEWORK,   JSR308_LANGTOOLS,   ANNO_TOOLS )
 INTERM_REPOS  = ( INTERM_CHECKER_REPO, INTERM_JSR308_REPO, INTERM_ANNO_REPO )
