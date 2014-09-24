@@ -1,0 +1,10 @@
+This directory contains tests for the Nullness Checker, with the
+-AskipDefs=SkipMe flag.
+
+To add a new file to the test suite, just add it to this directory.
+For more details, see
+  ../README
+
+To run the tests, do either of these:
+  ant -e -find build.xml nullness-skipdefs-tests
+  ant -e -find build.xml nullness-tests

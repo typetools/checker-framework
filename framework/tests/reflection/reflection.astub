@@ -1,0 +1,14 @@
+import tests.reflection.qual.Top;
+import tests.reflection.qual.ReflectBottom;
+
+package java.lang.reflect;
+
+class Method {
+
+   @Top Object invoke(@ReflectBottom Object obj, @ReflectBottom Object @ReflectBottom [] args) @Top;
+
+}
+
+class Constructor {
+  @Top Object newInstance(@ReflectBottom Object obj, @ReflectBottom Object @ReflectBottom [] args) @Top;
+}
