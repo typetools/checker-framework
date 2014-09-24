@@ -1,7 +1,6 @@
 
 // Test dataflow refinement in the body of a lambda.
 
-import tests.util.function.*;
 import org.checkerframework.checker.nullness.qual.*;
 
 class Dataflow {
@@ -14,4 +13,8 @@ class Dataflow {
             return "";
         };
     }
+}
+
+interface Function<T extends @Nullable Object, R> {
+    R apply(T t);
 }

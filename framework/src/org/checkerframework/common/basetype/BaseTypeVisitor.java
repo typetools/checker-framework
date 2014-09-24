@@ -1898,10 +1898,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // ========= Overriding Executable =========
         // The ::method element
         ExecutableElement overridingElement = (ExecutableElement)InternalUtils.symbol(overriderTree);
-        if (overridingElement == null) {
-            // TODO: this only seems to happen when the standard jdk8 javac is used. Why? What should be done?
-            return true;
-        }
 
         // TODO: Method type argument inference
         AnnotatedExecutableType overrider = atypeFactory.methodFromUse(

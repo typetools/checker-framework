@@ -2,7 +2,9 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-import tests.util.function.*;
+interface Function<T extends @Nullable Object, R> {
+    R apply(T t);
+}
 
 class FromByteCode {
 

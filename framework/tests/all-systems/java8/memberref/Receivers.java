@@ -1,6 +1,4 @@
 
-import tests.util.function.*;
-
 /**
  * Bound and unbound constraints.
  */
@@ -10,6 +8,10 @@ interface Unbound {
 interface Bound {
     void consume(/*4*/ Bound this, String s);
 }
+interface Supplier<R> {
+    R supply();
+}
+
 class MyClass {
 
     void take(/*6*/ MyClass this, String s) { }
