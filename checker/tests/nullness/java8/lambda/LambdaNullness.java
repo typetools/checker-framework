@@ -1,12 +1,23 @@
 
 // Test file for nullness parameter and return checks.
 
-import tests.util.function.*;
 import java.lang.Thread;
 import org.checkerframework.checker.nullness.qual.*;
 
 interface Noop {
     void noop();
+}
+
+interface Function<T extends @Nullable Object, R> {
+    R apply(T t);
+}
+
+interface Supplier<R extends @Nullable Object> {
+    R supply();
+}
+
+interface BiFunction<T, U, R> {
+    R apply(T t, U u);
 }
 
 class LambdaNullness {

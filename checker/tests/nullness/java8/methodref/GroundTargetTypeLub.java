@@ -1,6 +1,5 @@
 
 import org.checkerframework.checker.nullness.qual.*;
-import tests.util.function.*;
 
 interface Supplier <T extends @NonNull Object> {
     T supply();

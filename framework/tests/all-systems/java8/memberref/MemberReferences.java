@@ -1,5 +1,17 @@
 
-import tests.util.function.*;
+interface Supplier<R> {
+    R supply();
+}
+interface Function<T, R> {
+    R apply(T t);
+}
+interface Consumer<T> {
+    void consume(T t);
+}
+interface BiFunction<T, U, R> {
+    R apply(T t, U u);
+}
+
 
 /** super # instMethod */
 //SUPER(ReferenceMode.INVOKE, false),
