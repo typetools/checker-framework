@@ -101,12 +101,20 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         this(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents, false);
     }
 
+    public DefaultRawnessComparer createRawnessComparer() {
+        return new DefaultRawnessComparer(this);
+    }
+
+    public StructuralEqualityComparer createEqualityComparer() {
+        return new StructuralEqualityComparer(rawnessComparer);
+    }
+
     public DefaultTypeHierarchy(final BaseTypeChecker checker, final QualifierHierarchy qualifierHierarchy,
                                 boolean ignoreRawTypes, boolean invariantArrayComponents, boolean covariantTypeArgs) {
         this.checker = checker;
         this.qualifierHierarchy = qualifierHierarchy;
-        this.rawnessComparer = new DefaultRawnessComparer(this);
-        this.equalityComparer = new StructuralEqualityComparer(rawnessComparer);
+        this.rawnessComparer = createRawnessComparer();
+        this.equalityComparer = createEqualityComparer();
 
         this.ignoreRawTypes = ignoreRawTypes;
         this.invariantArrayComponents = invariantArrayComponents;
