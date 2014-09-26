@@ -708,17 +708,20 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     @Override
     public TransferResult<V, S> visitStringConcatenateAssignment(
             StringConcatenateAssignmentNode n, TransferInput<V, S> in) {
-        TransferResult<V, S> result = super.visitStringConcatenateAssignment(n, in);
+        // This gets the type of LHS + RHS
+        TransferResult<V, S> result = super.visitStringConcatenateAssignment(n,
+                in);
         Node lhs = n.getLeftOperand();
         Node rhs = n.getRightOperand();
 
         // update the results store if the assignment target is something we can
         // process
         S info = result.getRegularStore();
-        V rhsValue = result.getResultValue();
-        processCommonAssignment(in, lhs, rhs, info, rhsValue);
+        // ResultValue is the type of LHS + RHS
+        V resultValue = result.getResultValue();
+        processCommonAssignment(in, lhs, rhs, info, resultValue);
 
-        return result;
+        return new RegularTransferResult<>(finishValue(resultValue, info), info);
     }
 
     /**

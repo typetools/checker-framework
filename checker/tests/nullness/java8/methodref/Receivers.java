@@ -1,6 +1,5 @@
 
 import org.checkerframework.checker.nullness.qual.*;
-import tests.util.function.*;
 
 // Nullable receivers don't make a lot of sense
 // But this class tests the sub supertype recevier relationships.
@@ -11,6 +10,9 @@ interface Unbound1 {
 }
 interface Unbound2 {
     void apply(@Nullable MyClass my);
+}
+interface Supplier<R extends @Nullable Object> {
+    R supply();
 }
 
 interface Bound {

@@ -5,7 +5,7 @@ release_push.py
 
 Created by Jonathan Burke on 2013-12-30.
 
-Copyright (c) 2013 University of Washington. All rights reserved.
+Copyright (c) 2014 University of Washington. All rights reserved.
 """
 
 from release_vars  import *
@@ -89,6 +89,12 @@ def stage_maven_artifacts_in_maven_central( new_checker_version ):
                              os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-javadoc.jar" ),
                              pgp_user, pgp_passphrase  )
 
+    mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_COMPAT_QUAL_RELEASE_POM,
+                             CHECKER_COMPAT_QUAL,
+                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-compat-qual-source.jar"  ),
+                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-compat-qual-javadoc.jar" ),
+                             pgp_user, pgp_passphrase  )
+
     mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JAVAC_BINARY_RELEASE_POM, JAVAC_BINARY,
                              os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-source.jar"  ),
                              os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-javadoc.jar" ),
@@ -102,6 +108,14 @@ def stage_maven_artifacts_in_maven_central( new_checker_version ):
     mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JDK8_BINARY_RELEASE_POM, JDK8_BINARY,
                              os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-source.jar"  ),
                              os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-javadoc.jar" ),
+                             pgp_user, pgp_passphrase  )
+
+    mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JAVACUTIL_BINARY_RELEASE_POM, JAVACUTIL_BINARY,
+                             JAVACUTIL_SOURCE_JAR, JAVACUTIL_JAVADOC_JAR,
+                             pgp_user, pgp_passphrase  )
+
+    mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, DATAFLOW_BINARY_RELEASE_POM, DATAFLOW_BINARY,
+                             DATAFLOW_SOURCE_JAR, DATAFLOW_JAVADOC_JAR,
                              pgp_user, pgp_passphrase  )
 
     plugin_jar = find_mvn_plugin_jar( MAVEN_PLUGIN_DIR, new_checker_version )

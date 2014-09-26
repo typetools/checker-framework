@@ -95,6 +95,14 @@
         <jar destfile="${javacutil.lib}" basedir="${build}"/>
     </target>
 
+    <target name="sources-jar">
+        <jar destfile="${javacutil.sources.lib}" basedir="${src}"/>
+    </target>
+
+    <target name="javadoc-jar" depends="javadoc">
+        <jar destfile="${javacutil.javadoc.lib}" basedir="${dist.doc}" includes="**"/>
+    </target>
+
     <!--
     This target seems to only work if tools.jar is already in the
     classpath (despite the attempt in the body to add tools.jar to the
