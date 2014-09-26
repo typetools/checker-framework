@@ -246,7 +246,7 @@ public class QualifierDefaults {
 
         if (elt != null) {
             boolean useFlow = (atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>)
-                           && ((((GenericAnnotatedTypeFactory) atypeFactory).getUseFlow()));
+                           && (((GenericAnnotatedTypeFactory) atypeFactory).getUseFlow());
 
             applyToTypeVar = useFlow
                           && elt.getKind() == ElementKind.LOCAL_VARIABLE
