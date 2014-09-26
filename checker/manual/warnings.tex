@@ -458,7 +458,7 @@ discuss this situation, which you can handle by writing annotations in
 comments.
 
 In other cases, your code needs to be run by people who are not using a Java~8
-JVM\@.  Sections~\ref{java5-class-files} and~\ref{nullness-java7} discuss this situation.
+JVM\@.  Sections~\ref{java5-class-files} and~\ref{java7-classfiles} discuss this situation.
 
 (\textbf{Note:} These are features of the javac compiler that is
 distributed along with the Checker Framework.  They are \emph{not}
@@ -737,7 +737,7 @@ declares these declaration annotations:
 \refqualclass{checker/nullness/compatqual}{NullableType},
 \refqualclass{checker/nullness/compatqual}{NonNullType},
 \refqualclass{checker/nullness/compatqual}{PolyNullType},
-\refqualclass{checker/nullness/compatqual}{MonotonicNullType}, and
+\refqualclass{checker/nullness/compatqual}{MonotonicNonNullType}, and
 \refqualclass{checker/nullness/compatqual}{KeyForType}.
 
 \item
@@ -746,7 +746,7 @@ declares these declaration annotations:
 \refqualclass{checker/nullness/compatqual}{NullableDecl},
 \refqualclass{checker/nullness/compatqual}{NonNullDecl},
 \refqualclass{checker/nullness/compatqual}{PolyNullDecl},
-\refqualclass{checker/nullness/compatqual}{MonotonicNullDecl}, and
+\refqualclass{checker/nullness/compatqual}{MonotonicNonNullDecl}, and
 \refqualclass{checker/nullness/compatqual}{KeyForDecl}.
 
 At locations where only type annotations are possible, use the regular

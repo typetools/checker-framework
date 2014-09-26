@@ -35,6 +35,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotatedType;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
+import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
@@ -107,6 +108,11 @@ public class InternalUtils {
 
             case NEW_CLASS:
                 return ((JCNewClass)tree).constructor;
+
+            case MEMBER_REFERENCE:
+                // TreeInfo.symbol, which is used in the default case, didn't handle
+                // member references until JDK8u20. So handle it here.
+                return ((JCMemberReference) tree).sym;
 
             default:
                 return TreeInfo.symbol((JCTree) tree);

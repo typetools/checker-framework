@@ -80,7 +80,7 @@ public class CheckerInfo
 
                 new CheckerInfo("IGJ Immutability Checker",    IGJChecker.class),
                 new CheckerInfo("Javari Immutability Checker", JavariChecker.class),
-                new CheckerInfo("Subtyping Checker",           SubtypingChecker.class),
+                new CheckerInfo("Subtyping Checker",           SubtypingChecker.class, null),
 
                 new CheckerInfo("Constant Value Checker", ValueChecker.class)
             );
@@ -129,6 +129,15 @@ public class CheckerInfo
      */
     public CheckerInfo(final String label, final Class<? extends SourceChecker> checker) {
         this(label, checker.getCanonicalName(), checkerToQuals(checker));
+    }
+    /**
+     * Sets the name and processor accordingly.
+     *
+     * @param label
+     * @param checker
+     */
+    public CheckerInfo(final String label, final Class<? extends SourceChecker> checker, final String qualsPath) {
+        this(label, checker.getCanonicalName(), qualsPath);
     }
 
     public CheckerInfo(final String label, final String processor, final String qualsPath) {

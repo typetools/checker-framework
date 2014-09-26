@@ -1,8 +1,20 @@
 
 // Test file for lambda syntax
 
-import tests.util.function.*;
 import java.lang.Thread;
+
+interface Supplier<R> {
+    R supply();
+}
+interface Function<T, R> {
+    R apply(T t);
+}
+interface Consumer<T> {
+    void consume(T t);
+}
+interface BiFunction<T, U, R> {
+    R apply(T t, U u);
+}
 
 interface Noop {
     void noop();
@@ -13,7 +25,7 @@ class Lambda {
 
     Noop f1 = () -> {};                // No parameters; result is void
     Supplier<Integer> f2 = () -> 42;                // No parameters, expression body
-    Supplier<Void> f3 = () -> null;              // No parameters, expression body
+//    Supplier<Void> f3 = () -> null;              // No parameters, expression body
     Supplier<Integer> f4 = () -> { return 42; };    // No parameters, block body with return
     Noop f5 = () -> { System.gc(); };  // No parameters, void block body
 
