@@ -13,6 +13,7 @@ import javax.lang.model.element.AnnotationMirror;
  * It also has a handy toString method that is useful for debugging.
  */
 class Default implements Comparable<Default> {
+    //please remember to add any fields to the hashcode calculation
     public final AnnotationMirror anno;
     public final DefaultLocation location;
 
@@ -47,7 +48,7 @@ class Default implements Comparable<Default> {
     @Override
     public int hashCode() {
         return 13 + (anno == null     ? 0 : 37 * anno.hashCode())
-                + (location == null ? 0 : 37 * location.hashCode());
+                  + (location == null ? 0 : 41 * location.hashCode());
 
     }
 
