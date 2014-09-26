@@ -2,8 +2,6 @@ package org.checkerframework.qualframework.poly;
 
 import java.util.*;
 
-import javax.lang.model.element.Element;
-
 import org.checkerframework.qualframework.base.TypeAnnotator;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.util.ExtendedDeclaredType;
@@ -20,7 +18,7 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedType
 
 /** {@link TypeAnnotator} implementation for qualifier parameter checkers. */
 public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams<Q>> {
-    private QualifierHierarchy<Wildcard<Q>> containmentHierarchy;
+    private final QualifierHierarchy<Wildcard<Q>> containmentHierarchy;
 
     public QualifierParameterTypeAnnotator(
             QualifierParameterAnnotationConverter<Q> annotationConverter,
@@ -33,6 +31,7 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
         return containmentHierarchy;
     }
 
+    @Override
     public QualifierParameterAnnotationConverter<Q> getAnnotationConverter() {
         return (QualifierParameterAnnotationConverter<Q>)super.getAnnotationConverter();
     }
