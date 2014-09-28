@@ -65,6 +65,7 @@ checker/manual/figures/*.pdf
 checker/manual/figures/*.png
 checker/manual/figures/signature-types-with-canonicalname.dia
 checker/manual/*.png
+checker/manual/*.svg
 
 # dataflow manual
 dataflow/manual/dataflow.aux
