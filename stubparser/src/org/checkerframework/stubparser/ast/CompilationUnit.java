@@ -38,8 +38,7 @@ import org.checkerframework.stubparser.ast.visitor.VoidVisitor;
  * compilation unit.
  * </p>
  * The CompilationUnit is constructed following the syntax:<br>
- * <code>
- * <table>
+ * <table summary="CompilationUnit syntax">
  * <tr valign=baseline>
  *   <td align=right>CompilationUnit</td>
  *   <td align=center>::=</td>
@@ -50,7 +49,6 @@ import org.checkerframework.stubparser.ast.visitor.VoidVisitor;
  *   </td>
  * </tr>
  * </table>
- * </code>
  *
  * @author Julio Vilmar Gesser
  */
