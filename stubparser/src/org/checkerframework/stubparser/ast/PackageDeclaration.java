@@ -34,8 +34,7 @@ import org.checkerframework.stubparser.ast.visitor.VoidVisitor;
  * optional for the {@link CompilationUnit}.
  * </p>
  * The PackageDeclaration is constructed following the syntax:<br>
- * <code>
- * <table>
+ * <table summary="PackageDeclaration syntax">
  * <tr valign=baseline>
  *   <td align=right>PackageDeclaration</td>
  *   <td align=center>::=</td>
@@ -44,7 +43,6 @@ import org.checkerframework.stubparser.ast.visitor.VoidVisitor;
  *   </td>
  * </tr>
  * </table> 
- * </code>
  * 
  * @author Julio Vilmar Gesser
  */

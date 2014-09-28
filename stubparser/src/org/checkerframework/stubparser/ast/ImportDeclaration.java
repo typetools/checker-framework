@@ -31,8 +31,7 @@ import org.checkerframework.stubparser.ast.visitor.VoidVisitor;
  * {@link CompilationUnit}.
  * </p>
  * The ImportDeclaration is constructed following the syntax:<br>
- * <code>
- * <table>
+ * <table summary="ImportDeclaration syntax">
  * <tr valign=baseline>
  *   <td align=right>ImportDeclaration</td>
  *   <td align=center>::=</td>
@@ -41,7 +40,6 @@ import org.checkerframework.stubparser.ast.visitor.VoidVisitor;
  *   </td>
  * </tr>
  * </table> 
- * </code>
  * 
  * @author Julio Vilmar Gesser
  */
