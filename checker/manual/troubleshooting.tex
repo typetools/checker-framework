@@ -441,6 +441,25 @@ Running the regular Java compiler with the \<-Xlint:unchecked> command-line
 option will help you to find and fix problems such as raw types.
 
 
+\item
+The error
+
+\begin{Verbatim}
+error: annotation type not applicable to this kind of declaration
+    ... List<@NonNull String> ...
+\end{Verbatim}
+
+\noindent
+indicates that you are using a definition of \<@NonNull> that is a
+declaration annotation, which cannot be used in that syntactic location.
+For example, many legacy annotations such as those listed in
+Figure~\ref{fig-nullness-refactoring} are declaration annotations.  You can
+fix the problem by instead using a definition of \<@NonNull> that is a type
+annotation, such as the Checker Framework's annotations; often this only
+requires changing an \<import> statement.
+Alternately, if you wish to continue using the legacy annotations in
+declaration locations, see Section~\ref{java7-classfiles}.
+
 \end{itemize}
 
 
@@ -965,5 +984,7 @@ For details, see file \<LICENSE.txt>.
 % LocalWords:  MyFile buildfiles ClassName JRE java jsr308 bootclasspath
 %  LocalWords:  extJavac ZipFile AprintErrorStack AprintAllQualifiers Jlint
 %  LocalWords:  Telmo Correa Papi NoSuchFieldError ZipException Xlint A1
-%  LocalWords:  FileNotFoundException MyQualifier ImplicitFor A2 A3
+%  LocalWords:  FileNotFoundException MyQualifier ImplicitFor A2 A3 JDKs
 %  LocalWords:  StaticNestedClass StaticNested ConfusingAnnotation
+%%  LocalWords:  CHECKERFRAMEWORK currentOutgoing isCompleted
+%%  LocalWords:  EnsuresNonNull
