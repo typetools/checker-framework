@@ -54,13 +54,13 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-1.8.5/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-1.8.6/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.  Now, whenever
     you run \code{javac}, you will use the updated compiler.  If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.5
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.6
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -76,7 +76,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.5
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.6
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -95,11 +95,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.5
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.6
   alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.5\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.6\
   doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
 \end{Verbatim}
 
@@ -118,7 +118,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-1.8.5
+  javac 1.8.0-jsr308-1.8.6
 \end{Verbatim}
 
 
@@ -257,7 +257,7 @@ This section explains each part of the Ant task.
 The \code{fork} field of the \code{javac} task
 ensures that an external javac program is called.  Otherwise, Ant will run
 javac via a Java method call, and there is no guarantee that it will get
-the JSR 308 version that is distributed with the Checker Framework.
+the Checker Framework compiler that is distributed with the Checker Framework.
 
 The \code{-version} compiler argument is just for debugging; you may omit
 it.
@@ -433,10 +433,9 @@ See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-suppor
 
 \section{Eclipse\label{eclipse}}
 
-Eclipse supports type
-annotations.  It
-does not enable running the Checker Framework, nor is it necessary for
-running the Checker Framework.
+Eclipse supports type annotations.
+Eclipse does not directly support running the Checker Framework, 
+nor is Eclipse necessary for running the Checker Framework.
 
 There are two ways to run a checker from within the Eclipse IDE:  via Ant
 or using an Eclipse plug-in.  These two methods are described below.
@@ -445,8 +444,8 @@ No matter what method you choose, we suggest that
 all Checker Framework annotations be written in the comments
 if you are using a version of Eclipse that
 does not support Java 8.  This will avoid many
-text highlighting errors with versions of Eclipse that don't support Java 8 and the
-new JSR 308 syntax changes.
+text highlighting errors with versions of Eclipse that don't support Java 8
+and type annotations.
 
 Even in a version of Eclipse that supports Java 8's type annotations, you
 still need to run the Checker Framework via Ant or via the plug-in, rather
