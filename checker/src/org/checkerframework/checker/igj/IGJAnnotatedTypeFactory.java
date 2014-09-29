@@ -68,9 +68,9 @@ import com.sun.source.tree.TypeCastTree;
  * <p>
  *
  * Default Annotations:
- * <p>
+ * <p> <br />
  *
- * This factory will add the {@link ImmutableBADLINK} annotation to a type if the
+ * This factory will add the {@link Immutable} annotation to a type if the
  * input is
  * <ol>
  * <li value="1">(*)a primitive type,
