@@ -68,7 +68,7 @@ import com.sun.source.tree.TypeCastTree;
  * <p>
  *
  * Default Annotations:
- * <p> <br />
+ * <p>
  *
  * This factory will add the {@link Immutable} annotation to a type if the
  * input is
