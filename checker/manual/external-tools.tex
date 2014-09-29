@@ -433,10 +433,9 @@ See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-suppor
 
 \section{Eclipse\label{eclipse}}
 
-Eclipse supports type
-annotations.  It
-does not enable running the Checker Framework, nor is it necessary for
-running the Checker Framework.
+Eclipse supports type annotations.
+Eclipse does not directly support running the Checker Framework, 
+nor is Eclipse necessary for running the Checker Framework.
 
 There are two ways to run a checker from within the Eclipse IDE:  via Ant
 or using an Eclipse plug-in.  These two methods are described below.
@@ -445,8 +444,8 @@ No matter what method you choose, we suggest that
 all Checker Framework annotations be written in the comments
 if you are using a version of Eclipse that
 does not support Java 8.  This will avoid many
-text highlighting errors with versions of Eclipse that don't support Java 8 and the
-new JSR 308 syntax changes.
+text highlighting errors with versions of Eclipse that don't support Java 8
+and type annotations.
 
 Even in a version of Eclipse that supports Java 8's type annotations, you
 still need to run the Checker Framework via Ant or via the plug-in, rather
