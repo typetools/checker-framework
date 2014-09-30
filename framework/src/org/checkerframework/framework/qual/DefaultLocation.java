@@ -73,7 +73,7 @@ public enum DefaultLocation {
     EXPLICIT_LOWER_BOUNDS,
 
     /**
-     * Apply default annotations to unannotated, but explicit lower bounds:
+     * Apply default annotations to unannotated, but implicit lower bounds:
      * <code>&lt;T&gt;</code>
      * <code>&lt;?&gt;</code>
      */
