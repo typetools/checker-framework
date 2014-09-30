@@ -32,17 +32,15 @@ import org.checkerframework.stubparser.ast.visitor.VoidVisitor;
  * This class represents the declaration of a genetics argument.
  * </p>
  * The TypeParameter is constructed following the syntax:<br>
- * <code>
- * <table>
+ * <table summary="TypeParameter syntax">
  * <tr valign=baseline>
  *   <td align=right>TypeParameter</td>
  *   <td align=center>::=</td>
  *   <td align=left>
- *       &lt;IDENTIFIER&gt; ( "extends" {@link ClassOrInterfaceType} ( "&" {@link ClassOrInterfaceType} )* )?
+ *       &lt;IDENTIFIER&gt; ( "extends" {@link ClassOrInterfaceType} ( "&amp;" {@link ClassOrInterfaceType} )* )?
  *   </td>
  * </tr>
  * </table> 
- * </code>
  * 
  * @author Julio Vilmar Gesser
  */
