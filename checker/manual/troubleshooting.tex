@@ -485,6 +485,22 @@ If you ignore the error and run your code in a Java 7 JVM, then you will get a r
 \end{Verbatim}
 
 
+\item
+If Eclipse gives the warning
+
+\begin{Verbatim}
+The annotation @NonNull is disallowed for this location
+\end{Verbatim}
+
+\noindent
+then you have the wrong version of the \<org.eclipse.jdt.annotation>
+classes.  Eclipse includes two incompatible versions of these annotations.
+You want the one with a name like
+\<org.eclipse.jdt.annotation\_2.0.0.....jar>, which you can find in the
+\<plugins> subdirectory under the Eclipse installation directory.
+Add this .jar file to your build path.
+
+
 \end{itemize}
 
 
