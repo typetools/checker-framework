@@ -13,8 +13,9 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
  *
  * Here is an example use:
  *
- * <pre><code>           @AssertNonNullIfNonNull("id")
- *     public @Pure @Nullable Long getId(){
+ * <pre><code>     @AssertNonNullIfNonNull("id")
+ *     @Pure
+ *     public @Nullable Long getId(){
  *         return id;
  *     }
  * </code></pre>
@@ -22,7 +23,8 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
  * Note the direction of the implication.  This annotation says that if the
  * result is non-null, then the variable <tt>id</tt> is also non-null.  The
  * annotation does not say that if <tt>id</tt> is non-null, then the result
- * is non-null.
+ * is non-null.  (There is not currently a way to say the latter,
+ * though it would also be useful.)
  * <p>
  *
  * You should <em>not</em> write a formal parameter name or <tt>this</tt>

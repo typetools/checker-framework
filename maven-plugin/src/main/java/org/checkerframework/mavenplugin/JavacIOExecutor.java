@@ -25,7 +25,7 @@ public class JavacIOExecutor implements CommandLineExceutor {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public void executeCommandLine(final Commandline cl, final Log log, final boolean failOnError)
             throws MojoExecutionException, MojoFailureException {
