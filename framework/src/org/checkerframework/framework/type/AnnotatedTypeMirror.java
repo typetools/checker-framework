@@ -2031,8 +2031,8 @@ public abstract class AnnotatedTypeMirror {
                 try {
                     isPrintingBound = true;
                     sb.append("[");
-                    printBound("super",   getLowerBoundField(), printInvisible, sb);
                     printBound("extends", getUpperBoundField(), printInvisible, sb);
+                    printBound("super",   getLowerBoundField(), printInvisible, sb);
                     sb.append("]");
                 } finally {
                     isPrintingBound = false;
@@ -2165,9 +2165,9 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString(boolean printInvisible) {
             if (printInvisible) {
-                return formatAnnotationString(getAnnotations(), printInvisible) + "null";
+            return formatAnnotationString(getAnnotations(), printInvisible) + "null";
             } else {
-                return "null";
+                    return "null";
             }
         }
     }
@@ -2393,8 +2393,8 @@ public abstract class AnnotatedTypeMirror {
                 try {
                     isPrintingBound = true;
                     sb.append("[");
-                    printBound("super",   getSuperBoundField(),   printInvisible, sb);
                     printBound("extends", getExtendsBoundField(), printInvisible, sb);
+                    printBound("super",   getSuperBoundField(),   printInvisible, sb);
                     sb.append("]");
                 } finally {
                     isPrintingBound = false;
