@@ -460,6 +460,31 @@ requires changing an \<import> statement.
 Alternately, if you wish to continue using the legacy annotations in
 declaration locations, see Section~\ref{java7-classfiles}.
 
+
+\item
+This compile-time error
+
+\begin{Verbatim}
+  unknown enum constant java.lang.annotation.ElementType.TYPE_USE
+\end{Verbatim}
+
+\noindent
+indicates that you are compiling using a Java 7 JDK, but your code
+references an enum constant that is only defined in the Java 8 JDK.  The
+problem might be that your code uses a library that references the enum
+constant.  In particular, the type annotations shipped with the Checker
+Framework reference 
+\sunjavadoc{java/lang/annotation/ElementType.html#TYPE\_USE}{ElementType.TYPE\_USE}.  You can use the Checker
+Framework, but still compile and run your code in a Java 7 JVM, by
+following the instructions in Section~\ref{java7-classfiles}.
+
+If you ignore the error and run your code in a Java 7 JVM, then you will get a run-time error:
+
+\begin{Verbatim}
+  java.lang.ArrayStoreException: sun.reflect.annotation.EnumConstantNotPresentExceptionProxy
+\end{Verbatim}
+
+
 \end{itemize}
 
 
