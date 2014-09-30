@@ -67,8 +67,8 @@ public class Arrays {
   public static void fill(double[] a1, int a2, int a3, double a4) { throw new RuntimeException("skeleton method"); }
   public static void fill(float[] a1, float a2) { throw new RuntimeException("skeleton method"); }
   public static void fill(float[] a1, int a2, int a3, float a4) { throw new RuntimeException("skeleton method"); }
-  public static void fill(Object[] a1, Object a2) { throw new RuntimeException("skeleton method"); }
-  public static void fill(Object[] a1, int a2, int a3, Object a4) { throw new RuntimeException("skeleton method"); }
+  public static void fill(@PolyNull Object[] a1, @PolyNull Object a2) { throw new RuntimeException("skeleton method"); }
+  public static void fill(@PolyNull Object[] a1, int a2, int a3, @PolyNull Object a4) { throw new RuntimeException("skeleton method"); }
   public static <T extends @Nullable Object> @Nullable T [] copyOf(T [] a1, int a2) { throw new RuntimeException("skeleton method"); }
   public static <T extends @Nullable Object, U extends @Nullable Object> @Nullable T [] copyOf(U [] a1, int a2, Class<? extends T[]> a3) { throw new RuntimeException("skeleton method"); }
   public static byte[] copyOf(byte[] a1, int a2) { throw new RuntimeException("skeleton method"); }

@@ -441,6 +441,66 @@ Running the regular Java compiler with the \<-Xlint:unchecked> command-line
 option will help you to find and fix problems such as raw types.
 
 
+\item
+The error
+
+\begin{Verbatim}
+error: annotation type not applicable to this kind of declaration
+    ... List<@NonNull String> ...
+\end{Verbatim}
+
+\noindent
+indicates that you are using a definition of \<@NonNull> that is a
+declaration annotation, which cannot be used in that syntactic location.
+For example, many legacy annotations such as those listed in
+Figure~\ref{fig-nullness-refactoring} are declaration annotations.  You can
+fix the problem by instead using a definition of \<@NonNull> that is a type
+annotation, such as the Checker Framework's annotations; often this only
+requires changing an \<import> statement.
+Alternately, if you wish to continue using the legacy annotations in
+declaration locations, see Section~\ref{java7-classfiles}.
+
+
+\item
+This compile-time error
+
+\begin{Verbatim}
+  unknown enum constant java.lang.annotation.ElementType.TYPE_USE
+\end{Verbatim}
+
+\noindent
+indicates that you are compiling using a Java 7 JDK, but your code
+references an enum constant that is only defined in the Java 8 JDK.  The
+problem might be that your code uses a library that references the enum
+constant.  In particular, the type annotations shipped with the Checker
+Framework reference 
+\sunjavadoc{java/lang/annotation/ElementType.html#TYPE\_USE}{ElementType.TYPE\_USE}.  You can use the Checker
+Framework, but still compile and run your code in a Java 7 JVM, by
+following the instructions in Section~\ref{java7-classfiles}.
+
+If you ignore the error and run your code in a Java 7 JVM, then you will get a run-time error:
+
+\begin{Verbatim}
+  java.lang.ArrayStoreException: sun.reflect.annotation.EnumConstantNotPresentExceptionProxy
+\end{Verbatim}
+
+
+\item
+If Eclipse gives the warning
+
+\begin{Verbatim}
+The annotation @NonNull is disallowed for this location
+\end{Verbatim}
+
+\noindent
+then you have the wrong version of the \<org.eclipse.jdt.annotation>
+classes.  Eclipse includes two incompatible versions of these annotations.
+You want the one with a name like
+\<org.eclipse.jdt.annotation\_2.0.0.....jar>, which you can find in the
+\<plugins> subdirectory under the Eclipse installation directory.
+Add this .jar file to your build path.
+
+
 \end{itemize}
 
 
@@ -663,13 +723,13 @@ identical to the Type Annotations compiler.
 
 \end{enumerate}
 
-% JSR 308 extends the Java language to permit annotations to appear on types,
+% Java 8 extends the Java language to permit annotations to appear on types,
 % as in \code{List<@NonNull String>} (see Section~\ref{writing-annotations}).
 % This change will be part of the Java 8 language.  We recommend that you
 % write annotations in comments, as in \code{List</*@NonNull*/ String>} (see
-% Section~\ref{annotations-in-comments}).  The JSR 308 compiler still reads
+% Section~\ref{annotations-in-comments}).  The Checker Framework compiler still reads
 % such annotations, but this syntax permits you to use a compiler other than
-% the JSR 308 compiler.  For example, you can compile your code with a Java 5
+% the Checker Framework compiler.  For example, you can compile your code with a Java 5
 % compiler, and you can use a checker as an external tool in an IDE.
 
 
@@ -699,7 +759,8 @@ the Checker Framework build finds it using relative paths.
 \begin{enumerate}
 % \item
 % Edit \code{checker/build.properties} file so that the
-% \code{compiler.lib} property specifies the location of the JSR 308
+% \code{compiler.lib} property specifies the location of the Checker
+% Framework
 % \code{javac.jar} library.  (If you also installed the JSR 308 compiler from
 % source, and you made the \code{checker-framework} and \code{jsr308-langtools} directories
 % siblings, then you don't need to edit \code{checker/build.properties}.)
@@ -761,7 +822,7 @@ Run \code{make} in the \code{checker/manual} directory to build both the PDF and
 % \subsection{Adjust classpath}
 
 % Building the Checker Framework requires use of a Java 8 compiler.  You may
-% use either the OpenJDK compiler or the JSR 308 compiler.  The latter has a
+% use either the OpenJDK compiler or the Checker Framework compiler.  The latter has a
 % few extra features and tends to get bug fixes more quickly.
 
 % The following instructions give detailed steps for installing the source
@@ -965,5 +1026,7 @@ For details, see file \<LICENSE.txt>.
 % LocalWords:  MyFile buildfiles ClassName JRE java jsr308 bootclasspath
 %  LocalWords:  extJavac ZipFile AprintErrorStack AprintAllQualifiers Jlint
 %  LocalWords:  Telmo Correa Papi NoSuchFieldError ZipException Xlint A1
-%  LocalWords:  FileNotFoundException MyQualifier ImplicitFor A2 A3
+%  LocalWords:  FileNotFoundException MyQualifier ImplicitFor A2 A3 JDKs
 %  LocalWords:  StaticNestedClass StaticNested ConfusingAnnotation
+%%  LocalWords:  CHECKERFRAMEWORK currentOutgoing isCompleted
+%%  LocalWords:  EnsuresNonNull
