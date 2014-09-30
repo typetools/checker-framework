@@ -34,6 +34,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -79,6 +80,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
@@ -1712,13 +1714,36 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         while (boundsIter.hasNext()) {
 
             AnnotatedTypeParameterBounds bounds = boundsIter.next();
-            AnnotatedTypeMirror typearg = argIter.next();
+            AnnotatedTypeMirror typeArg = argIter.next();
 
-            if (typearg.getKind() == TypeKind.WILDCARD && bounds.getUpperBound().getKind() == TypeKind.WILDCARD) {
-                //TODO: When capture conversion is implemented, this special case should be removed.
-                //TODO: This may not occur only in places where capture conversion occurs but in those cases
-                //TODO: The containment check provided by this method should be enough
-                continue;
+            AnnotatedTypeMirror varUpperBound = bounds.getUpperBound();
+            final AnnotatedTypeMirror typeArgForUpperBoundCheck = typeArg;
+
+            if (typeArg.getKind() == TypeKind.WILDCARD ) {
+
+                if (bounds.getUpperBound().getKind() == TypeKind.WILDCARD) {
+                    //TODO: When capture conversion is implemented, this special case should be removed.
+                    //TODO: This may not occur only in places where capture conversion occurs but in those cases
+                    //TODO: The containment check provided by this method should be enough
+                    continue;
+                }
+
+                //If we have a declaration:
+                // class MyClass<T extends String> ...
+                //
+                //the javac compiler allows wildcard type arguments that have Java types OUTSIDE of the
+                //bounds of T, i.e:
+                // MyClass<? extends Object>
+                //
+                //This is sound because every NON-WILDCARD reference to MyClass MUST obey those bounds
+                //This leads to cases where varUpperBound is actually a subtype of typeArgForUpperBoundCheck
+                final TypeMirror varUnderlyingUb = varUpperBound.getUnderlyingType();
+                final TypeMirror argUnderlyingUb = ((AnnotatedWildcardType)typeArg).getExtendsBound().getUnderlyingType();
+                if ( !types.isSubtype(argUnderlyingUb, varUnderlyingUb)
+                  &&  types.isSubtype(varUnderlyingUb, argUnderlyingUb)) {
+                    varUpperBound = AnnotatedTypes.asSuper(types, atypeFactory,
+                                                           varUpperBound, typeArgForUpperBoundCheck);
+                }
             }
 
             if (typeargTrees == null || typeargTrees.isEmpty()) {
@@ -1726,25 +1751,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 // The inference fails if we provide invalid arguments,
                 // therefore issue an error for the arguments.
                 // I hope this is less confusing for users.
-                commonAssignmentCheck(bounds.getUpperBound(),
-                        typearg, toptree,
+                commonAssignmentCheck(varUpperBound,
+                        typeArg, toptree,
                         "type.argument.type.incompatible", false);
             } else {
-                commonAssignmentCheck(bounds.getUpperBound(), typearg,
-                        typeargTrees.get(typeargs.indexOf(typearg)),
+                commonAssignmentCheck(varUpperBound, typeArg,
+                        typeargTrees.get(typeargs.indexOf(typeArg)),
                         "type.argument.type.incompatible", false);
             }
 
-            if (!atypeFactory.getTypeHierarchy().isSubtype(bounds.getLowerBound(), typearg)) {
+            if (!atypeFactory.getTypeHierarchy().isSubtype(bounds.getLowerBound(), typeArg)) {
                 if (typeargTrees == null || typeargTrees.isEmpty()) {
                     // The type arguments were inferred and we mark the whole method.
                     checker.report(Result.failure("type.argument.type.incompatible",
-                                    typearg, bounds),
+                                    typeArg, bounds),
                             toptree);
                 } else {
                     checker.report(Result.failure("type.argument.type.incompatible",
-                                    typearg, bounds),
-                            typeargTrees.get(typeargs.indexOf(typearg)));
+                                    typeArg, bounds),
+                            typeargTrees.get(typeargs.indexOf(typeArg)));
                 }
             }
         }
