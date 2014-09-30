@@ -21,6 +21,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
@@ -217,7 +218,7 @@ public class QualifierDefaults {
     private void applyDefaults(Tree tree, AnnotatedTypeMirror type) {
 
         // The location to take defaults from.
-        Element elt = null;
+        Element elt;
         switch (tree.getKind()) {
             case MEMBER_SELECT:
                 elt = TreeUtils.elementFromUse((MemberSelectTree)tree);
@@ -535,27 +536,42 @@ public class QualifierDefaults {
                     break;
                 }
 
+
+                case IMPLICIT_LOWER_BOUNDS: {
+                    if (isLowerBound && boundType.isOneOf(BoundType.UNBOUND, BoundType.UPPER, BoundType.UNKNOWN)) {
+                        doApply(t, qual);
+                    }
+                    break;
+                }
+
+                case EXPLICIT_LOWER_BOUNDS: {
+                    if (isLowerBound && boundType.isOneOf(BoundType.LOWER)) {
+                        doApply(t, qual);
+                    }
+                    break;
+                }
+
                 case LOWER_BOUNDS: {
-                    if (this.isLowerBound) {
+                    if (isLowerBound) {
                         doApply(t, qual);
                     }
                     break;
                 }
 
                 case IMPLICIT_UPPER_BOUNDS: {
-                    if (this.isTypeVarExtendsImplicit) {
+                    if (isUpperBound && boundType.isOneOf(BoundType.UNBOUND, BoundType.LOWER)) {
                         doApply(t, qual);
                     }
                     break;
                 }
                 case EXPLICIT_UPPER_BOUNDS: {
-                    if (this.isTypeVarExtendsExplicit) {
+                    if (isUpperBound && boundType.isOneOf(BoundType.UPPER, BoundType.UNKNOWN)) {
                         doApply(t, qual);
                     }
                     break;
                 }
                 case UPPER_BOUNDS: {
-                    if (this.isTypeVarExtendsImplicit || this.isTypeVarExtendsExplicit) {
+                    if (this.isUpperBound) {
                         doApply(t, qual);
                     }
                     break;
@@ -580,14 +596,19 @@ public class QualifierDefaults {
             @Override
             public void reset() {
                 super.reset();
-                impl.isTypeVarExtendsImplicit = false;
-                impl.isTypeVarExtendsExplicit = false;
                 impl.isLowerBound = false;
+                impl.isUpperBound = false;
+                impl.boundType = BoundType.UNBOUND;
             }
 
-            private boolean isTypeVarExtendsImplicit = false;
-            private boolean isTypeVarExtendsExplicit = false;
+            //are we currently defaulting the lower bound of a type variable or wildcard
             private boolean isLowerBound = false;
+
+            //are we currently defaulting the upper bound of a type variable or wildcard
+            private boolean isUpperBound  = false;
+
+            //the bound type of the current wildcard or type variable being defaulted
+            private BoundType boundType = BoundType.UNBOUND;
 
             @Override
             public Void visitTypeVariable(AnnotatedTypeVariable type,
@@ -596,48 +617,8 @@ public class QualifierDefaults {
                     return visitedNodes.get(type);
                 }
 
-                final AnnotatedTypeMirror lowerBound = type.getLowerBound();
-
-                isLowerBound = true;
-                Void r = scanAndReduce(lowerBound, qual, null);
-                isLowerBound = false;
-                visitedNodes.put(type, r);
-
-                Element tvel = type.getUnderlyingType().asElement();
-                // TODO: find a better way to do this
-                TreePath treepath = atypeFactory.getTreeUtils().getPath(tvel);
-                Tree tree = treepath == null ? null : treepath.getLeaf();
-
-                boolean prevIsTypeVarExtendsImplicit = isTypeVarExtendsImplicit;
-                boolean prevIsTypeVarExtendsExplicit = isTypeVarExtendsExplicit;
-
-                if (tree == null) {
-                    // This is not only for elements from binaries, but also
-                    // when the compilation unit is no-longer available.
-                    isTypeVarExtendsImplicit = false;
-                    isTypeVarExtendsExplicit = true;
-                } else {
-                    if (tree.getKind() == Tree.Kind.TYPE_PARAMETER) {
-                        TypeParameterTree tptree = (TypeParameterTree) tree;
-
-                        List<? extends Tree> bnds = tptree.getBounds();
-                        if (bnds != null && !bnds.isEmpty()) {
-                            isTypeVarExtendsImplicit = false;
-                            isTypeVarExtendsExplicit = true;
-                        } else {
-                            isTypeVarExtendsImplicit = true;
-                            isTypeVarExtendsExplicit = false;
-                        }
-                    }
-                }
-                try {
-                    r = scanAndReduce(type.getUpperBoundField(), qual, r);
-                } finally {
-                    isTypeVarExtendsImplicit = prevIsTypeVarExtendsImplicit;
-                    isTypeVarExtendsExplicit = prevIsTypeVarExtendsExplicit;
-                }
-                visitedNodes.put(type, r);
-                return r;
+                visitBounds(type, type.getUpperBound(), type.getLowerBound(), qual);
+                return null;
             }
 
             @Override
@@ -646,59 +627,164 @@ public class QualifierDefaults {
                 if (visitedNodes.containsKey(type)) {
                     return visitedNodes.get(type);
                 }
-                Void r;
-                boolean prevIsTypeVarExtendsImplicit = isTypeVarExtendsImplicit;
-                boolean prevIsTypeVarExtendsExplicit = isTypeVarExtendsExplicit;
 
-                WildcardType wc = (WildcardType) type.getUnderlyingType();
+                visitBounds(type, type.getExtendsBound(), type.getSuperBound(), qual);
+                return null;
+            }
 
+            /**
+             * Visit the bounds of a type variable or a wildcard and potentially apply qual
+             * to those bounds.  This method will also update the boundType, isLowerBound, and isUpperbound
+             * fields.
+             */
+            protected void visitBounds(AnnotatedTypeMirror boundedType, AnnotatedTypeMirror upperBound,
+                                       AnnotatedTypeMirror lowerBound, AnnotationMirror qual) {
 
-                final AnnotatedTypeMirror lowerBound = type.getSuperBound();
+                final boolean prevIsUpperBound = isUpperBound;
+                final boolean prevIsLowerBound = isLowerBound;
+                final BoundType prevBoundType = boundType;
 
-                isLowerBound = true;
-                r = scanAndReduce(lowerBound, qual, null);
-                isLowerBound = false;
-                visitedNodes.put(type, r);
+                boundType = getBoundType(boundedType, atypeFactory);
 
-                if (wc.isUnbound() &&
-                        wc.bound != null) {
-                    // If the wildcard bound is implicit, look what
-                    // the type variable bound would be.
-                    Element tvel = wc.bound.asElement();
-                    TreePath treepath = atypeFactory.getTreeUtils().getPath(tvel);
-                    Tree tree = treepath == null ? null : treepath.getLeaf();
-
-                    if (tree != null &&
-                            tree.getKind() == Tree.Kind.TYPE_PARAMETER) {
-                        TypeParameterTree tptree = (TypeParameterTree) tree;
-
-                        List<? extends Tree> bnds = tptree.getBounds();
-                        if (bnds != null && !bnds.isEmpty()) {
-                            isTypeVarExtendsImplicit = false;
-                            isTypeVarExtendsExplicit = true;
-                        } else {
-                            isTypeVarExtendsImplicit = true;
-                            isTypeVarExtendsExplicit = false;
-                        }
-                    } else {
-                        isTypeVarExtendsImplicit = false;
-                        isTypeVarExtendsExplicit = true;
-                    }
-                } else {
-                    isTypeVarExtendsImplicit = false;
-                    isTypeVarExtendsExplicit = true;
-                }
                 try {
-                    r = scan(type.getExtendsBoundField(), qual);
+                    try {
+                        isLowerBound = true;
+                        scanAndReduce(lowerBound, qual, null);
+                    } finally {
+                        isLowerBound = prevIsLowerBound;
+                    }
+                    visitedNodes.put(type, null);
+
+
+                    try {
+                        isUpperBound = true;
+                        scanAndReduce(upperBound, qual, null);
+                    } finally {
+                        isUpperBound = prevIsUpperBound;
+                    }
+                    visitedNodes.put(type, null);
+
                 } finally {
-                    isTypeVarExtendsImplicit = prevIsTypeVarExtendsImplicit;
-                    isTypeVarExtendsExplicit = prevIsTypeVarExtendsExplicit;
+                    boundType = prevBoundType;
                 }
-                visitedNodes.put(type, r);
-                r = scanAndReduce(type.getSuperBoundField(), qual, r);
-                visitedNodes.put(type, r);
-                return r;
             }
         }
+    }
+
+    enum BoundType {
+
+        /**
+         * Indicates an upper bounded type variable or wildcard
+         */
+        UPPER,
+
+        /**
+         * Indicates a lower bounded type variable or wildcard
+         */
+        LOWER,
+
+        /**
+         * Neither bound is specified, BOTH are implicit
+         */
+        UNBOUND,
+
+        /**
+         * For bytecode, or trees for which we no longer have the compilation unit.
+         * We treat UNKNOWN bounds as if they are an UPPER bound.
+         */
+        UNKNOWN;
+
+        public boolean isOneOf(final BoundType ... choices) {
+            for(final BoundType choice : choices) {
+                if(this == choice) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    /**
+     * @param type The type whose boundType is returned.
+     *             type must be an AnnotatedWildcardType or AnnotatedTypeVariable
+     * @return The boundType for type
+     */
+    private static BoundType getBoundType(final AnnotatedTypeMirror type,
+                                          final AnnotatedTypeFactory typeFactory) {
+        if (type instanceof AnnotatedTypeVariable) {
+            return getTypeVarBoundType((AnnotatedTypeVariable) type, typeFactory);
+        }
+
+        if (type instanceof AnnotatedWildcardType) {
+            return getWilcardBoundType((AnnotatedWildcardType) type, typeFactory);
+        }
+
+        ErrorReporter.errorAbort("Unexpected type kind: type=" + type);
+        return null; //dead code
+    }
+
+    /**
+     * @return the bound type of the input typeVar
+     */
+    private static BoundType getTypeVarBoundType(final AnnotatedTypeVariable typeVar,
+                                                 final AnnotatedTypeFactory typeFactory) {
+        return getTypeVarBoundType((TypeParameterElement) typeVar.getUnderlyingType().asElement(), typeFactory);
+    }
+
+    /**
+     * @return The boundType (UPPER, UNBOUND, or UNKNOWN) of the declaration of typeParamElem.
+     */
+    private static BoundType getTypeVarBoundType(final TypeParameterElement typeParamElem,
+                                                 final AnnotatedTypeFactory typeFactory) {
+        TreePath declaredTypeVarEle = typeFactory.getTreeUtils().getPath(typeParamElem);
+        Tree typeParamDecl = declaredTypeVarEle == null ? null : declaredTypeVarEle.getLeaf();
+
+        final BoundType boundType;
+        if (typeParamDecl == null) {
+            // This is not only for elements from binaries, but also
+            // when the compilation unit is no-longer available.
+            boundType = BoundType.UNKNOWN;
+
+        } else {
+            if (typeParamDecl.getKind() == Tree.Kind.TYPE_PARAMETER) {
+                final TypeParameterTree tptree = (TypeParameterTree) typeParamDecl;
+
+                List<? extends Tree> bnds = tptree.getBounds();
+                if (bnds != null && !bnds.isEmpty()) {
+                    boundType = BoundType.UPPER;
+                } else {
+                    boundType = BoundType.UNBOUND;
+                }
+            } else {
+                ErrorReporter.errorAbort("Unexpected tree type for typeVar Element:\n"
+                                       + "typeParamElem=" + typeParamElem + "\n"
+                                       + typeParamDecl);
+                boundType = null; //dead code
+            }
+        }
+
+        return boundType;
+    }
+
+    /**
+     * @return the BoundType of annotatedWildcard.  If it is unbounded, use the type parameter to
+     * which its an argument
+     */
+    public static BoundType getWilcardBoundType(final AnnotatedWildcardType annotatedWildcard,
+                                                final AnnotatedTypeFactory typeFactory) {
+
+        final WildcardType wildcard = (WildcardType) annotatedWildcard.getUnderlyingType();
+
+        final BoundType boundType;
+        if (wildcard.isUnbound() && wildcard.bound != null) {
+            boundType = getTypeVarBoundType((TypeParameterElement) wildcard.bound.asElement(), typeFactory);
+
+        } else {
+            //note: isSuperBound will be true for unbounded and lowers, but the unbounded case is already handled
+            boundType = wildcard.isSuperBound() ? BoundType.LOWER : BoundType.UPPER;
+        }
+
+        return boundType;
     }
 }
