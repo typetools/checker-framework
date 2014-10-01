@@ -14,7 +14,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
  * Here is an example use:
  *
  * <pre><code>     @AssertNonNullIfNonNull("id")
- *     @Pure
+ *     {@literal @}Pure
  *     public @Nullable Long getId(){
  *         return id;
  *     }
