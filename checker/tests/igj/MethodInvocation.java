@@ -168,7 +168,7 @@ public class MethodInvocation {
 
     //Bound for B is explicit in order to use the correct defaulting rules
     public static <A, B extends Object> java.util.Map<A, B> forMap(
-            java.util.Map<? super A, ? extends B> map, final B defaultValue) {
+            java.util.Map<? super A, ? extends B> map, final B defaultValue) { // should emit type.argument.type.incompatible
         return forMap(map, null);
     }
 

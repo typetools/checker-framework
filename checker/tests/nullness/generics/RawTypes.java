@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.*;
 class RawTypes {
   void m() throws ClassNotFoundException {
     Class c1 = Class.forName("bla");
-    Class<?> c2 = Class.forName("bla");
+    Class<? extends @Nullable Object> c2 = Class.forName("bla");
   }
 
   class Test<X extends Number> {}
@@ -21,6 +21,6 @@ class RawTypes {
 
   void m(java.lang.reflect.Constructor<?> c) {
     Class cls1 = c.getParameterTypes()[0];
-    Class<?> cls2 = c.getParameterTypes()[0];
+    Class<? extends @Nullable Object> cls2 = c.getParameterTypes()[0];
   }
 }
