@@ -11,6 +11,10 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
  * expressions are also non-null.
  * <p>
  *
+ * <b>WARNING:</b>
+ * Type-checking for this annotation is <em>not implemented</em> at present.
+ * <p>
+ *
  * Here is an example use:
  *
  * <pre><code>     @AssertNonNullIfNonNull("id")
