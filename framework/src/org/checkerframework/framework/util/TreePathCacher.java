@@ -27,9 +27,10 @@ public class TreePathCacher {
         return searcher.get().getPath(new TreePath(root), tree);
     }
 
-    private static class TreePathSearcher extends TreePathScanner<TreePath,Tree> {
+    private static class TreePathSearcher extends TreeScanner<TreePath,Tree> {
 
         private Map<Tree, TreePath> foundPaths = new HashMap<>();
+        private TreePath path;
 
         class Result extends Error {
             static final long serialVersionUID = -5942088234594905625L;
@@ -62,14 +63,23 @@ public class TreePathCacher {
          */
         @Override
         public TreePath scan(Tree tree, Tree target) {
+            TreePath prev = path;
             if (tree != null && foundPaths.get(tree) == null) {
-                foundPaths.put(tree, new TreePath(getCurrentPath(), tree));
+                TreePath current = new TreePath(path, tree);
+                foundPaths.put(tree, current);
+                path = current;
+            } else {
+                this.path = foundPaths.get(tree);
             }
 
             if (tree == target) {
-                throw new Result(new TreePath(getCurrentPath(), target));
+                throw new Result(path);
             }
-            return super.scan(tree, target);
+            try {
+                return super.scan(tree, target);
+            } finally {
+                this.path = prev;
+            }
         }
     }
 }
