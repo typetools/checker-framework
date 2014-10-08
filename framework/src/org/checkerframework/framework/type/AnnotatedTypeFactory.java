@@ -37,6 +37,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -1977,6 +1978,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         pathHack.put(node, enclosing);
     }
 
+
+    private TreePathCacher treePathCache = new TreePathCacher();
     /**
      * Gets the path for the given {@link Tree} under the current root by
      * checking from the visitor's current path, and only using
@@ -2036,8 +2039,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             current = current.getParentPath();
         }
 
+        return treePathCache.getPath(root, node);
         // OK, we give up. Do a full scan.
-        return TreePath.getPath(root, node);
+//        return TreePath.getPath(root, node);
     }
 
     /**
