@@ -582,13 +582,13 @@ The Nullness
 the following code:
 
 \begin{Verbatim}
-  // one way to use as a cast:
+  // one way to use castNonNull as a cast:
   @NonNull String s = castNonNull(possiblyNull1);
 
-  // another way to use as a cast:
+  // another way to use castNonNull as a cast:
   castNonNull(possiblyNull2).toString();
 
-  // one way to use as a statement:
+  // one way to use castNonNull as a statement:
   castNonNull(possiblyNull3);
   possiblyNull3.toString();
 \end{Verbatim}
