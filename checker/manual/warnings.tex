@@ -71,15 +71,29 @@ You may wish to suppress checker warnings because of unannotated libraries
 or un-annotated portions of your own code, because of application
 invariants that are beyond the capabilities of the type system, because of
 checker limitations, because you are interested in only some of the
-guarantees provided by a checker, or for other reasons.  You can suppress
-warnings via
+guarantees provided by a checker, or for other reasons.
+In many cases, suppressing a warning is similar to writing a cast in a Java
+program:  the programmer knows more about the type than the type system does
+and uses the warning suppression or cast to convey that information to the
+type system.
+
+You can suppress a single warning message (or those in a single method or
+class) by using the following mechanisms:
+
 \begin{enumerate}
 \item
   the \code{@SuppressWarnings} annotation (Section~\ref{suppresswarnings-annotation}),
 \item
-  the \code{-AsuppressWarnings} command-line option (Section~\ref{suppresswarnings-command-line}),
-\item
   the \code{@AssumeAssertion} string in an \<assert> message (Section~\ref{assumeassertion}),
+      \setcounter{lastsinglesuppression}{\theenumi}
+\end{enumerate}
+
+You can suppress warnings throughout the codebase by using the following mechanisms:
+
+\begin{enumerate}
+\setcounter{enumi}{\lastsinglesuppression}
+\item
+  the \code{-AsuppressWarnings} command-line option (Section~\ref{suppresswarnings-command-line}),
 \item
   the \code{-AskipUses} and \code{-AonlyUses} command-line options (Section~\ref{askipuses}),
 \item
@@ -127,10 +141,11 @@ that \<expr> has type \<@Tainted String>:
 \end{Verbatim}
 
 \noindent
-It would have been illegal to write
+It would have been \emph{illegal} to write
 
 \begin{Verbatim}
   @Untainted String myvar;
+  // This does not work; @SuppressWarnings goes on a declaration, not a statement
   @SuppressWarnings("tainting") // Explain why the suppression is sound.
   myvar = expr;
 \end{Verbatim}
@@ -218,18 +233,6 @@ key, you can re-run the checker, passing the the \code{-Anomsgtext}
 command-line option (Section~\ref{debugging-options}).
 
 
-\subsection{\code{-AsuppressWarnings} command-line option\label{suppresswarnings-command-line}}
-
-Supplying the \<-AsuppressWarnings> command-line option is equivalent to
-writing a \<@SuppressWarnings> annotation on every class that the compiler
-type-checks.  The argument to \<-AsuppressWarnings> is a comma-separated
-list of warning suppression keys, as in
-\<-AsuppressWarnings=purity,uninitialized>.
-
-When possible, it is better to write a \<@SuppressWarnings> annotation with a
-smaller scope, rather than using the \<-AsuppressWarnings> command-line option.
-
-
 \subsection{\code{@AssumeAssertion} string in an \<assert> message\label{assumeassertion}}
 
 \begin{sloppypar}
@@ -276,6 +279,18 @@ assertion can never fail.
 % (Section~\ref{checker-guarantees}).  The Nullness Checker prevents null
 % pointer errors in your code under the assumption that assertions are
 % enabled, and it does not guarantee that all of your assertions succeed.)
+
+
+\subsection{\code{-AsuppressWarnings} command-line option\label{suppresswarnings-command-line}}
+
+Supplying the \<-AsuppressWarnings> command-line option is equivalent to
+writing a \<@SuppressWarnings> annotation on every class that the compiler
+type-checks.  The argument to \<-AsuppressWarnings> is a comma-separated
+list of warning suppression keys, as in
+\<-AsuppressWarnings=purity,uninitialized>.
+
+When possible, it is better to write a \<@SuppressWarnings> annotation with a
+smaller scope, rather than using the \<-AsuppressWarnings> command-line option.
 
 
 \subsection{\code{-AskipUses} and \code{-AonlyUses} command-line options\label{askipuses}}
