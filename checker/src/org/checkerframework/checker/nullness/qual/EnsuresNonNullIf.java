@@ -1,7 +1,7 @@
 package org.checkerframework.checker.nullness.qual;
 
-import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
+import org.checkerframework.framework.qual.InheritedAnnotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -9,11 +9,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
-import org.checkerframework.framework.qual.InheritedAnnotation;
-
 /**
- * Indicates that the given expressions are non-null, 
+ * Indicates that the given expressions are non-null,
  * if the method returns the given result (either true or false).
  * <p>
  *
