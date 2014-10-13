@@ -24,8 +24,8 @@ interface KFMap<K extends @NonNull Object, V extends @NonNull Object> {
 }
 
 class KFHashMap<K2 extends @NonNull Object, V2 extends @NonNull Object> implements KFMap<K2, V2> {
-    public @Pure boolean containsKey(@Nullable Object a1) { return false; }
-    public @Pure @Nullable V2 get(@Nullable Object a1) { return null; }
+    @Pure public boolean containsKey(@Nullable Object a1) { return false; }
+    @Pure public @Nullable V2 get(@Nullable Object a1) { return null; }
     public @Nullable V2 put(K2 a1, V2 a2) { return null; }
     public Set<@KeyFor("this") K2> keySet() { return new HashSet<@KeyFor("this") K2>(); }
     public Set<KFMap.Entry<@KeyFor("this") K2, V2>> entrySet() { return new HashSet<KFMap.Entry<@KeyFor("this") K2, V2>>(); }
