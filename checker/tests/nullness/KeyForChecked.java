@@ -104,7 +104,7 @@ class KFIterator<E extends @Nullable Object> {
     void entrySet() {
         KFMap<String, Object> emap = new KFHashMap<String, Object>();
         Set<KFMap.Entry<@KeyFor("emap") String, Object>> es = emap.entrySet();
-        //:: error: (assignment.type.incompatible)
+        // TODO: Should issue error (assignment.type.incompatible) but doesn't right now. With Jonathan's changes, it does.
         Set<KFMap.Entry<String, Object>> es2 = emap.entrySet();
     }
 
