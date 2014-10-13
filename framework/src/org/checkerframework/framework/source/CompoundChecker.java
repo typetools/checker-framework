@@ -28,7 +28,7 @@ import com.sun.tools.javac.util.Log;
  * may inspect the analysis resuls of a checker earlier in the sequence via
  * {@link SourceChecker#getPreviousCheckers()}
  *
- * @See AggregateChecker
+ * @see AggregateChecker
  */
 public abstract class CompoundChecker extends AggregateChecker {
 
