@@ -21,7 +21,7 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Log;
 
 /**
- * 
+ *
  * Like an AggregateChecker, a CompoundChecker is shorthand to invoke
  * a sequence of checkers. In an AggregateChecker, there is no communication
  * between checkers. In a CompoundChecker, a checker later in the sequence

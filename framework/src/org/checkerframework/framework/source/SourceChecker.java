@@ -1420,16 +1420,16 @@ public abstract class SourceChecker
         activeOptions = Collections.unmodifiableMap(activeOpts);
     }
 
-    /** 
+    /**
      * Returns the unmodifiable list of checkers that the CompoundChecker ran
      * prior to this one. If this is the first checker that is run by the
      * CompoundChecker, returns an empty list. If this checker is not being
      * run by a CompoundChecker, returns null.
-     * 
+     *
      * @see SourceChecker#previousCheckers
      */
     public List<SourceChecker> getPreviousCheckers() {
-    	return previousCheckers;
+        return previousCheckers;
     }
 
     /**
