@@ -1,44 +1,24 @@
 package org.checkerframework.checker.nullness;
 
-import org.checkerframework.checker.initialization.qual.FBCBottom;
-import org.checkerframework.checker.initialization.qual.Initialized;
-import org.checkerframework.checker.initialization.qual.UnderInitialization;
-import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.checkerframework.checker.nullness.qual.KeyFor;
-import org.checkerframework.checker.nullness.qual.KeyForBottom;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.PolyNull;
-import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
-import org.checkerframework.framework.qual.PolyAll;
-import org.checkerframework.framework.qual.StubFiles;
-import org.checkerframework.framework.qual.TypeQualifiers;
-import org.checkerframework.framework.source.SupportedLintOptions;
+import org.checkerframework.framework.source.CompoundChecker;
+import org.checkerframework.framework.source.SourceChecker;
 
 /**
- * A concrete instantiation of {@link AbstractNullnessChecker} using
- * freedom-before-commitment.
+ * An aggregated checker for the nullness type-system (with
+ * freedom-before-commitment) and {@link KeyFor}).
  */
-@TypeQualifiers({ Nullable.class, MonotonicNonNull.class, NonNull.class,
-        UnderInitialization.class, Initialized.class, UnknownInitialization.class,
-        FBCBottom.class, PolyNull.class, PolyAll.class,
-        KeyFor.class, UnknownKeyFor.class, KeyForBottom.class})
-@SupportedLintOptions({
-        AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
-        AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
-        // Temporary option to forbid non-null array component types,
-        // which is allowed by default.
-        // Forbidding is sound and will eventually be the only possibility.
-        // Allowing is unsound but permitted until flow-sensitivity changes are
-        // made.
-        // See issues 154 and 322.
-        "arrays:forbidnonnullcomponents" })
-@StubFiles("astubs/gnu-getopt.astub")
-public class NullnessChecker extends AbstractNullnessChecker {
+public class NullnessChecker extends CompoundChecker {
 
-    public NullnessChecker() {
-        super(true);
+    @Override
+    protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
+        Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>();
+        checkers.add(KeyForSubchecker.class);
+        checkers.add(AbstractNullnessFbcChecker.class);
+        return checkers;
     }
 
 }

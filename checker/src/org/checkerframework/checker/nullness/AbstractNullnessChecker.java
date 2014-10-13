@@ -49,7 +49,6 @@ public abstract class AbstractNullnessChecker extends InitializationChecker {
     public Collection<String> getSuppressWarningsKeys() {
         Collection<String> result = new HashSet<>(super.getSuppressWarningsKeys());
         result.add("nullness");
-        result.add("keyfor");
         return result;
     }
 
