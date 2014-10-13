@@ -29,7 +29,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.NonRaw;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
-import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -66,7 +65,6 @@ public class NullnessTransfer extends
 
     /** Annotations of the non-null type system. */
     protected final AnnotationMirror NONNULL, NULLABLE;
-    protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR;
 
     public NullnessTransfer(NullnessAnalysis analysis) {
         super(analysis);
@@ -75,10 +73,6 @@ public class NullnessTransfer extends
                 .getElementUtils(), NonNull.class);
         NULLABLE = AnnotationUtils.fromClass(analysis.getTypeFactory()
                 .getElementUtils(), Nullable.class);
-        UNKNOWNKEYFOR = AnnotationUtils.fromClass(analysis.getTypeFactory()
-                .getElementUtils(), UnknownKeyFor.class);
-        KEYFOR = AnnotationUtils.fromClass(analysis.getTypeFactory()
-                .getElementUtils(), KeyFor.class);
     }
 
     /**
@@ -202,6 +196,10 @@ public class NullnessTransfer extends
         return result;
     }
 
+    /*
+     * Provided that m is of a type that implements interface java.util.Map:
+     * -Given a call m.get(k), if k is @KeyFor("m"), ensures that the result is @NonNull in the thenStore and elseStore of the transfer result.
+     */
     @Override
     public TransferResult<NullnessValue, NullnessStore> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<NullnessValue, NullnessStore> in) {
@@ -225,30 +223,16 @@ public class NullnessTransfer extends
             }
         }
 
-        return keyForVisitMethodInvocation(n, result, tree, methodArgs);
-    }
+        // Handle KeyFor annotations
+        
+    	String methodName = n.getTarget().getMethod().toString();
 
-    /*
-     * Provided that m is of a type that implements interface java.util.Map:
-     * -Given a call m.containsKey(k), ensures that k is @KeyFor("m") in the thenStore of the transfer result.
-     * -Given a call m.put(k, ...), ensures that k is @KeyFor("m") in the thenStore and elseStore of the transfer result.
-     * -Given a call m.get(k), if k is @KeyFor("m"), ensures that the result is @NonNull in the thenStore and elseStore of the transfer result.
-     */
-    private TransferResult<NullnessValue, NullnessStore> keyForVisitMethodInvocation(
-            MethodInvocationNode n, TransferResult<NullnessValue, NullnessStore> result,
-            MethodInvocationTree tree, List<? extends ExpressionTree> methodArgs){
-        String methodName = n.getTarget().getMethod().toString();
+        // First verify if the method name is get. This is an inexpensive check.
 
-        NullnessAnnotatedTypeFactory atypeFactory = (NullnessAnnotatedTypeFactory) analysis.getTypeFactory();
+        if (methodName.startsWith("get(")) {
+        	KeyForAnnotatedTypeFactory keyForTypeFactory = analysis.getTypeFactory().getTypeFactoryOfPreviousChecker(0);
 
-        // First verify if the method name is containsKey or put. This is an inexpensive check.
-
-        boolean containsKey = methodName.startsWith("containsKey(");
-        boolean put = methodName.startsWith("put(");
-        boolean get = methodName.startsWith("get(");
-
-        if (containsKey || put || get) {
-            // Now verify that the receiver of the method invocation is of a type
+        	// Now verify that the receiver of the method invocation is of a type
             // that extends that java.util.Map interface. This is a more expensive check.
 
             javax.lang.model.util.Types types = analysis.getTypes();
@@ -263,35 +247,23 @@ public class NullnessTransfer extends
                         .buildFlowExprContextForUse(n, analysis.getTypeFactory());
 
                 String mapName = flowExprContext.receiver.toString();
-                Receiver keyReceiver = flowExprContext.arguments.get(0);
-                AnnotationMirror am = atypeFactory.createKeyForAnnotationMirrorWithValue(mapName); // @KeyFor(mapName)
+                AnnotationMirror am = keyForTypeFactory.createKeyForAnnotationMirrorWithValue(mapName); // @KeyFor(mapName)
 
-                if (containsKey) {
-                    ConditionalTransferResult<NullnessValue, NullnessStore> conditionalResult = (ConditionalTransferResult<NullnessValue, NullnessStore>) result;
-                    conditionalResult.getThenStore().insertValue(keyReceiver, am);
+                AnnotatedTypeMirror type = keyForTypeFactory.getAnnotatedType(methodArgs.get(0));
 
-                } else if (put) {
-                    result.getThenStore().insertValue(keyReceiver, am);
-                    result.getElseStore().insertValue(keyReceiver, am);
-                } else if (get) {
+                if (type != null) {
+                    AnnotationMirror am1  = type.getAnnotation(KeyFor.class);
 
-                    AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(methodArgs.get(0));
+                    if (am1 != null) {
+                        if (keyForTypeFactory.keyForValuesSubtypeCheck(am, am1, tree, n)) {
+                            makeNonNull(result, n);
 
-                    if (type != null) {
-                        AnnotationMirror am1  = type.getAnnotation(KeyFor.class);
-
-                        if (am1 != null) {
-                            if (atypeFactory.keyForValuesSubtypeCheck(am, am1, tree, n)) {
-                                makeNonNull(result, n);
-
-                                NullnessValue oldResultValue = result.getResultValue();
-                                NullnessValue refinedResultValue = analysis.createSingleAnnotationValue(
-                                        NONNULL, oldResultValue.getType().getUnderlyingType());
-                                NullnessValue newResultValue = refinedResultValue.mostSpecific(
-                                        oldResultValue, null);
-                                result.setResultValue(newResultValue);
-
-                            }
+                            NullnessValue oldResultValue = result.getResultValue();
+                            NullnessValue refinedResultValue = analysis.createSingleAnnotationValue(
+                                    NONNULL, oldResultValue.getType().getUnderlyingType());
+                            NullnessValue newResultValue = refinedResultValue.mostSpecific(
+                                    oldResultValue, null);
+                            result.setResultValue(newResultValue);
                         }
                     }
                 }
@@ -330,7 +302,6 @@ public class NullnessTransfer extends
         annotatedDummy.addAnnotation(NonNull.class);
         annotatedDummy.addAnnotation(NonRaw.class);
         annotatedDummy.addAnnotation(Initialized.class);
-        annotatedDummy.addAnnotation(UnknownKeyFor.class);
         NullnessValue value = new NullnessValue(analysis, annotatedDummy);
         return value;
     }
