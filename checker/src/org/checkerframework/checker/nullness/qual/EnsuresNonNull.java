@@ -1,6 +1,7 @@
 package org.checkerframework.checker.nullness.qual;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.framework.qual.InheritedAnnotation;
+import org.checkerframework.framework.qual.PostconditionAnnotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -8,15 +9,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.checkerframework.framework.qual.InheritedAnnotation;
-import org.checkerframework.framework.qual.PostconditionAnnotation;
-
 /**
  * Indicates that the value expressions are non-null, if the method
  * terminates successfully.
  * <p>
  *
- * This postcondidion annotation is useful for methods that initialize a
+ * This postcondition annotation is useful for methods that initialize a
  * field.  It can also be used for a method that fails if a given
  * expression is null.
  *
