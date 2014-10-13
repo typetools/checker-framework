@@ -15,7 +15,8 @@ public class AssertIfNonNullTest {
     }
 
     @AssertNonNullIfNonNull("id")
-    public @Pure @Nullable Long getId() {
+    @Pure
+    public @Nullable Long getId() {
         return id;
     }
 
