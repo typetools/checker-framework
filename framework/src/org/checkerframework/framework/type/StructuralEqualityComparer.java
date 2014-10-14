@@ -32,7 +32,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     public AbstractAtmComboVisitor<Boolean, VisitHistory> fallback;
 
     public StructuralEqualityComparer() {
-        this.fallback = null;
+        this(null);
     }
 
     public StructuralEqualityComparer(final AbstractAtmComboVisitor<Boolean, VisitHistory> fallback) {
@@ -187,6 +187,18 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             return false;
         }
         visited.add(type1, type2);
+        visitTypeArgs(type1, type2, visited);
+
+        return true;
+    }
+
+    /**
+     * A helper class for visitDeclared_Declared.  There are subtypes of DefaultTypeHierarchy that
+     * need to customize the handling of type arguments. This method provides a convenient extension
+     * point.
+     */
+    protected Boolean visitTypeArgs(final AnnotatedDeclaredType type1, final AnnotatedDeclaredType type2,
+                                 final VisitHistory visited) {
 
         //TODO: ANYTHING WITH RAW TYPES? SHOULD WE HANDLE THEM LIKE DefaultTypeHierarchy, i.e. use ignoreRawTypes
         final List<? extends AnnotatedTypeMirror> type1Args = type1.getTypeArguments();

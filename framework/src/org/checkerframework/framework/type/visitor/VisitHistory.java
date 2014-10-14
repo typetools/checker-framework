@@ -10,6 +10,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * IMPORTANT: DO NOT USE VisitHistory FOR VISITORS THAT UPDATE AN ANNOTATED TYPE MIRROR'S
+ * ANNOTATIONS OR YOU VIOLATE THE CONTRACT OF equals/Hashcode.  THIS CLASS IS DESIGNED FOR
+ * USE WITH The DefaultTypeHierarchy AND RELATED CLASSES
  *
  * VisitHistory keeps track of all visits and allows clients of this class to check whether or
  * not they have visited a pair of AnnotatedTypeMirrors already.  This is necessary in order to
