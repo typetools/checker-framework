@@ -12,6 +12,8 @@ class Initializer {
     //:: error: (assignment.type.incompatible)
     public String c = null;
     
+    public String d = ("");
+
     public Initializer() {
         //:: error: (assignment.type.incompatible)
         a = null;

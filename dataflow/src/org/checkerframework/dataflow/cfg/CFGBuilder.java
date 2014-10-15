@@ -1558,8 +1558,17 @@ public class CFGBuilder {
          */
         protected void addToLookupMap(Node node) {
             Tree tree = node.getTree();
-            if (tree != null && !treeLookupMap.containsKey(tree)) {
+            if (tree == null) {
+                return;
+            }
+            if (!treeLookupMap.containsKey(tree)) {
                 treeLookupMap.put(tree, node);
+            }
+
+            Tree enclosingParens = parenMapping.get(tree);
+            while (enclosingParens != null) {
+                treeLookupMap.put(enclosingParens, node);
+                enclosingParens = parenMapping.get(enclosingParens);
             }
         }
 
@@ -3991,8 +4000,10 @@ public class CFGBuilder {
             return node;
         }
 
+        private Map<Tree, ParenthesizedTree> parenMapping = new HashMap<>();
         @Override
         public Node visitParenthesized(ParenthesizedTree tree, Void p) {
+            parenMapping.put(tree.getExpression(), tree);
             return scan(tree.getExpression(), p);
         }
 
