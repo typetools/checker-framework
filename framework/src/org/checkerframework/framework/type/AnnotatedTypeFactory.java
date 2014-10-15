@@ -283,6 +283,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // What's a better name? Maybe "reset" or "start"?
     public void setRoot(/*@Nullable*/ CompilationUnitTree root) {
         this.root = root;
+        treePathCache.clear();
+
         // There is no need to clear the following caches, they
         // are all limited by CACHE_SIZE.
         /*
@@ -508,6 +510,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /** Mapping from an Element to the source Tree of the declaration. */
     private final Map<Element, Tree> elementToTreeCache  = createLRUCache(CACHE_SIZE);
+
+    /** Mapping from a Tree to its TreePath **/
+    private TreePathCacher treePathCache = new TreePathCacher();
 
     /**
      * Determines the annotated type of an element using
@@ -1978,8 +1983,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         pathHack.put(node, enclosing);
     }
 
-
-    private TreePathCacher treePathCache = new TreePathCacher();
     /**
      * Gets the path for the given {@link Tree} under the current root by
      * checking from the visitor's current path, and only using
@@ -2039,9 +2042,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             current = current.getParentPath();
         }
 
+        // OK, we give up. Use the cache to look up.
         return treePathCache.getPath(root, node);
-        // OK, we give up. Do a full scan.
-//        return TreePath.getPath(root, node);
     }
 
     /**
