@@ -428,8 +428,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 AnnotatedExecutableType overriddenMethod = AnnotatedTypes
                         .asMemberOf(types, atypeFactory, overriddenType,
                                 pair.getValue());
-                checkOverride(node, enclosingType, overriddenMethod,
-                        overriddenType, p);
+                if (!checkOverride(node, enclosingType, overriddenMethod,
+                        overriddenType, p)) {
+                    // Stop at the first mismatch; this makes a difference only if
+                    // -Awarns is passed, in which case multiple warnings might be raised on
+                    // the same method, not adding any value. See Issue 373.
+                    break;
+                }
             }
             return super.visitMethod(node, p);
         } finally {
@@ -2152,7 +2157,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Set<Pair<Receiver, AnnotationMirror>> subCPostTrue2 = resolveContracts(
                     subCPostTrue, overrider);
             @SuppressWarnings("CompilerMessages")
-            /*@CompilerMessageKey*/ String posttruemsg = "contracts.conditional.postcondition.true." + msgKey + ".invalid"; 
+            /*@CompilerMessageKey*/ String posttruemsg = "contracts.conditional.postcondition.true." + msgKey + ".invalid";
             checkContractsSubset(overriderMeth, overriderTyp, overriddenMeth, overriddenTyp, superCPostTrue2, subCPostTrue2,
                     posttruemsg);
 
@@ -2165,7 +2170,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Set<Pair<Receiver, AnnotationMirror>> subCPostFalse2 = resolveContracts(
                     subCPostFalse, overrider);
             @SuppressWarnings("CompilerMessages")
-            /*@CompilerMessageKey*/ String postfalsemsg = "contracts.conditional.postcondition.false." + msgKey + ".invalid"; 
+            /*@CompilerMessageKey*/ String postfalsemsg = "contracts.conditional.postcondition.false." + msgKey + ".invalid";
             checkContractsSubset(overriderMeth, overriderTyp, overriddenMeth, overriddenTyp, superCPostFalse2, subCPostFalse2,
                     postfalsemsg);
         }
@@ -2362,7 +2367,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * same expression in {@code set}, with the same (or a stronger) annotation.
      */
     private void checkContractsSubset(
-            String overriderMeth, String overriderTyp, String overriddenMeth, String overriddenTyp, 
+            String overriderMeth, String overriderTyp, String overriddenMeth, String overriddenTyp,
             Set<Pair<Receiver, AnnotationMirror>> mustSubset,
             Set<Pair<Receiver, AnnotationMirror>> set, /*@CompilerMessageKey*/ String messageKey) {
         for (Pair<Receiver, AnnotationMirror> a : mustSubset) {
