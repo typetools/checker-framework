@@ -11,75 +11,84 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by mcarthur on 10/7/14.
+ * TreePathCacher is a TreeScanner that creates and caches a TreePath for a target
+ * Tree.
+ *
+ * This class replicates some logic from TreePath.getPath but also adds
+ * caching to all intermediate TreePaths that are generated. The intermediate TreePaths
+ * are reused when other targets have overlapping paths.
+ *
+ * @author mcarthur
  */
-public class TreePathCacher {
+public class TreePathCacher  extends TreeScanner<TreePath, Tree> {
 
-    private Map<CompilationUnitTree, SoftReference<TreePathSearcher>> compilationUnitCache = new HashMap<>();
+    private Map<Tree, TreePath> foundPaths = new HashMap<>();
+    // The TreePath of the previous tree scanned.
+    // It is always set back to null after a scan has completed.
+    private TreePath path;
 
-    public TreePath getPath(CompilationUnitTree root, Tree tree) {
-
-        SoftReference<TreePathSearcher> searcher = compilationUnitCache.get(root);
-        if (searcher == null) {
-            searcher = new SoftReference<>(new TreePathSearcher());
-            compilationUnitCache.put(root, searcher);
+    /**
+     * Return the TreePath for a Tree.
+     *
+     * This method uses try/catch and the Result Error for control flow to
+     * stop the superclass from scanning other subtrees when target is found.
+     *
+     * @param root The compilation unit to search in
+     * @param target The target tree to look for
+     * @return The TreePath corresponding to target,
+     *  or null if target is not found in the compilation root
+     */
+    public TreePath getPath(CompilationUnitTree root, Tree target) {
+        TreePath path = new TreePath(root);
+        if (path.getLeaf() == target) {
+            return path;
         }
-        return searcher.get().getPath(new TreePath(root), tree);
+        if (foundPaths.containsKey(target)) {
+            return foundPaths.get(target);
+        }
+
+        try {
+            this.scan(path, target);
+        } catch (Result result) {
+            return result.path;
+        }
+        return null;
     }
 
-    private static class TreePathSearcher extends TreeScanner<TreePath,Tree> {
+    private class Result extends Error {
+        private static final long serialVersionUID = 4948452207518392627L;
+        TreePath path;
+        Result(TreePath path) {
+            this.path = path;
+        }
+    }
 
-        private Map<Tree, TreePath> foundPaths = new HashMap<>();
-        private TreePath path;
+    public void clear() {
+        foundPaths.clear();
+    }
 
-        class Result extends Error {
-            static final long serialVersionUID = -5942088234594905625L;
-
-            TreePath path;
-            Result(TreePath path) {
-                this.path = path;
-            }
+    /**
+     * Scan a single node.
+     * The current path is updated for the duration of the scan.
+     */
+    @Override
+    public TreePath scan(Tree tree, Tree target) {
+        TreePath prev = path;
+        if (tree != null && foundPaths.get(tree) == null) {
+            TreePath current = new TreePath(path, tree);
+            foundPaths.put(tree, current);
+            path = current;
+        } else {
+            this.path = foundPaths.get(tree);
         }
 
-        public TreePath getPath(TreePath path, Tree target) {
-            if (path.getLeaf() == target) {
-                return path;
-            }
-            if (foundPaths.containsKey(target)) {
-                return foundPaths.get(target);
-            }
-
-            try {
-                this.scan(path, target);
-            } catch (Result result) {
-                return result.path;
-            }
-            return null;
+        if (tree == target) {
+            throw new Result(path);
         }
-
-        /**
-         * Scan a single node.
-         * The current path is updated for the duration of the scan.
-         */
-        @Override
-        public TreePath scan(Tree tree, Tree target) {
-            TreePath prev = path;
-            if (tree != null && foundPaths.get(tree) == null) {
-                TreePath current = new TreePath(path, tree);
-                foundPaths.put(tree, current);
-                path = current;
-            } else {
-                this.path = foundPaths.get(tree);
-            }
-
-            if (tree == target) {
-                throw new Result(path);
-            }
-            try {
-                return super.scan(tree, target);
-            } finally {
-                this.path = prev;
-            }
+        try {
+            return super.scan(tree, target);
+        } finally {
+            this.path = prev;
         }
     }
 }
