@@ -2,4 +2,5 @@ checker/bin/**
 checker/dist/**
 checker/manual/manual.html
 checker/manual/manual.pdf
-checker/examples
+checker/manual/*.svg
+checker/examples/**
