@@ -9,5 +9,5 @@ import org.checkerframework.framework.qual.*;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Repeatable(MultiWild.class)
 public @interface Wild {
-    String target() default "Main";
+    String target();
 }
