@@ -3,7 +3,7 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 // Test primary annotations with strings.
 class Simple {
 
-    void execute(@Untainted(target="_NONE_") String s) { }
+    void execute(@Untainted String s) { }
     void tainted(String s) { }
 
     void stringLiteral() {
@@ -17,12 +17,12 @@ class Simple {
         tainted(ref);
     }
 
-    void untaintedRef(@Untainted(target="_NONE_") String ref) {
+    void untaintedRef(@Untainted String ref) {
         execute(ref);
         tainted(ref);
     }
 
-    void concatenation(@Untainted(target="_NONE_") String s1, String s2) {
+    void concatenation(@Untainted String s1, String s2) {
         execute(s1 + s1);
         execute(s1 += s1);
         execute(s1 + "m");
