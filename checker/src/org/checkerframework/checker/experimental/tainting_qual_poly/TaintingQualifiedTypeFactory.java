@@ -41,8 +41,7 @@ public class TaintingQualifiedTypeFactory extends QualifierParameterTypeFactory<
                 QualifiedTypeMirror<QualParams<Tainting>> result = super.visitLiteral(tree, type);
                 if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
                     // TODO: Fix, this is a defaults thing
-                    result = SetQualifierVisitor.apply(result, new QualParams<>("Main", new Wildcard<>(Tainting.UNTAINTED), new GroundQual<>(Tainting.UNTAINTED)));
-                    result = SetQualifierVisitor.apply(result, new QualParams<>("Main", new Wildcard<>(Tainting.UNTAINTED), new GroundQual<>(Tainting.UNTAINTED)));
+                    result = SetQualifierVisitor.apply(result, new QualParams<>(new GroundQual<>(Tainting.UNTAINTED)));
                 }
                 return result;
             }

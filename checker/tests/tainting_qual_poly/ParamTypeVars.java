@@ -3,25 +3,25 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
 // Type variables and post-as-member-of
 // CANT USE Integer here!
-@TaintingParam("Main")
+@TaintingParam("Param1")
 class List<T> {
     // (T + MAIN) head
-    @Var("Main") T head;
+    @Var(value="Param1", target="Param2") T head;
     // List<T><<MAIN>>
-    @Var("Main") List<T> tail;
+    @Var(value="Param1", target="Param1") List<T> tail;
 }
 
-@TaintingParam("Main")
+@TaintingParam("Param2")
 class A { }
 
 abstract class Test {
-    abstract @Tainted   List<@Tainted   A> makeTT();
-    abstract @Untainted List<@Tainted   A> makeUT();
-    abstract @Tainted   List<@Untainted A> makeTU();
-    abstract @Untainted List<@Untainted A> makeUU();
+    abstract @Tainted(target="Param1")   List<@Tainted(target="Param2")   A> makeTT();
+    abstract @Untainted(target="Param1") List<@Tainted(target="Param2")   A> makeUT();
+    abstract @Tainted(target="Param1")   List<@Untainted(target="Param2") A> makeTU();
+    abstract @Untainted(target="Param1") List<@Untainted(target="Param2") A> makeUU();
 
-    abstract void takeT(@Tainted   A x);
-    abstract void takeU(@Untainted A x);
+    abstract void takeT(@Tainted(target="Param2")   A x);
+    abstract void takeU(@Untainted(target="Param2") A x);
 
     void test() {
         takeT(makeTT().head);
