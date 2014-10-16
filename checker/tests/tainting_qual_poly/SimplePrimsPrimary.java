@@ -3,7 +3,7 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 // Test primary annotations with primitives
 class SimplePrims {
 
-    void execute(@Untainted(target="_NONE_") int s) { }
+    void execute(@Untainted int s) { }
     void tainted(int s) { }
 
     void intLiteral() {
@@ -18,12 +18,12 @@ class SimplePrims {
         tainted(ref);
     }
 
-    void untaintedRef(@Untainted(target="_NONE_") int ref) {
+    void untaintedRef(@Untainted int ref) {
         execute(ref);
         tainted(ref);
     }
 
-    void concatenation(@Untainted(target="_NONE_") int s1, int s2) {
+    void concatenation(@Untainted int s1, int s2) {
         execute(s1 + s1);
         execute(s1 += s1);
         //:: error: (argument.type.incompatible)
