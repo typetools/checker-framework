@@ -2,12 +2,12 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
 // Test wildcards with method qualifier parameters.
 // No corresponding primary test.
-@TaintingParam("Main")
+@ClassTaintingParam("Main")
 class A { }
 
 abstract class Test {
     static void test1(@Tainted(target="Main") A i, @Extends(target="Main") @Tainted(target="Main") A j) { }
-    @TaintingParam("Main")
+    @MethodTaintingParam("Main")
     static void test2(@Var(value="Main", target="Main") A i, @Extends(target="Main") @Var(value="Main", target="Main") A j) { }
 
     abstract @Tainted(target="Main") A makeTainted();

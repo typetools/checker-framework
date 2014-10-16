@@ -5,10 +5,10 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 abstract class Test {
 
     abstract Integer makeDefault();
-    abstract @Untainted(target="_NONE_") Integer makeUntainted();
+    abstract @Untainted Integer makeUntainted();
 
-    abstract void takeTainted(@Tainted(target="_NONE_") Integer o);
-    abstract void takeUntainted(@Untainted(target="_NONE_") Integer o);
+    abstract void takeTainted(@Tainted Integer o);
+    abstract void takeUntainted(@Untainted Integer o);
 
     void test() {
 

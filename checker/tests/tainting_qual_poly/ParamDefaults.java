@@ -1,12 +1,12 @@
 // Test parameter defaulting rules.
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
-@TaintingParam("Main")
+@ClassTaintingParam("Main")
 class A {
     public @Var(value="Main", target="Main2") B z;
 }
 
-@TaintingParam("Main2")
+@ClassTaintingParam("Main2")
 class B { }
 
 abstract class Test {

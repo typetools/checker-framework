@@ -5,16 +5,11 @@ import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.QualifiedNameable;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.javacutil.AnnotationUtils;
-
-import org.checkerframework.qualframework.base.AnnotationConverter;
 
 import org.checkerframework.qualframework.poly.PolyQual;
 import org.checkerframework.qualframework.poly.QualifierParameterAnnotationConverter;
@@ -25,7 +20,6 @@ import org.checkerframework.qualframework.poly.QualParams;
 import org.checkerframework.qualframework.poly.Wildcard;
 
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
-import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
 public class TaintingAnnotationConverter implements QualifierParameterAnnotationConverter<Tainting> {
     private Map<String, Wildcard<Tainting>> lookup;
@@ -218,18 +212,14 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
     @Override
     public Set<String> getDeclaredParameters(Element elt) {
         Set<String> result = new HashSet<>();
-        for (Annotation a : elt.getAnnotationsByType(TaintingParam.class)) {
-            result.add(((TaintingParam)a).value());
+        for (Annotation a : elt.getAnnotationsByType(MethodTaintingParam.class)) {
+            result.add(((MethodTaintingParam)a).value());
+        }
+        for (Annotation a : elt.getAnnotationsByType(ClassTaintingParam.class)) {
+            result.add(((ClassTaintingParam)a).value());
         }
 
         switch (elt.getKind()) {
-            case CLASS:
-            case INTERFACE:
-            case ENUM:
-                // TODO: VERY VERY TEMPORARY
-//                result.add("Main");
-                break;
-
             case CONSTRUCTOR:
             case METHOD:
                 if (hasPolyAnnotation((ExecutableElement)elt)) {
@@ -238,8 +228,6 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
                 break;
 
             default:
-
-
                 break;
         }
 

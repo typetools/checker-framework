@@ -1,22 +1,22 @@
 // Test qualifier parameter combining.
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
-@TaintingParam("Main")
+@ClassTaintingParam("Main")
 class A {
     // Integer<<Main + TAINTED>> x;
-    public @Var(value="Main", target="_NONE_") @Tainted(target="_NONE_") Integer x;
+    public @Var("Main") @Tainted Integer x;
     // Integer<<Main + UNTAINTED>> y;
-    public @Var(value="Main", target="_NONE_") @Untainted(target="_NONE_") Integer y;
+    public @Var("Main") @Untainted Integer y;
     // Integer<<Main>> z;
-    public @Var(value="Main", target="_NONE_") Integer z;
+    public @Var("Main") Integer z;
 }
 
 abstract class Test {
     abstract @Tainted(target="Main") A makeTainted();
     abstract @Untainted(target="Main") A makeUntainted();
 
-    abstract void takeTainted(@Tainted(target="_NONE_") Integer o);
-    abstract void takeUntainted(@Untainted(target="_NONE_") Integer o);
+    abstract void takeTainted(@Tainted Integer o);
+    abstract void takeUntainted(@Untainted Integer o);
 
     void test() {
         @Tainted(target="Main") A ta = makeTainted();

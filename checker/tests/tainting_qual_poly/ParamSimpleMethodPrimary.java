@@ -3,7 +3,7 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
 // Test method qual params with primary variable
 abstract class Test {
-    @TaintingParam
+    @MethodTaintingParam
     abstract @Var Integer test(@Var Integer i, @Var Integer j);
 
     abstract @Tainted Integer makeTainted();

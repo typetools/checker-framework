@@ -2,7 +2,7 @@
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
 // Test qual param on a class, targeting the primary
-@TaintingParam("Main")
+@ClassTaintingParam("Main")
 class A {
     public @Tainted(target="_NONE_") Integer x;
     public @Untainted(target="_NONE_") Integer y;
