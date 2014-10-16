@@ -3,14 +3,14 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
 // Test method qual params with primary variable
 abstract class Test {
-    @TaintingParam("_NONE_")
-    abstract @Var(value="_NONE_", target="_NONE_") Integer test(@Var(value="_NONE_", target="_NONE_") Integer i, @Var(value="_NONE_", target="_NONE_") Integer j);
+    @TaintingParam
+    abstract @Var Integer test(@Var Integer i, @Var Integer j);
 
-    abstract @Tainted(target="_NONE_") Integer makeTainted();
-    abstract @Untainted(target="_NONE_") Integer makeUntainted();
+    abstract @Tainted Integer makeTainted();
+    abstract @Untainted Integer makeUntainted();
 
-    abstract void takeTainted(@Tainted(target="_NONE_") Integer o);
-    abstract void takeUntainted(@Untainted(target="_NONE_") Integer o);
+    abstract void takeTainted(@Tainted Integer o);
+    abstract void takeUntainted(@Untainted Integer o);
 
     void test() {
         takeTainted(test(makeTainted(), makeTainted()));

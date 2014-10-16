@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.*;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Repeatable(MultiVar.class)
 public @interface Var {
-    String value();
+    String value()  default TaintingAnnotationConverter.PRIMARY_TARGET;
     String target() default TaintingAnnotationConverter.PRIMARY_TARGET;
 }
 
