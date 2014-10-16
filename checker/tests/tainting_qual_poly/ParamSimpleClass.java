@@ -4,21 +4,24 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 // Test qual param on a class
 @TaintingParam("Main")
 class A {
-    public @Tainted Integer x;
-    public @Untainted Integer y;
-    public @Var("Main") Integer z;
+    public @Tainted(target="Main2") B x;
+    public @Untainted(target="Main2") B y;
+    public @Var(value="Main", target="Main2") B z;
 }
 
-abstract class Test {
-    abstract @Tainted A makeTainted();
-    abstract @Untainted A makeUntainted();
+@TaintingParam("Main2")
+class B { }
 
-    abstract void takeTainted(@Tainted Integer o);
-    abstract void takeUntainted(@Untainted Integer o);
+abstract class Test {
+    abstract @Tainted(target="Main") A makeTainted();
+    abstract @Untainted(target="Main") A makeUntainted();
+
+    abstract void takeTainted(@Tainted(target="Main2") B o);
+    abstract void takeUntainted(@Untainted(target="Main2") B o);
 
     void test() {
-        @Tainted A ta = makeTainted();
-        @Untainted A ua = makeUntainted();
+        @Tainted(target="Main") A ta = makeTainted();
+        @Untainted(target="Main") A ua = makeUntainted();
 
         takeTainted(ta.x);
         //:: error: (argument.type.incompatible)

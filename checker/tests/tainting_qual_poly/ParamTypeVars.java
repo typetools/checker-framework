@@ -12,9 +12,7 @@ class List<T> {
 }
 
 @TaintingParam("Main")
-class A {
-
-}
+class A { }
 
 abstract class Test {
     abstract @Tainted   List<@Tainted   A> makeTT();
