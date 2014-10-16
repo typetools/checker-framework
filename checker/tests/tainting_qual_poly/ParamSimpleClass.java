@@ -1,6 +1,7 @@
 // Simple test for qualifier parameters on classes.
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
+// Test qual param on a class
 @TaintingParam("Main")
 class A {
     public @Tainted Integer x;
@@ -18,6 +19,18 @@ abstract class Test {
     void test() {
         @Tainted A ta = makeTainted();
         @Untainted A ua = makeUntainted();
+
+        takeTainted(ta.x);
+        //:: error: (argument.type.incompatible)
+        takeTainted(ta.y);
+        takeTainted(ta.z);
+
+        takeTainted(ua.x);
+        //:: error: (argument.type.incompatible)
+        takeTainted(ua.y);
+        //:: error: (argument.type.incompatible)
+        takeTainted(ua.z);
+
 
         //:: error: (argument.type.incompatible)
         takeUntainted(ta.x);

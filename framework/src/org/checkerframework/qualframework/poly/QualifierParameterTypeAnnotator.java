@@ -95,7 +95,7 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
             }
         }
 
-        return new QualParams<>(newParams);
+        return new QualParams<>(newParams, result.getPrimary());
     }
 }
 

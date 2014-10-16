@@ -2,34 +2,27 @@
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
 // Type variables and post-as-member-of
-// CANT USE Integer here!
 @TaintingParam("Main")
 class List<T> {
     // (T + MAIN) head
-    @Var("Main") T head;
+    @Var(value="Main", target="_NONE_") T head;
     // List<T><<MAIN>>
-    @Var("Main") List<T> tail;
-}
-
-@TaintingParam("Main")
-class A {
-
+    @Var(value="Main", target="_NONE_") List<T> tail;
 }
 
 abstract class Test {
-    abstract @Tainted   List<@Tainted   A> makeTT();
-    abstract @Untainted List<@Tainted   A> makeUT();
-    abstract @Tainted   List<@Untainted A> makeTU();
-    abstract @Untainted List<@Untainted A> makeUU();
+    abstract @Tainted   List<@Tainted(target="_NONE_")   Integer> makeTT();
+    abstract @Untainted List<@Tainted(target="_NONE_")   Integer> makeUT();
+    abstract @Tainted   List<@Untainted(target="_NONE_") Integer> makeTU();
+    abstract @Untainted List<@Untainted(target="_NONE_") Integer> makeUU();
 
-    abstract void takeT(@Tainted   A x);
-    abstract void takeU(@Untainted A x);
+    abstract void takeT(@Tainted(target="_NONE_")   Integer x);
+    abstract void takeU(@Untainted(target="_NONE_") Integer x);
 
     void test() {
         takeT(makeTT().head);
         takeT(makeUT().head);
         takeT(makeTU().head);
-        //:: error: (argument.type.incompatible)
         takeT(makeUU().head);
 
         //:: error: (argument.type.incompatible)
@@ -39,5 +32,8 @@ abstract class Test {
         //:: error: (argument.type.incompatible)
         takeU(makeTU().head);
         takeU(makeUU().head);
+
+        // TODO: Add some tail tests
+
     }
 }

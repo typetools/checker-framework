@@ -16,6 +16,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 
 import org.checkerframework.qualframework.base.AnnotationConverter;
 
+import org.checkerframework.qualframework.poly.PolyQual;
 import org.checkerframework.qualframework.poly.QualifierParameterAnnotationConverter;
 import org.checkerframework.qualframework.poly.CombiningOperation;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
@@ -24,16 +25,20 @@ import org.checkerframework.qualframework.poly.QualParams;
 import org.checkerframework.qualframework.poly.Wildcard;
 
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
+import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
 public class TaintingAnnotationConverter implements QualifierParameterAnnotationConverter<Tainting> {
     private Map<String, Wildcard<Tainting>> lookup;
     private CombiningOperation<Tainting> lubOp;
 
+    // The default "Target" in an annotation is the primary qualifier
+    // We can't use null in the annotation, so we must use a special value
+    public static final String PRIMARY_TARGET="_NONE_";
+
     private static final Tainting BOTTOM = Tainting.UNTAINTED;
     private static final Tainting TOP = Tainting.TAINTED;
 
     private static final String MULTI_ANNO_NAME_PREFIX = MultiTainted.class.getPackage().getName() + ".Multi";
-    private static final String DEFAULT_NAME = "Main";
     private static final String POLY_NAME = "_poly";
 
     public TaintingAnnotationConverter() {
@@ -58,7 +63,6 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
             Wildcard<Tainting> combinedWild = oldWild.combineWith(newWild, lubOp, lubOp);
 
             //System.err.printf("COMBINE[%s]: %s + %s = %s\n", name, oldWild, newWild, combinedWild);
-
             params.put(name, combinedWild);
         }
     }
@@ -77,25 +81,32 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
 
         } else if (name.equals(Tainted.class.getName())) {
             String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
-            return Collections.singletonMap(target, new Wildcard<>(Tainting.TAINTED));
+            if (!PRIMARY_TARGET.equals(target)) {
+                return Collections.singletonMap(target, new Wildcard<>(Tainting.TAINTED));
+            }
 
         } else if (name.equals(Untainted.class.getName())) {
             String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
-            return Collections.singletonMap(target, new Wildcard<>(Tainting.UNTAINTED));
+            if (!PRIMARY_TARGET.equals(target)) {
+                return Collections.singletonMap(target, new Wildcard<>(Tainting.UNTAINTED));
+            }
 
         } else if (name.equals(Var.class.getName())) {
             String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
             String value = AnnotationUtils.getElementValue(anno, "value", String.class, true);
-            Wildcard<Tainting> valueWild = new Wildcard<>(
-                    new QualVar<>(value, BOTTOM, TOP));
-            return Collections.singletonMap(target, valueWild);
+            if (!PRIMARY_TARGET.equals(target)) {
+                Wildcard<Tainting> valueWild = new Wildcard<>(
+                        new QualVar<>(value, BOTTOM, TOP));
+                return Collections.singletonMap(target, valueWild);
+            }
 
         } else if (name.equals(PolyTainting.class.getName())) {
             String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
-            Wildcard<Tainting> polyWild = new Wildcard<>(
-                    new QualVar<>(POLY_NAME, BOTTOM, TOP));
-            return Collections.singletonMap(target, polyWild);
-
+            if (!PRIMARY_TARGET.equals(target)) {
+                Wildcard<Tainting> polyWild = new Wildcard<>(
+                        new QualVar<>(POLY_NAME, BOTTOM, TOP));
+                return Collections.singletonMap(target, polyWild);
+            }
         } else if (name.equals(Wild.class.getName())) {
             String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
             return Collections.singletonMap(target, new Wildcard<>(BOTTOM, TOP));
@@ -130,7 +141,6 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
             Wildcard<Tainting> newWild = new Wildcard<>(oldWild.getLowerBound(), new GroundQual<>(TOP));
             params.put(target, newWild);
             return true;
-
         }
 
         return false;
@@ -145,7 +155,52 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
         for (AnnotationMirror anno : annos) {
             handleExtendsSuper(anno, params);
         }
-        return (params.isEmpty() ? null : new QualParams<>(params));
+
+        PolyQual<Tainting> primary = getPrimaryAnnotation(annos);
+        if (primary == null) {
+            // TODO: Add a way to change this defaulting
+
+            primary = new PolyQual.GroundQual<>(TOP);
+        }
+
+        return (params.isEmpty() && primary == null ? null : new QualParams<>(params, primary));
+    }
+
+    private PolyQual<Tainting> getPrimaryAnnotation(Collection<? extends AnnotationMirror> annos) {
+        PolyQual<Tainting> result = null;
+        for (AnnotationMirror anno : annos) {
+            String name = AnnotationUtils.annotationName(anno);
+            PolyQual<Tainting> newQual = null;
+            if (name.equals(Tainted.class.getName())) {
+                String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+                if (PRIMARY_TARGET.equals(target)) {
+                    newQual = new PolyQual.GroundQual<>(Tainting.TAINTED);
+                }
+            } else if (name.equals(Untainted.class.getName())) {
+                String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+                if (PRIMARY_TARGET.equals(target)) {
+                    newQual =  new PolyQual.GroundQual<>(Tainting.UNTAINTED);
+                }
+            } else if (name.equals(Var.class.getName())) {
+                String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+                String value = AnnotationUtils.getElementValue(anno, "value", String.class, true);
+                if (PRIMARY_TARGET.equals(target)) {
+                    newQual =  new QualVar<>(value, BOTTOM, TOP);
+                }
+            } else if (name.equals(PolyTainting.class.getName())) {
+                String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+                if (PRIMARY_TARGET.equals(target)) {
+                    newQual = new QualVar<>(POLY_NAME, BOTTOM, TOP);
+                }
+            }
+
+            if (result != null && newQual != null) {
+                result = result.combineWith(newQual, lubOp);
+            } else {
+                result = newQual;
+            }
+        }
+        return result;
     }
 
     @Override
@@ -156,7 +211,8 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
         return name.startsWith(MULTI_ANNO_NAME_PREFIX)
             || name.equals(Extends.class.getName())
             || name.equals(Super.class.getName())
-            || fromAnnotation(anno) != null;
+            || fromAnnotation(anno) != null
+            || getPrimaryAnnotation(Arrays.asList(anno)) != null;
     }
 
     @Override
@@ -170,15 +226,20 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
             case CLASS:
             case INTERFACE:
             case ENUM:
-                result.add(DEFAULT_NAME);
+                // TODO: VERY VERY TEMPORARY
+                result.add("Main");
                 break;
+
             case CONSTRUCTOR:
             case METHOD:
                 if (hasPolyAnnotation((ExecutableElement)elt)) {
                     result.add(POLY_NAME);
                 }
                 break;
+
             default:
+
+
                 break;
         }
 

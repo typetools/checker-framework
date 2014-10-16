@@ -19,6 +19,7 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExec
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
+import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 
 /** Type factory with qualifier polymorphism support.  This type factory
  * extends an underlying qualifier system with qualifier variables, combined
@@ -181,6 +182,7 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
      * [T := C<<Q=TAINTED>>]} into the use {@code T + <<Q=UNTAINTED>>}).
      */
     protected abstract Wildcard<Q> combineForSubstitution(Wildcard<Q> a, Wildcard<Q> b);
+    protected abstract PolyQual<Q> combineForSubstitution(PolyQual<Q> a, PolyQual<Q> b);
 
     @Override
     public QualifiedTypeMirror<QualParams<Q>> postTypeVarSubstitution(QualifiedParameterDeclaration<QualParams<Q>> varDecl,
@@ -222,7 +224,13 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             newParams.put(name, newValue);
         }
 
-        return SetQualifierVisitor.apply(value, new QualParams<>(newParams));
+        PolyQual<Q> primary;
+        if (useParams.getPrimary() != null && valueParams.getPrimary() != null) {
+            primary = combineForSubstitution(useParams.getPrimary(), valueParams.getPrimary());
+        } else {
+            throw new RuntimeException("Expected both QualParams to have a primary qualifier");
+        }
+        return SetQualifierVisitor.apply(value, new QualParams<>(newParams, primary));
     }
 
 

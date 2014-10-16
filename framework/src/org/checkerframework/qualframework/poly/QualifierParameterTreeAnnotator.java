@@ -75,6 +75,6 @@ public class QualifierParameterTreeAnnotator<Q> extends TreeAnnotator<QualParams
 
         Map<String, Wildcard<Q>> params = new HashMap<>(type.getQualifier());
         params.keySet().retainAll(validParams);
-        return SetQualifierVisitor.apply(type, new QualParams<>(params));
+        return SetQualifierVisitor.apply(type, new QualParams<>(params, type.getQualifier().getPrimary()));
     }
 }

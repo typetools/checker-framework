@@ -1,6 +1,7 @@
 // Simple test for qualifier parameters on methods.
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
+// Test method qual parameters
 abstract class Test {
     @TaintingParam("Main")
     static void test(@Var("Main") Integer i, @Var("Main") Integer j) { }
