@@ -1,27 +1,34 @@
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
-//class Simple {
-//
-//    void execute(@Untainted String s) { }
-//    void tainted(String s) { }
-//
-//    void stringLiteral() {
-//        execute("ldskjfldj");
-//        tainted("lksjdflkjdf");
-//    }
-//
-//    void stringRef(String ref) {
-//        //:: error: (argument.type.incompatible)
-//        execute(ref);   // error
-//        tainted(ref);
-//    }
-//
-//    void untaintedRef(@Untainted String ref) {
-//        execute(ref);
-//        tainted(ref);
-//    }
-//
-// Strings don't have qual params
+@TaintingParam("param1")
+class A { }
+
+class Simple {
+
+    void takeUntainted(@Untainted(target="param1") A a) { }
+    void takeTainted(@Tainted(target="param1") A a) { }
+    void takeDef(A a) { }
+
+    void test(@Untainted(target="param1") A u, @Tainted(target="param1") A t, A def) {
+
+        takeUntainted(u);
+        //:: error: (argument.type.incompatible)
+        takeTainted(u);
+        takeDef(u);
+
+        //:: error: (argument.type.incompatible)
+        takeUntainted(t);
+        takeTainted(t);
+        takeDef(u);
+
+        //:: error: (argument.type.incompatible)
+        takeUntainted(def);
+        //:: error: (argument.type.incompatible)
+        takeTainted(def);
+        takeDef(u);
+    }
+
+// Concatenation doesn't apply to qual params.
 
 //    void concatenation(@Untainted String s1, String s2) {
 //        execute(s1 + s1);
@@ -46,4 +53,4 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 //        tainted(s2 + s2);
 //
 //    }
-//}
+}
