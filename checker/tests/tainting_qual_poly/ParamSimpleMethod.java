@@ -2,11 +2,11 @@
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
 // Test method qual parameters
-@TaintingParam("Main")
+@ClassTaintingParam("Main")
 class A { }
 
 abstract class Test {
-    @TaintingParam("Main")
+    @MethodTaintingParam("Main")
     static void test(@Var(value="Main", target="Main") A i,
             @Var(value="Main", target="Main") A j) { }
 

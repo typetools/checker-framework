@@ -1,6 +1,6 @@
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
-@TaintingParam("param1")
+@ClassTaintingParam("param1")
 class A { }
 
 class Simple {
