@@ -3,24 +3,27 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
 @TaintingParam("Main")
 class A {
-    // Integer<<Main + TAINTED>> x;
-    public @Var("Main") @Tainted Integer x;
-    // Integer<<Main + UNTAINTED>> y;
-    public @Var("Main") @Untainted Integer y;
-    // Integer<<Main>> z;
-    public @Var("Main") Integer z;
+    // B<<Main + TAINTED>> x;
+    public @Var(value="Main", target="Main2") @Tainted(target="Main2") B x;
+    // B<<Main + UNTAINTED>> y;
+    public @Var(value="Main", target="Main2") @Untainted(target="Main2") B y;
+    // B<<Main>> z;
+    public @Var(value="Main", target="Main2") B z;
 }
 
-abstract class Test {
-    abstract @Tainted A makeTainted();
-    abstract @Untainted A makeUntainted();
+@TaintingParam("Main2")
+class B { }
 
-    abstract void takeTainted(@Tainted Integer o);
-    abstract void takeUntainted(@Untainted Integer o);
+abstract class Test {
+    abstract @Tainted(target="Main") A makeTainted();
+    abstract @Untainted(target="Main") A makeUntainted();
+
+    abstract void takeTainted(@Tainted(target="Main2") B o);
+    abstract void takeUntainted(@Untainted(target="Main2") B o);
 
     void test() {
-        @Tainted A ta = makeTainted();
-        @Untainted A ua = makeUntainted();
+        @Tainted(target="Main") A ta = makeTainted();
+        @Untainted(target="Main") A ua = makeUntainted();
 
         takeTainted(ta.x);
         takeTainted(ta.y);
@@ -34,7 +37,7 @@ abstract class Test {
         //:: error: (argument.type.incompatible)
         takeUntainted(ta.x);
         // The combining rule for Tainting is LUB, so the type of ta.y is
-        // Integer<<TAINTED + UNTAINTED>> = Integer<<TAINTED>>.
+        // B<<TAINTED + UNTAINTED>> = B<<TAINTED>>.
         //:: error: (argument.type.incompatible)
         takeUntainted(ta.y);
         //:: error: (argument.type.incompatible)
