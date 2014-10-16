@@ -4,31 +4,29 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 @TaintingParam("Main")
 class A {
     // Integer<<Main + TAINTED>> x;
-    public @Var("Main") @Tainted Integer x;
+    public @Var(value="Main", target="_NONE_") @Tainted(target="_NONE_") Integer x;
     // Integer<<Main + UNTAINTED>> y;
-    public @Var("Main") @Untainted Integer y;
+    public @Var(value="Main", target="_NONE_") @Untainted(target="_NONE_") Integer y;
     // Integer<<Main>> z;
-    public @Var("Main") Integer z;
+    public @Var(value="Main", target="_NONE_") Integer z;
 }
 
 abstract class Test {
-    abstract @Tainted A makeTainted();
-    abstract @Untainted A makeUntainted();
+    abstract @Tainted(target="Main") A makeTainted();
+    abstract @Untainted(target="Main") A makeUntainted();
 
-    abstract void takeTainted(@Tainted Integer o);
-    abstract void takeUntainted(@Untainted Integer o);
+    abstract void takeTainted(@Tainted(target="_NONE_") Integer o);
+    abstract void takeUntainted(@Untainted(target="_NONE_") Integer o);
 
     void test() {
-        @Tainted A ta = makeTainted();
-        @Untainted A ua = makeUntainted();
+        @Tainted(target="Main") A ta = makeTainted();
+        @Untainted(target="Main") A ua = makeUntainted();
 
         takeTainted(ta.x);
         takeTainted(ta.y);
         takeTainted(ta.z);
         takeTainted(ua.x);
-        //:: error: (argument.type.incompatible)
         takeTainted(ua.y);
-        //:: error: (argument.type.incompatible)
         takeTainted(ua.z);
 
         //:: error: (argument.type.incompatible)

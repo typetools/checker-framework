@@ -11,6 +11,8 @@ import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
 import org.checkerframework.qualframework.base.SetQualifierVisitor;
+import org.checkerframework.qualframework.poly.PolyQual;
+import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
 import org.checkerframework.qualframework.poly.CombiningOperation;
@@ -38,7 +40,9 @@ public class TaintingQualifiedTypeFactory extends QualifierParameterTypeFactory<
             public QualifiedTypeMirror<QualParams<Tainting>> visitLiteral(LiteralTree tree, ExtendedTypeMirror type) {
                 QualifiedTypeMirror<QualParams<Tainting>> result = super.visitLiteral(tree, type);
                 if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
-                    result = SetQualifierVisitor.apply(result, new QualParams<>("Main", Tainting.UNTAINTED));
+                    // TODO: Fix, this is a defaults thing
+                    result = SetQualifierVisitor.apply(result, new QualParams<>("Main", new Wildcard<>(Tainting.UNTAINTED), new GroundQual<>(Tainting.UNTAINTED)));
+                    result = SetQualifierVisitor.apply(result, new QualParams<>("Main", new Wildcard<>(Tainting.UNTAINTED), new GroundQual<>(Tainting.UNTAINTED)));
                 }
                 return result;
             }
@@ -51,5 +55,10 @@ public class TaintingQualifiedTypeFactory extends QualifierParameterTypeFactory<
     @Override
     protected Wildcard<Tainting> combineForSubstitution(Wildcard<Tainting> a, Wildcard<Tainting> b) {
         return a.combineWith(b, lubOp, lubOp);
+    }
+
+    @Override
+    protected PolyQual<Tainting> combineForSubstitution(PolyQual<Tainting> a, PolyQual<Tainting> b) {
+        return a.combineWith(b, lubOp);
     }
 }

@@ -1,6 +1,7 @@
-// Test wildcards with method qualifier parameters.
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
+// Test wildcards with method qualifier parameters.
+// No corresponding primary test.
 abstract class Test {
     static void test1(@Tainted Integer i, @Extends @Tainted Integer j) { }
     @TaintingParam("Main")
