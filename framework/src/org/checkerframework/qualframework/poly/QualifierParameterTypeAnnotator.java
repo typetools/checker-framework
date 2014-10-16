@@ -58,10 +58,8 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
             case PACKAGE:
             case NONE:
             case TYPEVAR:
-                names = Collections.emptySet();
-                break;
             case ARRAY:
-                names = Collections.singleton("Main");
+                names = Collections.emptySet();
                 break;
             case INTERSECTION:
             case UNION:
@@ -75,7 +73,7 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
                 // take the parameters from the declaration of the boxed
                 // version of the primitive type?
                 if (type.getKind().isPrimitive()) {
-                    names = Collections.singleton("Main");
+                    names = Collections.emptySet();
                     break;
                 }
                 throw new IllegalArgumentException("unexpected type kind: " + type.getKind());

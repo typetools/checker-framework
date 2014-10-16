@@ -227,7 +227,7 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
             case INTERFACE:
             case ENUM:
                 // TODO: VERY VERY TEMPORARY
-                result.add("Main");
+//                result.add("Main");
                 break;
 
             case CONSTRUCTOR:
