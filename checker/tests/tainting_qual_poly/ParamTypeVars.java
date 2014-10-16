@@ -3,7 +3,7 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
 // Type variables and post-as-member-of
 // CANT USE Integer here!
-@TaintingParam("Param1")
+@ClassTaintingParam("Param1")
 class List<T> {
     // (T + MAIN) head
     @Var(value="Param1", target="Param2") T head;
@@ -11,7 +11,7 @@ class List<T> {
     @Var(value="Param1", target="Param1") List<T> tail;
 }
 
-@TaintingParam("Param2")
+@ClassTaintingParam("Param2")
 class A { }
 
 abstract class Test {

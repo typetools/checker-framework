@@ -2,7 +2,7 @@
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
 // Polymorphic method parameters
-@TaintingParam("Main")
+@ClassTaintingParam("Main")
 class A { }
 
 abstract class Test {

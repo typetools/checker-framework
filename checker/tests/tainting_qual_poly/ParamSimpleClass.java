@@ -2,14 +2,14 @@
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
 // Test qual param on a class
-@TaintingParam("Main")
+@ClassTaintingParam("Main")
 class A {
     public @Tainted(target="Main2") B x;
     public @Untainted(target="Main2") B y;
     public @Var(value="Main", target="Main2") B z;
 }
 
-@TaintingParam("Main2")
+@ClassTaintingParam("Main2")
 class B { }
 
 abstract class Test {
