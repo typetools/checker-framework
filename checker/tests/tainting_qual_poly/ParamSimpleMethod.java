@@ -7,7 +7,8 @@ class A { }
 
 abstract class Test {
     @TaintingParam("Main")
-    static void test(@Var("Main") A i, @Var("Main") A j) { }
+    static void test(@Var(value="Main", target="Main") A i,
+            @Var(value="Main", target="Main") A j) { }
 
     abstract @Tainted(target="Main") A makeTainted();
     abstract @Untainted(target="Main") A makeUntainted();
