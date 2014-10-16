@@ -9,5 +9,5 @@ import org.checkerframework.framework.qual.*;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Repeatable(MultiExtends.class)
 public @interface Extends {
-    String target() default "Main";
+    String target();
 }
