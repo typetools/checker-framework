@@ -4,17 +4,17 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 // Test qual param on a class, targeting the primary
 @ClassTaintingParam("Main")
 class A {
-    public @Tainted(target="_NONE_") Integer x;
-    public @Untainted(target="_NONE_") Integer y;
-    public @Var(value="Main", target="_NONE_") Integer z;
+    public @Tainted Integer x;
+    public @Untainted Integer y;
+    public @Var("Main") Integer z;
 }
 
 abstract class Test {
     abstract @Tainted(target="Main") A makeTainted();
     abstract @Untainted(target="Main") A makeUntainted();
 
-    abstract void takeTainted(@Tainted(target="_NONE_") Integer o);
-    abstract void takeUntainted(@Untainted(target="_NONE_") Integer o);
+    abstract void takeTainted(@Tainted Integer o);
+    abstract void takeUntainted(@Untainted Integer o);
 
     void test() {
         @Tainted(target="Main") A ta = makeTainted();

@@ -22,21 +22,40 @@ import org.checkerframework.qualframework.poly.Wildcard;
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
 public class TaintingAnnotationConverter implements QualifierParameterAnnotationConverter<Tainting> {
-    private Map<String, Wildcard<Tainting>> lookup;
+
     private CombiningOperation<Tainting> lubOp;
 
     // The default "Target" in an annotation is the primary qualifier
     // We can't use null in the annotation, so we must use a special value
-    public static final String PRIMARY_TARGET="_NONE_";
+    public static final String PRIMARY_TARGET="_primary";
+    private static final String POLY_NAME = "_poly";
+    private static final String MULTI_ANNO_NAME_PREFIX = MultiTainted.class.getPackage().getName() + ".Multi";
 
     private static final Tainting BOTTOM = Tainting.UNTAINTED;
     private static final Tainting TOP = Tainting.TAINTED;
 
-    private static final String MULTI_ANNO_NAME_PREFIX = MultiTainted.class.getPackage().getName() + ".Multi";
-    private static final String POLY_NAME = "_poly";
-
     public TaintingAnnotationConverter() {
         this.lubOp = new CombiningOperation.Lub<>(new TaintingQualifierHierarchy());
+    }
+
+    @Override
+    public QualParams<Tainting> fromAnnotations(Collection<? extends AnnotationMirror> annos) {
+        Map<String, Wildcard<Tainting>> params = new HashMap<>();
+        for (AnnotationMirror anno : annos) {
+            mergeParams(params, getQualifierMap(anno));
+        }
+        for (AnnotationMirror anno : annos) {
+            handleExtendsSuper(anno, params);
+        }
+
+        PolyQual<Tainting> primary = getPrimaryAnnotation(annos);
+        if (primary == null) {
+            // TODO: Add a way to change this defaulting
+
+            primary = new PolyQual.GroundQual<>(TOP);
+        }
+
+        return (params.isEmpty() && primary == null ? null : new QualParams<>(params, primary));
     }
 
     private void mergeParams(
@@ -61,7 +80,7 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
         }
     }
 
-    private Map<String, Wildcard<Tainting>> fromAnnotation(AnnotationMirror anno) {
+    private Map<String, Wildcard<Tainting>> getQualifierMap(AnnotationMirror anno) {
         String name = AnnotationUtils.annotationName(anno);
 
         if (name.startsWith(MULTI_ANNO_NAME_PREFIX)) {
@@ -69,7 +88,7 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
             AnnotationMirror[] subAnnos = AnnotationUtils.getElementValue(
                     anno, "value", AnnotationMirror[].class, true);
             for (AnnotationMirror subAnno : subAnnos) {
-                mergeParams(result, fromAnnotation(subAnno));
+                mergeParams(result, getQualifierMap(subAnno));
             }
             return result;
 
@@ -140,27 +159,8 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
         return false;
     }
 
-    @Override
-    public QualParams<Tainting> fromAnnotations(Collection<? extends AnnotationMirror> annos) {
-        Map<String, Wildcard<Tainting>> params = new HashMap<>();
-        for (AnnotationMirror anno : annos) {
-            mergeParams(params, fromAnnotation(anno));
-        }
-        for (AnnotationMirror anno : annos) {
-            handleExtendsSuper(anno, params);
-        }
-
-        PolyQual<Tainting> primary = getPrimaryAnnotation(annos);
-        if (primary == null) {
-            // TODO: Add a way to change this defaulting
-
-            primary = new PolyQual.GroundQual<>(TOP);
-        }
-
-        return (params.isEmpty() && primary == null ? null : new QualParams<>(params, primary));
-    }
-
     private PolyQual<Tainting> getPrimaryAnnotation(Collection<? extends AnnotationMirror> annos) {
+
         PolyQual<Tainting> result = null;
         for (AnnotationMirror anno : annos) {
             String name = AnnotationUtils.annotationName(anno);
@@ -200,12 +200,12 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
     @Override
     public boolean isAnnotationSupported(AnnotationMirror anno) {
         String name = AnnotationUtils.annotationName(anno);
-        // Avoid running fromAnnotation on Multi* annotations, since that could
+        // Avoid running getQualifierMap on Multi* annotations, since that could
         // involve a nontrivial amount of work.
         return name.startsWith(MULTI_ANNO_NAME_PREFIX)
             || name.equals(Extends.class.getName())
             || name.equals(Super.class.getName())
-            || fromAnnotation(anno) != null
+            || getQualifierMap(anno) != null
             || getPrimaryAnnotation(Arrays.asList(anno)) != null;
     }
 
