@@ -987,7 +987,8 @@ class Properties extends Hashtable<Object,Object> {
      * @see     #setProperty
      * @see     #defaults
      */
-    @Pure public @Nullable String getProperty(String key, String defaultValue) {
+    // For justification of the @PolyNull annotations, see issue #340.
+    @Pure public @PolyNull String getProperty(String key, @PolyNull String defaultValue) {
         String val = getProperty(key);
         return (val == null) ? defaultValue : val;
     }
