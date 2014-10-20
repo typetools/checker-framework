@@ -1,3 +1,10 @@
+Version 1.8.7, 3 November 2014
+
+
+Resolved issues:  200, 300, 332, 336, 340, 357, 359, 373, 374
+
+----------------------------------------------------------------------
+
 Version 1.8.6, 25 September 2014
 
 Method Reference and Lambda Expression Support:
