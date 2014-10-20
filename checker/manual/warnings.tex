@@ -80,18 +80,18 @@ type system.
 You can suppress a single warning message (or those in a single method or
 class) by using the following mechanisms:
 
-\begin{enumerate}
+\newcounter{lastsinglesuppression}
+\begin{itemize}
 \item
-  the \code{@SuppressWarnings} annotation (Section~\ref{suppresswarnings-annotation}),
+  the \code{@SuppressWarnings} annotation
+  (Section~\ref{suppresswarnings-annotation}), or
 \item
-  the \code{@AssumeAssertion} string in an \<assert> message (Section~\ref{assumeassertion}),
-      \setcounter{lastsinglesuppression}{\theenumi}
-\end{enumerate}
+  the \code{@AssumeAssertion} string in an \<assert> message (Section~\ref{assumeassertion}).
+\end{itemize}
 
 You can suppress warnings throughout the codebase by using the following mechanisms:
 
-\begin{enumerate}
-\setcounter{enumi}{\lastsinglesuppression}
+\begin{itemize}
 \item
   the \code{-AsuppressWarnings} command-line option (Section~\ref{suppresswarnings-command-line}),
 \item
@@ -99,12 +99,17 @@ You can suppress warnings throughout the codebase by using the following mechani
 \item
   the \code{-AskipDefs} and \code{-AonlyDefs} command-line options (Section~\ref{askipdefs}),
 \item
-  the \code{-Alint} command-line option (Section~\ref{alint}),
+  the \code{-Alint} command-line option (Section~\ref{alint}), or
 \item
-  not using the \code{-processor} command-line option (Section~\ref{no-processor}), or
+  not using the \code{-processor} command-line option
+  (Section~\ref{no-processor}).
+\end{itemize}
+
+Some type checkers can suppress warnings via
+\begin{itemize}
 \item
   checker-specific mechanisms (Section~\ref{checker-specific-suppression}).
-\end{enumerate}
+\end{itemize}
 
 \noindent
 We now explain these mechanisms in turn.
