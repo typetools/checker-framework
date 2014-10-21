@@ -20,6 +20,7 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedPara
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
+import org.checkerframework.qualframework.util.QualifierContext;
 
 /** Type factory with qualifier polymorphism support.  This type factory
  * extends an underlying qualifier system with qualifier variables, combined
@@ -30,6 +31,10 @@ import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
  */
 public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedTypeFactory<QualParams<Q>> {
     QualifierHierarchy<Q> groundHierarchy;
+
+    public QualifierParameterTypeFactory(QualifierContext<QualParams<Q>> context) {
+        super(context);
+    }
 
     @Override
     protected abstract QualifierParameterAnnotationConverter<Q> createAnnotationConverter();
