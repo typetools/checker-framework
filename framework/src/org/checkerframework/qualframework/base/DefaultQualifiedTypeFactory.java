@@ -22,6 +22,7 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExec
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
 import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
+import org.checkerframework.qualframework.util.QualifierContext;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror.WrappedAnnotatedTypeVariable;
 
@@ -64,13 +65,12 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     private TreeAnnotator<Q> treeAnnotator;
     private TypeAnnotator<Q> typeAnnotator;
 
-
     private QualifiedTypeFactoryAdapter<Q> adapter;
+    private QualifierContext<Q> context;
 
-    void setAdapter(QualifiedTypeFactoryAdapter<Q> adapter) {
-        this.adapter = adapter;
+    public DefaultQualifiedTypeFactory(QualifierContext<Q> context) {
+        this.context = context;
     }
-
 
     @Override
     public final QualifiedTypeMirror<Q> getQualifiedType(Element element) {
@@ -248,5 +248,13 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     public QualifiedTypeMirror<Q> postTypeVarSubstitution(QualifiedParameterDeclaration<Q> varDecl,
             QualifiedTypeVariable<Q> varUse, QualifiedTypeMirror<Q> value) {
         return adapter.superPostTypeVarSubstitution(varDecl, varUse, value);
+    }
+
+    public QualifierContext<Q> getContext() {
+        return context;
+    }
+
+    void setAdapter(QualifiedTypeFactoryAdapter<Q> adapter) {
+        this.adapter = adapter;
     }
 }

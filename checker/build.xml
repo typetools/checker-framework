@@ -690,6 +690,13 @@
         </antcall>
     </target>
 
+    <target name="regex_qual-tests" depends="jar,build-tests"
+            description="Run tests for the qualifier API Regex Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.RegexQualTest"/>
+        </antcall>
+    </target>
+
     <target name="signature-tests" depends="jar,build-tests"
             description="Run tests for the Signature Checker">
         <antcall target="-run-tests">

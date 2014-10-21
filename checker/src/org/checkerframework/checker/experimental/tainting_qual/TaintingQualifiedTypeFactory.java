@@ -13,8 +13,14 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDecl
 import org.checkerframework.qualframework.base.SetQualifierVisitor;
 import org.checkerframework.qualframework.base.TreeAnnotator;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
+import org.checkerframework.qualframework.util.QualifierContext;
 
 public class TaintingQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Tainting> {
+
+    public TaintingQualifiedTypeFactory(QualifierContext<Tainting> context) {
+        super(context);
+    }
+
     @Override
     protected QualifierHierarchy<Tainting> createQualifierHierarchy() {
         return new TaintingQualifierHierarchy();

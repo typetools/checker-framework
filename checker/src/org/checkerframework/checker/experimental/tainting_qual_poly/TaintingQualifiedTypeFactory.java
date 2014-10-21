@@ -21,8 +21,14 @@ import org.checkerframework.qualframework.poly.QualifierParameterTypeFactory;
 import org.checkerframework.qualframework.poly.QualifierParameterTreeAnnotator;
 import org.checkerframework.qualframework.poly.QualParams;
 import org.checkerframework.qualframework.poly.Wildcard;
+import org.checkerframework.qualframework.util.QualifierContext;
 
 public class TaintingQualifiedTypeFactory extends QualifierParameterTypeFactory<Tainting> {
+
+    public TaintingQualifiedTypeFactory(QualifierContext<QualParams<Tainting>> context) {
+        super(context);
+    }
+
     @Override
     protected QualifierHierarchy<Tainting> createGroundQualifierHierarchy() {
         return new TaintingQualifierHierarchy();
