@@ -231,9 +231,11 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
 
     @Override
     public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable var) {
-        // Same logic as getWildcardBoundedBy.
-        AnnotatedWildcardType result = super.getUninferredWildcardType(var);
-        typeAnnotator.scanAndReduce(result, null, null);
+        // TODO: Need to comment what this is doing.
+        AnnotatedTypeVariable copy = var.getCopy(true);
+        copy.addAnnotations(copy.getBounds().getUpperBound().getAnnotations());
+        AnnotatedWildcardType result = super.getUninferredWildcardType(copy);
+
         return result;
     }
 
