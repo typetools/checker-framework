@@ -780,7 +780,10 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                     if (AnnotationUtils.areSameIgnoringValues(
                             getValueAnnotation(lhsType), STRINGVAL)) {
                         argClass = getAnnotationValueClass(getValueAnnotation(lhsType));
-                    } else {
+                    } if (AnnotationUtils.areSameByClass(
+                            getValueAnnotation(lhsType), BoolVal.class)) {
+                        argClass = getAnnotationValueClass(getValueAnnotation(lhsType));
+                    }else {
                         argClass = getTypeValueClass("double", tree);
                         handleBinaryCast(tree.getLeftOperand(), lhsType,
                                 tree.getRightOperand(), rhsType, "double");
@@ -1406,9 +1409,12 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
             AnnotationMirror recAnno = getValueAnnotation(receiverType);
 
             if (AnnotationUtils.areSameIgnoringValues(recAnno, ARRAYLEN)) {
-                HashSet<Long> lengthValues = new HashSet<Long>(
-                        AnnotationUtils.getElementValueArray(recAnno, "value",
-                                Long.class, true));
+                List<Integer>lengthInts =  AnnotationUtils.getElementValueArray(recAnno, "value",
+                                Integer.class, true);
+                HashSet<Long> lengthValues = new HashSet<>();
+                for(int i: lengthInts){
+                	lengthValues.add((long) i);
+                }
 
                 return createAnnotation(
                         "org.checkerframework.common.value.qual.IntVal",
@@ -1924,9 +1930,12 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 AnnotationMirror treeAnno = getValueAnnotation(treeType);
 
                 String anno = "org.checkerframework.common.value.qual.";
-                if (castTypeString.equals("boolean")) {
-                    // do nothing
-                } else if (castTypeString.equals("java.lang.String")) {
+				if (castTypeString.equalsIgnoreCase("boolean")
+						|| AnnotationUtils.areSameByClass(
+								treeType.getAnnotationInHierarchy(UNKNOWNVAL),
+								BoolVal.class) || this.nonValueAnno(treeType)) {
+					// do nothing
+				} else if (castTypeString.equals("java.lang.String")) {
                     HashSet<String> newValues = new HashSet<String>();
                     List<Object> valuesToCast = AnnotationUtils
                             .getElementValueArray(treeAnno, "value",
