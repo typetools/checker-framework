@@ -598,8 +598,12 @@ The traditional way to do this is to write an import statement like
 compiles the code (no matter what compiler they use, and even if the
 annotations are in comments) must have the annotation definitions (e.g.,
 the \code{checker.jar} or \code{checker-qual.jar} file) on their
-classpath.  The reason is that a Java compiler issues an error if an
-imported package is not on the classpath.  See Section~\ref{distributing}.
+classpath.  
+% The reason is that a Java compiler issues an error if an
+% imported package is not on the classpath.
+The disadvantage of having the annotation definitions on the classpath is
+that it makes it impossible to compile to Java 7 classfiles.
+See Section~\ref{distributing}.
 
 \item
 Write an import statement in a comment, just as for annotations in comments:
