@@ -460,7 +460,9 @@ To compile the code:
   These appear in the full Checker Framework.  Additionally, the Checker
   Framework distribution \code{.zip} file contains a small jar file,
   \code{checker-qual.jar}, that only contains the definitions of the
-  distributed qualifiers and some run-time utilities, without any support for type-checking.
+  distributed qualifiers and some run-time utilities, without any support
+  for type-checking.  Because the annotations use Java 8 features, only do
+  this if you are compiling to Java 8 classfiles.
 \end{itemize}
 \item
 To run the code:
@@ -558,8 +560,11 @@ Unsound checking: ignore some errors
 More sound (strict) checking: enable errors that are disabled by default
 \begin{itemize}
 \item \<-AcheckPurityAnnotations>
-  Check the bodies of methods marked \<@SideEffectFree>, \<@Deterministic>,
-  and \<@Pure> to ensure the method satisfies the annotation.  By default,
+  Check the bodies of methods marked
+  \refqualclass{dataflow/qual}{SideEffectFree},
+  \refqualclass{dataflow/qual}{Deterministic},
+  and \refqualclass{dataflow/qual}{Pure}
+  to ensure the method satisfies the annotation.  By default,
   the Checker Framework unsoundly trusts the method annotation.  See
   Section~\ref{type-refinement-purity}.
 \item \<-AinvariantArrays>
@@ -580,8 +585,11 @@ Type-checking modes:  enable/disable functionality
   With each warning, show all possible keys to suppress that warning;
   see Section~\ref{suppresswarnings-command-line}
 \item \<-AsuggestPureMethods>
-  Suggest methods that could be marked \<@SideEffectFree>,
-  \<@Deterministic>, or \<@Pure>; see Section~\ref{type-refinement-purity}.
+  Suggest methods that could be marked
+  \refqualclass{dataflow/qual}{SideEffectFree},
+  \refqualclass{dataflow/qual}{Deterministic},
+  or \refqualclass{dataflow/qual}{Pure}; see
+  Section~\ref{type-refinement-purity}.
 \item \<-AcheckCastElementType>
   In a cast, require that parameterized type arguments and array elements
   are the same.  By default, the Checker Framework unsoundly permits them

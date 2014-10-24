@@ -352,6 +352,7 @@ public class SupertypeFinder extends SimpleAnnotatedTypeVisitor<List<? extends A
 
 
     // Version of method below for declared types
+    /** @see Types#directSupertypes(TypeMirror) */
     public static List<AnnotatedDeclaredType> directSuperTypes(AnnotatedDeclaredType type) {
         SupertypeFinder superTypeFinder = new SupertypeFinder(type.atypeFactory);
         List<AnnotatedDeclaredType> supertypes = superTypeFinder.visitDeclared(type, null);
@@ -360,6 +361,7 @@ public class SupertypeFinder extends SimpleAnnotatedTypeVisitor<List<? extends A
     }
 
     // Version of method above for all types
+    /** @see Types#directSupertypes(TypeMirror) */
     public static final List<? extends AnnotatedTypeMirror> directSuperTypes(AnnotatedTypeMirror type) {
         SupertypeFinder superTypeFinder = new SupertypeFinder(type.atypeFactory);
         List<? extends AnnotatedTypeMirror> supertypes = superTypeFinder.visit(type, null);

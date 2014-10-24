@@ -9,6 +9,10 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -25,9 +29,9 @@ import com.sun.source.tree.Tree;
  * {@link #methodFromUse(MethodInvocationTree)} is called for a reflective
  * method invocation and reflection can be resolved, then the annotations of the
  * resolved method are returned.
- * 
+ *
  * @author rjust
- * 
+ *
  */
 public class ReflectionResolutionAnnotatedTypeFactory extends
         BaseAnnotatedTypeFactory {
@@ -37,7 +41,7 @@ public class ReflectionResolutionAnnotatedTypeFactory extends
     private final List<BaseAnnotatedTypeFactory> factories = new LinkedList<>();
 
     /**
-     * 
+     *
      * @param checker
      *            The checker of the used type system
      */
@@ -67,6 +71,16 @@ public class ReflectionResolutionAnnotatedTypeFactory extends
         for (BaseAnnotatedTypeFactory factory : factories) {
             factory.setRoot(root);
         }
+    }
+
+    @Override
+    public CFTransfer createFlowTransferFunction(
+            CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+        // The super implementation uses the name of the checker
+        // to reflectively create a transfer with the checker name followed
+        // by Transfer. Since this factory is intended to be used with
+        // any checker, explicitly create the default CFTransfer
+        return new CFTransfer(analysis);
     }
 
     @Override

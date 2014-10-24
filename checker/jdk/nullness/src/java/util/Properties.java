@@ -1,6 +1,7 @@
 package java.util;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 
 public class Properties extends Hashtable<Object, Object> {
   private static final long serialVersionUID = 0;
@@ -16,7 +17,7 @@ public class Properties extends Hashtable<Object, Object> {
   public synchronized void storeToXML(java.io.OutputStream a1, @Nullable String a2)throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public synchronized void storeToXML(java.io.OutputStream a1, @Nullable String a2, String a3)throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   @Pure public @Nullable String getProperty(String a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public @Nullable String getProperty(String a1, String a2) { throw new RuntimeException("skeleton method"); }
+  @Pure public @PolyNull String getProperty(String a1, @PolyNull String a2) { throw new RuntimeException("skeleton method"); }
   public Enumeration<?> propertyNames() { throw new RuntimeException("skeleton method"); }
   public Set<String> stringPropertyNames() { throw new RuntimeException("skeleton method"); }
   public void list(java.io.PrintStream a1) { throw new RuntimeException("skeleton method"); }

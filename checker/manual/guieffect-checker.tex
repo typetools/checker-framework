@@ -267,16 +267,16 @@ qualifiers before a use of the type:
 As an example:
 
 \begin{alltt}
-@AlwaysSafe Runnable s = ...;     s.run();     // s.run() is @SafeEffect
-@PolyUI Runnable p = ...;   p.run();     // p.run() is @PolyUIEffect (context-dependent)
-@UI Runnable u = ...;       u.run();     // u.run() is @UIEffect
+@AlwaysSafe Runnable s = ...;    s.run();    // s.run() is @SafeEffect
+@PolyUI Runnable p = ...;        p.run();    // p.run() is @PolyUIEffect (context-dependent)
+@UI Runnable u = ...;            u.run();    // u.run() is @UIEffect
 \end{alltt}
 
 It is an error to apply an effect instantiation qualifier to a type that is not effect-polymorphic.
 
 \subsection{Subclassing a specific instantiation of an effect-polymorphic type\label{guieffect-subclassing}}
 Sometimes you may wish to subclass a specific instantiation of an effect-polymorphic type, just as
-you may extend \code{List<Runnable>}.
+you may extend \code{List<String>}.
 
 To do this, simply place the effect instantiation qualifier by the name of the type you are
 defining, e.g.:
