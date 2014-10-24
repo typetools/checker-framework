@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 
@@ -19,13 +20,12 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.TypeQualifiers;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
+
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TypeHierarchy;
+import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -109,26 +109,31 @@ public class KeyForAnnotatedTypeFactory extends
     // System.out.println("looking at call: " + call);
     Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(call);
     AnnotatedExecutableType method = mfuPair.first;
+    ExecutableElement methElem = method.getElement();
+    AnnotatedExecutableType declMethod = this.getAnnotatedType(methElem);
 
     Map<AnnotatedTypeMirror, AnnotatedTypeMirror> mappings = new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>();
 
     // Modify parameters
     List<AnnotatedTypeMirror> params = method.getParameterTypes();
-    for (AnnotatedTypeMirror param : params) {
-      AnnotatedTypeMirror subst = substituteCall(call, param);
+    List<AnnotatedTypeMirror> declParams = declMethod.getParameterTypes();
+    assert params.size() == declParams.size();
+
+    for (int i = 0; i < params.size(); ++i) {
+      AnnotatedTypeMirror param = params.get(i);
+      AnnotatedTypeMirror subst = substituteCall(call, declParams.get(i), param);
       mappings.put(param, subst);
     }
 
     // Modify return type
     AnnotatedTypeMirror returnType = method.getReturnType();
     if (returnType.getKind() != TypeKind.VOID ) {
-      AnnotatedTypeMirror subst = substituteCall(call, returnType);
+      AnnotatedTypeMirror subst = substituteCall(call, declMethod.getReturnType(), returnType);
       mappings.put(returnType, subst);
     }
 
     // TODO: upper bounds, throws?
-
-    method = (AnnotatedExecutableType)method.substitute(mappings);
+    method = (AnnotatedExecutableType) method.substitute(mappings);
 
     // System.out.println("adapted method: " + method);
 
@@ -157,12 +162,12 @@ public class KeyForAnnotatedTypeFactory extends
   // TODO: doc
   // TODO: "this" should be implicitly prepended
   // TODO: substitutions also need to be applied to argument types
-  private AnnotatedTypeMirror substituteCall(MethodInvocationTree call, AnnotatedTypeMirror inType) {
+  private AnnotatedTypeMirror substituteCall(MethodInvocationTree call, AnnotatedTypeMirror declInType, AnnotatedTypeMirror inType) {
 
     // System.out.println("input type: " + inType);
     AnnotatedTypeMirror outType = inType.getCopy(true);
 
-    AnnotationMirror anno = inType.getAnnotation(KeyFor.class);
+    AnnotationMirror anno = declInType.getAnnotation(KeyFor.class);
     if (anno != null) {
 
       List<String> inMaps = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
@@ -203,23 +208,33 @@ public class KeyForAnnotatedTypeFactory extends
       outType.addAnnotation(newAnno);
     }
 
-    if (outType.getKind() == TypeKind.DECLARED) {
+    if (declInType.getKind() == TypeKind.DECLARED &&
+      outType.getKind() == TypeKind.DECLARED) {
       AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) outType;
+      AnnotatedDeclaredType declDeclaredType = (AnnotatedDeclaredType) declInType;
       Map<AnnotatedTypeMirror, AnnotatedTypeMirror> mapping = new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>();
 
+      List<AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
+      List<AnnotatedTypeMirror> declTypeArgs = declDeclaredType.getTypeArguments();
+
+      assert typeArgs.size() == declTypeArgs.size();
+
       // Get the substituted type arguments
-      for (AnnotatedTypeMirror typeArgument : declaredType.getTypeArguments()) {
-        AnnotatedTypeMirror substTypeArgument = substituteCall(call, typeArgument);
+      for (int i = 0; i < typeArgs.size(); ++i) {
+        AnnotatedTypeMirror typeArgument = typeArgs.get(i);
+        AnnotatedTypeMirror substTypeArgument = substituteCall(call, declTypeArgs.get(i), typeArgument);
         mapping.put(typeArgument, substTypeArgument);
       }
 
       outType = declaredType.substitute(mapping);
-    } else if (outType.getKind() == TypeKind.ARRAY) {
-      AnnotatedArrayType  arrayType = (AnnotatedArrayType) outType;
+    } else if (declInType.getKind() == TypeKind.ARRAY &
+            outType.getKind() == TypeKind.ARRAY) {
+      AnnotatedArrayType arrayType = (AnnotatedArrayType) outType;
+      AnnotatedArrayType declArrayType = (AnnotatedArrayType) declInType;
 
       // Get the substituted component type
       AnnotatedTypeMirror elemType = arrayType.getComponentType();
-      AnnotatedTypeMirror substElemType = substituteCall(call, elemType);
+      AnnotatedTypeMirror substElemType = substituteCall(call, declArrayType.getComponentType(), elemType);
 
       arrayType.setComponentType(substElemType);
       // outType aliases arrayType
@@ -239,86 +254,84 @@ public class KeyForAnnotatedTypeFactory extends
 
   @Override
   protected TypeHierarchy createTypeHierarchy() {
-      return new KeyForTypeHierarchy(checker, getQualifierHierarchy());
+      return new KeyForTypeHierarchy(checker, getQualifierHierarchy(),
+                                     checker.hasOption("ignoreRawTypeArguments"),
+                                     checker.hasOption("invariantArrays"));
   }
 
-  private class KeyForTypeHierarchy extends TypeHierarchy {
+  protected class KeyForTypeHierarchy extends DefaultTypeHierarchy {
 
-      public KeyForTypeHierarchy(BaseTypeChecker checker, QualifierHierarchy qualifierHierarchy) {
-          super(checker, qualifierHierarchy);
+      public KeyForTypeHierarchy(BaseTypeChecker checker, QualifierHierarchy qualifierHierarchy,
+                                 boolean ignoreRawTypes, boolean invariantArrayComponents) {
+          super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents);
       }
 
       @Override
-      public final boolean isSubtype(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
-          if (lhs.getKind() == TypeKind.TYPEVAR &&
-                  rhs.getKind() == TypeKind.TYPEVAR) {
+      public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, VisitHistory visited) {
+
+          //TODO: THIS IS FROM THE OLD TYPE HIERARCHY.  WE SHOULD FIX DATA-FLOW/PROPAGATION TO DO THE RIGHT THING
+          if (supertype.getKind() == TypeKind.TYPEVAR &&
+              subtype.getKind() == TypeKind.TYPEVAR) {
               // TODO: Investigate whether there is a nicer and more proper way to
               // get assignments between two type variables working.
-              if (lhs.getAnnotations().isEmpty()) {
+              if (supertype.getAnnotations().isEmpty()) {
                   return true;
               }
           }
+
           // Otherwise Covariant would cause trouble.
-          if (rhs.hasAnnotation(KeyForBottom.class)) {
+          if (subtype.hasAnnotation(KeyForBottom.class)) {
               return true;
           }
-          return super.isSubtype(rhs, lhs);
+          return super.isSubtype(subtype, supertype, visited);
       }
 
-      @Override
-      protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
-          if (ignoreRawTypeArguments(rhs, lhs)) {
-              return true;
-          }
 
-          List<AnnotatedTypeMirror> rhsTypeArgs = rhs.getTypeArguments();
-          List<AnnotatedTypeMirror> lhsTypeArgs = lhs.getTypeArguments();
-
-          if (rhsTypeArgs.isEmpty() || lhsTypeArgs.isEmpty())
-              return true;
-
-          TypeElement lhsElem = (TypeElement) lhs.getUnderlyingType().asElement();
-          // TypeElement rhsElem = (TypeElement) lhs.getUnderlyingType().asElement();
-          // the following would be needed if Covariant were per type parameter
-          // AnnotatedDeclaredType lhsDecl = currentATF.fromElement(lhsElem);
-          // AnnotatedDeclaredType rhsDecl = currentATF.fromElement(rhsElem);
-          // List<AnnotatedTypeMirror> lhsTVs = lhsDecl.getTypeArguments();
-          // List<AnnotatedTypeMirror> rhsTVs = rhsDecl.getTypeArguments();
-
-          // TODO: implementation of @Covariant should be done in the standard TypeHierarchy
-          int[] covarVals = null;
-          if (lhsElem.getAnnotation(Covariant.class) != null) {
-              covarVals = lhsElem.getAnnotation(Covariant.class).value();
-          }
-
-
-          if (lhsTypeArgs.size() != rhsTypeArgs.size()) {
-              // This test fails e.g. for casts from a type with one type
-              // argument to a type with two type arguments.
-              // See test case nullness/generics/GenericsCasts
-              // TODO: shouldn't the type be brought to a common type before
-              // this?
-              return true;
-          }
-
-          for (int i = 0; i < lhsTypeArgs.size(); ++i) {
-              boolean covar = false;
-              if (covarVals != null) {
-                  for (int cvv = 0; cvv < covarVals.length; ++cvv) {
-                      if (covarVals[cvv] == i) {
-                          covar = true;
-                      }
+      protected boolean isCovariant(final int typeArgIndex, final int[] covariantArgIndexes) {
+          if(covariantArgIndexes != null) {
+              for (int covariantIndex : covariantArgIndexes) {
+                  if (typeArgIndex == covariantIndex) {
+                      return true;
                   }
               }
+          }
 
-              if (covar) {
-                  if (!isSubtype(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
-                      // TODO: still check whether isSubtypeAsTypeArgument returns true.
-                      // This handles wildcards better.
-                      return isSubtypeAsTypeArgument(rhsTypeArgs.get(i), lhsTypeArgs.get(i));
-              } else {
-                  if (!isSubtypeAsTypeArgument(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
-                      return false;
+          return false;
+      }
+      @Override
+      public Boolean visitTypeArgs(AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype,
+                                      VisitHistory visited,  boolean subtypeIsRaw, boolean supertypeIsRaw) {
+          final boolean ignoreTypeArgs = ignoreRawTypes && (subtypeIsRaw || supertypeIsRaw);
+
+          if (!ignoreTypeArgs) {
+
+              //TODO: Make an option for honoring this annotation in DefaultTypeHierarchy?
+              final TypeElement supertypeElem = (TypeElement) supertype.getUnderlyingType().asElement();
+              int[] covariantArgIndexes = null;
+              if (supertypeElem.getAnnotation(Covariant.class) != null) {
+                  covariantArgIndexes = supertypeElem.getAnnotation(Covariant.class).value();
+              }
+
+              final List<? extends AnnotatedTypeMirror> subtypeTypeArgs   = subtype.getTypeArguments();
+              final List<? extends AnnotatedTypeMirror> supertypeTypeArgs = supertype.getTypeArguments();
+
+              if( subtypeTypeArgs.isEmpty() || supertypeTypeArgs.isEmpty() ) {
+                  return true;
+              }
+
+              if (supertypeTypeArgs.size() > 0) {
+                  for (int i = 0; i < supertypeTypeArgs.size(); i++) {
+                      final AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);
+                      final AnnotatedTypeMirror subTypeArg   = subtypeTypeArgs.get(i);
+
+                      if(subtypeIsRaw || supertypeIsRaw) {
+                          rawnessComparer.isValid(subtype, supertype, visited);
+                      } else {
+                          if (!isContainedBy(subTypeArg, superTypeArg, visited, isCovariant(i, covariantArgIndexes))) {
+                              return false;
+                          }
+                      }
+                  }
               }
           }
 

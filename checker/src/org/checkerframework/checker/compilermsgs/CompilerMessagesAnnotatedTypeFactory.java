@@ -1,6 +1,7 @@
 package org.checkerframework.checker.compilermsgs;
 
 import com.sun.source.tree.Tree;
+
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.propkey.PropertyKeyAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;

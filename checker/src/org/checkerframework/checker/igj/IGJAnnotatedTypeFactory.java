@@ -16,13 +16,11 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 
-import org.checkerframework.checker.i18n.qual.LocalizableKey;
 import org.checkerframework.checker.igj.qual.AssignsFields;
 import org.checkerframework.checker.igj.qual.I;
 import org.checkerframework.checker.igj.qual.Immutable;
 import org.checkerframework.checker.igj.qual.Mutable;
 import org.checkerframework.checker.igj.qual.ReadOnly;
-import org.checkerframework.checker.propkey.PropertyKeyAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.*;
@@ -33,6 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
+import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -833,7 +832,9 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TypeHierarchy createTypeHierarchy() {
-        return new IGJTypeHierarchy(checker, getQualifierHierarchy());
+        return new IGJTypeHierarchy(checker, getQualifierHierarchy(),
+                                    checker.hasOption("ignoreRawTypeArguments"),
+                                    checker.hasOption("invariantArrays"));
     }
 
     //
@@ -914,29 +915,16 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * 2. If the type is a read-only or an immutable type, then type arguments
      *    may change co-variantly in a safe manner
      */
-    private final class IGJTypeHierarchy extends TypeHierarchy {
-        public IGJTypeHierarchy(BaseTypeChecker checker, QualifierHierarchy qualifierHierarchy) {
-            super(checker, qualifierHierarchy);
-        }
+    private final class IGJTypeHierarchy extends DefaultTypeHierarchy {
 
-        /**
-         * Returns true if either of the provided types is a
-         * {@link IGJBottom}, otherwise uses the JLS specification
-         * implemented by the abstract {@link typeHierarchy}.
-         *
-         */
-        // Note: This cannot be expressed with the QualifierHierarchy alone,
-        // as TypeHierarchy requires type arguments to be equivalent
-        @Override
-        protected boolean isSubtypeAsTypeArgument(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
-            return (lhs.hasEffectiveAnnotation(BOTTOM_QUAL)
-                    || rhs.hasEffectiveAnnotation(BOTTOM_QUAL)
-                    || super.isSubtypeAsTypeArgument(rhs, lhs));
+        public IGJTypeHierarchy(BaseTypeChecker checker, QualifierHierarchy qualifierHierarchy,
+                                boolean ignoreRawTypes, boolean invariantArrayComponents) {
+            super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents, true);
         }
 
 
         /**
-         * Uses the JLS specification (as implemented in {@link TypeHierarchy},
+         * Uses the JLS specification (as implemented in {@link org.checkerframework.framework.type.DefaultTypeHierarchy},
          * if the variable type, lhs, is mutable; otherwise, allows the type
          * arguments to change while maintaining subtype relationship.
          *
@@ -944,23 +932,32 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * <pre>  @Mutable List&lt;@Mutable Date&gt; &lt;: @ReadOnly List&lt;@ReadOnly Date&gt;<\pre>
          */
         @Override
-        protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
-            if (ignoreRawTypeArguments(rhs, lhs)) {
+        public Boolean visitTypeArgs(final AnnotatedDeclaredType subtype, final AnnotatedDeclaredType supertype,
+                                      final VisitHistory visited, final boolean subtypeIsRaw, final boolean supertypeIsRaw) {
+
+            boolean ignoreTypeArgs = ignoreRawTypes && (subtypeIsRaw || supertypeIsRaw);
+
+            if(!ignoreTypeArgs) {
+                if (supertype.hasEffectiveAnnotation(MUTABLE)) {
+                    return super.visitTypeArgs(subtype, supertype, visited,  subtypeIsRaw, supertypeIsRaw);
+                }
+
+                return super.visitTypeArgs(subtype, supertype, visited, subtypeIsRaw, supertypeIsRaw);
+            }
+
+            return true;
+        }
+
+        //NOTE: This is needed because sometimes we call the supertype behavior of visitTypeArgs and
+        @Override
+        protected boolean isContainedBy(AnnotatedTypeMirror inside, AnnotatedTypeMirror outside,
+                                        VisitHistory visited, boolean canBeCovariant) {
+            //seems weird to have both inside and outside checked for BOTTOM_QUAL
+            if (inside.hasEffectiveAnnotation(BOTTOM_QUAL) || outside.hasEffectiveAnnotation(BOTTOM_QUAL)) {
                 return true;
             }
 
-            if (lhs.hasEffectiveAnnotation(MUTABLE))
-                return super.isSubtypeTypeArguments(rhs, lhs);
-
-            if (!lhs.getTypeArguments().isEmpty()
-                    && !rhs.getTypeArguments().isEmpty()) {
-                assert lhs.getTypeArguments().size() == rhs.getTypeArguments().size();
-                for (int i = 0; i < lhs.getTypeArguments().size(); ++i) {
-                    if (!isSubtype(rhs.getTypeArguments().get(i), lhs.getTypeArguments().get(i)))
-                        return false;
-                }
-            }
-            return true;
+            return super.isContainedBy(inside, outside, visited, canBeCovariant);
         }
     }
 

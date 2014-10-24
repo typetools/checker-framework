@@ -31,6 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
+import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -774,37 +775,32 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     //
     @Override
     protected TypeHierarchy createTypeHierarchy() {
-        return new OIGJImmutabilityTypeHierarchy(checker, getQualifierHierarchy());
+        return new OIGJImmutabilityTypeHierarchy(checker, getQualifierHierarchy(),
+                                                 checker.hasOption("ignoreRawTypeArguments"),
+                                                 checker.hasOption("invariantArrays"));
     }
 
-    private final class OIGJImmutabilityTypeHierarchy extends TypeHierarchy {
+    private final class OIGJImmutabilityTypeHierarchy extends DefaultTypeHierarchy {
 
-        public OIGJImmutabilityTypeHierarchy(BaseTypeChecker checker,
-                QualifierHierarchy qualifierHierarchy) {
-            super(checker, qualifierHierarchy);
+        public OIGJImmutabilityTypeHierarchy(BaseTypeChecker checker, QualifierHierarchy qualifierHierarchy,
+                                boolean ignoreRawTypes, boolean invariantArrayComponents) {
+            super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents, true);
         }
 
-        /**
-         * OIGJ Rule 6. <b>Same-class subtype definition</b>
-         */
-        // TODO: Handle CoVariant(X_i, C)
         @Override
-        protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
-            if (ignoreRawTypeArguments(rhs, lhs)) {
-                return true;
-            }
+        public Boolean visitTypeArgs(final AnnotatedDeclaredType subtype, final AnnotatedDeclaredType supertype,
+                                        final VisitHistory visited,  final boolean subtypeIsRaw, final boolean supertypeIsRaw) {
 
-            if (lhs.hasEffectiveAnnotation(MUTABLE))
-                return super.isSubtypeTypeArguments(rhs, lhs);
+            boolean ignoreTypeArgs = ignoreRawTypes && (subtypeIsRaw || supertypeIsRaw);
 
-            if (!lhs.getTypeArguments().isEmpty()
-                    && !rhs.getTypeArguments().isEmpty()) {
-                assert lhs.getTypeArguments().size() == rhs.getTypeArguments().size();
-                for (int i = 0; i < lhs.getTypeArguments().size(); ++i) {
-                    if (!isSubtype(rhs.getTypeArguments().get(i), lhs.getTypeArguments().get(i)))
-                        return false;
+            if( !ignoreTypeArgs ) {
+                if (supertype.hasEffectiveAnnotation(MUTABLE)) {
+                    return super.visitTypeArgs(subtype, supertype, visited, subtypeIsRaw, supertypeIsRaw);
                 }
+
+                return super.visitTypeArgs(subtype, supertype, visited, subtypeIsRaw, supertypeIsRaw);
             }
+
             return true;
         }
     }

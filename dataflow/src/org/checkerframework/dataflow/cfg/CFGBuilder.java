@@ -236,7 +236,7 @@ public class CFGBuilder {
      * Class declarations that have been encountered when building the
      * control-flow graph for a method.
      */
-    protected List<ClassTree> declaredClasses;
+    protected final List<ClassTree> declaredClasses = new LinkedList<>();
 
     public List<ClassTree> getDeclaredClasses() {
         return declaredClasses;
@@ -246,7 +246,7 @@ public class CFGBuilder {
      * Lambdas encountered when building the control-flow graph for
      * a method, variable initializer, or initializer.
      */
-    protected List<LambdaExpressionTree> declaredLambdas;
+    protected final List<LambdaExpressionTree> declaredLambdas = new LinkedList<>();
 
     public List<LambdaExpressionTree> getDeclaredLambdas() {
         return declaredLambdas;
@@ -304,8 +304,8 @@ public class CFGBuilder {
     public ControlFlowGraph run(
             CompilationUnitTree root, ProcessingEnvironment env,
             UnderlyingAST underlyingAST) {
-        declaredClasses = new LinkedList<>();
-        declaredLambdas = new LinkedList<>();
+        declaredClasses.clear();
+        declaredLambdas.clear();
 
         TreeBuilder builder = new TreeBuilder(env);
         AnnotationProvider annotationProvider = new BasicAnnotationProvider();
@@ -325,7 +325,7 @@ public class CFGBuilder {
     public ControlFlowGraph run(
             TreePath bodyPath, ProcessingEnvironment env,
             UnderlyingAST underlyingAST) {
-        declaredClasses = new LinkedList<>();
+        declaredClasses.clear();
         TreeBuilder builder = new TreeBuilder(env);
         AnnotationProvider annotationProvider = new BasicAnnotationProvider();
         PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
