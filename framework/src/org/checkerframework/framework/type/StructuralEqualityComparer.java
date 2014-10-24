@@ -187,9 +187,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             return false;
         }
         visited.add(type1, type2);
-        visitTypeArgs(type1, type2, visited);
-
-        return true;
+        return visitTypeArgs(type1, type2, visited);
     }
 
     /**
