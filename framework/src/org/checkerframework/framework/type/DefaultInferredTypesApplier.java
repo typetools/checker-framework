@@ -3,6 +3,7 @@ package org.checkerframework.framework.type;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
+import org.checkerframework.javacutil.ErrorReporter;
 
 import javax.lang.model.element.AnnotationMirror;
 
@@ -10,6 +11,20 @@ import javax.lang.model.element.AnnotationMirror;
  * Utility class for applying the annotations inferred by dataflow to a given type.
  */
 public class DefaultInferredTypesApplier {
+
+    //At the moment, only Inference uses the omitSubtypingCheck option
+    //in actuality the subtyping check should be unnecessary since inferred
+    //types should be subtypes of their declaration
+    private final boolean omitSubtypingCheck;
+
+    public DefaultInferredTypesApplier() {
+        omitSubtypingCheck = false;
+    }
+
+    public DefaultInferredTypesApplier(boolean omitSubtypingCheck) {
+        this.omitSubtypingCheck = omitSubtypingCheck;
+    }
+
 
     /**
      * For each top in qualifier hierarchy, traverse inferred and copy the required annotations over to
@@ -19,8 +34,8 @@ public class DefaultInferredTypesApplier {
      * @param inferred The type inferred by data flow
      */
     public void applyInferredType(final QualifierHierarchy qualifierHierarchy,
-                                         final AnnotatedTypeMirror type, final AnnotatedTypeMirror inferred) {
-        final InferredTypeApplyingVisitor applier = new InferredTypeApplyingVisitor(qualifierHierarchy);
+                                  final AnnotatedTypeMirror type, final AnnotatedTypeMirror inferred) {
+        final InferredTypeApplyingVisitor applier = new InferredTypeApplyingVisitor(qualifierHierarchy, omitSubtypingCheck);
         for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations())  {
             applier.visit(type, inferred, top);
         }
@@ -32,11 +47,12 @@ public class DefaultInferredTypesApplier {
      * type to annotate is a wildcard or type variable.
      */
     protected static class InferredTypeApplyingVisitor extends AbstractAtmComboVisitor<Void, AnnotationMirror> {
-
+        private final boolean omitSubtypingCheck;
         private QualifierHierarchy qualifierHierarchy;
 
-        public InferredTypeApplyingVisitor(QualifierHierarchy qualifierHierarchy) {
+        public InferredTypeApplyingVisitor(QualifierHierarchy qualifierHierarchy, boolean omitSubtypingCheck) {
             this.qualifierHierarchy = qualifierHierarchy;
+            this.omitSubtypingCheck = omitSubtypingCheck;
         }
 
         @Override
@@ -62,27 +78,22 @@ public class DefaultInferredTypesApplier {
                 // We inferred an annotation.
                 AnnotationMirror present = type.getAnnotationInHierarchy(top);
                 if (present != null) {
-                    if (qualifierHierarchy.isSubtype(inferredAnnotation, present)) {
-                        // TODO: why is the above check needed?
-                        // Shouldn't inferred qualifiers always be
-                        // subtypes?
+                    if (omitSubtypingCheck || qualifierHierarchy.isSubtype(inferredAnnotation, present)) {
                         type.replaceAnnotation(inferredAnnotation);
+
+                    } else {
+// TODO: UNCOMMENT AND FIX UNARIES AND OTHER CASES THAT LEAD TO THIS ISSUE
+//                        ErrorReporter.errorAbort(
+//                            "Inferred type is above present type:\n"
+//                          + "inferredAnnotation=" + inferredAnnotation + "\n"
+//                          + "present=" + present
+//                        );
                     }
                 } else {
                     type.addAnnotation(inferredAnnotation);
                 }
             }
 
-            return null;
-        }
-
-        //TODO: REMOVE
-        //This is overriden so that we don't have to provide null checks on the wildcard bounds (which are sometimes null)
-        @Override
-        public Void visit(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotationMirror annotationMirror) {
-            if (type1 != null || type2!= null) {
-                super.visit(type1, type2, annotationMirror);
-            }
             return null;
         }
 
