@@ -494,7 +494,8 @@ on which it is built.)
 \subsection{Annotations in comments\label{annotations-in-comments}}
 
 A Java 4 compiler does not permit use of
-annotations, and a Java 5/6/7 compiler only permits annotations on
+annotations.
+A Java 5/6/7 compiler only permits annotations on
 declarations (but not on generic arguments, casts, \<extends> clauses, method receiver, etc.).
 
 So that your code can be compiled by any Java compiler (for any version of
@@ -512,7 +513,7 @@ or \code{8}.
 In a single program, you may write some annotations in comments, and others
 outside of comments.
 
-By default, the compiler ignores any comment that contains spaces at the
+By default, the Checker Framework compiler ignores any comment that contains spaces at the
 beginning or end, or between the \code{@} and the annotation name.
 In other words, it reads \code{/*@NonNull*/} as an annotation but ignores
 \code{/* @NonNull*/} or \code{/*@ NonNull*/} or \code{/*@NonNull */}.
@@ -542,22 +543,20 @@ then you can either selectively add spaces to the comments or use
 comments.
 
 There is a more powerful mechanism that permits arbitrary code to be
-written in a comment that is formatted as ``\code{/*>>>}\ldots\code{*/}'',
+written in a comment.  Format the comment as ``\code{/*>>>}\ldots\code{*/}'',
 with the first three characters of the comment being greater-than signs. As
 with annotations in comments, the commented code is ignored by ordinary
-compilers but is treated like ordinary code by the
+compilers but is treated like code by the
 Checker Framework compiler.
 
 This mechanism is intended for two purposes.
-First, it supports the receiver (\<this> parameter) syntax, as in
+First, it supports the receiver (\<this> parameter) syntax.  For example,
+to specify a method that does not modify its receiver:
 
 \begin{Verbatim}
 public boolean getResult(/*>>> @ReadOnly MyClass this*/) { ... }
 public boolean getResult(/*>>> @ReadOnly MyClass this, */ String argument) { ... }
 \end{Verbatim}
-
-\noindent
-for a method that does not modify its receiver.
 
 Second, it can be used for import statements:
 
@@ -569,7 +568,14 @@ import org.checkerframework.checker.regex.qual.*;
 \end{Verbatim}
 
 \noindent
-Such a use avoids dependences on qualifiers.  It also eliminates Eclipse
+Such a use avoids dependences on qualifiers.
+If the import statements are not commented out, there are two potential
+disadvantages.  First, it is necessary to have the annotation definitions (e.g.,
+the \code{checker.jar} or \code{checker-qual.jar} file) on the
+classpath when compiling.  Second, the resulting classfiles can only be run
+on a Java 8 JVM, because the Checker Framework qualifiers use Java 8 features.
+
+Commenting out the import statements also eliminates Eclipse
 warnings about unused import statements, if all uses of the imported
 qualifier are themselves in comments and thus invisible to Eclipse.
 
@@ -598,8 +604,12 @@ The traditional way to do this is to write an import statement like
 compiles the code (no matter what compiler they use, and even if the
 annotations are in comments) must have the annotation definitions (e.g.,
 the \code{checker.jar} or \code{checker-qual.jar} file) on their
-classpath.  The reason is that a Java compiler issues an error if an
-imported package is not on the classpath.  See Section~\ref{distributing}.
+classpath.  
+% The reason is that a Java compiler issues an error if an
+% imported package is not on the classpath.
+The disadvantage of having the annotation definitions on the classpath is
+that it makes it impossible to compile to Java 7 classfiles.
+See Section~\ref{distributing}.
 
 \item
 Write an import statement in a comment, just as for annotations in comments:
@@ -667,7 +677,8 @@ warnings about quoting from the command line, apply as for the
 
 Suppose that your codebase currently uses annotations in comments, but you
 wish to remove the comment characters around your annotations, because in
-the future you will use only compilers that support type annotations.
+the future you will use only compilers that support type annotations and
+your code will only run on Java 8 JVMs.
 This Unix command removes
 the comment characters, for all Java files in the current
 working directory or any subdirectory.
@@ -730,20 +741,47 @@ as in \code{List<@NonNull String>}.  A downside is that use of these type
 annotations creates a dependency on Java~8, which means that the compiled
 program requires a Java 8 JDK at run time. 
 
-To ensure that your program can run on a Java~7 JVM, you can use
-annotations that are Java~7 declaration annotations.  These can only be
-written at code locations that are legal for both declaration and type
-annotations, such as for fields, method returns, and method parameters.
+To ensure that your program can run on a Java~7 JVM, you have two options:
 
-If you wish to write type annotations at other locations such as generic
-type parameters and \<extends>
-clauses, then you should write them in comments so that a standard Java 7
-compiler will ignore them, and be sure to distributed binaries that were
-created by a standard Java 7 compiler (not the Checker Framework compiler,
-which reads annotations in comments and writes them to classfiles).
+\begin{enumerate}
+\item
+Write all the type annotations in comments, and compile with an ordinary Java
+compiler rather than the Checker Framework compiler.  
+You will still do pluggable type-checking using the Checker Framework
+compiler.  You may wish to supply the \<-proc:only> command-line argument
+so that it does not overwrite existing classfiles.
 
-For example, if you wish to run the Nullness Checker using with Java~7
-declaration annotations rather than type annotations, you have two options.
+One downside of this
+approach is that it produces classfiles that contain no trace of
+your type annotations.  This means that you need to compile your entire
+application every time you do pluggable type-checking, rather than just
+compiling a subset of the files.
+
+Another downside of this approach is that pluggable type-checking is a
+different step than ``real'' compilation, rather than both happening at the
+same time.  You will do pluggable type-checking first, and when it works or
+when you want to create a binary to distribute to others, you will compile
+with an ordinary Java compiler.
+
+\item
+Use annotations that are Java~7 declaration annotations.
+This approach requires you to use annotations that are declared in
+different packages than usual and that have slightly different names.
+\begin{itemize}
+\item
+At code locations that are legal for both declaration and type
+annotations (such as for fields, method returns, and method parameters),
+write annotations normally (not in comments).
+\item
+At locations where a declaration annotation is not permitted
+(such as generic type parameters and \<extends> clauses), write
+annotations in comments.
+\end{itemize}
+\end{enumerate}
+
+Here are more details about the second approach.
+Suppose you wish to run the Nullness Checker using Java~7
+declaration annotations rather than type annotations.  You have two options.
 
 \begin{enumerate}
 \item
@@ -752,7 +790,9 @@ annotations for the Nullness Checker are listed in
 Section~\ref{nullness-related-work}.
 
 At locations where only type annotations are possible, use the
-``\<*Type>'' compatibility annotations in comments.  For example, the Nullness Checker
+``\<*Type>'' compatibility annotations from package
+\<org.checkerframework.checker.nullness.compatqual>
+in comments.  For example, the Nullness Checker
 declares these declaration annotations:
 \refqualclass{checker/nullness/compatqual}{NullableType},
 \refqualclass{checker/nullness/compatqual}{NonNullType},
@@ -761,7 +801,9 @@ declares these declaration annotations:
 \refqualclass{checker/nullness/compatqual}{KeyForType}.
 
 \item
-Use ``\<*Decl>'' compatibility annotations.  For example, the Nullness Checker
+Use ``\<*Decl>'' compatibility annotations from package
+\<org.checkerframework.checker.nullness.compatqual>.
+For example, the Nullness Checker
 declares these declaration annotations:
 \refqualclass{checker/nullness/compatqual}{NullableDecl},
 \refqualclass{checker/nullness/compatqual}{NonNullDecl},
