@@ -7,8 +7,8 @@ public final class Scanner implements Iterator<String> {
   public Scanner(Readable a1) { throw new RuntimeException("skeleton method"); }
   public Scanner(java.io.InputStream a1) { throw new RuntimeException("skeleton method"); }
   public Scanner(java.io.InputStream a1, String a2) { throw new RuntimeException("skeleton method"); }
-  public Scanner(java.io.File a1)throws java.io.FileNotFoundException { throw new RuntimeException("skeleton method"); }
-  public Scanner(java.io.File a1, String a2)throws java.io.FileNotFoundException { throw new RuntimeException("skeleton method"); }
+  public Scanner(java.io.File a1) throws java.io.FileNotFoundException { throw new RuntimeException("skeleton method"); }
+  public Scanner(java.io.File a1, String a2) throws java.io.FileNotFoundException { throw new RuntimeException("skeleton method"); }
   public Scanner(String a1) { throw new RuntimeException("skeleton method"); }
   public Scanner(java.nio.channels.ReadableByteChannel a1) { throw new RuntimeException("skeleton method"); }
   public Scanner(java.nio.channels.ReadableByteChannel a1, String a2) { throw new RuntimeException("skeleton method"); }

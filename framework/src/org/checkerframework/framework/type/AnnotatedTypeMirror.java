@@ -2591,6 +2591,7 @@ public abstract class AnnotatedTypeMirror {
         }
     }
 
+    /** @see Types#directSupertypes(TypeMirror) */
     public List<? extends AnnotatedTypeMirror> directSuperTypes() {
         return SupertypeFinder.directSuperTypes(this);
     }

@@ -22,7 +22,7 @@ svg-copy:
 	epstopdf $<
 
 value-subtyping.eps:	
-	
+
 clean:
 	@\rm ${EPSFILES}
 	@\rm ${PDFFILES}

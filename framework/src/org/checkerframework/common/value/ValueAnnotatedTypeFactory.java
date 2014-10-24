@@ -8,6 +8,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -23,21 +24,30 @@ import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TreeAnnotator;
+import org.checkerframework.framework.type.TypeAnnotator;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -48,8 +58,8 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -60,12 +70,14 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.tree.JCTree.JCBinary;
+import com.sun.tools.javac.tree.JCTree.JCUnary;
 
 /**
  * @author plvines
- * 
+ *
  *         AnnotatedTypeFactory for the Value type system.
- * 
+ *
  */
 @TypeQualifiers({ ArrayLen.class, BoolVal.class, DoubleVal.class, IntVal.class,
         StringVal.class, BottomVal.class, UnknownVal.class }) public class ValueAnnotatedTypeFactory
@@ -85,13 +97,17 @@ import com.sun.source.util.TreePath;
                                                 // array
     protected final List<AnnotationMirror> constantAnnotations;
     protected Set<String> coveredClassStrings;
+    /**
+     * propTreeCache ensures that the ValueATF terminates on compound binary/unary trees.
+     */
+    private final Map<Tree, AnnotatedTypeMirror> propTreeCache = createLRUCache(200);
 
     /**
      * Constructor. Initializes all the AnnotationMirror constants.
-     * 
+     *
      * @param checker
      *            The checker used with this AnnotatedTypeFactory
-     * 
+     *
      */
     public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -142,11 +158,34 @@ import com.sun.source.util.TreePath;
         }
     }
 
+    @Override
+    public CFTransfer createFlowTransferFunction(
+            CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+        // The super implementation uses the name of the checker
+        // to reflectively create a transfer with the checker name followed
+        // by Transfer. Since this factory is intended to be used with
+        // any checker, explicitly create the default CFTransfer
+        return new CFTransfer(analysis);
+    }
+
+    @Override
+    public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
+        if(propTreeCache.containsKey(tree)){
+            return AnnotatedTypes.deepCopy(propTreeCache.get(tree));
+        }
+        AnnotatedTypeMirror anno = super.getAnnotatedType(tree);
+        if(tree instanceof JCBinary ||
+                tree instanceof JCUnary){
+            propTreeCache.put(tree, AnnotatedTypes.deepCopy(anno));
+        }
+        return anno;
+    }
+
     /**
      * Creates an annotation of the name given with the set of values given.
      * Issues a checker warning and return UNKNOWNVAL if values.size &gt;
      * MAX_VALUES
-     * 
+     *
      * @param name
      * @param values
      * @return annotation given by name with values=values, or UNKNOWNVAL
@@ -224,7 +263,7 @@ import com.sun.source.util.TreePath;
         /**
          * @param factory
          *            MultiGraphFactory to use to construct this
-         * 
+         *
          * @return
          */
         public ValueQualifierHierarchy(
@@ -240,10 +279,10 @@ import com.sun.source.util.TreePath;
          * mergeable because some values can be implicitly cast as others. If a1
          * and a2 are both in {DoubleVal, IntVal} then they will be converted
          * upwards: IntVal -> DoubleVal to arrive at a common annotation type.
-         * 
+         *
          * @param a1
          * @param a2
-         * 
+         *
          * @return the least upper bound of a1 and a2
          */
         @Override public AnnotationMirror leastUpperBound(AnnotationMirror a1,
@@ -314,10 +353,10 @@ import com.sun.source.util.TreePath;
          * Computes subtyping as per the subtyping in the qualifier hierarchy
          * structure unless both annotations are Value. In this case, rhs is a
          * subtype of lhs iff lhs contains at least every element of rhs
-         * 
+         *
          * @param rhs
          * @param lhs
-         * 
+         *
          * @return true if rhs is a subtype of lhs, false otherwise
          */
         @Override public boolean isSubtype(AnnotationMirror rhs,
@@ -377,9 +416,13 @@ import com.sun.source.util.TreePath;
 
     }
 
-    @Override protected TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(super.createTreeAnnotator(),
-                new ValueTreeAnnotator(this));
+    @Override
+    protected TreeAnnotator createTreeAnnotator() {
+
+        // The ValueTreeAnnotator handles propagation differently,
+        // so it doesn't need PropgationTreeAnnotator. Also, the ValueChecker does not have
+        // any implicit annotations, so there is no need to run the ImplicitTreeAnnotator.
+        return new ValueTreeAnnotator(this);
     }
 
     @Override protected QualifierDefaults createQualifierDefaults() {
@@ -480,7 +523,7 @@ import com.sun.source.util.TreePath;
          * Recursive method to handle array initializations. Recursively
          * descends the initializer to find each dimension's size and create the
          * appropriate annotation for it.
-         * 
+         *
          * @param dimensions
          *            a list of ExpressionTrees where each ExpressionTree is a
          *            specifier of the size of that dimension (should be an
@@ -656,7 +699,7 @@ import com.sun.source.util.TreePath;
          * The values in the annotations of the arguments will be converted to
          * the type of argClass. Thus argClass should always result in a
          * lossless casting (e.g. int to long).
-         * 
+         *
          * @param lhsType
          *            the annotated type mirror of the LHS argument
          * @param rhsType
@@ -668,8 +711,8 @@ import com.sun.source.util.TreePath;
          *            code)
          * @param tree
          *            location to provide to error message
-         * 
-         * 
+         *
+         *
          * @return
          */
         private AnnotationMirror evaluateUnaryOperator(
@@ -737,7 +780,10 @@ import com.sun.source.util.TreePath;
                     if (AnnotationUtils.areSameIgnoringValues(
                             getValueAnnotation(lhsType), STRINGVAL)) {
                         argClass = getAnnotationValueClass(getValueAnnotation(lhsType));
-                    } else {
+                    } if (AnnotationUtils.areSameByClass(
+                            getValueAnnotation(lhsType), BoolVal.class)) {
+                        argClass = getAnnotationValueClass(getValueAnnotation(lhsType));
+                    }else {
                         argClass = getTypeValueClass("double", tree);
                         handleBinaryCast(tree.getLeftOperand(), lhsType,
                                 tree.getRightOperand(), rhsType, "double");
@@ -759,7 +805,7 @@ import com.sun.source.util.TreePath;
          * Casts the two arguments of a binary operator to the final type of
          * that operator. i.e. double + int -> double so DoubleVal + IntVal ->
          * DoubleVal
-         * 
+         *
          * @param lhs
          * @param lhsType
          * @param rhs
@@ -807,7 +853,7 @@ import com.sun.source.util.TreePath;
          * The values in the annotations of the arguments will be converted to
          * the type of argClass. Thus argClass should always result in a
          * lossless casting (e.g. int to long).
-         * 
+         *
          * @param lhsType
          *            the annotated type mirror of the LHS argument
          * @param rhsType
@@ -852,11 +898,11 @@ import com.sun.source.util.TreePath;
         /**
          * Simple method to take a MemberSelectTree representing a method call
          * and determine if the method's return is annotated with
-         * 
+         *
          * @StaticallyExecutable.
-         * 
+         *
          * @param method
-         * 
+         *
          * @return
          */
         private boolean methodIsStaticallyExecutable(Element method) {
@@ -959,7 +1005,7 @@ import com.sun.source.util.TreePath;
          * Method for reflectively obtaining a method object so it can
          * (potentially) be statically executed by the checker for constant
          * propagation
-         * 
+         *
          * @param tree
          * @return the Method object corresponding to the method being invoke in
          *         tree
@@ -1006,7 +1052,7 @@ import com.sun.source.util.TreePath;
         /**
          * Evaluates the possible results of a method and returns an annotation
          * containing those results.
-         * 
+         *
          * @param recType
          *            the AnnotatedTypeMirror of the receiver
          * @param method
@@ -1019,7 +1065,7 @@ import com.sun.source.util.TreePath;
          *            to determine the type of AnnotationMirr to return
          * @param tree
          *            location for error reporting
-         * 
+         *
          * @return an AnnotationMirror of the type specified by retType's
          *         underlyingType and with its value array populated by all the
          *         possible evaluations of method. Or UnknownVal
@@ -1053,7 +1099,7 @@ import com.sun.source.util.TreePath;
          * recursion, all possible values for an argument are incremented
          * through and the method is invoked on each one and the result is added
          * to the results list.
-         * 
+         *
          * @param argArrayDeque
          *            ArrayDeque of Lists of Objects representing possible
          *            values for each argument
@@ -1201,7 +1247,7 @@ import com.sun.source.util.TreePath;
         /**
          * Attempts to evaluate a New call by retrieving the constructor and
          * invoking it reflectively.
-         * 
+         *
          * @param constructor
          *            the constructor to invoke
          * @param argTypes
@@ -1211,7 +1257,7 @@ import com.sun.source.util.TreePath;
          *            determine what the return AnnotationMirror should be
          * @param tree
          *            location for error reporting
-         * 
+         *
          * @return an AnnotationMirror containing all the possible values of the
          *         New call based on combinations of argument values
          */
@@ -1232,7 +1278,7 @@ import com.sun.source.util.TreePath;
         /**
          * Recurses through all the possible argument values and invokes the
          * constructor on each one, adding the result to the results list
-         * 
+         *
          * @param argArrayDeque
          *            ArrayDeque of List of Object containing all the argument
          *            values
@@ -1339,7 +1385,7 @@ import com.sun.source.util.TreePath;
                         && !tree.getIdentifier().toString().equals("class")) {
                     //if an element is not a compile-time constant, we still might be able to find the value
                     //if the type of the field is a wrapped primitive class.
-                    //eg Boolean.FALSE 
+                    //eg Boolean.FALSE
                     TypeMirror retType = elem.asType();
                     AnnotationMirror newAnno = evaluateStaticFieldAccess(
                             tree.getIdentifier(), retType, tree);
@@ -1355,7 +1401,7 @@ import com.sun.source.util.TreePath;
          * If the receiverType object has an ArrayLen annotation it returns an
          * IntVal with all the ArrayLen annotation's values as its possible
          * values.
-         * 
+         *
          * @param receiverType
          */
         private AnnotationMirror handleArrayLength(
@@ -1363,9 +1409,12 @@ import com.sun.source.util.TreePath;
             AnnotationMirror recAnno = getValueAnnotation(receiverType);
 
             if (AnnotationUtils.areSameIgnoringValues(recAnno, ARRAYLEN)) {
-                HashSet<Long> lengthValues = new HashSet<Long>(
-                        AnnotationUtils.getElementValueArray(recAnno, "value",
-                                Long.class, true));
+                List<Integer>lengthInts =  AnnotationUtils.getElementValueArray(recAnno, "value",
+                                Integer.class, true);
+                HashSet<Long> lengthValues = new HashSet<>();
+                for(int i: lengthInts){
+                	lengthValues.add((long) i);
+                }
 
                 return createAnnotation(
                         "org.checkerframework.common.value.qual.IntVal",
@@ -1378,7 +1427,7 @@ import com.sun.source.util.TreePath;
         /**
          * Evalautes a static field access by getting the field reflectively
          * from the field name and class name
-         * 
+         *
          * @param fieldName
          *            the field to be access
          * @param recType
@@ -1387,7 +1436,7 @@ import com.sun.source.util.TreePath;
          *            the Class object to get the field from
          * @param tree
          *            location for error reporting
-         * 
+         *
          * @return
          */
         private AnnotationMirror evaluateStaticFieldAccess(Name fieldName,
@@ -1418,7 +1467,7 @@ import com.sun.source.util.TreePath;
         /**
          * Overloaded method for convenience of dealing with
          * AnnotatedTypeMirrors. See isClassCovered(TypeMirror type) below
-         * 
+         *
          * @param type
          * @return
          */
@@ -1427,7 +1476,7 @@ import com.sun.source.util.TreePath;
         }
 
         /**
-         * 
+         *
          * @param type
          * @return true if the type name is in coveredClassStrings
          */
@@ -1442,11 +1491,11 @@ import com.sun.source.util.TreePath;
          * To get the Class corresponding to the value array a value annotation
          * has for a given type, use getTypeValueClass. (e.g. "int" return
          * Long.class)
-         * 
+         *
          * @param stringType
          * @param tree
          *            location for error reporting
-         * 
+         *
          * @return
          */
         private Class<?> getClass(String stringType, Tree tree) {
@@ -1490,7 +1539,7 @@ import com.sun.source.util.TreePath;
         }
 
         /**
-         * 
+         *
          * @param anno
          * @return the Class object for the value array of an annotation or null
          *         if the annotation has no value array
@@ -1517,11 +1566,11 @@ import com.sun.source.util.TreePath;
          * IntVal stores its values as a List<Long>. To get the primitive Class
          * corresponding to a string name, use getClass (e.g. "int" and
          * "java.lang.Integer" give int.class)
-         * 
+         *
          * @param stringType
          * @param tree
          *            location for error reporting
-         * 
+         *
          * @return
          */
         private Class<?> getTypeValueClass(String stringType, Tree tree) {
@@ -1566,11 +1615,11 @@ import com.sun.source.util.TreePath;
         /**
          * Gets a Class[] from a List of AnnotatedTypeMirror by calling getClass
          * on the underlying type of each element
-         * 
+         *
          * @param typeList
          * @param tree
          *            location for error reporting
-         * 
+         *
          * @return
          */
         private Class<?>[] getClassList(List<AnnotatedTypeMirror> typeList,
@@ -1589,13 +1638,13 @@ import com.sun.source.util.TreePath;
          * Extracts the list of values on an annotation as a List of Object
          * while ensuring the actual type of each element is the same type as
          * the underlyingType of the typeMirror input
-         * 
+         *
          * @param typeMirror
          *            the AnnotatedTypeMirror to pull values from and use to
          *            determine what type to cast the values to
          * @param tree
          *            location for error reporting
-         * 
+         *
          * @return List of Object where each element is the same type as the
          *         underlyingType of typeMirror
          */
@@ -1610,7 +1659,7 @@ import com.sun.source.util.TreePath;
          * Extracts the list of values on an annotation as a List of Object
          * while ensuring the actual type of each element is the same type as
          * the underlyingType of the typeMirror input
-         * 
+         *
          * @param underlyingType
          *            the type to cast values to
          *
@@ -1619,7 +1668,7 @@ import com.sun.source.util.TreePath;
          *            determine what type to cast the values to
          * @param tree
          *            location for error reporting
-         * 
+         *
          * @return List of Object where each element is the same type as the
          *         underlyingType of typeMirror
          */
@@ -1659,10 +1708,10 @@ import com.sun.source.util.TreePath;
          * evaluate method and constructor invocations, which will pop argument
          * values off and push them onto another deque, so the order actually
          * gets reversed twice and the original order is maintained.
-         * 
+         *
          * @param argTypes
          *            a List of AnnotatedTypeMirror elements
-         * 
+         *
          * @param tree
          *            location for error reporting
          *
@@ -1682,7 +1731,7 @@ import com.sun.source.util.TreePath;
 
         /**
          * Changes all elements in a List of Object from origClass to newClass.
-         * 
+         *
          * @param listToFix
          * @param origClass
          *            is in {Double.class, Long.class}
@@ -1748,14 +1797,14 @@ import com.sun.source.util.TreePath;
 
         /**
          * Overloaded version to accept an AnnotatedTypeMirror
-         * 
+         *
          * @param resultType
          *            is evaluated using getClass to derived a Class object for
          *            passing to the other resultAnnotationHandler function
          * @param results
          * @param tree
          *            location for error reporting
-         * 
+         *
          * @return
          */
         private AnnotationMirror resultAnnotationHandler(
@@ -1776,12 +1825,12 @@ import com.sun.source.util.TreePath;
          * apply to, with the annotation containing results in its value field.
          * Annotations should never have empty value fields, so if |results| ==
          * 0 then UnknownVal is returned.
-         * 
+         *
          * @param resultClass
          *            the Class to return an annotation
          * @param results
          *            the results to go in the annotation's value field
-         * 
+         *
          * @return an AnnotationMirror containing results and corresponding to
          *         resultClass, if possible. UnknownVal otherwise
          */
@@ -1865,7 +1914,7 @@ import com.sun.source.util.TreePath;
          * specified by the value of castTypeString. If this conversion is not
          * possible, the AnnotatedTypeMirror remains unchanged. Otherwise, the
          * new annotation is created and replaces the old annotation on type
-         * 
+         *
          * @param tree
          *            the ExpressionTree for the object being cast
          * @param castTypeString
@@ -1881,9 +1930,12 @@ import com.sun.source.util.TreePath;
                 AnnotationMirror treeAnno = getValueAnnotation(treeType);
 
                 String anno = "org.checkerframework.common.value.qual.";
-                if (castTypeString.equals("boolean")) {
-                    // do nothing
-                } else if (castTypeString.equals("java.lang.String")) {
+				if (castTypeString.equalsIgnoreCase("boolean")
+						|| AnnotationUtils.areSameByClass(
+								treeType.getAnnotationInHierarchy(UNKNOWNVAL),
+								BoolVal.class) || this.nonValueAnno(treeType)) {
+					// do nothing
+				} else if (castTypeString.equals("java.lang.String")) {
                     HashSet<String> newValues = new HashSet<String>();
                     List<Object> valuesToCast = AnnotationUtils
                             .getElementValueArray(treeAnno, "value",
@@ -1958,9 +2010,9 @@ import com.sun.source.util.TreePath;
         /**
          * Extract annotation in the Constant Value Checker's type hierarchy (if
          * one exists)
-         * 
+         *
          * @param atm
-         * 
+         *
          * @return
          */
         private AnnotationMirror getValueAnnotation(AnnotatedTypeMirror atm) {
@@ -1994,9 +2046,9 @@ import com.sun.source.util.TreePath;
     }
 
     /**
-     * 
+     *
      * @param anno
-     * 
+     *
      * @return true if anno is an IntVal or DoubleVal, false otheriwse
      */
     private boolean isNumberAnnotation(AnnotationMirror anno) {

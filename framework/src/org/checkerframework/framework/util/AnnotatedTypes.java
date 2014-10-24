@@ -4,30 +4,6 @@ package org.checkerframework.framework.util;
 import org.checkerframework.checker.nullness.qual.*;
 */
 
-import java.util.ArrayList;
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-
-import com.sun.source.tree.*;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Type;
 import org.checkerframework.framework.flow.util.LubTypeVariableAnnotator;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.TypeQualifier;
@@ -46,7 +22,46 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+
 import com.sun.source.util.TreePath;
+
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type;
 
 /**
  * Utility methods for operating on {@code AnnotatedTypeMirror}. This
@@ -493,7 +508,7 @@ public class AnnotatedTypes {
      */
     public static Set<AnnotatedDeclaredType> getSuperTypes(AnnotatedDeclaredType type) {
 
-        Set<AnnotatedDeclaredType> supertypes = new HashSet<>();
+        Set<AnnotatedDeclaredType> supertypes = new LinkedHashSet<>();
         if (type == null)
             return supertypes;
 
@@ -558,7 +573,7 @@ public class AnnotatedTypes {
             Elements elements,
             ExecutableElement method, Collection<AnnotatedDeclaredType> supertypes) {
 
-        Map<AnnotatedDeclaredType, ExecutableElement> overrides = new HashMap<>();
+        Map<AnnotatedDeclaredType, ExecutableElement> overrides = new LinkedHashMap<>();
 
         for (AnnotatedDeclaredType supertype : supertypes) {
             /*@Nullable*/ TypeElement superElement =
@@ -587,7 +602,7 @@ public class AnnotatedTypes {
      * were specified and otherwise it infers them based on the passed arguments
      * or the return type context, according to JLS 15.12.2.
      *
-     * @param the processing environment
+     * @param processingEnv
      * @param atypeFactory the annotated type factory
      * @param expr the method or constructor invocation tree; the passed argument
      *   has to be a subtype of MethodInvocationTree or NewClassTree.
@@ -799,10 +814,8 @@ public class AnnotatedTypes {
     /**
      * Infer the type argument for a single type variable.
      *
-     * @param typeVar the method or constructor type variable to infer
      * @param returnType the return type
      * @param typeArgumentsFromAssignment
-     * @param exeType the executable type of the method or constructor
      * @param expr the method or constructor invocation tree; the passed argument
      *   has to be a subtype of MethodInvocationTree or NewClassTree.
      * @return the type argument
