@@ -494,7 +494,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
             the current version.  Lower or equivalent versions are not possible and
             will be rejected when you try to push the release.
             <br/> <br/>
-            The JSR308-Langtools version ALWAYS matches the Checker Framework version.
+            The jsr308-langtools version ALWAYS matches the Checker Framework version.
             <br/>
             <br/>
             <p class="alert alert-warning"><strong>Note:</strong> If you pass --auto on the command
@@ -505,14 +505,23 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         <td colspan="2">
             <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
             <strong>Build Step 4: Verify changelogs.</strong><br/>
-            All changelogs should be up to date before releasing.  However, we manually verify this
+            All changelogs should be up-to-date before releasing.  However, we manually verify this
             during the build process.  This step extracts the changesets that have occurred
-            since the last release and write them to a file.  Please look through these changesets and
+            since the last release and writes them to a file.  Please look through these changesets and
             ensure we have not missed any relevant messages in the changelog.  The release script will
             indicate what changelog you should edit in case there are missing changes.  These changes
-            will be committed when you run the release_push.py script.<br/><br/>
-            Also, please verify that all changelog messages follow the guidelines found in:<b>
-            <a href="#changelog_guide">Changelog Guidelines</a></b><br /><br />
+            will be committed when you run the release_push.py script.
+            <br/><br/>
+            Verify that all changelog messages follow the guidelines found in:<b>
+            <a href="#changelog_guide">Changelog Guidelines</a></b>
+            <br /><br />
+            Finally, ensure that the changelog ends with a line like
+            <pre>Resolved issues:  200, 300, 332, 336, 357, 359, 373, 374</pre>
+            You can compute the relevant numbers by visiting these two URLs:<br/>
+            <a href="https://code.google.com/p/checker-framework/issues/list?q=status%3APushed">https://code.google.com/p/checker-framework/issues/list?q=status%3APushed</a><br/>
+            <a href="https://code.google.com/p/checker-framework/issues/list?can=1&q=closed-after%3A2014%2F09%2F25">https://code.google.com/p/checker-framework/issues/list?can=1&q=closed-after%3A2014%2F09%2F25</a><br/>
+            though you will need to adjust the date in the latter URL to be the date of the previous release.
+            <br/><br/>
 
             If <code>release_build</code> fails later on and you need to restart it, I recommend you make copies of
             the changelogs you modified on your local machine, push the changes to those changelogs,
