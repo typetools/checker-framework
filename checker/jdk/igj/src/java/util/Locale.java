@@ -38,8 +38,8 @@ public final class Locale implements @Immutable Cloneable, java.io. @Immutable S
   public String getCountry() { throw new RuntimeException("skeleton method"); }
   public String getVariant() { throw new RuntimeException("skeleton method"); }
   public final String toString() { throw new RuntimeException("skeleton method"); }
-  public String getISO3Language()throws MissingResourceException { throw new RuntimeException("skeleton method"); }
-  public String getISO3Country()throws MissingResourceException { throw new RuntimeException("skeleton method"); }
+  public String getISO3Language() throws MissingResourceException { throw new RuntimeException("skeleton method"); }
+  public String getISO3Country() throws MissingResourceException { throw new RuntimeException("skeleton method"); }
   public final String getDisplayLanguage() { throw new RuntimeException("skeleton method"); }
   public String getDisplayLanguage(Locale a1) { throw new RuntimeException("skeleton method"); }
   public final String getDisplayCountry() { throw new RuntimeException("skeleton method"); }
