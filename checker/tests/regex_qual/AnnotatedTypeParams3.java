@@ -3,6 +3,7 @@ import java.lang.annotation.Annotation;
 
 import org.checkerframework.checker.experimental.regex_qual.qual.*;
 
+/** @skip-test */
 class AnnotatedTypeParams3 {
     private <T extends Annotation> T
             safeGetAnnotation(Field f, Class<T> annotationClass) {

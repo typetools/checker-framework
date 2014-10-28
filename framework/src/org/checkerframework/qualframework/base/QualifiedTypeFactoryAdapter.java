@@ -4,10 +4,18 @@ import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
+
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.dataflow.analysis.TransferFunction;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
@@ -16,6 +24,8 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.Pair;
 
+import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
+import org.checkerframework.qualframework.base.dataflow.QualTransferAdapter;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
@@ -345,4 +355,15 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         QualifiedTypeMirror<Q> qualResult = conv.getQualifiedType(annoValue);
         return qualResult;
     }
+
+//    private QualAnalysis<Q> qualAnalysis;
+//    @Override
+//    public CFTransfer createFlowTransferFunction(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+//        if (qualAnalysis == null) {
+//            // TODO: We should do something better than just using null here.
+//            qualAnalysis = underlying.createFlowAnalysis(null);
+//            qualAnalysis.setAdapter(analysis);
+//        }
+//        return new QualTransferAdapter<Q>(qualAnalysis.createTransferFunction(), analysis, qualAnalysis);
+//    }
 }
