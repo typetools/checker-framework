@@ -4000,7 +4000,16 @@ public class CFGBuilder {
             return node;
         }
 
+        /**
+         * Maps a <code>Tree</code> its directly enclosing <code>ParenthesizedTree</code> if one exists.
+         *
+         * This map is used by {@link CFGTranslationPhaseOne#addToLookupMap(Node)} to
+         * associate a <code>ParenthesizedTree</code> with the dataflow <code>Node</code> that was used
+         * during inference. This map is necessary because dataflow does
+         * not create a <code>Node</code> for a <code>ParenthesizedTree.</code>
+         */
         private Map<Tree, ParenthesizedTree> parenMapping = new HashMap<>();
+
         @Override
         public Node visitParenthesized(ParenthesizedTree tree, Void p) {
             parenMapping.put(tree.getExpression(), tree);
