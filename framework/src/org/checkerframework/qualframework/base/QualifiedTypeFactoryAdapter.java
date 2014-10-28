@@ -356,14 +356,14 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         return qualResult;
     }
 
-//    private QualAnalysis<Q> qualAnalysis;
-//    @Override
-//    public CFTransfer createFlowTransferFunction(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
-//        if (qualAnalysis == null) {
-//            // TODO: We should do something better than just using null here.
-//            qualAnalysis = underlying.createFlowAnalysis(null);
-//            qualAnalysis.setAdapter(analysis);
-//        }
-//        return new QualTransferAdapter<Q>(qualAnalysis.createTransferFunction(), analysis, qualAnalysis);
-//    }
+    private QualAnalysis<Q> qualAnalysis;
+    @Override
+    public CFTransfer createFlowTransferFunction(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+        if (qualAnalysis == null) {
+            // TODO: We should do something better than just using null here.
+            qualAnalysis = underlying.createFlowAnalysis(null);
+            qualAnalysis.setAdapter(analysis);
+        }
+        return new QualTransferAdapter<Q>(qualAnalysis.createTransferFunction(), analysis, qualAnalysis);
+    }
 }
