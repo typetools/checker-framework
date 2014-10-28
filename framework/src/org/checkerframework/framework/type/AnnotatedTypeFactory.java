@@ -512,7 +512,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final Map<Element, Tree> elementToTreeCache  = createLRUCache(CACHE_SIZE);
 
     /** Mapping from a Tree to its TreePath **/
-    private TreePathCacher treePathCache = new TreePathCacher();
+    private final TreePathCacher treePathCache = new TreePathCacher();
 
     /**
      * Determines the annotated type of an element using
