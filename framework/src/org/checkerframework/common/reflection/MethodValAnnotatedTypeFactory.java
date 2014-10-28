@@ -19,6 +19,10 @@ import org.checkerframework.common.reflection.qual.MethodValBottom;
 import org.checkerframework.common.reflection.qual.UnknownMethod;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.util.AnnotationBuilder;
@@ -37,7 +41,7 @@ import com.sun.source.tree.Tree;
  * AnnotatedTypeFactory for the Method Value type system. This factory requires
  * an {@link AnnotationProvider} that provides {@link ClassVal},
  * {@link StringVal}, and {@link ArrayLen} annotations.
- * 
+ *
  * @author plvines
  * @author rjust
  */
@@ -63,13 +67,13 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Constructor. Initializes all the AnnotationMirror and Executable Element
      * variables, sets the default annotation.
-     * 
+     *
      * @param checker
      *            The checker used with this AnnotatedTypeFactory
      * @param annotationProvider
      *            The AnnotationProvider providing the necessary ClassVal,
      *            StringVal, and ArrayLen annotations.
-     * 
+     *
      */
     public MethodValAnnotatedTypeFactory(BaseTypeChecker checker,
             AnnotationProvider annotationProvider) {
@@ -95,18 +99,28 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return supported;
     }
 
+    @Override
+    public CFTransfer createFlowTransferFunction(
+            CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+        // The super implementation uses the name of the checker
+        // to reflectively create a transfer with the checker name followed
+        // by Transfer. Since this factory is intended to be used with
+        // any checker, explicitly create the default CFTransfer
+        return new CFTransfer(analysis);
+    }
+
     /**
      * Constructs a MethodVal annotation by adding all the elements in
      * classNames, methodNames, and params to a new MethodVal annotation and
      * returning it
-     * 
+     *
      * @param classNames
      *            The list of possible class names.
      * @param methodNames
      *            The list of possible method names.
      * @param params
      *            The list of possible numbers of parameters.
-     * 
+     *
      * @return A MethodVal annotation with all provided values.
      */
     private AnnotationMirror createMethodVal(List<String> classNames,
@@ -236,7 +250,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * additional problems, it will just make the annotations larger and
          * create a little redundant work. This will not matter once ClassVal
          * annotations are changed to use Class objects instead of Strings
-         * 
+         *
          * Computes subtyping as per the subtyping in the qualifier hierarchy
          * structure unless both annotations are MethodVal. In this case, rhs is
          * a subtype of lhs iff, for each rhs.methodName[i], rhs.className[i],
