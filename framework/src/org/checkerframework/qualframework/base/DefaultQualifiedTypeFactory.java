@@ -6,6 +6,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
 
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -21,6 +22,9 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDecl
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
+import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
+import org.checkerframework.qualframework.base.dataflow.QualTransfer;
+import org.checkerframework.qualframework.base.dataflow.QualValue;
 import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
 import org.checkerframework.qualframework.util.QualifierContext;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
@@ -248,6 +252,11 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     public QualifiedTypeMirror<Q> postTypeVarSubstitution(QualifiedParameterDeclaration<Q> varDecl,
             QualifiedTypeVariable<Q> varUse, QualifiedTypeMirror<Q> value) {
         return adapter.superPostTypeVarSubstitution(varDecl, varUse, value);
+    }
+
+    @Override
+    public QualAnalysis<Q> createFlowAnalysis(List<Pair<VariableElement, QualValue<Q>>> fieldValues) {
+        return new QualAnalysis<Q>(this.getContext());
     }
 
     public QualifierContext<Q> getContext() {

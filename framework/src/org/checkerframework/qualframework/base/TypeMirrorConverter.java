@@ -53,7 +53,7 @@ import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror.*;
  * qualifiers as annotations.  Each '@Key' annotation contains a single index,
  * which is a key into the lookup table indicating a particular qualifier.
  */
-class TypeMirrorConverter<Q> {
+public class TypeMirrorConverter<Q> {
     /** The checker adapter, used for lazy initialization of {@link
      * typeFactory}. */
     private CheckerAdapter<Q> checkerAdapter;

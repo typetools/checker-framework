@@ -2,7 +2,7 @@ import java.util.*;
 
 import org.checkerframework.checker.experimental.regex_qual.qual.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-
+/** @skip-test **/
 public class InvariantTypes {
   String[] sa = {"a"};
   String[] sa2 = {"a", "b"};
