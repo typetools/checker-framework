@@ -1,6 +1,7 @@
 import org.checkerframework.checker.experimental.regex_qual.qual.*;
 import java.util.regex.Pattern;
 
+/** @skip-test **/
 public class PolyRegexTests {
 
   public static @PolyRegex String method(@PolyRegex String s) {
