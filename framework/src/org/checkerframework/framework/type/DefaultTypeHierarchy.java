@@ -799,16 +799,19 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         // @1 Enum<@2 MyEnum>
         //asSuper should return:
         // @1 Enum<@2 E>
-        if (isEnum(asSuperType) && isDeclarationOfJavaLangEnum(types, elements, supertype)) {
+        if (asSuperType != null && isEnum(asSuperType) && isDeclarationOfJavaLangEnum(types, elements, supertype)) {
             final AnnotatedDeclaredType resultAtd = (AnnotatedDeclaredType) AnnotatedTypes.deepCopy(supertype);
             resultAtd.clearAnnotations();
             resultAtd.addAnnotations(asSuperType.getAnnotations());
 
-            final AnnotatedTypeMirror sourceTypeArg = ((AnnotatedDeclaredType)asSuperType).getTypeArguments().get(0);
-            final AnnotatedTypeMirror resultTypeArg = resultAtd.getTypeArguments().get(0);
-            resultTypeArg.clearAnnotations();
-            resultTypeArg.addAnnotations(sourceTypeArg.getAnnotations());
-            return (T) resultAtd;
+            final AnnotatedDeclaredType asSuperAdt = (AnnotatedDeclaredType) asSuperType;
+            if (resultAtd.getTypeArguments().size() > 0 && asSuperAdt.getTypeArguments().size() > 0) {
+                final AnnotatedTypeMirror sourceTypeArg = asSuperAdt.getTypeArguments().get(0);
+                final AnnotatedTypeMirror resultTypeArg = resultAtd.getTypeArguments().get(0);
+                resultTypeArg.clearAnnotations();
+                resultTypeArg.addAnnotations(sourceTypeArg.getAnnotations());
+                return (T) resultAtd;
+            }
         }
         return (T) AnnotatedTypes.asSuper( types, subtype.atypeFactory, subtype, supertype);
     }
