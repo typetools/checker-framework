@@ -1731,6 +1731,26 @@ public class AnnotatedTypes {
     }
 
 
+    public static boolean isEnum(final AnnotatedTypeMirror typeMirror) {
+        if (typeMirror.getKind() == TypeKind.DECLARED) {
+            final AnnotatedDeclaredType adt = (AnnotatedDeclaredType) typeMirror;
+            return TypesUtils.isDeclaredOfName(adt.getUnderlyingType(), java.lang.Enum.class.getName());
+        }
+
+        return false;
+    }
+
+    public static boolean isDeclarationOfJavaLangEnum(final Types types, final Elements elements,
+                                                      final AnnotatedTypeMirror typeMirror) {
+        if (isEnum(typeMirror)) {
+            return elements.getTypeElement("java.lang.Enum").equals(
+                   ((AnnotatedDeclaredType) typeMirror).getUnderlyingType().asElement());
+        }
+
+        return false;
+    }
+
+
     /**
      * @return true if the typeVar1 and typeVar2 are two uses of the same type variable
      */
