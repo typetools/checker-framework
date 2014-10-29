@@ -71,6 +71,8 @@ class Binaries {
         }
 
         @IntVal({ '2', '4' }) char f = (char) (e * 2);
+        
+        @DoubleVal(0.75) float g = 1 * 0.75f;
 
     }
 
@@ -93,6 +95,10 @@ class Binaries {
         }
 
         @IntVal({ '0', '1' }) char f = (char) (e / 2);
+        
+        @IntVal(0) int g = 2/3;
+        @IntVal(0)  int h = (Integer.MAX_VALUE-1)/Integer.MAX_VALUE;
+        @IntVal(0) long l = (Long.MAX_VALUE-1)/Long.MAX_VALUE;
 
     }
 
@@ -188,7 +194,6 @@ class Binaries {
         @BoolVal({ true }) boolean b = false || true;
 
     }
-
     public void conditionals() {
         @BoolVal({ false }) boolean a = 1.0f == '1';
         @BoolVal({ true }) boolean b = 1 != 2.0;
@@ -196,6 +201,19 @@ class Binaries {
         @BoolVal({ true }) boolean d = 1 >= 1.0;
         @BoolVal({ true }) boolean e = 1 < 1.1f;
         @BoolVal({ true }) boolean f = (char) 2 <= 2.0;
+    }
+    
+    public void loop() throws InterruptedException {
+        int spurious_count = 0;
+        while (true) {
+            wait();
+            if (System.currentTimeMillis() == 0) {
+                spurious_count++;
+                if (spurious_count > 1024) {
+                    break;
+                }
+            }
+        }
     }
 
     public void shifts() {
