@@ -5,8 +5,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import static org.checkerframework.framework.util.AnnotatedTypes.isJavaLangAnnotation;
-import static org.checkerframework.framework.util.AnnotatedTypes.implementsAnnotation;
+
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -14,8 +13,11 @@ import org.checkerframework.javacutil.ErrorReporter;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.util.*;
+
+import static org.checkerframework.framework.util.AnnotatedTypes.*;
 
 /**
  * Default implementation of TypeHierarchy that implements the JLS specification with minor
@@ -420,9 +422,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             return true;
         }
 
+        visited.add(subtypeAsSuper, supertype);
         final Boolean result = visitTypeArgs(subtypeAsSuper, supertype, visited, subtype.wasRaw(), supertype.wasRaw());
 
-        visited.add(subtypeAsSuper, supertype);
 
         return result;
     }
@@ -771,6 +773,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     @SuppressWarnings("unchecked")
     private <T extends AnnotatedTypeMirror> T castedAsSuper(final AnnotatedTypeMirror subtype, final T supertype ) {
         final Types types = checker.getProcessingEnvironment().getTypeUtils();
+        final Elements elements = checker.getProcessingEnvironment().getElementUtils();
 
         //the best example exercising this code is the test: all-systems/Annotations.java
         //asSuper will return null when casting an instance of an annotation interface to
@@ -787,6 +790,26 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             return (T) atm;
         }
 
+        final AnnotatedTypeMirror asSuperType = AnnotatedTypes.asSuper( types, subtype.atypeFactory, subtype, supertype);
+
+        //if we have a type for enum MyEnum {...}
+        //When the supertype is the declaration of java.lang.Enum<E>, MyEnum values become
+        //Enum<MyEnum>.  Where really, we would like an Enum<E> with the annotations from Enum<MyEnum>
+        //are transferred to Enum<E>.  That is, if we have a type:
+        // @1 Enum<@2 MyEnum>
+        //asSuper should return:
+        // @1 Enum<@2 E>
+        if (isEnum(asSuperType) && isDeclarationOfJavaLangEnum(types, elements, supertype)) {
+            final AnnotatedDeclaredType resultAtd = (AnnotatedDeclaredType) AnnotatedTypes.deepCopy(supertype);
+            resultAtd.clearAnnotations();
+            resultAtd.addAnnotations(asSuperType.getAnnotations());
+
+            final AnnotatedTypeMirror sourceTypeArg = ((AnnotatedDeclaredType)asSuperType).getTypeArguments().get(0);
+            final AnnotatedTypeMirror resultTypeArg = resultAtd.getTypeArguments().get(0);
+            resultTypeArg.clearAnnotations();
+            resultTypeArg.addAnnotations(sourceTypeArg.getAnnotations());
+            return (T) resultAtd;
+        }
         return (T) AnnotatedTypes.asSuper( types, subtype.atypeFactory, subtype, supertype);
     }
 }
