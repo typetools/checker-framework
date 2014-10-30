@@ -203,6 +203,23 @@
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
+        <!-- artifacts used in Google's error-prone -->
+        <update file="${checker.binary.poms}/dataflowPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/dataflowReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.binary.poms}/javacutilPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/javacutilReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
         <!-- examples -->
         <update file="${maven.plugin}/mvn-examples/HelloGalaxy/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
