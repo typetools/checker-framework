@@ -190,6 +190,9 @@ def print_usage():
             "steps but will NOT actually perform a release.  This is for testing the script." )
 
 def main(argv):
+    # umask g+w
+    os.umask(os.umask(0) - 16)
+
     test_mode = read_args( argv )
 
     msg = ( "You have chosen test_mode.  \nThis means that this script will execute all build steps that " +
@@ -239,6 +242,12 @@ def main(argv):
                      "any of the JSR308, AFU, or Checker Framework repositories." )
 
     print_step( "Push Step 2: Check links on development site" )
+
+    # Work around broken link to dejavu.css by creating an empty dejavu.css file
+    dev_afu_website_api_directory  = os.path.join( FILE_PATH_TO_DEV_SITE, "checker-framework", "api" )
+    execute("mkdir -p resources/fonts", True, False, dev_afu_website_api_directory)
+    execute("touch resources/fonts/dejavu.css", True, False, dev_afu_website_api_directory)
+
     if prompt_yes_no( "Run link Checker on DEV site?", True ):
         check_all_links( dev_jsr308_website, dev_afu_website, dev_checker_website, "dev" )
 

@@ -53,6 +53,9 @@ SONATYPE_CLOSING_DIRECTIONS_URL = "https://docs.sonatype.org/display/Repository/
 SONATYPE_RELEASE_DIRECTIONS_URL = "https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-8a.ReleaseIt"
 SONATYPE_DROPPING_DIRECTIONS_URL = "https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-DroppingaStagingRepository%28i.e.WhattoDoifYourStagingRepositoryHasErrors%29"
 
+#Location this and other release scripts are contained in
+SCRIPTS_DIR = "/scratch/jsr308-release/scripts"
+
 #Location in which we will download files to run sanity checks
 SANITY_DIR = "/scratch/jsr308-release/sanity"
 
@@ -194,7 +197,7 @@ os.environ['BIBINPUTS']=  '.:' + PLUME_BIB
 os.environ['TEXINPUTS'] =  '.:/scratch/secs-jenkins/tools/hevea-1.10/lib/hevea:/usr/share/texmf/tex/latex/hevea/:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:..:'
 os.environ['PERLLIB']   =  getAndAppend('PERLLIB', ":")  + perl_libs
 os.environ['PERL5LIB']  =  getAndAppend('PERL5LIB', ":") + perl_libs
-os.environ['JAVA_7_HOME'] =  '/scratch/secs-jenkins/java/jdk1.7.0'
+os.environ['JAVA_7_HOME'] =  '/scratch/secs-jenkins/java/jdk1.7.0.newer'
 os.environ['JAVA_8_HOME'] =  '/scratch/secs-jenkins/java/jdk1.8.0'
 os.environ['JAVA_HOME']   =  os.environ['JAVA_7_HOME']
 
