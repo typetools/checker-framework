@@ -225,6 +225,8 @@ def main(argv):
 
     afu_date = get_afu_date( projects_to_release[AFU_OPT] )
 
+    check_hg_user()
+
     #For each project, build what is necessary but don't push
 
     #Check for a --auto
