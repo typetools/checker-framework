@@ -21,4 +21,10 @@ class ArrayInit {
         int @ArrayLen({2})[] @ArrayLen({3})[] a = new int[2][3];
         int @ArrayLen({2})[] @ArrayLen({3})[] b = new int[i][j];
     }
+    
+    public void initilizer(){
+        int @ArrayLen(3) [] ints = new int[]{2,2,2};
+        byte @StringVal("d%")[] bytes = new byte[]{100,'%'};
+        char @StringVal("-A%")[] chars = new char[]{45,'A','%'};
+    }
 }
