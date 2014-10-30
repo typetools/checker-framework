@@ -356,6 +356,16 @@ def get_afu_version_from_html( html_file_path ):
 #=========================================================================================
 # Mercurial Utils
 
+#ensure that the environment variable "HGUSER" is set
+#if it is not, Mercurial will not allow changes to be commited or pushed
+def check_hg_user():
+    hg_user = os.getenv("HGUSER")
+    if not hg_user: #note this is true if hg_user is NONE or if it is empty
+        raise Exception("Mercurial user name environment variable, HGUSER, must be set!")
+
+    if not prompt_yes_no(("Your Mercurial user name is: %s" % hg_user) + os.linesep + "Is this correct?"):
+        raise Exception("Please set your HGUSER name to the correct value before running the script!")
+
 def hg_push_or_fail( repo_root ):
     cmd = 'hg -R %s push' % repo_root
     result = os.system('hg -R %s push' % repo_root)
