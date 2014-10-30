@@ -347,8 +347,7 @@
         scp -r $CF/release/* &lt;your-username&gt;@buffalo.cs.washington.edu:///scratch/jsr308-release/scripts<br/>
         ssh &lt;your-username&gt;@buffalo.cs.washington.edu<br/>
         cd /scratch/jsr308-release/scripts<br/>
-        umask g+w
-        export HGUSER=&lt;your-username&gt<br/>
+        export HGUSER=yourHgUserName<br/>
         python release_build.py all<br/>
         python release_push.py<br/>
     </code>
@@ -397,10 +396,8 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         <td colspan="2">
             <span style="float: right;" class="glyphicon glyphicon-eye-open"></span>
             <strong>Build Step 0: Run release_build</strong><br/>
-            Ensure that newly created files are group writable. For example: <br />
-            <code>umask g+w<br/><br /></code>
             Ensure the HGUSER is set. For example: <br />
-            <code>export HGUSER=jthaine<br/><br /></code>
+            <code>export HGUSER=yourHgUserName<br/><br /></code>
             Run the following command: <br/>
             <code>python release_build.py all<br/><br/></code>
             <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
@@ -457,16 +454,6 @@ miss a step if you only read the paragraph asking you to say 'yes'.
                     changes you previously wrote to the build repositories.  At this step, the script
                     pauses to allow you to replace any files you wish before actually executing the build.<br /><br />
                     
-                    At this point make sure hevea.sty and comment.sty are in the
-                    <code>/scratch/jsr308-release/build/checker-framework/checker/manual</code> directory.
-                    Otherwise copy <code>/usr/share/texlive/texmf/tex/latex/hevea/hevea.sty</code> and
-                    <a href="http://ctan.math.utah.edu/ctan/tex-archive/macros/latex/contrib/comment/comment.sty">http://ctan.math.utah.edu/ctan/tex-archive/macros/latex/contrib/comment/comment.sty</a> into it.
-                    It's easiest to save a copy of comment.sty in your home directory in case you need it again.<br /><br />
-
-                    Also, there is a bug in <code>release.xml</code> where tutorial/webpages/security-error-cmd.html
-                    does not get updated with new version numbers (e.g. 1.8.3 -> 1.8.4). You should do that
-                    now.<br /><br />
-
                     Note that any changes you make in this step are lost if you restart the <code>release_build</code> process
                     and instruct it to clean the repositories (which you should say yes to). That's why it's
                     a good idea to keep copies of the work you do here readily available in your home directory.
@@ -617,10 +604,6 @@ miss a step if you only read the paragraph asking you to say 'yes'.
             but the link checker is unable to check it), you may add a suppression to the
             <tt>checklink-args.txt</tt> file.  In extremely rare instances (such as when a website 
             happens to be down at the time you ran the link checker), you may ignore an error.<br/>
-            You will see a broken link in <code>stylesheet.css</code> indicating that <code>dejavu.css</code> cannot be found.
-            Simply open <code>stylesheet.css</code> and remove the line referring to <code>dejavu.css</code>. Unfortunately we
-            cannot change this in the repository until we hear back from the javadoc mailing list
-            as to whether this fix can be made.<br/>
         </td>
     </tr>
 
@@ -658,25 +641,6 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         <td colspan="2">
             <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
             <strong>Push Step 5. Push dev website to live website</strong><br/>
-
-            Before you say yes to this step, there are two bugs that need to be worked around at this point:<br/><br/>
-
-            There is currently a bug where the Checker Framework home page has an extraneous = sign.
-            Open /cse/www2/types/dev/checker-framework/index.html in a text editor and look for the
-            line mentioning annotation-tools.zip and remove the = sign next to the date. Also this is
-            a good time to change the "Last updated" date at the end of this web page, as this is not
-            done automatically.<br/><br/>
-
-            Another bug is that the checker-framework/checker/examples directory does not get copied
-            into the zip file. Open /cse/www2/types/dev/checker-framework/current/checker-framework.zip
-            using XArchiver or a similar visual tool, and add the example files to the zip file under the
-            checker-framework-<version>/checker/examples directory. We have not been including the
-            examples under the units-extension subdirectory, but check with Jonathan whether they
-            need to be included in this release.<br/><br/>
-
-            This is also a good time to verify that /cse/www2/types/dev/checker-framework/current/checker-framework.zip
-            is complete. Open it using XArchiver or a similar visual tool and double-check that all the
-            directories have files in them.<br/><br/>
 
             This step copies the development release directories to the live release directories.  It then adds
             the appropriate permissions to the release.  Symlinks need to be updated to point to the live

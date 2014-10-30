@@ -124,6 +124,9 @@
         <replaceregexp file="${checker.tutorial}/tests/testdemo/check-tainting.0.expected" byline="true"
                        match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
 
+        <replaceregexp file="${checker.tutorial}/webpages/security-error-cmd.html" byline="true"
+                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
+
         <update file="${checker}/build.properties"
                 start="build.version = " with="${release.ver}"/>
 
