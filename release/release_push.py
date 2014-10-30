@@ -210,6 +210,8 @@ def main(argv):
     else:
         print("Continuing in release mode.")
 
+    check_hg_user()
+
     print_step( "Push Step 0: Verify Requirements\n" )
     print( " If this is your first time running the release_push script, please verify that you have met " +
            "all the requirements specified in README-maintainers.html \"Pre-release Checklist\"\n" )
