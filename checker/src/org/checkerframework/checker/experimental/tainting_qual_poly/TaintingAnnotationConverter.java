@@ -23,6 +23,10 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
 public class TaintingAnnotationConverter implements QualifierParameterAnnotationConverter<Tainting> {
 
+    private static final String TARGET_PARAM_NAME = "param";
+    private static final String SOURCE_VALUE_NAME = "arg";
+    private static final String WILDCARD_NAME = "wildcard";
+
     private CombiningOperation<Tainting> lubOp;
 
     // The default "Target" in an annotation is the primary qualifier
@@ -44,9 +48,9 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
         for (AnnotationMirror anno : annos) {
             mergeParams(params, getQualifierMap(anno));
         }
-        for (AnnotationMirror anno : annos) {
-            handleExtendsSuper(anno, params);
-        }
+//        for (AnnotationMirror anno : annos) {
+//            handleExtendsSuper(anno, params);
+//        }
 
         PolyQual<Tainting> primary = getPrimaryAnnotation(annos);
         if (primary == null) {
@@ -93,40 +97,55 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
             return result;
 
         } else if (name.equals(Tainted.class.getName())) {
-            String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+            String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
             if (!PRIMARY_TARGET.equals(target)) {
-                return Collections.singletonMap(target, new Wildcard<>(Tainting.TAINTED));
+                return Collections.singletonMap(target, handleWildcard(anno, new Wildcard<>(Tainting.TAINTED)));
             }
 
         } else if (name.equals(Untainted.class.getName())) {
-            String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+            String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
             if (!PRIMARY_TARGET.equals(target)) {
-                return Collections.singletonMap(target, new Wildcard<>(Tainting.UNTAINTED));
+                return Collections.singletonMap(target, handleWildcard(anno, new Wildcard<>(Tainting.UNTAINTED)));
             }
 
         } else if (name.equals(Var.class.getName())) {
-            String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
-            String value = AnnotationUtils.getElementValue(anno, "value", String.class, true);
+            String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
+            String value = AnnotationUtils.getElementValue(anno, SOURCE_VALUE_NAME, String.class, true);
             if (!PRIMARY_TARGET.equals(target)) {
-                Wildcard<Tainting> valueWild = new Wildcard<>(
-                        new QualVar<>(value, BOTTOM, TOP));
+                Wildcard<Tainting> valueWild = handleWildcard(anno, new Wildcard<>(
+                        new QualVar<>(value, BOTTOM, TOP)));
                 return Collections.singletonMap(target, valueWild);
             }
 
         } else if (name.equals(PolyTainting.class.getName())) {
-            String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+            String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
             if (!PRIMARY_TARGET.equals(target)) {
                 Wildcard<Tainting> polyWild = new Wildcard<>(
                         new QualVar<>(POLY_NAME, BOTTOM, TOP));
                 return Collections.singletonMap(target, polyWild);
             }
         } else if (name.equals(Wild.class.getName())) {
-            String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+            String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
             return Collections.singletonMap(target, new Wildcard<>(BOTTOM, TOP));
-
         }
 
         return null;
+    }
+
+
+    private Wildcard<Tainting> handleWildcard(AnnotationMirror anno, Wildcard<Tainting> current) {
+        org.checkerframework.checker.experimental.tainting_qual_poly.qual.Wildcard wildcard =
+                AnnotationUtils.getElementValueEnum(anno, WILDCARD_NAME,
+                org.checkerframework.checker.experimental.tainting_qual_poly.qual.Wildcard.class, true);
+
+        switch (wildcard) {
+            case SUPER:
+                return new Wildcard<>(current.getLowerBound(), new GroundQual<>(TOP));
+            case EXTENDS:
+                return new Wildcard<>(new GroundQual<>(BOTTOM), current.getUpperBound());
+            default:
+                return current;
+        }
     }
 
     private void handleExtendsSuper(AnnotationMirror anno, Map<String, Wildcard<Tainting>> params) {
@@ -141,7 +160,7 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
             }
 
         } else if (name.equals(Extends.class.getName())) {
-            String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+            String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
             Wildcard<Tainting> oldWild = params.get(target);
             if (oldWild == null) {
                 // TODO: Need to report an error to the user here
@@ -151,7 +170,7 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
             params.put(target, newWild);
 
         } else if (name.equals(Super.class.getName())) {
-            String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+            String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
             Wildcard<Tainting> oldWild = params.get(target);
             if (oldWild == null) {
                 // TODO: Need to report an error to the user here
@@ -169,23 +188,23 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
             String name = AnnotationUtils.annotationName(anno);
             PolyQual<Tainting> newQual = null;
             if (name.equals(Tainted.class.getName())) {
-                String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+                String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
                 if (PRIMARY_TARGET.equals(target)) {
                     newQual = new PolyQual.GroundQual<>(Tainting.TAINTED);
                 }
             } else if (name.equals(Untainted.class.getName())) {
-                String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+                String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
                 if (PRIMARY_TARGET.equals(target)) {
                     newQual =  new PolyQual.GroundQual<>(Tainting.UNTAINTED);
                 }
             } else if (name.equals(Var.class.getName())) {
-                String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
-                String value = AnnotationUtils.getElementValue(anno, "value", String.class, true);
+                String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
+                String value = AnnotationUtils.getElementValue(anno, SOURCE_VALUE_NAME, String.class, true);
                 if (PRIMARY_TARGET.equals(target)) {
                     newQual =  new QualVar<>(value, BOTTOM, TOP);
                 }
             } else if (name.equals(PolyTainting.class.getName())) {
-                String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+                String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
                 if (PRIMARY_TARGET.equals(target)) {
                     newQual = new QualVar<>(POLY_NAME, BOTTOM, TOP);
                 }

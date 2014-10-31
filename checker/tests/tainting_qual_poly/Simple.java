@@ -5,11 +5,11 @@ class A { }
 
 class Simple {
 
-    void takeUntainted(@Untainted(target="param1") A a) { }
-    void takeTainted(@Tainted(target="param1") A a) { }
+    void takeUntainted(@Untainted(param="param1") A a) { }
+    void takeTainted(@Tainted(param="param1") A a) { }
     void takeDef(A a) { }
 
-    void test(@Untainted(target="param1") A u, @Tainted(target="param1") A t, A def) {
+    void test(@Untainted(param="param1") A u, @Tainted(param="param1") A t, A def) {
 
         takeUntainted(u);
         //:: error: (argument.type.incompatible)

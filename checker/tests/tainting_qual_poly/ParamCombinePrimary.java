@@ -4,23 +4,23 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 @ClassTaintingParam("Main")
 class A {
     // Integer<<Main + TAINTED>> x;
-    public @Var("Main") @Tainted Integer x;
+    public @Var(arg="Main") @Tainted Integer x;
     // Integer<<Main + UNTAINTED>> y;
-    public @Var("Main") @Untainted Integer y;
+    public @Var(arg="Main") @Untainted Integer y;
     // Integer<<Main>> z;
-    public @Var("Main") Integer z;
+    public @Var(arg="Main") Integer z;
 }
 
 abstract class Test {
-    abstract @Tainted(target="Main") A makeTainted();
-    abstract @Untainted(target="Main") A makeUntainted();
+    abstract @Tainted(param="Main") A makeTainted();
+    abstract @Untainted(param="Main") A makeUntainted();
 
     abstract void takeTainted(@Tainted Integer o);
     abstract void takeUntainted(@Untainted Integer o);
 
     void test() {
-        @Tainted(target="Main") A ta = makeTainted();
-        @Untainted(target="Main") A ua = makeUntainted();
+        @Tainted(param="Main") A ta = makeTainted();
+        @Untainted(param="Main") A ua = makeUntainted();
 
         takeTainted(ta.x);
         takeTainted(ta.y);

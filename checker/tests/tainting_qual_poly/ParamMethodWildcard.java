@@ -6,15 +6,15 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 class A { }
 
 abstract class Test {
-    static void test1(@Tainted(target="Main") A i, @Extends(target="Main") @Tainted(target="Main") A j) { }
+    static void test1(@Tainted(param="Main") A i, @Tainted(param="Main", wildcard=Wildcard.EXTENDS) A j) { }
     @MethodTaintingParam("Main")
-    static void test2(@Var(value="Main", target="Main") A i, @Extends(target="Main") @Var(value="Main", target="Main") A j) { }
+    static void test2(@Var(arg="Main", param="Main") A i, @Var(arg="Main", param="Main", wildcard=Wildcard.EXTENDS) A j) { }
 
-    abstract @Tainted(target="Main") A makeTainted();
-    abstract @Untainted(target="Main") A makeUntainted();
+    abstract @Tainted(param="Main") A makeTainted();
+    abstract @Untainted(param="Main") A makeUntainted();
 
-    abstract void takeTainted(@Tainted(target="Main") A o);
-    abstract void takeUntainted(@Untainted(target="Main") A o);
+    abstract void takeTainted(@Tainted(param="Main") A o);
+    abstract void takeUntainted(@Untainted(param="Main") A o);
 
     void test() {
         test1(makeTainted(), makeTainted());
