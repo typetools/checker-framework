@@ -89,7 +89,7 @@ public class KeyForTransfer extends
             if (types.isSubtype(receiverType, mapInterfaceTypeMirror)) {
 
                 FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(node, analysis.getTypeFactory());
+                        .buildFlowExprContextForUse(node, checker);
 
                 String mapName = flowExprContext.receiver.toString();
                 Receiver keyReceiver = flowExprContext.arguments.get(0);

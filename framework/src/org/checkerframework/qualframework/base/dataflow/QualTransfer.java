@@ -84,8 +84,8 @@ import java.util.List;
  */
 public class QualTransfer<Q> implements TransferFunction<QualValue<Q>, QualStore<Q>> {
 
-    private final QualAnalysis<Q> analysis;
-    QualTransferAdapter<Q> adapter;
+    protected final QualAnalysis<Q> analysis;
+    protected QualTransferAdapter<Q> adapter;
 
     public QualTransfer(QualAnalysis<Q> analysis) {
         this.analysis = analysis;

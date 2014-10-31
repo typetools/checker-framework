@@ -449,7 +449,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             if (flowExprContext == null) {
                 flowExprContext = FlowExpressionParseUtil
                         .buildFlowExprContextForDeclaration(methodTree,
-                                method.getClassTree(), analysis.getTypeFactory());
+                                method.getClassTree(), analysis.checker.getContext());
             }
 
             FlowExpressions.Receiver expr = null;
@@ -792,7 +792,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             }
             if (flowExprContext == null) {
                 flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(n, analysis.getTypeFactory());
+                        .buildFlowExprContextForUse(n, analysis.checker.getContext());
             }
 
             try {
@@ -867,7 +867,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             }
             if (flowExprContext == null) {
                 flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(n, analysis.getTypeFactory());
+                        .buildFlowExprContextForUse(n, analysis.checker.getContext());
             }
 
             try {

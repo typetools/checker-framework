@@ -12,6 +12,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
+import com.sun.source.util.TreePath;
 import org.checkerframework.javacutil.Pair;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -265,5 +266,10 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
 
     void setAdapter(QualifiedTypeFactoryAdapter<Q> adapter) {
         this.adapter = adapter;
+    }
+
+    @Override
+    public TreePath getPath(Tree node) {
+        return adapter.getPath(node);
     }
 }
