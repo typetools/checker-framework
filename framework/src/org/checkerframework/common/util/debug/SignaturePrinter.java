@@ -31,6 +31,7 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
+import org.checkerframework.javacutil.AnnotationProvider;
 
 /**
  * Outputs the method signatures of a class with fully annotated types.
@@ -88,6 +89,11 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
                 @Override
                 protected SourceVisitor<?, ?> createSourceVisitor() {
+                    return null;
+                }
+
+                @Override
+                public AnnotationProvider getAnnotationProvider() {
                     return null;
                 }
 

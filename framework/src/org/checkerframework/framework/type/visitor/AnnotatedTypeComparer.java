@@ -68,7 +68,7 @@ public abstract class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, A
     }
     @Override
     protected R scan(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {
-        return compare(type, p);
+        return reduce(super.scan(type, p), compare(type, p));
     }
 
 

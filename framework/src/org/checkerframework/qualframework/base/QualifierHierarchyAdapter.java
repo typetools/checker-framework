@@ -1,5 +1,6 @@
 package org.checkerframework.qualframework.base;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -33,9 +34,12 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 class QualifierHierarchyAdapter<Q> {
     private QualifierHierarchy<Q> underlying;
     private TypeMirrorConverter<Q> converter;
+    private AnnotationConverter<Q> annotationConverter;
 
-    public QualifierHierarchyAdapter(QualifierHierarchy<Q> underlying,
+    public QualifierHierarchyAdapter(AnnotationConverter<Q> annotationConverter,
+            QualifierHierarchy<Q> underlying,
             TypeMirrorConverter<Q> converter) {
+        this.annotationConverter = annotationConverter;
         this.underlying = underlying;
         this.converter = converter;
     }
@@ -132,27 +136,50 @@ class QualifierHierarchyAdapter<Q> {
             // Having this check might cause us to skip some important checks
             // in the case where the type variable has annotations on its
             // upper/lower bounds.
-            if (!converter.isKey(rhs) || !converter.isKey(lhs))
-                return false;
 
-            Q rhsQual = converter.getQualifier(rhs);
-            Q lhsQual = converter.getQualifier(lhs);
+            Q rhsQual = getQ(rhs);
+            Q lhsQual = getQ(lhs);
+
+            if (!converter.isKey(lhs)) {
+                lhsQual = annotationConverter.fromAnnotations(Arrays.asList(lhs));
+            } else {
+                lhsQual = converter.getQualifier(lhs);
+            }
+
+            if (rhs == null || lhs == null) {
+                return false;
+            }
+//            if (!converter.isKey(rhs) || !converter.isKey(lhs))
+//                return false;
+
+//            Q rhsQual = converter.getQualifier(rhs);
+//            Q lhsQual = converter.getQualifier(lhs);
 
 
             return underlying.isSubtype(rhsQual, lhsQual);
         }
 
+        private Q getQ(AnnotationMirror rhs) {
+            Q rhsQual;
+            if (!converter.isKey(rhs)) {
+                rhsQual = annotationConverter.fromAnnotations(Arrays.asList(rhs));
+            } else {
+                rhsQual = converter.getQualifier(rhs);
+            }
+            return rhsQual;
+        }
+
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            Q q1 = converter.getQualifier(a1);
-            Q q2 = converter.getQualifier(a2);
+            Q q1 = getQ(a1);
+            Q q2 = getQ(a2);
             return converter.getAnnotation(underlying.leastUpperBound(q1, q2));
         }
 
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-            Q q1 = converter.getQualifier(a1);
-            Q q2 = converter.getQualifier(a2);
+            Q q1 = getQ(a1);
+            Q q2 = getQ(a2);
             return converter.getAnnotation(underlying.greatestLowerBound(q1, q2));
         }
 
