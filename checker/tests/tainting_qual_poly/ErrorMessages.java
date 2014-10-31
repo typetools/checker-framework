@@ -8,14 +8,10 @@ abstract class Test {
 
     void test() {
         //:: error: (type.invalid)
-        @Tainted(target="Param1") Integer i;
-        @Tainted(target="Param1") A a;
+        @Tainted(param="Param1") Integer i;
+        @Tainted(param="Param1") A a;
         //:: error: (type.invalid)
-        @Tainted(target="error")  A a2;
-        @Tainted(target="Param1") @Extends(target="Param1") A a3;
-
-        // TODO: These should give off errors
-        @Extends(target="Param1") A a4;
-        @Extends(target="error")  A a5;
+        @Tainted(param="error")  A a2;
+        @Tainted(param="Param1", wildcard=Wildcard.EXTENDS) A a3;
     }
 }

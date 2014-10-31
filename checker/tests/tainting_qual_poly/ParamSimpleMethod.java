@@ -7,14 +7,14 @@ class A { }
 
 abstract class Test {
     @MethodTaintingParam("Main")
-    static void test(@Var(value="Main", target="Main") A i,
-            @Var(value="Main", target="Main") A j) { }
+    static void test(@Var(arg="Main", param="Main") A i,
+            @Var(arg="Main", param="Main") A j) { }
 
-    abstract @Tainted(target="Main") A makeTainted();
-    abstract @Untainted(target="Main") A makeUntainted();
+    abstract @Tainted(param="Main") A makeTainted();
+    abstract @Untainted(param="Main") A makeUntainted();
 
-    abstract void takeTainted(@Tainted(target="Main") A o);
-    abstract void takeUntainted(@Untainted(target="Main") A o);
+    abstract void takeTainted(@Tainted(param="Main") A o);
+    abstract void takeUntainted(@Untainted(param="Main") A o);
 
     void test() {
         test(makeTainted(), makeTainted());

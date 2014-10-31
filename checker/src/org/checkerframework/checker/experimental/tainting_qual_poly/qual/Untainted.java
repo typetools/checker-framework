@@ -10,6 +10,7 @@ import org.checkerframework.framework.qual.*;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Repeatable(MultiUntainted.class)
 public @interface Untainted {
-    String target() default TaintingAnnotationConverter.PRIMARY_TARGET;
+    String param() default TaintingAnnotationConverter.PRIMARY_TARGET;
+    Wildcard wildcard() default Wildcard.NONE;
 }
 
