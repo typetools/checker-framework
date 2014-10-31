@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TreeAnnotator;
@@ -60,6 +62,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -235,6 +238,16 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
             replaceWithUnknownValIfTooManyValues((AnnotatedTypeMirror) type);
 
             return super.visitDeclared(type, p);
+        }
+        @Override
+        public Void visitNull(AnnotatedNullType type, Void p) {
+            HashSet<String> values = new HashSet<String>();
+            values.add("null");
+            AnnotationMirror newQual = createAnnotation(
+                    "org.checkerframework.common.value.qual.StringVal",
+                    values);
+            type.replaceAnnotation(newQual);
+            return super.visitNull(type, p);
         }
 
         /**
@@ -481,33 +494,24 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                     }
 
                     AnnotationMirror newQual;
-                    String typeString = type.getUnderlyingType().toString();
-                    if (typeString.equals("byte[]")
-                            || typeString.equals("char[]")) {
-
-                        boolean allLiterals = true;
-                        char[] chars = new char[initializers.size()];
-                        for (int i = 0; i < chars.length && allLiterals; i++) {
-                            ExpressionTree e = initializers.get(i);
-                            if (e.getKind() == Tree.Kind.INT_LITERAL) {
-                                chars[i] = (char) (((Long) ((LiteralTree) initializers
-                                        .get(i)).getValue()).intValue());
-                            } else {
-                                allLiterals = false;
-                            }
-                        }
-
-                        if (allLiterals) {
-                            HashSet<String> stringFromChars = new HashSet<String>(
-                                    1);
-                            stringFromChars.add(new String(chars));
-                            newQual = createAnnotation(
-                                    "org.checkerframework.common.value.qual.StringVal",
-                                    stringFromChars);
-                            type.replaceAnnotation(newQual);
-                            return null;
-                        }
+                    Class<?> clazz = getClass(type, tree);
+                    String stringVal = null;
+                    if (clazz.equals(byte[].class)) {
+                        stringVal = getByteArrayStringVal(initializers);
+                    } else if (clazz.equals(char[].class)) {
+                        stringVal = getCharArrayStringVal(initializers);
                     }
+
+                    if (stringVal != null) {
+                        HashSet<String> stringFromChars = new HashSet<String>(1);
+                        stringFromChars.add(stringVal);
+                        newQual = createAnnotation(
+                                "org.checkerframework.common.value.qual.StringVal",
+                                stringFromChars);
+                        type.replaceAnnotation(newQual);
+                        return null;
+                    }
+
 
                     newQual = createAnnotation(
                             "org.checkerframework.common.value.qual.ArrayLen",
@@ -517,6 +521,53 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 }
             }
             return super.visitNewArray(tree, type);
+        }
+
+        private String getByteArrayStringVal(
+                List<? extends ExpressionTree> initializers) {
+            boolean allLiterals = true;
+            byte[] bytes = new byte[initializers.size()];
+            int i = 0;
+            for (ExpressionTree e : initializers) {
+                if (e.getKind() == Tree.Kind.INT_LITERAL) {
+                    bytes[i] = (byte) (((Integer) ((LiteralTree) e)
+                            .getValue()).intValue());
+                } else if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
+                    bytes[i] = (byte) (((Character) ((LiteralTree) e).getValue())
+                            .charValue());                    
+                } else {
+                    allLiterals = false;
+                }
+                i++;
+            }
+            if (allLiterals)
+                return new String(bytes);
+            //If any part of the initialize isn't know,
+            //the stringval isn't known.
+            return null;
+        }
+
+        private String getCharArrayStringVal(
+                List<? extends ExpressionTree> initializers) {
+            boolean allLiterals = true;
+            String stringVal = "";
+            for (ExpressionTree e : initializers) {
+                if (e.getKind() == Tree.Kind.INT_LITERAL) {
+                    char charVal = (char) (((Integer) ((LiteralTree) e)
+                            .getValue()).intValue());
+                    stringVal += charVal;
+                } else if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
+                    char charVal = (((Character) ((LiteralTree) e).getValue()));
+                    stringVal += charVal;
+                } else {
+                    allLiterals = false;
+                }
+            }
+            if (allLiterals)
+                return stringVal;
+            //If any part of the initialize isn't know,
+            //the stringval isn't known.
+            return null;
         }
 
         /**
@@ -562,8 +613,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
         @Override public Void visitTypeCast(TypeCastTree tree,
                 AnnotatedTypeMirror type) {
             if (isClassCovered(type)) {
-                String castedToString = type.getUnderlyingType().toString();
-                handleCast(tree.getExpression(), castedToString, type);
+                handleCast(tree.getExpression(), getClass(type, tree.getType()), type);
             }
             return super.visitTypeCast(tree, type);
         }
@@ -660,6 +710,14 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
 
                     return null;
                 }
+                else if ( tree.getKind() == Tree.Kind.NULL_LITERAL){
+                    HashSet<String> values = new HashSet<String>();
+                    values.add("null");
+                    AnnotationMirror newQual = createAnnotation(
+                            "org.checkerframework.common.value.qual.StringVal",
+                            values);
+                    type.replaceAnnotation(newQual);
+                }
             }
             // super.visitLiteral(tree, type);
             return null;
@@ -671,13 +729,13 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
 
             if (isClassCovered(type)) {
                 Tree.Kind operation = tree.getKind();
-                String finalTypeString = type.getUnderlyingType().toString();
+
                 AnnotatedTypeMirror argType = getAnnotatedType(tree
                         .getExpression());
 
                 if (!nonValueAnno(argType)) {
-                    Class<?> argClass = getTypeValueClass(finalTypeString, tree);
-                    handleCast(tree.getExpression(), finalTypeString, argType);
+                    Class<?> argClass = boxPrimatives(getClass(type, tree));
+                    handleCast(tree.getExpression(), getClass(type, tree), argType);
 
                     AnnotationMirror argAnno = getValueAnnotation(argType);
                     AnnotationMirror newAnno = evaluateUnaryOperator(argAnno,
@@ -692,6 +750,13 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
             }
             return null;
         }
+        @Override
+        public Void visitCompoundAssignment(CompoundAssignmentTree node,
+                AnnotatedTypeMirror p) {
+            // TODO Auto-generated method stub
+            return super.visitCompoundAssignment(node, p);
+        }
+
 
         /**
          * This method resolves a unary operator by converting it to a
@@ -719,11 +784,12 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 AnnotationMirror argAnno, String operation, Class<?> argClass,
                 UnaryTree tree) {
             try {
+                argClass = boxPrimatives(argClass);
                 Class<?>[] argClasses = new Class<?>[] { argClass };
                 Method m = Operators.class.getMethod(operation, argClasses);
 
-                List<?> annoValues = AnnotationUtils.getElementValueArray(
-                        argAnno, "value", argClass, true);
+                List<?> annoValues = getCastedValues(argAnno, argClass, tree);
+
                 ArrayList<Object> results = new ArrayList<Object>(
                         annoValues.size());
 
@@ -739,13 +805,14 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
             }
         }
 
-        @Override public Void visitBinary(BinaryTree tree,
+
+        @Override 
+        public Void visitBinary(BinaryTree tree,
                 AnnotatedTypeMirror type) {
             if (!isClassCovered(type)) {
                 return super.visitBinary(tree, type);
             }
             Tree.Kind operation = tree.getKind();
-            String finalTypeString = type.getUnderlyingType().toString();
 
             AnnotatedTypeMirror lhsType = getAnnotatedType(tree
                     .getLeftOperand());
@@ -753,7 +820,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                     .getRightOperand());
             if (!nonValueAnno(lhsType) && !nonValueAnno(rhsType)) {
 
-                Class<?> argClass = null;
+                Class<?> resultClass = null;
                 AnnotationMirror newAnno = null;
 
                 // Non-Comparison Binary Operation
@@ -763,12 +830,26 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                         && operation != Tree.Kind.GREATER_THAN_EQUAL
                         && operation != Tree.Kind.LESS_THAN
                         && operation != Tree.Kind.LESS_THAN_EQUAL) {
-                    argClass = getClass(finalTypeString, tree);
-                    // argClass = getTypeValueClass(finalTypeString, tree);
-                    handleBinaryCast(tree.getLeftOperand(), lhsType,
-                            tree.getRightOperand(), rhsType, finalTypeString);
-                    newAnno = evaluateBinaryOperator(lhsType, rhsType,
-                            operation.toString(), argClass, tree);
+                    resultClass = getClass(type, tree);
+                    if (resultClass != String.class) {
+                        // Convert to the final type
+                        List<?> lhs = getCastedValues(lhsType, resultClass, tree);
+                        List<?> rhs = getCastedValues(rhsType, resultClass, tree);
+
+                        // Evaluate
+                        newAnno = evaluateBinaryOperator(lhs, rhs,
+                                operation.toString(), resultClass, tree);
+                    } else {
+                        // Get values based on underlying type of the left and
+                        // right trees, then cast the values to strings.
+                        List<?> lhs = convertToStringVal(getCastedValues(
+                                lhsType, tree.getLeftOperand()));
+                        List<?> rhs = convertToStringVal(getCastedValues(
+                                rhsType, tree.getRightOperand()));
+                        // Evaluate
+                        newAnno = evaluateBinaryOperator(lhs, rhs,
+                                operation.toString(), resultClass, tree);
+                    }
                 }
                 // Comparison Binary Operation We're okay to cast
                 // everything to DoubleVal *UNLESS* we're
@@ -779,17 +860,17 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 else {
                     if (AnnotationUtils.areSameIgnoringValues(
                             getValueAnnotation(lhsType), STRINGVAL)) {
-                        argClass = getAnnotationValueClass(getValueAnnotation(lhsType));
-                    } if (AnnotationUtils.areSameByClass(
+                        resultClass = getAnnotationValueClass(getValueAnnotation(lhsType));
+                    } else if (AnnotationUtils.areSameByClass(
                             getValueAnnotation(lhsType), BoolVal.class)) {
-                        argClass = getAnnotationValueClass(getValueAnnotation(lhsType));
+                        resultClass = getAnnotationValueClass(getValueAnnotation(lhsType));
                     }else {
-                        argClass = getTypeValueClass("double", tree);
+                        resultClass = double.class;
                         handleBinaryCast(tree.getLeftOperand(), lhsType,
-                                tree.getRightOperand(), rhsType, "double");
+                                tree.getRightOperand(), rhsType, double.class);
                     }
                     newAnno = evaluateComparison(lhsType, rhsType,
-                            operation.toString(), argClass, tree);
+                            operation.toString(), resultClass, tree);
                 }
                 if (newAnno != null) {
                     type.replaceAnnotation(newAnno);
@@ -810,26 +891,26 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
          * @param lhsType
          * @param rhs
          * @param rhsType
-         * @param finalTypeString
+         * @param castType
          */
         private void handleBinaryCast(ExpressionTree lhs,
                 AnnotatedTypeMirror lhsType, ExpressionTree rhs,
-                AnnotatedTypeMirror rhsType, String finalTypeString) {
-            handleCast(lhs, finalTypeString, lhsType);
-            handleCast(rhs, finalTypeString, rhsType);
+                AnnotatedTypeMirror rhsType, Class<?> castType) {
+            handleCast(lhs, castType, lhsType);
+            handleCast(rhs, castType, rhsType);
         }
 
         private AnnotationMirror evaluateComparison(
                 AnnotatedTypeMirror lhsType, AnnotatedTypeMirror rhsType,
                 String operation, Class<?> argClass, BinaryTree tree) {
             try {
+                argClass = boxPrimatives(argClass);
                 Class<?>[] argClasses = new Class<?>[] { argClass, argClass };
                 Method m = Operators.class.getMethod(operation, argClasses);
 
-                List<?> lhsAnnoValues = AnnotationUtils.getElementValueArray(
-                        getValueAnnotation(lhsType), "value", argClass, true);
-                List<?> rhsAnnoValues = AnnotationUtils.getElementValueArray(
-                        getValueAnnotation(rhsType), "value", argClass, true);
+                List<?> lhsAnnoValues = getCastedValues(lhsType, argClass, tree);
+                List<?> rhsAnnoValues = getCastedValues(rhsType, argClass, tree);
+
                 ArrayList<Object> results = new ArrayList<Object>(
                         lhsAnnoValues.size() * rhsAnnoValues.size());
 
@@ -854,9 +935,9 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
          * the type of argClass. Thus argClass should always result in a
          * lossless casting (e.g. int to long).
          *
-         * @param lhsType
+         * @param lhsAnnoValues
          *            the annotated type mirror of the LHS argument
-         * @param rhsType
+         * @param rhsAnnoValues
          *            the annotated type mirror of the RHS argument
          * @param operation
          *            the String name of the operation
@@ -868,16 +949,13 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
          * @return
          */
         private AnnotationMirror evaluateBinaryOperator(
-                AnnotatedTypeMirror lhsType, AnnotatedTypeMirror rhsType,
+                List<?> lhsAnnoValues, List<?> rhsAnnoValues,
                 String operation, Class<?> argClass, BinaryTree tree) {
             try {
+                argClass = boxPrimatives(argClass);
                 Class<?>[] argClasses = new Class<?>[] { argClass, argClass };
                 Method m = Operators.class.getMethod(operation, argClasses);
 
-                List<?> lhsAnnoValues = getCastedValues(lhsType, argClass, tree);
-                //AnnotationUtils.getElementValueArray(lhsAnno, "value", argClass, true);
-                List<?> rhsAnnoValues = getCastedValues(rhsType, argClass, tree);
-                //AnnotationUtils.getElementValueArray(rhsAnno, "value", argClass, true);
                 ArrayList<Object> results = new ArrayList<Object>(
                         lhsAnnoValues.size() * rhsAnnoValues.size());
 
@@ -1039,7 +1117,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                     if (paramClass.contains("java")) {
                         paramClzz.add(Class.forName(paramClass));
                     } else {
-                        paramClzz.add(getClass(paramClass, tree));
+                        paramClzz.add(getClass(ElementUtils.getType(e), tree));
                     }
                 }
             }
@@ -1073,7 +1151,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
         private AnnotationMirror evaluateMethod(AnnotatedTypeMirror recType,
                 Method method, List<AnnotatedTypeMirror> argTypes,
                 AnnotatedTypeMirror retType, MethodInvocationTree tree) {
-            List<Object> recValues = null;
+            List<?> recValues = null;
             // If we are going to need the values of the receiver, get them.
             // Otherwise they can be null because the method is static
             if (!java.lang.reflect.Modifier.isStatic(method.getModifiers())) {
@@ -1081,7 +1159,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
             }
 
             // Get the values for all the arguments
-            ArrayDeque<List<Object>> allArgValues = getAllArgumentAnnotationValues(
+            ArrayDeque<List<?>> allArgValues = getAllArgumentAnnotationValues(
                     argTypes, tree);
             // Evaluate the method by recursively navigating through all the
             // argument value lists, adding all results to the results list.
@@ -1122,8 +1200,8 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
          *            location for error reporting
          */
         private void evaluateMethodHelper(
-                ArrayDeque<List<Object>> argArrayDeque,
-                ArrayDeque<Object> values, List<Object> receiverValues,
+                ArrayDeque<List<?>> argArrayDeque,
+                ArrayDeque<Object> values, List<?> receiverValues,
                 Method method, List<Object> results, MethodInvocationTree tree) {
             // If we have descended through all the argument value lists
             if (argArrayDeque.size() == 0) {
@@ -1181,7 +1259,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
             else {
 
                 // Pop an argument off and iterate through all its values
-                List<Object> argValues = argArrayDeque.pop();
+                List<?> argValues = argArrayDeque.pop();
                 for (Object o : argValues) {
 
                     // Push one of the arg's values on and evaluate, then pop
@@ -1220,9 +1298,8 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 if (known) {
                     try {
                         // get the constructor
-                        Class<?>[] argClasses = getClassList(argTypes, tree);
-                        Class<?> recClass = Class.forName(type
-                                .getUnderlyingType().toString());
+                        Class<?>[] argClasses = getParameterTypes(tree);
+                        Class<?> recClass = boxPrimatives(getClass(type, tree));
                         Constructor<?> constructor = recClass
                                 .getConstructor(argClasses);
 
@@ -1245,6 +1322,61 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
         }
 
         /**
+         * Returns the box primitive type if the passed type is an (unboxed)
+         * primitive. Otherwise it returns the passed type
+         * 
+         * @param type
+         * @return
+         */
+        private Class<?> boxPrimatives(Class<?> type) {
+            if(type == byte.class){
+                return Byte.class;
+            } else if(type == short.class){
+                return Short.class;
+            } else if(type == int.class){
+                return Integer.class;
+            } else if(type == long.class){
+                return Long.class;
+            } else if(type == float.class){
+                return Float.class;
+            } else if(type == double.class){
+                return Double.class;
+            } else if(type == char.class){
+                return Character.class;
+            } else if(type == boolean.class){
+                return Boolean.class;
+            }  
+            return type;
+        }
+        /**
+         * Returns the unboxed primitive type if the passed type is a boxed
+         * primitive. Otherwise it returns the passed type
+         * 
+         * @param type
+         * @return
+         */
+        private Class<?> unboxPrimatives(Class<?> type) {
+            if(type == Byte.class){
+                return byte.class;
+            } else if(type == Short.class){
+                return short.class;
+            } else if(type == Integer.class){
+                return int.class;
+            } else if(type == Long.class){
+                return long.class;
+            } else if(type == Float.class){
+                return float.class;
+            } else if(type == Double.class){
+                return double.class;
+            } else if(type == Character.class){
+                return char.class;
+            } else if(type == Boolean.class){
+                return boolean.class;
+            }  
+            return type;
+        }
+
+        /**
          * Attempts to evaluate a New call by retrieving the constructor and
          * invoking it reflectively.
          *
@@ -1264,7 +1396,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
         private AnnotationMirror evaluateNewClass(Constructor<?> constructor,
                 List<AnnotatedTypeMirror> argTypes,
                 AnnotatedTypeMirror retType, NewClassTree tree) {
-            ArrayDeque<List<Object>> allArgValues = getAllArgumentAnnotationValues(
+            ArrayDeque<List<?>> allArgValues = getAllArgumentAnnotationValues(
                     argTypes, tree);
 
             ArrayDeque<Object> specificArgValues = new ArrayDeque<Object>();
@@ -1297,7 +1429,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
          *            location for error reporting
          */
         private void evaluateNewClassHelper(
-                ArrayDeque<List<Object>> argArrayDeque,
+                ArrayDeque<List<?>> argArrayDeque,
                 ArrayDeque<Object> values, Constructor<?> constructor,
                 List<Object> results, NewClassTree tree) {
             // If we have descended through all argument value lists
@@ -1329,7 +1461,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
             else {
 
                 // Pop an argument off and iterate through all its values
-                List<Object> argValues = argArrayDeque.pop();
+                List<?> argValues = argArrayDeque.pop();
                 for (Object o : argValues) {
 
                     // Push one of the arg's values on and evaluate, then pop
@@ -1500,32 +1632,8 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
          */
         private Class<?> getClass(String stringType, Tree tree) {
             switch (stringType) {
-            case "int":
-            case "java.lang.Integer":
-                return int.class;
-            case "long":
-            case "java.lang.Long":
-                return long.class;
-            case "short":
-            case "java.lang.Short":
-                return short.class;
-            case "byte":
-            case "java.lang.Byte":
-                return byte.class;
-            case "char":
-            case "java.lang.Character":
-                return char.class;
-            case "double":
-            case "java.lang.Double":
-                return double.class;
-            case "float":
-            case "java.lang.Float":
-                return float.class;
-            case "boolean":
-            case "java.lang.Boolean":
-                return boolean.class;
-            case "byte[]":
-                return byte[].class;
+            case "<nulltype>":
+                return Object.class;
             }
 
             try {
@@ -1536,6 +1644,70 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 return Object.class;
             }
 
+        }
+
+        /**
+         * 
+         * @param typeMirror the underlying type is used
+         * @param tree Tree for error reporting
+         * @return class object corresponding to the typeMirror passed.
+         */
+        private Class<?> getClass(AnnotatedTypeMirror typeMirror, Tree tree) {
+            TypeMirror type = typeMirror.getUnderlyingType();
+            return getClass(type, tree);
+        }
+
+        private Class<?> getClass(TypeMirror type, Tree tree) {
+
+            switch (type.getKind()) {
+            case INT:
+                return int.class;
+            case LONG:
+                return long.class;
+            case SHORT:
+                return short.class;
+            case BYTE:
+                return byte.class;
+            case CHAR:
+                return char.class;
+            case DOUBLE:
+                return double.class;
+            case FLOAT:
+                return float.class;
+            case BOOLEAN:
+                return boolean.class;
+            case ARRAY:
+                return getArrayType(((ArrayType) type).getComponentType());
+            case DECLARED:
+                String stringType = TypesUtils.getQualifiedName(
+                        (DeclaredType) type).toString();
+                return getClass(stringType, tree);
+            default:
+                return Object.class;
+            }
+        }
+
+        private Class<?> getArrayType(TypeMirror componentType) {
+            switch (componentType.getKind()) {
+            case INT:
+                return int[].class;
+            case LONG:
+                return long[].class;
+            case SHORT:
+                return short[].class;
+            case BYTE:
+                return byte[].class;
+            case CHAR:
+                return char[].class;
+            case DOUBLE:
+                return double[].class;
+            case FLOAT:
+                return float[].class;
+            case BOOLEAN:
+                return boolean[].class;
+            default:
+                return Object[].class;
+            }
         }
 
         /**
@@ -1559,144 +1731,175 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
 
         }
 
-        /**
-         * Gets the Class corresponding to the objects stored in a value
-         * annotations values array for an annotation on a variable of type
-         * stringType. So "int" or "java.lang.Integer" return Long.class because
-         * IntVal stores its values as a List<Long>. To get the primitive Class
-         * corresponding to a string name, use getClass (e.g. "int" and
-         * "java.lang.Integer" give int.class)
-         *
-         * @param stringType
-         * @param tree
-         *            location for error reporting
-         *
-         * @return
-         */
-        private Class<?> getTypeValueClass(String stringType, Tree tree) {
-            switch (stringType) {
-            case "int":
-            case "java.lang.Integer":
-                return Long.class;
-            case "long":
-            case "java.lang.Long":
-                return Long.class;
-            case "short":
-            case "java.lang.Short":
-                return Long.class;
-            case "byte":
-            case "java.lang.Byte":
-                return Long.class;
-            case "char":
-            case "java.lang.Character":
-                return Long.class;
-            case "double":
-            case "java.lang.Double":
-                return Double.class;
-            case "float":
-            case "java.lang.Float":
-                return Float.class;
-            case "boolean":
-            case "java.lang.Boolean":
-                return Boolean.class;
-            case "byte[]":
-                return String.class;
-            }
-            try {
-                return Class.forName(stringType);
-            } catch (ClassNotFoundException e) {
-                checker.report(Result.failure("class.find.failed", stringType),
-                        tree);
-                return Object.class;
-            }
 
+        private Class<?>[] getParameterTypes(NewClassTree tree) {
+            ExecutableElement e = TreeUtils.elementFromUse(tree);
+            Class<?>[] classes = new Class<?>[e.getParameters().size()];
+            int i=0;
+            for(Element param: e.getParameters()){
+                classes[i] = getClass(ElementUtils.getType(param), tree);
+                i++;
+            }
+            return classes;
         }
 
         /**
-         * Gets a Class[] from a List of AnnotatedTypeMirror by calling getClass
-         * on the underlying type of each element
-         *
-         * @param typeList
-         * @param tree
-         *            location for error reporting
-         *
-         * @return
-         */
-        private Class<?>[] getClassList(List<AnnotatedTypeMirror> typeList,
-                Tree tree) {
-            // Get a Class array for the parameters
-            Class<?>[] classList = new Class<?>[typeList.size()];
-            for (int i = 0; i < typeList.size(); i++) {
-                classList[i] = getClass(typeList.get(i).getUnderlyingType()
-                        .toString(), tree);
-            }
-
-            return classList;
-        }
-
-        /**
-         * Extracts the list of values on an annotation as a List of Object
-         * while ensuring the actual type of each element is the same type as
-         * the underlyingType of the typeMirror input
-         *
+         * Gets a list of values in the annotated casted to the type of the
+         * tree.
+         * 
          * @param typeMirror
-         *            the AnnotatedTypeMirror to pull values from and use to
-         *            determine what type to cast the values to
+         *            AnnotatedTypeMirror with values
          * @param tree
-         *            location for error reporting
-         *
-         * @return List of Object where each element is the same type as the
-         *         underlyingType of typeMirror
+         *            Tree whose type the values are casted to and errors should
+         *            be report
+         * @return a list of values cast to the type of tree
          */
-        private List<Object> getCastedValues(AnnotatedTypeMirror typeMirror,
+        private List<?> getCastedValues(AnnotatedTypeMirror typeMirror,
                 Tree tree) {
-            return getCastedValues(typeMirror,
-                    getClass(typeMirror.getUnderlyingType().toString(), tree),
-                    tree);
+            return getCastedValues(typeMirror, getClass(typeMirror, tree), tree);
         }
 
         /**
-         * Extracts the list of values on an annotation as a List of Object
-         * while ensuring the actual type of each element is the same type as
-         * the underlyingType of the typeMirror input
-         *
-         * @param underlyingType
-         *            the type to cast values to
-         *
-         * @param typeMirror
-         *            the AnnotatedTypeMirror to pull values from and use to
-         *            determine what type to cast the values to
-         * @param tree
-         *            location for error reporting
-         *
-         * @return List of Object where each element is the same type as the
-         *         underlyingType of typeMirror
+         * Returns a list of values from the typeMirror cast to castType
+         * @param typeMirror  AnnotatedTypeMirror with values
+         * @param castType Class with type to cast to
+         * @param tree Tree used for location of errors
+         * @return a list of values casted to typeCast
          */
-        private List<Object> getCastedValues(AnnotatedTypeMirror typeMirror,
-                Class<?> underlyingType, Tree tree) {
-            if (!nonValueAnno(typeMirror)) {
-                // Class<?> annoValueClass =
-                // getTypeValueClass(typeMirror.getUnderlyingType().toString());
-                Class<?> annoValueClass = getAnnotationValueClass(getValueAnnotation(typeMirror));
-
-                @SuppressWarnings("unchecked")// We know any type of value array
-                // from an annotation is a
-                // subtype of Object, so we are
-                // casting it to that
-                List<Object> tempValues = (List<Object>) AnnotationUtils
-                        .getElementValueArray(getValueAnnotation(typeMirror),
-                                "value", annoValueClass, true);
-
-                // Since we will be reflectively invoking the method with these
-                // values, it will matter that they are the proper type (Integer
-                // and not Long for an int argument), so fix them if necessary
-
-                fixAnnotationValueObjectType(tempValues, annoValueClass,
-                        underlyingType);
-                return tempValues;
-            } else {
-                return null;
+        private List<?> getCastedValues(AnnotatedTypeMirror typeMirror,
+                Class<?> castType, Tree tree) {
+            AnnotationMirror anno = getValueAnnotation(typeMirror);
+            return getCastedValues(anno, castType, tree);
+        }
+        /**
+         * Returns a list of values from the typeMirror cast to castType
+         * @param typeMirror  AnnotationMirror with values
+         * @param castType Class with type to cast to
+         * @param tree Tree used for location of errors
+         * @return a list of values casted to typeCast
+         */
+        private List<?> getCastedValues(AnnotationMirror anno,
+                Class<?> castType, Tree tree) {
+            List<?> values = null;
+            if (AnnotationUtils.areSameByClass(anno, DoubleVal.class)) {
+                values = convertDoubleVal(anno, castType);
+            } else if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
+                values = convertIntVal(anno, castType);
+            } else if (AnnotationUtils.areSameByClass(anno, StringVal.class)) {
+                values = convertStringVal(anno, castType);
+            } else if (AnnotationUtils.areSameByClass(anno, BoolVal.class)) {
+                values = convertBoolVal(anno, castType);
             }
+            if (values == null) {
+                checker.report(Result.warning("class.convert.failed", anno,
+                        castType), tree);
+                values = Collections.EMPTY_LIST;
+            }
+
+            return values;
+        }
+
+        private List<?> convertToStringVal(List<?> origValues) {
+            List<String> strings = new ArrayList<>();
+            for (Object value : origValues) {
+                strings.add(value.toString());
+            }
+            return strings;
+        }
+
+        private List<?> convertBoolVal(AnnotationMirror anno, Class<?> newClass) {
+            List<Boolean> bools = AnnotationUtils.getElementValueArray(anno,
+                    "value", Boolean.class, true);
+            if (newClass == Boolean.class || newClass == boolean.class) {
+                return bools;
+            } else if (newClass == String.class) {
+                return convertToStringVal(bools);
+            }
+            return null;
+        }
+
+        private List<?> convertStringVal(AnnotationMirror anno,
+                Class<?> newClass) {
+            List<String> strings = AnnotationUtils.getElementValueArray(anno,
+                    "value", String.class, true);
+            if (newClass == String.class) {
+                return strings;
+            } else if (newClass == byte[].class) {
+                List<byte[]> bytes = new ArrayList<>();
+                for (String s : strings) {
+                    bytes.add(s.getBytes());
+                }
+                return bytes;
+            } else if( newClass == Object.class && strings.size() == 1){
+                if(strings.get(0).equals("null"))
+                    return strings;
+            }
+            return null;
+        }
+
+        private List<?> convertIntVal(AnnotationMirror anno, Class<?> newClass) {
+            List<Long> longs = AnnotationUtils.getElementValueArray(anno,
+                    "value", Long.class, true);
+            if (newClass == Long.class || newClass == long.class) {
+                return longs;
+            } else if (newClass == Integer.class || newClass == int.class) {
+                List<Integer> ints = new ArrayList<Integer>();
+                for (Long l : longs) {
+                    ints.add(l.intValue());
+                }
+                return ints;
+            } else if (newClass == Short.class || newClass == short.class) {
+                List<Short> shorts = new ArrayList<>();
+                for (Long l : longs) {
+                    shorts.add(l.shortValue());
+                }
+                return shorts;
+            } else if (newClass == Byte.class || newClass == byte.class) {
+                List<Byte> bytes = new ArrayList<>();
+                for (Long l : longs) {
+                    bytes.add(l.byteValue());
+                }
+                return bytes;
+            } else if (newClass == Character.class || newClass == char.class) {
+                List<Character> chars = new ArrayList<>();
+                for (Long l : longs) {
+                    chars.add((char) l.intValue());
+                }
+                return chars;
+            } else if (newClass == Double.class || newClass == double.class) {
+                List<Double> doubles = new ArrayList<>();
+                for (Long l : longs) {
+                    doubles.add((double) l.intValue());
+                }
+                return doubles;
+            } else if (newClass == Float.class || newClass == float.class) {
+                List<Float> floats = new ArrayList<>();
+                for (Long l : longs) {
+                    floats.add((float) l.intValue());
+                }
+                return floats;
+            }else if (newClass == String.class) {
+                return convertToStringVal(longs);
+            }
+            return null;
+        }
+
+        private List<?> convertDoubleVal(AnnotationMirror anno,
+                Class<?> newClass) {
+            List<Double> doubles = AnnotationUtils.getElementValueArray(anno,
+                    "value", Double.class, true);
+            if (newClass == Double.class || newClass == double.class) {
+                return doubles;
+            } else if (newClass == Float.class || newClass == float.class) {
+                List<Float> floats = new ArrayList<Float>();
+                for (Double d : doubles) {
+                    floats.add(d.floatValue());
+                }
+                return floats;
+            } else if (newClass == String.class) {
+                return convertToStringVal(doubles);
+            }
+            return null;
         }
 
         /**
@@ -1719,80 +1922,14 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
          *         corresponds to the annotation values of an
          *         AnnotatedTypeMirror passed in.
          */
-        private ArrayDeque<List<Object>> getAllArgumentAnnotationValues(
+        private ArrayDeque<List<?>> getAllArgumentAnnotationValues(
                 List<AnnotatedTypeMirror> argTypes, Tree tree) {
-            ArrayDeque<List<Object>> allArgValues = new ArrayDeque<List<Object>>();
+            ArrayDeque<List<?>> allArgValues = new ArrayDeque<List<?>>();
 
             for (AnnotatedTypeMirror a : argTypes) {
                 allArgValues.push(getCastedValues(a, tree));
             }
             return allArgValues;
-        }
-
-        /**
-         * Changes all elements in a List of Object from origClass to newClass.
-         *
-         * @param listToFix
-         * @param origClass
-         *            is in {Double.class, Long.class}
-         * @param newClass
-         *            is in {int.class, short.class, byte.class, float.class} or
-         *            their respective wrappers
-         * @param tree
-         *            location for error reporting
-         *
-         */
-        private void fixAnnotationValueObjectType(List<Object> listToFix,
-                Class<?> origClass, Class<?> newClass) {
-            // Check if the types don't match because floats and ints get
-            // promoted to Doubles and Longs in this annotation scheme
-
-            // Only need to do this if the annotation values were Doubles or
-            // Longs because only these annotations apply to multiple types
-
-            if (origClass == Long.class || origClass == Double.class) {
-
-                if (newClass == Integer.class || newClass == int.class) {
-                    for (int i = 0; i < listToFix.size(); i++) {
-                        listToFix.set(
-                                i,
-                                new Integer(((Long) listToFix.get(i))
-                                        .intValue()));
-                    }
-                } else if (newClass == Short.class || newClass == short.class) {
-                    for (int i = 0; i < listToFix.size(); i++) {
-                        listToFix.set(
-                                i,
-                                new Short(((Long) listToFix.get(i))
-                                        .shortValue()));
-                    }
-                } else if (newClass == Byte.class || newClass == byte.class) {
-                    for (int i = 0; i < listToFix.size(); i++) {
-                        listToFix
-                                .set(i,
-                                        new Byte(((Long) listToFix.get(i))
-                                                .byteValue()));
-                    }
-                } else if (newClass == Float.class || newClass == float.class) {
-                    for (int i = 0; i < listToFix.size(); i++) {
-                        listToFix.set(
-                                i,
-                                new Float(((Double) listToFix.get(i))
-                                        .floatValue()));
-                    }
-                } else if (newClass == Character.class
-                        || newClass == char.class) {
-                    for (int i = 0; i < listToFix.size(); i++) {
-                        listToFix.set(i, new Character(
-                                (char) ((Number) listToFix.get(i)).intValue()));
-                    }
-                }
-            }
-            if (origClass == String.class && newClass == byte[].class) {
-                for (int i = 0; i < listToFix.size(); i++) {
-                    listToFix.set(i, ((String) listToFix.get(i)).getBytes());
-                }
-            }
         }
 
         /**
@@ -1809,15 +1946,12 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
          */
         private AnnotationMirror resultAnnotationHandler(
                 AnnotatedTypeMirror resultType, List<Object> results, Tree tree) {
-            return resultAnnotationHandler(
-                    getClass(resultType.getUnderlyingType().toString(), tree),
-                    results);
+            return resultAnnotationHandler(getClass(resultType, tree), results);
         }
 
         private AnnotationMirror resultAnnotationHandler(TypeMirror resultType,
                 List<Object> results, Tree tree) {
-            return resultAnnotationHandler(
-                    getClass(resultType.toString(), tree), results);
+            return resultAnnotationHandler(getClass(resultType, tree), results);
         }
 
         /**
@@ -1917,12 +2051,12 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
          *
          * @param tree
          *            the ExpressionTree for the object being cast
-         * @param castTypeString
+         * @param castType
          *            the String name of the type to cast the tree/type to
          * @param alteredType
          *            the AnnotatedTypeMirror that is being cast
          */
-        private void handleCast(ExpressionTree tree, String castTypeString,
+        private void handleCast(ExpressionTree tree, Class<?> castType,
                 AnnotatedTypeMirror alteredType) {
 
             AnnotatedTypeMirror treeType = getAnnotatedType(tree);
@@ -1930,12 +2064,8 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 AnnotationMirror treeAnno = getValueAnnotation(treeType);
 
                 String anno = "org.checkerframework.common.value.qual.";
-				if (castTypeString.equalsIgnoreCase("boolean")
-						|| AnnotationUtils.areSameByClass(
-								treeType.getAnnotationInHierarchy(UNKNOWNVAL),
-								BoolVal.class) || this.nonValueAnno(treeType)) {
-					// do nothing
-				} else if (castTypeString.equals("java.lang.String")) {
+
+                if (castType.equals(String.class)) {
                     HashSet<String> newValues = new HashSet<String>();
                     List<Object> valuesToCast = AnnotationUtils
                             .getElementValueArray(treeAnno, "value",
@@ -1946,56 +2076,56 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                     anno += "StringVal";
                     alteredType.replaceAnnotation(createAnnotation(anno,
                             newValues));
-                } else {
+                } else if(isNumberAnnotation(treeAnno)) {
                     List<Number> valuesToCast;
                     valuesToCast = AnnotationUtils.getElementValueArray(
                             treeAnno, "value", Number.class, true);
 
                     HashSet<Object> newValues = new HashSet<Object>();
 
-                    if (castTypeString.equals("double")) {
+                    if (castType.equals(double.class)) {
                         for (Number n : valuesToCast) {
                             newValues.add(new Double(n.doubleValue()));
                         }
                         anno += "DoubleVal";
                     }
 
-                    else if (castTypeString.equals("int")) {
+                    else if (castType.equals(int.class)) {
                         for (Number n : valuesToCast) {
                             newValues.add(new Long(n.intValue()));
                         }
                         anno += "IntVal";
                     }
 
-                    else if (castTypeString.equals("long")) {
+                    else if (castType.equals(long.class)) {
                         for (Number n : valuesToCast) {
                             newValues.add(new Long(n.longValue()));
                         }
                         anno += "IntVal";
                     }
 
-                    else if (castTypeString.equals("float")) {
+                    else if (castType.equals(float.class)) {
                         for (Number n : valuesToCast) {
                             newValues.add(new Double(n.floatValue()));
                         }
                         anno += "DoubleVal";
                     }
 
-                    else if (castTypeString.equals("short")) {
+                    else if (castType.equals(short.class)) {
                         for (Number n : valuesToCast) {
                             newValues.add(new Long(n.shortValue()));
                         }
                         anno += "IntVal";
                     }
 
-                    else if (castTypeString.equals("byte")) {
+                    else if (castType.equals(byte.class)) {
                         for (Number n : valuesToCast) {
                             newValues.add(new Long(n.byteValue()));
                         }
                         anno += "IntVal";
                     }
 
-                    else if (castTypeString.equals("char")) {
+                    else if (castType.equals(char.class)) {
                         for (Number n : valuesToCast) {
                             newValues.add(new Long(n.intValue()));
                         }
@@ -2003,6 +2133,10 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                     }
                     alteredType.replaceAnnotation(createAnnotation(anno,
                             newValues));
+                } else {
+                    //If the expression to cast has a BoolVal anno or a StringVal anno,
+                    //just copy the annotation of the expression.
+                    alteredType.replaceAnnotation(treeAnno);
                 }
             }
         }
@@ -2055,5 +2189,4 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
         return AnnotationUtils.areSameIgnoringValues(anno, INTVAL)
                 || AnnotationUtils.areSameIgnoringValues(anno, DOUBLEVAL);
     }
-
 }
