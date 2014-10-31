@@ -88,12 +88,15 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     @Override
     public MultiGraphQualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         QualifierHierarchy<Q> underlyingHierarchy = underlying.getQualifierHierarchy();
+        DefaultQualifiedTypeFactory<Q> defaultUnderlying = (DefaultQualifiedTypeFactory<Q>)underlying;
+        AnnotationConverter<Q> annoConverter = defaultUnderlying.getAnnotationConverter();
 
         // See QualifierHierarchyAdapter for an explanation of why we need this
         // strange pattern instead of just making a single call to the
         // QualifierHierarchyAdapter constructor.
         QualifierHierarchyAdapter<Q>.Implementation adapter =
             new QualifierHierarchyAdapter<Q>(
+                annoConverter,
                 underlyingHierarchy,
                 getCheckerAdapter().getTypeMirrorConverter())
             .createImplementation(factory);
@@ -106,6 +109,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     @Override
     protected org.checkerframework.framework.type.TypeHierarchy createTypeHierarchy() {
         TypeHierarchy<Q> underlyingHierarchy = underlying.getTypeHierarchy();
+
         TypeHierarchyAdapter<Q> adapter = new TypeHierarchyAdapter<Q>(
                 underlyingHierarchy,
                 getCheckerAdapter().getTypeMirrorConverter(),
@@ -190,7 +194,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         AnnotationConverter<Q> annoConverter = defaultUnderlying.getAnnotationConverter();
 
         return annoConverter.isAnnotationSupported(anno)
-            || getCheckerAdapter().getTypeMirrorConverter().isKey(anno);
+                || getCheckerAdapter().getTypeMirrorConverter().isKey(anno);
     }
 
 

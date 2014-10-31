@@ -108,10 +108,10 @@ public class QualTransferAdapter<Q> extends CFTransfer {
     public TransferInput<QualValue<Q>, QualStore<Q>> convertCfToQualInput(TransferInput<CFValue, CFStore> p) {
         if (p.containsTwoStores()) {
             return new QualTransferInput<Q>(qualAnalysis, p.getNode(), analysis,
-                    new QualStore<Q>(p.getThenStore()), new QualStore<Q>(p.getElseStore()), qualAnalysis.getConverter());
+                    new QualStore<Q>(qualAnalysis, p.getThenStore()), new QualStore<Q>(qualAnalysis, p.getElseStore()), qualAnalysis.getConverter());
         } else {
             return new QualTransferInput<Q>(qualAnalysis, p.getNode(), analysis,
-                    new QualStore<Q>(p.getThenStore()), qualAnalysis.getConverter());
+                    new QualStore<Q>(qualAnalysis, p.getThenStore()), qualAnalysis.getConverter());
         }
     }
 
@@ -152,7 +152,7 @@ public class QualTransferAdapter<Q> extends CFTransfer {
         Map<TypeMirror, QualStore<Q>> convertedExeStores = new HashMap<>();
         if (exeStores != null) {
             for (Map.Entry<TypeMirror, CFStore> entry : exeStores.entrySet()) {
-                convertedExeStores.put(entry.getKey(), new QualStore<Q>(entry.getValue()));
+                convertedExeStores.put(entry.getKey(), new QualStore<Q>(qualAnalysis, entry.getValue()));
             }
         }
 
@@ -163,16 +163,16 @@ public class QualTransferAdapter<Q> extends CFTransfer {
 
         if (p.containsTwoStores()) {
             return new ConditionalTransferResult<>(resultValue,
-                    new QualStore<Q>(p.getThenStore()), new QualStore<Q>(p.getElseStore()), convertedExeStores, p.storeChanged());
+                    new QualStore<Q>(qualAnalysis, p.getThenStore()), new QualStore<Q>(qualAnalysis, p.getElseStore()), convertedExeStores, p.storeChanged());
         } else {
             return new RegularTransferResult<>(resultValue,
-                    new QualStore<Q>(p.getRegularStore()), convertedExeStores, p.storeChanged());
+                    new QualStore<Q>(qualAnalysis, p.getRegularStore()), convertedExeStores, p.storeChanged());
         }
     }
 
     public QualStore<Q> superInitialStore(UnderlyingAST underlyingAST, List<LocalVariableNode> parameters) {
         CFStore initialStore = super.initialStore(underlyingAST, parameters);
-        return new QualStore<>(initialStore);
+        return new QualStore<>(qualAnalysis, initialStore);
     }
 
 //    @Override

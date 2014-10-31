@@ -10,6 +10,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
+import com.sun.source.util.TreePath;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFValue;
@@ -117,4 +118,6 @@ public interface QualifiedTypeFactory<Q> {
             QualifiedTypeMirror<Q> value);
 
     QualAnalysis<Q> createFlowAnalysis(List<Pair<VariableElement, QualValue<Q>>> fieldValues);
+
+    TreePath getPath(Tree node);
 }

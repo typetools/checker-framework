@@ -167,7 +167,7 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
             Receiver r = FlowExpressions.internalReprOf(atypeFactory, node);
 
             FlowExpressionContext flowExprContext = new FlowExpressionContext(
-                    r, null, atypeFactory);
+                    r, null, checker);
 
             canonicalizeKeyForValues(varType, flowExprContext, path, t);
             canonicalizeKeyForValues(valueType, flowExprContext, path, t);
