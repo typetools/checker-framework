@@ -622,7 +622,12 @@ public abstract class SourceChecker
     }
 
     private void logCheckerError(CheckerError ce) {
-        StringBuilder msg = new StringBuilder(ce.getMessage());
+        if( ce.getMessage() == null ) {
+            final String stackTrace = formatStackTrace(ce.getStackTrace());
+            ErrorReporter.errorAbort("Null error message while logging Checker error.\nStack Trace:\n" + stackTrace);
+        }
+
+        StringBuilder msg = new StringBuilder(ce.getMessage() == null ? "<null error message>" : ce.getMessage());
         if ((processingEnv == null ||
                 processingEnv.getOptions() == null ||
                 processingEnv.getOptions().containsKey("printErrorStack")) &&

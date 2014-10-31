@@ -32,7 +32,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
@@ -419,7 +421,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return  the type relations class to check type subtyping
      */
     protected TypeHierarchy createTypeHierarchy() {
-        return new TypeHierarchy(checker, getQualifierHierarchy());
+        return new DefaultTypeHierarchy(checker, getQualifierHierarchy(),
+                                        checker.hasOption("ignoreRawTypeArguments"),
+                                        checker.hasOption("invariantArrays"));
     }
 
     public final TypeHierarchy getTypeHierarchy() {
@@ -671,7 +675,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             type = AnnotatedTypes.deepCopy(indexTypes.get(elt));
         } else if (decl == null && (indexTypes == null || !indexTypes.containsKey(elt))) {
             type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
-            TypeFromElement.annotate(type, elt);
+            ElementAnnotationApplier.apply(type, elt, this);
 
             if (elt instanceof ExecutableElement
                     || elt instanceof VariableElement) {
@@ -1076,8 +1080,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (type.getAnnotations().isEmpty() &&
                         type.getUpperBound().getAnnotations().isEmpty() &&
                         tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
-                    // TODO does this ever happen?
-                    TypeFromElement.annotate(type, tpelt);
+                    ElementAnnotationApplier.apply(type, tpelt, p);
                 }
                 super.visitTypeVariable(type, p);
                 visited.remove(tpelt);
@@ -1456,13 +1459,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         if (!typeVarMapping.isEmpty()) {
             for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
-                if (typeVarMapping.get(tv) == null) {
+                // TODO: call to getTypeParmaeterDeclaration should not be needed, as
+                // methodType should only contain declarations.
+                if (typeVarMapping.get(tv.getTypeParameterDeclaration()) == null) {
                     ErrorReporter.errorAbort("AnnotatedTypeFactory.methodFromUse:" +
                             "mismatch between declared method type variables and the inferred method type arguments! " +
                             "Method type variables: " + methodType.getTypeVariables() + "; " +
                             "Inferred method type arguments: " + typeVarMapping);
                 }
-                typeargs.add(typeVarMapping.get(tv));
+                typeargs.add(typeVarMapping.get(tv.getTypeParameterDeclaration()));
             }
             methodType = (AnnotatedExecutableType)methodType.substitute(typeVarMapping);
         }
@@ -1804,7 +1809,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public final AnnotatedTypeMirror toAnnotatedType(TypeMirror t, boolean declaration) {
         return AnnotatedTypeMirror.createType(t, this, declaration);
     }
-
 
     /**
      * Determines an empty annotated type of the given tree. In other words,
@@ -2476,7 +2480,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar) {
         WildcardType wc = types.getWildcardType(typeVar.getUnderlyingType(), null);
         AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
-        wctype.setExtendsBound(typeVar);
+        wctype.setExtendsBound(typeVar.getEffectiveUpperBound());
         wctype.addAnnotations(typeVar.getAnnotations());
         wctype.setTypeArgHack();
         return wctype;
@@ -2617,24 +2621,29 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotatedTypeMirror argType = overriddenType.getTypeArguments().get(i);
                 if (argType.getKind() == TypeKind.WILDCARD) {
                     AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) argType;
+
+                    final TypeMirror wilcardUbType = wildcardType.getExtendsBound().getUnderlyingType();
+                    final TypeMirror typeParamUbType =  bounds.get(i).getUpperBound().getUnderlyingType();
                     if (isExtendsWildcard(wildcardType)) {
-                        AnnotatedTypeMirror formalTypeParameterBound = bounds.get(i).getUpperBound();
-                        TypeMirror lubBaseType = InternalUtils.greatestLowerBound(this.checker.getProcessingEnvironment(),
-                                formalTypeParameterBound.getUnderlyingType(), wildcardType.getExtendsBound().getUnderlyingType());
+                        TypeMirror glbType =
+                            InternalUtils.greatestLowerBound(this.checker.getProcessingEnvironment(),
+                                                             typeParamUbType, wilcardUbType);
 
-                        Set<? extends AnnotationMirror> glb;
-                        if (formalTypeParameterBound.getAnnotations().size() == wildcardType.getExtendsBound().getAnnotations().size()) {
-                            glb = this.getQualifierHierarchy().greatestLowerBounds(
-                                    formalTypeParameterBound.getAnnotations(),
-                                    wildcardType.getExtendsBound().getAnnotations());
+                        //checkTypeArgs now enforces that wildcard annotation bounds MUST be within
+                        //the bounds of the type parameter.  Therefore, the wildcard's upper bound
+                        //should ALWAYS be more specific than the upper bound of the type parameter
+                        //That said, the Java type does NOT have to be.
+                        //Add the annotations from the wildcard to the lub type.
+                        final AnnotatedTypeMirror newArg;
+                        if (types.isSameType(wilcardUbType, glbType)) {
+                            newArg = AnnotatedTypes.deepCopy(wildcardType.getExtendsBound());
+
                         } else {
-                            // Arbitrary choice for type systems that create types without any annotations.
-                            glb = wildcardType.getExtendsBound().getAnnotations();
+                            newArg = this.toAnnotatedType(glbType, false);
+                            newArg.replaceAnnotations(wildcardType.getExtendsBound().getAnnotations());
                         }
-
-                        AnnotatedTypeMirror newArg = this.toAnnotatedType(lubBaseType, false);
-                        newArg.replaceAnnotations(glb);
                         newTypeArguments.set(i, newArg);
+
                     } else {
                         newTypeArguments.set(i, wildcardType.getSuperBound());
                     }

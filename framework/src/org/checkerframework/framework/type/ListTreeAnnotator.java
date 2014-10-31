@@ -1,24 +1,25 @@
 package org.checkerframework.framework.type;
 
-import com.sun.source.tree.Tree;
-import com.sun.source.util.SimpleTreeVisitor;
-
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+
+import com.sun.source.tree.Tree;
 
 /**
  * ListTreeAnnotator is a TreeVisitor that executes a list of
  * {@link org.checkerframework.framework.type.TreeAnnotator}
  * for each tree visited.
  *
- * Checkers should not override ListTreeAnnotator; they should instead
- * pass a custom TreeAnnotator the constructor.
+ * Checkers should not extend ListTreeAnnotator; they should instead
+ * pass a custom TreeAnnotator to the constructor.
  *
  * @see org.checkerframework.framework.type.ImplicitsTreeAnnotator
  * @see org.checkerframework.framework.type.PropagationTreeAnnotator
  */
-public final class ListTreeAnnotator extends TreeAnnotator {
+public class ListTreeAnnotator extends TreeAnnotator {
 
-    private final TreeAnnotator[] annotators;
+    protected final List<TreeAnnotator> annotators;
 
     /**
      * @param annotators the annotators that will be executed for
@@ -27,7 +28,7 @@ public final class ListTreeAnnotator extends TreeAnnotator {
      */
     public ListTreeAnnotator(TreeAnnotator... annotators) {
         super(null);
-        this.annotators = annotators;
+        this.annotators = Collections.unmodifiableList(Arrays.asList(annotators));
     }
 
     @Override

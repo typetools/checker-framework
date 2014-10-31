@@ -297,6 +297,12 @@ public final class TypesUtils {
         }
     }
 
+    public static Type wildLowerBound(ProcessingEnvironment env, TypeMirror tm) {
+        com.sun.tools.javac.code.Type.WildcardType wct = (com.sun.tools.javac.code.Type.WildcardType) tm;
+        com.sun.tools.javac.util.Context ctx = ((com.sun.tools.javac.processing.JavacProcessingEnvironment) env).getContext();
+        return com.sun.tools.javac.code.Types.instance(ctx).wildLowerBound(wct);
+    }
+
     /**
      * Returns the {@link TypeMirror} for a given {@link Class}.
      */
@@ -326,5 +332,30 @@ public final class TypesUtils {
     public static ArrayType createArrayType(Types types, TypeMirror componentType) {
         JavacTypes t = (JavacTypes) types;
         return t.getArrayType(componentType);
+    }
+
+    /**
+     * Returns true if declaredType is a Class that is used to box primitive type
+     * (e.g. declaredType=java.lang.Double and primitiveType=22.5d )
+     */
+    public static boolean isBoxOf(TypeMirror declaredType, TypeMirror primitiveType) {
+        if(declaredType.getKind() != TypeKind.DECLARED) {
+            return false;
+        }
+
+        final String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
+        switch (primitiveType.getKind()) {
+            case BOOLEAN:  return qualifiedName.equals("java.lang.Boolean");
+            case BYTE:     return qualifiedName.equals("java.lang.Byte");
+            case CHAR:     return qualifiedName.equals("java.lang.Character");
+            case DOUBLE:   return qualifiedName.equals("java.lang.Double");
+            case FLOAT:    return qualifiedName.equals("java.lang.Float");
+            case INT:      return qualifiedName.equals("java.lang.Integer");
+            case LONG:     return qualifiedName.equals("java.lang.Long");
+            case SHORT:    return qualifiedName.equals("java.lang.Short");
+
+            default:
+                return false;
+        }
     }
 }
