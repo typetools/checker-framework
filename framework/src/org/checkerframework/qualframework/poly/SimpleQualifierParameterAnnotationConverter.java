@@ -1,22 +1,10 @@
-package org.checkerframework.checker.experimental.tainting_qual_poly;
+package org.checkerframework.qualframework.poly;
 
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.ClassTaintingParam;
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.MethodTaintingParam;
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.MultiTainted;
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.PolyTainting;
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.Tainted;
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.Untainted;
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.Var;
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.Wild;
+
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.qualframework.poly.CombiningOperation;
-import org.checkerframework.qualframework.poly.PolyQual;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 import org.checkerframework.qualframework.poly.PolyQual.QualVar;
-import org.checkerframework.qualframework.poly.QualParams;
-import org.checkerframework.qualframework.poly.QualifierParameterAnnotationConverter;
-import org.checkerframework.qualframework.poly.Wildcard;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -24,8 +12,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -173,11 +159,10 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         return null;
     }
 
-
     private Wildcard<Q> handleWildcard(AnnotationMirror anno, Wildcard<Q> current) {
-        org.checkerframework.checker.experimental.tainting_qual_poly.qual.Wildcard wildcard =
+        org.checkerframework.qualframework.poly.qual.Wildcard wildcard =
                 AnnotationUtils.getElementValueEnum(anno, WILDCARD_NAME,
-                        org.checkerframework.checker.experimental.tainting_qual_poly.qual.Wildcard.class, true);
+                        org.checkerframework.qualframework.poly.qual.Wildcard.class, true);
 
         switch (wildcard) {
             case SUPER:
@@ -236,7 +221,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
                 result.add((String) classAnno.cast(a).getClass().getMethod("value").invoke(a));
             }
         } catch (Exception e) {
-            ErrorReporter.errorAbort("AnnotationCovnerter not configured correctly. Error looking up 'value' field.");
+            ErrorReporter.errorAbort("AnnotationConverter not configured correctly. Error looking up 'value' field.");
         }
 
         switch (elt.getKind()) {
