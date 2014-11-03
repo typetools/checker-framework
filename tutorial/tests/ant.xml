@@ -26,7 +26,6 @@
         <!-- <arg value="-version"/> -->
         <arg value="-g"/>
         <arg line="-classpath ${checker.lib}:@{custom.lib}"/>
-        <arg line="-J-Djsr308.imports='org.checkerframework.framework.qual.*:org.checkerframework.checker.nullness.qual.*:org.checkerframework.checker.initialization.qual.*:org.checkerframework.checker.interning.qual.*:org.checkerframework.checker.igj.qual.*'"/>
         <arg line="-sourcepath @{srcpath}"/>
         <arg line="-processor @{checker}"/>
         <arg line="-implicit:none"/>
