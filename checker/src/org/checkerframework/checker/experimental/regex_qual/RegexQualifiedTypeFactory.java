@@ -97,7 +97,7 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
 
 
                 if (regexStr != null) {
-                    Regex regexQual = null;
+                    Regex regexQual;
                     if (isRegex(regexStr)) {
                         int groupCount = getGroupCount(regexStr);
                         regexQual = new Regex.RegexVal(groupCount);
