@@ -70,8 +70,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
             Class<? extends Annotation> wildAnno,
             Q top,
             Q bottom,
-            Q defaultQual
-            ) {
+            Q defaultQual) {
 
         this.MULTI_ANNO_NAME_PREFIX = multiAnnoNamePrefix;
         this.supportedAnnotationNames = supportedAnnotationNames;
@@ -91,11 +90,18 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     @Override
     public QualParams<Q> fromAnnotations(Collection<? extends AnnotationMirror> annos) {
         Map<String, Wildcard<Q>> params = new HashMap<>();
+        PolyQual<Q> primary = null;
         for (AnnotationMirror anno : annos) {
             mergeParams(params, getQualifierMap(anno));
+
+            PolyQual<Q> newPrimary = getPrimaryAnnotation(anno);
+            if (primary != null && newPrimary != null) {
+                primary = primary.combineWith(newPrimary, lubOp);
+            } else {
+                primary = newPrimary;
+            }
         }
 
-        PolyQual<Q> primary = getPrimaryAnnotation(annos);
         if (primary == null) {
             // TODO: This is pretty coarse defaulting
             primary = new GroundQual<>(DEFAULT_QUAL);
@@ -183,39 +189,30 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         }
     }
 
-    private PolyQual<Q> getPrimaryAnnotation(Collection<? extends AnnotationMirror> annos) {
+    private PolyQual<Q> getPrimaryAnnotation(AnnotationMirror anno) {
 
-        PolyQual<Q> result = null;
-        for (AnnotationMirror anno : annos) {
-            String name = AnnotationUtils.annotationName(anno);
-            PolyQual<Q> newQual = null;
+        String name = AnnotationUtils.annotationName(anno);
+        PolyQual<Q> newQual = null;
 
-            if (supportedAnnotationNames.contains(name)) {
-                Q qual = getQualifier(anno);
-                String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
-                if (PRIMARY_TARGET.equals(target)) {
-                    newQual = new GroundQual<>(qual);
-                }
-            } else if (name.equals(varAnno.getName())) {
-                String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
-                String value = AnnotationUtils.getElementValue(anno, SOURCE_VALUE_NAME, String.class, true);
-                if (PRIMARY_TARGET.equals(target)) {
-                    newQual = new QualVar<>(value, BOTTOM, TOP);
-                }
-            } else if (name.equals(polyAnno.getName())) {
-                String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
-                if (PRIMARY_TARGET.equals(target)) {
-                    newQual = new QualVar<>(POLY_NAME, BOTTOM, TOP);
-                }
+        if (supportedAnnotationNames.contains(name)) {
+            Q qual = getQualifier(anno);
+            String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
+            if (PRIMARY_TARGET.equals(target)) {
+                newQual = new GroundQual<>(qual);
             }
-
-            if (result != null && newQual != null) {
-                result = result.combineWith(newQual, lubOp);
-            } else {
-                result = newQual;
+        } else if (name.equals(varAnno.getName())) {
+            String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
+            String value = AnnotationUtils.getElementValue(anno, SOURCE_VALUE_NAME, String.class, true);
+            if (PRIMARY_TARGET.equals(target)) {
+                newQual = new QualVar<>(value, BOTTOM, TOP);
+            }
+        } else if (name.equals(polyAnno.getName())) {
+            String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
+            if (PRIMARY_TARGET.equals(target)) {
+                newQual = new QualVar<>(POLY_NAME, BOTTOM, TOP);
             }
         }
-        return result;
+        return newQual;
     }
 
     @Override
@@ -225,7 +222,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         // involve a nontrivial amount of work.
         return name.startsWith(MULTI_ANNO_NAME_PREFIX)
             || getQualifierMap(anno) != null
-            || getPrimaryAnnotation(Arrays.asList(anno)) != null;
+            || getPrimaryAnnotation(anno) != null;
     }
 
     @Override
