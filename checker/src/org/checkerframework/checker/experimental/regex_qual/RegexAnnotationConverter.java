@@ -17,11 +17,9 @@ import java.util.Map;
  */
 public class RegexAnnotationConverter implements AnnotationConverter<Regex> {
     private String regexName;
-//    private String unknown;
 
     public RegexAnnotationConverter() {
         regexName = org.checkerframework.checker.experimental.regex_qual.qual.Regex.class.getName();
-//        unknown = UnknownRegex.class.getName();
     }
 
     @Override
