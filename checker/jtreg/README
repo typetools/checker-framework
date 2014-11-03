@@ -5,3 +5,5 @@ checker-framework/checker/tests
 
 Using the jtreg approach it is easier to pass options to the compiler
 in the test file itself.
+The jtreg approach also makes it possible to check that an error message
+was output two times.
