@@ -11,6 +11,7 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.Wild;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.qualframework.poly.CombiningOperation;
+import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 
 import javax.lang.model.element.AnnotationMirror;
 import java.util.Arrays;
