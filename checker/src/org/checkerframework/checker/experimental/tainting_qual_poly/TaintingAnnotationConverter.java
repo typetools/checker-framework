@@ -48,14 +48,10 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
         for (AnnotationMirror anno : annos) {
             mergeParams(params, getQualifierMap(anno));
         }
-//        for (AnnotationMirror anno : annos) {
-//            handleExtendsSuper(anno, params);
-//        }
 
         PolyQual<Tainting> primary = getPrimaryAnnotation(annos);
         if (primary == null) {
             // TODO: Add a way to change this defaulting
-
             primary = new PolyQual.GroundQual<>(TOP);
         }
 
@@ -148,39 +144,6 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
         }
     }
 
-    private void handleExtendsSuper(AnnotationMirror anno, Map<String, Wildcard<Tainting>> params) {
-        String name = AnnotationUtils.annotationName(anno);
-
-        if (name.startsWith(MULTI_ANNO_NAME_PREFIX)) {
-            Map<String, Wildcard<Tainting>> result = new HashMap<>();
-            AnnotationMirror[] subAnnos = AnnotationUtils.getElementValue(
-                    anno, "value", AnnotationMirror[].class, true);
-            for (AnnotationMirror subAnno : subAnnos) {
-                handleExtendsSuper(subAnno, params);
-            }
-
-        } else if (name.equals(Extends.class.getName())) {
-            String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
-            Wildcard<Tainting> oldWild = params.get(target);
-            if (oldWild == null) {
-                // TODO: Need to report an error to the user here
-                return;
-            }
-            Wildcard<Tainting> newWild = new Wildcard<>(new GroundQual<>(BOTTOM), oldWild.getUpperBound());
-            params.put(target, newWild);
-
-        } else if (name.equals(Super.class.getName())) {
-            String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
-            Wildcard<Tainting> oldWild = params.get(target);
-            if (oldWild == null) {
-                // TODO: Need to report an error to the user here
-                return;
-            }
-            Wildcard<Tainting> newWild = new Wildcard<>(oldWild.getLowerBound(), new GroundQual<>(TOP));
-            params.put(target, newWild);
-        }
-    }
-
     private PolyQual<Tainting> getPrimaryAnnotation(Collection<? extends AnnotationMirror> annos) {
 
         PolyQual<Tainting> result = null;
@@ -225,8 +188,6 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
         // Avoid running getQualifierMap on Multi* annotations, since that could
         // involve a nontrivial amount of work.
         return name.startsWith(MULTI_ANNO_NAME_PREFIX)
-            || name.equals(Extends.class.getName())
-            || name.equals(Super.class.getName())
             || getQualifierMap(anno) != null
             || getPrimaryAnnotation(Arrays.asList(anno)) != null;
     }
