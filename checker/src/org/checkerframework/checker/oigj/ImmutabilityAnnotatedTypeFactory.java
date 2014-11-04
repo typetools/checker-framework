@@ -388,6 +388,9 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // resolving @I Immutability
     // **********************************************************************
 
+    //SupertypeVisit and related classes are used to cut the infinite loop that occurred on
+    //recursive direct super types e.g.
+    //class MyClass implements List<MyClass {}
     private static final StructuralEqualityComparer structEquals = new StructuralEqualityComparer();
     private final class SupertypeVisit {
         private final AnnotatedTypeMirror type;
