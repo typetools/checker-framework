@@ -56,7 +56,6 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
         super(checker);
 
         patternCompile = TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, getContext().getProcessingEnvironment());
-//        partialRegexValue = TreeUtils.getMethod("org.checkerframework.checker.regex.qual.PartialRegex", "value", 0, this.context.getProcessingEnvironment());
     }
 
     @Override
