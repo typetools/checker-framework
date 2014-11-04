@@ -1,6 +1,7 @@
 package org.checkerframework.checker.experimental.regex_qual;
 
 import org.checkerframework.checker.regex.qual.UnknownRegex;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.qualframework.base.AnnotationConverter;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -26,7 +27,7 @@ public class RegexAnnotationConverter implements AnnotationConverter<Regex> {
     public Regex fromAnnotations(Collection<? extends AnnotationMirror> annos) {
 
         for (AnnotationMirror anno: annos) {
-            if (getAnnotationTypeName(anno).equals(regexName)) {
+            if (AnnotationUtils.annotationName(anno).equals(regexName)) {
                 for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
                         anno.getElementValues().entrySet()) {
 
@@ -40,20 +41,8 @@ public class RegexAnnotationConverter implements AnnotationConverter<Regex> {
         return Regex.TOP;
     }
 
-    private String getAnnotationTypeName(AnnotationMirror anno) {
-        Element elt = anno.getAnnotationType().asElement();
-        if (elt instanceof QualifiedNameable) {
-            @SuppressWarnings("unchecked")
-            QualifiedNameable nameable = (QualifiedNameable)elt;
-            return nameable.getQualifiedName().toString();
-        } else {
-            return null;
-        }
-    }
-
     @Override
     public boolean isAnnotationSupported(AnnotationMirror anno) {
-        String name = getAnnotationTypeName(anno);
-        return name.equals(regexName);
+        return AnnotationUtils.annotationName(anno).equals(regexName);
     }
 }
