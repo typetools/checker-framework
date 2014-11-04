@@ -1,19 +1,13 @@
 package org.checkerframework.checker.oigj;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
 import org.checkerframework.checker.oigj.qual.AssignsFields;
@@ -394,6 +388,42 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // resolving @I Immutability
     // **********************************************************************
 
+    private static final StructuralEqualityComparer structEquals = new StructuralEqualityComparer();
+    private final class SupertypeVisit {
+        private final AnnotatedTypeMirror type;
+        public SupertypeVisit(final AnnotatedTypeMirror type) {
+            this.type = type;
+        }
+
+        @Override
+        public int hashCode() {
+            return this.type.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object that) {
+            if (that == null) return false;
+            if (!that.getClass().equals(SupertypeVisit.class)) {
+                return false;
+            }
+
+            return structEquals.areEqual(type, ((SupertypeVisit) that).type);
+        }
+    }
+
+    private final Set<SupertypeVisit> visited = new HashSet<>();
+
+    public boolean checkVisitingSupertype(final AnnotatedTypeMirror type) {
+        final SupertypeVisit visit = new SupertypeVisit(type);
+        if (!visited.contains(visit)) {
+            visited.add(visit);
+            return true;
+        }
+
+        visited.remove(visit);
+        return false;
+    }
+
     /**
      * Replace all instances of {@code @I} in the super types with the
      * immutability of the current type
@@ -405,12 +435,14 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected void postDirectSuperTypes(AnnotatedTypeMirror type,
             List<? extends AnnotatedTypeMirror> supertypes) {
         super.postDirectSuperTypes(type, supertypes);
-        Map<String, AnnotationMirror> templateMapping =
-            new ImmutabilityTemplateCollector().visit(type);
+        if (checkVisitingSupertype(type)) {
+            Map<String, AnnotationMirror> templateMapping =
+                    new ImmutabilityTemplateCollector().visit(type);
 
-        new ImmutabilityResolver().visit(supertypes, templateMapping);
-        for (AnnotatedTypeMirror supertype: supertypes) {
-            typeAnnotator.visit(supertype, null);
+            new ImmutabilityResolver().visit(supertypes, templateMapping);
+            for (AnnotatedTypeMirror supertype : supertypes) {
+                typeAnnotator.visit(supertype, null);
+            }
         }
     }
 
