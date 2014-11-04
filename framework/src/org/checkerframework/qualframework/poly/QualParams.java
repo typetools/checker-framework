@@ -98,13 +98,17 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
             newMap.put(k, newValue);
         }
 
-        // TODO: I have no udea if this is right. Need to make sure there are tests.
+        // TODO: I have no idea if this is right. Need to make sure there are tests.
         Map<String, PolyQual<Q>> qualSubst = new HashMap<>();
         for (String k : substs.keySet()) {
             qualSubst.put(k, substs.get(k).getUpperBound());
         }
 
         PolyQual<Q> newPrimary = primary == null? null : primary.substitute(qualSubst);
+//        PolyQual<Q> newPrimary = primary == null? null : primary.substitute(qualSubst);
+//        if (substs instanceof QualParams &&  ((QualParams<Q>)substs).getPrimary() != null) {
+//            newPrimary = ((QualParams<Q>)substs).getPrimary();
+//        }
         return new QualParams<Q>(newMap, newPrimary);
 //        return new QualParams<Q>(newMap, primary);
     }
@@ -193,12 +197,17 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
         return map.size();
     }
 
+    public QualParams<Q> clone() {
+        QualParams<Q> clone = new QualParams<Q>();
+        clone.putAll(this);
+        clone.setPrimary(getPrimary());
+        return clone;
+    }
+
     @Override
     public String toString() {
         String result = "QualParams(";
-//        if (primary != null) {
-            result += "primary=" + primary + ",";
-//        }
+        result += "primary=" + primary + ",";
 
         result += map.toString();
         result += ")";

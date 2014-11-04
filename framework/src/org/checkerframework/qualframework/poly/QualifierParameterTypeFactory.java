@@ -251,7 +251,15 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
         List<QualifiedTypeMirror<QualParams<Q>>> result = new ArrayList<>();
         for (QualifiedTypeMirror<QualParams<Q>> supertype : supertypes) {
             QualParams<Q> superQuals = supertype.getQualifier().substituteAll(subQuals);
+            superQuals.setPrimary(subQuals.getPrimary());
+            // TODO: This comment is not yet done.
+            // Doc why we need this. We need this because substitute doesnt replace primary annotations,
+            // it only substitutes Polyqual variables that might be in the primary annotaiton.
+            // However, the behavior of directSupertypes should be to replace the primary annotation
+            // This was needed to get the Ternary test to work.
+            // This does make it impossible to a qual param on the subclass used as a primary qualifier on the super class.
             result.add(SetQualifierVisitor.apply(supertype, superQuals));
+
         }
 
         return result;
