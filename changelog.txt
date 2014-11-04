@@ -1,3 +1,11 @@
+Version 1.8.8, 1 December 2014
+
+Deprecate implicit imports, including the jsr308_imports environment
+variable and the -jsr308_imports ... and -Djsr308.imports=... command-line
+options.
+
+----------------------------------------------------------------------
+
 Version 1.8.7, 30 October 2014
 
 Fix performance regression introduced in release 1.8.6.
