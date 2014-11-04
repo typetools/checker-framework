@@ -227,7 +227,6 @@ indicated in this example:
     <!-- use jsr308.javac instead of javac -->
     <jsr308.javac ... >
       <compilerarg line="-processor org.checkerframework.checker.nullness.NullnessChecker"/>
-      <!-- optional, for implicit imports: <compilerarg value="-J-Djsr308_imports=org.checkerframework.checker.nullness.qual.*:org.checkerframework.dataflow.qual.*"/> -->
       <!-- optional, to not check uses of library methods: <compilerarg value="-AskipUses=^(java\.awt\.|javax\.swing\.)"/> -->
       <compilerarg line="-Xmaxerrs 10000"/>
       ...
@@ -499,7 +498,7 @@ The website contains instructions for installing and using the plugin.
 
 \begin{sloppypar}
 tIDE, an open-source Java IDE, supports the Checker Framework.  See its
-documentation at \myurl{http://tide.olympe-network.com/}.
+documentation at \myurl{http://tide.olympe.in/}.
 \end{sloppypar}
 
 
