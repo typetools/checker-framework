@@ -3,7 +3,6 @@ package org.checkerframework.checker.i18n;
 import com.sun.source.tree.Tree;
 import org.checkerframework.checker.i18n.qual.LocalizableKey;
 import org.checkerframework.checker.propkey.PropertyKeyAnnotatedTypeFactory;
-import org.checkerframework.checker.propkey.qual.PropertyKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.ListTreeAnnotator;

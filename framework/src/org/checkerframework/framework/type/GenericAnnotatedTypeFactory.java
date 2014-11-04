@@ -15,7 +15,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.util.SimpleTreeVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -46,7 +45,7 @@ import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.util.QualifierDefaults;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -201,7 +200,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns a {@link TreeAnnotator} that adds annotations to a type based
      * on the contents of a tree.
      *
-     * Subclasses may override this method to specify more appriopriate
+     * Subclasses may override this method to specify more appropriate
      * {@link TreeAnnotator}
      *
      * @return a tree annotator
@@ -623,7 +622,7 @@ public abstract class GenericAnnotatedTypeFactory<
         }
     }
 
-    // Maintain a deque of analyses to accomodate nested classes.
+    // Maintain a deque of analyses to accommodate nested classes.
     protected final Deque<FlowAnalysis> analyses;
     // Maintain for every class the store that is used when we analyze initialization code
     protected Store initializationStore;
@@ -847,12 +846,15 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns the inferred value (by the org.checkerframework.dataflow analysis) for a given tree.
      */
     public Value getInferredValueFor(Tree tree) {
+        if (tree == null) {
+            ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.getInferredValueFor called with null tree. Don't!");
+            return null; // dead code
+        }
         Value as = null;
-        if (!analyses.isEmpty() && tree != null) {
+        if (!analyses.isEmpty()) {
             as = analyses.getFirst().getValue(tree);
         }
         if (as == null &&
-                tree != null &&
                 // TODO: this comparison shouldn't be needed, but
                 // Daikon check-nullness started failing without it.
                 flowResult != null) {
@@ -865,34 +867,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * Applies the annotations inferred by the org.checkerframework.dataflow analysis to the type {@code type}.
      */
     protected void applyInferredAnnotations(AnnotatedTypeMirror type, Value as) {
-        AnnotatedTypeMirror inferred = as.getType();
-        for (AnnotationMirror top : getQualifierHierarchy().getTopAnnotations()) {
-            AnnotationMirror inferredAnnotation;
-            if (QualifierHierarchy.canHaveEmptyAnnotationSet(type)) {
-                inferredAnnotation = inferred.getAnnotationInHierarchy(top);
-            } else {
-                inferredAnnotation = inferred.getEffectiveAnnotationInHierarchy(top);
-            }
-            if (inferredAnnotation == null) {
-                // We inferred "no annotation" for this hierarchy.
-                type.removeAnnotationInHierarchy(top);
-            } else {
-                // We inferred an annotation.
-                AnnotationMirror present = type
-                        .getAnnotationInHierarchy(top);
-                if (present != null) {
-                    if (getQualifierHierarchy().isSubtype(
-                            inferredAnnotation, present)) {
-                        // TODO: why is the above check needed?
-                        // Shouldn't inferred qualifiers always be
-                        // subtypes?
-                        type.replaceAnnotation(inferredAnnotation);
-                    }
-                } else {
-                    type.addAnnotation(inferredAnnotation);
-                }
-            }
-        }
+        new DefaultInferredTypesApplier().applyInferredType(getQualifierHierarchy(), type, as.getType());
     }
 
     @Override

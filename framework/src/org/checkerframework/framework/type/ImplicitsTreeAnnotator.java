@@ -2,15 +2,11 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.SimpleTreeVisitor;
 import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.Pair;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.regex.Pattern;
