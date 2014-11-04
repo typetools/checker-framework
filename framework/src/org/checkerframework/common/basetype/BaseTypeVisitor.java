@@ -1721,46 +1721,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeParameterBounds bounds = boundsIter.next();
             AnnotatedTypeMirror typeArg = argIter.next();
 
-            AnnotatedTypeMirror varUpperBound = bounds.getUpperBound();
-            final AnnotatedTypeMirror typeArgForUpperBoundCheck = typeArg;
-
-            if (typeArg.getKind() == TypeKind.WILDCARD ) {
-
-                if (bounds.getUpperBound().getKind() == TypeKind.WILDCARD) {
-                    //TODO: When capture conversion is implemented, this special case should be removed.
-                    //TODO: This may not occur only in places where capture conversion occurs but in those cases
-                    //TODO: The containment check provided by this method should be enough
-                    continue;
-                }
-
-                //If we have a declaration:
-                // class MyClass<T extends String> ...
-                //
-                //the javac compiler allows wildcard type arguments that have Java types OUTSIDE of the
-                //bounds of T, i.e:
-                // MyClass<? extends Object>
-                //
-                //This is sound because every NON-WILDCARD reference to MyClass MUST obey those bounds
-                //This leads to cases where varUpperBound is actually a subtype of typeArgForUpperBoundCheck
-                final TypeMirror varUnderlyingUb = varUpperBound.getUnderlyingType();
-                final TypeMirror argUnderlyingUb = ((AnnotatedWildcardType)typeArg).getExtendsBound().getUnderlyingType();
-                if ( !types.isSubtype(argUnderlyingUb, varUnderlyingUb)
-                  &&  types.isSubtype(varUnderlyingUb, argUnderlyingUb)) {
-                    varUpperBound = AnnotatedTypes.asSuper(types, atypeFactory,
-                                                           varUpperBound, typeArgForUpperBoundCheck);
-                }
+            if (shouldBeCaptureConverted(typeArg, bounds)) {
+                continue;
             }
+
+            final AnnotatedTypeMirror paramUpperBound = replaceMalformedWildcards(bounds.getUpperBound(), typeArg);
 
             if (typeargTrees == null || typeargTrees.isEmpty()) {
                 // The type arguments were inferred and we mark the whole method.
                 // The inference fails if we provide invalid arguments,
                 // therefore issue an error for the arguments.
                 // I hope this is less confusing for users.
-                commonAssignmentCheck(varUpperBound,
+                commonAssignmentCheck(paramUpperBound,
                         typeArg, toptree,
                         "type.argument.type.incompatible", false);
             } else {
-                commonAssignmentCheck(varUpperBound, typeArg,
+                commonAssignmentCheck(paramUpperBound, typeArg,
                         typeargTrees.get(typeargs.indexOf(typeArg)),
                         "type.argument.type.incompatible", false);
             }
@@ -1778,6 +1754,43 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
             }
         }
+    }
+
+    //TODO: REMOVE WHEN CAPTURE CONVERSION IS IMPLEMENTED
+    //TODO: This may not occur only in places where capture conversion occurs but in those cases
+    //TODO: The containment check provided by this method should be enough
+    /**
+     * Identifies cases that would not happen if capture conversion were implemented.  These special cases
+     * should be removed when capture conversion is implemented.
+     */
+    private boolean shouldBeCaptureConverted(final AnnotatedTypeMirror typeArg,
+                                             final AnnotatedTypeParameterBounds bounds) {
+        return typeArg.getKind() == TypeKind.WILDCARD && bounds.getUpperBound().getKind() == TypeKind.WILDCARD;
+    }
+
+    //If we have a declaration:
+    // class MyClass<T extends String> ...
+    //
+    //the javac compiler allows wildcard type arguments that have Java types OUTSIDE of the
+    //bounds of T, i.e:
+    // MyClass<? extends Object>
+    //
+    //This is sound because every NON-WILDCARD reference to MyClass MUST obey those bounds
+    //This leads to cases where the type parameter's upper bound is actually a subtype of typeArg
+    //In this case, we convert the upper bound to the type of typeArg and use that for checks
+    //against the parameter's upper bound
+    private AnnotatedTypeMirror replaceMalformedWildcards(final AnnotatedTypeMirror paramUpperBound,
+                                                          final AnnotatedTypeMirror typeArg) {
+        if (typeArg.getKind() == TypeKind.WILDCARD) {
+            final TypeMirror varUnderlyingUb = paramUpperBound.getUnderlyingType();
+            final TypeMirror argUnderlyingUb = ((AnnotatedWildcardType) typeArg).getExtendsBound().getUnderlyingType();
+            if (!types.isSubtype(argUnderlyingUb, varUnderlyingUb)
+                    && types.isSubtype(varUnderlyingUb, argUnderlyingUb)) {
+                return AnnotatedTypes.asSuper(types, atypeFactory,paramUpperBound, typeArg);
+            }
+        } //else
+
+        return paramUpperBound;
     }
 
     /* Updated version that performs more well-formedness checks.
