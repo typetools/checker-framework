@@ -739,7 +739,7 @@ abstract class TypeFromTree extends
             AnnotatedTypeMirror type = f.type(node);
 
             if (type.getKind() == TypeKind.TYPEVAR)
-                return forTypeVariable(type, f);
+                return forTypeVariable(type, f).asUse();
 
             return type;
         }
@@ -751,7 +751,7 @@ abstract class TypeFromTree extends
             AnnotatedTypeMirror type = f.type(node);
 
             if (type.getKind() == TypeKind.TYPEVAR)
-                return forTypeVariable(type, f);
+                return forTypeVariable(type, f).asUse();
 
             return type;
         }
@@ -762,7 +762,7 @@ abstract class TypeFromTree extends
             AnnotatedTypeMirror type = f.type(node);
 
             if (type.getKind() == TypeKind.TYPEVAR)
-                return forTypeVariable(type, f);
+                return forTypeVariable(type, f).asUse();
 
             return type;
         }

@@ -314,7 +314,7 @@ public class BoundsInitializer {
                     final List<? extends TypeMirror> actualTypeArgs = actualType.getTypeArguments();
                     for (int i = 0; i < actualTypeArgs.size(); i++) {
                         final AnnotatedTypeMirror annoTypeArg =
-                                AnnotatedTypeMirror.createType(actualTypeArgs.get(i), declaredType.atypeFactory, declaredType.isDeclaration());
+                                AnnotatedTypeMirror.createType(actualTypeArgs.get(i), declaredType.atypeFactory, false);
 
                         final BoundPathNode node = addPathNode(new TypeArgNode(i));
                         typeArgs.add(replaceOrVisit(annoTypeArg));
@@ -399,7 +399,7 @@ public class BoundsInitializer {
                 TypeVariableStructure targetStructure = typeVarToStructure.get(entry.getValue());
 
                 AnnotatedTypeVariable template = targetStructure.annotatedTypeVar;
-                refMap.put(entry.getKey(), AnnotatedTypeCopier.copy(template));
+                refMap.put(entry.getKey(), AnnotatedTypeCopier.copy(template).asUse());
 
                 addImmediateTypeVarPaths(refMap, entry.getKey(), targetStructure);
             }
