@@ -1,8 +1,7 @@
 import java.lang.reflect.*;
 import java.lang.annotation.Annotation;
 
-import org.checkerframework.checker.experimental.regex_qual.qual.*;
-
+import org.checkerframework.checker.experimental.regex_qual_poly.qual.*;
 
 class AnnotatedTypeParams3 {
     private <T extends Annotation> T
@@ -34,6 +33,8 @@ class AnnotatedTypeParams3 {
 
     <T extends @Regex Object> void test2(T p) {
         Object o = p;
+        // TODO: We must fix non-defaultable locations for this!
+        //:: error: (assignment.type.incompatible)
         @Regex Object re = o;
     }
 
