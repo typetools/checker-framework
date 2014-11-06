@@ -6,14 +6,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.ErrorReporter;
 
 import static org.checkerframework.framework.util.AnnotatedTypes.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -49,7 +47,7 @@ public class LubTypeVariableAnnotator {
 
             //asSuper(null, typevar) does not yield a typevar but the value null, handle this here for now
             } else if(subtype.getKind() == TypeKind.NULL) {
-                typeVar = AnnotatedTypes.deepCopy(lub);
+                typeVar = lub.deepCopy();
                 typeVar.replaceAnnotations(subtype.getAnnotations());
 
             } else {
@@ -161,7 +159,7 @@ public class LubTypeVariableAnnotator {
         }
 
         if(anno != null) {
-            typeUpperBound = typeUpperBound.getCopy(true);
+            typeUpperBound = typeUpperBound.shallowCopy();
             typeUpperBound.addAnnotation(anno);
         }
 
