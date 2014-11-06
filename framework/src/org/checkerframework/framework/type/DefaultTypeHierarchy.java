@@ -784,7 +784,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         // flow2/Precondition.java, flow2/Postcondition.java,
         // flow2/ParamFlowExpr.java, flow2/MethodCallFlowExpr.java
         if( isJavaLangAnnotation(supertype) && implementsAnnotation(subtype) ) { //TODO: Should this go in asSuper?
-            final AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(supertype);
+            final AnnotatedTypeMirror atm = supertype.deepCopy();
             atm.clearAnnotations();
             atm.addAnnotations(subtype.getAnnotations());
             return (T) atm;
@@ -800,7 +800,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         //asSuper should return:
         // @1 Enum<@2 E>
         if (asSuperType != null && isEnum(asSuperType) && isDeclarationOfJavaLangEnum(types, elements, supertype)) {
-            final AnnotatedDeclaredType resultAtd = (AnnotatedDeclaredType) AnnotatedTypes.deepCopy(supertype);
+            final AnnotatedDeclaredType resultAtd = ((AnnotatedDeclaredType)supertype).deepCopy();
             resultAtd.clearAnnotations();
             resultAtd.addAnnotations(asSuperType.getAnnotations());
 

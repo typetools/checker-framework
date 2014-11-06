@@ -399,7 +399,7 @@ public class BoundsInitializer {
                 TypeVariableStructure targetStructure = typeVarToStructure.get(entry.getValue());
 
                 AnnotatedTypeVariable template = targetStructure.annotatedTypeVar;
-                refMap.put(entry.getKey(), AnnotatedTypeCopier.copy(template).asUse());
+                refMap.put(entry.getKey(), template.deepCopy().asUse());
 
                 addImmediateTypeVarPaths(refMap, entry.getKey(), targetStructure);
             }
@@ -419,7 +419,7 @@ public class BoundsInitializer {
                 TypeVariableStructure immTvStructure = typeVarToStructure.get(immTypeVar);
 
                 AnnotatedTypeVariable template = immTvStructure.annotatedTypeVar;
-                refMap.put(newPath, AnnotatedTypeCopier.copy(template));
+                refMap.put(newPath, template.deepCopy());
             }
         }
 
@@ -437,7 +437,7 @@ public class BoundsInitializer {
             public ReferenceMap copy() {
                 final ReferenceMap copy = new ReferenceMap(this.sourceType);
                 for(Entry<BoundPath, AnnotatedTypeVariable> entry : entrySet()) {
-                    copy.put(entry.getKey(), AnnotatedTypeCopier.copy(entry.getValue()));
+                    copy.put(entry.getKey(), entry.getValue().deepCopy());
                 }
                 return copy;
             }

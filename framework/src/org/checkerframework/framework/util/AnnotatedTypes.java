@@ -7,7 +7,6 @@ import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.flow.util.LubTypeVariableAnnotator;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.TypeQualifier;
-import org.checkerframework.framework.type.AnnotatedTypeCopier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
@@ -116,7 +115,7 @@ public class AnnotatedTypes {
                 return visit(atypeFactory.getBoxedType(type), p);
 
             AnnotatedPrimitiveType pt = (AnnotatedPrimitiveType)p;
-            AnnotatedPrimitiveType st = pt.getCopy(false);
+            AnnotatedPrimitiveType st = pt.shallowCopy(false);
             st.addAnnotations(type.getAnnotations());
             return st;
         }
@@ -443,18 +442,6 @@ public class AnnotatedTypes {
         return t.substitute(mappings);
     }
 
-
-    /**
-     * Returns a deep copy of the passed type.
-     *
-     * @param type  the annotated type to be copied
-     * @return a deep copy of the passed type
-     */
-    @SuppressWarnings("unchecked")
-    public static <ATM extends AnnotatedTypeMirror> ATM deepCopy(ATM type) {
-        return AnnotatedTypeCopier.copy(type);
-    }
-
     /**
      * Returns the iterated type of the passed iterable type, and throws
      * {@link IllegalArgumentException} if the passed type is not iterable.
@@ -726,7 +713,7 @@ public class AnnotatedTypes {
                 // Tree, with defaults applied.
                 final AnnotatedTypeMirror basicReturnType = atypeFactory.type(expr);
                 atypeFactory.annotateImplicit(expr, basicReturnType);
-                AnnotatedTypeMirror ret = assigned.getCopy(true);
+                AnnotatedTypeMirror ret = assigned.shallowCopy();
                 ret.replaceAnnotations(basicReturnType.getAnnotations());
                 typeArgumentsFromAssignment = Collections.singletonMap(((AnnotatedTypeVariable) returnType).getTypeParameterDeclaration(), ret);
             } else {
@@ -1077,7 +1064,7 @@ public class AnnotatedTypes {
 
             // TODO: This code needs some more serious thought.
             if (lub.getKind() == TypeKind.WILDCARD) {
-                subtypes.add(deepCopy(lub));
+                subtypes.add(lub.deepCopy());
             } else {
                 for (AnnotatedTypeMirror type : types) {
                     if (type == null) {
@@ -1085,7 +1072,7 @@ public class AnnotatedTypes {
                     }
                     AnnotatedTypeMirror ass = asSuper(typeutils, atypeFactory, type, lub);
                     if (ass == null) {
-                        subtypes.add(deepCopy(type));
+                        subtypes.add(type.deepCopy());
                     } else {
                         subtypes.add(ass);
                     }

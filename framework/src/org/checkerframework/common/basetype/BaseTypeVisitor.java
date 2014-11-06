@@ -338,7 +338,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // by circular AnnotatedTypeMirrors, which avoids problems with
         // later checks.
         // TODO: Find a cleaner way to ensure circular AnnotatedTypeMirrors.
-        AnnotatedExecutableType methodType = AnnotatedTypes.deepCopy(atypeFactory.getAnnotatedType(node));
+        AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(node).deepCopy();
         AnnotatedDeclaredType preMRT = visitorState.getMethodReceiver();
         MethodTree preMT = visitorState.getMethodTree();
         visitorState.setMethodReceiver(methodType.getReceiverType());
@@ -1893,7 +1893,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
-        AnnotatedTypeMirror treeReceiver = methodReceiver.getCopy(false);
+        AnnotatedTypeMirror treeReceiver = methodReceiver.shallowCopy(false);
         AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(node);
 
         treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
@@ -1917,7 +1917,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if( dt.getUnderlyingType().asElement().getKind().isInterface() &&
             TypesUtils.isObject(ret.getUnderlyingType()) ) {
 
-            final AnnotatedDeclaredType retAsDt = AnnotatedTypes.deepCopy(dt);
+            final AnnotatedDeclaredType retAsDt = dt.deepCopy();
             retAsDt.replaceAnnotations(ret.getAnnotations());
             ret = retAsDt;
         }
@@ -2397,7 +2397,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             // overridden receiver.  Hence copying the annotations.
             // TODO: this will need to be improved for generic receivers.
             AnnotatedTypeMirror overriddenReceiver =
-                    overrider.getReceiverType().getErased().getCopy(false);
+                    overrider.getReceiverType().getErased().shallowCopy(false);
             overriddenReceiver.addAnnotations(overridden.getReceiverType().getAnnotations());
             if (!atypeFactory.getTypeHierarchy().isSubtype(overriddenReceiver,
                     overrider.getReceiverType().getErased())) {

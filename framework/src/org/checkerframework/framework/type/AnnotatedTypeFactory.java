@@ -579,7 +579,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null; // dead code
         }
         if (treeCache.containsKey(tree) && shouldReadCache) {
-            return AnnotatedTypes.deepCopy(treeCache.get(tree));
+            return treeCache.get(tree).deepCopy();
         }
 
         AnnotatedTypeMirror type;
@@ -603,7 +603,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             tree.getKind() == Tree.Kind.METHOD) {
             // Don't cache VARIABLE
             if (shouldCache) {
-                treeCache.put(tree, AnnotatedTypes.deepCopy(type));
+                treeCache.put(tree, type.deepCopy());
             }
         } else {
             // No caching otherwise
@@ -664,7 +664,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeMirror fromElement(Element elt) {
         if (elementCache.containsKey(elt) && shouldReadCache) {
-            return AnnotatedTypes.deepCopy(elementCache.get(elt));
+            return elementCache.get(elt).deepCopy();
         }
         if (elt.getKind() == ElementKind.PACKAGE)
             return toAnnotatedType(elt.asType(), false);
@@ -672,7 +672,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         Tree decl = declarationFromElement(elt);
 
         if (decl == null && indexTypes != null && indexTypes.containsKey(elt)) {
-            type = AnnotatedTypes.deepCopy(indexTypes.get(elt));
+            type = indexTypes.get(elt).deepCopy();
         } else if (decl == null && (indexTypes == null || !indexTypes.containsKey(elt))) {
             type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
             ElementAnnotationApplier.apply(type, elt, this);
@@ -699,7 +699,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // method before the stub files are fully read can return incorrect
         // results.
         if (shouldCache && indexTypes != null)
-            elementCache.put(elt, AnnotatedTypes.deepCopy(type));
+            elementCache.put(elt, type.deepCopy());
         return type;
     }
 
@@ -760,13 +760,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null; // dead code
         }
         if (fromTreeCache.containsKey(tree) && shouldReadCache) {
-            return AnnotatedTypes.deepCopy(fromTreeCache.get(tree));
+            return fromTreeCache.get(tree).deepCopy();
         }
         AnnotatedTypeMirror result = fromTreeWithVisitor(
                 TypeFromTree.TypeFromMemberINSTANCE, tree);
         annotateInheritedFromClass(result);
         if (shouldCache)
-            fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
+            fromTreeCache.put(tree, result.deepCopy());
         return result;
     }
 
@@ -778,7 +778,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeMirror fromExpression(ExpressionTree tree) {
         if (fromTreeCache.containsKey(tree) && shouldReadCache)
-            return AnnotatedTypes.deepCopy(fromTreeCache.get(tree));
+            return fromTreeCache.get(tree).deepCopy();
 
         AnnotatedTypeMirror result = fromTreeWithVisitor(
                 TypeFromTree.TypeFromExpressionINSTANCE, tree);
@@ -786,7 +786,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         annotateInheritedFromClass(result);
 
         if (shouldCache)
-            fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
+            fromTreeCache.put(tree, result.deepCopy());
         return result;
     }
 
@@ -799,7 +799,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeMirror fromTypeTree(Tree tree) {
         if (fromTreeCache.containsKey(tree) && shouldReadCache) {
-            return AnnotatedTypes.deepCopy(fromTreeCache.get(tree));
+            return fromTreeCache.get(tree).deepCopy();
         }
 
         AnnotatedTypeMirror result = fromTreeWithVisitor(
@@ -836,7 +836,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         annotateInheritedFromClass(result);
         if (shouldCache)
-            fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
+            fromTreeCache.put(tree, result.deepCopy());
         return result;
     }
 
@@ -2636,7 +2636,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         //Add the annotations from the wildcard to the lub type.
                         final AnnotatedTypeMirror newArg;
                         if (types.isSameType(wilcardUbType, glbType)) {
-                            newArg = AnnotatedTypes.deepCopy(wildcardType.getExtendsBound());
+                            newArg = wildcardType.getExtendsBound().deepCopy();
 
                         } else {
                             newArg = this.toAnnotatedType(glbType, false);

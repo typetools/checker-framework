@@ -165,7 +165,7 @@ public class KeyForAnnotatedTypeFactory extends
   private AnnotatedTypeMirror substituteCall(MethodInvocationTree call, AnnotatedTypeMirror declInType, AnnotatedTypeMirror inType) {
 
     // System.out.println("input type: " + inType);
-    AnnotatedTypeMirror outType = inType.getCopy(true);
+    AnnotatedTypeMirror outType = inType.shallowCopy();
 
     AnnotationMirror anno = declInType.getAnnotation(KeyFor.class);
     if (anno != null) {

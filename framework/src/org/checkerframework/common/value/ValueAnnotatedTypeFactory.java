@@ -174,12 +174,12 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
     @Override
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
         if(propTreeCache.containsKey(tree)){
-            return AnnotatedTypes.deepCopy(propTreeCache.get(tree));
+            return propTreeCache.get(tree).deepCopy();
         }
         AnnotatedTypeMirror anno = super.getAnnotatedType(tree);
         if(tree instanceof JCBinary ||
                 tree instanceof JCUnary){
-            propTreeCache.put(tree, AnnotatedTypes.deepCopy(anno));
+            propTreeCache.put(tree, anno.deepCopy());
         }
         return anno;
     }
