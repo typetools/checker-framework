@@ -7,10 +7,14 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.SetQualifierVisitor;
+import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
+import org.checkerframework.qualframework.base.dataflow.QualTransfer;
+import org.checkerframework.qualframework.base.dataflow.QualValue;
 import org.checkerframework.qualframework.poly.CombiningOperation;
 import org.checkerframework.qualframework.poly.PolyQual;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
@@ -22,6 +26,8 @@ import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 import org.checkerframework.qualframework.util.QualifierContext;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -56,10 +62,16 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
         return new RegexAnnotationConverter();
     }
 
-// TODO: I imagine that we still need this.
+    /**
+     * This allows the GenericsEnclosing test to pass but causes other issues with the InvariantTypes test.
+     * @param varDecl
+     * @param varUse
+     * @param value
+     * @return
+     */
 //    @Override
-//    public QualifiedTypeMirror<Regex> postTypeVarSubstitution(QualifiedParameterDeclaration<Regex> varDecl,
-//            QualifiedTypeVariable<Regex> varUse, QualifiedTypeMirror<Regex> value) {
+//    public QualifiedTypeMirror<QualParams<Regex>> postTypeVarSubstitution(QualifiedParameterDeclaration<QualParams<Regex>> varDecl,
+//            QualifiedTypeVariable<QualParams<Regex>> varUse, QualifiedTypeMirror<QualParams<Regex>> value) {
 //        if (varUse.getQualifier() == Regex.TOP) {
 //            return value;
 //        } else {
@@ -210,17 +222,15 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
         return true;
     }
 
-    // TODO: Re-enable this
-//    @Override
-//    public QualAnalysis<Regex> createFlowAnalysis(List<Pair<VariableElement, QualValue<Regex>>> fieldValues) {
-//        return new QualAnalysis<Regex>(this.getContext()) {
-//            @Override
-//            public QualTransfer<Regex> createTransferFunction() {
-//                return new RegexQualTransfer(this);
-//            }
-//        };
-//    }
-
+    @Override
+    public QualAnalysis<QualParams<Regex>> createFlowAnalysis(List<Pair<VariableElement, QualValue<QualParams<Regex>>>> fieldValues) {
+        return new QualAnalysis<QualParams<Regex>>(this.getContext()) {
+            @Override
+            public QualTransfer<QualParams<Regex>> createTransferFunction() {
+                return new RegexQualTransfer(this);
+            }
+        };
+    }
 
     @Override
     protected Wildcard<Regex> combineForSubstitution(Wildcard<Regex> a, Wildcard<Regex> b) {

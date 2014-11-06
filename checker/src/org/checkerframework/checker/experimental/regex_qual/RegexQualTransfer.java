@@ -27,8 +27,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
 /**
- *
- * //TODO: Something about factory.getPath
+ * // TODO: Document
  * Created by mcarthur on 10/29/14.
  */
 public class RegexQualTransfer extends QualTransfer<Regex> {

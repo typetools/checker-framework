@@ -4,8 +4,10 @@ import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
@@ -331,6 +333,31 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         return qualResult;
     }
 
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(ExpressionTree tree,
+            ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
+
+        TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
+        Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> qualResult =
+                underlying.methodFromUse(tree, methodElt, conv.getQualifiedType(receiverType));
+
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> annoResult =
+                Pair.of((AnnotatedExecutableType)conv.getAnnotatedType(qualResult.first),
+                        conv.getAnnotatedTypeList(qualResult.second));
+        return annoResult;
+    }
+
+    Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> superMethodFromUse(ExpressionTree tree,
+            ExecutableElement methodElt, QualifiedTypeMirror<Q> receiverType) {
+        TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
+
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> annoResult =
+                super.methodFromUse(tree, methodElt, conv.getAnnotatedType(receiverType));
+
+        Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> qualResult =
+                Pair.of((QualifiedExecutableType<Q>)conv.getQualifiedType(annoResult.first),
+                        conv.getQualifiedTypeList(annoResult.second));
+        return qualResult;
+    }
 
     public void postTypeVarSubstitution(AnnotatedTypeVariable varDecl,
             AnnotatedTypeVariable varUse, AnnotatedTypeMirror value) {

@@ -151,7 +151,7 @@ public class RegexUtil {
    * @return true iff s is a regular expression
    */
   /*@Pure*/
-  @EnsuresQualifierIf(result=true, expression="#1", qualifier=org.checkerframework.checker.experimental.regex_qual.qual.Regex.class)
+  @EnsuresQualifierIf(result=true, expression="#1", qualifier=org.checkerframework.checker.experimental.regex_qual_poly.qual.Regex.class)
   public static boolean isRegex(String s) {
     return isRegex(s, 0);
   }
@@ -189,7 +189,7 @@ public class RegexUtil {
   @SuppressWarnings("regex")    // RegexUtil
   */
   /*@Pure*/
-  @EnsuresQualifierIf(result=true, expression="#1", qualifier=org.checkerframework.checker.experimental.regex_qual.qual.Regex.class)
+  @EnsuresQualifierIf(result=true, expression="#1", qualifier=org.checkerframework.checker.experimental.regex_qual_poly.qual.Regex.class)
   public static boolean isRegex(final char c) {
     return isRegex(Character.toString(c));
   }
@@ -285,12 +285,12 @@ public class RegexUtil {
    */
   /*@SideEffectFree*/
   // The return type annotation is a conservative bound.
-  public static /*@org.checkerframework.checker.experimental.regex_qual.qual.Regex*/ String asRegex(String s) {
+  public static /*@org.checkerframework.checker.experimental.regex_qual_poly.qual.Regex*/ String asRegex(String s) {
     return asRegex(s, 0);
   }
 
   /**
-   * Returns the argument as a {@code @org.checkerframework.checker.experimental.regex_qual.qual.Regex(groups) String} if it is a regex
+   * Returns the argument as a {@code @org.checkerframework.checker.experimental.regex_qual_poly.qual.Regex(groups) String} if it is a regex
    * with at least the given number of groups, otherwise throws an error. The
    * purpose of this method is to suppress Regex Checker warnings. Once the
    * Regex Checker supports flow-sensitivity, it should be very rarely needed.
@@ -305,7 +305,7 @@ public class RegexUtil {
   /*@SideEffectFree*/
   // The return type annotation is irrelevant; it is special-cased by
   // RegexAnnotatedTypeFactory.
-  public static /*@org.checkerframework.checker.experimental.regex_qual.qual.Regex*/ String asRegex(String s, int groups) {
+  public static /*@org.checkerframework.checker.experimental.regex_qual_poly.qual.Regex*/ String asRegex(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
       int actualGroups = getGroupCount(p);

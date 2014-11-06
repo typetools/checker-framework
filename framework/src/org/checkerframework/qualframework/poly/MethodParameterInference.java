@@ -183,7 +183,7 @@ class MethodParameterInference<Q> {
             // nothing.  The constraint TAINTED <: UNTAINTED is always false,
             // so mark the current set of constraints as unsatisfiable.
             if (!polyQualHierarchy.isSubtype(subtype, supertype)) {
-                this.unsatisfiable = true;
+//                this.unsatisfiable = true;
             }
         }
     }
