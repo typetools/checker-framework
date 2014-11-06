@@ -18,25 +18,26 @@ import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
 import org.checkerframework.qualframework.base.dataflow.QualStore;
 import org.checkerframework.qualframework.base.dataflow.QualTransfer;
 import org.checkerframework.qualframework.base.dataflow.QualValue;
+import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
+import org.checkerframework.qualframework.poly.QualParams;
 
 import javax.lang.model.element.ExecutableElement;
 
 /**
- *
- * //TODO: Something about factory.getPath
+ * // TODO: Document
  * Created by mcarthur on 10/29/14.
  */
-public class RegexQualTransfer extends QualTransfer<Regex> {
+public class RegexQualTransfer extends QualTransfer<QualParams<Regex>> {
 
-    public RegexQualTransfer(QualAnalysis<Regex> analysis) {
+    public RegexQualTransfer(QualAnalysis<QualParams<Regex>> analysis) {
         super(analysis);
     }
 
     @Override
-    public TransferResult<QualValue<Regex>, QualStore<Regex>> visitMethodInvocation(
-            MethodInvocationNode n, TransferInput<QualValue<Regex>, QualStore<Regex>> in) {
+    public TransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> visitMethodInvocation(
+            MethodInvocationNode n, TransferInput<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> in) {
 
-        TransferResult<QualValue<Regex>, QualStore<Regex>> result = super.visitMethodInvocation(n, in);
+        TransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> result = super.visitMethodInvocation(n, in);
 
         // refine result for some helper methods
         MethodAccessNode target = n.getTarget();
@@ -51,9 +52,9 @@ public class RegexQualTransfer extends QualTransfer<Regex> {
             if (isRegexUtil(receiverName)
                     && method.toString().equals(
                     "isRegex(java.lang.String,int)")) {
-                QualStore<Regex> thenStore = result.getRegularStore();
-                QualStore<Regex> elseStore = thenStore.copy();
-                ConditionalTransferResult<QualValue<Regex>, QualStore<Regex>> newResult = new ConditionalTransferResult<>(
+                QualStore<QualParams<Regex>> thenStore = result.getRegularStore();
+                QualStore<QualParams<Regex>> elseStore = thenStore.copy();
+                ConditionalTransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> newResult = new ConditionalTransferResult<>(
                         result.getResultValue(), thenStore, elseStore);
                 FlowExpressionContext context = FlowExpressionParseUtil
                         .buildFlowExprContextForUse(n, analysis.getContext());
@@ -67,9 +68,9 @@ public class RegexQualTransfer extends QualTransfer<Regex> {
                         IntegerLiteralNode iln = (IntegerLiteralNode) count;
                         Integer groupCount = iln.getValue();
                         Regex regex = new RegexVal(groupCount);
-                        thenStore.insertValue(firstParam, regex);
+                        thenStore.insertValue(firstParam, new QualParams<>(new GroundQual<>(regex)));
                     } else {
-                        thenStore.insertValue(firstParam, new RegexVal(0));
+                        thenStore.insertValue(firstParam, new QualParams<>(new GroundQual<Regex>(new RegexVal(0))));
                     }
                 } catch (FlowExpressionParseException e) {
                     assert false;
@@ -85,16 +86,16 @@ public class RegexQualTransfer extends QualTransfer<Regex> {
                     "asRegex(java.lang.String,int)")) {
                 // add annotation with correct group count (if possible,
                 // regex annotation without count otherwise)
-                Regex regex;
+                QualParams<Regex> regex;
                 Node count = n.getArgument(1);
                 if (count instanceof IntegerLiteralNode) {
                     IntegerLiteralNode iln = (IntegerLiteralNode) count;
                     Integer groupCount = iln.getValue();
-                    regex = new RegexVal(groupCount);
+                    regex = new QualParams<>(new GroundQual<Regex>(new RegexVal(groupCount)));
                 } else {
-                    regex = new RegexVal(0);
+                    regex = new QualParams<>(new GroundQual<Regex>(new RegexVal(0)));
                 }
-                QualValue<Regex> newResultValue = analysis
+                QualValue<QualParams<Regex>> newResultValue = analysis
                         .createSingleAnnotationValue(regex,
                         result.getResultValue().getType().getUnderlyingType().getOriginalType());
                 return new RegularTransferResult<>(newResultValue,

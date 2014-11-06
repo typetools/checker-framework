@@ -4,10 +4,12 @@ import java.util.*;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -27,6 +29,7 @@ import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
 import org.checkerframework.qualframework.base.dataflow.QualTransfer;
 import org.checkerframework.qualframework.base.dataflow.QualValue;
 import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
+import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 import org.checkerframework.qualframework.util.QualifierContext;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror.WrappedAnnotatedTypeVariable;
@@ -158,7 +161,7 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     protected TypeAnnotator<Q> createTypeAnnotator() {
         // Construct a new TypeAnnotator using the TOP qualifier as the
         // default.
-        return new TypeAnnotator<Q>(getAnnotationConverter(),
+        return new TypeAnnotator<Q>(context, getAnnotationConverter(),
                 getQualifierHierarchy().getTop());
     }
 
@@ -245,6 +248,13 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     }
 
     @Override
+    public Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> methodFromUse(ExpressionTree tree,
+            ExecutableElement methodElt, QualifiedTypeMirror<Q> receiverType) {
+
+        return adapter.superMethodFromUse(tree, methodElt, receiverType);
+    }
+
+    @Override
     public Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> constructorFromUse(NewClassTree tree) {
         throw new UnsupportedOperationException();
     }
@@ -271,5 +281,15 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     @Override
     public TreePath getPath(Tree node) {
         return adapter.getPath(node);
+    }
+
+    @Override
+    public QualifiedTypeMirror<Q> getReceiverType(ExpressionTree expression) {
+        return adapter.getCheckerAdapter().getTypeMirrorConverter().getQualifiedType(adapter.getReceiverType(expression));
+    }
+
+    @Override
+    public ExtendedTypeMirror getDecoratedElement(Element element) {
+        return WrappedAnnotatedTypeMirror.wrap(adapter.fromElement(element));
     }
 }

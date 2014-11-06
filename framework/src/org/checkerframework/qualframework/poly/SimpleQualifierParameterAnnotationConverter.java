@@ -5,6 +5,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 import org.checkerframework.qualframework.poly.PolyQual.QualVar;
+import org.checkerframework.qualframework.util.ExtendedExecutableType;
+import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -211,7 +213,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     }
 
     @Override
-    public Set<String> getDeclaredParameters(Element elt) {
+    public Set<String> getDeclaredParameters(Element elt, ExtendedTypeMirror type) {
         Set<String> result = new HashSet<>();
         try {
             for (Annotation a : elt.getAnnotationsByType(methodAnno)) {
@@ -227,7 +229,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         switch (elt.getKind()) {
             case CONSTRUCTOR:
             case METHOD:
-                if (hasPolyAnnotation((ExecutableElement)elt)) {
+                if (hasPolyAnnotation((ExtendedExecutableType)type)) {
                     result.add(POLY_NAME);
                 }
                 break;
@@ -239,22 +241,22 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         return result;
     }
 
-    private boolean hasPolyAnnotation(ExecutableElement elt) {
-        if (hasPolyAnnotation(elt.getReturnType())) {
+    private boolean hasPolyAnnotation(ExtendedExecutableType type) {
+        if (hasPolyAnnotationCheck(type.getReturnType())) {
             return true;
         }
-        if (hasPolyAnnotation(elt.getReceiverType())) {
+        if (hasPolyAnnotationCheck(type.getReceiverType())) {
             return true;
         }
-        for (VariableElement paramElt : elt.getParameters()) {
-            if (hasPolyAnnotation(paramElt.asType())) {
+        for (ExtendedTypeMirror param : type.getParameterTypes()) {
+            if (hasPolyAnnotationCheck(param)) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean hasPolyAnnotation(TypeMirror type) {
+    private boolean hasPolyAnnotationCheck(ExtendedTypeMirror type) {
         if (type == null) {
             return false;
         }

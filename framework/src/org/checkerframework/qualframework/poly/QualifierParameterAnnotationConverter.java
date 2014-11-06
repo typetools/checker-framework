@@ -5,6 +5,7 @@ import java.util.*;
 import javax.lang.model.element.Element;
 
 import org.checkerframework.qualframework.base.AnnotationConverter;
+import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
 /** An {@link AnnotationConverter} that can also find the names of all declared
  * parameters on a class or method.
@@ -13,5 +14,5 @@ public interface QualifierParameterAnnotationConverter<Q> extends AnnotationConv
     /** Get the names of all parameters declared on a class, interface, enum,
      * or method declaration {@link Element}.
      */
-    Set<String> getDeclaredParameters(Element elt);
+    Set<String> getDeclaredParameters(Element elt, ExtendedTypeMirror type);
 }

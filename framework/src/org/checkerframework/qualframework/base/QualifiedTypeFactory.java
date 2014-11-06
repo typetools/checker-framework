@@ -3,9 +3,11 @@ package org.checkerframework.qualframework.base;
 import java.util.List;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -14,6 +16,7 @@ import com.sun.source.util.TreePath;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.Pair;
 
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
@@ -25,6 +28,7 @@ import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
 import org.checkerframework.qualframework.base.dataflow.QualTransfer;
 import org.checkerframework.qualframework.base.dataflow.QualValue;
 import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
+import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
 /**
  * Used to compute the qualified type of a {@link Tree} or {@link Element}.
@@ -32,6 +36,7 @@ import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
  * in type system-specific ways.
  */
 public interface QualifiedTypeFactory<Q> {
+
     /**
      * Gets the qualified type of an {@link Element}.
      */
@@ -101,6 +106,9 @@ public interface QualifiedTypeFactory<Q> {
      */
     Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> methodFromUse(MethodInvocationTree tree);
 
+    Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> methodFromUse(ExpressionTree tree,
+            ExecutableElement methodElt, QualifiedTypeMirror<Q> receiverType);
+
     /**
      * Hook for customizing type parameter inference for constructors.
      *
@@ -120,4 +128,8 @@ public interface QualifiedTypeFactory<Q> {
     QualAnalysis<Q> createFlowAnalysis(List<Pair<VariableElement, QualValue<Q>>> fieldValues);
 
     TreePath getPath(Tree node);
+
+    QualifiedTypeMirror<Q> getReceiverType(ExpressionTree expression);
+
+    ExtendedTypeMirror getDecoratedElement(Element element);
 }
