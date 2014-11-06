@@ -12,6 +12,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.*;
+
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.ClassBound;
@@ -19,6 +20,10 @@ import org.checkerframework.common.reflection.qual.ClassVal;
 import org.checkerframework.common.reflection.qual.ClassValBottom;
 import org.checkerframework.common.reflection.qual.UnknownClass;
 import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.*;
@@ -36,10 +41,10 @@ import com.sun.tools.javac.code.Type;
 /**
  * AnnotatedTypeFactory for the Class Value type system. This factory requires
  * an {@link AnnotationProvider} that provides {@link StringVal} annotations.
- * 
+ *
  * @author plvines
  * @author rjust
- * 
+ *
  */
 @TypeQualifiers({ UnknownClass.class, ClassVal.class, ClassBound.class,
         ClassValBottom.class })
@@ -68,13 +73,13 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Constructor. Initializes all the AnnotationMirror and Executable Element
      * variables, sets the default annotation.
-     * 
+     *
      * @param checker
      *            The checker used with this AnnotatedTypeFactory
      * @param annotationProvider
      *            The AnnotationProvider providing the necessary StringVal
      *            annotations.
-     * 
+     *
      */
     public ClassValAnnotatedTypeFactory(BaseTypeChecker checker,
             AnnotationProvider annotationProvider) {
@@ -88,6 +93,16 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.defaults.addAbsoluteDefault(
                 AnnotationUtils.fromClass(elements, UnknownClass.class),
                 DefaultLocation.ALL);
+    }
+
+    @Override
+    public CFTransfer createFlowTransferFunction(
+            CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+        // The super implementation uses the name of the checker
+        // to reflectively create a transfer with the checker name followed
+        // by Transfer. Since this factory is intended to be used with
+        // any checker, explicitly create the default CFTransfer
+        return new CFTransfer(analysis);
     }
 
     @Override
@@ -117,34 +132,34 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Constructs a ClassVal annotation by adding all the elements in values to
      * a new ClassVal annotation and returning it
-     * 
+     *
      * @param values
      *            The list of values to add to the new ClassVal annotation
-     * 
+     *
      * @return A new ClassVal annotation with values as its value
      */
     private AnnotationMirror createClassVal(List<String> values) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
                 ClassVal.class.getCanonicalName());
         builder.setValue("value", values);
-        
+
         return builder.build();
     }
 
     /**
      * Constructs a ClassBound annotation by adding all the elements in values
      * to a new ClassBound annotation and returning it
-     * 
+     *
      * @param values
      *            The list of values to add to the new ClassBound annotation
-     * 
+     *
      * @return A new ClassBound annotation with values as its value
      */
     private AnnotationMirror createClassBound(List<String> values) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
                 ClassBound.class.getCanonicalName());
         builder.setValue("value", values);
-        
+
         return builder.build();
     }
 
@@ -200,7 +215,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
 
                 AnnotationMirror result = createClassVal(newValues);
-                
+
                 return result;
             } else if (AnnotationUtils.areSameIgnoringValues(a1, CLASSBOUND)
                     && AnnotationUtils.areSameIgnoringValues(a2, CLASSVAL)) {
@@ -222,7 +237,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
 
                 AnnotationMirror result = createClassBound(newValues);
-                
+
                 return result;
             } else {
                 return a1;
