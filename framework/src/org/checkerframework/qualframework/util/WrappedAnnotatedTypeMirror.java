@@ -46,7 +46,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
      * affect the wrapped version.
      */
     public static WrappedAnnotatedTypeMirror wrap(AnnotatedTypeMirror atm) {
-        return wrapImpl(AnnotatedTypes.deepCopy(atm));
+        return wrapImpl(atm.deepCopy());
     }
 
     private static WrappedAnnotatedTypeMirror wrapImpl(AnnotatedTypeMirror atm) {
@@ -431,7 +431,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
 
         @Override
         public ExtendedParameterDeclaration getDeclaration() {
-            AnnotatedTypeVariable copy = AnnotatedTypes.deepCopy(unwrap());
+            AnnotatedTypeVariable copy = unwrap().deepCopy();
             copy.clearAnnotations();
             copy.setDeclaration(true);
             return (ExtendedParameterDeclaration)wrap(copy);

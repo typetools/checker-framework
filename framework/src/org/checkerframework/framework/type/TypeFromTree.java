@@ -699,7 +699,7 @@ abstract class TypeFromTree extends
                     // of type parameter declarations (`TypeParameterTree`), so this recursive call
                     // to `visit` will return a declaration ATV.  So we must copy the result and set
                     // its `isDeclaration` field to `false`.
-                    AnnotatedTypeMirror result = visit(cls.getTypeParameters().get(idx), f).getCopy(true);
+                    AnnotatedTypeMirror result = visit(cls.getTypeParameters().get(idx), f).shallowCopy();
                     ((AnnotatedTypeVariable)result).setDeclaration(false);
                     return result;
                 } else {
@@ -713,7 +713,7 @@ abstract class TypeFromTree extends
                 if (meth != null) {
                     // This works the same as the case above.  Even though `meth` itself is not a
                     // type declaration tree, the elements of `meth.getTypeParameters()` still are.
-                    AnnotatedTypeMirror result = visit(meth.getTypeParameters().get(idx), f).getCopy(true);
+                    AnnotatedTypeMirror result = visit(meth.getTypeParameters().get(idx), f).shallowCopy();
                     ((AnnotatedTypeVariable)result).setDeclaration(false);
                     return result;
                 } else {

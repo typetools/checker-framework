@@ -302,14 +302,14 @@ class SupertypeFinder {
         @Override
         public List<AnnotatedTypeMirror> visitTypeVariable(AnnotatedTypeVariable type, Void p) {
             List<AnnotatedTypeMirror> superTypes = new ArrayList<>();
-            superTypes.add(AnnotatedTypes.deepCopy(type.getUpperBound()));
+            superTypes.add(type.getUpperBound().deepCopy());
             return superTypes;
         }
 
         @Override
         public List<AnnotatedTypeMirror> visitWildcard(AnnotatedWildcardType type, Void p) {
             List<AnnotatedTypeMirror> superTypes = new ArrayList<>();
-            superTypes.add(AnnotatedTypes.deepCopy(type.getExtendsBound()));
+            superTypes.add(type.getExtendsBound().deepCopy());
             return superTypes;
         }
 
