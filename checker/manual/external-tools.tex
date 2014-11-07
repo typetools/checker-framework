@@ -54,13 +54,13 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-1.8.6/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-1.8.7/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.  Now, whenever
     you run \code{javac}, you will use the updated compiler.  If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.6
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.7
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -76,7 +76,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.6
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.7
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -95,11 +95,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.6
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.7
   alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.6\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.7\
   doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
 \end{Verbatim}
 
@@ -118,7 +118,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-1.8.6
+  javac 1.8.0-jsr308-1.8.7
 \end{Verbatim}
 
 
@@ -227,7 +227,6 @@ indicated in this example:
     <!-- use jsr308.javac instead of javac -->
     <jsr308.javac ... >
       <compilerarg line="-processor org.checkerframework.checker.nullness.NullnessChecker"/>
-      <!-- optional, for implicit imports: <compilerarg value="-J-Djsr308_imports=org.checkerframework.checker.nullness.qual.*:org.checkerframework.dataflow.qual.*"/> -->
       <!-- optional, to not check uses of library methods: <compilerarg value="-AskipUses=^(java\.awt\.|javax\.swing\.)"/> -->
       <compilerarg line="-Xmaxerrs 10000"/>
       ...
@@ -499,7 +498,7 @@ The website contains instructions for installing and using the plugin.
 
 \begin{sloppypar}
 tIDE, an open-source Java IDE, supports the Checker Framework.  See its
-documentation at \myurl{http://tide.olympe-network.com/}.
+documentation at \myurl{http://tide.olympe.in/}.
 \end{sloppypar}
 
 
