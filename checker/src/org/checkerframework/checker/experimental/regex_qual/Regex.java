@@ -4,11 +4,15 @@ package org.checkerframework.checker.experimental.regex_qual;
  *
  * Qualifier for the Regex type system.
  *
- * @author McArthur
+ * The static instances TOP and BOTTOM are used as the top and bottom of the hierarchy.
+ * Comparisons between TOP and BOTTOM must use reference equality.
+ *
+ * @{link Regex#PartialRegex} is used to track string values that are not value regex.
+ *
+ * @{link Regex#RegexVal} is used to track valid regex, with a count of the number of groups.
+ *
  */
-public class Regex {
-
-    private Regex() { }
+public abstract class Regex {
 
     public static final Regex TOP = new Regex() {
         @Override
