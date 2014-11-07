@@ -89,8 +89,11 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
     /** Apply a set of substitutions to each value in this map.
      */
     public QualParams<Q> substituteAll(Map<String, Wildcard<Q>> substs) {
-        if (this == QualParams.<Q>getTop() || this == QualParams.<Q>getBottom())
+        if (this == QualParams.<Q>getTop() || this == QualParams.<Q>getBottom()) {
             return this;
+        } else if (substs == QualParams.<Q>getBottom() || substs == QualParams.<Q>getTop()) {
+            return (QualParams<Q>)substs;
+        }
 
         Map<String, Wildcard<Q>> newMap = new HashMap<>();
         for (String k : this.map.keySet()) {
@@ -192,6 +195,7 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
         return map.size();
     }
 
+    @Override
     public QualParams<Q> clone() {
         QualParams<Q> clone = new QualParams<Q>();
         clone.putAll(this);
