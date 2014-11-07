@@ -24,6 +24,8 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
             QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
         this.containmentHierarchy = containmentHierarchy;
         this.polyQualHierarchy = polyQualHierarchy;
+//        PARAMS_TOP.setPrimary(polyQualHierarchy.getTop());
+//        PARAMS_BOTTOM.setPrimary(polyQualHierarchy.getBottom());
     }
 
     // We can't use constructor overloads for the following variants because

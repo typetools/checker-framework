@@ -69,16 +69,6 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
     }
 
     @Override
-    public QualifiedTypeMirror<Regex> postTypeVarSubstitution(QualifiedParameterDeclaration<Regex> varDecl,
-            QualifiedTypeVariable<Regex> varUse, QualifiedTypeMirror<Regex> value) {
-        if (varUse.getQualifier() == Regex.TOP) {
-            return value;
-        } else {
-            return super.postTypeVarSubstitution(varDecl, varUse, value);
-        }
-    }
-
-    @Override
     protected TreeAnnotator<Regex> createTreeAnnotator() {
         return new TreeAnnotator<Regex>() {
             @Override
