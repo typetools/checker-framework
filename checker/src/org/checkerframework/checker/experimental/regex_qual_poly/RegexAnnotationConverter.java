@@ -12,9 +12,7 @@ import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotatio
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.QualifiedNameable;
 import java.util.Arrays;
 import java.util.Map;
 

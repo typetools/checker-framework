@@ -107,11 +107,11 @@ public class QualTransferAdapter<Q> extends CFTransfer {
 
     public TransferInput<QualValue<Q>, QualStore<Q>> convertCfToQualInput(TransferInput<CFValue, CFStore> p) {
         if (p.containsTwoStores()) {
-            return new QualTransferInput<Q>(qualAnalysis, p.getNode(), analysis,
-                    new QualStore<Q>(qualAnalysis, p.getThenStore()), new QualStore<Q>(qualAnalysis, p.getElseStore()), qualAnalysis.getConverter());
+            return new TransferInput<QualValue<Q>, QualStore<Q>>(p.getNode(), qualAnalysis,
+                    new QualStore<Q>(qualAnalysis, p.getThenStore()), new QualStore<Q>(qualAnalysis, p.getElseStore()));
         } else {
-            return new QualTransferInput<Q>(qualAnalysis, p.getNode(), analysis,
-                    new QualStore<Q>(qualAnalysis, p.getThenStore()), qualAnalysis.getConverter());
+            return new TransferInput<QualValue<Q>, QualStore<Q>>(p.getNode(), qualAnalysis,
+                    new QualStore<Q>(qualAnalysis, p.getThenStore()));
         }
     }
 
