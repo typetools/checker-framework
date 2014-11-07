@@ -512,7 +512,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
         QualifiedTypeMirror<Q> qtm = converter.getQualifiedType(componentType);
         converter.applyQualifiers(qtm, ((AnnotatedArrayType)atm2).getComponentType());
         super.visitNewArray(node, atm);
-//        Qu?alifiedTypeMirror<Q> propQtm = converter.getQualifiedType(((AnnotatedArrayType) atm).getComponentType());
+
         if (this.factoryAdapter.getTypeHierarchy().isSubtype(((AnnotatedArrayType) atm2).getComponentType(), ((AnnotatedArrayType) atm).getComponentType())) {
             ((AnnotatedArrayType) atm).getComponentType().replaceAnnotations(((AnnotatedArrayType) atm2).getComponentType().getAnnotations());
         }
