@@ -161,7 +161,7 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
     afu_build_properties = os.path.join( ANNO_FILE_UTILITIES, "build.properties" )
 
     #update jsr308_langtools versions
-    ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.properties=%s -Dafu.release.date==\"%s\"" % (checker_dir, version, afu_build_properties, afu_release_date)
+    ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (checker_dir, version, afu_build_properties, afu_release_date)
     ant_cmd   = "ant -f release.xml %s update-checker-framework-versions " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -173,13 +173,15 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
 
     #make the Checker Framework Manual
     checker_manual_dir = os.path.join(checker_dir, "manual")
+    execute("cp " + os.path.join(SCRIPTS_DIR, "hevea.sty") + " .", True, False, checker_manual_dir)
+    execute("cp " + os.path.join(SCRIPTS_DIR, "comment.sty") + " .", True, False, checker_manual_dir)
     execute("make manual.pdf manual.html", True, False, checker_manual_dir)
 
     #make the checker framework tutorial
     checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
     execute("make", True, False, checker_tutorial_dir)
 
-    #zip up checker-framework.zip and put it in releases_iterm_dir
+    #zip up checker-framework.zip and put it in checker_framework_interm_dir
     ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, "checker-framework.zip", version)
     ant_cmd   = "ant -f release.xml %s zip-checker-framework " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
@@ -188,7 +190,7 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
     ant_cmd   = "ant -f release.xml %s zip-maven-examples " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    #copy the remaining checker-framework website files to release_interm_dir
+    #copy the remaining checker-framework website files to checker_framework_interm_dir
     ant_props = "-Dchecker=%s -Ddest.dir=%s -Dmanual.name=%s -Dchecker.webpage=%s" % (
                  checker_dir, checker_framework_interm_dir, "checker-framework-manual", "checker-framework-webpage.html"
     )
@@ -214,11 +216,16 @@ def commit_to_interm_projects(jsr308_version, afu_version, projects_to_release):
         commit_tag_and_push(jsr308_version, CHECKER_FRAMEWORK, "checker-framework-")
 
 def main(argv):
+    # umask g+w
+    os.umask(os.umask(0) - 16)
+
     projects_to_release = read_projects( argv, print_usage )
     auto = read_auto( argv )
     add_project_dependencies( projects_to_release )
 
     afu_date = get_afu_date( projects_to_release[AFU_OPT] )
+
+    check_hg_user()
 
     #For each project, build what is necessary but don't push
 

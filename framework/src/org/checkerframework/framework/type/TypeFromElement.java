@@ -211,7 +211,6 @@ public class TypeFromElement {
                 parentTree = type.atypeFactory.getPath(paramDecl).getParentPath().getLeaf();
             }
 
-
             Integer param_index = null;
             boolean lambda = false;
             if (execElt.getKind() != ElementKind.INSTANCE_INIT
