@@ -1,6 +1,7 @@
 package org.checkerframework.qualframework.base.dataflow;
 
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -18,7 +19,18 @@ import javax.lang.model.type.TypeMirror;
 import java.util.Set;
 
 /**
- * Created by mcarthur on 10/23/14.
+ * Checkers should extend a QualAnalysis to customize the TransferFunction for their checker.
+ *
+ * The underlying checker-framework's dataflow does not use this class directly for running the analysis;
+ * It does use the QualTransfer.
+ *
+ * For dataflow to actually use this analysis we would need to add functionality for tracking fields and
+ * the other functionality that is in CFAbstractAnalysis. We could add methods
+ * in this class that call back to an CFAbstractAnalysis adapter, like other shims in system.
+ *
+ * Also, because the checker-framework does not directly use this class, adding properties
+ * (like initialization) to the QualStore or QualValue will currently have no effect.
+ *
  */
 public class QualAnalysis<Q> extends Analysis<QualValue<Q>, QualStore<Q>, QualTransfer<Q>> {
 
@@ -78,5 +90,10 @@ public class QualAnalysis<Q> extends Analysis<QualValue<Q>, QualStore<Q>, QualTr
             TypeMirror underlyingType) {
         CFValue atm = adapter.createSingleAnnotationValue(converter.getAnnotation(qual), underlyingType);
         return new QualValue<>(converter.getQualifiedType(atm.getType()), this);
+    }
+
+    @Override
+    public QualValue<Q> getValue(Node n) {
+        return new QualValue<>(converter.getQualifiedType(adapter.getValue(n).getType()), this);
     }
 }
