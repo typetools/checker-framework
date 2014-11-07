@@ -142,7 +142,7 @@ public class RegexUtil {
     }
   }
 
-  private RegexUtil() {
+  protected RegexUtil() {
     throw new AssertionError("Class RegexUtil shouldn't be instantiated");
   }
 

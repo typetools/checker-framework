@@ -1,14 +1,11 @@
 package org.checkerframework.checker.experimental.regex_qual;
 
-import org.checkerframework.checker.regex.qual.UnknownRegex;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.qualframework.base.AnnotationConverter;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.QualifiedNameable;
 import java.util.Collection;
 import java.util.Map;
 

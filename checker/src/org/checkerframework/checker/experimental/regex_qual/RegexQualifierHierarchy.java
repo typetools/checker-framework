@@ -1,8 +1,10 @@
 package org.checkerframework.checker.experimental.regex_qual;
 
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
-import static org.checkerframework.checker.experimental.regex_qual.Regex.*;
+
+import static org.checkerframework.checker.experimental.regex_qual.Regex.BOTTOM;
+import static org.checkerframework.checker.experimental.regex_qual.Regex.RegexVal;
+import static org.checkerframework.checker.experimental.regex_qual.Regex.TOP;
 
 /**
  * QualifierHierarchy for the Regex type system.
