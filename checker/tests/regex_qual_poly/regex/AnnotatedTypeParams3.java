@@ -33,8 +33,6 @@ class AnnotatedTypeParams3 {
 
     <T extends @Regex Object> void test2(T p) {
         Object o = p;
-        // TODO: We must fix non-defaultable locations for this!
-        //:: error: (assignment.type.incompatible)
         @Regex Object re = o;
     }
 

@@ -6,6 +6,7 @@ import javax.annotation.processing.*;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -189,12 +190,19 @@ public class TypeMirrorConverter<Q> {
 
         atm.clearAnnotations();
 
-        if (qtm.getQualifier() != null) {
-            // Apply the qualifier for this QTM-ATM pair.
-            int index = getIndexForQualifier(qtm.getQualifier());
-            AnnotationMirror key = createKey(index, qtm.getQualifier());
+        // TODO: Here is where we check the QTV for primary qual
+        // TODO:
+        // TODO:
+        // TODO:
+        // TODO:
+        if (qtm.getQualifier() != null
+            && (qtm.getKind() != TypeKind.TYPEVAR || ((QualifiedTypeVariable<Q>)qtm).isPrimaryQualified())) {
 
-            atm.addAnnotation(key);
+                // Apply the qualifier for this QTM-ATM pair.
+                int index = getIndexForQualifier(qtm.getQualifier());
+                AnnotationMirror key = createKey(index, qtm.getQualifier());
+
+                atm.addAnnotation(key);
         }
 
         // Recursively create entries for all component QTM-ATM pairs.
