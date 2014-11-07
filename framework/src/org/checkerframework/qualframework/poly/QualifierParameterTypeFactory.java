@@ -296,6 +296,12 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
                     wild.getUnderlyingType(), extendsBound, superBound);
         }
 
+        // If the underlying type is not primary qualified we don't
+        // then we should not use the type variables primary qualifier.
+        if (!varUse.isPrimaryQualified()) {
+            return value;
+        }
+
         QualParams<Q> useParams = varUse.getQualifier();
         QualParams<Q> valueParams = value.getQualifier();
 
