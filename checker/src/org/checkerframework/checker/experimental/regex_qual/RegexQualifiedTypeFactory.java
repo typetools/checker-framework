@@ -34,7 +34,11 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * We implement the polymorphic qualifier behavior in this class
+ * The QualifiedTypeFactory for the Regex qual type system.
+ *
+ * Note: Polymorphic qualifiers are not supported automatically by the system.
+ * Instead, only the most basic and required polymorphic methods are manually
+ * supported by visitMethodInvocation.
  *
  */
 public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex> {
@@ -47,6 +51,8 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
     private final ExecutableElement patternCompile;
     /**
      * The Pattern.matcher method.
+     *
+     * @see java.util.regex.Pattern#matcher(CharSequence)
      */
     private final ExecutableElement patternMatcher;
 
