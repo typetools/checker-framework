@@ -34,7 +34,8 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Created by mcarthur on 6/3/14.
+ * We implement the polymorphic qualifier behavior in this class
+ *
  */
 public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex> {
 
@@ -44,18 +45,16 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
      * @see java.util.regex.Pattern#compile(String)
      */
     private final ExecutableElement patternCompile;
-
     /**
-//     * The value method of the PartialRegex qualifier.
-//     *
-//     * @see org.checkerframework.checker.regex.qual.PartialRegex
-//     */
-//    private final ExecutableElement partialRegexValue;
+     * The Pattern.matcher method.
+     */
+    private final ExecutableElement patternMatcher;
 
     public RegexQualifiedTypeFactory(QualifierContext<Regex> checker) {
         super(checker);
 
         patternCompile = TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, getContext().getProcessingEnvironment());
+        patternMatcher = TreeUtils.getMethod("java.util.regex.Pattern", "matcher", 1, getContext().getProcessingEnvironment());
     }
 
     @Override
@@ -121,6 +120,11 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
 
                     ExpressionTree arg0 = tree.getArguments().get(0);
                     Regex qual = getQualifiedType(arg0).getQualifier();
+                    result = SetQualifierVisitor.apply(result, qual);
+                } else if (TreeUtils.isMethodInvocation(tree, patternMatcher,
+                        getContext().getProcessingEnvironment())) {
+
+                    Regex qual = getReceiverType(tree).getQualifier();
                     result = SetQualifierVisitor.apply(result, qual);
                 }
                 return result;
