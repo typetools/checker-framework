@@ -4,12 +4,20 @@ import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Symbol;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.DefaultQualifiedTypeFactory;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
@@ -19,6 +27,8 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExec
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
+import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
+import org.checkerframework.qualframework.util.QualifierContext;
 
 /** Type factory with qualifier polymorphism support.  This type factory
  * extends an underlying qualifier system with qualifier variables, combined
@@ -29,6 +39,10 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWild
  */
 public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedTypeFactory<QualParams<Q>> {
     QualifierHierarchy<Q> groundHierarchy;
+
+    public QualifierParameterTypeFactory(QualifierContext<QualParams<Q>> context) {
+        super(context);
+    }
 
     @Override
     protected abstract QualifierParameterAnnotationConverter<Q> createAnnotationConverter();
@@ -58,7 +72,7 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
 
     @Override
     protected QualifierParameterTypeAnnotator<Q> createTypeAnnotator() {
-        return new QualifierParameterTypeAnnotator<Q>(getAnnotationConverter(),
+        return new QualifierParameterTypeAnnotator<Q>(getContext(), getAnnotationConverter(),
                 new ContainmentHierarchy<>(new PolyQualHierarchy<>(getGroundQualifierHierarchy())));
     }
 
@@ -121,12 +135,17 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             }
         };
 
+
     @Override
-    public Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> methodFromUse(MethodInvocationTree tree) {
-        Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> result = super.methodFromUse(tree);
+    public Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> methodFromUse(ExpressionTree tree,
+            ExecutableElement methodElt, QualifiedTypeMirror<QualParams<Q>> receiverType) {
+
+        // TODO: This is just a copy until i get things to work
+        Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> result = super.methodFromUse(tree,
+                methodElt, receiverType);
 
         Set<String> qualParams = getAnnotationConverter().getDeclaredParameters(
-                result.first.getUnderlyingType().asElement());
+                result.first.getUnderlyingType().asElement(), getDecoratedElement(result.first.getUnderlyingType().asElement()));
         if (qualParams.isEmpty()) {
             // This check is not just a performance optimization - it saves us
             // from crashing in one obscure corner case.  An `enum`
@@ -140,11 +159,18 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             return result;
         }
 
-        List<? extends QualifiedTypeMirror<QualParams<Q>>> formals =
-            getQualifiedTypes().expandVarArgs(result.first, tree.getArguments());
+        List<QualifiedTypeMirror<QualParams<Q>>> formals = new ArrayList<>();
         List<QualifiedTypeMirror<QualParams<Q>>> actuals = new ArrayList<>();
-        for (ExpressionTree actualExpr : tree.getArguments()) {
-            actuals.add(getQualifiedType(actualExpr));
+        if (tree.getKind() == Kind.METHOD_INVOCATION) {
+            formals.addAll(getQualifiedTypes().expandVarArgs(result.first, ((MethodInvocationTree)tree).getArguments()));
+            for (ExpressionTree actualExpr : ((MethodInvocationTree)tree).getArguments()) {
+                actuals.add(getQualifiedType(actualExpr));
+            }
+        }
+
+        if (! ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
+            formals.add(result.first.getReceiverType());
+            actuals.add(receiverType);
         }
 
         QualifierParameterHierarchy<Q> hierarchy = (QualifierParameterHierarchy<Q>)getQualifierHierarchy();
@@ -162,7 +188,7 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             }
 
             QualifiedExecutableType<QualParams<Q>> newMethodType =
-                (QualifiedExecutableType<QualParams<Q>>)SUBSTITUTE_VISITOR.visit(result.first, wildSubst);
+                    (QualifiedExecutableType<QualParams<Q>>)SUBSTITUTE_VISITOR.visit(result.first, wildSubst);
             List<QualifiedTypeMirror<QualParams<Q>>> newTypeArgs = new ArrayList<>();
             for (QualifiedTypeMirror<QualParams<Q>> qtm : result.second) {
                 newTypeArgs.add(SUBSTITUTE_VISITOR.visit(qtm, wildSubst));
@@ -176,11 +202,74 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
     }
 
 
+//    @Override
+//    public Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> methodFromUse(ExpressionTree tree) {
+//        Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> result = super.methodFromUse(tree);
+//
+//        Set<String> qualParams = getAnnotationConverter().getDeclaredParameters(
+//                result.first.getUnderlyingType().asElement(), getDecoratedElement(result.first.getUnderlyingType().asElement()));
+//        if (qualParams.isEmpty()) {
+//            // This check is not just a performance optimization - it saves us
+//            // from crashing in one obscure corner case.  An `enum`
+//            // declarations gets an auto-generated constructor with an
+//            // auto-generated `super()` call.  But the actual java.lang.Enum
+//            // constructor takes two arguments.  So trying to do inference on
+//            // that super call will cause a crash.  (This problem shows up as
+//            // an IndexOutOfBoundsException in tests/all-systems/Enums.java.)
+//            // The constructor has no qualifier parameters, though, so we can
+//            // skip processing it using this check.
+//            return result;
+//        }
+//
+//        List<QualifiedTypeMirror<QualParams<Q>>> formals =
+//                new ArrayList<>(getQualifiedTypes().expandVarArgs(result.first, tree.getArguments()));
+//
+//
+//        List<QualifiedTypeMirror<QualParams<Q>>> actuals = new ArrayList<>();
+//        for (ExpressionTree actualExpr : tree.getArguments()) {
+//            actuals.add(getQualifiedType(actualExpr));
+//        }
+//
+//        if (! ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
+//            formals.add(result.first.getReceiverType());
+//            actuals.add(getReceiverType(tree));
+//        }
+//
+//        QualifierParameterHierarchy<Q> hierarchy = (QualifierParameterHierarchy<Q>)getQualifierHierarchy();
+//        MethodParameterInference<Q> inference = new MethodParameterInference<>(
+//                new ArrayList<>(qualParams), formals, actuals,
+//                groundHierarchy, new PolyQualHierarchy<>(groundHierarchy),
+//                hierarchy, getTypeHierarchy());
+//
+//        Map<String, PolyQual<Q>> subst = inference.infer();
+//
+//        if (subst != null) {
+//            Map<String, Wildcard<Q>> wildSubst = new HashMap<>();
+//            for (String name : subst.keySet()) {
+//                wildSubst.put(name, new Wildcard<>(subst.get(name)));
+//            }
+//
+//            QualifiedExecutableType<QualParams<Q>> newMethodType =
+//                (QualifiedExecutableType<QualParams<Q>>)SUBSTITUTE_VISITOR.visit(result.first, wildSubst);
+//            List<QualifiedTypeMirror<QualParams<Q>>> newTypeArgs = new ArrayList<>();
+//            for (QualifiedTypeMirror<QualParams<Q>> qtm : result.second) {
+//                newTypeArgs.add(SUBSTITUTE_VISITOR.visit(qtm, wildSubst));
+//            }
+//            result = Pair.of(newMethodType, newTypeArgs);
+//        } else {
+//            // TODO: report error
+//        }
+//
+//        return result;
+//    }
+
+
     /** Combine two wildcards into one when substituting a qualified type into
      * a qualified type variable use (for example, substituting {@code
      * [T := C<<Q=TAINTED>>]} into the use {@code T + <<Q=UNTAINTED>>}).
      */
     protected abstract Wildcard<Q> combineForSubstitution(Wildcard<Q> a, Wildcard<Q> b);
+    protected abstract PolyQual<Q> combineForSubstitution(PolyQual<Q> a, PolyQual<Q> b);
 
     @Override
     public QualifiedTypeMirror<QualParams<Q>> postTypeVarSubstitution(QualifiedParameterDeclaration<QualParams<Q>> varDecl,
@@ -207,6 +296,12 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
                     wild.getUnderlyingType(), extendsBound, superBound);
         }
 
+        // If the underlying type is not primary qualified we don't
+        // then we should not use the type variables primary qualifier.
+        if (!varUse.isPrimaryQualified()) {
+            return value;
+        }
+
         QualParams<Q> useParams = varUse.getQualifier();
         QualParams<Q> valueParams = value.getQualifier();
 
@@ -222,7 +317,13 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             newParams.put(name, newValue);
         }
 
-        return SetQualifierVisitor.apply(value, new QualParams<>(newParams));
+        PolyQual<Q> primary;
+        if (useParams.getPrimary() != null && valueParams.getPrimary() != null) {
+            primary = combineForSubstitution(useParams.getPrimary(), valueParams.getPrimary());
+        } else {
+            throw new RuntimeException("Expected both QualParams to have a primary qualifier");
+        }
+        return SetQualifierVisitor.apply(value, new QualParams<>(newParams, primary));
     }
 
 
@@ -238,7 +339,15 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
         List<QualifiedTypeMirror<QualParams<Q>>> result = new ArrayList<>();
         for (QualifiedTypeMirror<QualParams<Q>> supertype : supertypes) {
             QualParams<Q> superQuals = supertype.getQualifier().substituteAll(subQuals);
+            superQuals.setPrimary(subQuals.getPrimary());
+            // TODO: This comment is not yet done.
+            // Doc why we need this. We need this because substitute doesnt replace primary annotations,
+            // it only substitutes Polyqual variables that might be in the primary annotaiton.
+            // However, the behavior of directSupertypes should be to replace the primary annotation
+            // This was needed to get the Ternary test to work.
+            // This does make it impossible to a qual param on the subclass used as a primary qualifier on the super class.
             result.add(SetQualifierVisitor.apply(supertype, superQuals));
+
         }
 
         return result;

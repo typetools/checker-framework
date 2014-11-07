@@ -87,6 +87,13 @@ abstract public class TransferResult<A extends AbstractValue<A>, S extends Store
     }
 
     /**
+     * @return The stores in case the basic block throws an exception.
+     */
+    public Map<TypeMirror, S> getExceptionalStores() {
+        return exceptionalStores;
+    }
+
+    /**
      * @return {@code true} if and only if this transfer result contains two
      *         stores that are potentially not equal. Note that the result
      *         {@code true} does not imply that {@code getRegularStore} cannot

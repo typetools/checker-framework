@@ -7,6 +7,6 @@ import org.checkerframework.qualframework.poly.QualParams;
 public class TaintingChecker extends Checker<QualParams<Tainting>> {
     @Override
     protected TaintingQualifiedTypeFactory createTypeFactory() {
-        return new TaintingQualifiedTypeFactory();
+        return new TaintingQualifiedTypeFactory(this);
     }
 }

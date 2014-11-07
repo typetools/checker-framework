@@ -3,6 +3,7 @@ package org.checkerframework.qualframework.base;
 import com.sun.source.tree.*;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.PropagationTreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 
@@ -11,9 +12,10 @@ import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 
 /**
  * Adapter for {@link TreeAnnotator}, extending
- * {@link org.checkerframework.framework.type.TreeAnnotator org.checkerframework.framework.type.TreeAnnotator}. 
+ * {@link org.checkerframework.framework.type.TreeAnnotator org.checkerframework.framework.type.TreeAnnotator}.
  */
 class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
+    private final QualifiedTypeFactoryAdapter<Q> factoryAdapter;
     private TreeAnnotator<Q> underlying;
     private TypeMirrorConverter<Q> converter;
 
@@ -21,7 +23,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
             TypeMirrorConverter<Q> converter,
             QualifiedTypeFactoryAdapter<Q> factoryAdapter) {
         super(factoryAdapter);
-
+        this.factoryAdapter = factoryAdapter;
         this.underlying = underlying;
         this.converter = converter;
     }
@@ -505,7 +507,15 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
 
     QualifiedTypeMirror<Q> superVisitNewArray(NewArrayTree node, ExtendedTypeMirror type) {
         AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm2 = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror componentType = ((AnnotatedArrayType)atm).getComponentType();
+        QualifiedTypeMirror<Q> qtm = converter.getQualifiedType(componentType);
+        converter.applyQualifiers(qtm, ((AnnotatedArrayType)atm2).getComponentType());
         super.visitNewArray(node, atm);
+
+        if (this.factoryAdapter.getTypeHierarchy().isSubtype(((AnnotatedArrayType) atm2).getComponentType(), ((AnnotatedArrayType) atm).getComponentType())) {
+            ((AnnotatedArrayType) atm).getComponentType().replaceAnnotations(((AnnotatedArrayType) atm2).getComponentType().getAnnotations());
+        }
         return converter.getQualifiedType(atm);
     }
 

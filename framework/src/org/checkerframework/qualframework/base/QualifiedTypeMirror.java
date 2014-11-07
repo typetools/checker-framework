@@ -624,6 +624,10 @@ public abstract class QualifiedTypeMirror<Q> {
             }
         }
 
+        public boolean isPrimaryQualified() {
+            return getUnderlyingType().getAnnotationMirrors().size() > 0;
+        }
+
         @Override
         public <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p) {
             return visitor.visitTypeVariable(this, p);

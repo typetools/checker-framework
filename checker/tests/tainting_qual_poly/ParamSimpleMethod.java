@@ -1,15 +1,20 @@
 // Simple test for qualifier parameters on methods.
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
+// Test method qual parameters
+@ClassTaintingParam("Main")
+class A { }
+
 abstract class Test {
-    @TaintingParam("Main")
-    static void test(@Var("Main") Integer i, @Var("Main") Integer j) { }
+    @MethodTaintingParam("Main")
+    static void test(@Var(arg="Main", param="Main") A i,
+            @Var(arg="Main", param="Main") A j) { }
 
-    abstract @Tainted Integer makeTainted();
-    abstract @Untainted Integer makeUntainted();
+    abstract @Tainted(param="Main") A makeTainted();
+    abstract @Untainted(param="Main") A makeUntainted();
 
-    abstract void takeTainted(@Tainted Integer o);
-    abstract void takeUntainted(@Untainted Integer o);
+    abstract void takeTainted(@Tainted(param="Main") A o);
+    abstract void takeUntainted(@Untainted(param="Main") A o);
 
     void test() {
         test(makeTainted(), makeTainted());
