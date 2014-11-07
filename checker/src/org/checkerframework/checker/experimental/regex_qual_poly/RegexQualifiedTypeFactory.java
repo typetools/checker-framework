@@ -92,9 +92,7 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
                 } else if (tree.getKind() == Kind.CHAR_LITERAL) {
                     regexStr = Character.toString((Character) tree.getValue());
                 } else if (tree.getKind() == Kind.NULL_LITERAL) {
-                    QualParams<Regex> clone = result.getQualifier().clone();
-                    clone.setPrimary(new GroundQual<>(Regex.BOTTOM));
-                    return SetQualifierVisitor.apply(result, clone);
+                    return SetQualifierVisitor.apply(result, QualParams.<Regex>getBottom());
                 }
 
 
@@ -135,10 +133,14 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
                         getContext().getProcessingEnvironment())) {
 
                     ExpressionTree arg0 = tree.getArguments().get(0);
-                    Regex qual = getQualifiedType(arg0).getQualifier().getPrimary().getMaximum();
-                    QualParams<Regex> clone = result.getQualifier().clone();
-                    clone.setPrimary(new GroundQual<>(qual));
-                    result = SetQualifierVisitor.apply(result, clone);
+                    if (getQualifiedType(arg0).getQualifier() == QualParams.<Regex>getBottom()) {
+                        result = SetQualifierVisitor.apply(result, QualParams.<Regex>getBottom());
+                    } else {
+                        Regex qual = getQualifiedType(arg0).getQualifier().getPrimary().getMaximum();
+                        QualParams<Regex> clone = result.getQualifier().clone();
+                        clone.setPrimary(new GroundQual<>(qual));
+                        result = SetQualifierVisitor.apply(result, clone);
+                    }
                 }
                 return result;
             }
