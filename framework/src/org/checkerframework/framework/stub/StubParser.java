@@ -861,7 +861,8 @@ public class StubParser {
             return;
         if (m.containsKey(key)) {
             AnnotatedTypeMirror value2 = m.get(key);
-            value.accept(new AnnotatedTypeMerger(), value2);
+            new AnnotatedTypeMerger().scanAndReduce(value, value2, null);
+//            value.accept(new AnnotatedTypeMerger(), value2);
             m.put(key, value2);
         } else {
             m.put(key, value);
