@@ -1,16 +1,16 @@
 package org.checkerframework.checker.experimental.tainting_qual.qual;
 
-import static com.sun.source.tree.Tree.Kind.NULL_LITERAL;
-import static com.sun.source.tree.Tree.Kind.STRING_LITERAL;
+import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeQualifier;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
+import static com.sun.source.tree.Tree.Kind.NULL_LITERAL;
+import static com.sun.source.tree.Tree.Kind.STRING_LITERAL;
 
 /**
  * Denotes a reference that is untainted, i.e. can be trusted.

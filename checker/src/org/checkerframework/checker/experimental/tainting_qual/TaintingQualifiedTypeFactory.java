@@ -1,15 +1,10 @@
 package org.checkerframework.checker.experimental.tainting_qual;
 
-import java.util.ArrayList;
-
-import javax.lang.model.type.TypeMirror;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
-
 import org.checkerframework.qualframework.base.DefaultQualifiedTypeFactory;
-import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
+import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.SetQualifierVisitor;
 import org.checkerframework.qualframework.base.TreeAnnotator;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
