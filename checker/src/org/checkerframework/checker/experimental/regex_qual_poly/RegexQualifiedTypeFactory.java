@@ -62,23 +62,6 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
         return new RegexAnnotationConverter();
     }
 
-    /**
-     * This allows the GenericsEnclosing test to pass but causes other issues with the InvariantTypes test.
-     * @param varDecl
-     * @param varUse
-     * @param value
-     * @return
-     */
-//    @Override
-//    public QualifiedTypeMirror<QualParams<Regex>> postTypeVarSubstitution(QualifiedParameterDeclaration<QualParams<Regex>> varDecl,
-//            QualifiedTypeVariable<QualParams<Regex>> varUse, QualifiedTypeMirror<QualParams<Regex>> value) {
-//        if (varUse.getQualifier() == Regex.TOP) {
-//            return value;
-//        } else {
-//            return super.postTypeVarSubstitution(varDecl, varUse, value);
-//        }
-//    }
-
     @Override
     protected QualifierParameterTreeAnnotator<Regex> createTreeAnnotator() {
         return new QualifierParameterTreeAnnotator<Regex>(this) {
