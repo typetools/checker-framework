@@ -1042,9 +1042,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected boolean checkContract(Receiver expr,
             AnnotationMirror necessaryAnnotation,
             AnnotationMirror inferredAnnotation, CFAbstractStore<?, ?> store) {
-        return !(inferredAnnotation == null || !atypeFactory
-                .getQualifierHierarchy().isSubtype(inferredAnnotation,
-                        necessaryAnnotation));
+        return inferredAnnotation != null &&
+                atypeFactory.getQualifierHierarchy().isSubtype(inferredAnnotation,
+                        necessaryAnnotation);
     }
 
     // Handle case Vector.copyInto()
