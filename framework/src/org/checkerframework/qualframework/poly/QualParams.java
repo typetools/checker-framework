@@ -29,14 +29,14 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
         this.primary = primary;
     }
 
-    public QualParams(Map<String, Wildcard<Q>> map, PolyQual<Q> primary) {
-        this.map = new HashMap<>(map);
+    public QualParams(PolyQual<Q> primary) {
+        this();
         this.primary = primary;
     }
 
-    public QualParams(PolyQual<Q> primary) {
+    public QualParams(Map<String, Wildcard<Q>> map, PolyQual<Q> primary) {
+        this.map = new HashMap<>(map);
         this.primary = primary;
-        this.map = new HashMap<>();
     }
 
     // More rawtype nonsense like in BaseQual.BaseLimit.  Once again, this is

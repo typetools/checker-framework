@@ -3,20 +3,14 @@ package org.checkerframework.qualframework.base.dataflow;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
-import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
-import org.checkerframework.qualframework.base.SetQualifierVisitor;
 import org.checkerframework.qualframework.base.TypeMirrorConverter;
 import org.checkerframework.qualframework.util.QualifierContext;
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
-import java.util.Set;
 
 /**
  * Checkers should extend a QualAnalysis to customize the TransferFunction for their checker.

@@ -3,9 +3,6 @@ package org.checkerframework.qualframework.base.dataflow;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.qualframework.base.TypeMirrorConverter;
-
-import javax.lang.model.element.AnnotationMirror;
 
 /**
  * TODO: qual store creation
