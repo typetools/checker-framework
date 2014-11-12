@@ -12,6 +12,8 @@ import org.checkerframework.checker.experimental.regex_qual.qual.*;
 public class GroupCounts {
     void testGroupCount() {
         @Regex(0) String s1 = "abc";
+        // TODO
+        @Regex(0) String s1a = "abc".toString();
         @Regex(1) String s2 = "(abc)";
         @Regex(2) String s3 = "()(abc)";
         @Regex(3) String s4 = "(abc())()";

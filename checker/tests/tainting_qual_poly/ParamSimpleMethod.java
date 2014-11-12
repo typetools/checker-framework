@@ -10,6 +10,12 @@ abstract class Test {
     static void test(@Var(arg="Main", param="Main") A i,
             @Var(arg="Main", param="Main") A j) { }
 
+    @MethodTaintingParam("Main")
+    @Var(arg="main", param="Main") A test2(@Var(arg="Main", param="Main") A in, A other) {
+        //:: error: (return.type.incompatible)
+        return makeTainted();
+    }
+
     abstract @Tainted(param="Main") A makeTainted();
     abstract @Untainted(param="Main") A makeUntainted();
 
