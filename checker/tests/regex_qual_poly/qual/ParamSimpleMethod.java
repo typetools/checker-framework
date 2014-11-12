@@ -10,6 +10,12 @@ abstract class Test {
     static void test(@Var(arg="Main", param="Main") A i,
             @Var(arg="Main", param="Main") A j) { }
 
+    @MethodRegexParam("Main")
+    @Var(arg="main", param="Main") A test2(@Var(arg="Main", param="Main") A in, A other) {
+        //:: error: (return.type.incompatible)
+        return makeTainted();
+    }
+
     abstract @Regex(param="Main") A makeTainted();
     abstract @Regex(value=1, param="Main") A makeUntainted();
 

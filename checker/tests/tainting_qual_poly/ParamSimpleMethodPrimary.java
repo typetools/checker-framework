@@ -6,6 +6,12 @@ abstract class Test {
     @MethodTaintingParam
     abstract @Var Integer test(@Var Integer i, @Var Integer j);
 
+    @MethodTaintingParam
+    @Var Integer test2(@Var Integer in, Integer other) {
+        //:: error: (return.type.incompatible)
+        return makeTainted();
+    }
+
     abstract @Tainted Integer makeTainted();
     abstract @Untainted Integer makeUntainted();
 
