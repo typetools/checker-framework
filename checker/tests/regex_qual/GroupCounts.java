@@ -1,7 +1,7 @@
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.checkerframework.checker.experimental.regex_qual.RegexUtil;
+import org.checkerframework.checker.regex.RegexUtil;
 import org.checkerframework.checker.experimental.regex_qual.qual.*;
 
 /*

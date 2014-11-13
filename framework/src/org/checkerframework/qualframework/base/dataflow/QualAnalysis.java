@@ -15,14 +15,14 @@ import javax.lang.model.type.TypeMirror;
 /**
  * Checkers should extend a QualAnalysis to customize the TransferFunction for their checker.
  *
- * The underlying checker-framework's dataflow does not use this class directly for running the analysis;
- * It does use the QualTransfer.
+ * Currently, the underlying checker-framework's dataflow does not use this class directly for running the analysis;
+ * It only directly uses the QualTransfer.
  *
  * For dataflow to actually use this analysis we would need to add functionality for tracking fields and
- * the other functionality that is in CFAbstractAnalysis. We could add methods
+ * the other functionality that is currently in CFAbstractAnalysis. We could add methods
  * in this class that call back to an CFAbstractAnalysis adapter, like other shims in system.
  *
- * Also, because the checker-framework does not directly use this class, adding properties
+ * Because the checker-framework does not directly use this class, adding properties
  * (like initialization) to the QualStore or QualValue will currently have no effect.
  *
  */
@@ -75,11 +75,6 @@ public class QualAnalysis<Q> extends Analysis<QualValue<Q>, QualStore<Q>, QualTr
         return converter;
     }
 
-    /**
-     * Returns an abstract value containing an annotated type with the
-     * annotation {@code anno}, and 'top' for all other hierarchies. The
-     * underlying type is {@link Object}.
-     */
     public QualValue<Q> createSingleAnnotationValue(Q qual,
             TypeMirror underlyingType) {
         CFValue atm = adapter.createSingleAnnotationValue(converter.getAnnotation(qual), underlyingType);

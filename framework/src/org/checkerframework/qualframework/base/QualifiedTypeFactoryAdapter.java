@@ -245,15 +245,15 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         return result;
     }
 
-    @Override
-    public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable var) {
-        // TODO: Need to comment what this is doing.
-        AnnotatedTypeVariable copy = var.getCopy(true);
-        copy.addAnnotations(copy.getBounds().getUpperBound().getAnnotations());
-        AnnotatedWildcardType result = super.getUninferredWildcardType(copy);
-
-        return result;
-    }
+//    @Override
+//    public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable var) {
+//        // TODO: Need to comment what this is doing.
+////        AnnotatedTypeVariable copy = var.getCopy(true);
+////        copy.addAnnotations(copy.getBounds().getUpperBound().getAnnotations());
+////        AnnotatedWildcardType result = super.getUninferredWildcardType(copy);
+//
+//        return result;
+//    }
 
 
     @Override
@@ -391,7 +391,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     @Override
     public CFTransfer createFlowTransferFunction(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         if (qualAnalysis == null) {
-            // TODO: We should do something better than just using null here.
+            // TODO: When we actually use the qual analysis, we will have to initialize it with real data.
             qualAnalysis = underlying.createFlowAnalysis(null);
             qualAnalysis.setAdapter(analysis);
         }

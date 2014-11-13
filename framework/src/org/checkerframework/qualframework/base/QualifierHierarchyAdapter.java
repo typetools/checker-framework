@@ -115,17 +115,17 @@ class QualifierHierarchyAdapter<Q> {
         /**
          * This method looks up a qualifier on an AnnotatedTypeMirror by using @Key
          * annotations. If no @Key annotations are present, converter is used to
-         * create a qualifier based on the annotations on rhs.
+         * create a qualifier based on the annotations on mirror.
          *
-         * @param rhs the AnnotationMirror to create a qualifier from
+         * @param mirror the AnnotationMirror to create a qualifier from
          * @return
          */
-        private Q getOrCreateQualifier(AnnotationMirror rhs) {
+        private Q getOrCreateQualifier(AnnotationMirror mirror) {
             Q rhsQual;
-            if (!converter.isKey(rhs)) {
-                rhsQual = annotationConverter.fromAnnotations(Arrays.asList(rhs));
+            if (!converter.isKey(mirror)) {
+                rhsQual = annotationConverter.fromAnnotations(Arrays.asList(mirror));
             } else {
-                rhsQual = converter.getQualifier(rhs);
+                rhsQual = converter.getQualifier(mirror);
             }
             return rhsQual;
         }

@@ -9,7 +9,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-/** A collection of references to various type checker components. */
+/** A collection of references to javac components. */
 public interface BaseContext {
     ProcessingEnvironment getProcessingEnvironment();
     Elements getElementUtils();

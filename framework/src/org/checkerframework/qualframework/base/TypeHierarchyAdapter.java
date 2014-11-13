@@ -10,7 +10,6 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDecl
  * {@link org.checkerframework.framework.type.TypeHierarchy org.checkerframework.framework.type.TypeHierarchy}.
  */
 class TypeHierarchyAdapter<Q> extends org.checkerframework.framework.type.TypeHierarchy {
-
     private TypeHierarchy<Q> underlying;
     /** A copy of {@link underlying} with a more precise type, or null if
      * {@link underlying} is not a {@link DefaultTypeHierarchy} instance.

@@ -4,10 +4,10 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
 //@non-308-skip-test
 public class RegexUtilTest {
     void fullyQualifiedRegexUtil(String s) {
-        if (org.checkerframework.checker.experimental.regex_qual_poly.RegexUtil.isRegex(s, 2)) {
+        if (RegexUtil.isRegex(s, 2)) {
             @Regex(2) String s2 = s;
         }
-        @Regex(2) String s2 = org.checkerframework.checker.experimental.regex_qual_poly.RegexUtil.asRegex(s, 2);
+        @Regex(2) String s2 = RegexUtil.asRegex(s, 2);
     }
 
     void unqualifiedRegexUtil(String s) {
@@ -18,12 +18,12 @@ public class RegexUtilTest {
     }
 
     void fullyQualifiedRegexUtilNoParamsArg(String s) {
-        if (org.checkerframework.checker.experimental.regex_qual_poly.RegexUtil.isRegex(s)) {
+        if (RegexUtil.isRegex(s)) {
             @Regex String s2 = s;
             @Regex(0) String s3 = s;
         }
-        @Regex String s2 = org.checkerframework.checker.experimental.regex_qual_poly.RegexUtil.asRegex(s);
-        @Regex(0) String s3 = org.checkerframework.checker.experimental.regex_qual_poly.RegexUtil.asRegex(s);
+        @Regex String s2 = RegexUtil.asRegex(s);
+        @Regex(0) String s3 = RegexUtil.asRegex(s);
     }
 
     void unqualifiedRegexUtilNoParamsArg(String s) {

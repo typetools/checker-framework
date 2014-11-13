@@ -2,7 +2,7 @@
 // https://code.google.com/p/checker-framework/issues/detail?id=291
 // @skip-test
 import java.util.regex.*;
-import org.checkerframework.checker.experimental.regex_qual_poly.RegexUtil;
+import org.checkerframework.checker.regex.RegexUtil;
 
 public class MatcherGroupCount {
     public static void main(String[] args) {

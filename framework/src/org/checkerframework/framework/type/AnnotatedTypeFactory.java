@@ -2673,6 +2673,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return this.processingEnv;
     }
 
+    /** Accessor for the {@link CFContext}.
+     */
     public CFContext getContext() {
         return checker;
     }
