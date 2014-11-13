@@ -60,7 +60,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     protected final /*@Nullable*/ S elseStore;
 
     /**
-     * The corresponding analysis class to get intermediate flow results.
+     * The corresponding analysis class to Nod intermediate flow results.
      */
     protected final Analysis<A, S, ?> analysis;
 
@@ -149,7 +149,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
-     * @return The node for this TransferInput
+     * @return The {@link Node} for this {@link TransferInput}.
      */
     public Node getNode() {
         return node;

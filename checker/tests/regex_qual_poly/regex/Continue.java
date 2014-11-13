@@ -1,4 +1,4 @@
-import org.checkerframework.checker.experimental.regex_qual_poly.RegexUtil;
+import org.checkerframework.checker.regex.RegexUtil;
 import java.util.regex.Pattern;
 
 class Continue {

@@ -178,11 +178,11 @@ public class TypeMirrorConverter<Q> {
             && (qtm.getKind() != TypeKind.TYPEVAR
                 || ((QualifiedTypeVariable<Q>)qtm).isPrimaryQualifierValid())) {
 
-                // Apply the qualifier for this QTM-ATM pair.
-                int index = getIndexForQualifier(qtm.getQualifier());
-                AnnotationMirror key = createKey(index, qtm.getQualifier());
+            // Apply the qualifier for this QTM-ATM pair.
+            int index = getIndexForQualifier(qtm.getQualifier());
+            AnnotationMirror key = createKey(index, qtm.getQualifier());
 
-                atm.addAnnotation(key);
+            atm.addAnnotation(key);
         }
 
         // Recursively create entries for all component QTM-ATM pairs.
