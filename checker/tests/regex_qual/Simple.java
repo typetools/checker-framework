@@ -94,6 +94,7 @@ public class Simple {
         @Regex String s7 = 'r' + "ege(";   // error
     }
 
+//    These todos are from the original Regex test.
 //    TODO: Uncomment this once isValidUse works better. See RegexChecker.isValidUse for details.
 //    class TestAllowedTypes {
 //        @Regex CharSequence cs;
