@@ -1,13 +1,8 @@
 package org.checkerframework.checker.experimental.tainting_qual.qual;
 
-import org.checkerframework.framework.qual.PolymorphicQualifier;
-import org.checkerframework.framework.qual.TypeQualifier;
+import java.lang.annotation.*;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.*;
 
 /**
  * A polymorphic qualifier for the Tainting type system.

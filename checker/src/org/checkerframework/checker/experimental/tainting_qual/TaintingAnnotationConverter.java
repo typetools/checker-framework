@@ -1,12 +1,17 @@
 package org.checkerframework.checker.experimental.tainting_qual;
 
-import org.checkerframework.checker.experimental.tainting_qual.qual.Tainted;
-import org.checkerframework.checker.experimental.tainting_qual.qual.Untainted;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.qualframework.base.AnnotationConverter;
+import java.util.Collection;
 
 import javax.lang.model.element.AnnotationMirror;
-import java.util.Collection;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.QualifiedNameable;
+
+import org.checkerframework.javacutil.AnnotationUtils;
+
+import org.checkerframework.qualframework.base.AnnotationConverter;
+
+import org.checkerframework.checker.experimental.tainting_qual.qual.Tainted;
+import org.checkerframework.checker.experimental.tainting_qual.qual.Untainted;
 
 
 public class TaintingAnnotationConverter implements AnnotationConverter<Tainting> {

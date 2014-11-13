@@ -1,15 +1,9 @@
 package org.checkerframework.checker.experimental.tainting_qual.qual;
 
-import org.checkerframework.checker.experimental.tainting_qual.TaintingChecker;
-import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
-import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
+import java.lang.annotation.*;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.checkerframework.checker.experimental.tainting_qual.TaintingChecker;
+import org.checkerframework.framework.qual.*;
 
 /**
  * The top qualifier of the tainting type system.
