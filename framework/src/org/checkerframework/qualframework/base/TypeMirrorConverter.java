@@ -8,13 +8,10 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
-import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationBuilder;
 
@@ -22,23 +19,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.*;
-import org.checkerframework.qualframework.util.ExtendedArrayType;
-import org.checkerframework.qualframework.util.ExtendedDeclaredType;
-import org.checkerframework.qualframework.util.ExtendedErrorType;
-import org.checkerframework.qualframework.util.ExtendedExecutableType;
-import org.checkerframework.qualframework.util.ExtendedIntersectionType;
-import org.checkerframework.qualframework.util.ExtendedNoType;
-import org.checkerframework.qualframework.util.ExtendedNullType;
-import org.checkerframework.qualframework.util.ExtendedPrimitiveType;
-import org.checkerframework.qualframework.util.ExtendedTypeVariable;
-import org.checkerframework.qualframework.util.ExtendedUnionType;
-import org.checkerframework.qualframework.util.ExtendedWildcardType;
-import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
-import org.checkerframework.qualframework.util.ExtendedTypeDeclaration;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
-import org.checkerframework.qualframework.util.ExtendedTypeVisitor;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
-import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror.*;
 
 /**
  * Helper class used by adapters to convert between {@link QualifiedTypeMirror}
@@ -190,13 +172,11 @@ public class TypeMirrorConverter<Q> {
 
         atm.clearAnnotations();
 
-        // TODO: Here is where we check the QTV for primary qual
-        // TODO:
-        // TODO:
-        // TODO:
-        // TODO:
+        // Only add the qualifier if it is not null,
+        // and the original underlying ATV had a primary annotation.
         if (qtm.getQualifier() != null
-            && (qtm.getKind() != TypeKind.TYPEVAR || ((QualifiedTypeVariable<Q>)qtm).isPrimaryQualified())) {
+            && (qtm.getKind() != TypeKind.TYPEVAR
+                || ((QualifiedTypeVariable<Q>)qtm).isPrimaryQualifierValid())) {
 
                 // Apply the qualifier for this QTM-ATM pair.
                 int index = getIndexForQualifier(qtm.getQualifier());

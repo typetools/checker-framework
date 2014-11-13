@@ -506,17 +506,8 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitNewArray(NewArrayTree node, ExtendedTypeMirror type) {
-
         AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
-        AnnotatedTypeMirror atm2 = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
-        AnnotatedTypeMirror componentType = ((AnnotatedArrayType)atm).getComponentType();
-        QualifiedTypeMirror<Q> qtm = converter.getQualifiedType(componentType);
-        converter.applyQualifiers(qtm, ((AnnotatedArrayType)atm2).getComponentType());
         super.visitNewArray(node, atm);
-
-        if (this.factoryAdapter.getTypeHierarchy().isSubtype(((AnnotatedArrayType) atm2).getComponentType(), ((AnnotatedArrayType) atm).getComponentType())) {
-            ((AnnotatedArrayType) atm).getComponentType().replaceAnnotations(((AnnotatedArrayType) atm2).getComponentType().getAnnotations());
-        }
         return converter.getQualifiedType(atm);
     }
 

@@ -12,8 +12,6 @@ import org.checkerframework.checker.experimental.regex_qual_poly.qual.*;
 public class GroupCounts {
     void testGroupCount() {
         @Regex(0) String s1 = "abc";
-        //TODO: This fails because we don't have full @PolyRegex support
-        //:: error:(assignment.type.incompatible)
         @Regex(0) String s1a = "abc".toString();
         @Regex(1) String s2 = "(abc)";
         @Regex(2) String s3 = "()(abc)";
