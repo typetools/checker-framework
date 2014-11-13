@@ -3,7 +3,6 @@ package org.checkerframework.checker.experimental.tainting_qual_poly;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import org.checkerframework.checker.experimental.regex_qual.Regex;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.SetQualifierVisitor;
@@ -40,7 +39,6 @@ public class TaintingQualifiedTypeFactory extends QualifierParameterTypeFactory<
             public QualifiedTypeMirror<QualParams<Tainting>> visitLiteral(LiteralTree tree, ExtendedTypeMirror type) {
                 QualifiedTypeMirror<QualParams<Tainting>> result = super.visitLiteral(tree, type);
                 if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
-                    // TODO: Fix, this is a defaults thing
                     result = SetQualifierVisitor.apply(result, new QualParams<>(new GroundQual<>(Tainting.UNTAINTED)));
                 } else if (tree.getKind() == Kind.NULL_LITERAL) {
                     return SetQualifierVisitor.apply(result, QualParams.<Tainting>getBottom());
@@ -49,7 +47,6 @@ public class TaintingQualifiedTypeFactory extends QualifierParameterTypeFactory<
             }
         };
     }
-
 
     private CombiningOperation<Tainting> lubOp = new CombiningOperation.Lub<>(new TaintingQualifierHierarchy());
 

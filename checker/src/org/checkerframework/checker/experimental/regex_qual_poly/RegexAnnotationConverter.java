@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 /**
- * Convert @Regex annotations into qualifiers.
+ * Convert @Regex annotations into qualifiers with support for @PolyRegex, @Var, @Wild.
  *
  */
 public class RegexAnnotationConverter extends SimpleQualifierParameterAnnotationConverter<Regex> {
@@ -47,6 +47,7 @@ public class RegexAnnotationConverter extends SimpleQualifierParameterAnnotation
                     return new Regex.RegexVal((Integer)entry.getValue().getValue());
                 }
             }
+
             return new Regex.RegexVal(0);
         }
         return null;

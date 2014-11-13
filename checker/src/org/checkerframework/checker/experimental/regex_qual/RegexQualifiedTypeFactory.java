@@ -28,11 +28,13 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * The QualifiedTypeFactory for the Regex qual type system.
+ * The QualifiedTypeFactory for the Regex-Qual type system.
  *
- * Note: Polymorphic qualifiers are not supported automatically by the system.
+ * Note: Polymorphic qualifiers are not supported automatically by the qual system.
  * Instead, only the most basic and required polymorphic methods are manually
  * supported by visitMethodInvocation.
+ *
+ * @see org.checkerframework.checker.regex.RegexAnnotatedTypeFactory
  *
  */
 public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex> {
@@ -70,6 +72,11 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
     @Override
     protected TreeAnnotator<Regex> createTreeAnnotator() {
         return new TreeAnnotator<Regex>() {
+
+            /**
+             * Create a Regex qualifier based on the contents of string and char literals.
+             * Null literals are Regex.BOTTOM.
+             */
             @Override
             public QualifiedTypeMirror<Regex> visitLiteral(LiteralTree tree, ExtendedTypeMirror type) {
                 QualifiedTypeMirror<Regex> result = super.visitLiteral(tree, type);
@@ -82,7 +89,6 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
                 } else if (tree.getKind() == Kind.NULL_LITERAL) {
                     return SetQualifierVisitor.apply(result, Regex.BOTTOM);
                 }
-
 
                 if (regexStr != null) {
                     Regex regexQual;
@@ -98,6 +104,9 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
                 return result;
             }
 
+            /**
+             * Handle string compound assignment
+             */
             @Override
             public QualifiedTypeMirror<Regex> visitCompoundAssignment(CompoundAssignmentTree tree,
                     ExtendedTypeMirror type) {
@@ -109,10 +118,13 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
                 return handleBinaryOperation(tree, lRegex, rRegex, result);
             }
 
+            /**
+             * Add polymorphism to the Pattern.compile and Pattern.matcher methods.
+             */
             @Override
             public QualifiedTypeMirror<Regex> visitMethodInvocation(MethodInvocationTree tree, ExtendedTypeMirror type) {
-                // TODO: Also get this to work with 2 argument Pattern.compile.
 
+                // TODO: Also get this to work with 2 argument Pattern.compile.
                 QualifiedTypeMirror<Regex> result = super.visitMethodInvocation(tree, type);
 
                 if (TreeUtils.isMethodInvocation(tree, patternCompile,
@@ -131,7 +143,7 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
             }
 
             /**
-             * Case 2: concatenation of Regex or PolyRegex String/char literals.
+             * Handle concatenation of Regex or PolyRegex String/char literals.
              * Also handles concatenation of partial regular expressions.
              */
             @Override
@@ -144,6 +156,16 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
                 return handleBinaryOperation(tree, lRegex, rRegex, result);
             }
 
+            /**
+             * Returns the QualifiedTypeMirror that is the result of the binary operation represented by tree.
+             * Handles concatenation of Regex and PolyRegex qualifiers.
+             *
+             * @param tree A binary tree or a CompoundAssingmentTree
+             * @param lRegex The qualifier of the left hand side of the expression.
+             * @param rRegex The qualifier of the right hand side of the expression.
+             * @param result The current QualifiedTypeMirror result
+             * @return A copy of result with the new qualifier Applied.
+             */
             private QualifiedTypeMirror<Regex> handleBinaryOperation(Tree tree, Regex lRegex,
                     Regex rRegex, QualifiedTypeMirror<Regex> result) {
                 if (TreeUtils.isStringConcatenation(tree)
@@ -204,12 +226,15 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
         return true;
     }
 
+    /**
+     * Configure dataflow to use the RegexQualifiedTransfer
+     */
     @Override
     public QualAnalysis<Regex> createFlowAnalysis(List<Pair<VariableElement, QualValue<Regex>>> fieldValues) {
         return new QualAnalysis<Regex>(this.getContext()) {
             @Override
             public QualTransfer<Regex> createTransferFunction() {
-                return new RegexQualTransfer(this);
+                return new RegexQualifiedTransfer(this);
             }
         };
     }

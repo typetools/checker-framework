@@ -10,11 +10,13 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * Convert @Regex annotations into qualifiers.
- *
+ * Convert {@link org.checkerframework.checker.experimental.regex_qual.qual.Regex}
+ * annotations into {@link Regex} qualifiers.
  */
 public class RegexAnnotationConverter implements AnnotationConverter<Regex> {
+
     private String regexName;
+    private static final Regex DEFAULT = Regex.TOP;
 
     public RegexAnnotationConverter() {
         regexName = org.checkerframework.checker.experimental.regex_qual.qual.Regex.class.getName();
@@ -35,7 +37,7 @@ public class RegexAnnotationConverter implements AnnotationConverter<Regex> {
                 return new Regex.RegexVal(0);
             }
         }
-        return Regex.TOP;
+        return DEFAULT;
     }
 
     @Override

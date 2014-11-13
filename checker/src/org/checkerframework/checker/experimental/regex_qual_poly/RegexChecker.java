@@ -4,7 +4,7 @@ import org.checkerframework.qualframework.base.Checker;
 import org.checkerframework.qualframework.poly.QualParams;
 
 /**
- * Created by mcarthur on 6/3/14.
+ * {@link Checker} for the Regex-Qual-Param type system.
  */
 public class RegexChecker extends Checker<QualParams<Regex>> {
 
