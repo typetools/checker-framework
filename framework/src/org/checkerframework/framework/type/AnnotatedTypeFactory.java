@@ -152,8 +152,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected QualifierHierarchy qualHierarchy;
 
     /** Represent the type relations. */
-    // TODO: when is this allowed to be null?
     protected TypeHierarchy typeHierarchy;
+
+    /**
+     * Provides utility method to substitute arguments for their type variables
+     */
+    protected TypeVariableSubstitutor typeVarSubstitutor;
 
     /** To cache the supported type qualifiers. */
     private final Set<Class<? extends Annotation>> supportedQuals;
@@ -258,6 +262,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ErrorReporter.errorAbort("AnnotatedTypeFactory with null qualifier hierarchy not supported.");
         }
         this.typeHierarchy = createTypeHierarchy();
+        this.typeVarSubstitutor = createTypeVariableSubstitutor();
 
         // TODO: is this the best location for declaring this alias?
         addAliasedDeclAnnotation(org.jmlspecs.annotation.Pure.class,
@@ -427,9 +432,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     public final TypeHierarchy getTypeHierarchy() {
-        //if (typeHierarchy == null)
-        //    typeHierarchy = createTypeHierarchy();
         return typeHierarchy;
+    }
+
+    /**
+     * TypeVariableSubstitutor provides a method to replace type parameters with
+     * their arguments.  It may also be
+     * @return
+     */
+    protected TypeVariableSubstitutor createTypeVariableSubstitutor() {
+        return new TypeVariableSubstitutor();
+    }
+
+    public TypeVariableSubstitutor getTypeVarSubstitutor() {
+        return typeVarSubstitutor;
     }
 
     /**
@@ -968,6 +984,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * by the main modifier.
      *
      * <p>
+     *
+     * An example of an adaptation follows.  Suppose, I have a declaration:
+     * class MyClass&lt;E extends Listlt;E&gt;&gt;
+     * And an instantiation:
+     * new MyClass&lt;@NonNull String&gt;()
+     *
+     * The upper bound of E adapted to the argument String, would be List&lt;@NonNull String&gt;
+     * and the lower bound would be an AnnotatedNullType.
+     *
      * TODO: ensure that this method is consistently used instead
      * of directly querying the type variables.
      *
@@ -986,8 +1011,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         //System.err.printf("TVFU\n  type: %s\n  generic: %s\n", type, generic);
 
-        Map<AnnotatedTypeVariable, AnnotatedTypeMirror> mapping =
-                new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
+        Map<AnnotatedTypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
 
         for (int i = 0; i < targs.size(); ++i) {
             mapping.put((AnnotatedTypeVariable)tvars.get(i), targs.get(i));
@@ -997,9 +1021,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         for (AnnotatedTypeMirror atm : tvars) {
             AnnotatedTypeVariable atv = (AnnotatedTypeVariable)atm;
-            // TODO: this maybe needs to use getEffective*Bound, not sure
-            AnnotatedTypeMirror upper = atv.getUpperBound().substitute(mapping);
-            AnnotatedTypeMirror lower = atv.getLowerBound().substitute(mapping);
+            AnnotatedTypeMirror upper = typeVarSubstitutor.subtitute(mapping, atv.getUpperBound());
+            AnnotatedTypeMirror lower = typeVarSubstitutor.subtitute(mapping, atv.getLowerBound());
             res.add(new AnnotatedTypeParameterBounds(upper, lower));
         }
         return res;
@@ -1469,7 +1492,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 }
                 typeargs.add(typeVarMapping.get(tv.getTypeParameterDeclaration()));
             }
-            methodType = (AnnotatedExecutableType)methodType.substitute(typeVarMapping);
+            methodType = (AnnotatedExecutableType) typeVarSubstitutor.subtitute(typeVarMapping, methodType);
         }
 
         return Pair.of(methodType, typeargs);
@@ -1517,7 +1540,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             for (AnnotatedTypeVariable tv : con.getTypeVariables()) {
                 typeargs.add(typeVarMapping.get(tv));
             }
-            con = (AnnotatedExecutableType)con.substitute(typeVarMapping);
+            con = (AnnotatedExecutableType) typeVarSubstitutor.subtitute(typeVarMapping,con);
         }
 
         return Pair.of(con, typeargs);
