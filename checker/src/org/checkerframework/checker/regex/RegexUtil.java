@@ -142,6 +142,11 @@ public class RegexUtil {
     }
   }
 
+  /**
+   * This is currently protected so that the experimental Regex-Qual and Regex-Qual-Param
+   * checkers can extend it to add their own annotations. This would not be necessary if we
+   * supported multiple ensuresQualifierIf.
+   */
   protected RegexUtil() {
     throw new AssertionError("Class RegexUtil shouldn't be instantiated");
   }

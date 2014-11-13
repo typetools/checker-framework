@@ -3,7 +3,7 @@ package org.checkerframework.checker.experimental.regex_qual;
 import org.checkerframework.qualframework.base.Checker;
 
 /**
- * Created by mcarthur on 6/3/14.
+ * {@link Checker} for the Regex-Qual type system.
  */
 public class RegexChecker extends Checker<Regex> {
 

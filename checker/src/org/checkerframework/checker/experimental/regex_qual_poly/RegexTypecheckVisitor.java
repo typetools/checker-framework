@@ -17,7 +17,9 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
 /**
- * Created by mcarthur on 6/4/14.
+ * The {@link org.checkerframework.common.basetype.BaseTypeVisitor} for the Regex-Qual-Param type system.
+ *
+ * @see org.checkerframework.checker.regex.RegexVisitor
  */
 public class RegexTypecheckVisitor extends TypecheckVisitorAdapter<QualParams<Regex>> {
 

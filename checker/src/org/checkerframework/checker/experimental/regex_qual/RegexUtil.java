@@ -19,9 +19,8 @@ import org.checkerframework.checker.experimental.regex_qual.qual.*;
  * This is a copy of RegexUtil, but with different Annotations.
  * A better solution might be to allow multiple @EnsuresQualifierIf
  *
+ * @see org.checkerframework.checker.regex.RegexUtil
  */
-// The PurityChecker cannot show for most methods in this class that
-// they are pure, even though they are.
 @SuppressWarnings("purity")
 public class RegexUtil extends org.checkerframework.checker.regex.RegexUtil {
 
@@ -56,7 +55,6 @@ public class RegexUtil extends org.checkerframework.checker.regex.RegexUtil {
      * {@inheritDoc}
      */
   /*@SideEffectFree*/
-    // The return type annotation is a conservative bound.
     public static /*@org.checkerframework.checker.experimental.regex_qual.qual.Regex*/ String asRegex(String s) {
         return org.checkerframework.checker.regex.RegexUtil.asRegex(s);
     }
@@ -68,8 +66,6 @@ public class RegexUtil extends org.checkerframework.checker.regex.RegexUtil {
   @SuppressWarnings("regex")    // RegexUtil
   */
   /*@SideEffectFree*/
-    // The return type annotation is irrelevant; it is special-cased by
-    // RegexAnnotatedTypeFactory.
     public static /*@org.checkerframework.checker.experimental.regex_qual.qual.Regex*/ String asRegex(String s, int groups) {
         return org.checkerframework.checker.regex.RegexUtil.asRegex(s, groups);
     }

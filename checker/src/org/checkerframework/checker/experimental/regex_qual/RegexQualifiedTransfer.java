@@ -1,6 +1,7 @@
 package org.checkerframework.checker.experimental.regex_qual;
 
 import org.checkerframework.checker.experimental.regex_qual.Regex.RegexVal;
+import org.checkerframework.checker.regex.RegexTransfer;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -22,12 +23,11 @@ import org.checkerframework.qualframework.base.dataflow.QualValue;
 import javax.lang.model.element.ExecutableElement;
 
 /**
- * // TODO: Document
- * Created by mcarthur on 10/29/14.
+ * A reimplemention of {@link RegexTransfer} using QualifiedTypeMirrors instead of AnnotatedTypeMirrors.
  */
-public class RegexQualTransfer extends QualTransfer<Regex> {
+public class RegexQualifiedTransfer extends QualTransfer<Regex> {
 
-    public RegexQualTransfer(QualAnalysis<Regex> analysis) {
+    public RegexQualifiedTransfer(QualAnalysis<Regex> analysis) {
         super(analysis);
     }
 
