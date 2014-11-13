@@ -146,7 +146,7 @@ then an annotation is not present at run time that was present at compile
 time.  For example, maybe when you compiled the code, the \<@Nullable>
 annotation was available, but it was not available at run time.
 You can use JDK 8 at run time, or compile
-with a Java 7 compiler that will ignore the annotations in comments.
+with a Java 6 or 7 compiler that will ignore the annotations in comments.
 
 \item
 A ``class file for \ldots\ not found'' error, especially for an inner class
@@ -157,8 +157,8 @@ your classpath contains code that was compiled
 with some library, but your classpath does not contain that library itself.
 
 For example, suppose that when you run the compiler, you are using JDK 8,
-but some library on your classpath was compiled against JDK 7, and the
-compiled library refers to a class that only appears in JDK 7.  (If only
+but some library on your classpath was compiled against JDK 6 or 7, and the
+compiled library refers to a class that only appears in JDK 6 or 7.  (If only
 one version of Java existed, or the Checker Framework didn't try to support
 multiple different versions of Java, this would not be a problem.)
 
@@ -467,16 +467,16 @@ This compile-time error
 \end{Verbatim}
 
 \noindent
-indicates that you are compiling using a Java 7 JDK, but your code
+indicates that you are compiling using a Java 6 or 7 JDK, but your code
 references an enum constant that is only defined in the Java 8 JDK.  The
 problem might be that your code uses a library that references the enum
 constant.  In particular, the type annotations shipped with the Checker
 Framework reference 
 \sunjavadoc{java/lang/annotation/ElementType.html#TYPE\_USE}{ElementType.TYPE\_USE}.  You can use the Checker
-Framework, but still compile and run your code in a Java 7 JVM, by
+Framework, but still compile and run your code in a Java 6 or 7 JVM, by
 following the instructions in Section~\ref{java7-classfiles}.
 
-If you ignore the error and run your code in a Java 7 JVM, then you will get a run-time error:
+If you ignore the error and run your code in a Java 6 or 7 JVM, then you will get a run-time error:
 
 \begin{Verbatim}
   java.lang.ArrayStoreException: sun.reflect.annotation.EnumConstantNotPresentExceptionProxy
@@ -519,7 +519,7 @@ Run \<java -version> to
 determine the version of Java you are using and use a newer version,
 and/or use the \<-target>
 command-line option to \<javac> to specify the version of the class files
-that are created, such as \<javac -target 7 ...>.
+that are created, such as \<javac -source 7 -target 7 ...>.
 
 
 
@@ -677,7 +677,7 @@ adds annotated JDKs and the Checker Framework jars to the classpath.
 %  * the location of tools.jar, below.
 %  * the default location of RTJAR, in checker/jdk/Makefile.
 Set the \<JAVA\_HOME> environment variable to the location of your JDK 
-7 installation (not the JRE installation, and not JDK 6).
+7 or 8 installation (not the JRE installation, and not JDK 6 or earlier).
 This needs to be an Oracle JDK.
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
