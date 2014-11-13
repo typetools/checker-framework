@@ -11,6 +11,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.SyntheticArrays;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -346,21 +347,16 @@ public class AnnotatedTypes {
         }
 
         // For type variables and wildcards, operate on the upper bound
-        if (t.getKind() == TypeKind.TYPEVAR &&
-                ((AnnotatedTypeVariable)t).getUpperBound() != null) {
-            return asMemberOf(types, atypeFactory, ((AnnotatedTypeVariable) t).getEffectiveUpperBound(),
-                    elem);
+        if (t.getKind() == TypeKind.TYPEVAR) {
+            return asMemberOf(types, atypeFactory, ((AnnotatedTypeVariable) t).getEffectiveUpperBound(), elem);
         }
-        if (t.getKind() == TypeKind.WILDCARD &&
-                ((AnnotatedWildcardType)t).getExtendsBound() != null) {
-            return asMemberOf(types, atypeFactory, ((AnnotatedWildcardType) t).getEffectiveExtendsBound(),
-                    elem);
+        if (t.getKind() == TypeKind.WILDCARD) {
+            return asMemberOf(types, atypeFactory, ((AnnotatedWildcardType) t).getEffectiveExtendsBound(), elem);
         }
-        if (t.getKind() == TypeKind.ARRAY
-                && elem.getKind() == ElementKind.METHOD
-                && elem.getSimpleName().contentEquals("clone")) {
-            AnnotatedExecutableType method = (AnnotatedExecutableType) atypeFactory.getAnnotatedType(elem);
-            return method.substitute(Collections.singletonMap(method.getReturnType(), t));
+
+        //Method references like String[]::clone should have a return type of String[] rather than Object
+        if (SyntheticArrays.isArrayClone(t, elem)) {
+            return SyntheticArrays.replaceReturnType(elem, (AnnotatedArrayType) t);
         }
 
         final AnnotatedTypeMirror elemType = atypeFactory.getAnnotatedType(elem);
@@ -403,19 +399,28 @@ public class AnnotatedTypes {
             return elemType;
         }
 
-        List<? extends AnnotatedTypeMirror> ownerParams =
-                ownerType.getTypeArguments();
-        List<? extends AnnotatedTypeMirror> baseParams =
-                base.getTypeArguments();
+        final List<AnnotatedTypeVariable> ownerParams = new ArrayList<>(ownerType.getTypeArguments().size());
+        for(final AnnotatedTypeMirror typeParam : ownerType.getTypeArguments()) {
+            if (typeParam.getKind() != TypeKind.TYPEVAR) {
+                ErrorReporter.errorAbort("Type arguments of a declaration should be type variables\n"
+                                       + "owner=" + owner + "\n"
+                                       + "ownerType=" + ownerType + "\n"
+                                       + "typeMirror=" + t + "\n"
+                                       + "element=" + elem);
+            }
+            ownerParams.add((AnnotatedTypeVariable) typeParam);
+        }
+
+        final List<? extends AnnotatedTypeMirror> baseParams = base.getTypeArguments();
         if (!ownerParams.isEmpty()) {
             if (baseParams.isEmpty()) {
                 List<AnnotatedTypeMirror> baseParamsEr = new ArrayList<>();
                 for (AnnotatedTypeMirror arg : ownerParams) {
                     baseParamsEr.add(arg.getErased());
                 }
-                return subst(elemType, ownerParams, baseParamsEr);
+                return subst(atypeFactory, elemType, ownerParams, baseParamsEr);
             }
-            return subst(elemType, ownerParams, baseParams);
+            return subst(atypeFactory, elemType, ownerParams, baseParams);
         }
 
         return elemType;
@@ -431,15 +436,16 @@ public class AnnotatedTypes {
      * @param to    the to types
      * @return  the new type after substitutions
      */
-    public static AnnotatedTypeMirror subst(AnnotatedTypeMirror t,
-                                            List<? extends AnnotatedTypeMirror> from,
-                                            List<? extends AnnotatedTypeMirror> to) {
-        Map<AnnotatedTypeMirror, AnnotatedTypeMirror> mappings = new HashMap<>();
+    private static AnnotatedTypeMirror subst(AnnotatedTypeFactory atypeFactory,
+                                             AnnotatedTypeMirror t,
+                                             List<? extends AnnotatedTypeVariable> from,
+                                             List<? extends AnnotatedTypeMirror> to) {
+        final Map<AnnotatedTypeVariable, AnnotatedTypeMirror> mappings = new HashMap<>();
 
         for (int i = 0; i < from.size(); ++i) {
             mappings.put(from.get(i), to.get(i));
         }
-        return t.substitute(mappings);
+        return atypeFactory.getTypeVarSubstitutor().subtitute(mappings, t);
     }
 
     /**
