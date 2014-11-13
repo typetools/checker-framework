@@ -73,12 +73,12 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
             return true;
         }
 
-        AnnotatedTypeMirror subtypeUpper   = subtype.getEffectiveExtendsBound();
-        AnnotatedTypeMirror supertypeUpper = supertype.getEffectiveExtendsBound();
+        AnnotatedTypeMirror subtypeUpper   = subtype.getExtendsBound();
+        AnnotatedTypeMirror supertypeUpper = supertype.getExtendsBound();
 
         if( subtypeUpper.getKind() == TypeKind.TYPEVAR
          && InternalUtils.isCaptured((TypeVariable) supertypeUpper.getUnderlyingType())) {
-            supertypeUpper = ((AnnotatedTypeVariable) supertypeUpper).getEffectiveUpperBound();
+            supertypeUpper = ((AnnotatedTypeVariable) supertypeUpper).getUpperBound();
         }
 
         if(checkOrAdd(subtypeUpper, supertypeUpper, visited)) {
@@ -123,7 +123,7 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
 
     @Override
     public Boolean visitWildcard_Declared(AnnotatedWildcardType subtype, AnnotatedDeclaredType supertype, VisitHistory visited) {
-       return arePrimaryAnnotationsEqual(subtype.getEffectiveExtendsBound(), supertype);
+       return arePrimaryAnnotationsEqual(subtype.getExtendsBound(), supertype);
     }
 
     public Boolean visitWildcardSupertype(AnnotatedTypeMirror subtype, AnnotatedWildcardType supertype, VisitHistory visited) {

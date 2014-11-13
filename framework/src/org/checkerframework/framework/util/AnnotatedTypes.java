@@ -126,7 +126,7 @@ public class AnnotatedTypes {
             if (p.getKind() == TypeKind.TYPEVAR)
                 return type;
             // Operate on the effective upper bound
-            AnnotatedTypeMirror res = asSuper(types, atypeFactory, type.getEffectiveUpperBound(), p);
+            AnnotatedTypeMirror res = asSuper(types, atypeFactory, type.getUpperBound(), p);
             if (res != null) {
                 res.addMissingAnnotations(atypeFactory.getQualifierHierarchy().getTopAnnotations());
                 // TODO: or should it be the default?
@@ -140,8 +140,7 @@ public class AnnotatedTypes {
         public AnnotatedTypeMirror visitWildcard(AnnotatedWildcardType type, AnnotatedTypeMirror p) {
             if (p.getKind() == TypeKind.WILDCARD)
                 return type;
-            // Operate on the effective extends bound
-            return asSuper(types, atypeFactory, type.getEffectiveExtendsBound(), p);
+            return asSuper(types, atypeFactory, type.getExtendsBound(), p);
         }
 
 
@@ -197,10 +196,10 @@ public class AnnotatedTypes {
             }
 
             if (p.getKind() == TypeKind.TYPEVAR) {
-                return asSuper(types, atypeFactory, type, ((AnnotatedTypeVariable)p).getEffectiveUpperBound());
+                return asSuper(types, atypeFactory, type, ((AnnotatedTypeVariable)p).getUpperBound());
             }
             if (p.getKind() == TypeKind.WILDCARD) {
-                return asSuper(types, atypeFactory, type, ((AnnotatedWildcardType)p).getEffectiveExtendsBound());
+                return asSuper(types, atypeFactory, type, ((AnnotatedWildcardType)p).getExtendsBound().deepCopy());
             }
             return null;
         }
@@ -348,10 +347,10 @@ public class AnnotatedTypes {
 
         // For type variables and wildcards, operate on the upper bound
         if (t.getKind() == TypeKind.TYPEVAR) {
-            return asMemberOf(types, atypeFactory, ((AnnotatedTypeVariable) t).getEffectiveUpperBound(), elem);
+            return asMemberOf(types, atypeFactory, ((AnnotatedTypeVariable) t).getUpperBound(), elem);
         }
         if (t.getKind() == TypeKind.WILDCARD) {
-            return asMemberOf(types, atypeFactory, ((AnnotatedWildcardType) t).getEffectiveExtendsBound(), elem);
+            return asMemberOf(types, atypeFactory, ((AnnotatedWildcardType) t).getExtendsBound().deepCopy(), elem);
         }
 
         //Method references like String[]::clone should have a return type of String[] rather than Object
@@ -468,10 +467,10 @@ public class AnnotatedTypes {
         // For type variables and wildcards take the effective upper bound.
         if (iterableType.getKind() == TypeKind.WILDCARD)
             return getIteratedType(processingEnv, atypeFactory,
-                    ((AnnotatedWildcardType) iterableType).getEffectiveExtendsBound());
+                    ((AnnotatedWildcardType) iterableType).getExtendsBound().deepCopy());
         if (iterableType.getKind() == TypeKind.TYPEVAR)
             return getIteratedType(processingEnv, atypeFactory,
-                    ((AnnotatedTypeVariable) iterableType).getEffectiveUpperBound());
+                    ((AnnotatedTypeVariable) iterableType).getUpperBound());
 
         if (iterableType.getKind() != TypeKind.DECLARED) {
             ErrorReporter.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
@@ -765,7 +764,7 @@ public class AnnotatedTypes {
                 AnnotatedTypeVariable key = ((AnnotatedTypeVariable) rhs).getTypeParameterDeclaration();
 
                 if (toplevel && lhs.getKind() == TypeKind.WILDCARD) {
-                    accum.put(key, ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound());
+                    accum.put(key, ((AnnotatedWildcardType)lhs).getExtendsBound().deepCopy());
                 } else {
                     accum.put(key, lhs);
                 }
@@ -1156,17 +1155,17 @@ public class AnnotatedTypes {
                 putOnOrig.addAll(typei.getAnnotations());
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType) typei;
                 if (wildcard.getExtendsBound() != null)
-                    types.set(i, wildcard.getEffectiveExtendsBound());
+                    types.set(i, wildcard.getExtendsBound().deepCopy());
                 else if (wildcard.getSuperBound() != null)
-                    types.set(i, wildcard.getEffectiveSuperBound());
+                    types.set(i, wildcard.getSuperBound().deepCopy());
             }
             if (typei.getKind() == TypeKind.TYPEVAR) {
                 putOnOrig.addAll(typei.getAnnotations());
                 AnnotatedTypeVariable typevar = (AnnotatedTypeVariable) types.get(i);
                 if (typevar.getUpperBound() != null)
-                    types.set(i, typevar.getEffectiveUpperBound());
+                    types.set(i, typevar.getUpperBound());
                 else if (typevar.getLowerBound() != null)
-                    types.set(i, typevar.getEffectiveLowerBound());
+                    types.set(i, typevar.getLowerBound());
             }
         }
 

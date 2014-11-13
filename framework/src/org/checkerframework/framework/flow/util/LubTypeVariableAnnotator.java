@@ -118,10 +118,10 @@ public class LubTypeVariableAnnotator {
                     }
                 } else { //incomparable types, find the upper bound annotation of the two and take its lub
                     final AnnotationMirror lubAnno =
-                        (lubPrimary != null) ? lubPrimary : findSourceAnnotation( qualHierarchy, lub, top);
+                        (lubPrimary != null) ? lubPrimary : findSourceAnnotation(qualHierarchy, lub, top);
 
                     final AnnotationMirror subAnno =
-                        (lubPrimary != null) ? subPrimary : findSourceAnnotation( qualHierarchy, subAsLub, top);
+                        (lubPrimary != null) ? subPrimary : findSourceAnnotation(qualHierarchy, subAsLub, top);
 
                     //It is a conservative lub to place a primary annotation rather than choosing a more specific bound
                     //set that would be a supertype of both the ranges of the subtype/supertype
@@ -174,11 +174,11 @@ public class LubTypeVariableAnnotator {
 
             switch(source.getKind()) {
                 case TYPEVAR:
-                    source = ((AnnotatedTypeVariable) source).getEffectiveUpperBound();
+                    source = ((AnnotatedTypeVariable) source).getUpperBound();
                     break;
 
                 case WILDCARD:
-                    source = ((AnnotatedWildcardType) source).getEffectiveExtendsBound();
+                    source = ((AnnotatedWildcardType) source).getExtendsBound();
                     break;
 
                 case INTERSECTION:
