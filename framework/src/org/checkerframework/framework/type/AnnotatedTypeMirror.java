@@ -873,26 +873,6 @@ public abstract class AnnotatedTypeMirror {
         return objectType;
     }
 
-    /**
-     * Return a copy of this, with the given substitutions performed.
-     *
-     * @param mappings
-     */
-    public AnnotatedTypeMirror substitute(
-            Map<? extends AnnotatedTypeMirror,
-                    ? extends AnnotatedTypeMirror> mappings) {
-        return this.substitute(mappings, false);
-    }
-
-    public AnnotatedTypeMirror substitute(
-            Map<? extends AnnotatedTypeMirror,
-                    ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
-        if (mappings.containsKey(this)) {
-            return mappings.get(this).shallowCopy();
-        }
-        return this.shallowCopy();
-    }
-
     public static interface AnnotatedReferenceType {
         // No members.
     }
@@ -1119,27 +1099,6 @@ public abstract class AnnotatedTypeMirror {
                 type.addAnnotations(annotations);
             type.setEnclosingType(getEnclosingType());
             type.setTypeArguments(getTypeArguments());
-            return type;
-        }
-
-        @Override
-        public AnnotatedTypeMirror substitute(
-                Map<? extends AnnotatedTypeMirror,
-                    ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
-            if (mappings.containsKey(this))
-                return mappings.get(this);
-
-            AnnotatedDeclaredType type = shallowCopy();
-
-            Map<AnnotatedTypeMirror, AnnotatedTypeMirror> newMappings =
-                    new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>(mappings);
-            newMappings.put(this, type);
-
-            List<AnnotatedTypeMirror> typeArgs = new ArrayList<AnnotatedTypeMirror>();
-            for (AnnotatedTypeMirror t : getTypeArguments())
-                typeArgs.add(t.substitute(newMappings, forDeepCopy));
-            type.setTypeArguments(typeArgs);
-
             return type;
         }
 
@@ -1489,60 +1448,6 @@ public abstract class AnnotatedTypeMirror {
             return erased;
         }
 
-        @Override
-        public AnnotatedExecutableType substitute(
-                Map<? extends AnnotatedTypeMirror,
-                        ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
-            // Shouldn't substitute for methods!
-            AnnotatedExecutableType type = shallowCopy();
-
-            // Params
-            {
-                List<AnnotatedTypeMirror> params = new ArrayList<AnnotatedTypeMirror>();
-                for (AnnotatedTypeMirror t : getParameterTypes()) {
-                    params.add(t.substitute(mappings, forDeepCopy));
-                }
-                type.setParameterTypes(params);
-            }
-
-            if (getReceiverType() != null)
-                type.setReceiverType((AnnotatedDeclaredType)getReceiverType().substitute(mappings, forDeepCopy));
-
-            type.setReturnType(getReturnType().substitute(mappings, forDeepCopy));
-
-            // Throws
-            {
-                List<AnnotatedTypeMirror> throwns = new ArrayList<AnnotatedTypeMirror>();
-                for (AnnotatedTypeMirror t : getThrownTypes()) {
-                    throwns.add(t.substitute(mappings, forDeepCopy));
-                }
-                type.setThrownTypes(throwns);
-            }
-
-            // Method type variables
-            {
-                List<AnnotatedTypeVariable> mtvs = new ArrayList<AnnotatedTypeVariable>();
-                for (AnnotatedTypeVariable t : getTypeVariables()) {
-                    // Substitute upper and lower bound of the type variable.
-                    AnnotatedTypeVariable newtv = t.deepCopy();
-                    AnnotatedTypeMirror bnd = newtv.getUpperBoundField();
-                    if (bnd != null) {
-                        bnd = bnd.substitute(mappings, forDeepCopy);
-                        newtv.setUpperBound(bnd);
-                    }
-                    bnd = newtv.getLowerBoundField();
-                    if (bnd != null) {
-                        bnd = bnd.substitute(mappings, forDeepCopy);
-                        newtv.setLowerBound(bnd);
-                    }
-                    mtvs.add(newtv);
-                }
-                type.setTypeVariables(mtvs);
-            }
-
-            return type;
-        }
-
         @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
@@ -1668,20 +1573,6 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedArrayType shallowCopy() {
             return shallowCopy(true);
-        }
-
-        @Override
-        public AnnotatedTypeMirror substitute(
-                Map<? extends AnnotatedTypeMirror,
-                        ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
-            if (mappings.containsKey(this))
-                return mappings.get(this);
-
-            AnnotatedArrayType type = shallowCopy();
-            AnnotatedTypeMirror c = getComponentType();
-            AnnotatedTypeMirror cs = c.substitute(mappings, forDeepCopy);
-            type.setComponentType(cs);
-            return type;
         }
 
         @Override
@@ -2020,82 +1911,6 @@ public abstract class AnnotatedTypeMirror {
             return this.getEffectiveUpperBound().getErased();
         }
 
-        /* TODO: If we use the stronger equals method below, we also
-         * need this "canonical" version of the type variable.
-         * This type variable will be used for hashmaps that keep track
-         * of type arguments.
-        private AnnotatedTypeVariable canonical;
-
-        public AnnotatedTypeVariable getCanonical() {
-            if (canonical == null) {
-                canonical = new AnnotatedTypeVariable(this.actualType, env, atypeFactory);
-            }
-            return canonical;
-        }
-         */
-
-        private static <K extends AnnotatedTypeMirror, V extends AnnotatedTypeMirror>
-        V mapGetHelper(Map<K, V> mappings, AnnotatedTypeVariable key, boolean forDeepCopy) {
-            // Search through `mappings` for an ATV which represents the declaration of the type
-            // variable `key`.
-            for (Map.Entry<K, V> entry : mappings.entrySet()) {
-                K possible = entry.getKey();
-                V possValue = entry.getValue();
-                if (possible instanceof AnnotatedTypeVariable) {
-
-                    AnnotatedTypeVariable other = (AnnotatedTypeVariable)possible;
-                    Element oElt = other.getUnderlyingType().asElement();
-
-                    if (key.getUnderlyingType().asElement().equals(oElt)) {
-                        // The underlying `Element` is the same for `key` and `other`, so `other` is
-                        // the declaration of `key`.  Replace type variable `other` with type
-                        // `possValue` at type variable use `key`.
-                        @SuppressWarnings("unchecked")
-                        V found = (V)possValue.shallowCopy(false);
-                        found.addAnnotations(possValue.getAnnotations());
-                        if (!forDeepCopy) {
-                            key.atypeFactory.postTypeVarSubstitution((AnnotatedTypeVariable)possible, key, found);
-                        }
-                        return found;
-                    }
-                }
-            }
-            return null;
-        }
-
-        @Override
-        public AnnotatedTypeMirror substitute(
-                Map<? extends AnnotatedTypeMirror,
-                        ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
-            AnnotatedTypeMirror found = mapGetHelper(mappings, this, forDeepCopy);
-            if (found != null) {
-                return found;
-            }
-
-            AnnotatedTypeVariable type = shallowCopy();
-            /* TODO: the above call of shallowCopy results in calls of
-             * getUpperBound, which lazily initializes the field.
-             * This causes a modification of the data structure, when
-             * all we want to do is copy it.
-             * However, if we only do the first part of shallowCopy,
-             * test cases fail. I spent a huge amount of time debugging
-             * this and added the annotateImplicitHack above.
-            AnnotatedTypeVariable type =
-                    new AnnotatedTypeVariable(actualType, env, atypeFactory);
-            copyFields(type, true);*/
-
-            Map<AnnotatedTypeMirror, AnnotatedTypeMirror> newMappings =
-                new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>(mappings);
-            newMappings.put(this, type);
-            if (lowerBound != null) {
-                type.setLowerBound(lowerBound.substitute(newMappings, forDeepCopy));
-            }
-            if (upperBound != null) {
-                type.setUpperBound(upperBound.substitute(newMappings, forDeepCopy));
-            }
-            return type;
-        }
-
         // Style taken from Type
         boolean isPrintingBound = false;
 
@@ -2143,19 +1958,6 @@ public abstract class AnnotatedTypeMirror {
             res.declaration = true;
             return res;
         }
-
-        /* TODO: provide strict equality comparison.
-        @Override
-        public boolean equals(Object o) {
-            boolean isSame = super.equals(o);
-            if (!isSame || !(o instanceof AnnotatedTypeVariable))
-                return false;
-            AnnotatedTypeVariable other = (AnnotatedTypeVariable) o;
-            isSame = this.getUpperBound().equals(other.getUpperBound()) &&
-                    this.getLowerBound().equals(other.getLowerBound());
-            return isSame;
-        }
-        */
     }
 
     /**
@@ -2211,14 +2013,6 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedNoType shallowCopy() {
             return shallowCopy(true);
         }
-
-        @Override
-        public AnnotatedTypeMirror substitute(
-                Map<? extends AnnotatedTypeMirror,
-                        ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
-            // Cannot substitute
-            return shallowCopy();
-        }
     }
 
     /**
@@ -2262,14 +2056,6 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedNullType shallowCopy() {
             return shallowCopy(true);
-        }
-
-        @Override
-        public AnnotatedTypeMirror substitute(
-                Map<? extends AnnotatedTypeMirror,
-                        ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
-            // cannot substitute
-            return shallowCopy();
         }
 
         @SideEffectFree
@@ -2328,15 +2114,6 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedPrimitiveType shallowCopy() {
             return shallowCopy(true);
-        }
-
-        @Override
-        public AnnotatedTypeMirror substitute(
-                Map<? extends AnnotatedTypeMirror,
-                        ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
-            if (mappings.containsKey(this))
-                return mappings.get(this);
-            return shallowCopy();
         }
     }
 
@@ -2487,36 +2264,6 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedTypeMirror substitute(
-                Map<? extends AnnotatedTypeMirror,
-                        ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
-
-            if (mappings.containsKey(this))
-                return mappings.get(this);
-
-            AnnotatedWildcardType type = shallowCopy();
-            // Prevent looping
-            Map<AnnotatedTypeMirror, AnnotatedTypeMirror> newMapping =
-                new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>(mappings);
-            newMapping.put(this, type);
-
-            // The extends and super bounds can be null because the underlying
-            // type's extends and super bounds can be null.
-            if (extendsBound != null)
-                type.setExtendsBound(extendsBound.substitute(newMapping, forDeepCopy));
-            if (superBound != null)
-                type.setSuperBound(superBound.substitute(newMapping, forDeepCopy));
-
-            if (type.getExtendsBound() != null &&
-                    type.getSuperBound() != null &&
-                    AnnotatedTypes.areSame(type.getExtendsBound(), type.getSuperBound())) {
-                return type.getExtendsBound();
-            } else {
-                return type;
-            }
-        }
-
-        @Override
         public AnnotatedTypeMirror getErased() {
             // |? extends A&B| = |A|
             return getEffectiveExtendsBound().getErased();
@@ -2639,29 +2386,6 @@ public abstract class AnnotatedTypeMirror {
         void setDirectSuperTypes(List<AnnotatedDeclaredType> supertypes) {
             this.supertypes = new ArrayList<AnnotatedDeclaredType>(supertypes);
         }
-
-        @Override
-        public AnnotatedTypeMirror substitute(
-                Map<? extends AnnotatedTypeMirror,
-                    ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
-            if (mappings.containsKey(this))
-                return mappings.get(this);
-
-            AnnotatedIntersectionType type = shallowCopy();
-
-            Map<AnnotatedTypeMirror, AnnotatedTypeMirror> newMappings =
-                    new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>(mappings);
-            newMappings.put(this, type);
-
-            if (this.supertypes != null) {
-                // watch need to copy upper bound as well
-                List<AnnotatedDeclaredType> supertypes = new ArrayList<AnnotatedDeclaredType>();
-                for (AnnotatedDeclaredType t : directSuperTypes())
-                    supertypes.add((AnnotatedDeclaredType)t.substitute(newMappings, forDeepCopy));
-                type.supertypes = supertypes;
-            }
-            return type;
-        }
     }
 
 
@@ -2736,29 +2460,6 @@ public abstract class AnnotatedTypeMirror {
                 alternatives = Collections.unmodifiableList(res);
             }
             return alternatives;
-        }
-
-        @Override
-        public AnnotatedTypeMirror substitute(
-                Map<? extends AnnotatedTypeMirror,
-                    ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
-            if (mappings.containsKey(this))
-                return mappings.get(this);
-
-            AnnotatedUnionType type = shallowCopy();
-
-            Map<AnnotatedTypeMirror, AnnotatedTypeMirror> newMappings =
-                    new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>(mappings);
-            newMappings.put(this, type);
-
-            if (this.alternatives != null) {
-                // watch need to copy alternatives as well
-                List<AnnotatedDeclaredType> alternatives = new ArrayList<AnnotatedDeclaredType>();
-                for (AnnotatedDeclaredType t : getAlternatives())
-                    alternatives.add((AnnotatedDeclaredType)t.substitute(newMappings, forDeepCopy));
-                type.alternatives = alternatives;
-            }
-            return type;
         }
     }
 

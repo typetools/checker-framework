@@ -112,7 +112,7 @@ public class KeyForAnnotatedTypeFactory extends
     ExecutableElement methElem = method.getElement();
     AnnotatedExecutableType declMethod = this.getAnnotatedType(methElem);
 
-    Map<AnnotatedTypeMirror, AnnotatedTypeMirror> mappings = new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>();
+    Map<AnnotatedTypeMirror, AnnotatedTypeMirror> mappings = new HashMap<>();
 
     // Modify parameters
     List<AnnotatedTypeMirror> params = method.getParameterTypes();
@@ -132,125 +132,123 @@ public class KeyForAnnotatedTypeFactory extends
       mappings.put(returnType, subst);
     }
 
-    // TODO: upper bounds, throws?
-    method = (AnnotatedExecutableType) method.substitute(mappings);
+    method = (AnnotatedExecutableType) AnnotatedTypeReplacer.replace(method, mappings);
 
     // System.out.println("adapted method: " + method);
 
     return Pair.of(method, mfuPair.second);
   }
 
+ /* TODO: doc
+  * This pattern and the logic how to use it is copied from NullnessFlow.
+  * NullnessFlow already contains four exact copies of the logic for handling this
+  * pattern and should really be refactored.
+  */
+ private static final Pattern parameterPtn = Pattern.compile("#(\\d+)");
 
-  /* TODO: doc
-   * This pattern and the logic how to use it is copied from NullnessFlow.
-   * NullnessFlow already contains four exact copies of the logic for handling this
-   * pattern and should really be refactored.
-   */
-  private static final Pattern parameterPtn = Pattern.compile("#(\\d+)");
+ // TODO: copied from NullnessFlow, but without the "." at the end.
+ private String receiver(MethodInvocationTree node) {
+     ExpressionTree sel = node.getMethodSelect();
+     if (sel.getKind() == Tree.Kind.IDENTIFIER)
+         return "";
+     else if (sel.getKind() == Tree.Kind.MEMBER_SELECT)
+         return ((MemberSelectTree)sel).getExpression().toString();
+     ErrorReporter.errorAbort("KeyForAnnotatedTypeFactory.receiver: cannot be here");
+     return null; // dead code
+ }
 
-  // TODO: copied from NullnessFlow, but without the "." at the end.
-  private String receiver(MethodInvocationTree node) {
-    ExpressionTree sel = node.getMethodSelect();
-    if (sel.getKind() == Tree.Kind.IDENTIFIER)
-      return "";
-    else if (sel.getKind() == Tree.Kind.MEMBER_SELECT)
-      return ((MemberSelectTree)sel).getExpression().toString();
-    ErrorReporter.errorAbort("KeyForAnnotatedTypeFactory.receiver: cannot be here");
-    return null; // dead code
-  }
+ // TODO: doc
+ // TODO: "this" should be implicitly prepended
+ // TODO: substitutions also need to be applied to argument types
+ private AnnotatedTypeMirror substituteCall(MethodInvocationTree call, AnnotatedTypeMirror declInType, AnnotatedTypeMirror inType) {
 
-  // TODO: doc
-  // TODO: "this" should be implicitly prepended
-  // TODO: substitutions also need to be applied to argument types
-  private AnnotatedTypeMirror substituteCall(MethodInvocationTree call, AnnotatedTypeMirror declInType, AnnotatedTypeMirror inType) {
+     // System.out.println("input type: " + inType);
+     AnnotatedTypeMirror outType = inType.shallowCopy();
 
-    // System.out.println("input type: " + inType);
-    AnnotatedTypeMirror outType = inType.shallowCopy();
+     AnnotationMirror anno = declInType.getAnnotation(KeyFor.class);
+     if (anno != null) {
 
-    AnnotationMirror anno = declInType.getAnnotation(KeyFor.class);
-    if (anno != null) {
+         List<String> inMaps = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+         List<String> outMaps = new ArrayList<String>();
 
-      List<String> inMaps = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
-      List<String> outMaps = new ArrayList<String>();
+         String receiver = receiver(call);
 
-      String receiver = receiver(call);
+         for (String inMapName : inMaps) {
+             if (parameterPtn.matcher(inMapName).matches()) {
+                 int param = Integer.valueOf(inMapName.substring(1));
+                 if (param <= 0 || param > call.getArguments().size()) {
+                     // The failure should already have been reported, when the
+                     // method declaration was processed.
+                     // checker.report(Result.failure("param.index.nullness.parse.error", inMapName), call);
+                 } else {
+                     String res = call.getArguments().get(param-1).toString();
+                     outMaps.add(res);
+                 }
+             } else if (inMapName.equals("this")) {
+                 outMaps.add(receiver);
+             } else {
+                 // TODO: look at the code below, copied from NullnessFlow
+                 // System.out.println("KeyFor argument unhandled: " + inMapName + " using " + receiver + "." + inMapName);
+                 // do not always add the receiver, e.g. for local variables this creates a mess
+                 // outMaps.add(receiver + "." + inMapName);
+                 // just copy name for now, better than doing nothing
+                 outMaps.add(inMapName);
+             }
+             // TODO: look at code in NullnessFlow and decide whether there
+             // are more cases to copy.
+         }
 
-      for (String inMapName : inMaps) {
-        if (parameterPtn.matcher(inMapName).matches()) {
-          int param = Integer.valueOf(inMapName.substring(1));
-          if (param <= 0 || param > call.getArguments().size()) {
-            // The failure should already have been reported, when the
-            // method declaration was processed.
-            // checker.report(Result.failure("param.index.nullness.parse.error", inMapName), call);
-          } else {
-            String res = call.getArguments().get(param-1).toString();
-            outMaps.add(res);
-          }
-        } else if (inMapName.equals("this")) {
-          outMaps.add(receiver);
-        } else {
-          // TODO: look at the code below, copied from NullnessFlow
-          // System.out.println("KeyFor argument unhandled: " + inMapName + " using " + receiver + "." + inMapName);
-          // do not always add the receiver, e.g. for local variables this creates a mess
-          // outMaps.add(receiver + "." + inMapName);
-          // just copy name for now, better than doing nothing
-          outMaps.add(inMapName);
-        }
-        // TODO: look at code in NullnessFlow and decide whether there
-        // are more cases to copy.
-      }
+         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, KeyFor.class);
+         builder.setValue("value", outMaps);
+         AnnotationMirror newAnno =  builder.build();
 
-      AnnotationBuilder builder = new AnnotationBuilder(processingEnv, KeyFor.class);
-      builder.setValue("value", outMaps);
-      AnnotationMirror newAnno =  builder.build();
+         outType.removeAnnotation(KeyFor.class);
+         outType.addAnnotation(newAnno);
+     }
 
-      outType.removeAnnotation(KeyFor.class);
-      outType.addAnnotation(newAnno);
-    }
+     if (declInType.getKind() == TypeKind.DECLARED &&
+             outType.getKind() == TypeKind.DECLARED) {
+         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) outType;
+         AnnotatedDeclaredType declDeclaredType = (AnnotatedDeclaredType) declInType;
+         Map<AnnotatedTypeMirror, AnnotatedTypeMirror> mapping = new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>();
 
-    if (declInType.getKind() == TypeKind.DECLARED &&
-      outType.getKind() == TypeKind.DECLARED) {
-      AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) outType;
-      AnnotatedDeclaredType declDeclaredType = (AnnotatedDeclaredType) declInType;
-      Map<AnnotatedTypeMirror, AnnotatedTypeMirror> mapping = new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>();
+         List<AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
+         List<AnnotatedTypeMirror> declTypeArgs = declDeclaredType.getTypeArguments();
 
-      List<AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
-      List<AnnotatedTypeMirror> declTypeArgs = declDeclaredType.getTypeArguments();
+         assert typeArgs.size() == declTypeArgs.size();
 
-      assert typeArgs.size() == declTypeArgs.size();
+         // Get the substituted type arguments
+         for (int i = 0; i < typeArgs.size(); ++i) {
+             AnnotatedTypeMirror typeArgument = typeArgs.get(i);
+             AnnotatedTypeMirror substTypeArgument = substituteCall(call, declTypeArgs.get(i), typeArgument);
+             mapping.put(typeArgument, substTypeArgument);
+         }
 
-      // Get the substituted type arguments
-      for (int i = 0; i < typeArgs.size(); ++i) {
-        AnnotatedTypeMirror typeArgument = typeArgs.get(i);
-        AnnotatedTypeMirror substTypeArgument = substituteCall(call, declTypeArgs.get(i), typeArgument);
-        mapping.put(typeArgument, substTypeArgument);
-      }
+         outType = AnnotatedTypeReplacer.replace(declaredType, mapping);
+     } else if (declInType.getKind() == TypeKind.ARRAY &
+             outType.getKind() == TypeKind.ARRAY) {
+         AnnotatedArrayType arrayType = (AnnotatedArrayType) outType;
+         AnnotatedArrayType declArrayType = (AnnotatedArrayType) declInType;
 
-      outType = declaredType.substitute(mapping);
-    } else if (declInType.getKind() == TypeKind.ARRAY &
-            outType.getKind() == TypeKind.ARRAY) {
-      AnnotatedArrayType arrayType = (AnnotatedArrayType) outType;
-      AnnotatedArrayType declArrayType = (AnnotatedArrayType) declInType;
+         // Get the substituted component type
+         AnnotatedTypeMirror elemType = arrayType.getComponentType();
+         AnnotatedTypeMirror substElemType = substituteCall(call, declArrayType.getComponentType(), elemType);
 
-      // Get the substituted component type
-      AnnotatedTypeMirror elemType = arrayType.getComponentType();
-      AnnotatedTypeMirror substElemType = substituteCall(call, declArrayType.getComponentType(), elemType);
+         arrayType.setComponentType(substElemType);
+         // outType aliases arrayType
+     } else if(outType.getKind().isPrimitive() ||
+             outType.getKind() == TypeKind.WILDCARD ||
+             outType.getKind() == TypeKind.TYPEVAR) {
+         // TODO: for which of these should we also recursively substitute?
+         // System.out.println("KeyForATF: Intentionally unhandled Kind: " + outType.getKind());
+     } else {
+         // System.err.println("KeyForATF: Unknown getKind(): " + outType.getKind());
+         // assert false;
+     }
 
-      arrayType.setComponentType(substElemType);
-      // outType aliases arrayType
-    } else if(outType.getKind().isPrimitive() ||
-              outType.getKind() == TypeKind.WILDCARD ||
-              outType.getKind() == TypeKind.TYPEVAR) {
-      // TODO: for which of these should we also recursively substitute?
-      // System.out.println("KeyForATF: Intentionally unhandled Kind: " + outType.getKind());
-    } else {
-      // System.err.println("KeyForATF: Unknown getKind(): " + outType.getKind());
-      // assert false;
-    }
-
-    // System.out.println("result type: " + outType);
-    return outType;
-  }
+     // System.out.println("result type: " + outType);
+     return outType;
+ }
 
   @Override
   protected TypeHierarchy createTypeHierarchy() {
