@@ -383,11 +383,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
 
             switch(source.getKind()) {
                 case TYPEVAR:
-                    source = ((AnnotatedTypeVariable) source).getEffectiveUpperBound();
+                    source = ((AnnotatedTypeVariable) source).getUpperBound();
                     break;
 
                 case WILDCARD:
-                    source = ((AnnotatedWildcardType) source).getEffectiveExtendsBound();
+                    source = ((AnnotatedWildcardType) source).getExtendsBound();
                     break;
 
                 case INTERSECTION:
