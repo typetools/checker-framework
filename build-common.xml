@@ -25,6 +25,11 @@
     <scriptdef name="generateguid" language="javascript">
         <attribute name="property" />
         <![CDATA[
+        var version = java.lang.System.getProperty("java.version");
+        if (version.startsWith("1.8.0")) {
+            load("nashorn:mozilla_compat.js");
+        }
+
         importClass( java.util.UUID );
 
         project.setProperty( attributes.get( "property" ), UUID.randomUUID() );
