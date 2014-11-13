@@ -1720,7 +1720,6 @@ public abstract class AnnotatedTypeMirror {
 
         /**
          * @return the lower bound type of this type variable
-         * @see #getEffectiveLowerBound
          */
         public AnnotatedTypeMirror getLowerBound() {
             if (lowerBound == null) { // lazy init
@@ -1729,15 +1728,6 @@ public abstract class AnnotatedTypeMirror {
             fixupBoundAnnotations();
             return lowerBound;
         }
-
-        /**
-         * @return the effective lower bound:  the lower bound,
-         * with annotations on the type variable considered.
-        */
-        public AnnotatedTypeMirror getEffectiveLowerBound() {
-            return getLowerBound();
-        }
-
 
         // If the lower bound was not present in actualType, then its
         // annotation was defaulted from the AnnotatedTypeFactory.  If the
@@ -1833,7 +1823,6 @@ public abstract class AnnotatedTypeMirror {
          * AnnotatedTypeFactory first processed the bound.
          *
          * @return the upper bound type of this type variable
-         * @see #getEffectiveUpperBound
          */
         public AnnotatedTypeMirror getUpperBound() {
             if (upperBound == null) { // lazy init
@@ -1843,24 +1832,12 @@ public abstract class AnnotatedTypeMirror {
             return upperBound;
         }
 
-        /**
-         * @return the effective upper bound:  the upper bound,
-         * with annotations on the type variable considered.
-        */
-        public AnnotatedTypeMirror getEffectiveUpperBound() {
-            return getUpperBound(); //TODO: REMOVE getEffectiveUpperBound
-        }
-
         public AnnotatedTypeParameterBounds getBounds() {
             return new AnnotatedTypeParameterBounds(getUpperBound(), getLowerBound());
         }
 
         public AnnotatedTypeParameterBounds getBoundFields() {
             return new AnnotatedTypeParameterBounds(getUpperBoundField(), getLowerBoundField());
-        }
-
-        public AnnotatedTypeParameterBounds getEffectiveBounds() {
-            return new AnnotatedTypeParameterBounds(getEffectiveUpperBound(), getEffectiveLowerBound());
         }
 
         /**
@@ -1908,7 +1885,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeMirror getErased() {
             // |T extends A&B| = |A|
-            return this.getEffectiveUpperBound().getErased();
+            return this.getUpperBound().getErased();
         }
 
         // Style taken from Type
@@ -2173,14 +2150,6 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * @return the lower bound of this wildcard. If no lower bound is
-         * explicitly declared, {@code null} is returned.
-         */
-        public AnnotatedTypeMirror getEffectiveSuperBound() {
-            return getSuperBound().deepCopy();
-        }
-
-        /**
          * Sets the upper bound of this wild card
          *
          * @param type  the type of the upper bound
@@ -2208,10 +2177,6 @@ public abstract class AnnotatedTypeMirror {
 
             fixupBoundAnnotations();
             return this.extendsBound;
-        }
-
-        public AnnotatedTypeMirror getEffectiveExtendsBound() {
-            return getExtendsBound().deepCopy();
         }
 
         private void fixupBoundAnnotations() {
@@ -2266,7 +2231,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeMirror getErased() {
             // |? extends A&B| = |A|
-            return getEffectiveExtendsBound().getErased();
+            return getExtendsBound().deepCopy().getErased();
         }
 
         boolean isPrintingBound = false;

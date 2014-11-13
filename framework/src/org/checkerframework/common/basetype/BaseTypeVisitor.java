@@ -1450,13 +1450,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (checker.hasOption("checkCastElementType")) {
                 AnnotatedTypeMirror newCastType;
                 if (castType.getKind() == TypeKind.TYPEVAR) {
-                    newCastType = ((AnnotatedTypeVariable)castType).getEffectiveUpperBound();
+                    newCastType = ((AnnotatedTypeVariable)castType).getUpperBound();
                 } else {
                     newCastType = castType;
                 }
                 AnnotatedTypeMirror newExprType;
                 if (exprType.getKind() == TypeKind.TYPEVAR) {
-                    newExprType = ((AnnotatedTypeVariable)exprType).getEffectiveUpperBound();
+                    newExprType = ((AnnotatedTypeVariable)exprType).getUpperBound();
                 } else {
                     newExprType = exprType;
                 }
@@ -1843,12 +1843,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 typeArgTree = toptree;
             }
 
-            if (typeVar.getEffectiveUpperBound() != null) {
-                if (!AnnotatedTypes.isValidType(atypeFactory.getQualifierHierarchy(), typeVar.getEffectiveUpperBound())) {
+            if (typeVar.getUpperBound() != null) {
+                if (!AnnotatedTypes.isValidType(atypeFactory.getQualifierHierarchy(), typeVar.getUpperBound())) {
                     continue;
                 }
 
-                commonAssignmentCheck(typeVar.getEffectiveUpperBound(),
+                commonAssignmentCheck(typeVar.getUpperBound(),
                         typearg, typeArgTree,
                         "type.argument.type.incompatible", false);
             }
@@ -1980,8 +1980,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             if (AnnotatedTypes.areCorrespondingTypeVariables(elements, innerAtv, outerAtv)) {
                 final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
-                return typeHierarchy.isSubtype(innerAtv.getEffectiveUpperBound(), outerAtv.getEffectiveUpperBound())
-                        && typeHierarchy.isSubtype(outerAtv.getEffectiveLowerBound(), innerAtv.getEffectiveLowerBound());
+                return typeHierarchy.isSubtype(innerAtv.getUpperBound(), outerAtv.getUpperBound())
+                        && typeHierarchy.isSubtype(outerAtv.getLowerBound(), innerAtv.getLowerBound());
             }
         }
 

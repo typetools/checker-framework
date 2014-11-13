@@ -258,7 +258,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
         switch(subtype.getKind()) {
             case TYPEVAR:
-                return isBottom(((AnnotatedTypeVariable) subtype).getEffectiveUpperBound());
+                return isBottom(((AnnotatedTypeVariable) subtype).getUpperBound());
 
             case WILDCARD:
                 final AnnotatedWildcardType subtypeWc = (AnnotatedWildcardType) subtype;
@@ -725,7 +725,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * A type variable is a supertype if its lower bound is above subtype.
      */
     protected boolean visitTypevarSupertype( AnnotatedTypeMirror subtype, AnnotatedTypeVariable supertype, VisitHistory visited ) {
-        return checkAndSubtype(subtype, supertype.getEffectiveLowerBound(), visited);
+        return checkAndSubtype(subtype, supertype.getLowerBound(), visited);
     }
 
     /**
@@ -734,7 +734,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * lower bound.
      */
     protected boolean visitTypevarSubtype( AnnotatedTypeVariable subtype, AnnotatedTypeMirror supertype, VisitHistory visited ) {
-        return checkAndSubtype(subtype.getEffectiveUpperBound(), supertype, visited);
+        return checkAndSubtype(subtype.getUpperBound(), supertype, visited);
     }
 
     /**
