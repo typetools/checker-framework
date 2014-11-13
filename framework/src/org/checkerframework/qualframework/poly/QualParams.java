@@ -86,7 +86,16 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
 //        return this.substituteAll(subst);
 //    }
 
-    /** Apply a set of substitutions to each value in this map.
+    /**
+     * Apply a set of substitutions to each value in this map.
+     *
+     * Substitutions are ran on the underlying wildcards. for each key/value
+     * in substs, if the target wildcard has a QualVar with a name that matches "key",
+     * the value of the bounds of the QualVar are replaced by the bounds of the value wildcard.
+     *
+     * This substitution must also be performed on the primary qualifier, as the primary
+     * might be a QualVar.
+     *
      */
     public QualParams<Q> substituteAll(Map<String, Wildcard<Q>> substs) {
         if (this == QualParams.<Q>getTop() || this == QualParams.<Q>getBottom()) {
@@ -101,7 +110,7 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
             newMap.put(k, newValue);
         }
 
-        // Apply any substitutes for primary annotation @Vars
+        // Apply any substitutions on primary qualifier, to support @Vars
         Map<String, PolyQual<Q>> qualSubst = new HashMap<>();
         for (String k : substs.keySet()) {
             qualSubst.put(k, substs.get(k).getUpperBound());

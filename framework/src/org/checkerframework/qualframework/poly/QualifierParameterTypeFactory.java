@@ -2,18 +2,13 @@ package org.checkerframework.qualframework.poly;
 
 import java.util.*;
 
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Symbol;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 
@@ -27,7 +22,6 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExec
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
-import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 import org.checkerframework.qualframework.util.QualifierContext;
 
 /** Type factory with qualifier polymorphism support.  This type factory
@@ -296,9 +290,9 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
                     wild.getUnderlyingType(), extendsBound, superBound);
         }
 
-        // If the underlying type is not primary qualified we don't
+        // If the underlying type is not primary qualified
         // then we should not use the type variables primary qualifier.
-        if (!varUse.isPrimaryQualified()) {
+        if (!varUse.isPrimaryQualifierValid()) {
             return value;
         }
 
@@ -338,14 +332,12 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
 
         List<QualifiedTypeMirror<QualParams<Q>>> result = new ArrayList<>();
         for (QualifiedTypeMirror<QualParams<Q>> supertype : supertypes) {
+
             QualParams<Q> superQuals = supertype.getQualifier().substituteAll(subQuals);
+            // substituteAll performs substitutions on the primary, but when viewing the superclass we want to
+            // use the exact primary qualifier of the subclass.
+            // This was needed to get the Ternary.java test to work.
             superQuals.setPrimary(subQuals.getPrimary());
-            // TODO: This comment is not yet done.
-            // Doc why we need this. We need this because substitute doesnt replace primary annotations,
-            // it only substitutes Polyqual variables that might be in the primary annotaiton.
-            // However, the behavior of directSupertypes should be to replace the primary annotation
-            // This was needed to get the Ternary test to work.
-            // This does make it impossible to a qual param on the subclass used as a primary qualifier on the super class.
             result.add(SetQualifierVisitor.apply(supertype, superQuals));
 
         }
