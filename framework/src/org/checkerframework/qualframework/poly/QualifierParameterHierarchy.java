@@ -12,6 +12,7 @@ import org.checkerframework.qualframework.base.QualifierHierarchy;
  * the corresponding parameter in B.
  */
 public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualParams<Q>> {
+    private QualifierHierarchy<PolyQual<Q>> polyQualHierarchy;
     private QualifierHierarchy<Wildcard<Q>> containmentHierarchy;
     private List<Pair<Wildcard<Q>, Wildcard<Q>>> constraintTarget = null;
 
@@ -19,8 +20,12 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
     public final QualParams<Q> PARAMS_TOP = QualParams.<Q>getTop();
 
 
-    public QualifierParameterHierarchy(QualifierHierarchy<Wildcard<Q>> containmentHierarchy) {
+    public QualifierParameterHierarchy(QualifierHierarchy<Wildcard<Q>> containmentHierarchy,
+            QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
         this.containmentHierarchy = containmentHierarchy;
+        this.polyQualHierarchy = polyQualHierarchy;
+//        PARAMS_TOP.setPrimary(polyQualHierarchy.getTop());
+//        PARAMS_BOTTOM.setPrimary(polyQualHierarchy.getBottom());
     }
 
     // We can't use constructor overloads for the following variants because
@@ -29,15 +34,16 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
     /** Construct an instance from a {@link ContainmentHierarchy} or
      * equivalent.
      */
-    public static <Q> QualifierParameterHierarchy<Q> fromContainment(QualifierHierarchy<Wildcard<Q>> containmentHierarchy) {
-        return new QualifierParameterHierarchy<>(containmentHierarchy);
+    public static <Q> QualifierParameterHierarchy<Q> fromContainment(QualifierHierarchy<Wildcard<Q>> containmentHierarchy,
+            QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
+        return new QualifierParameterHierarchy<>(containmentHierarchy, polyQualHierarchy);
     }
 
     /** Construct an instance from a {@link PolyQualHierarchy} or equivalent,
      * using the default {@link ContainmentHierarchy} implementation.
      */
     public static <Q> QualifierParameterHierarchy<Q> fromPolyQual(QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
-        return fromContainment(new ContainmentHierarchy<Q>(polyQualHierarchy));
+        return fromContainment(new ContainmentHierarchy<Q>(polyQualHierarchy), polyQualHierarchy);
     }
 
     /** Construct an instance from a {@code QualifierHierarchy<Q>}, using the
@@ -79,6 +85,16 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
             } else {
                 constraintTarget.add(null);
                 return true;
+            }
+        }
+
+        if (subtype.getPrimary() != null && supertype.getPrimary() != null) {
+            if (constraintTarget == null) {
+                if (!polyQualHierarchy.isSubtype(subtype.getPrimary(), supertype.getPrimary())) {
+                    return false;
+                }
+            } else {
+                constraintTarget.add(Pair.of(new Wildcard<>(subtype.getPrimary()), new Wildcard<>(supertype.getPrimary())));
             }
         }
 
@@ -125,7 +141,11 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
             }
         }
 
-        return new QualParams<Q>(result);
+        PolyQual<Q> newPrimary = null;
+        if (a.getPrimary() != null && b.getPrimary() != null) {
+            newPrimary = polyQualHierarchy.leastUpperBound(a.getPrimary(), b.getPrimary());
+        }
+        return new QualParams<Q>(result, newPrimary);
     }
 
     @Override
@@ -159,7 +179,11 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
             }
         }
 
-        return new QualParams<Q>(result);
+        PolyQual<Q> newPrimary = null;
+        if (a.getPrimary() != null && b.getPrimary() != null) {
+            newPrimary = polyQualHierarchy.greatestLowerBound(a.getPrimary(), b.getPrimary());
+        }
+        return new QualParams<Q>(result, newPrimary);
     }
 
     @Override

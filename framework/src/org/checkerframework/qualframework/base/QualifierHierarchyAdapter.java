@@ -1,5 +1,6 @@
 package org.checkerframework.qualframework.base;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -33,9 +34,12 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 class QualifierHierarchyAdapter<Q> {
     private QualifierHierarchy<Q> underlying;
     private TypeMirrorConverter<Q> converter;
+    private AnnotationConverter<Q> annotationConverter;
 
-    public QualifierHierarchyAdapter(QualifierHierarchy<Q> underlying,
+    public QualifierHierarchyAdapter(AnnotationConverter<Q> annotationConverter,
+            QualifierHierarchy<Q> underlying,
             TypeMirrorConverter<Q> converter) {
+        this.annotationConverter = annotationConverter;
         this.underlying = underlying;
         this.converter = converter;
     }
@@ -97,62 +101,46 @@ class QualifierHierarchyAdapter<Q> {
 
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            // TODO: Clean up this nonsense.
-            //
-            // 2014-03-21: Commenting out this check currently causes only one
-            // test failure (tests/tainting/ExtendsAndAnnotation.java) with the
-            // expected "@Key annotations contains no index()" error.  I'm not
-            // sure if the explanation given below is still accurate.
-            //
-            // ---
-            //
-            // This check is a hack to work around a particular case that shows
-            // up when annotations are applied to type variables.  Here is an
-            // example:
-            //  - The checker framework goes to annotated a member variable
-            //    whose type is an annotated type variable, such as
-            //    '@MyQual T x;'
-            //  - The checker framework calls the UserQualAnnotatedTypeFactory.
-            //    fromMember method.
-            //  - UQATF.fromMember calls super.fromMethod (which is
-            //    BasicAnnotatedTypeFactory.fromMember)
-            //  - BATF.fromMember (through many nested calls) builds the
-            //    original AnnotatedTypeMirror (which is '@MyQual T'), and
-            //    checks it against the upper and lower bounds for 'T' to
-            //    ensure that it's valid.
-            //  - The check involves a call to this isSubtype method, with one
-            //    argument being the original @MyQual AnnotationMirror that the
-            //    programmer wrote.
-            //  - Without this check, LookupTable.get would throw an exception
-            //    (due to receiving a non-Key argument).  With this check in
-            //    place, checking continues, and eventually the @MyQual ATM is
-            //    returned to the UQATF's fromMember method, where it is
-            //    rewritten to have an appropriate @Key annotation instead.
-            //
-            // Having this check might cause us to skip some important checks
-            // in the case where the type variable has annotations on its
-            // upper/lower bounds.
-            if (!converter.isKey(rhs) || !converter.isKey(lhs))
+
+            Q rhsQual = getOrCreateQualifier(rhs);
+            Q lhsQual = getOrCreateQualifier(lhs);
+
+            if (rhs == null || lhs == null) {
                 return false;
-
-            Q rhsQual = converter.getQualifier(rhs);
-            Q lhsQual = converter.getQualifier(lhs);
-
+            }
 
             return underlying.isSubtype(rhsQual, lhsQual);
         }
 
+        /**
+         * This method looks up a qualifier on an AnnotatedTypeMirror by using @Key
+         * annotations. If no @Key annotations are present, converter is used to
+         * create a qualifier based on the annotations on rhs.
+         *
+         * @param rhs the AnnotationMirror to create a qualifier from
+         * @return
+         */
+        private Q getOrCreateQualifier(AnnotationMirror rhs) {
+            Q rhsQual;
+            if (!converter.isKey(rhs)) {
+                rhsQual = annotationConverter.fromAnnotations(Arrays.asList(rhs));
+            } else {
+                rhsQual = converter.getQualifier(rhs);
+            }
+            return rhsQual;
+        }
+
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            Q q1 = converter.getQualifier(a1);
-            Q q2 = converter.getQualifier(a2);
+            Q q1 = getOrCreateQualifier(a1);
+            Q q2 = getOrCreateQualifier(a2);
             return converter.getAnnotation(underlying.leastUpperBound(q1, q2));
         }
 
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-            Q q1 = converter.getQualifier(a1);
-            Q q2 = converter.getQualifier(a2);
+            Q q1 = getOrCreateQualifier(a1);
+            Q q2 = getOrCreateQualifier(a2);
             return converter.getAnnotation(underlying.greatestLowerBound(q1, q2));
         }
 

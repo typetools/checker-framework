@@ -22,6 +22,7 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
+import org.checkerframework.javacutil.AnnotationProvider;
 
 /**
  * An annotation processor for listing the potential locations of annotations.
@@ -219,5 +220,10 @@ public class Locations extends SourceChecker {
                 System.out.println("wildcard");
             return super.visitWildcard(tree, p);
         }
+    }
+
+    @Override
+    public AnnotationProvider getAnnotationProvider() {
+        return null;
     }
 }

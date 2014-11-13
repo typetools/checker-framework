@@ -2,9 +2,15 @@
 
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
-class ExtendsAndAnnotation extends @Wild Object {
-    void test(@Untainted ExtendsAndAnnotation c) {
-        Object o = new @Untainted ExtendsAndAnnotation();
-        o = new @Tainted ExtendsAndAnnotation();
+@ClassTaintingParam("Main")
+class A {
+
+}
+
+@ClassTaintingParam("Main")
+class ExtendsAndAnnotation extends @Wild(param="Main") A {
+    void test(@Untainted(param="Main") ExtendsAndAnnotation c) {
+        Object o = new @Untainted(param="Main") ExtendsAndAnnotation();
+        o = new @Tainted(param="Main") ExtendsAndAnnotation();
     }
 }
