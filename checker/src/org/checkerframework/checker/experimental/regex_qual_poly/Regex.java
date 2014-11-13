@@ -2,9 +2,15 @@ package org.checkerframework.checker.experimental.regex_qual_poly;
 
 /**
  *
- * Qualifier for the Regex type system.
+ * Qualifier for the Regex-Qual-Param type system.
  *
- * @author McArthur
+ * The static instances TOP and BOTTOM are used as the top and bottom of the hierarchy.
+ * Comparisons using TOP or BOTTOM must use reference equality.
+ *
+ * {@link Regex.PartialRegex} is used to track string values that are not value regex.
+ *
+ * {@link Regex.RegexVal} is used to track valid regex, with a count of the number of groups.
+ *
  */
 public class Regex {
 

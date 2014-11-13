@@ -7,16 +7,16 @@ import static org.checkerframework.checker.experimental.regex_qual_poly.Regex.Pa
 import static org.checkerframework.checker.experimental.regex_qual_poly.Regex.RegexVal;
 import static org.checkerframework.checker.experimental.regex_qual_poly.Regex.TOP;
 
+
 /**
- * QualifierHierarchy for the Regex type system.
+ * QualifierHierarchy for the Regex-Qual-Param type system. The Hierarchy consists of
+ * RegexTop, RegexBottom, RegexVal and PartialRegex.
  *
- * The Hierarchy consists of RegexTop, RegexBottom, RegexVal and PartialRegex.
- *
- * RegexVal and PartialRegex are incomparable.
- * Partial Regexs are subtypes of each other if they have the same partial regex.
- *
- * A RegexVal is a subtype of another RegexVal with a smaller count.
- *
+ * <ul>
+ *   <li>RegexVal and PartialRegex are incomparable.</li>
+ *   <li>A PartialRegex is a subtype of another PartialRegex if they have the same partial regex.</li>
+ *   <li>A RegexVal is a subtype of another RegexVal with a smaller count.</li>
+ * </ul>
  */
 public class RegexQualifierHierarchy implements QualifierHierarchy<Regex> {
 
@@ -38,6 +38,7 @@ public class RegexQualifierHierarchy implements QualifierHierarchy<Regex> {
 
         } else if (subtype instanceof PartialRegex && supertype instanceof PartialRegex) {
             return ((PartialRegex) subtype).getPartialValue().equals(((PartialRegex) supertype).getPartialValue());
+
         } else {
             return false;
         }
@@ -47,8 +48,6 @@ public class RegexQualifierHierarchy implements QualifierHierarchy<Regex> {
     public Regex leastUpperBound(Regex a, Regex b) {
         if (a == TOP || b == TOP) {
             return TOP;
-        } else if (a == BOTTOM && b == BOTTOM) {
-            return BOTTOM;
         } else if (a == BOTTOM) {
             return b;
         } else if (b == BOTTOM) {
@@ -72,8 +71,6 @@ public class RegexQualifierHierarchy implements QualifierHierarchy<Regex> {
     public Regex greatestLowerBound(Regex a, Regex b) {
         if (a == BOTTOM || b == BOTTOM) {
             return BOTTOM;
-        } else if (a == TOP && b == TOP) {
-            return TOP;
         } else if (a == TOP) {
             return b;
         } else if (b == TOP) {

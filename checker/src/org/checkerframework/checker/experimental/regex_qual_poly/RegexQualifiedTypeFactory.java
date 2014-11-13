@@ -32,7 +32,9 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Created by mcarthur on 6/3/14.
+ * The QualifiedTypeFactory for the Regex-Qual-Param type system.
+ *
+ *
  */
 public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Regex> {
 
@@ -65,6 +67,11 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
     @Override
     protected QualifierParameterTreeAnnotator<Regex> createTreeAnnotator() {
         return new QualifierParameterTreeAnnotator<Regex>(this) {
+
+            /**
+             * Create a Regex qualifier based on the contents of string and char literals.
+             * Null literals are Regex.BOTTOM.
+             */
             @Override
             public QualifiedTypeMirror<QualParams<Regex>> visitLiteral(LiteralTree tree, ExtendedTypeMirror type) {
                 QualifiedTypeMirror<QualParams<Regex>> result = super.visitLiteral(tree, type);
@@ -95,6 +102,9 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
                 return result;
             }
 
+            /**
+             * Handle string compound assignment
+             */
             @Override
             public QualifiedTypeMirror<QualParams<Regex>> visitCompoundAssignment(CompoundAssignmentTree tree,
                     ExtendedTypeMirror type) {
@@ -106,6 +116,9 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
                 return handleBinaryOperation(tree, lRegex, rRegex, result);
             }
 
+            /**
+             * Add polymorphism to the Pattern.compile and Pattern.matcher methods.
+             */
             @Override
             public QualifiedTypeMirror<QualParams<Regex>> visitMethodInvocation(MethodInvocationTree tree, ExtendedTypeMirror type) {
                 // TODO: Also get this to work with 2 argument Pattern.compile.
@@ -129,7 +142,7 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
             }
 
             /**
-             * Case 2: concatenation of Regex or PolyRegex String/char literals.
+             * Handle concatenation of Regex or PolyRegex String/char literals.
              * Also handles concatenation of partial regular expressions.
              */
             @Override
@@ -142,6 +155,16 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
                 return handleBinaryOperation(tree, lRegex, rRegex, result);
             }
 
+            /**
+             * Returns the QualifiedTypeMirror that is the result of the binary operation represented by tree.
+             * Handles concatenation of Regex and PolyRegex qualifiers.
+             *
+             * @param tree A binary tree or a CompoundAssingmentTree
+             * @param lRegexParam The qualifier of the left hand side of the expression.
+             * @param rRegexParam The qualifier of the right hand side of the expression.
+             * @param result The current QualifiedTypeMirror result
+             * @return A copy of result with the new qualifier Applied.
+             */
             private QualifiedTypeMirror<QualParams<Regex>> handleBinaryOperation(Tree tree, QualParams<Regex> lRegexParam,
                     QualParams<Regex> rRegexParam, QualifiedTypeMirror<QualParams<Regex>> result) {
                 if (TreeUtils.isStringConcatenation(tree)
@@ -212,7 +235,7 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
         return new QualAnalysis<QualParams<Regex>>(this.getContext()) {
             @Override
             public QualTransfer<QualParams<Regex>> createTransferFunction() {
-                return new RegexQualTransfer(this);
+                return new RegexQualifiedTransfer(this);
             }
         };
     }

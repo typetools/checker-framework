@@ -4,7 +4,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.qualframework.base.CheckerAdapter;
 
 /**
- * Created by mcarthur on 6/3/14.
+ * {@link CheckerAdapter} for the Regex-Qual type system.
  */
 public class RegexCheckerAdapter extends CheckerAdapter<Regex> {
 

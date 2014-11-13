@@ -3,19 +3,19 @@ package org.checkerframework.checker.experimental.regex_qual;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 
 import static org.checkerframework.checker.experimental.regex_qual.Regex.BOTTOM;
+import static org.checkerframework.checker.experimental.regex_qual.Regex.PartialRegex;
 import static org.checkerframework.checker.experimental.regex_qual.Regex.RegexVal;
 import static org.checkerframework.checker.experimental.regex_qual.Regex.TOP;
 
 /**
- * QualifierHierarchy for the Regex type system.
+ * QualifierHierarchy for the Regex-Qual-Param type system. The Hierarchy consists of
+ * RegexTop, RegexBottom, RegexVal and PartialRegex.
  *
- * The Hierarchy consists of RegexTop, RegexBottom, RegexVal and PartialRegex.
- *
- * RegexVal and PartialRegex are incomparable.
- * Partial Regexs are subtypes of each other if they have the same partial regex.
- *
- * A RegexVal is a subtype of another RegexVal with a smaller count.
- *
+ * <ul>
+ *   <li>RegexVal and PartialRegex are incomparable.</li>
+ *   <li>A PartialRegex is a subtype of another PartialRegex if they have the same partial regex.</li>
+ *   <li>A RegexVal is a subtype of another RegexVal with a smaller count.</li>
+ * </ul>
  */
 public class RegexQualifierHierarchy implements QualifierHierarchy<Regex> {
 
@@ -32,11 +32,12 @@ public class RegexQualifierHierarchy implements QualifierHierarchy<Regex> {
             return false;
         }
 
-        if (subtype instanceof Regex.RegexVal && supertype instanceof Regex.RegexVal) {
-            return ((Regex.RegexVal) subtype).getCount() >= ((Regex.RegexVal) supertype).getCount();
+        if (subtype instanceof RegexVal && supertype instanceof RegexVal) {
+            return ((RegexVal) subtype).getCount() >= ((RegexVal) supertype).getCount();
 
-        } else if (subtype instanceof Regex.PartialRegex && supertype instanceof Regex.PartialRegex) {
-            return ((Regex.PartialRegex) subtype).getPartialValue().equals(((Regex.PartialRegex) supertype).getPartialValue());
+        } else if (subtype instanceof PartialRegex && supertype instanceof PartialRegex) {
+            return ((PartialRegex) subtype).getPartialValue().equals(((PartialRegex) supertype).getPartialValue());
+
         } else {
             return false;
         }
@@ -46,18 +47,16 @@ public class RegexQualifierHierarchy implements QualifierHierarchy<Regex> {
     public Regex leastUpperBound(Regex a, Regex b) {
         if (a == TOP || b == TOP) {
             return TOP;
-        } else if (a == BOTTOM && b == BOTTOM) {
-            return BOTTOM;
         } else if (a == BOTTOM) {
             return b;
         } else if (b == BOTTOM) {
             return a;
         }
 
-        if (a instanceof Regex.RegexVal && b instanceof Regex.RegexVal) {
-            return new RegexVal(Math.min(((Regex.RegexVal) a).getCount(), ((Regex.RegexVal) b).getCount()));
-        } else if (a instanceof Regex.PartialRegex && b instanceof Regex.PartialRegex) {
-            if (((Regex.PartialRegex) a).getPartialValue().equals(((Regex.PartialRegex) b).getPartialValue())) {
+        if (a instanceof RegexVal && b instanceof RegexVal) {
+            return new RegexVal(Math.min(((RegexVal) a).getCount(), ((RegexVal) b).getCount()));
+        } else if (a instanceof PartialRegex && b instanceof PartialRegex) {
+            if (((PartialRegex) a).getPartialValue().equals(((PartialRegex) b).getPartialValue())) {
                 return a;
             } else {
                 return TOP;
@@ -71,18 +70,16 @@ public class RegexQualifierHierarchy implements QualifierHierarchy<Regex> {
     public Regex greatestLowerBound(Regex a, Regex b) {
         if (a == BOTTOM || b == BOTTOM) {
             return BOTTOM;
-        } else if (a == TOP && b == TOP) {
-            return TOP;
         } else if (a == TOP) {
             return b;
         } else if (b == TOP) {
             return a;
         }
 
-        if (a instanceof Regex.RegexVal && b instanceof Regex.RegexVal) {
-            return new RegexVal(Math.max(((Regex.RegexVal) a).getCount(), ((Regex.RegexVal) b).getCount()));
-        } else if (a instanceof Regex.PartialRegex && b instanceof Regex.PartialRegex) {
-            if (((Regex.PartialRegex) a).getPartialValue().equals(((Regex.PartialRegex) b).getPartialValue())) {
+        if (a instanceof RegexVal && b instanceof RegexVal) {
+            return new RegexVal(Math.max(((RegexVal) a).getCount(), ((RegexVal) b).getCount()));
+        } else if (a instanceof PartialRegex && b instanceof PartialRegex) {
+            if (((PartialRegex) a).getPartialValue().equals(((PartialRegex) b).getPartialValue())) {
                 return a;
             } else {
                 return BOTTOM;

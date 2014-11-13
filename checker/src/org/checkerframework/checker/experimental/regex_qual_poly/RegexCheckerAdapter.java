@@ -5,7 +5,7 @@ import org.checkerframework.qualframework.base.CheckerAdapter;
 import org.checkerframework.qualframework.poly.QualParams;
 
 /**
- * Created by mcarthur on 6/3/14.
+ * {@link CheckerAdapter} for the Regex-Qual-Param type system.
  */
 public class RegexCheckerAdapter extends CheckerAdapter<QualParams<Regex>> {
 
