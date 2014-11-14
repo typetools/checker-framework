@@ -7,18 +7,24 @@ import java.util.*;
 
 /**
  * AnnotatedTypeCopier is a visitor that deep copies an AnnotatedTypeMirror exactly, including any lazily initialized
- * fields.  That is, if a field has already been initialized, it will be initialized in the copied type.  Previous
- * versions of copy also flipped the "isDeclaration" field.  This copier maintains isDeclaration.
+ * fields.  That is, if a field has already been initialized, it will be initialized in the copied type.
  *
- * When making copies, a map of encountered references -> copied types is maintain.  This ensures that, if a
+ * When making copies, a map of encountered references -> copied types is maintained.  This ensures that, if a
  * reference appears in multiple locations in the original type, a corresponding copy of the original type
  * appears in the same locations in the output copy.  This ensures that the recursive loops in the input type
  * are preserved in its output copy (see makeOrReturnCopy)
  *
- * In general, this class should be used via the public static "copy" method.
+ * In general, AnnotatedTypeMirrors should be copied via AnnotatedTypeMirror#deepCopy and AnnotatedTypeMirror#shallowCopy.
+ * AnnotatedTypeMirror#deepCopy makes use of AnnotatedTypeCopier under the covers.  However, this visitor and
+ * it's subclasses can be invoked as follows:
  *
- * E.g.
  * new AnnotatedTypeCopier().visit(myTypeVar);
+ *
+ * Note: There are methods that may require a copy of a type mirror with slight changes.  It is intended that this
+ * class can be overridden for these cases.
+ * @see org.checkerframework.framework.type.TypeVariableSubstitutor
+ * @see org.checkerframework.framework.type.AnnotatedTypeReplacer
+ *
  */
 public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMirror, IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>> {
 
@@ -216,13 +222,13 @@ public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMi
     @Override
     public AnnotatedTypeMirror visitPrimitive(AnnotatedPrimitiveType original,
                                               IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
-        return makeOrReturnCopy(original, originalToCopy);
+        return makeCopy(original);
     }
 
     @Override
     public AnnotatedTypeMirror visitNoType(AnnotatedNoType original,
                                            IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
-        return makeOrReturnCopy(original, originalToCopy);
+        return makeCopy(original);
     }
 
     @Override
@@ -259,16 +265,13 @@ public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMi
     }
 
     /**
-     * When copying types, we may encounter a reference to an AnnotatedTypeMirror in different positions.
-     * An example of this would be recursive type parameters.
-     * E.g.  <T extends List<T>>
-     * In this example, the bound of T will contain a cycle and a visitor to this type would encounter
-     * the type argument T to List<T> multiple times.  The first time a reference is encountered a
-     * copy of its type is created and added returned.  If a reference is encountered again, the previously
-     * made copy is returned.  This preserves the cyclic nature of the type being copied in the output
-     * copy.
+     * For any given object in the type being copied, we only want to generate one copy of that object.
+     * When that object is encountered again, using the previously generated copy will preserve
+     * the structure of the original AnnotatedTypeMirror.
      *
-     * Note: This method is idempotent
+     * makeOrReturnCopy first checks to see if an object has been encountered before.
+     * If so, it returns the previously generated duplicate of that object
+     * if not, it creates a duplicate of the object and stores it in the history, originalToCopy
      *
      * @param original A reference to a type to copy.
      * @param originalToCopy A mapping of previously encountered references to the copies made for those references
@@ -276,16 +279,24 @@ public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMi
      * @return A copy of original
      */
     @SuppressWarnings("unchecked")
-    protected <T extends AnnotatedTypeMirror> AnnotatedTypeMirror makeOrReturnCopy(
+    protected <T extends AnnotatedTypeMirror> T makeOrReturnCopy(
             T original, IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
         if (originalToCopy.containsKey(original)) {
-            return originalToCopy.get(original);
+            return (T) originalToCopy.get(original);
         }
+
+        final T copy = makeCopy(original);
+        originalToCopy.put(original, copy);
+
+        return copy;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T extends AnnotatedTypeMirror> T makeCopy(T original) {
 
         final T copy = (T) AnnotatedTypeMirror.createType(
                 original.getUnderlyingType(), original.atypeFactory, original.isDeclaration());
         maybeCopyPrimaryAnnotations(original, copy);
-        originalToCopy.put(original, copy);
 
         return copy;
     }
