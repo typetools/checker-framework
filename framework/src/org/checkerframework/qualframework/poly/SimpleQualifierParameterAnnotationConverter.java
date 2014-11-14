@@ -28,29 +28,30 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     // We can't use null in the annotation, so we use this special value
     public static final String PRIMARY_TARGET="_primary";
     public static final String TARGET_PARAM_NAME = "param";
-
     // The name of the qualifier parameter to use for polymorphic qualifiers.
-    private static final String POLY_NAME = "_poly";
+    public static final String POLY_NAME = "_poly";
 
-    private static final String SOURCE_VALUE_NAME = "arg";
-    private static final String WILDCARD_NAME = "wildcard";
+    protected static final String SOURCE_VALUE_NAME = "arg";
+    protected static final String WILDCARD_NAME = "wildcard";
 
-    private final String MULTI_ANNO_NAME_PREFIX;
-    private final CombiningOperation<Q> lubOp;
-    private final Q BOTTOM;
-    private final Q TOP;
-    private final Q DEFAULT_QUAL;
+    protected final String MULTI_ANNO_NAME_PREFIX;
+    protected final CombiningOperation<Q> lubOp;
+    protected final Q BOTTOM;
+    protected final Q TOP;
+    protected final Q DEFAULT_QUAL;
 
     private final Class<? extends Annotation> classAnno;
     private final Class<? extends Annotation> methodAnno;
     private final Class<? extends Annotation> polyAnno;
     private final Class<? extends Annotation> varAnno;
     private final Class<? extends Annotation> wildAnno;
-    private final List<String> supportedAnnotationNames;
+    private final Set<String> supportedAnnotationNames;
+    private final Set<String> legacyAnnoNames;
 
     public SimpleQualifierParameterAnnotationConverter(CombiningOperation<Q> lubOp,
             String multiAnnoNamePrefix,
-            List<String> supportedAnnotationNames,
+            Set<String> supportedAnnotationNames,
+            Set<String> legacyAnnoNames,
             Class<? extends Annotation> classAnno,
             Class<? extends Annotation> methodAnno,
             Class<? extends Annotation> polyAnno,
@@ -62,6 +63,11 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
 
         this.MULTI_ANNO_NAME_PREFIX = multiAnnoNamePrefix;
         this.supportedAnnotationNames = supportedAnnotationNames;
+        if (legacyAnnoNames == null) {
+            this.legacyAnnoNames = new HashSet<>();
+        } else {
+            this.legacyAnnoNames = legacyAnnoNames;
+        }
         this.lubOp = lubOp;
         this.classAnno = classAnno;
         this.methodAnno = methodAnno;
@@ -120,30 +126,39 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         }
     }
 
+    protected Map<String, Wildcard<Q>> getQualifierMapLegacy(AnnotationMirror anno) {
+        return null;
+    }
+
     private Map<String, Wildcard<Q>> getQualifierMap(AnnotationMirror anno) {
         String name = AnnotationUtils.annotationName(anno);
 
-        if (name.startsWith(MULTI_ANNO_NAME_PREFIX)) {
-            Map<String, Wildcard<Q>> result = new HashMap<>();
+        Map<String, Wildcard<Q>> result = null;
+        if (legacyAnnoNames.contains(anno)) {
+            return getQualifierMapLegacy(anno);
+
+        } else if (name.startsWith(MULTI_ANNO_NAME_PREFIX)) {
+            result = new HashMap<>();
             AnnotationMirror[] subAnnos = AnnotationUtils.getElementValue(
                     anno, "value", AnnotationMirror[].class, true);
             for (AnnotationMirror subAnno : subAnnos) {
                 mergeParams(result, getQualifierMap(subAnno));
             }
-            return result;
+
         } else if (supportedAnnotationNames.contains(name)) {
             Q qual = getQualifier(anno);
             String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
             if (!PRIMARY_TARGET.equals(target)) {
-                return Collections.singletonMap(target, handleWildcard(anno, new Wildcard<>(qual)));
+                result = Collections.singletonMap(target, handleWildcard(anno, new Wildcard<>(qual)));
             }
+
         } else if (name.equals(varAnno.getName())) {
             String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
             String value = AnnotationUtils.getElementValue(anno, SOURCE_VALUE_NAME, String.class, true);
             if (!PRIMARY_TARGET.equals(target)) {
                 Wildcard<Q> valueWild = handleWildcard(anno, new Wildcard<>(
                         new QualVar<>(value, BOTTOM, TOP)));
-                return Collections.singletonMap(target, valueWild);
+                result = Collections.singletonMap(target, valueWild);
             }
 
         } else if (name.equals(polyAnno.getName())) {
@@ -151,14 +166,15 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
             if (!PRIMARY_TARGET.equals(target)) {
                 Wildcard<Q> polyWild = new Wildcard<>(
                         new QualVar<>(POLY_NAME, BOTTOM, TOP));
-                return Collections.singletonMap(target, polyWild);
+                result = Collections.singletonMap(target, polyWild);
             }
+
         } else if (name.equals(wildAnno.getName())) {
             String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
-            return Collections.singletonMap(target, new Wildcard<>(BOTTOM, TOP));
+            result = Collections.singletonMap(target, new Wildcard<>(BOTTOM, TOP));
         }
 
-        return null;
+        return result;
     }
 
     private Wildcard<Q> handleWildcard(AnnotationMirror anno, Wildcard<Q> current) {
@@ -176,12 +192,18 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         }
     }
 
+    protected PolyQual<Q> getPrimaryAnnotationLegacy(AnnotationMirror anno) {
+        return null;
+    }
+
     private PolyQual<Q> getPrimaryAnnotation(AnnotationMirror anno) {
 
         String name = AnnotationUtils.annotationName(anno);
         PolyQual<Q> newQual = null;
 
-        if (supportedAnnotationNames.contains(name)) {
+        if (legacyAnnoNames.contains(name)) {
+            newQual = getPrimaryAnnotationLegacy(anno);
+        } else if (supportedAnnotationNames.contains(name)) {
             Q qual = getQualifier(anno);
             String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
             if (PRIMARY_TARGET.equals(target)) {
@@ -256,7 +278,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         return false;
     }
 
-    private boolean hasPolyAnnotationCheck(ExtendedTypeMirror type) {
+    protected boolean hasPolyAnnotationCheck(ExtendedTypeMirror type) {
         if (type == null) {
             return false;
         }

@@ -5,7 +5,9 @@ import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.framework.flow.CFStore;
 
 /**
- * TODO: qual store creation
+ * QualStore is a {@link Store} for Qualifiers.
+ * It proxies a {@link CFStore} adapter.
+ *
  */
 public class QualStore<Q> implements Store<QualStore<Q>> {
 

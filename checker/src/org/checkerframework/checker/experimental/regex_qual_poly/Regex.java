@@ -1,5 +1,7 @@
 package org.checkerframework.checker.experimental.regex_qual_poly;
 
+import org.checkerframework.javacutil.ErrorReporter;
+
 /**
  *
  * Qualifier for the Regex-Qual-Param type system.
@@ -42,6 +44,11 @@ public class Regex {
         }
 
         @Override
+        public boolean isPartialRegex() {
+            return true;
+        }
+
+        @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
@@ -75,6 +82,11 @@ public class Regex {
         }
 
         @Override
+        public boolean isRegexVal() {
+            return true;
+        }
+
+        @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
@@ -95,6 +107,14 @@ public class Regex {
         public String toString() {
             return "RegexVal(" + count + ")";
         }
+    }
+
+    public boolean isRegexVal() {
+        return false;
+    }
+
+    public boolean isPartialRegex() {
+        return false;
     }
 
     @Override

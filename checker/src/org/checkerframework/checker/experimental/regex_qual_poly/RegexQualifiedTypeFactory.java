@@ -18,9 +18,11 @@ import org.checkerframework.qualframework.base.dataflow.QualValue;
 import org.checkerframework.qualframework.poly.CombiningOperation;
 import org.checkerframework.qualframework.poly.PolyQual;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
+import org.checkerframework.qualframework.poly.PolyQual.QualVar;
 import org.checkerframework.qualframework.poly.QualParams;
 import org.checkerframework.qualframework.poly.QualifierParameterTreeAnnotator;
 import org.checkerframework.qualframework.poly.QualifierParameterTypeFactory;
+import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 import org.checkerframework.qualframework.poly.Wildcard;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 import org.checkerframework.qualframework.util.QualifierContext;
@@ -167,36 +169,55 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
              */
             private QualifiedTypeMirror<QualParams<Regex>> handleBinaryOperation(Tree tree, QualParams<Regex> lRegexParam,
                     QualParams<Regex> rRegexParam, QualifiedTypeMirror<QualParams<Regex>> result) {
+
                 if (TreeUtils.isStringConcatenation(tree)
                         || (tree instanceof CompoundAssignmentTree
                             && TreeUtils.isStringCompoundConcatenation((CompoundAssignmentTree)tree))) {
 
+                    PolyQual<Regex> rPrimary = rRegexParam.getPrimary();
+                    PolyQual<Regex> lPrimary = lRegexParam.getPrimary();
+
                     Regex lRegex = lRegexParam.getPrimary().getMaximum();
                     Regex rRegex = rRegexParam.getPrimary().getMaximum();
+                    PolyQual<Regex> resultQual = null;
 
-                    Regex regex = null;
-                    if (lRegex instanceof Regex.RegexVal && rRegex instanceof Regex.RegexVal) {
+                    // Poly + Regex == Poly
+                    if (isPolyPlusRegex(rPrimary, lRegex)) {
+                        resultQual = rPrimary;
+
+                    } else if (isPolyPlusRegex(lPrimary, rRegex)) {
+                        resultQual = lPrimary;
+                    }
+
+                    if (lRegex.isRegexVal() && rRegex.isRegexVal()) {
+                        // Regex(a) + Regex(b) = Regex(a + b)
                         int resultCount = ((Regex.RegexVal) lRegex).getCount() + ((Regex.RegexVal) rRegex).getCount();
-                        regex = new Regex.RegexVal(resultCount);
-                    } else if (lRegex instanceof Regex.PartialRegex && rRegex instanceof Regex.PartialRegex) {
+                        resultQual = new GroundQual<Regex>(new Regex.RegexVal(resultCount));
+
+                    } else if (lRegex.isPartialRegex() && rRegex.isPartialRegex()) {
+                        // Partial + Partial == Regex or Partial
                         String concat = ((Regex.PartialRegex) lRegex).getPartialValue() + ((Regex.PartialRegex) rRegex).getPartialValue();
                         if (isRegex(concat)) {
                             int groupCount = getGroupCount(concat);
-                            regex = new Regex.RegexVal(groupCount);
+                            resultQual = new GroundQual<Regex>(new Regex.RegexVal(groupCount));
                         } else {
-                            regex = new Regex.PartialRegex(concat);
+                            resultQual = new GroundQual<Regex>(new Regex.PartialRegex(concat));
                         }
-                    } else if (lRegex instanceof Regex.RegexVal && rRegex instanceof Regex.PartialRegex) {
+
+                    } else if (lRegex.isRegexVal() && rRegex.isPartialRegex()) {
+                        // Regex + Partial == Partial
                         String concat = "e" + ((Regex.PartialRegex) rRegex).getPartialValue();
-                        regex = new Regex.PartialRegex(concat);
-                    } else if (rRegex instanceof Regex.RegexVal && lRegex instanceof Regex.PartialRegex ) {
+                        resultQual = new GroundQual<Regex>(new Regex.PartialRegex(concat));
+
+                    } else if (rRegex.isRegexVal() && lRegex.isPartialRegex()) {
+                        // Partial + Regex == Partial
                         String concat = ((Regex.PartialRegex) lRegex).getPartialValue() + "e";
-                        regex = new Regex.PartialRegex(concat);
+                        resultQual = new GroundQual<Regex>(new Regex.PartialRegex(concat));
                     }
 
-                    if (regex != null) {
+                    if (resultQual != null) {
                         QualParams<Regex> clone = result.getQualifier().clone();
-                        clone.setPrimary(new GroundQual<>(regex));
+                        clone.setPrimary(resultQual);
                         result = SetQualifierVisitor.apply(result, clone);
                     }
                 }
@@ -204,6 +225,12 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
             }
 
         };
+    }
+
+    private boolean isPolyPlusRegex(PolyQual<Regex> possiblePoly, Regex other) {
+        return possiblePoly instanceof QualVar
+                && ((QualVar) possiblePoly).getName().equals(SimpleQualifierParameterAnnotationConverter.POLY_NAME)
+                && other.isRegexVal();
     }
 
     /**
