@@ -8,6 +8,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * ClassTaintingParam declares a tainting qualifier parameter on a class.
+ *
+ * <pre>
+ * @ClassTaintingParam("aParam")
+ * class A { }
+ *
+ * is equivalent to:
+ * class A<<aParam>> { }
+ *
+ * </pre>
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 @Repeatable(MultiClassTaintingParam.class)

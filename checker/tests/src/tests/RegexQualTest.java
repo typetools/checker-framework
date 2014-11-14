@@ -17,6 +17,7 @@ public class RegexQualTest extends ParameterizedCheckerTest {
 
     @Parameters
     public static Collection<Object[]> data() {
-        return testFiles("regex_qual", "all-systems");
+        return testFiles("regex", "all-systems");
     }
 }
+

@@ -1,8 +1,12 @@
 import org.checkerframework.checker.regex.qual.PolyRegex;
 import org.checkerframework.checker.regex.qual.Regex;
+
+import java.lang.SuppressWarnings;
 import java.util.regex.Pattern;
 
 public class PolyRegexTests {
+
+  @Regex(0) String field1 = "abc".toString();
 
   public static @PolyRegex String method(@PolyRegex String s) {
     return s;
