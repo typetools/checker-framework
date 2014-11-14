@@ -18,6 +18,8 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.util.AnnotationFormatter;
+import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
@@ -59,6 +61,7 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
         Store extends InitializationStore<Value, Store>>
     extends BaseTypeVisitor<Factory> {
 
+    protected final AnnotationFormatter annoFormatter;
     // Error message keys
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CAST = "initialization.invalid.cast";
     private static final /*@CompilerMessageKey*/ String COMMITMENT_FIELDS_UNINITIALIZED = "initialization.fields.uninitialized";
@@ -69,6 +72,7 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
 
     public InitializationVisitor(BaseTypeChecker checker) {
         super(checker);
+        annoFormatter = new DefaultAnnotationFormatter();
         initializedFields = new ArrayList<>();
         checkForAnnotatedJdk();
     }
@@ -240,8 +244,8 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
 
         if (!isSubtype) {
             checker.report(Result.failure(COMMITMENT_INVALID_CAST,
-                    AnnotatedTypeMirror.formatAnnotationMirror(exprAnno),
-                    AnnotatedTypeMirror.formatAnnotationMirror(castAnno)), node);
+                    annoFormatter.formatAnnotationMirror(exprAnno),
+                    annoFormatter.formatAnnotationMirror(castAnno)), node);
             return p; // suppress cast.unsafe warning
         }
 

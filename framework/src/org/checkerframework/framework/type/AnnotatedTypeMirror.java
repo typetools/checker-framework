@@ -8,21 +8,15 @@ import org.checkerframework.checker.interning.qual.*;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -39,7 +33,6 @@ import javax.lang.model.util.Types;
 
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.TypeQualifier;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -140,6 +133,9 @@ public abstract class AnnotatedTypeMirror {
     /** Actual type wrapped with this AnnotatedTypeMirror **/
     protected final TypeMirror actualType;
 
+    /** Used to format AnnotatedTypeMirrors into strings for printing. */
+    protected final AnnotatedTypeFormatter formatter;
+
     /** The annotations on this type. */
     // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
     // the class name of Annotation instead.
@@ -150,10 +146,6 @@ public abstract class AnnotatedTypeMirror {
     /** The explicitly written annotations on this type. */
     // TODO: use this to cache the result once computed? For generic types?
     // protected final Set<AnnotationMirror> explicitannotations = AnnotationUtils.createAnnotationSet();
-
-    // If unique IDs are helpful, add these and the commented lines that use them.
-    // private static int uidCounter = 0;
-    // public int uid;
 
     /**
      * Constructor for AnnotatedTypeMirror.
@@ -167,7 +159,7 @@ public abstract class AnnotatedTypeMirror {
         this.actualType = type;
         assert atypeFactory != null;
         this.atypeFactory = atypeFactory;
-        // uid = ++uidCounter;
+        this.formatter = atypeFactory.typeFormatter;
     }
 
     @Override
@@ -706,123 +698,17 @@ public abstract class AnnotatedTypeMirror {
         annotations.clear();
     }
 
-    private static boolean isInvisibleQualified(AnnotationMirror anno) {
-        return ((TypeElement)anno.getAnnotationType().asElement()).getAnnotation(InvisibleQualifier.class) != null;
-    }
-
-    // A helper method to print annotations separated by a space.
-    // Note a final space after a list of annotations to separate from the underlying type.
-    @SideEffectFree
-    protected final static String formatAnnotationString(
-            Collection<? extends AnnotationMirror> lst,
-            boolean printInvisible) {
-        StringBuilder sb = new StringBuilder();
-        for (AnnotationMirror obj : lst) {
-            if (obj == null) {
-                ErrorReporter.errorAbort("AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror!");
-            }
-            if (isInvisibleQualified(obj) &&
-                    !printInvisible) {
-                continue;
-            }
-            formatAnnotationMirror(obj, sb);
-            sb.append(" ");
-        }
-        return sb.toString();
-    }
-
-    // A helper method to output a single AnnotationMirror, without showing full package names.
-    protected final static void formatAnnotationMirror(AnnotationMirror am, StringBuilder sb) {
-        sb.append("@");
-        sb.append(am.getAnnotationType().asElement().getSimpleName());
-        Map<? extends ExecutableElement, ? extends AnnotationValue> args = am.getElementValues();
-        if (!args.isEmpty()) {
-            sb.append("(");
-            boolean oneValue = false;
-            if (args.size() == 1) {
-                Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> first = args.entrySet().iterator().next();
-                if (first.getKey().getSimpleName().contentEquals("value")) {
-                    formatAnnotationMirrorArg(first.getValue(), sb);
-                    oneValue = true;
-                }
-            }
-            if (!oneValue) {
-                boolean notfirst = false;
-                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> arg : args.entrySet()) {
-                    if (notfirst) {
-                        sb.append(", ");
-                    }
-                    notfirst = true;
-                    sb.append(arg.getKey().getSimpleName() + "=");
-                    formatAnnotationMirrorArg(arg.getValue(), sb);
-                }
-            }
-            sb.append(")");
-        }
-    }
-
-    /**
-     * Returns the string representation of a single AnnotationMirror, without showing full package names.
-     */
-    public final static String formatAnnotationMirror(AnnotationMirror am) {
-        StringBuilder sb = new StringBuilder();
-        formatAnnotationMirror(am, sb);
-        return sb.toString();
-    }
-
-    // A helper method to output a single AnnotationValue, without showing full package names.
-    @SuppressWarnings("unchecked")
-    protected final static void formatAnnotationMirrorArg(AnnotationValue av, StringBuilder sb) {
-        Object val = av.getValue();
-        if (List.class.isAssignableFrom(val.getClass())) {
-            List<AnnotationValue> vallist = (List<AnnotationValue>) val;
-            if (vallist.size() == 1) {
-                formatAnnotationMirrorArg(vallist.get(0), sb);
-            } else {
-                sb.append('{');
-                boolean notfirst = false;
-                for (AnnotationValue nav : vallist) {
-                    if (notfirst) {
-                        sb.append(", ");
-                    }
-                    notfirst = true;
-                    formatAnnotationMirrorArg(nav, sb);
-                }
-                sb.append('}');
-            }
-        } else if (VariableElement.class.isAssignableFrom(val.getClass())) {
-            VariableElement ve = (VariableElement) val;
-            sb.append(ve.getEnclosingElement().getSimpleName() + "." + ve.getSimpleName());
-        } else {
-            sb.append(av.toString());
-        }
-    }
-
     @SideEffectFree
     @Override
     public final String toString() {
-        // Also see
-        // org.checkerframework.common.basetype.BaseTypeVisitor.commonAssignmentCheck(AnnotatedTypeMirror, AnnotatedTypeMirror, Tree, String)
-        // TODO the direct access to the 'checker' field is not clean
-        return toString(atypeFactory.checker.hasOption("printAllQualifiers"));
-    }
+        return formatter.format(this);
 
-    /**
-     * A version of toString() that optionally outputs all type qualifiers,
-     * including @InvisibleQualifier's.
-     *
-     * @param invisible Whether to always output invisible qualifiers.
-     * @return A string representation of the current type containing all qualifiers.
-     */
-    @SideEffectFree
-    public String toString(boolean invisible) {
-        return formatAnnotationString(getAnnotations(), invisible)
-                + this.actualType;
     }
 
     @SideEffectFree
-    public String toStringDebug() {
-        return toString(true) + " " + getClass().getSimpleName(); // + "#" + uid;
+    public final String toString(boolean printInvisibles) {
+        return formatter.format(this, printInvisibles);
+
     }
 
     /**
@@ -966,36 +852,6 @@ public abstract class AnnotatedTypeMirror {
             return result;
         }
 
-        @SideEffectFree
-        @Override
-        public String toString(boolean printInvisible) {
-            StringBuilder sb = new StringBuilder();
-            if (declaration) {
-                sb.append("/*DECL*/ ");
-            }
-            final Element typeElt = this.getUnderlyingType().asElement();
-            String smpl = typeElt.getSimpleName().toString();
-            if (smpl.isEmpty()) {
-                // For anonymous classes smpl is empty - toString
-                // of the element is more useful.
-                smpl = typeElt.toString();
-            }
-            sb.append(formatAnnotationString(getAnnotations(), printInvisible));
-            sb.append(smpl);
-            if (!this.getTypeArguments().isEmpty()) {
-                sb.append("<");
-
-                boolean isFirst = true;
-                for (AnnotatedTypeMirror typeArg : getTypeArguments()) {
-                    if (!isFirst) sb.append(", ");
-                    sb.append(typeArg.toString(printInvisible));
-                    isFirst = false;
-                }
-                sb.append(">");
-            }
-            return sb.toString();
-        }
-
         @Override
         public <R, P> R accept(AnnotatedTypeVisitor<R, P> v, P p) {
             return v.visitDeclared(this, p);
@@ -1006,8 +862,7 @@ public abstract class AnnotatedTypeMirror {
          * @param ts the type arguments
          */
         // WMD
-        public
-        void setTypeArguments(List<? extends AnnotatedTypeMirror> ts) {
+        public void setTypeArguments(List<? extends AnnotatedTypeMirror> ts) {
             if (ts == null || ts.isEmpty()) {
                 typeArgs = Collections.emptyList();
             } else {
@@ -1447,58 +1302,6 @@ public abstract class AnnotatedTypeMirror {
                 erased.add(t.getErased());
             return erased;
         }
-
-        @SideEffectFree
-        @Override
-        public String toString(boolean printInvisible) {
-            StringBuilder sb = new StringBuilder();
-            if (!getTypeVariables().isEmpty()) {
-                sb.append('<');
-                for (AnnotatedTypeVariable atv : getTypeVariables()) {
-                    sb.append(atv.toString(printInvisible));
-                }
-                sb.append("> ");
-            }
-            if (getReturnType() != null) {
-                sb.append(getReturnType().toString(printInvisible));
-            } else {
-                sb.append("<UNKNOWNRETURN>");
-            }
-            sb.append(' ');
-            if (element != null) {
-                sb.append(element.getSimpleName());
-            } else {
-                sb.append("METHOD");
-            }
-            sb.append('(');
-            AnnotatedDeclaredType rcv = getReceiverType();
-            if (rcv != null) {
-                sb.append(rcv.toString(printInvisible));
-                sb.append(" this");
-            }
-            if (!getParameterTypes().isEmpty()) {
-                int p = 0;
-                for (AnnotatedTypeMirror atm : getParameterTypes()) {
-                    if (rcv != null ||
-                            p > 0) {
-                        sb.append(", ");
-                    }
-                    sb.append(atm.toString(printInvisible));
-                    // Output some parameter names to make it look more like a method.
-                    // TODO: go to the element and look up real parameter names, maybe.
-                    sb.append(" p");
-                    sb.append(p++);
-                }
-            }
-            sb.append(')');
-            if (!getThrownTypes().isEmpty()) {
-                sb.append(" throws ");
-                for (AnnotatedTypeMirror atm : getThrownTypes()) {
-                    sb.append(atm.toString(printInvisible));
-                }
-            }
-            return sb.toString();
-        }
     }
 
     /**
@@ -1583,33 +1386,6 @@ public abstract class AnnotatedTypeMirror {
             at.setComponentType(ct);
             return at;
 
-        }
-
-        public String toStringAsCanonical(boolean printInvisible) {
-            StringBuilder sb = new StringBuilder();
-
-            AnnotatedArrayType array = this;
-            AnnotatedTypeMirror component;
-            while (true) {
-                component = array.getComponentType();
-                if (array.getAnnotations().size() > 0) {
-                    sb.append(' ');
-                    sb.append(formatAnnotationString(array.getAnnotations(), printInvisible));
-                }
-                sb.append("[]");
-                if (!(component instanceof AnnotatedArrayType)) {
-                    sb.insert(0, component.toString(printInvisible));
-                    break;
-                }
-                array = (AnnotatedArrayType) component;
-            }
-            return sb.toString();
-        }
-
-        @SideEffectFree
-        @Override
-        public String toString(boolean printInvisible) {
-            return toStringAsCanonical(printInvisible);
         }
     }
 
@@ -1888,32 +1664,6 @@ public abstract class AnnotatedTypeMirror {
             return this.getUpperBound().getErased();
         }
 
-        // Style taken from Type
-        boolean isPrintingBound = false;
-
-        @SideEffectFree
-        @Override
-        public String toString(boolean printInvisible) {
-            StringBuilder sb = new StringBuilder();
-            if (declaration) {
-                sb.append("/*DECL*/ ");
-            }
-
-            sb.append(actualType);
-            if (!isPrintingBound) {
-                try {
-                    isPrintingBound = true;
-                    sb.append("[");
-                    printBound("extends", getUpperBoundField(), printInvisible, sb);
-                    printBound("super",   getLowerBoundField(), printInvisible, sb);
-                    sb.append("]");
-                } finally {
-                    isPrintingBound = false;
-                }
-            }
-            return sb.toString();
-        }
-
         @Pure
         @Override
         public int hashCode() {
@@ -2033,16 +1783,6 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedNullType shallowCopy() {
             return shallowCopy(true);
-        }
-
-        @SideEffectFree
-        @Override
-        public String toString(boolean printInvisible) {
-            if (printInvisible) {
-            return formatAnnotationString(getAnnotations(), printInvisible) + "null";
-            } else {
-                    return "null";
-            }
         }
     }
 
@@ -2234,28 +1974,6 @@ public abstract class AnnotatedTypeMirror {
             return getExtendsBound().deepCopy().getErased();
         }
 
-        boolean isPrintingBound = false;
-
-        @SideEffectFree
-        @Override
-        public String toString(boolean printInvisible) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(formatAnnotationString(annotations, printInvisible));
-            sb.append("?");
-            if (!isPrintingBound) {
-                try {
-                    isPrintingBound = true;
-                    sb.append("[");
-                    printBound("extends", getExtendsBoundField(), printInvisible, sb);
-                    printBound("super",   getSuperBoundField(),   printInvisible, sb);
-                    sb.append("]");
-                } finally {
-                    isPrintingBound = false;
-                }
-            }
-            return sb.toString();
-        }
-
         // Remove the typeArgHack once method type
         // argument inference and raw type handling is improved.
         private boolean typeArgHack = false;
@@ -2272,31 +1990,19 @@ public abstract class AnnotatedTypeMirror {
     public static class AnnotatedIntersectionType extends AnnotatedTypeMirror {
 
         /**
-         * Constructor for this type
+         * AnnotatedIntersectionTypes are created by type parameters whose bounds include an &
+         * e.g.
+         * &lt;T extends MyObject & Serializable & Comparable&lt;MyObject&gt;&gt;
+         *
+         * The bound MyObject & Serializable & Comparable is an intersection type
+         * with direct supertypes [MyObject, Serializable, Comparable]
          *
          * @param type  underlying kind of this type
-         * @param atypeFactory TODO
+         * @param atypeFactory The factory used to construct this intersection type
          */
         private AnnotatedIntersectionType(IntersectionType type,
                 AnnotatedTypeFactory atypeFactory) {
             super(type, atypeFactory);
-        }
-
-        @SideEffectFree
-        @Override
-        public String toString(boolean printInvisible) {
-            StringBuilder sb = new StringBuilder();
-            // Prevent an infinite recursion that might happen when calling toString
-            // within deepCopy, caused by postAsSuper in (at least) the IGJ Checker.
-            // if (this.supertypes == null) { return; }
-
-            boolean isFirst = true;
-            for(AnnotatedDeclaredType adt : this.directSuperTypes()) {
-                if (!isFirst) sb.append(" & ");
-                sb.append(adt.toString(printInvisible));
-                isFirst = false;
-            }
-            return sb.toString();
         }
 
         @Override
@@ -2369,20 +2075,6 @@ public abstract class AnnotatedTypeMirror {
             super(type, atypeFactory);
         }
 
-        @SideEffectFree
-        @Override
-        public String toString(boolean printInvisible) {
-            StringBuilder sb = new StringBuilder();
-
-            boolean isFirst = true;
-            for(AnnotatedDeclaredType adt : this.getAlternatives()) {
-                if (!isFirst) sb.append(" | ");
-                sb.append(adt.toString(printInvisible));
-                isFirst = false;
-            }
-            return sb.toString();
-        }
-
         @Override
         public <R, P> R accept(AnnotatedTypeVisitor<R, P> v, P p) {
             return v.visitUnion(this, p);
@@ -2432,24 +2124,4 @@ public abstract class AnnotatedTypeMirror {
     public List<? extends AnnotatedTypeMirror> directSuperTypes() {
         return SupertypeFinder.directSuperTypes(this);
     }
-
-    /** print to sb keyWord followed by field.  NULL types are substituted with
-     * their annotations followed by " Void"
-     */
-    private static void printBound(final String keyWord, final AnnotatedTypeMirror field,
-                            final boolean printInvisible, final StringBuilder sb) {
-        sb.append(" ");
-        sb.append(keyWord);
-        sb.append(" ");
-
-        if(field == null) {
-            sb.append("<null>");
-        } else if(field.getKind() != TypeKind.NULL) {
-            sb.append(field.toString(printInvisible));
-        } else {
-            sb.append(formatAnnotationString(field.getAnnotations(), printInvisible));
-            sb.append("Void");
-        }
-    }
-
 }
