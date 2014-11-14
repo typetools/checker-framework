@@ -32,9 +32,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
@@ -155,6 +153,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected TypeHierarchy typeHierarchy;
 
     /**
+     * This formatter is used for converting AnnotatedTypeMirrors to Strings.
+     * This formatter will be passed to all AnnotatedTypeMirrors created by this
+     * factory and will be used in their toString methods.
+     */
+    protected DefaultAnnotatedTypeFormatter typeFormatter;
+
+    /**
      * Provides utility method to substitute arguments for their type variables
      */
     protected TypeVariableSubstitutor typeVarSubstitutor;
@@ -236,6 +241,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public AnnotatedTypeFactory(BaseTypeChecker checker) {
         uid = ++uidCounter;
         this.processingEnv = checker.getProcessingEnvironment();
+        this.typeFormatter = new DefaultAnnotatedTypeFormatter(checker.hasOption("printAllQualifiers"));
         // this.root = root;
         this.checker = checker;
         this.trees = Trees.instance(processingEnv);

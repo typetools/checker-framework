@@ -379,6 +379,7 @@ public class TypeVisualizer {
          * in the enclosing drawing.
          */
         private class NodeDrawer implements AnnotatedTypeVisitor<Void, Void> {
+            private final DefaultAnnotationFormatter annoFormatter = new DefaultAnnotationFormatter();
 
             public NodeDrawer() {
             }
@@ -508,7 +509,7 @@ public class TypeVisualizer {
             public String getAnnoStr(final AnnotatedTypeMirror atm) {
                 List<String> annoNames = new ArrayList<>();
                 for(final AnnotationMirror anno : atm.getAnnotations()) {
-                    annoNames.add(AnnotatedTypeMirror.formatAnnotationMirror(anno));
+                    annoNames.add(annoFormatter.formatAnnotationMirror(anno));
                 }
                 return PluginUtil.join(" ", annoNames);
             }
