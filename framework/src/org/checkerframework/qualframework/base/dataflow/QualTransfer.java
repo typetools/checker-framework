@@ -75,7 +75,12 @@ import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import java.util.List;
 
 /**
- * TODO: AbstractNodeVisitor. visitValueLiteral
+ * A {@link TransferFunction} for the Qual Framework.
+ *
+ * Consumers should override the methods of interest.
+ *
+ * The {@link QualTransferAdapter} adapter is called to retain the behaviour of
+ * the CFTransfer by default.
  */
 public class QualTransfer<Q> implements TransferFunction<QualValue<Q>, QualStore<Q>> {
 

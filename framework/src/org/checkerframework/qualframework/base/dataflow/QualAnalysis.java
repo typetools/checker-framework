@@ -16,7 +16,8 @@ import javax.lang.model.type.TypeMirror;
  * Checkers should extend a QualAnalysis to customize the TransferFunction for their checker.
  *
  * Currently, the underlying checker-framework's dataflow does not use this class directly for running the analysis;
- * It only directly uses the QualTransfer.
+ * It only directly uses the QualTransfer. QualAnalysis, QualStore and QualValue act as one way adapters from the
+ * qual system to the underlying atm system.
  *
  * For dataflow to actually use this analysis we would need to add functionality for tracking fields and
  * the other functionality that is currently in CFAbstractAnalysis. We could add methods
@@ -39,10 +40,6 @@ public class QualAnalysis<Q> extends Analysis<QualValue<Q>, QualStore<Q>, QualTr
         this.converter = context.getCheckerAdapter().getTypeMirrorConverter();
     }
 
-    public void setAdapter(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> adapter) {
-        this.adapter = adapter;
-    }
-
     public QualTransfer<Q> createTransferFunction() {
         return new QualTransfer<Q>(this);
     }
@@ -55,34 +52,45 @@ public class QualAnalysis<Q> extends Analysis<QualValue<Q>, QualStore<Q>, QualTr
         return new QualStore<>(this, adapter.createCopiedStore(qualStore.getUnderlyingStore().copy()));
     }
 
-    public QualStore<Q> createCopiedStore(CFStore cfStore) {
-        return new QualStore<>(this, cfStore.copy());
-    }
-
     public QualValue<Q> createAbstractValue(QualifiedTypeMirror<Q> type) {
         return new QualValue<Q>(type, this);
     }
 
-    public CFAbstractAnalysis<CFValue, CFStore, CFTransfer> getCFAnalysis() {
-        return adapter;
+    @Override
+    public QualValue<Q> getValue(Node n) {
+        return new QualValue<>(converter.getQualifiedType(adapter.getValue(n).getType()), this);
+    }
+
+    public QualValue<Q> createSingleAnnotationValue(Q qual, TypeMirror underlyingType) {
+        CFValue atm = adapter.createSingleAnnotationValue(converter.getAnnotation(qual), underlyingType);
+        return new QualValue<>(converter.getQualifiedType(atm.getType()), this);
     }
 
     public QualifierContext<Q> getContext() {
         return context;
     }
 
-    public TypeMirrorConverter<Q> getConverter() {
+    // **********************************************************************
+    // Methods for CF adaption.
+    // **********************************************************************
+
+    public void setAdapter(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> adapter) {
+        this.adapter = adapter;
+    }
+
+    /*package*/ QualStore<Q> createCopiedStore(CFStore cfStore) {
+        return new QualStore<>(this, cfStore.copy());
+    }
+
+    /*package*/ QualStore<Q> createStore(CFStore cfStore) {
+        return new QualStore<>(this, cfStore);
+    }
+
+    /*package*/ CFAbstractAnalysis<CFValue, CFStore, CFTransfer> getCFAnalysis() {
+        return adapter;
+    }
+
+    /*package*/ TypeMirrorConverter<Q> getConverter() {
         return converter;
-    }
-
-    public QualValue<Q> createSingleAnnotationValue(Q qual,
-            TypeMirror underlyingType) {
-        CFValue atm = adapter.createSingleAnnotationValue(converter.getAnnotation(qual), underlyingType);
-        return new QualValue<>(converter.getQualifiedType(atm.getType()), this);
-    }
-
-    @Override
-    public QualValue<Q> getValue(Node n) {
-        return new QualValue<>(converter.getQualifiedType(adapter.getValue(n).getType()), this);
     }
 }

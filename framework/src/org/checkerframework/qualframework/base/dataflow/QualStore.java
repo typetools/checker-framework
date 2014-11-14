@@ -5,9 +5,9 @@ import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.framework.flow.CFStore;
 
 /**
- * QualStore is a {@link Store} for Qualifiers.
- * It proxies a {@link CFStore} adapter.
+ * QualStore is a {@link Store} for quals.
  *
+ * It proxies a {@link CFStore} adapter.
  */
 public class QualStore<Q> implements Store<QualStore<Q>> {
 
@@ -26,7 +26,7 @@ public class QualStore<Q> implements Store<QualStore<Q>> {
 
     @Override
     public QualStore<Q> leastUpperBound(QualStore<Q> other) {
-        return new QualStore<>(analysis, adapter.leastUpperBound(other.adapter));
+        return analysis.createStore(adapter.leastUpperBound(other.adapter));
     }
 
     @Override
