@@ -62,7 +62,7 @@ public class RegexTransfer extends
                 ConditionalTransferResult<CFValue, CFStore> newResult = new ConditionalTransferResult<>(
                         result.getResultValue(), thenStore, elseStore);
                 FlowExpressionContext context = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(n, factory);
+                        .buildFlowExprContextForUse(n, factory.getContext());
                 try {
                     Receiver firstParam = FlowExpressionParseUtil.parse(
                             "#1", context, factory.getPath(n.getTree()));
