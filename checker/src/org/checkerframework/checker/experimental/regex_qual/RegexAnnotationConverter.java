@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * Convert {@link org.checkerframework.checker.experimental.regex_qual.qual.Regex}
+ * Convert {@link org.checkerframework.checker.regex.qual.Regex}
  * annotations into {@link Regex} qualifiers.
  */
 public class RegexAnnotationConverter implements AnnotationConverter<Regex> {
@@ -19,7 +19,7 @@ public class RegexAnnotationConverter implements AnnotationConverter<Regex> {
     private static final Regex DEFAULT = Regex.TOP;
 
     public RegexAnnotationConverter() {
-        regexName = org.checkerframework.checker.experimental.regex_qual.qual.Regex.class.getName();
+        regexName = org.checkerframework.checker.regex.qual.Regex.class.getName();
     }
 
     @Override

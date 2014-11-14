@@ -1,4 +1,4 @@
-import org.checkerframework.checker.experimental.regex_qual.qual.*;
+import org.checkerframework.checker.regex.qual.*;
 
 package java.util.regex;
 

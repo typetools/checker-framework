@@ -9,6 +9,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Var is a qualifier parameter use.
+ *
+ * @see org.checkerframework.checker.experimental.tainting_qual_poly.qual.Var
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Repeatable(MultiVar.class)
