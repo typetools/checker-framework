@@ -17,6 +17,6 @@ public class RegexTest extends ParameterizedCheckerTest {
 
     @Parameters
     public static Collection<Object[]> data() {
-        return testFiles("regex", "all-systems");
+        return testFiles("regex", "regex_poly", "all-systems");
     }
 }

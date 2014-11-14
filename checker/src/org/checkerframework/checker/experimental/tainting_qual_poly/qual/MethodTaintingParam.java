@@ -8,6 +8,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * MethodTaintingParam declares a qualifier parameter on a method.
+ *
+ * <pre>
+ *  @MethodTaintingParam("aParam") void foo() { }
+ *
+ *  is equivalent to:
+ *
+ *  <<aParam>> void food() { }
+ * </pre>
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Repeatable(MultiMethodTaintingParam.class)

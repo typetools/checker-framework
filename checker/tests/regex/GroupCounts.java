@@ -10,9 +10,9 @@ import org.checkerframework.checker.regex.qual.Regex;
  */
 //@non-308-skip-test
 public class GroupCounts {
+
     void testGroupCount() {
         @Regex(0) String s1 = "abc";
-        @Regex(0) String s1a = "abc".toString();
         @Regex(1) String s2 = "(abc)";
         @Regex(2) String s3 = "()(abc)";
         @Regex(3) String s4 = "(abc())()";
