@@ -1,4 +1,4 @@
-Version 1.8.8, 1 December 2014
+Version 1.8.8, 26 November 2014
 
 Deprecate implicit imports, including the jsr308_imports environment
 variable and the -jsr308_imports ... and -Djsr308.imports=... command-line
