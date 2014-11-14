@@ -16,7 +16,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TypeHierarchy;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -683,7 +683,7 @@ public class AnnotatedTypes {
             final ExpressionTree expr,
             final ExecutableElement elt,
             final AnnotatedExecutableType preType) {
-        Types types = processingEnv.getTypeUtils();
+        final Types types = processingEnv.getTypeUtils();
         //
         // The basic algorithm used here, for each type variable:
         // 1. Find the un-annotated  least upper bound for the type variable
@@ -692,7 +692,7 @@ public class AnnotatedTypes {
         // 3. If the type variable is not used within a parameter, find
         //    the assignment context and infer the type argument using it
         // 4. if not within an assignment context, then bind it to the extend bound.
-        Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArguments =
+        final Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArguments =
             new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
 
         // Find the un-annotated type
@@ -700,11 +700,11 @@ public class AnnotatedTypes {
         // instead of just the defaulted return type. For an example, see
         // nullness/generics/MethodTypeVars6.java where an annotation on a type variable
         // gets ignored.
-        AnnotatedTypeMirror returnType = atypeFactory.type(expr);
+        final AnnotatedTypeMirror returnType = atypeFactory.type(expr);
         atypeFactory.annotateImplicit(expr, returnType);
 
-        // Using assignment context first
-        AnnotatedTypeMirror assigned =
+        // Using assignment context
+        final AnnotatedTypeMirror assigned =
             assignedTo(types, atypeFactory, atypeFactory.getPath(expr));
 
         for (AnnotatedTypeVariable typeVar : preType.getTypeVariables()) {
@@ -713,7 +713,8 @@ public class AnnotatedTypes {
             // first use the arguments
             argument = inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, preType, expr);
 
-            if (assigned != null) {
+            if (assigned != null &&
+                    !isTypeVarAnnotatedInReturnType(typeVar, preType.getReturnType())) {
                 // if we also have an assignment context, try using it
                 AnnotatedTypeMirror rettype = preType.getReturnType();
                 AnnotatedTypeMirror returnTypeBase = asSuper(types, atypeFactory, rettype, assigned);
@@ -724,12 +725,16 @@ public class AnnotatedTypes {
                 if (lst != null && !lst.isEmpty()) {
                     AnnotatedTypeMirror retinf = lst.get(0);
 
-                    TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
-
-                    if (argument == null || (retinf != null &&
-                            types.isSubtype(argument.getUnderlyingType(), retinf.getUnderlyingType()) &&
-                            (retinf.getKind() == TypeKind.TYPEVAR ||
-                                typeHierarchy.isSubtype(argument, retinf)))) {
+                    if (argument == null ||
+                            (retinf != null
+                            // Wildcards are not good as inference result
+                            && (retinf.getKind() != TypeKind.WILDCARD)
+                            // This might happen when one method is called as argument to another method and
+                            // for both calls we need to infer method type arguments.
+                            // TODO: make sure that retinf is a method type variable? Or somehow combine the
+                            // constraints for both calls together and solve them together.
+                            && (retinf.getKind() != TypeKind.TYPEVAR)
+                            )) {
                         // Use a type inferred from the assignment context if it is a supertype
                         // of the type inferred by the arguments or if it is a type variable.
                         argument = retinf;
@@ -750,17 +755,13 @@ public class AnnotatedTypes {
                             // If the assignment type and bound type are incompatible, we'll get an
                             // error later. Most likely the assignment type is simply a supertype of
                             // the bound, e.g. because of the non-null except locals default.
-                            assigned = deepCopy(assigned);
-                            assigned.clearAnnotations();
-                            assigned.addAnnotations(rettype.getEffectiveAnnotations());
+                            argument = deepCopy(assigned);
+                            argument.clearAnnotations();
+                            argument.addAnnotations(rettype.getEffectiveAnnotations());
+                        } else {
+                            argument = assigned;
                         }
-                        argument = assigned;
                     }
-                }
-                if (argument == null) {
-                    // Inferring using context failed for some reason; use the
-                    // best we can from the arguments.
-                    argument = inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, preType, expr);
                 }
             }
 
@@ -774,6 +775,33 @@ public class AnnotatedTypes {
         }
 
         return typeArguments;
+    }
+
+    /*
+     * When using the assignment context to infer method type arguments, we
+     * should ignore type variables that are annotated in the return type of
+     * the method. The annotations for these types will be unused and therefore
+     * should not influence inference. 
+     */
+    private static boolean isTypeVarAnnotatedInReturnType(
+            final AnnotatedTypeVariable typeVar, AnnotatedTypeMirror rettype) {
+        AnnotatedTypeScanner<Boolean, Void> scan = new AnnotatedTypeScanner<Boolean, Void>() {
+
+            @Override
+            public Boolean visitTypeVariable(AnnotatedTypeVariable type, Void p) {
+                Element tv = type.getUnderlyingType().asElement();
+                if (tv == typeVar.getUnderlyingType().asElement()) {
+                    if (!type.getAnnotations().isEmpty()) {
+                        return true;
+                    }
+                }
+                return super.visitTypeVariable(type, p);
+            }
+        };
+        Boolean scres = scan.visit(rettype);
+        // TODO: what is a nicer way to implement this? The default is to return
+        // null, which is the same as false for us. Above I never have to return false.
+        return scres != null;
     }
 
     /**
@@ -814,8 +842,8 @@ public class AnnotatedTypes {
         }
 
         // find parameter arguments beneficial for inference
-        List<AnnotatedTypeMirror> requiredParams = expandVarArgs(atypeFactory, exeType, args);
-        List<AnnotatedTypeMirror> passedArgs = new ArrayList<AnnotatedTypeMirror>();
+        final List<AnnotatedTypeMirror> requiredParams = expandVarArgs(atypeFactory, exeType, args);
+        final List<AnnotatedTypeMirror> passedArgs = new ArrayList<AnnotatedTypeMirror>();
 
         // Whether the type variable only occurred in type argument positions.
         // E.g. will be true for <T> T get(List<T> p1, Map<T, T> p2)
@@ -827,13 +855,6 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror requiredArg = requiredParams.get(i);
             if (types.isSameType(requiredArg.getUnderlyingType(), typeVar.getUnderlyingType())) {
                 tvOnlyAsTypeArg = false;
-                if (!requiredArg.getAnnotations().isEmpty()) {
-                    // Ignore arguments where the parameter is an annotated
-                    // type variable. At the moment this is only done for
-                    // top-level uses, e.g. @Nullable T p, not for uses as
-                    // type arguments, e.g. List<@Nullable T> p.
-                    continue;
-                }
             }
             AnnotatedTypeMirror pasAsSuper = asSuper(types, atypeFactory, passedArg, requiredArg);
             if (pasAsSuper != null) {
