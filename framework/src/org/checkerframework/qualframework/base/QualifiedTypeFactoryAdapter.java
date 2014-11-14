@@ -41,6 +41,9 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     /** The underlying {@link QualifiedTypeFactory}. */
     private QualifiedTypeFactory<Q> underlying;
 
+    /** The qualAnalysis instance to use for dataflow. */
+    private QualAnalysis<Q> qualAnalysis;
+
     public QualifiedTypeFactoryAdapter(QualifiedTypeFactory<Q> underlying,
             CheckerAdapter<Q> checker) {
         super(checker, true);
@@ -387,7 +390,12 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         return qualResult;
     }
 
-    private QualAnalysis<Q> qualAnalysis;
+    /**
+     * Create the {@link TransferFunction} to be used.
+     *
+     * @param analysis The {@link CFAbstractAnalysis} that the checker framework will actually use
+     * @return The {@link CFTransfer} to be used
+     */
     @Override
     public CFTransfer createFlowTransferFunction(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         if (qualAnalysis == null) {
@@ -395,6 +403,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
             qualAnalysis = underlying.createFlowAnalysis(null);
             qualAnalysis.setAdapter(analysis);
         }
-        return new QualTransferAdapter<Q>(qualAnalysis.createTransferFunction(), analysis, qualAnalysis);
+        return new QualTransferAdapter<>(qualAnalysis.createTransferFunction(), analysis, qualAnalysis);
     }
 }
