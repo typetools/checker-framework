@@ -83,7 +83,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by mcarthur on 10/22/14.
+ * QualTransferAdapter adapts the {@link CFTransfer} to a {@link QualTransfer}.
+ *
+ * It does this by converting TransferInputs and TransferResults backed
+ * by CFValue and CFStores to ones backed by QualValue and QualStores.
+ *
  */
 public class QualTransferAdapter<Q> extends CFTransfer {
 
@@ -101,27 +105,40 @@ public class QualTransferAdapter<Q> extends CFTransfer {
         this.qualAnalysis = qualAnalysis;
     }
 
-    public TransferInput<QualValue<Q>, QualStore<Q>> convertCfToQualInput(TransferInput<CFValue, CFStore> p) {
-        if (p.containsTwoStores()) {
-            return new TransferInput<QualValue<Q>, QualStore<Q>>(p.getNode(), qualAnalysis,
-                    new QualStore<Q>(qualAnalysis, p.getThenStore()), new QualStore<Q>(qualAnalysis, p.getElseStore()));
+    /**
+     * Convert a TransferInput backed by CFValue and CFStores to one backed by QualValue and QualStores.
+     */
+    public TransferInput<QualValue<Q>, QualStore<Q>> convertCfToQualInput(TransferInput<CFValue, CFStore> transferInput) {
+        if (transferInput.containsTwoStores()) {
+            return new TransferInput<>(transferInput.getNode(), qualAnalysis,
+                    new QualStore<Q>(qualAnalysis, transferInput.getThenStore()),
+                    new QualStore<Q>(qualAnalysis, transferInput.getElseStore()));
         } else {
-            return new TransferInput<QualValue<Q>, QualStore<Q>>(p.getNode(), qualAnalysis,
-                    new QualStore<Q>(qualAnalysis, p.getThenStore()));
+            return new TransferInput<>(transferInput.getNode(), qualAnalysis,
+                    new QualStore<Q>(qualAnalysis, transferInput.getThenStore()));
         }
     }
 
-    public TransferInput<CFValue, CFStore> convertQualToCfInput(TransferInput<QualValue<Q>, QualStore<Q>> p) {
-        if (p.containsTwoStores()) {
-            return new TransferInput<>(p.getNode(), analysis, p.getThenStore().getUnderlyingStore(), p.getElseStore().getUnderlyingStore());
+    /**
+     * Convert a TransferInput backed by QualValue and QualStores to one backed by CFValue and CFStores.
+     */
+    public TransferInput<CFValue, CFStore> convertQualToCfInput(TransferInput<QualValue<Q>, QualStore<Q>> transferInput) {
+        if (transferInput.containsTwoStores()) {
+            return new TransferInput<>(transferInput.getNode(), analysis,
+                    transferInput.getThenStore().getUnderlyingStore(), transferInput.getElseStore().getUnderlyingStore());
         } else {
-            return new TransferInput<>(p.getNode(), analysis, p.getRegularStore().getUnderlyingStore());
+            return new TransferInput<>(transferInput.getNode(), analysis,
+                    transferInput.getRegularStore().getUnderlyingStore());
         }
     }
 
-    public TransferResult<CFValue, CFStore> convertQualToCfResult(TransferResult<QualValue<Q>, QualStore<Q>> p) {
+    /**
+     * Convert a TransferResult backed by QualValue and QualStores to one backed by CFValue and CFStores.
+     */
+    public TransferResult<CFValue, CFStore> convertQualToCfResult(TransferResult<QualValue<Q>,
+            QualStore<Q>> transferResult) {
 
-        Map<TypeMirror, QualStore<Q>> exeStores = p.getExceptionalStores();
+        Map<TypeMirror, QualStore<Q>> exeStores = transferResult.getExceptionalStores();
         Map<TypeMirror, CFStore> convertedExeStores = new HashMap<>();
         if (exeStores != null) {
             for (Map.Entry<TypeMirror, QualStore<Q>> entry : exeStores.entrySet()) {
@@ -130,21 +147,28 @@ public class QualTransferAdapter<Q> extends CFTransfer {
         }
 
         CFValue resultValue = null;
-        if (p.getResultValue() != null) {
-            resultValue = analysis.createAbstractValue(qualAnalysis.getConverter().getAnnotatedType(p.getResultValue().getType()));
+        if (transferResult.getResultValue() != null) {
+            resultValue = analysis.createAbstractValue(
+                    qualAnalysis.getConverter().getAnnotatedType(transferResult.getResultValue().getType()));
         }
         
-        if (p.containsTwoStores()) {
+        if (transferResult.containsTwoStores()) {
             return new ConditionalTransferResult<>(resultValue,
-                    p.getThenStore().getUnderlyingStore(), p.getElseStore().getUnderlyingStore(), convertedExeStores, p.storeChanged());
+                    transferResult.getThenStore().getUnderlyingStore(),
+                    transferResult.getElseStore().getUnderlyingStore(),
+                    convertedExeStores, transferResult.storeChanged());
         } else {
             return new RegularTransferResult<>(resultValue,
-                    p.getRegularStore().getUnderlyingStore(), convertedExeStores, p.storeChanged());
+                    transferResult.getRegularStore().getUnderlyingStore(),
+                    convertedExeStores, transferResult.storeChanged());
         }
     }
 
-    public  TransferResult<QualValue<Q>, QualStore<Q>> convertCfToQualResult(TransferResult<CFValue, CFStore> p) {
-        Map<TypeMirror, CFStore> exeStores = p.getExceptionalStores();
+    /**
+     * Convert a TransferResult backed by CFValue and CFStores to one backed by QualValue and QualStores.
+     */
+    public  TransferResult<QualValue<Q>, QualStore<Q>> convertCfToQualResult(TransferResult<CFValue, CFStore> transferResult) {
+        Map<TypeMirror, CFStore> exeStores = transferResult.getExceptionalStores();
         Map<TypeMirror, QualStore<Q>> convertedExeStores = new HashMap<>();
         if (exeStores != null) {
             for (Map.Entry<TypeMirror, CFStore> entry : exeStores.entrySet()) {
@@ -153,16 +177,20 @@ public class QualTransferAdapter<Q> extends CFTransfer {
         }
 
         QualValue<Q> resultValue = null;
-        if (p.getResultValue() != null) {
-            resultValue = qualAnalysis.createAbstractValue(qualAnalysis.getConverter().getQualifiedType(p.getResultValue().getType()));
+        if (transferResult.getResultValue() != null) {
+            resultValue = qualAnalysis.createAbstractValue(
+                    qualAnalysis.getConverter().getQualifiedType(transferResult.getResultValue().getType()));
         }
 
-        if (p.containsTwoStores()) {
+        if (transferResult.containsTwoStores()) {
             return new ConditionalTransferResult<>(resultValue,
-                    new QualStore<Q>(qualAnalysis, p.getThenStore()), new QualStore<Q>(qualAnalysis, p.getElseStore()), convertedExeStores, p.storeChanged());
+                    new QualStore<Q>(qualAnalysis, transferResult.getThenStore()),
+                    new QualStore<Q>(qualAnalysis, transferResult.getElseStore()),
+                    convertedExeStores, transferResult.storeChanged());
         } else {
             return new RegularTransferResult<>(resultValue,
-                    new QualStore<Q>(qualAnalysis, p.getRegularStore()), convertedExeStores, p.storeChanged());
+                    new QualStore<Q>(qualAnalysis, transferResult.getRegularStore()),
+                    convertedExeStores, transferResult.storeChanged());
         }
     }
 
@@ -170,16 +198,6 @@ public class QualTransferAdapter<Q> extends CFTransfer {
         CFStore initialStore = super.initialStore(underlyingAST, parameters);
         return new QualStore<>(qualAnalysis, initialStore);
     }
-
-//    @Override
-//    public TransferResult<CFValue, CFStore> visitNode(Node n, TransferInput<CFValue, CFStore> p) {
-//        return super.visitNode(n, p);
-//    }
-//
-//    @Override
-//    public TransferResult<CFValue, CFStore> visitValueLiteral(ValueLiteralNode n, TransferInput<CFValue, CFStore> p) {
-//        return super.visitValueLiteral(n, p);
-//    }
 
     @Override
     public TransferResult<CFValue, CFStore> visitShortLiteral(ShortLiteralNode n, TransferInput<CFValue, CFStore> p) {
@@ -670,16 +688,6 @@ public class QualTransferAdapter<Q> extends CFTransfer {
         TransferResult<CFValue, CFStore> result = super.visitArrayAccess(n, convertQualToCfInput(p));
         return convertCfToQualResult(result);
     }
-
-//    public TransferResult<CFValue, CFStore> visitThisLiteral(ThisLiteralNode n, TransferInput<CFValue, CFStore> p) {
-//        TransferResult<QualValue<Q>, QualStore<Q>> result = underlying.visitThisLiteral(n, convertCfToQualInput(p));
-//        return convertQualToCfResult(result);
-//    }
-//
-//    public TransferResult<QualValue<Q>, QualStore<Q>> superVisitThisLiteral(ThisLiteralNode n, TransferInput<QualValue<Q>, QualStore<Q>> p) {
-//        TransferResult<CFValue, CFStore> result = super.visitThisLiteral(n, convertQualToCfInput(p));
-//        return convertCfToQualResult(result);
-//    }
 
     @Override
     public TransferResult<CFValue, CFStore> visitImplicitThisLiteral(ImplicitThisLiteralNode n, TransferInput<CFValue, CFStore> p) {
