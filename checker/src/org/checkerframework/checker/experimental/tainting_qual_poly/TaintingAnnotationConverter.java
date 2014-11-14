@@ -15,13 +15,15 @@ import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotatio
 
 import javax.lang.model.element.AnnotationMirror;
 import java.util.Arrays;
+import java.util.HashSet;
 
 public class TaintingAnnotationConverter extends SimpleQualifierParameterAnnotationConverter<Tainting> {
 
     public TaintingAnnotationConverter() {
         super(new CombiningOperation.Lub<>(new TaintingQualifierHierarchy()),
                 MultiTainted.class.getPackage().getName() + ".Multi",
-                Arrays.asList(Tainted.class.getName(), Untainted.class.getName()),
+                new HashSet<>(Arrays.asList(Tainted.class.getName(), Untainted.class.getName())),
+                null,
                 ClassTaintingParam.class,
                 MethodTaintingParam.class,
                 PolyTainting.class,
