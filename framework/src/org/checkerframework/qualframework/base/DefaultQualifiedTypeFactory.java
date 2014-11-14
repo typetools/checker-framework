@@ -3,10 +3,7 @@ package org.checkerframework.qualframework.base;
 import java.util.*;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 
 import com.sun.source.tree.ExpressionTree;
@@ -17,16 +14,10 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import org.checkerframework.javacutil.Pair;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-
-import org.checkerframework.qualframework.base.QualifiedTypeMirror;
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
 import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
-import org.checkerframework.qualframework.base.dataflow.QualTransfer;
 import org.checkerframework.qualframework.base.dataflow.QualValue;
 import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
