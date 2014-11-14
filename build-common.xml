@@ -25,16 +25,21 @@
     <scriptdef name="generateguid" language="javascript">
         <attribute name="property" />
         <![CDATA[
+        var version = java.lang.System.getProperty("java.version");
+        if (version.startsWith("1.8.0")) {
+            load("nashorn:mozilla_compat.js");
+        }
+
         importClass( java.util.UUID );
 
         project.setProperty( attributes.get( "property" ), UUID.randomUUID() );
         ]]>
     </scriptdef>
 
-    <generateguid property="build-guid" />
+    <generateguid property="build.guid" />
 
     <property name="tmpdir"
-        value="${java.io.tmpdir}/${user.name}/${ant.project.name}/${build-guid}" />
+        value="${java.io.tmpdir}/${user.name}/${ant.project.name}/${build.guid}" />
 
     <property name="compiler.version.goal.jsr308"
               value="javac 1.8.0-jsr308-${build.version}"/>
