@@ -1204,7 +1204,7 @@ public abstract class SourceChecker
     /**
      * Determines the value of the lint option with the given name.  Just
      * as <a
-     * href="http://docs.oracle.com/javase/7/docs/technotes/guides/javac/index.html">javac</a>
+     * href="https://docs.oracle.com/javase/7/docs/technotes/guides/javac/index.html">javac</a>
      * uses "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx,
      * annotation-related lint options are enabled with "-Alint:xxx" and
      * disabled with "-Alint:-xxx".
@@ -1225,7 +1225,7 @@ public abstract class SourceChecker
     /**
      * Determines the value of the lint option with the given name.  Just
      * as <a
-     * href="http://docs.oracle.com/javase/1.5.0/docs/tooldocs/solaris/javac.html">javac</a>
+     * href="https://docs.oracle.com/javase/1.5.0/docs/tooldocs/solaris/javac.html">javac</a>
      * uses "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx,
      * annotation-related lint options are enabled with "-Alint=xxx" and
      * disabled with "-Alint=-xxx".
@@ -1271,7 +1271,7 @@ public abstract class SourceChecker
     /**
      * Set the value of the lint option with the given name.  Just
      * as <a
-     * href="http://docs.oracle.com/javase/1.5.0/docs/tooldocs/solaris/javac.html">javac</a>
+     * href="https://docs.oracle.com/javase/1.5.0/docs/tooldocs/solaris/javac.html">javac</a>
      * uses "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx,
      * annotation-related lint options are enabled with "-Alint=xxx" and
      * disabled with "-Alint=-xxx".
