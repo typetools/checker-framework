@@ -157,7 +157,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * This formatter will be passed to all AnnotatedTypeMirrors created by this
      * factory and will be used in their toString methods.
      */
-    protected DefaultAnnotatedTypeFormatter typeFormatter;
+    protected AnnotatedTypeFormatter typeFormatter;
 
     /**
      * Provides utility method to substitute arguments for their type variables
