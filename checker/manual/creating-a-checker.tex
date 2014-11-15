@@ -1228,9 +1228,10 @@ Don't forget to add the checker to a logical place in the manual (not
 necessarily as the last checker-related chapter) and to add a reference
 from the beginning of chapter~\ref{introduction}.
 
-There are some \LaTeX\ conventions, such as section references appearing
-within the \verb|\section| command and section labels not starting with
-``\<sec:>'', that are for the benefit of the Hevea program that produces
+Every chapter and (sub)section should have a label defined \emph{within} the 
+\verb|\section| command.  Section labels should starting with the checker
+name (as in \verb|\label{bellyrub-examples}|) and not with ``\<sec:>''.
+These conventions are for the benefit of the Hevea program that produces
 the HTML version of the manual.
 
 
