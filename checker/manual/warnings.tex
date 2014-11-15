@@ -478,7 +478,7 @@ discuss this situation, which you can handle by writing annotations in
 comments.
 
 In other cases, your code needs to be run by people who are not using a Java 8
-JVM\@.  Sections~\ref{java5-class-files} and~\ref{java7-classfiles} discuss this situation.
+JVM\@.  Sections~\ref{annotations-in-java7-class-files} and~\ref{running-on-a-java7-jvm} discuss this situation.
 
 (\textbf{Note:} These are features of the javac compiler that is
 distributed along with the Checker Framework.  They are \emph{not}
@@ -633,7 +633,7 @@ So, these command-line arguments give backward compatibility with earlier JVMs
 while still permitting pluggable type-checking.
 
 
-\subsection{Class-file compatibility with Java 6 or 7\label{java7-classfiles}}
+\subsection{Running an a Java 6 or Java 7 JVM (class-file compatibility with Java 6 or 7)\label{running-on-a-java7-jvm}}
 
 The Checker Framework's type annotations utilize a Java 8 feature that
 allows them to be placed on any type use, including generic type parameters

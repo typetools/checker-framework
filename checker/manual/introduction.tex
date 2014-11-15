@@ -48,13 +48,17 @@ The Checker Framework comes with checkers for specific types of errors:
 \item
   \ahrefloc{i18n-checker}{Internationalization Checker} to
   ensure that code is properly internationalized (see
-  \chapterpageref{i18n-checker}).
+  \chapterpageref{i18n-checker})
   %% Not interesting enough to go at the beginning of the introduction:
   % a checker for compiler message keys as used in the Checker Framework.
 \item
   \ahrefloc{signature-checker}{Signature String Checker} to ensure that the
   string representation of a type is properly used, for example in
-  \<Class.forName> (see \chapterpageref{signature-checker}).
+  \<Class.forName> (see \chapterpageref{signature-checker})
+\item
+  \ahrefloc{guieffect-checker}{GUI Effect Checker} to ensure that non-GUI
+  threads do not access the UI, which would crash the application
+  (see \chapterpageref{guieffect-checker})
 \item
   \ahrefloc{units-checker}{Units Checker} to ensure operations are
   performed on correct units of measurement
