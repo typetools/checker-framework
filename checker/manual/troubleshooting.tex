@@ -188,6 +188,13 @@ Examples of classes that were not in JDK 6 but were introduced in JDK 7 include:
   class file for java.util.Vector$Itr not found
 \end{Verbatim}
 
+There are even classes that were introduced within a single JDK release.
+Classes that appear in JDK 7 release 71 but not in JDK 7 release 45 include:
+
+\begin{Verbatim}
+  class file for java.lang.Class$ReflectionData not found
+\end{Verbatim}
+
 You may be able to solve the problem by running
 
 \begin{Verbatim}
@@ -198,6 +205,8 @@ You may be able to solve the problem by running
 \noindent
 to re-generate files \code{checker/jdk/jdk\{7,8\}.jar} and \code{checker/bin/jdk\{7,8\}.jar}.
 
+That usually works, but if not, then you should recompile the Checker
+Framework from source rather than using the pre-compiled distribution.
 
 
 \item
@@ -688,14 +697,6 @@ not because \<java> might be the version in the JDK or in the JRE):
 \begin{Verbatim}
   export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
 \end{Verbatim}
-
-% # To build your own JDK:
-% mkdir -p /scratch/$USER/jdk7
-% cd /scratch/$USER/jdk7
-% wget http://docs.oracle.com/otn-pub/java/jdk/7/jdk-7-linux-x64.tar.gz
-% tar xzf jdk-7-linux-x64.tar.gz
-% export JAVA_HOME=/scratch/$USER/jdk7/jdk1.7.0
-% export PATH=${JAVA_HOME}/bin:${PATH}
 
 \item
 Compile the Type Annotations tools:
