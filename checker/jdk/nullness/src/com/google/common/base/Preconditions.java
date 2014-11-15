@@ -37,7 +37,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * Note that the sense of the expression is inverted; with {@code Preconditions}
  * you declare what you expect to be <i>true</i>, just as you do with an
- * <a href="http://docs.oracle.com/javase/1.5.0/docs/guide/language/assert.html">
+ * <a href="https://docs.oracle.com/javase/1.5.0/docs/guide/language/assert.html">
  * {@code assert}</a> or a JUnit {@code assertTrue} call.
  *
  * <p><b>Warning:</b> only the {@code "%s"} specifier is recognized as a
