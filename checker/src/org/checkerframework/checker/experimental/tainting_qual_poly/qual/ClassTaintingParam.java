@@ -12,12 +12,13 @@ import java.lang.annotation.Target;
  * ClassTaintingParam declares a tainting qualifier parameter on a class.
  *
  * <pre>
- * @ClassTaintingParam("aParam")
- * class A { }
+ * {@code
+ *  {@literal @}ClassTaintingParam("aParam")
+ *  class A { }
  *
- * is equivalent to:
- * class A<<aParam>> { }
- *
+ *  is equivalent to:
+ *  class A<<aParam>> { }
+ * }
  * </pre>
  */
 @Retention(RetentionPolicy.RUNTIME)
