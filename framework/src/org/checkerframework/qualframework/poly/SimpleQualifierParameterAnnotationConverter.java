@@ -55,7 +55,8 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     private final Set<String> specialCaseAnnotations;
 
     /**
-     * Construct a SimpleQualifierParameterAnnotationConverter
+     * Construct a SimpleQualifierParameterAnnotationConverter. specialCaseAnnotations is the only
+     * parameter that is allowed to be null.
      *
      * @param lubOp The operation to perform for when combining annotations
      * @param multiAnnoNamePrefix The package and class name prefix for repeatable annotations
@@ -84,11 +85,12 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
             Q defaultQual) {
 
         this.MULTI_ANNO_NAME_PREFIX = multiAnnoNamePrefix;
-        this.supportedAnnotationNames = supportedAnnotationNames;
         if (supportedAnnotationNames == null ||
                 supportedAnnotationNames.isEmpty()) {
             ErrorReporter.errorAbort("supportedAnnotationNames must be a list of type system qualifiers.");
         }
+        this.supportedAnnotationNames = supportedAnnotationNames;
+
         if (specialCaseAnnotations == null) {
             this.specialCaseAnnotations = new HashSet<>();
         } else {
@@ -106,7 +108,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     }
 
     /**
-     * Return the qualifier for an annotations.
+     * Create a type system Qualifier based on an annotation.
      *
      * @param anno the annotation
      * @return the resulting qualifier
@@ -114,7 +116,8 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     public abstract Q getQualifier(AnnotationMirror anno);
 
     /**
-     * Special case handle the AnnotaitonMirror.
+     * Special case handle the AnnotaitonMirror. Useful for when more control
+     * is need when processing an annotation.
      */
     protected QualParams<Q> specialCaseHandle(AnnotationMirror anno) {
         return null;
