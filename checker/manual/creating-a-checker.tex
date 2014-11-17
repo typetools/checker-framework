@@ -1187,6 +1187,54 @@ java -jar $CHECKERFRAMEWORK/framework/dist/framework.jar \
 % \end{itemize}
 
 
+\section{Documenting the checker\label{documenting-a-checker}}
+
+This section describes how to write a chapter for this manual that
+describes a new type-checker.  This is a prerequisite to having your
+type-checker distributed with the Checker Framework, which is the best way
+for users to find it and for it to be kept up to date with Checker
+Framework changes.  Even if you do not want your checker distributed with
+the Checker Framework, these guidelines may help you write better
+documentation.
+
+When writing a chapter about a new type-checker, see the existing chapters
+for inspiration.  (But recognize that the existing chapters aren't perfect:
+maybe they can be improved too.)
+
+A chapter in the Checker Framework manual should generally have the
+following sections:
+
+\begin{description}
+\item[Chapter: Belly Rub Checker]
+  The text before the first section in the chapter should state the
+  guarantee that the checker provides and why it is important.  It should
+  give an overview of the concepts.  It should state how to run the checker.
+\item[Section: Belly Rub Annotations]
+  This section includes descriptions of the annotations with links to the
+  javadoc and a diagram of the type hierarchy.  A textual description of
+  the hieraarchy is not sufficient; the diagram really helps readers to
+  understand the system.
+\item[Section: What the Belly Rub Checker checks]
+  This section gives more details about when an error is issued, with examples.
+\item[Section: Examples]
+  Code examples.
+\end{description}
+
+Sometimes you can omit some of the above sections.  Sometimes there are
+additional sections, such as tips on suppressing warnings, comparisons to
+other tools, and run-time support.
+
+Don't forget to add the checker to a logical place in the manual (not
+necessarily as the last checker-related chapter) and to add a reference
+from the beginning of chapter~\ref{introduction}.
+
+Every chapter and (sub)section should have a label defined \emph{within} the 
+\verb|\section| command.  Section labels should starting with the checker
+name (as in \verb|\label{bellyrub-examples}|) and not with ``\<sec:>''.
+These conventions are for the benefit of the Hevea program that produces
+the HTML version of the manual.
+
+
 \section{javac implementation survival guide\label{javac-tips}}
 
 Since this section of the manual was written, the useful ``The Hitchhiker's
