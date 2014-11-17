@@ -8,7 +8,7 @@ import static org.checkerframework.checker.experimental.regex_qual.Regex.RegexVa
 import static org.checkerframework.checker.experimental.regex_qual.Regex.TOP;
 
 /**
- * QualifierHierarchy for the Regex-Qual-Param type system. The Hierarchy consists of
+ * QualifierHierarchy for the Regex-Qual type system. The Hierarchy consists of
  * RegexTop, RegexBottom, RegexVal and PartialRegex.
  *
  * <ul>
