@@ -1,5 +1,6 @@
 package org.checkerframework.checker.experimental.regex_qual_poly;
 
+import org.checkerframework.checker.experimental.regex_qual.Regex;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.qualframework.base.CheckerAdapter;
 import org.checkerframework.qualframework.poly.QualParams;
