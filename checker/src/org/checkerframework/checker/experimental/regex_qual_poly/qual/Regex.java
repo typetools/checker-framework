@@ -27,6 +27,8 @@ public @interface Regex {
      * Defaults to 0.
      */
     int value() default 0;
+    // The name of the parameter to set in the annotated reference.
     String param() default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
+    // Specify a wildcard with a bound.
     Wildcard wildcard() default Wildcard.NONE;
 }
