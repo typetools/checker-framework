@@ -94,7 +94,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
                 @Override
                 public AnnotationProvider getAnnotationProvider() {
-                    return null;
+                    throw new UnsupportedOperationException("getAnnotationProvider is not implemented for this class.");
                 }
 
             };
