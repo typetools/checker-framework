@@ -1,5 +1,7 @@
 package org.checkerframework.checker.experimental.regex_qual_poly;
 
+import org.checkerframework.checker.experimental.regex_qual.Regex;
+import org.checkerframework.checker.experimental.regex_qual.RegexQualifierHierarchy;
 import org.checkerframework.checker.experimental.regex_qual_poly.qual.ClassRegexParam;
 import org.checkerframework.checker.experimental.regex_qual_poly.qual.MethodRegexParam;
 import org.checkerframework.checker.experimental.regex_qual_poly.qual.MultiRegex;
