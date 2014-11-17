@@ -56,6 +56,7 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
             if (isRegexUtil(receiverName)
                     && method.toString().equals(
                     "isRegex(java.lang.String,int)")) {
+
                 QualStore<QualParams<Regex>> thenStore = result.getRegularStore();
                 QualStore<QualParams<Regex>> elseStore = thenStore.copy();
                 ConditionalTransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> newResult = new ConditionalTransferResult<>(
@@ -88,6 +89,7 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
             if (isRegexUtil(receiverName)
                     && method.toString().equals(
                     "asRegex(java.lang.String,int)")) {
+
                 // add annotation with correct group count (if possible,
                 // regex annotation without count otherwise)
                 QualParams<Regex> regex;
