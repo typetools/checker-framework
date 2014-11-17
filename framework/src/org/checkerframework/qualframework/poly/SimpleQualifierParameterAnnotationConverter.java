@@ -31,6 +31,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     // The name of the qualifier parameter to use for polymorphic qualifiers.
     public static final String POLY_NAME = "_poly";
 
+    // Annotation field names
     protected static final String SOURCE_VALUE_NAME = "arg";
     protected static final String WILDCARD_NAME = "wildcard";
 
@@ -45,9 +46,27 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     private final Class<? extends Annotation> polyAnno;
     private final Class<? extends Annotation> varAnno;
     private final Class<? extends Annotation> wildAnno;
+
     private final Set<String> supportedAnnotationNames;
     private final Set<String> legacyAnnoNames;
 
+    /**
+     * Construct a SimpleQualifierParameterAnnotationConverter
+     *
+     * @param lubOp The operation to perform for when combining annotations
+     * @param multiAnnoNamePrefix The package and class name prefix for repeatable annotations
+     * @param supportedAnnotationNames A list of supported annotations specific to the type system
+     * @param legacyAnnoNames A list of legacy annotations. Legacy annotations are processed by the
+     *                        #getQualifierMapLegacy and #getPrimaryAnnotationLegacy methods.
+     * @param classAnno The annotation for class parameter declaration
+     * @param methodAnno The annotation for method parameter declaration
+     * @param polyAnno The poly annotation for the type system
+     * @param varAnno The polymorphic qualifier use variable
+     * @param wildAnno The annotation for specifying a wildcard
+     * @param top The top qualifier in the system
+     * @param bottom The bottom qualifier in the system
+     * @param defaultQual The qualifier to use if no annotations result in a qualifier.
+     */
     public SimpleQualifierParameterAnnotationConverter(CombiningOperation<Q> lubOp,
             String multiAnnoNamePrefix,
             Set<String> supportedAnnotationNames,
@@ -97,13 +116,15 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         }
 
         if (primary == null) {
-            // TODO: This is pretty coarse defaulting
             primary = new GroundQual<>(DEFAULT_QUAL);
         }
 
         return (params.isEmpty() && primary == null ? null : new QualParams<>(params, primary));
     }
 
+    /**
+     * Merge the keys and values from the result of repeated qualifiers.
+     */
     private void mergeParams(
             Map<String, Wildcard<Q>> params,
             Map<String, Wildcard<Q>> newParams) {
@@ -126,6 +147,9 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         }
     }
 
+    /**
+     * @return Return the
+     */
     protected Map<String, Wildcard<Q>> getQualifierMapLegacy(AnnotationMirror anno) {
         return null;
     }
@@ -135,7 +159,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
 
         Map<String, Wildcard<Q>> result = null;
         if (legacyAnnoNames.contains(anno)) {
-            return getQualifierMapLegacy(anno);
+            result = getQualifierMapLegacy(anno);
 
         } else if (name.startsWith(MULTI_ANNO_NAME_PREFIX)) {
             result = new HashMap<>();
@@ -203,18 +227,21 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
 
         if (legacyAnnoNames.contains(name)) {
             newQual = getPrimaryAnnotationLegacy(anno);
+
         } else if (supportedAnnotationNames.contains(name)) {
             Q qual = getQualifier(anno);
             String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
             if (PRIMARY_TARGET.equals(target)) {
                 newQual = new GroundQual<>(qual);
             }
+
         } else if (name.equals(varAnno.getName())) {
             String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
             String value = AnnotationUtils.getElementValue(anno, SOURCE_VALUE_NAME, String.class, true);
             if (PRIMARY_TARGET.equals(target)) {
                 newQual = new QualVar<>(value, BOTTOM, TOP);
             }
+
         } else if (name.equals(polyAnno.getName())) {
             String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
             if (PRIMARY_TARGET.equals(target)) {
@@ -263,6 +290,9 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         return result;
     }
 
+    /**
+     * @return true if type has a polymorphic qualifier
+     */
     private boolean hasPolyAnnotation(ExtendedExecutableType type) {
         if (hasPolyAnnotationCheck(type.getReturnType())) {
             return true;
@@ -278,6 +308,9 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         return false;
     }
 
+    /**
+     * @return true if type has a polymorphic qualifier
+     */
     protected boolean hasPolyAnnotationCheck(ExtendedTypeMirror type) {
         if (type == null) {
             return false;

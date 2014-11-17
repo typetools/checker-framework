@@ -33,7 +33,5 @@ abstract class Test {
         takeU(makeTU().head);
         takeU(makeUU().head);
 
-        // TODO: Add some tail tests
-
     }
 }

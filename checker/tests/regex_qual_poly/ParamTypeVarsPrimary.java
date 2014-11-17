@@ -32,8 +32,5 @@ abstract class Test {
         //:: error: (argument.type.incompatible)
         takeU(makeTU().head);
         takeU(makeUU().head);
-
-        // TODO: Add some tail tests
-
     }
 }
