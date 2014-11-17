@@ -1,7 +1,5 @@
 package org.checkerframework.checker.experimental.regex_qual_poly;
 
-import org.checkerframework.javacutil.ErrorReporter;
-
 /**
  *
  * Qualifier for the Regex-Qual-Param type system.
@@ -11,13 +9,12 @@ import org.checkerframework.javacutil.ErrorReporter;
  *
  * {@link Regex.PartialRegex} is used to track string values that are not value regex.
  *
- * {@link Regex.RegexVal} is used to track valid regex, with a count of the number of groups.
+ * {@link Regex.RegexVal} is used to track valid regex values with a count of the number of groups.
  *
  */
-public class Regex {
+public abstract class Regex {
 
-    private Regex() { }
-
+    /* Top qualifier. Comparisons using TOP or BOTTOM must use reference equality. */
     public static final Regex TOP = new Regex() {
         @Override
         public String toString() {
@@ -25,6 +22,7 @@ public class Regex {
         }
     };
 
+    /* Bottom qualifier. Comparisons using TOP or BOTTOM must use reference equality. */
     public static final Regex BOTTOM = new Regex() {
         @Override
         public String toString() {
@@ -33,6 +31,8 @@ public class Regex {
     };
 
     public static class PartialRegex extends Regex {
+
+        // The string value that is not a valid regex.
         private final String partialValue;
 
         public PartialRegex(String partialValue) {
@@ -72,18 +72,16 @@ public class Regex {
     }
 
     public static class RegexVal extends Regex {
+
+        // The number of regex groups available.
         private final int count;
+
         public RegexVal(int count) {
             this.count = count;
         }
 
         public int getCount() {
             return count;
-        }
-
-        @Override
-        public boolean isRegexVal() {
-            return true;
         }
 
         @Override
@@ -95,6 +93,11 @@ public class Regex {
 
             if (count != regexVal.count) return false;
 
+            return true;
+        }
+
+        @Override
+        public boolean isRegexVal() {
             return true;
         }
 

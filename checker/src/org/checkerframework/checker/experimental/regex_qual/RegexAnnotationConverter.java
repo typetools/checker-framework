@@ -15,26 +15,17 @@ import java.util.Map;
  */
 public class RegexAnnotationConverter implements AnnotationConverter<Regex> {
 
-    private String regexName;
+    private static final String regexName = org.checkerframework.checker.regex.qual.Regex.class.getName();
     private static final Regex DEFAULT = Regex.TOP;
 
-    public RegexAnnotationConverter() {
-        regexName = org.checkerframework.checker.regex.qual.Regex.class.getName();
-    }
-
+    /** If annotated with @Regex, create a RegexVal qualifier. **/
     @Override
     public Regex fromAnnotations(Collection<? extends AnnotationMirror> annos) {
 
         for (AnnotationMirror anno: annos) {
             if (AnnotationUtils.annotationName(anno).equals(regexName)) {
-                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
-                        anno.getElementValues().entrySet()) {
-
-                    if (entry.getKey().getSimpleName().toString().equals("value")) {
-                        return new Regex.RegexVal((Integer)entry.getValue().getValue());
-                    }
-                }
-                return new Regex.RegexVal(0);
+                Integer value = AnnotationUtils.getElementValue(anno, "value", Integer.class, true);
+                return new Regex.RegexVal(value);
             }
         }
         return DEFAULT;
