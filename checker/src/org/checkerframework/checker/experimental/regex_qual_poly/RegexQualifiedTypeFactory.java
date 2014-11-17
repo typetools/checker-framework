@@ -7,6 +7,8 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import org.checkerframework.checker.experimental.regex_qual.Regex;
+import org.checkerframework.checker.experimental.regex_qual.RegexQualifierHierarchy;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;

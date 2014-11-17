@@ -1,6 +1,7 @@
 package org.checkerframework.checker.experimental.regex_qual_poly;
 
-import org.checkerframework.checker.experimental.regex_qual_poly.Regex.RegexVal;
+import org.checkerframework.checker.experimental.regex_qual.Regex;
+import org.checkerframework.checker.experimental.regex_qual.Regex.RegexVal;
 import org.checkerframework.checker.regex.RegexTransfer;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
