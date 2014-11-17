@@ -12,11 +12,13 @@ import java.lang.annotation.Target;
  * MethodTaintingParam declares a qualifier parameter on a method.
  *
  * <pre>
- *  @MethodTaintingParam("aParam") void foo() { }
+ * {@code
+ *  {@literal @}MethodTaintingParam("aParam") void foo() { }
  *
  *  is equivalent to:
  *
  *  <<aParam>> void food() { }
+ * }
  * </pre>
  *
  */

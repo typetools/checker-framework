@@ -9,13 +9,14 @@ import java.lang.annotation.*;
  * Tainted is the annotation to specify the tainted qualifier.
  *
  * <pre>
- *  @TaintingParam("aParam")
+ * {@code
+ *  {@literal @}TaintingParam("aParam")
  *  class A {
  *  }
  *
  *  class B {
- *    @Tainted(param="aParam") A f1;
- *    @Tainted(param="aParam", wildcard=Wildcard.EXTENDS) A f2;
+ *    {@literal @}Tainted(param="aParam") A f1;
+ *    {@literal @}Tainted(param="aParam", wildcard=Wildcard.EXTENDS) A f2;
  *  }
  *
  *  is equivalent to:
@@ -23,10 +24,10 @@ import java.lang.annotation.*;
  *
  *  }
  *  class B {
- *    A<<aParam=@Tainted>> a;
- *    A<<aParam=? extends @Tainted>> b;
+ *    A<<aParam={@literal @}Tainted>> a;
+ *    A<<aParam=? extends {@literal @}Tainted>> b;
  *  }
- *
+ * }
  * </pre>
  */
 @Retention(RetentionPolicy.RUNTIME)
