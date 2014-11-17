@@ -2,7 +2,6 @@
 import org.checkerframework.checker.experimental.regex_qual_poly.qual.*;
 
 // Type variables and post-as-member-of
-// CANT USE Integer here!
 @ClassRegexParam("Param1")
 class List<T> {
     // (T + MAIN) head

@@ -1,6 +1,7 @@
 import org.checkerframework.checker.experimental.regex_qual_poly.qual.*;
 
 // Test primary annotations with primitives
+// primitives don't have non-primary qualifiers
 class SimplePrims {
 
     void execute(@Regex(1) int s) { }
