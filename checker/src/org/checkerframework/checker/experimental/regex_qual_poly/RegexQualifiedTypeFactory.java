@@ -164,11 +164,12 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
              * Returns the QualifiedTypeMirror that is the result of the binary operation represented by tree.
              * Handles concatenation of Regex and PolyRegex qualifiers.
              *
-             * @param tree A binary tree or a CompoundAssingmentTree
+             * @param tree A BinaryTree or a CompoundAssignmentTree
              * @param lRegexParam The qualifier of the left hand side of the expression
              * @param rRegexParam The qualifier of the right hand side of the expression
              * @param result The current QualifiedTypeMirror result
-             * @return A copy of result with the new qualifier applied
+             * @return result if operation is not a string concatenation or compound assignment. Otherwise
+             *          a copy of result with the new qualifier applied is returned.
              */
             private QualifiedTypeMirror<QualParams<Regex>> handleBinaryOperation(Tree tree, QualParams<Regex> lRegexParam,
                     QualParams<Regex> rRegexParam, QualifiedTypeMirror<QualParams<Regex>> result) {
@@ -184,15 +185,16 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
                     Regex rRegex = rRegexParam.getPrimary().getMaximum();
                     PolyQual<Regex> resultQual = null;
 
-                    // Poly + Regex == Poly
+
                     if (isPolyPlusRegex(rPrimary, lRegex)) {
+                        // Poly + Regex == Poly
                         resultQual = rPrimary;
 
                     } else if (isPolyPlusRegex(lPrimary, rRegex)) {
+                        // Regex + Poly == Poly
                         resultQual = lPrimary;
-                    }
 
-                    if (lRegex.isRegexVal() && rRegex.isRegexVal()) {
+                    } else if (lRegex.isRegexVal() && rRegex.isRegexVal()) {
                         // Regex(a) + Regex(b) = Regex(a + b)
                         int resultCount = ((Regex.RegexVal) lRegex).getCount() + ((Regex.RegexVal) rRegex).getCount();
                         resultQual = new GroundQual<Regex>(new Regex.RegexVal(resultCount));
