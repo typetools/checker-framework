@@ -10,7 +10,6 @@ import org.checkerframework.checker.regex.qual.Regex;
  */
 //@non-308-skip-test
 public class GroupCounts {
-
     void testGroupCount() {
         @Regex(0) String s1 = "abc";
         @Regex(1) String s2 = "(abc)";
