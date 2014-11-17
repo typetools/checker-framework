@@ -4,8 +4,6 @@ import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotatio
 
 import java.lang.annotation.*;
 
-import java.lang.annotation.ElementType;
-
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Repeatable(MultiPolyTainting.class)
