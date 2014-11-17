@@ -78,14 +78,6 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
     }
     */
 
-    /** Apply a substitution to each value in this map.
-     */
-//    public QualParams<Q> substitute(String name, Wildcard<Q> substValue) {
-//        Map<String, Wildcard<Q>> subst = new HashMap<>();
-//        subst.put(name, substValue);
-//        return this.substituteAll(subst);
-//    }
-
     /**
      * Apply a set of substitutions to each value in this map.
      *
