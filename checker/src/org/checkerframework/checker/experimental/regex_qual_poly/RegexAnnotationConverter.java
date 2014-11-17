@@ -61,9 +61,11 @@ public class RegexAnnotationConverter extends SimpleQualifierParameterAnnotation
 
             Integer value = AnnotationUtils.getElementValue(anno, "value", Integer.class, true);
             return new GroundQual<Regex>(new Regex.RegexVal(value));
+
         } else if (AnnotationUtils.annotationName(anno).equals(
                 org.checkerframework.checker.regex.qual.PolyRegex.class.getName())) {
             return new QualVar<>(POLY_NAME, BOTTOM, TOP);
+
         }
         return null;
     }
@@ -73,6 +75,7 @@ public class RegexAnnotationConverter extends SimpleQualifierParameterAnnotation
         if (type == null) {
             return false;
         }
+
         for (AnnotationMirror anno : type.getAnnotationMirrors()) {
             if (AnnotationUtils.annotationName(anno).equals(org.checkerframework.checker.regex.qual.PolyRegex.class.getName())) {
                 return true;

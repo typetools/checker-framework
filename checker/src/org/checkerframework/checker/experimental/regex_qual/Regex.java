@@ -1,21 +1,20 @@
 package org.checkerframework.checker.experimental.regex_qual;
 
-import org.checkerframework.javacutil.ErrorReporter;
-
 /**
  *
- * Qualifier for the Regex-Qual type system.
+ * Qualifier for the Regex-Qual-Param type system.
  *
  * The static instances TOP and BOTTOM are used as the top and bottom of the hierarchy.
  * Comparisons using TOP or BOTTOM must use reference equality.
  *
  * {@link Regex.PartialRegex} is used to track string values that are not value regex.
  *
- * {@link Regex.RegexVal} is used to track valid regex, with a count of the number of groups.
+ * {@link Regex.RegexVal} is used to track valid regex values with a count of the number of groups.
  *
  */
 public abstract class Regex {
 
+    /* Top qualifier. Comparisons using TOP or BOTTOM must use reference equality. */
     public static final Regex TOP = new Regex() {
         @Override
         public String toString() {
@@ -23,6 +22,7 @@ public abstract class Regex {
         }
     };
 
+    /* Bottom qualifier. Comparisons using TOP or BOTTOM must use reference equality. */
     public static final Regex BOTTOM = new Regex() {
         @Override
         public String toString() {
@@ -31,6 +31,8 @@ public abstract class Regex {
     };
 
     public static class PartialRegex extends Regex {
+
+        // The string value that is not a valid regex.
         private final String partialValue;
 
         public PartialRegex(String partialValue) {
@@ -39,6 +41,11 @@ public abstract class Regex {
 
         public String getPartialValue() {
             return partialValue;
+        }
+
+        @Override
+        public boolean isPartialRegex() {
+            return true;
         }
 
         @Override
@@ -65,7 +72,10 @@ public abstract class Regex {
     }
 
     public static class RegexVal extends Regex {
+
+        // The number of regex groups available.
         private final int count;
+
         public RegexVal(int count) {
             this.count = count;
         }
@@ -87,6 +97,11 @@ public abstract class Regex {
         }
 
         @Override
+        public boolean isRegexVal() {
+            return true;
+        }
+
+        @Override
         public int hashCode() {
             return count;
         }
@@ -95,6 +110,14 @@ public abstract class Regex {
         public String toString() {
             return "RegexVal(" + count + ")";
         }
+    }
+
+    public boolean isRegexVal() {
+        return false;
+    }
+
+    public boolean isPartialRegex() {
+        return false;
     }
 
     @Override
