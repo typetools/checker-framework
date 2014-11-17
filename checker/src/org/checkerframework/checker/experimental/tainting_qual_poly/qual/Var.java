@@ -9,17 +9,23 @@ import java.lang.annotation.*;
  * Var is a qualifier parameter use.
  *
  * <pre>
- *  @TaintingParam("aParam")
+ * {@code
+ *
+ *  {@literal @}TaintingParam("aParam")
  *  class A {
  *  }
  *
- *  @TaintingParam("bParam")
+ *  {@literal @}TaintingParam("bParam")
  *  class B {
- *    @Var(arg="bParam", param="aParam") A f1;
- *    @Var(arg="bParam", param="aParam", wildcard=Wildcard.EXTENDS) A f2;
+ *    {@literal @}Var(arg="bParam", param="aParam") A f1;
+ *    {@literal @}Var(arg="bParam", param="aParam", wildcard=Wildcard.EXTENDS) A f2;
  *  }
- *
+ * }
+ * </pre>
  *  is equivalent to:
+ * <pre>
+ *
+ * {@code
  *  class A<<aParam>> {
  *
  *  }
@@ -28,6 +34,7 @@ import java.lang.annotation.*;
  *    A<<aParam=? extends bParam>> b;
  *  }
  *
+ * }
  * </pre>
  */
 @Retention(RetentionPolicy.RUNTIME)
