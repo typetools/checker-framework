@@ -162,11 +162,12 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
              * Returns the QualifiedTypeMirror that is the result of the binary operation represented by tree.
              * Handles concatenation of Regex and PolyRegex qualifiers.
              *
-             * @param tree A binary tree or a CompoundAssingmentTree
+             * @param tree A BinaryTree or a CompoundAssignmentTree
              * @param lRegex The qualifier of the left hand side of the expression
              * @param rRegex The qualifier of the right hand side of the expression
              * @param result The current QualifiedTypeMirror result
-             * @return A copy of result with the new qualifier applied
+             * @return result if operation is not a string concatenation or compound assignment. Otherwise
+             *          a copy of result with the new qualifier applied is returned.
              */
             private QualifiedTypeMirror<Regex> handleBinaryOperation(Tree tree, Regex lRegex,
                     Regex rRegex, QualifiedTypeMirror<Regex> result) {
@@ -175,10 +176,11 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
                             && TreeUtils.isStringCompoundConcatenation((CompoundAssignmentTree)tree))) {
 
                     Regex regex = null;
-                    if (lRegex instanceof Regex.RegexVal && rRegex instanceof Regex.RegexVal) {
+                    if (lRegex.isRegexVal() && rRegex.isRegexVal()) {
                         int resultCount = ((Regex.RegexVal) lRegex).getCount() + ((Regex.RegexVal) rRegex).getCount();
                         regex = new Regex.RegexVal(resultCount);
-                    } else if (lRegex instanceof Regex.PartialRegex && rRegex instanceof Regex.PartialRegex) {
+
+                    } else if (lRegex.isPartialRegex() && rRegex.isPartialRegex()) {
                         String concat = ((Regex.PartialRegex) lRegex).getPartialValue() + ((Regex.PartialRegex) rRegex).getPartialValue();
                         if (isRegex(concat)) {
                             int groupCount = getGroupCount(concat);
@@ -186,10 +188,11 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
                         } else {
                             regex = new Regex.PartialRegex(concat);
                         }
-                    } else if (lRegex instanceof Regex.RegexVal && rRegex instanceof Regex.PartialRegex) {
+
+                    } else if (lRegex.isRegexVal() && rRegex.isPartialRegex()) {
                         String concat = "e" + ((Regex.PartialRegex) rRegex).getPartialValue();
                         regex = new Regex.PartialRegex(concat);
-                    } else if (rRegex instanceof Regex.RegexVal && lRegex instanceof Regex.PartialRegex ) {
+                    } else if (rRegex.isRegexVal() && lRegex.isPartialRegex()) {
                         String concat = ((Regex.PartialRegex) lRegex).getPartialValue() + "e";
                         regex = new Regex.PartialRegex(concat);
                     }
@@ -229,7 +232,7 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
     }
 
     /**
-     * Configure dataflow to use the RegexQualifiedTransfer
+     * Configure dataflow to use the RegexQualifiedTransfer.
      */
     @Override
     public QualAnalysis<Regex> createFlowAnalysis(List<Pair<VariableElement, QualValue<Regex>>> fieldValues) {
