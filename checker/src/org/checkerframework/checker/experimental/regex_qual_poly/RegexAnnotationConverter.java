@@ -9,10 +9,12 @@ import org.checkerframework.checker.experimental.regex_qual_poly.qual.PolyRegex;
 import org.checkerframework.checker.experimental.regex_qual_poly.qual.Var;
 import org.checkerframework.checker.experimental.regex_qual_poly.qual.Wild;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.qualframework.poly.CombiningOperation;
 import org.checkerframework.qualframework.poly.PolyQual;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 import org.checkerframework.qualframework.poly.PolyQual.QualVar;
+import org.checkerframework.qualframework.poly.QualParams;
 import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 import org.checkerframework.qualframework.poly.Wildcard;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
@@ -59,21 +61,27 @@ public class RegexAnnotationConverter extends SimpleQualifierParameterAnnotation
     }
 
     @Override
-    protected PolyQual<Regex> getPrimaryAnnotationLegacy(AnnotationMirror anno) {
+    protected QualParams<Regex> specialCaseHandle(AnnotationMirror anno) {
+
         if (AnnotationUtils.annotationName(anno).equals(
                 org.checkerframework.checker.regex.qual.Regex.class.getName())) {
 
             Integer value = AnnotationUtils.getElementValue(anno, "value", Integer.class, true);
-            return new GroundQual<Regex>(new Regex.RegexVal(value));
+            return new QualParams<>(new GroundQual<Regex>(new Regex.RegexVal(value)));
 
         } else if (AnnotationUtils.annotationName(anno).equals(
                 org.checkerframework.checker.regex.qual.PolyRegex.class.getName())) {
-            return new QualVar<>(POLY_NAME, BOTTOM, TOP);
 
+            return new QualParams<>(new QualVar<>(POLY_NAME, BOTTOM, TOP));
         }
+
+        ErrorReporter.errorAbort("Unexpected AnnotationMirror found in special case handling: " + anno);
         return null;
     }
 
+    /**
+     * This override sets up a polymorphic qualifier when the old PolyRegex annotaiton is used.
+     */
     @Override
     protected boolean hasPolyAnnotationCheck(ExtendedTypeMirror type) {
         if (type == null) {

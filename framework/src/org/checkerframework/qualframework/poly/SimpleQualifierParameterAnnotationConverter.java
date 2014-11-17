@@ -10,18 +10,22 @@ import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * SimpleQualifierParameterAnnotationConverter abstracts away the logic of setting up the qualifiers
+ * and conversion of annotations for type systems that support @Wild, @Var, and qualifier parameters.
+ *
+ * {@link SimpleQualifierParameterAnnotationConverter#getQualifier} should be implemented to convert
+ * an annotation to a qualifier in a type system specific manner.
+ *
+ */
 public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements QualifierParameterAnnotationConverter<Q> {
 
     // The default "Target" in an annotation is the primary qualifier
@@ -48,7 +52,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     private final Class<? extends Annotation> wildAnno;
 
     private final Set<String> supportedAnnotationNames;
-    private final Set<String> legacyAnnoNames;
+    private final Set<String> specialCaseAnnotations;
 
     /**
      * Construct a SimpleQualifierParameterAnnotationConverter
@@ -56,8 +60,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
      * @param lubOp The operation to perform for when combining annotations
      * @param multiAnnoNamePrefix The package and class name prefix for repeatable annotations
      * @param supportedAnnotationNames A list of supported annotations specific to the type system
-     * @param legacyAnnoNames A list of legacy annotations. Legacy annotations are processed by the
-     *                        #getQualifierMapLegacy and #getPrimaryAnnotationLegacy methods.
+     * @param specialCaseAnnotations A list of annotations to be processed solely by the specialCaseProcess method
      * @param classAnno The annotation for class parameter declaration
      * @param methodAnno The annotation for method parameter declaration
      * @param polyAnno The poly annotation for the type system
@@ -70,7 +73,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     public SimpleQualifierParameterAnnotationConverter(CombiningOperation<Q> lubOp,
             String multiAnnoNamePrefix,
             Set<String> supportedAnnotationNames,
-            Set<String> legacyAnnoNames,
+            Set<String> specialCaseAnnotations,
             Class<? extends Annotation> classAnno,
             Class<? extends Annotation> methodAnno,
             Class<? extends Annotation> polyAnno,
@@ -82,10 +85,14 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
 
         this.MULTI_ANNO_NAME_PREFIX = multiAnnoNamePrefix;
         this.supportedAnnotationNames = supportedAnnotationNames;
-        if (legacyAnnoNames == null) {
-            this.legacyAnnoNames = new HashSet<>();
+        if (supportedAnnotationNames == null ||
+                supportedAnnotationNames.isEmpty()) {
+            ErrorReporter.errorAbort("supportedAnnotationNames must be a list of type system qualifiers.");
+        }
+        if (specialCaseAnnotations == null) {
+            this.specialCaseAnnotations = new HashSet<>();
         } else {
-            this.legacyAnnoNames = legacyAnnoNames;
+            this.specialCaseAnnotations = specialCaseAnnotations;
         }
         this.lubOp = lubOp;
         this.classAnno = classAnno;
@@ -98,16 +105,39 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         this.DEFAULT_QUAL = defaultQual;
     }
 
+    /**
+     * Return the qualifier for an annotations.
+     *
+     * @param anno the annotation
+     * @return the resulting qualifier
+     */
     public abstract Q getQualifier(AnnotationMirror anno);
+
+    /**
+     * Special case handle the AnnotaitonMirror.
+     */
+    protected QualParams<Q> specialCaseHandle(AnnotationMirror anno) {
+        return null;
+    }
 
     @Override
     public QualParams<Q> fromAnnotations(Collection<? extends AnnotationMirror> annos) {
         Map<String, Wildcard<Q>> params = new HashMap<>();
         PolyQual<Q> primary = null;
         for (AnnotationMirror anno : annos) {
-            mergeParams(params, getQualifierMap(anno));
+            Map<String, Wildcard<Q>> qualMap;
+            PolyQual<Q> newPrimary;
+            if (specialCaseAnnotations.contains(AnnotationUtils.annotationName(anno))) {
+                QualParams<Q> result = specialCaseHandle(anno);
+                qualMap = result;
+                newPrimary = result.getPrimary();
+            } else {
+                qualMap = getQualifierMap(anno);
+                newPrimary = getPrimaryAnnotation(anno);
+            }
 
-            PolyQual<Q> newPrimary = getPrimaryAnnotation(anno);
+            mergeParams(params, qualMap);
+
             if (primary != null && newPrimary != null) {
                 primary = primary.combineWith(newPrimary, lubOp);
             } else {
@@ -147,21 +177,11 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         }
     }
 
-    /**
-     * @return Return the
-     */
-    protected Map<String, Wildcard<Q>> getQualifierMapLegacy(AnnotationMirror anno) {
-        return null;
-    }
-
     private Map<String, Wildcard<Q>> getQualifierMap(AnnotationMirror anno) {
         String name = AnnotationUtils.annotationName(anno);
 
         Map<String, Wildcard<Q>> result = null;
-        if (legacyAnnoNames.contains(anno)) {
-            result = getQualifierMapLegacy(anno);
-
-        } else if (name.startsWith(MULTI_ANNO_NAME_PREFIX)) {
+        if (name.startsWith(MULTI_ANNO_NAME_PREFIX)) {
             result = new HashMap<>();
             AnnotationMirror[] subAnnos = AnnotationUtils.getElementValue(
                     anno, "value", AnnotationMirror[].class, true);
@@ -216,19 +236,12 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         }
     }
 
-    protected PolyQual<Q> getPrimaryAnnotationLegacy(AnnotationMirror anno) {
-        return null;
-    }
-
     private PolyQual<Q> getPrimaryAnnotation(AnnotationMirror anno) {
 
         String name = AnnotationUtils.annotationName(anno);
         PolyQual<Q> newQual = null;
 
-        if (legacyAnnoNames.contains(name)) {
-            newQual = getPrimaryAnnotationLegacy(anno);
-
-        } else if (supportedAnnotationNames.contains(name)) {
+        if (supportedAnnotationNames.contains(name)) {
             Q qual = getQualifier(anno);
             String target = AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
             if (PRIMARY_TARGET.equals(target)) {
