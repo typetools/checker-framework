@@ -80,15 +80,16 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
             public QualifiedTypeMirror<QualParams<Regex>> visitLiteral(LiteralTree tree, ExtendedTypeMirror type) {
                 QualifiedTypeMirror<QualParams<Regex>> result = super.visitLiteral(tree, type);
 
+                if (tree.getKind() == Kind.NULL_LITERAL) {
+                    return SetQualifierVisitor.apply(result, QualParams.<Regex>getBottom());
+                }
+
                 String regexStr = null;
                 if (tree.getKind() == Kind.STRING_LITERAL) {
                     regexStr = (String) tree.getValue();
                 } else if (tree.getKind() == Kind.CHAR_LITERAL) {
                     regexStr = Character.toString((Character) tree.getValue());
-                } else if (tree.getKind() == Kind.NULL_LITERAL) {
-                    return SetQualifierVisitor.apply(result, QualParams.<Regex>getBottom());
                 }
-
 
                 if (regexStr != null) {
                     Regex regexQual;
@@ -107,7 +108,7 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
             }
 
             /**
-             * Handle string compound assignment
+             * Handle string compound assignment.
              */
             @Override
             public QualifiedTypeMirror<QualParams<Regex>> visitCompoundAssignment(CompoundAssignmentTree tree,
@@ -164,10 +165,10 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
              * Handles concatenation of Regex and PolyRegex qualifiers.
              *
              * @param tree A binary tree or a CompoundAssingmentTree
-             * @param lRegexParam The qualifier of the left hand side of the expression.
-             * @param rRegexParam The qualifier of the right hand side of the expression.
+             * @param lRegexParam The qualifier of the left hand side of the expression
+             * @param rRegexParam The qualifier of the right hand side of the expression
              * @param result The current QualifiedTypeMirror result
-             * @return A copy of result with the new qualifier Applied.
+             * @return A copy of result with the new qualifier applied
              */
             private QualifiedTypeMirror<QualParams<Regex>> handleBinaryOperation(Tree tree, QualParams<Regex> lRegexParam,
                     QualParams<Regex> rRegexParam, QualifiedTypeMirror<QualParams<Regex>> result) {

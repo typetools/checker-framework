@@ -11,7 +11,7 @@ import java.util.Map;
 
 /**
  * Convert {@link org.checkerframework.checker.regex.qual.Regex}
- * annotations into {@link Regex} qualifiers.
+ * annotations into a {@link Regex} qualifier.
  */
 public class RegexAnnotationConverter implements AnnotationConverter<Regex> {
 

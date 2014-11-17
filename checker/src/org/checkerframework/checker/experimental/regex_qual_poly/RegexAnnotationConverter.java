@@ -25,7 +25,9 @@ import java.util.HashSet;
 import java.util.Map;
 
 /**
- * Convert @Regex annotations into qualifiers with support for @PolyRegex, @Var, @Wild.
+ * Convert {@link org.checkerframework.checker.regex.qual.Regex}
+ * annotations into a {@link Regex} qualifier with support for
+ * PolyRegex, Var, Wild annotations.
  *
  */
 public class RegexAnnotationConverter extends SimpleQualifierParameterAnnotationConverter<Regex> {

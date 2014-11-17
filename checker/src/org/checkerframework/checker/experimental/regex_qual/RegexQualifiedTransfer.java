@@ -12,9 +12,11 @@ import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
 import org.checkerframework.qualframework.base.dataflow.QualStore;
 import org.checkerframework.qualframework.base.dataflow.QualTransfer;
@@ -23,7 +25,8 @@ import org.checkerframework.qualframework.base.dataflow.QualValue;
 import javax.lang.model.element.ExecutableElement;
 
 /**
- * A reimplemention of {@link RegexTransfer} using QualifiedTypeMirrors instead of AnnotatedTypeMirrors.
+ * A reimplementation of {@link RegexTransfer} using {@link QualifiedTypeMirror}s
+ * instead of {@link AnnotatedTypeMirror}s.
  */
 public class RegexQualifiedTransfer extends QualTransfer<Regex> {
 

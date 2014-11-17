@@ -2,7 +2,7 @@ package org.checkerframework.checker.experimental.regex_qual;
 
 /**
  *
- * Qualifier for the Regex-Qual-Param type system.
+ * Qualifier for the Regex-Qual type system.
  *
  * The static instances TOP and BOTTOM are used as the top and bottom of the hierarchy.
  * Comparisons using TOP or BOTTOM must use reference equality.
