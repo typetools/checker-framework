@@ -19,11 +19,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * SimpleQualifierParameterAnnotationConverter abstracts away the logic of setting up the qualifiers
- * and conversion of annotations for type systems that support @Wild, @Var, and qualifier parameters.
+ * SimpleQualifierParameterAnnotationConverter abstracts the logic to convert annotations to qualifiers
+ * for typical qual-poly types systems that that support @Wild, @Var, and qualifier parameters.
  *
  * {@link SimpleQualifierParameterAnnotationConverter#getQualifier} should be implemented to convert
- * an annotation to a qualifier in a type system specific manner.
+ * an annotation to a type system specific qualifier (e.g. @Regex or @Tainted).
  *
  */
 public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements QualifierParameterAnnotationConverter<Q> {
@@ -58,7 +58,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
      * Construct a SimpleQualifierParameterAnnotationConverter. specialCaseAnnotations is the only
      * parameter that is allowed to be null.
      *
-     * @param lubOp The operation to perform for when combining annotations
+     * @param lubOp The operation to perform when combining annotations
      * @param multiAnnoNamePrefix The package and class name prefix for repeatable annotations
      * @param supportedAnnotationNames A list of supported annotations specific to the type system
      * @param specialCaseAnnotations A list of annotations to be processed solely by the specialCaseProcess method
@@ -108,7 +108,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     }
 
     /**
-     * Create a type system Qualifier based on an annotation.
+     * Create a type system qualifier based on an annotation.
      *
      * @param anno the annotation
      * @return the resulting qualifier
@@ -116,13 +116,22 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     public abstract Q getQualifier(AnnotationMirror anno);
 
     /**
-     * Special case handle the AnnotaitonMirror. Useful for when more control
+     * Special case handle the AnnotationMirror. Useful for when more control
      * is need when processing an annotation.
      */
     protected QualParams<Q> specialCaseHandle(AnnotationMirror anno) {
         return null;
     }
 
+    /**
+     * Convert a list of AnnotationMirrors to a QualParams. Each AnnotationMirror is converted into a QualParams.
+     * The resulting QualParams are merged together to create the result.
+     *
+     * If no primary qualifier is found, DEFAULT_QUAL will be used.
+     *
+     * @param annos the collection of type annotations to parse
+     * @return the QualParams
+     */
     @Override
     public QualParams<Q> fromAnnotations(Collection<? extends AnnotationMirror> annos) {
         Map<String, Wildcard<Q>> params = new HashMap<>();
@@ -156,7 +165,8 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     }
 
     /**
-     * Merge the keys and values from the result of repeated qualifiers.
+     * Merge two QualParam maps. Each annotation will be converted into a Map, so the map from
+     * multiple annotations will need to be merged together.
      */
     private void mergeParams(
             Map<String, Wildcard<Q>> params,
@@ -307,7 +317,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     }
 
     /**
-     * @return true if type has a polymorphic qualifier
+     * @return true if type has a polymorphic qualifier.
      */
     private boolean hasPolyAnnotation(ExtendedExecutableType type) {
         if (hasPolyAnnotationCheck(type.getReturnType())) {
@@ -325,7 +335,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     }
 
     /**
-     * @return true if type has a polymorphic qualifier
+     * @return true if type has a polymorphic qualifier.
      */
     protected boolean hasPolyAnnotationCheck(ExtendedTypeMirror type) {
         if (type == null) {

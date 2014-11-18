@@ -133,10 +133,10 @@ public interface QualifiedTypeFactory<Q> {
      *
      * The only trees that could potentially have a receiver are:
      * <ul>
-     *  <li> Array Access
-     *  <li> Identifiers (whose receivers are usually self type)
-     *  <li> Method Invocation Trees
-     *  <li> Member Select Trees
+     *  <li> ArrayAccessTree
+     *  <li> IdentifierTree (whose receivers are usually self type)
+     *  <li> MethodInvocationTree
+     *  <li> MemberSelectTree
      * </ul>
      *
      * @param expression The expression for which to determine the receiver type

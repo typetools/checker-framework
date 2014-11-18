@@ -15,13 +15,13 @@ import javax.lang.model.type.TypeMirror;
 /**
  * Checkers should extend a QualAnalysis to customize the TransferFunction for their checker.
  *
- * Currently, the underlying checker-framework's dataflow does not use this class directly for running the analysis;
+ * Currently, the underlying Checker Framework's dataflow does not use this class directly for running the analysis;
  * It only directly uses the QualTransfer. QualAnalysis, QualStore and QualValue act as one way adapters from the
  * qual system to the underlying atm system.
  *
  * For dataflow to actually use this analysis we would need to add functionality for tracking fields and
  * the other functionality that is currently in CFAbstractAnalysis. We could add methods
- * in this class that call back to an CFAbstractAnalysis adapter, like other shims in system.
+ * in this class that call back to an CFAbstractAnalysis adapter, like other shims in the system.
  *
  * Because the checker-framework does not directly use this class, adding properties
  * (like initialization) to the QualStore or QualValue will currently have no effect.

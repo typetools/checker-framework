@@ -162,6 +162,7 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
         }
 
         if (! ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
+            // Need to include receivers in the inference.
             formals.add(result.first.getReceiverType());
             actuals.add(receiverType);
         }
