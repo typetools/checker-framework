@@ -514,12 +514,14 @@ public class CheckerMain {
      * All "built-in" Checker Framework checkers, except SubtypingChecker, start with this package file path
      * Framework Checkers, except for SubtypingChecker are excluded from processor shorthand
      */
-    protected static final String CheckerBasePackage = "org.checkerframework.checker";
-    protected static final String CheckerFrameworkBase = CheckerBasePackage.replace(".", File.separator);
+    protected static final String CHECKER_BASE_PACKAGE = "org.checkerframework.checker";
+    protected static final String CHECKER_BASE_DIR_NAME = CHECKER_BASE_PACKAGE.replace(".", File.separator);
 
-    protected static final String SubtypingCheckerName = "SubtypingChecker";
-    protected static final String FullyQualifiedSubtypingChecker =
-            "org.checkerframework.common.subtyping.SubtypingChecker";
+    protected static final String FULLY_QUALIFIED_SUBTYPING_CHECKER =
+            org.checkerframework.common.subtyping.SubtypingChecker.class.getCanonicalName();
+
+    protected static final String SUBTYPING_CHECKER_NAME =
+            org.checkerframework.common.subtyping.SubtypingChecker.class.getSimpleName();
 
     /**
      * Takes a processor string of the form
@@ -543,8 +545,8 @@ public class CheckerMain {
         final String[] processors = processorsString.split(",");
         final boolean[] unqualified = new boolean[processors.length];
         for (int i = 0; i < processors.length; i++) {
-            if (processors[i].equals(SubtypingCheckerName)) {
-                processors[i] = FullyQualifiedSubtypingChecker;
+            if (processors[i].equals(SUBTYPING_CHECKER_NAME)) {
+                processors[i] = FULLY_QUALIFIED_SUBTYPING_CHECKER;
                 unqualified[i] = false;
             } else {
                 unqualified[i] = !processors[i].contains(".");
@@ -556,7 +558,7 @@ public class CheckerMain {
             ZipEntry entry;
             while ((entry = checkerJarIs.getNextEntry()) != null) {
                 final String name = entry.getName();
-                if (name.startsWith(CheckerFrameworkBase) && name.endsWith("Checker.class")) {
+                if (name.startsWith(CHECKER_BASE_DIR_NAME) && name.endsWith("Checker.class")) {
                     final String [] checkerPath = name.substring(0, name.length() - ".class".length()).split("/");
                     final String checkerName = checkerPath[checkerPath.length - 1];
 
