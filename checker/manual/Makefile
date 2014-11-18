@@ -18,11 +18,11 @@ propkey-checker.tex \
 signature-checker.tex \
 guieffect-checker.tex \
 units-checker.tex \
+constant-value-checker.tex \
 linear-checker.tex \
 igj-checker.tex \
 javari-checker.tex \
 subtyping-checker.tex \
-constant-value-checker.tex \
 external-checkers.tex \
 typestate-checker.tex \
 generics.tex \
