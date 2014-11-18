@@ -102,6 +102,9 @@ class QualifierHierarchyAdapter<Q> {
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
 
+            // Dataflow and Propagation tree annotator will sometimes call this method
+            // with ATMs that do not have a qualifier(@Key) yet. In that case we must
+            // do the conversion here.
             Q rhsQual = getOrCreateQualifier(rhs);
             Q lhsQual = getOrCreateQualifier(lhs);
 
@@ -113,12 +116,12 @@ class QualifierHierarchyAdapter<Q> {
         }
 
         /**
-         * This method looks up a qualifier on an AnnotatedTypeMirror by using @Key
-         * annotations. If no @Key annotations are present, converter is used to
-         * create a qualifier based on the annotations on mirror.
+         * This method looks up the qualifier for AnnotatedTypeMirror using its @Key
+         * annotation. If no @Key annotation is present, converter is used to
+         * create a qualifier based on the annotation on mirror.
          *
          * @param mirror the AnnotationMirror to create a qualifier from
-         * @return
+         * @return the resulting qualifier
          */
         private Q getOrCreateQualifier(AnnotationMirror mirror) {
             Q rhsQual;

@@ -151,7 +151,7 @@ public class QualTransferAdapter<Q> extends CFTransfer {
             resultValue = analysis.createAbstractValue(
                     qualAnalysis.getConverter().getAnnotatedType(transferResult.getResultValue().getType()));
         }
-        
+
         if (transferResult.containsTwoStores()) {
             return new ConditionalTransferResult<>(resultValue,
                     transferResult.getThenStore().getUnderlyingStore(),

@@ -77,10 +77,11 @@ import java.util.List;
 /**
  * A {@link TransferFunction} for the Qual Framework.
  *
- * Consumers should override the methods of interest.
+ * Extenders should override the methods of interest.
  *
- * The {@link QualTransferAdapter} adapter is called to retain the behaviour of
- * the CFTransfer by default.
+ * The default for each method is to call the {@link QualTransferAdapter} which calls the corresponding
+ * method in CFTransfer.
+ *
  */
 public class QualTransfer<Q> implements TransferFunction<QualValue<Q>, QualStore<Q>> {
 
