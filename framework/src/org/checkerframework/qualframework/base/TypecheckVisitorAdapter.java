@@ -40,7 +40,7 @@ public class TypecheckVisitorAdapter<Q> extends BaseTypeVisitor<GenericAnnotated
 
         if (tree.getKind() == Kind.VARIABLE &&
             InternalUtils.symbol(tree).asType().getKind() == TypeKind.TYPEVAR) {
-            // Need to allow any parameters on a declared type.
+            // We get an error annotating type variable uses otherwise.
             return true;
         }
 

@@ -248,17 +248,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         return result;
     }
 
-//    @Override
-//    public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable var) {
-//        // TODO: Need to comment what this is doing.
-////        AnnotatedTypeVariable copy = var.getCopy(true);
-////        copy.addAnnotations(copy.getBounds().getUpperBound().getAnnotations());
-////        AnnotatedWildcardType result = super.getUninferredWildcardType(copy);
-//
-//        return result;
-//    }
-
-
     @Override
     public void postDirectSuperTypes(AnnotatedTypeMirror subtype, List<? extends AnnotatedTypeMirror> supertypes) {
         TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();

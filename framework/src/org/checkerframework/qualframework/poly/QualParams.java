@@ -81,7 +81,7 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
     /**
      * Apply a set of substitutions to each value in this map.
      *
-     * Substitutions are ran on the underlying wildcards. for each key/value
+     * Substitutions are performed on the underlying wildcards. For each key/value
      * in substs, if the target wildcard has a QualVar with a name that matches "key",
      * the value of the bounds of the QualVar are replaced by the bounds of the value wildcard.
      *
