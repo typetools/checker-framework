@@ -63,7 +63,7 @@ public class TypeVariableSubstitutor {
     }
 
     protected class Visitor extends AnnotatedTypeCopier {
-        private Map<TypeParameterElement, Pair<AnnotatedTypeVariable, AnnotatedTypeMirror>> elementToArgMap;
+        private final Map<TypeParameterElement, Pair<AnnotatedTypeVariable, AnnotatedTypeMirror>> elementToArgMap;
 
         public Visitor(final Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeParamToArg) {
             elementToArgMap = new HashMap<>();
@@ -75,7 +75,10 @@ public class TypeVariableSubstitutor {
         }
 
         @Override
-        public AnnotatedTypeMirror visitTypeVariable(AnnotatedTypeVariable original, IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
+        public AnnotatedTypeMirror visitTypeVariable(
+                AnnotatedTypeVariable original,
+                IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
+
             if (visitingExecutableTypeParam) {
                 //AnnotatedExecutableType differs from AnnotatedDeclaredType in that its list of
                 //type parameters cannot be adapted in place since the AnnotatedExecutable.typeVarTypes

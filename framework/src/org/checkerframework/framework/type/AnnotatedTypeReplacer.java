@@ -19,7 +19,7 @@ public class AnnotatedTypeReplacer {
     public static AnnotatedTypeMirror replace(
             AnnotatedTypeMirror type,
             Map<? extends AnnotatedTypeMirror, ? extends AnnotatedTypeMirror> replacementMap) {
-            return new Visitor(replacementMap).visit(type);
+        return new Visitor(replacementMap).visit(type);
     }
 
     /**
