@@ -283,6 +283,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         // Avoid running getQualifierMap on Multi* annotations, since that could
         // involve a nontrivial amount of work.
         return name.startsWith(MULTI_ANNO_NAME_PREFIX)
+            || specialCaseAnnotations.contains(name)
             || getQualifierMap(anno) != null
             || getPrimaryAnnotation(anno) != null;
     }
