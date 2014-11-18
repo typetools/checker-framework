@@ -727,7 +727,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @return a deep copy
      */
-    public abstract AnnotatedTypeMirror deepCopy(final boolean deepCopy);
+    public abstract AnnotatedTypeMirror deepCopy(final boolean copyAnnotations);
 
     /**
      * @return a deep copy of this type with annotations
@@ -823,8 +823,8 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedDeclaredType deepCopy(boolean deepCopy) {
-            return (AnnotatedDeclaredType) new AnnotatedTypeCopier(deepCopy).visit(this);
+        public AnnotatedDeclaredType deepCopy(boolean copyAnnotations) {
+            return (AnnotatedDeclaredType) new AnnotatedTypeCopier(copyAnnotations).visit(this);
         }
 
         @Override
@@ -1239,8 +1239,8 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedExecutableType deepCopy(boolean deepCopy) {
-            return (AnnotatedExecutableType) new AnnotatedTypeCopier(deepCopy).visit(this);
+        public AnnotatedExecutableType deepCopy(boolean copyAnnotations) {
+            return (AnnotatedExecutableType) new AnnotatedTypeCopier(copyAnnotations).visit(this);
         }
 
         @Override
@@ -1355,8 +1355,8 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedArrayType deepCopy(boolean deepCopy) {
-            return (AnnotatedArrayType) new AnnotatedTypeCopier(deepCopy).visit(this);
+        public AnnotatedArrayType deepCopy(boolean copyAnnotations) {
+            return (AnnotatedArrayType) new AnnotatedTypeCopier(copyAnnotations).visit(this);
         }
 
         @Override
@@ -1622,8 +1622,8 @@ public abstract class AnnotatedTypeMirror {
         private boolean inUpperBounds = false;
 
         @Override
-        public AnnotatedTypeVariable deepCopy(boolean deepCopy) {
-            return (AnnotatedTypeVariable) new AnnotatedTypeCopier(deepCopy).visit(this);
+        public AnnotatedTypeVariable deepCopy(boolean copyAnnotations) {
+            return (AnnotatedTypeVariable) new AnnotatedTypeCopier(copyAnnotations).visit(this);
         }
 
         @Override
@@ -1719,8 +1719,8 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedNoType deepCopy(boolean deepCopy) {
-            return (AnnotatedNoType) new AnnotatedTypeCopier(deepCopy).visit(this);
+        public AnnotatedNoType deepCopy(boolean copyAnnotations) {
+            return (AnnotatedNoType) new AnnotatedTypeCopier(copyAnnotations).visit(this);
         }
 
         @Override
@@ -1763,8 +1763,8 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedNullType deepCopy(boolean deepCopy) {
-            return (AnnotatedNullType) new AnnotatedTypeCopier(deepCopy).visit(this);
+        public AnnotatedNullType deepCopy(boolean copyAnnotations) {
+            return (AnnotatedNullType) new AnnotatedTypeCopier(copyAnnotations).visit(this);
         }
 
         @Override
@@ -1810,8 +1810,8 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedPrimitiveType deepCopy(boolean deepCopy) {
-            return (AnnotatedPrimitiveType) new AnnotatedTypeCopier(deepCopy).visit(this);
+        public AnnotatedPrimitiveType deepCopy(boolean copyAnnotations) {
+            return (AnnotatedPrimitiveType) new AnnotatedTypeCopier(copyAnnotations).visit(this);
         }
 
         @Override
@@ -1941,8 +1941,8 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedWildcardType deepCopy(boolean deepCopy) {
-            return (AnnotatedWildcardType) new AnnotatedTypeCopier(deepCopy).visit(this);
+        public AnnotatedWildcardType deepCopy(boolean copyAnnotations) {
+            return (AnnotatedWildcardType) new AnnotatedTypeCopier(copyAnnotations).visit(this);
         }
 
         @Override
@@ -2011,8 +2011,8 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedIntersectionType deepCopy(boolean deepCopy) {
-            return (AnnotatedIntersectionType) new AnnotatedTypeCopier(deepCopy).visit(this);
+        public AnnotatedIntersectionType deepCopy(boolean copyAnnotations) {
+            return (AnnotatedIntersectionType) new AnnotatedTypeCopier(copyAnnotations).visit(this);
         }
 
         @Override
@@ -2081,8 +2081,8 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public AnnotatedUnionType deepCopy(boolean deepCopy) {
-            return (AnnotatedUnionType) new AnnotatedTypeCopier(deepCopy).visit(this);
+        public AnnotatedUnionType deepCopy(boolean copyAnnotations) {
+            return (AnnotatedUnionType) new AnnotatedTypeCopier(copyAnnotations).visit(this);
         }
 
         @Override
