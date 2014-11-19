@@ -146,6 +146,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** The state of the visitor. **/
     protected final VisitorState visitorState;
 
+    /** ===== postInit initialized fields ====
+     * Note: qualHierarchy and typeHierarchy are both initialized in the postInit.
+     * @see #postInit()
+     * This means, they cannot be final and cannot be referred to in any subclass
+     * constructor or method until after postInit is called.
+     */
+
     /** Represent the annotation relations. **/
     protected QualifierHierarchy qualHierarchy;
 
@@ -162,7 +169,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Provides utility method to substitute arguments for their type variables
      */
-    protected TypeVariableSubstitutor typeVarSubstitutor;
+    protected final TypeVariableSubstitutor typeVarSubstitutor;
 
     /** To cache the supported type qualifiers. */
     private final Set<Class<? extends Annotation>> supportedQuals;
@@ -254,6 +261,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
 
         this.cacheDeclAnnos = new HashMap<Element, Set<AnnotationMirror>>();
+
+        this.typeVarSubstitutor = createTypeVariableSubstitutor();
     }
 
     /**
@@ -268,7 +277,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ErrorReporter.errorAbort("AnnotatedTypeFactory with null qualifier hierarchy not supported.");
         }
         this.typeHierarchy = createTypeHierarchy();
-        this.typeVarSubstitutor = createTypeVariableSubstitutor();
 
         // TODO: is this the best location for declaring this alias?
         addAliasedDeclAnnotation(org.jmlspecs.annotation.Pure.class,
@@ -443,7 +451,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * TypeVariableSubstitutor provides a method to replace type parameters with
-     * their arguments.  It may also be
+     * their arguments.
      * @return
      */
     protected TypeVariableSubstitutor createTypeVariableSubstitutor() {
