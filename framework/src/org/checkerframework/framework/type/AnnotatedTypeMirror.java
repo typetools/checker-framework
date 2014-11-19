@@ -715,10 +715,12 @@ public abstract class AnnotatedTypeMirror {
      * Returns the erasure type of the this type, according to JLS
      * specifications.
      *
-     * @return  the erasure of this
+     * @see <a href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.6">https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.6</a>
+     *
+     * @return  the erasure of this AnnotatedTypeMirror
      */
     public AnnotatedTypeMirror getErased() {
-        return this;
+        return deepCopy();
     }
 
     /**
@@ -796,7 +798,7 @@ public abstract class AnnotatedTypeMirror {
          * Constructor for this type
          *
          * @param type  underlying kind of this type
-         * @param atypeFactory TODO
+         * @param atypeFactory The AnnotatedTypeFactory used to create this type
          */
         private AnnotatedDeclaredType(DeclaredType type,
                 AnnotatedTypeFactory atypeFactory, boolean declaration) {
@@ -957,6 +959,11 @@ public abstract class AnnotatedTypeMirror {
             return type;
         }
 
+        /**
+         * Return the declared type with its type arguments removed.  This
+         * also replaces the underlying type with its erasure.
+         * @return A fresh copy of the declared type with no type arguments
+         */
         @Override
         public AnnotatedDeclaredType getErased() {
             // 1. |G<T_1, ..., T_n>| = |G|
@@ -971,16 +978,21 @@ public abstract class AnnotatedTypeMirror {
                 rType.addAnnotations(getAnnotations());
                 rType.setTypeArguments(Collections.<AnnotatedTypeMirror> emptyList());
                 return rType.getErased();
+
             } else if ((getEnclosingType() != null) &&
                        (getEnclosingType().getKind() != TypeKind.NONE)) {
                 // Handle case 2
-                // TODO: Test this
+                //Shallow copy provides a fresh type when there are no type arguments
+                //and we set the enclosing type
+                //Therefore, we do not need to use deepCopy
                 AnnotatedDeclaredType rType = shallowCopy();
                 AnnotatedDeclaredType et = getEnclosingType();
                 rType.setEnclosingType(et.getErased());
                 return rType;
+
             } else {
-                return this;
+
+                return this.deepCopy();
             }
         }
 
@@ -1380,6 +1392,9 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public AnnotatedArrayType getErased() {
+            //IMPORTANT NOTE: The returned type is a fresh Object because
+            //the componentType is the only component of arrays and the
+            //call to getErased will return a fresh object.
             // | T[ ] | = |T| [ ]
             AnnotatedArrayType at = shallowCopy();
             AnnotatedTypeMirror ct = at.getComponentType().getErased();
@@ -1658,6 +1673,18 @@ public abstract class AnnotatedTypeMirror {
             return shallowCopy(true);
         }
 
+        /**
+         * This method will traverse the upper bound of this type variable calling getErased
+         * until it finds the concrete upper bound.
+         * e.g.
+         * &lt;E extends T&gt;, T extends S, S extends List&lt;String&gt;&gt;
+         * A call to getErased will return the type List
+         * @return The erasure of the upper bound of this type
+         *
+         * IMPORTANT NOTE: getErased should always return a FRESH object.  This will
+         * occur for type variables if all other getErased methods are implemented appropriately.
+         * Therefore, to avoid extra copy calls, this method will not call deepCopy on getUpperBound
+         */
         @Override
         public AnnotatedTypeMirror getErased() {
             // |T extends A&B| = |A|
@@ -1968,10 +1995,14 @@ public abstract class AnnotatedTypeMirror {
             return shallowCopy(true);
         }
 
+        /**
+         * @see org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable#getErased()
+         * @return
+         */
         @Override
         public AnnotatedTypeMirror getErased() {
             // |? extends A&B| = |A|
-            return getExtendsBound().deepCopy().getErased();
+            return getExtendsBound().getErased();
         }
 
         // Remove the typeArgHack once method type
