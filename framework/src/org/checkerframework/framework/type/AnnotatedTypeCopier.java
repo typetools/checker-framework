@@ -36,12 +36,31 @@ public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMi
      */
     protected boolean visitingExecutableTypeParam = false;
 
-    private final boolean copyAnnotations;
+    /**
+     * @see #AnnotatedTypeCopier(boolean)
+     */
+    protected final boolean copyAnnotations;
 
+    /**
+     * Creates an AnnotatedTypeCopier that may or may not copyAnnotations
+     * By default AnnotatedTypeCopier provides two major properties in its copies:
+     *   1) Structure preservation - the exact structure of the original AnnotatedTypeMirror is preserved in the copy
+     *      including all component types.
+     *   2) Annotation preservation - All of the annotations from the original AnnotatedTypeMirror and its components
+     *      have been copied to the new type.
+     *
+     * If copyAnnotations is set to false, the second property, annotation preservation, is removed.  This is useful
+     * for cases in which the user may want to copy the structure of a type exactly but NOT its annotations.
+     */
     public AnnotatedTypeCopier(final boolean copyAnnotations) {
         this.copyAnnotations = copyAnnotations;
     }
 
+    /**
+     * Creates an AnnotatedTypeCopier that copies both the structure and annotations of the source
+     * AnnotatedTypeMirror
+     * @see #AnnotatedTypeCopier(boolean)
+     */
     public AnnotatedTypeCopier() {
         this(true);
     }
@@ -171,6 +190,11 @@ public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMi
         copy.returnType = visit(original.returnType, originalToCopy);
 
         for (final AnnotatedTypeVariable typeVariable : original.typeVarTypes) {
+            // This field is needed to identify exactly when the declaration of an executable's
+            // type parameter is visited.  When subtypes of this class visit the type parameter's
+            // component types, they will likely set visitingExecutableTypeParam to false.
+            // Therefore, we set this variable on each iteration of the loop.
+            // See TypeVariableSubstitutor.Visitor.visitTypeVariable for an example of this.
             visitingExecutableTypeParam = true;
             copy.typeVarTypes.add((AnnotatedTypeVariable) visit(typeVariable, originalToCopy));
         }
@@ -301,6 +325,13 @@ public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMi
         return copy;
     }
 
+    /**
+     * This method is called in any location in which a primary annotation would be copied from
+     * source to dest.  Note, this method obeys the copyAnnotations field.  Subclasses of
+     * AnnotatedTypeCopier can use this method to customize annotations before copying.
+     * @param source The type whose primary annotations are being copied
+     * @param dest A copy of source that should receive its primary annotations
+     */
     protected void maybeCopyPrimaryAnnotations(final AnnotatedTypeMirror source, final AnnotatedTypeMirror dest) {
         if (copyAnnotations) {
             dest.addAnnotations(source.annotations);
