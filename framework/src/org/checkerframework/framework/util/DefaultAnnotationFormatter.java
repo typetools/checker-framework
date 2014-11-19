@@ -89,7 +89,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
         }
     }
 
-    // A helper method to output a single AnnotationValue, without showing full package names.
+    // A helper method to print AnnotationValues, without showing full package names.
     @SuppressWarnings("unchecked")
     protected void formatAnnotationMirrorArg(AnnotationValue av, StringBuilder sb) {
         Object val = av.getValue();
