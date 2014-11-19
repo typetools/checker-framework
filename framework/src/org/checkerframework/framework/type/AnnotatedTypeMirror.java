@@ -727,6 +727,15 @@ public abstract class AnnotatedTypeMirror {
      * Returns a deep copy of this type.  A deep copy implies that each component type is copied
      * recursively and the returned type refers to those copies in its component locations.
      *
+     * Note: deepCopy provides two important properties in the returned copy:
+     *  1) Structure preservation - The exact structure of the original AnnotatedTypeMirror is preserved in the copy
+     *     including all component types.
+     *  2) Annotation preservation - All of the annotations from the original AnnotatedTypeMirror and its components
+     *     have been copied to the new type.
+     *
+     * If copyAnnotations is set to false, the second property, Annotation preservation, is removed.  This is useful
+     * for cases in which the user may want to copy the structure of a type exactly but NOT its annotations.
+     *
      * @return a deep copy
      */
     public abstract AnnotatedTypeMirror deepCopy(final boolean copyAnnotations);
