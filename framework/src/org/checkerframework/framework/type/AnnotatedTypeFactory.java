@@ -157,7 +157,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * This formatter will be passed to all AnnotatedTypeMirrors created by this
      * factory and will be used in their toString methods.
      */
-    protected AnnotatedTypeFormatter typeFormatter;
+    protected final AnnotatedTypeFormatter typeFormatter;
 
     /**
      * Provides utility method to substitute arguments for their type variables
@@ -241,7 +241,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public AnnotatedTypeFactory(BaseTypeChecker checker) {
         uid = ++uidCounter;
         this.processingEnv = checker.getProcessingEnvironment();
-        this.typeFormatter = new DefaultAnnotatedTypeFormatter(checker.hasOption("printAllQualifiers"));
+        this.typeFormatter = createAnnotatedTypeFormatter();
         // this.root = root;
         this.checker = checker;
         this.trees = Trees.instance(processingEnv);
@@ -491,6 +491,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         return Collections.emptySet();
+    }
+
+    /**
+     * Creates the AnnotatedTypeFormatter used by this type factory and all AnnotatedTypeMirrors
+     * it creates.  The AnnotatedTypeFormatter is used in AnnotatedTypeMirror.toString and
+     * will affect the error messages printed for checkers that use this type factory.
+     * @return The AnnotatedTypeFormatter to pass to all instantiated AnnotatedTypeMirrors
+     */
+    protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
+        return new DefaultAnnotatedTypeFormatter(checker.hasOption("printAllQualifiers"));
     }
 
     /**
