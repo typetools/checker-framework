@@ -1477,8 +1477,7 @@ public abstract class AnnotatedTypeMirror {
          *
          * Returns the lower bound of this type variable. While a type
          * parameter cannot include an explicit lower bound declaration,
-         * capture conversion can produce a type variable wit
-         * h a non-trivial
+         * capture conversion can produce a type variable with a non-trivial
          * lower bound. Type variables otherwise have a lower bound of
          * NullType.
          *
