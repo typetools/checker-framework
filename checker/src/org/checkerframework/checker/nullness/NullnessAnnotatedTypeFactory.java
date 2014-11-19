@@ -22,6 +22,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
@@ -226,6 +227,14 @@ public class NullnessAnnotatedTypeFactory
     @Override
     public NullnessTransfer createFlowTransferFunction(CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer> analysis) {
         return new NullnessTransfer((NullnessAnalysis) analysis);
+    }
+
+    /**
+     * @return an AnnotatedTypeFormatter that does not print the qualifiers on null literals
+     */
+    @Override
+    protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
+        return new NullnessAnnotatedTypeFormatter(checker.hasOption("printAllQualifiers"));
     }
 
     @Override
