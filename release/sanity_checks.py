@@ -66,6 +66,16 @@ def javac_sanity_check( checker_framework_website, release_version ):
         "NullnessExampleWithWarnings.java:36: error: (argument.type.incompatible)"
     ])
 
+    #this is a smoke test for the built-in checker shorthand feature
+    #http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#shorthand-for-checkers
+    nullness_shorthand_output = os.path.join( deploy_dir, "output_shorthand.log")
+    cmd = sanity_javac + " -processor NullnessChecker " + nullness_example + " -Anomsgtext"
+    execute_write_to_file( cmd, nullness_shorthand_output, False )
+    check_results( "Javac Shorthand Sanity Check", nullness_shorthand_output, [
+        "NullnessExampleWithWarnings.java:25: error: (assignment.type.incompatible)",
+        "NullnessExampleWithWarnings.java:36: error: (argument.type.incompatible)"
+    ])
+
 def maven_sanity_check( sub_sanity_dir_name, repo_url, release_version ):
     """
        Download the Checker Framework maven plugin from the given repository.  Download the
@@ -145,10 +155,3 @@ def add_repo_information( pom, repo_url ):
     line_no = int( line_no_str )
     print(" LINE_NO: " + line_no_str )
     insert_before_line( to_insert, pom, line_no )
-
-
-
-
-
-
-
