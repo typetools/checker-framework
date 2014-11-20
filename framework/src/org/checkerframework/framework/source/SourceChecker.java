@@ -253,6 +253,9 @@ public abstract class SourceChecker
     // and maybe have an interface for all the methods for which it's safe
     // to override.
 
+    /** The @SuppressWarnings key that will suppress warnings for all checkers. */
+    protected static final String SUPPRESS_ALL_KEY = "all";
+
     /** File name of the localized messages. */
     protected static final String MSGS_FILE = "messages.properties";
 
@@ -1569,16 +1572,26 @@ public abstract class SourceChecker
         SuppressWarningsKeys annotation =
             this.getClass().getAnnotation(SuppressWarningsKeys.class);
 
-        if (annotation != null)
-            return Arrays.asList(annotation.value());
+        Set<String> result = new HashSet<>();
+        result.add(SUPPRESS_ALL_KEY);
 
-        // Inferring key from class name
-        String className = this.getClass().getSimpleName();
-        int indexOfChecker = className.lastIndexOf("Checker");
-        if (indexOfChecker == -1)
-            indexOfChecker = className.lastIndexOf("Subchecker");
-        String key = (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
-        return Collections.singleton(key.trim().toLowerCase());
+        if (annotation != null) {
+            // Add from annotation
+            for (String key : annotation.value()) {
+                result.add(key);
+            }
+
+        } else {
+            // No annotation, by default infer key from class name
+            String className = this.getClass().getSimpleName();
+            int indexOfChecker = className.lastIndexOf("Checker");
+            if (indexOfChecker == -1)
+                indexOfChecker = className.lastIndexOf("Subchecker");
+            String key = (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
+            result.add(key.trim().toLowerCase());
+        }
+
+        return result;
     }
 
     /**
