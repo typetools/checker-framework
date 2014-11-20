@@ -9,11 +9,22 @@ import java.util.*;
 
 /**
  * EquivalentAtmComboScanner is an AtmComboVisitor that accepts combinations that are identical in TypeMirror structure
- * but might differ in contained AnnotationMirrors.
+ * but might differ in contained AnnotationMirrors.  This method will scan the individual components of
+ * the visited type pairs together.
 */
 public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM> extends AbstractAtmComboVisitor<RETURN_TYPE, PARAM> {
+    /**
+     * A history of type pairs that have already been visited and  the return type of their visit
+     */
     protected final Visited visited = new Visited();
 
+    /**
+     * Entry point for this scanner.
+     */
+    @Override
+    public RETURN_TYPE visit(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2, PARAM param) {
+        return scan(type1, type2, param);
+    }
 
     protected RETURN_TYPE scan(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param) {
         return AtmCombo.accept(type1, type2, param, this);
@@ -45,7 +56,7 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM> extends Abst
         return reduce(scan(types1, types2, param), r);
     }
 
-    public RETURN_TYPE scanAndReduce(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param, RETURN_TYPE r) {
+    protected RETURN_TYPE scanAndReduce(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param, RETURN_TYPE r) {
         return reduce(scan(type1, type2, param), r);
     }
 
