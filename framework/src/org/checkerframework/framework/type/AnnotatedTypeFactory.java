@@ -248,7 +248,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public AnnotatedTypeFactory(BaseTypeChecker checker) {
         uid = ++uidCounter;
         this.processingEnv = checker.getProcessingEnvironment();
-        this.typeFormatter = createAnnotatedTypeFormatter();
         // this.root = root;
         this.checker = checker;
         this.trees = Trees.instance(processingEnv);
@@ -262,6 +261,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.cacheDeclAnnos = new HashMap<Element, Set<AnnotationMirror>>();
 
+        this.typeFormatter = createAnnotatedTypeFormatter();
         this.typeVarSubstitutor = createTypeVariableSubstitutor();
     }
 
