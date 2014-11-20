@@ -1,0 +1,137 @@
+This document describes how to run and write tests for the Checker
+Framework.  Running and writing tests is useful for Checker Framework
+maintainers, checker writers, and bug submitters.  Users of the Checker
+Framework and of the org.checkerframework.checker packaged with it should read the manual
+instead; see file ../manual/manual.html .
+
+
+How to run the tests for the Checker Framework
+==============================================
+
+  # Warning: this may rebuild the JDK
+  ant -e -find build.xml all-tests
+
+Other ant targets also exist to run a subset of the tests, without
+rebuilding the JDK; for example,
+  ant -e -find build.xml nullness-tests
+
+To run an individual test (check one source code file), do something like:
+
+  cd $CHECKERFRAMEWORK/checker/tests/nullness
+  (cd $CHECKERFRAMEWORK && ant -e dist) && $CHECKERFRAMEWORK/checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class AssertNonNullTest.java
+
+or, less commonly (to run from .class files instead of .jar file):
+
+  cd $CHECKERFRAMEWORK/checker/tests/framework
+  (cd $CHECKERFRAMEWORK && ant -e dist) && $CHECKERFRAMEWORK/checker/bin/javac -processor tests.util.TestChecker -classpath $CHECKERFRAMEWORK/checker/tests/build -implicit:class GenericTest10.java
+
+where the specific checker and command-line arguments are often clear from
+the directory name but can also be determined from
+  checker-framework/org.checkerframework.checker/tests/src/tests/MyTypeSystemTest.java
+
+
+How to write test cases for the Checker Framework
+=================================================
+
+The testing framework for the Checker Framework is built on top of JUnit.
+However, its tests are more like end-to-end integration tests than unit
+tests.
+
+A checker test case has two parts:
+  1. the Java class to be compiled, and
+  2. a set of expected errors.
+
+Both parts can be expressed in one file that is stored in the folder
+corresponding to the checker name, such as
+checker-framework/org.checkerframework.checker/tests/nullness/.
+
+
+Writing new tests for an existing checker
+=========================================
+
+Suppose that you want to add a test for the Nullness Checker, with the
+following Java class:
+
+class MyNullnessTest {
+  void method() {
+    Object nullable = null;
+    nullable.toString();   // should emit error
+  }
+}
+
+The Nullness Checker should report an error for the dereference in line 4.
+The non-localized message key for such an error is
+'dereference.of.nullable'.  You could learn that by reading the Javadoc (or
+the source code) for org.checkerframework.checker.nullness.NullnessVisitor, or by creating the
+test and observing the failure.
+
+To indicate the expected failure, insert the line
+  //:: error: (<error-message-key>)
+directly preceding the expected error line.
+If multiple errors are expected on a single line, duplicate everthing
+except the "//" comment characters, as in
+  //:: error: (<error-message-key1>) :: error: (<error-message-key2>)
+If a warning rather than an error is expected, insert the line
+  //:: warning: (<warning-message-key>)
+If a stub parser warning is expected, insert the line
+//warning: StubParser: <stub parser warning>
+
+So the final test case would be:
+
+class MyNullnessTest {
+  void method() {
+    Object nullable = null;
+    //:: error: (dereference.of.nullable)
+    nullable.toString();   // should emit error
+  }
+}
+
+The file may appear anywhere in or under org.checkerframework.checker/tests/nullness/.  (You may
+find it useful to use separate subfolders, such as
+nullness/tests/nullness/dereference/.)  Each checker should have its own
+folder under org.checkerframework.checker/tests, such as org.checkerframework.checker/tests/igj/,
+org.checkerframework.checker/tests/interning/, etc.
+
+You may wish to supply different command-line arguments (flags) to the
+checker for certain test cases -- for instance, to check an optional
+command-line argument that should not be enabled for every test.  To do
+this:
+ * create a top-level test directory, such as
+   org.checkerframework.checker/tests/nullness-uninit, for the test cases
+ * create a top-level JUnit test, such as:
+   org.checkerframework.checker/tests/src/tests/NullnessUninitializedTest.java
+ * change org.checkerframework.checker/build.xml to run those tests
+
+
+Disabling a test case
+=====================
+
+Write @skip-test anywhere in a test file to disable that test.
+
+Write @non-308-skip-test anywhere in a test file to disable that test if
+the jsr308-langtools compiler is not used. (This is useful for tests that
+depend on annotations-in-comments that would fail with the stock compiler.)
+
+To disable all tests for a given type system, temporarily move away a file;
+for example,
+  mv $CHECKERFRAMEWORK/checker/tests/src/tests/OIGJTest.java $CHECKERFRAMEWORK/checker/tests/src/tests/OIGJTest.java-SAVE
+[Is there a better way?]
+
+
+Writing tests for a new checker
+===============================
+
+Essentially, just copy an existing checker, analogously to creating a new
+test directory for testing different command-line arguments, as described
+above.
+
+You will thus create a new file such as 
+  checker-framework/org.checkerframework.checker/tests/src/tests/MyTypeSystemTest.java
+and a new directory such as 
+  checker-framework/org.checkerframework.checker/tests/mytypesystem/
+
+
+Annotated JDK
+=============
+
+The tests run with the annotated JDK.  Keep this in mind when writing tests.
