@@ -1,0 +1,10 @@
+This test is here because the nullness-extra tests are run after the checker.jar is created and
+the test must run through CheckerMain.  This test is not Nullness specific.  A feature has been added that
+allows us to specify built-in checkers with their class names only.  See:
+http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#shorthand-for-checkers
+
+This test ensures that:
+a) Single checkers can be called in this fashion
+b) Multiple checkers can be called in this fashion
+c) That adding a package-name in front of a checker eliminates it as a candidate for shorthand.
+d) That names that aren't checkers actually lead to the usual error message for missing annotation processors.
