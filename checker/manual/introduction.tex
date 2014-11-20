@@ -532,7 +532,10 @@ command-line option, but in that case no checking of the type
 annotations is performed.  The annotations are still written to the
 resulting \<.class> files, however.
 
-
+Since the \code{-processor} expects a fully-qualified class name,
+its argument can often be verbose.  There is shorthand for invoking
+checkers that are built into the Checker Framework.
+See Section~\ref{shorthand-for-checkers}.
 
 \subsection{Summary of command-line options\label{checker-options}}
 
@@ -724,7 +727,23 @@ annotation processing including all pluggable type-checking.
 %%  2. The nullness and mutability checkers would issue lots of errors for
 %%     unannotated code, and that would be irritating.
 
+\subsection{Shorthand for built-in checkers \label{shorthand-for-checkers}}
+The \code{-processor} flag expects fully-qualified class names.
+For checkers that are packaged with the Checker Framework, the fully-qualified
+name can be quite long.  Therefore, when running a built-in checker, you may 
+omit the package name.  The following two commands are equivalent: 
 
+\begin{alltt}
+  javac -processor \textbf{org.checkerframework.checker.nullness.NullnessChecker} MyFile.java
+  javac -processor \textbf{NullnessChecker} MyFile.java
+\end{alltt}
+
+This feature does not apply to Javac \ahref{\url{https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html#commandlineargfile}}{@argfiles}.
+This feature will work when multiple checkers are specified.  For example:
+
+\begin{alltt}
+  javac -processor NullnessChecker,RegexChecker MyFile.java
+\end{alltt}
 
 \section{What the checker guarantees\label{checker-guarantees}}
 
