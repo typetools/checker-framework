@@ -11,6 +11,9 @@ be omitted when running from the command line.
 E.g.
     javac -processor NullnessChecker MyFile.java 
 
+The Nullness checker supports Android annotations
+android.support.annotation.NonNull and android.support.annotation.Nullable.
+
 ----------------------------------------------------------------------
 
 Version 1.8.7, 30 October 2014
