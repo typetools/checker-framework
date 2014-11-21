@@ -1,0 +1,10 @@
+import java.util.*;
+
+public final class MissingBoundAnnotations {
+  public static <K extends Comparable<? super K>,V> Collection<K> sortedKeySet(Map<K,V> m) {
+    ArrayList<K> theKeys = new ArrayList<K>(m.keySet());
+    Collections.sort(theKeys);
+    return theKeys;
+  }
+}
+
