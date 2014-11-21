@@ -928,14 +928,15 @@ Nullness Checker, as described in Figure~\ref{fig-nullness-refactoring}.
 \begin{tabular}{ll}
 \begin{tabular}{|l|}
 \hline
+ ~android.support.annotation.NonNull~ \\ \hline
  ~com.sun.istack.internal.NotNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.NonNull~ \\ \hline
  ~javax.annotation.Nonnull~ \\ \hline
  ~javax.validation.constraints.NotNull~ \\ \hline
  ~org.eclipse.jdt.annotation.NonNull~ \\ \hline
  ~org.jetbrains.annotations.NotNull~ \\ \hline
- ~org.netbeans.api.annotations.common.NonNull~ \\ \hline
  ~org.jmlspecs.annotation.NonNull~ \\ \hline
+ ~org.netbeans.api.annotations.common.NonNull~ \\ \hline
 \end{tabular}
 &
 $\Rightarrow$
@@ -945,6 +946,7 @@ $\Rightarrow$
 \\
 \begin{tabular}{|l|l|}
 \hline
+ ~android.support.annotation.Nullable~ \\ \hline
  ~com.sun.istack.internal.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.CheckForNull~ \\ \hline
@@ -953,10 +955,10 @@ $\Rightarrow$
  ~javax.annotation.CheckForNull~ \\ \hline
  ~org.eclipse.jdt.annotation.Nullable~ \\ \hline
  ~org.jetbrains.annotations.Nullable~ \\ \hline
- ~org.netbeans.api.annotations.common.CheckForNull~ \\ \hline
- ~org.netbeans.api.annotations.common.NullAllowed~ \\ \hline
- ~org.netbeans.api.annotations.common.NullUnknown~ \\ \hline
  ~org.jmlspecs.annotation.Nullable~ \\ \hline
+ ~org.netbeans.api.annotations.common.NullAllowed~ \\ \hline
+ ~org.netbeans.api.annotations.common.CheckForNull~ \\ \hline
+ ~org.netbeans.api.annotations.common.NullUnknown~ \\ \hline
 \end{tabular}
 &
 $\Rightarrow$
