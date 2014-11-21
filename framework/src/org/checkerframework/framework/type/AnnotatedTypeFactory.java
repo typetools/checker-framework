@@ -678,7 +678,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * For example, an identifier can be either a type or an expression.
      *
      * @param tree the type tree
-     * @return the annotat  ed type of the type in the AST
+     * @return the annotated type of the type in the AST
      */
     public AnnotatedTypeMirror getAnnotatedTypeFromTypeTree(Tree tree) {
         if (tree == null) {
