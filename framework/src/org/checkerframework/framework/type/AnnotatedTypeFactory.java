@@ -678,7 +678,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * For example, an identifier can be either a type or an expression.
      *
      * @param tree the type tree
-     * @return the annotated type of the type in the AST
+     * @return the annotat  ed type of the type in the AST
      */
     public AnnotatedTypeMirror getAnnotatedTypeFromTypeTree(Tree tree) {
         if (tree == null) {
@@ -781,9 +781,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the annotated type of the class being declared
      */
     public AnnotatedDeclaredType fromClass(ClassTree tree) {
-        AnnotatedDeclaredType result = (AnnotatedDeclaredType)
-            fromTreeWithVisitor(TypeFromTree.TypeFromClassINSTANCE, tree);
-        return result;
+        return TypeFromTree.fromClassTree(this, tree);
     }
 
     /**
@@ -802,8 +800,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (fromTreeCache.containsKey(tree) && shouldReadCache) {
             return fromTreeCache.get(tree).deepCopy();
         }
-        AnnotatedTypeMirror result = fromTreeWithVisitor(
-                TypeFromTree.TypeFromMemberINSTANCE, tree);
+        AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
         annotateInheritedFromClass(result);
         if (shouldCache)
             fromTreeCache.put(tree, result.deepCopy());
@@ -820,8 +817,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (fromTreeCache.containsKey(tree) && shouldReadCache)
             return fromTreeCache.get(tree).deepCopy();
 
-        AnnotatedTypeMirror result = fromTreeWithVisitor(
-                TypeFromTree.TypeFromExpressionINSTANCE, tree);
+        AnnotatedTypeMirror result = TypeFromTree.fromExpression(this, tree);
 
         annotateInheritedFromClass(result);
 
@@ -842,8 +838,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return fromTreeCache.get(tree).deepCopy();
         }
 
-        AnnotatedTypeMirror result = fromTreeWithVisitor(
-                TypeFromTree.TypeFromTypeTreeINSTANCE, tree);
+        AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(this, tree);
 
         // treat Raw as generic!
         // TODO: This doesn't handle recursive type parameter
@@ -877,29 +872,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         annotateInheritedFromClass(result);
         if (shouldCache)
             fromTreeCache.put(tree, result.deepCopy());
-        return result;
-    }
-
-    /**
-     * A convenience method that takes any visitor for converting trees to
-     * annotated types, and applies the visitor to the tree, add implicit
-     * annotations, etc.
-     *
-     * @param converter the tree-to-type-converting visitor
-     * @param tree the tree to convert
-     * @param type the converted annotated type
-     */
-    private AnnotatedTypeMirror fromTreeWithVisitor(TypeFromTree converter, Tree tree) {
-        if (tree == null) {
-            ErrorReporter.errorAbort("AnnotatedTypeFactory.fromTreeWithVisitor: null tree");
-            return null; // dead code
-        }
-        if (converter == null) {
-            ErrorReporter.errorAbort("AnnotatedTypeFactory.fromTreeWithVisitor: null visitor");
-            return null; // dead code
-        }
-        AnnotatedTypeMirror result = converter.visit(tree, this);
-        checkRep(result);
         return result;
     }
 
@@ -2112,28 +2084,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public final Element getEnclosingMethod(Tree node) {
         return pathHack.get(node);
-    }
-
-    /**
-     * Ensures that a type has been constructed properly.
-     *
-     * @param type the type to check
-     */
-    private void checkRep(AnnotatedTypeMirror type) {
-        new AnnotatedTypeScanner<Void, Void>() {
-            @Override
-            public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
-                //assert type.getElement() != null;
-                return super.visitDeclared(type, p);
-            }
-
-            @Override
-            public Void visitExecutable(AnnotatedExecutableType type, Void p) {
-                assert type.getElement() != null : "Unexpected null executable type.";
-                return super.visitExecutable(type, p);
-            }
-
-        }.visit(type);
     }
 
     /**
