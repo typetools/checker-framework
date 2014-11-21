@@ -158,6 +158,13 @@ class MethodParameterInference<Q> {
     /** Process a single containment constraint and update {@code upperBounds}
      * and {@code lowerBounds} accordingly. */
     private void processConstraint(Wildcard<Q> subset, Wildcard<Q> superset) {
+        if (!isInferVar(subset.getLowerBound())
+                && !isInferVar(subset.getUpperBound())
+                && !isInferVar(superset.getLowerBound())
+                && !isInferVar(superset.getUpperBound())) {
+            // There are no vars to infer so the constraint isn't part of the solution
+            return;
+        }
         addSubtypeBound(superset.getLowerBound(), subset.getLowerBound());
         addSubtypeBound(subset.getLowerBound(), subset.getUpperBound());
         addSubtypeBound(subset.getUpperBound(), superset.getUpperBound());
