@@ -1558,8 +1558,17 @@ public class CFGBuilder {
          */
         protected void addToLookupMap(Node node) {
             Tree tree = node.getTree();
-            if (tree != null && !treeLookupMap.containsKey(tree)) {
+            if (tree == null) {
+                return;
+            }
+            if (!treeLookupMap.containsKey(tree)) {
                 treeLookupMap.put(tree, node);
+            }
+
+            Tree enclosingParens = parenMapping.get(tree);
+            while (enclosingParens != null) {
+                treeLookupMap.put(enclosingParens, node);
+                enclosingParens = parenMapping.get(enclosingParens);
             }
         }
 
@@ -3991,8 +4000,19 @@ public class CFGBuilder {
             return node;
         }
 
+        /**
+         * Maps a <code>Tree</code> its directly enclosing <code>ParenthesizedTree</code> if one exists.
+         *
+         * This map is used by {@link CFGTranslationPhaseOne#addToLookupMap(Node)} to
+         * associate a <code>ParenthesizedTree</code> with the dataflow <code>Node</code> that was used
+         * during inference. This map is necessary because dataflow does
+         * not create a <code>Node</code> for a <code>ParenthesizedTree.</code>
+         */
+        private Map<Tree, ParenthesizedTree> parenMapping = new HashMap<>();
+
         @Override
         public Node visitParenthesized(ParenthesizedTree tree, Void p) {
+            parenMapping.put(tree.getExpression(), tree);
             return scan(tree.getExpression(), p);
         }
 
@@ -4178,10 +4198,13 @@ public class CFGBuilder {
 
         @Override
         public Node visitTypeCast(TypeCastTree tree, Void p) {
-            Node operand = scan(tree.getExpression(), p);
-            TypeMirror type = InternalUtils.typeOf(tree.getType());
+            final Node operand = scan(tree.getExpression(), p);
+            final TypeMirror type = InternalUtils.typeOf(tree.getType());
+            final Node node = new TypeCastNode(tree, operand, type);
+            final TypeElement cceElement = elements.getTypeElement("java.lang.ClassCastException");
 
-            return extendWithNode(new TypeCastNode(tree, operand, type));
+            extendWithNodeWithException(node, cceElement.asType());
+            return node;
         }
 
         @Override

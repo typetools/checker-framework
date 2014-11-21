@@ -5,10 +5,10 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 interface Consumer {
-    void method(/*@Nullable*/ String s);
+    void method(@Nullable String s);
 }
 interface NNConsumer {
-    void method(/*@NonNull*/ String s);
+    void method(@NonNull String s);
 }
 
 class LambdaParamBody {

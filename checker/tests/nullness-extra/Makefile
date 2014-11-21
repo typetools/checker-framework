@@ -1,6 +1,6 @@
-.PHONY: all Bug109 multiple-errors package-anno issue265 issue309 compat
+.PHONY: all Bug109 multiple-errors package-anno issue265 issue309 compat shorthand
 
-all: Bug109 multiple-errors package-anno issue265 issue309 compat
+all: Bug109 multiple-errors package-anno issue265 issue309 compat shorthand
 
 Bug109:
 	$(JAVAC) -processor org.checkerframework.checker.nullness.NullnessChecker Bug109_A.java Bug109_B.java
@@ -21,3 +21,6 @@ issue309:
 
 compat:
 	make -C compat
+
+shorthand:
+	make -C shorthand

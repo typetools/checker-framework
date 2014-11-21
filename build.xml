@@ -41,6 +41,37 @@
     <ant dir="checker">
       <target name="javadoc"/>
     </ant>
+    <ant dir="dataflow">
+      <target name="javadoc"/>
+    </ant>
+    <ant dir="framework">
+      <target name="javadoc"/>
+    </ant>
+    <ant dir="javacutil">
+      <target name="javadoc"/>
+    </ant>
+    <ant dir="stubparser">
+      <target name="javadoc"/>
+    </ant>
+  </target>
+
+  <target name="dist-release">
+      <ant dir="checker">
+          <target name="dist-release"/>
+      </ant>
+
+      <ant dir="javacutil">
+          <target name="sources-jar"/>
+      </ant>
+      <ant dir="javacutil">
+        <target name="javadoc-jar" />
+    </ant>
+      <ant dir="dataflow">
+          <target name="sources-jar"/>
+      </ant>
+      <ant dir="dataflow">
+          <target name="javadoc-jar" />
+      </ant>
   </target>
 
   <target name="tags"

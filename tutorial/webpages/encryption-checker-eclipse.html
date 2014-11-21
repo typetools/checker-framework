@@ -22,7 +22,7 @@
      <li class="heading">Checker Framework:
       </h4>
      </li>
-     <li><a href="http://types.cs.washington.edu/checker-framework/">Main Site</a></li>
+     <li><a href="http://checkerframework.org/">Main Site</a></li>
      <li><a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">Manual</a></li>
      <li><a href="https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">Discussion List</a></li>
      <li><a href="http://code.google.com/p/checker-framework/issues/list">Issue Tracker</a></li>
@@ -80,9 +80,9 @@
 					<h5>Outline</h5>
 					<ol>
 						<li><a href="#import">Import <em>encryption-checker</em>
-								project</li>
+								project</a></li>
 						<li><a href="#setup"> Set Up the Subtyping Checker to run the
-								Encryption Checker</li>
+								Encryption Checker</a></li>
 						<li><a href="#run1">Run the Encryption Checker</a>--2 errors</li>
 						<li><a href="#error1">Suppress the first error</a></li>
 						<li><a href="#run2">Run the Encryption Checker</a>--1 error</li>
@@ -97,15 +97,18 @@
 						</h4>
 
 						<p>
-							This project has two source files: <a
-								href="../src/myqual/Encrypted.java">Encrypted.java</a>, the
-							type qualifier definition, and <a
-								href="../src/encrypted/EncryptionDemo.java">EncryptedDemo.java</a>,
+							This project has three source files:
+                            <a href="../src/myqual/Encrypted.java">Encrypted.java</a> and
+                            <a href="../src/myqual/PossibleUnencrypted.java">PossibleUnencrypted.java</a>
+                            are the type qualifier definitions and
+                            <a href="../src/encrypted/EncryptionDemo.java">EncryptedDemo.java</a> is the
 							the example program that use the Encrypted checker. You will need
 							to setup your JRE to use the Checker Framework jars, see <a
 								href="#issue1">Issue 1</a> below. This will fix the "TYPE_USE
 							cannot be resolved or is not a field" error. The <em> import
                             myqual.Encrypted is never used</em> warning should be ignored.
+                            When building the encryption-checker project, set your -source
+                            and -target levels to at least 1.7 (1.8 is recommended).  See <a href="#issue2">Issue 2</a>.
 						</p>
 
 
@@ -115,19 +118,14 @@
 						<h4>2. Set Up the Subtyping Checker</h4>
 
 						<p>The Encryption Checker is built on top of the Subtyping 
-							Checker. Use the following steps to setup it up with in the
-							Eclipse plugin.</p>
+							Checker. The Subtyping Checker allows you to enforce a basic type systems by
+                            listing its qualifiers when type checking. To set up the Subtyping Checker
+                            to use the Encryption Checker's qualifiers, do the following:</p>
 						<div class="well">
 							<ol>
 								<li>Navigate to Eclipse->Preferences->Checker Framework</li>
-								<li>Click Add</li>
-								<li>Type in <strong class="text-success">SubtypingChecker</strong>
-								</li>
-								<li>Select SubtypingChecker - org.checkerframework.common.subtyping (not the one from
-									sun) and click Ok</li>
 								<li>Under Additional compiler parameters, add <strong
-									class="text-success">-Aquals=myqual.Encrypted,-Aquals=myqual.Encrypted,
-myqual.PossibleUnencrypted </strong></li>
+									class="text-success">-Aquals=myqual.Encrypted,myqual.PossibleUnencrypted </strong></li>
 								<li>Click Ok</li>
 							</ol>
 						</div>
@@ -138,7 +136,7 @@ myqual.PossibleUnencrypted </strong></li>
 
 						<p>
 							Right Click on the <em>src</em> package, select Checker
-							Framework->Run Custom Checker->Subtyping Checker. You should see the
+							Framework->Run Built-in Checker->Subtyping Checker. You should see the
 							following errors:
 						</p>
 						<pre>
@@ -209,9 +207,8 @@ void sendPassword() {
     sendOverInternet(encrypt(password));
 }
 </pre>
-				</div>
-		</section>
-
+                    </section>
+        </div>
 		<section id="issue1">
 			<div class="page-header short">
 				<h4>Issue 1</h4>
@@ -222,7 +219,7 @@ void sendPassword() {
 				<p>Writing a Type annotation requires ElementType.TYPE_USE
 					and/or ElementType.TYPE_PARAMETER which are part of Java 8, but not
 					yet supported by Eclipse. This means that Eclipse will give an
-					error: "TYPE_USE cannot be resolved or is not a field."
+					error: "TYPE_USE cannot be resolved or is not a field."</p>
 				<div class="alert alert-warning">
 					<h5>Workaround</h5>
 					<ol>
@@ -235,13 +232,35 @@ void sendPassword() {
 						<li>Select javac.jar and either jdk7.jar or
 							jdk8.jar depending on the version the JRE you are duplicating.
 							Click Open</li>
-						<li>Move the three jars to the top of the system libraries
+						<li>Move the two jars to the top of the system libraries
 							list. Click Finish</li>
 					</ol>
 				</div>
+            </div>
 		</section>
+        <section id="issue2">
+            <div class="page-header short">
+                <h4>Issue 2</h4>
+            </div>
+            <div class="section">
+                <p>To update your -source and -target levels:</p>
 
-		<!--section id="issue2">
+                <div class="alert alert-warning">
+                    <h5>Workaround:</h5>
+                    <ol>
+                        <li>Right click the encryption-checker project</li>
+                        <li>Select properties->Java Compiler</li>
+                        <li>Check the box labeled "Enable project specific settings"</li>
+                        <li>Update the compliance setting to 1.8 (recommended) or 1.7.</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+            </div>
+        </section>
+
+        <!--section id="issue2">
     <div class="page-header short">
 <h4>Issue 2</h4>
 </div>
@@ -260,7 +279,7 @@ would be commented as <code>/*@Encrypted*/</code>
 				<h2>
 					The End of the Checker Framework Tutorial<small><strong>
 							Return to the <a href="../index.html">main page</a> of the
-							Tutorial. 
+							Tutorial.</strong></small>
 				</h2>
 			</div>
 

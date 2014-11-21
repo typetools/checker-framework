@@ -582,15 +582,15 @@ The Nullness
 the following code:
 
 \begin{Verbatim}
-  // one way to use as a cast:
+  // one way to use castNonNull as a cast:
   @NonNull String s = castNonNull(possiblyNull1);
 
-  // another way to use as a cast:
+  // another way to use castNonNull as a cast:
   castNonNull(possiblyNull2).toString();
 
-  // one way to use as a statement:
+  // one way to use castNonNull as a statement:
   castNonNull(possiblyNull3);
-  possiblyNull3.toString();`
+  possiblyNull3.toString();
 \end{Verbatim}
 
   The method also throws \<AssertionError> if Java assertions are enabled and
@@ -738,7 +738,7 @@ default).  This will prevent the checker from issuing a warning about the
 \subsection{Tiny examples\label{nullness-tiny-examples}}
 
 To try the Nullness Checker on a source file that uses the \refqualclass{checker/nullness/qual}{NonNull} qualifier,
-use the following command (where \code{javac} is the JSR 308 compiler that
+use the following command (where \code{javac} is the Checker Framework compiler that
 is distributed with the Checker Framework):
 
 \begin{Verbatim}
@@ -1241,7 +1241,7 @@ helper routine that is called by constructor.  For example:
   }
 \end{Verbatim}
 
-For compatibility with Java 7 and earlier, you can write the receiver
+For compatibility with Java 6 and 7, you can write the receiver
 parameter in comments (see Section~\ref{annotations-in-comments}):
 \begin{Verbatim}
     private void init_other_fields(/*>>>@UnderInitialization(MyClass.class) MyClass this*/) {
@@ -1376,8 +1376,8 @@ this rule.)
 The Initialization Checker issues an error if the constructor fails to initialize
 any \code{@NonNull} field.  This ensures that the object is in a legal (initialized)
 state by the time that the constructor exits.
-\urldef{\jlsdefiniteassignmenturl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}
-\urldef{\jlsfinalvariablesurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}
+\urldef{\jlsdefiniteassignmenturl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}
+\urldef{\jlsfinalvariablesurl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}
 This is different than Java's test for definite assignment (see
 \ahref{\jlsdefiniteassignmenturl}{JLS ch.16}),
 % , which requires that local
@@ -1576,7 +1576,7 @@ the type of the object being constructed is:
 
 
 
-% \urldef{\jlsconstructorbodyurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
+% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
 % (Recall that the superclass constructor is called on the first line, or is
 % inserted automatically by the compiler before the first line, see
 % \ahref{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
@@ -1834,7 +1834,7 @@ is called by constructor.  For example:
   }
 \end{Verbatim}
 
-For compatibility with Java 7 and earlier, you can write the receiver
+For compatibility with Java 6 and 7, you can write the receiver
 parameter in comments (see Section~\ref{annotations-in-comments}):
 \begin{Verbatim}
     private void init_other_fields(/*>>> @Raw MyClass this*/) {
@@ -1956,8 +1956,8 @@ have been initialized, then \code{this} is treated as non-raw.
 The Nullness Checker issues an error if the constructor fails to initialize
 any \code{@NonNull} field.  This ensures that the object is in a legal (non-raw)
 state by the time that the constructor exits.
-\urldef{\jlsdefiniteassignmenturl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}
-\urldef{\jlsfinalvariablesurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}
+\urldef{\jlsdefiniteassignmenturl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}
+\urldef{\jlsfinalvariablesurl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}
 This is different than Java's test for definite assignment (see
 \ahref{\jlsdefiniteassignmenturl}{JLS ch.16}),
 % , which requires that local
@@ -2179,7 +2179,7 @@ types.)
 
 
 
-% \urldef{\jlsconstructorbodyurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
+% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
 % (Recall that the superclass constructor is called on the first line, or is
 % inserted automatically by the compiler before the first line, see
 % \ahref{\jlsconstructorbodyurl}{JLS \S8.8.7}.)

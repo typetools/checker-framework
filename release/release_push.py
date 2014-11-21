@@ -5,7 +5,7 @@ release_push.py
 
 Created by Jonathan Burke on 2013-12-30.
 
-Copyright (c) 2013 University of Washington. All rights reserved.
+Copyright (c) 2014 University of Washington. All rights reserved.
 """
 
 from release_vars  import *
@@ -89,6 +89,12 @@ def stage_maven_artifacts_in_maven_central( new_checker_version ):
                              os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-javadoc.jar" ),
                              pgp_user, pgp_passphrase  )
 
+    mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_COMPAT_QUAL_RELEASE_POM,
+                             CHECKER_COMPAT_QUAL,
+                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-compat-qual-source.jar"  ),
+                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-compat-qual-javadoc.jar" ),
+                             pgp_user, pgp_passphrase  )
+
     mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JAVAC_BINARY_RELEASE_POM, JAVAC_BINARY,
                              os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-source.jar"  ),
                              os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-javadoc.jar" ),
@@ -102,6 +108,14 @@ def stage_maven_artifacts_in_maven_central( new_checker_version ):
     mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JDK8_BINARY_RELEASE_POM, JDK8_BINARY,
                              os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-source.jar"  ),
                              os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-javadoc.jar" ),
+                             pgp_user, pgp_passphrase  )
+
+    mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JAVACUTIL_BINARY_RELEASE_POM, JAVACUTIL_BINARY,
+                             JAVACUTIL_SOURCE_JAR, JAVACUTIL_JAVADOC_JAR,
+                             pgp_user, pgp_passphrase  )
+
+    mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, DATAFLOW_BINARY_RELEASE_POM, DATAFLOW_BINARY,
+                             DATAFLOW_SOURCE_JAR, DATAFLOW_JAVADOC_JAR,
                              pgp_user, pgp_passphrase  )
 
     plugin_jar = find_mvn_plugin_jar( MAVEN_PLUGIN_DIR, new_checker_version )
@@ -176,6 +190,9 @@ def print_usage():
             "steps but will NOT actually perform a release.  This is for testing the script." )
 
 def main(argv):
+    # umask g+w
+    os.umask(os.umask(0) - 16)
+
     test_mode = read_args( argv )
 
     msg = ( "You have chosen test_mode.  \nThis means that this script will execute all build steps that " +
@@ -192,6 +209,8 @@ def main(argv):
         print("Continuing in test mode.")
     else:
         print("Continuing in release mode.")
+
+    check_hg_user()
 
     print_step( "Push Step 0: Verify Requirements\n" )
     print( " If this is your first time running the release_push script, please verify that you have met " +
@@ -225,6 +244,12 @@ def main(argv):
                      "any of the JSR308, AFU, or Checker Framework repositories." )
 
     print_step( "Push Step 2: Check links on development site" )
+
+    # Work around broken link to dejavu.css by creating an empty dejavu.css file
+    dev_afu_website_api_directory  = os.path.join( FILE_PATH_TO_DEV_SITE, "checker-framework", "api" )
+    execute("mkdir -p resources/fonts", True, False, dev_afu_website_api_directory)
+    execute("touch resources/fonts/dejavu.css", True, False, dev_afu_website_api_directory)
+
     if prompt_yes_no( "Run link Checker on DEV site?", True ):
         check_all_links( dev_jsr308_website, dev_afu_website, dev_checker_website, "dev" )
 

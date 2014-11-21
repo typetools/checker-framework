@@ -1,6 +1,4 @@
 
-import tests.util.function.*;
-
 import org.checkerframework.checker.nullness.qual.*;
 
 // The return of a lambda is a lambda
@@ -9,7 +7,7 @@ interface ConsumerSupplier {
     Consumer get();
 }
 interface Consumer {
-    void method(/*@Nullable*/ String s);
+    void method(@Nullable String s);
 }
 
 interface SupplierSupplier {

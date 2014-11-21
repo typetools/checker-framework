@@ -1,3 +1,55 @@
+Version 1.8.8, 26 November 2014
+
+Added support for @SuppressWarnings("all").
+
+Deprecate implicit imports, including the jsr308_imports environment
+variable and the -jsr308_imports ... and -Djsr308.imports=... command-line
+options.
+
+For checkers bundled with the Checker Framework, package names may now 
+be omitted when running from the command line.
+E.g.
+    javac -processor NullnessChecker MyFile.java 
+
+----------------------------------------------------------------------
+
+Version 1.8.7, 30 October 2014
+
+Fix performance regression introduced in release 1.8.6.
+
+Nullness Checker:
+  * Updated Nullness annotations in the annotated JDK.
+    See issues: 336, 340, 374.
+  * String concatenations with null literals are now @NonNull
+    rather than @Nullable.  See issue 357.
+
+Fixed issues:  200, 300, 332, 336, 340, 357, 359, 373, 374.
+
+----------------------------------------------------------------------
+
+Version 1.8.6, 25 September 2014
+
+Method Reference and Lambda Expression Support:
+The Checker Framework now supports type-checking method references
+and lambda expressions to ensure they are congruent with the
+functional interface they are assigned to. The bodies of lambda expressions
+are also now type-checked similarly to regular method bodies.
+
+Dataflow:
+ * Handling of the following language features has been improved:
+   boxed Booleans, finally blocks, switch statements, type casts, enhanced
+   for loops
+ * Performance improvements
+	      
+Annotations:
+The checker-compat-qual.jar is now included with the Checker Framework 
+release.  It can also be found in Maven Central at the coordinates:
+org.checkerframework:checker-compat-qual
+Annotations in checker-compat-qual.jar do not require Java 8 but
+can only be placed in annotation locations valid in Java 7
+
+----------------------------------------------------------------------
+
 Version 1.8.5, 29 August 2014
 
 Eclipse Plugin:
@@ -9,7 +61,7 @@ Improved Java 7 compatibility and introduced Java 7 compliant
 annotations for the Nullness Checker.  Please see the section on
 "Class-file compatibility with Java 7" in the manual for more details.
 
-Fixed Issue 347.
+Fixed issue 347.
 
 ----------------------------------------------------------------------
 
@@ -46,7 +98,7 @@ expressions, but it does issue a lambda.unsupported warning when
 type-checking code containing lambda expressions.  Full support for
 type-checking lambda expressions will appear in a future release.
 
-Fixed Issue 343.
+Fixed issue 343.
 
 ----------------------------------------------------------------------
 
@@ -60,7 +112,7 @@ no longer maintained and the final release was on June 2, 2014.
 The javac_maven script (and batch file) are available to use
 the Checker Framework from Maven.
 
-Fix for Issue 331.
+Fixed issue 331.
 
 ----------------------------------------------------------------------
 
@@ -85,7 +137,7 @@ to use the script in the Maven section of the manual.
 The Checker Framework installation instructions in the manual have
 been updated.
 
-Fixes for Issues 312, 315, 316, 318, 319, 324, 326, 327.
+Fixed issues: 312, 315, 316, 318, 319, 324, 326, 327.
 
 ----------------------------------------------------------------------
 
@@ -95,7 +147,7 @@ Support to directly use the Java 8 javac in addition to jsr308-langtools.
 Added checker/examples directory to checker-framework.zip.
 New section in the manual describing the contents of checker-framework.zip.
 
-Fixes for Issues 204, 304, 320.
+Fixed issues: 204, 304, 320.
 
 ----------------------------------------------------------------------
 
@@ -138,7 +190,7 @@ to the final bytecode.
 
 Reduce special treatment of checkers.quals.Unqualified.
 
-Fixes for Issues 170, 240, 265, 281.
+Fixed issues: 170, 240, 265, 281.
 
 ----------------------------------------------------------------------
 
@@ -159,7 +211,7 @@ Eclipse Plugin:
 
 Version 1.7.2, 2 January 2014
 
-Fixes for Issues 289, 292, 295, 296, 298.
+Fixed issues: 289, 292, 295, 296, 298.
 
 ----------------------------------------------------------------------
 

@@ -1,0 +1,9 @@
+This jar is a stand in for either source/javadoc for the annotations
+used by the Checker Framework to type check source code.   The
+checker-qual-compat.jar contains annotations that are compatible
+with JDK 7 and previous, which do not support type annotations
+(https://docs.oracle.com/javase/tutorial/java/annotations/type_annotations.html).
+
+For Checker Framework information visit:
+http://checkerframework.org/
+
