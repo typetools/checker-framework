@@ -2,6 +2,7 @@ package org.checkerframework.framework.util;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -10,9 +11,11 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.jar.JarInputStream;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
 
 /**
  * This class functions essentially the same as the jsr308-langtools javac
@@ -73,6 +76,7 @@ public class CheckerMain {
         this.checkersJar   = checkersJar;
 
         final List<String> argsList = new ArrayList<String>(Arrays.asList(args));
+        replaceShorthandProcessor(argsList);
         argListFiles = collectArgLists(argsList);
 
         this.javacJar = extractFileArg(PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), argsList);
@@ -92,6 +96,23 @@ public class CheckerMain {
 
     protected void assertValidState() {
         assertFilesExist(Arrays.asList(javacJar, jdkJar, checkersJar));
+    }
+
+    /**
+     * For every "-proccessor" argument in args, replace its immediate successor argument using
+     * asCheckerFrameworkProcessors
+     */
+    protected void replaceShorthandProcessor(final List<String> args) {
+        for (int i = 0; i < args.size(); i++) {
+            final int nextIndex = i + 1;
+            if (args.size() > nextIndex) {
+                if (args.get(i).equals("-processor")) {
+                    final String replacement = asCheckerFrameworkProcessors(args.get(nextIndex));
+                    args.remove(nextIndex);
+                    args.add(nextIndex, replacement);
+                }
+            }
+        }
     }
 
     protected List<String> createRuntimeBootclasspath(final List<String> argsList) {
@@ -487,5 +508,77 @@ public class CheckerMain {
             return "\"" + str + "\"";
         }
         return str;
+    }
+
+    /**
+     * All "built-in" Checker Framework checkers, except SubtypingChecker, start with this package file path
+     * Framework Checkers, except for SubtypingChecker are excluded from processor shorthand
+     */
+    protected static final String CHECKER_BASE_PACKAGE = "org.checkerframework.checker";
+    protected static final String CHECKER_BASE_DIR_NAME = CHECKER_BASE_PACKAGE.replace(".", File.separator);
+
+    protected static final String FULLY_QUALIFIED_SUBTYPING_CHECKER =
+            org.checkerframework.common.subtyping.SubtypingChecker.class.getCanonicalName();
+
+    protected static final String SUBTYPING_CHECKER_NAME =
+            org.checkerframework.common.subtyping.SubtypingChecker.class.getSimpleName();
+
+    /**
+     * Takes a processor string of the form
+     * NullnessChecker
+     * and returns:
+     * org.checkerframework.checker.nullness.NullnessChecker
+     *
+     * asCheckerFrameworkProcessors will handle processor strings with multiple processors, e.g:
+     * NullnessChecker,RegexChecker
+     * becomes:
+     * org.checkerframework.checker.nullness.NullnessChecker,org.checkerframework.checker.regex.RegexChecker
+     *
+     * Note, a processor entry only gets replaced if it contains NO "." (i.e. is not qualified by the
+     * package name) and can be found under the package org.checkerframework.checker in the checker.jar.
+     * @param processorsString A string identifying processors
+     * @return processorsString where all unqualified references to Checker Framework built-in checkers
+     * are replaced with fully-qualified references
+     */
+    protected String asCheckerFrameworkProcessors(final String processorsString) {
+
+        final String[] processors = processorsString.split(",");
+        final boolean[] unqualified = new boolean[processors.length];
+        for (int i = 0; i < processors.length; i++) {
+            if (processors[i].equals(SUBTYPING_CHECKER_NAME)) {
+                processors[i] = FULLY_QUALIFIED_SUBTYPING_CHECKER;
+                unqualified[i] = false;
+            } else {
+                unqualified[i] = !processors[i].contains(".");
+            }
+        }
+
+        try {
+            final JarInputStream checkerJarIs = new JarInputStream(new FileInputStream(checkersJar));
+            ZipEntry entry;
+            while ((entry = checkerJarIs.getNextEntry()) != null) {
+                final String name = entry.getName();
+                if (name.startsWith(CHECKER_BASE_DIR_NAME) && name.endsWith("Checker.class")) {
+                    final String [] checkerPath = name.substring(0, name.length() - ".class".length()).split("/");
+                    final String checkerName = checkerPath[checkerPath.length - 1];
+
+                    final String qualifiedCheckerFrameworkProcessor = PluginUtil.join(".", checkerPath);
+
+                    for (int i = 0; i < processors.length; i++) {
+                        if (unqualified[i]) {
+                            if (processors[i].equals(checkerName)) {
+                                processors[i] = qualifiedCheckerFrameworkProcessor;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            checkerJarIs.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read checker.jar", e);
+        }
+
+        return PluginUtil.join(",", processors);
     }
 }
