@@ -114,7 +114,7 @@ final public class MostlySingleton<T> implements Set<T> {
     }
 
     @Override
-    public <T> T[] toArray(T[] a) {
+    public <S> S[] toArray(S[] a) {
         throw new UnsupportedOperationException();
     }
 

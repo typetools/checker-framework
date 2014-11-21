@@ -32,11 +32,12 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 public final class SubtypingChecker extends BaseTypeChecker {
     @Override
     public Collection<String> getSuppressWarningsKeys() {
-        Set<String> swKeys = new HashSet<String>();
         Set<Class<? extends Annotation>> annos = ((BaseTypeVisitor<?>)visitor).getTypeFactory().getSupportedTypeQualifiers();
         if (annos.isEmpty())
             return super.getSuppressWarningsKeys();
 
+        Set<String> swKeys = new HashSet<>();
+        swKeys.add(SUPPRESS_ALL_KEY);
         for (Class<? extends Annotation> anno : annos)
             swKeys.add(anno.getSimpleName().toLowerCase());
 
