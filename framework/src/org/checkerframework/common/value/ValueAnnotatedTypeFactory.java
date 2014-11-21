@@ -53,7 +53,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.framework.util.QualifierDefaults;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -174,12 +174,12 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
     @Override
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
         if(propTreeCache.containsKey(tree)){
-            return AnnotatedTypes.deepCopy(propTreeCache.get(tree));
+            return propTreeCache.get(tree).deepCopy();
         }
         AnnotatedTypeMirror anno = super.getAnnotatedType(tree);
         if(tree instanceof JCBinary ||
                 tree instanceof JCUnary){
-            propTreeCache.put(tree, AnnotatedTypes.deepCopy(anno));
+            propTreeCache.put(tree, anno.deepCopy());
         }
         return anno;
     }

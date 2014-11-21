@@ -1,11 +1,8 @@
 package org.checkerframework.qualframework.base;
 
-import java.util.*;
-
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.*;
 import org.checkerframework.qualframework.base.QualifiedTypeVisitor;
-
 
 /** Visitor that replaces the qualifier of a {@link QualifiedTypeMirror}.
  */

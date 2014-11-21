@@ -55,7 +55,7 @@ public class FormatterAnnotatedTypeFactory extends
     }
 
     @Override
-    public TreeAnnotator createTreeAnnotator() {
+    protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
                 super.createTreeAnnotator(),
                 new FormatterTreeAnnotator(this)

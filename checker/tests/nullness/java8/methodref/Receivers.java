@@ -20,7 +20,6 @@ interface Bound {
 }
 
 class MyClass {
-
     void take(@NonNull MyClass this) { }
 
     void context1(@Nullable MyClass this,
