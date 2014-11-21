@@ -188,6 +188,13 @@ Examples of classes that were not in JDK 6 but were introduced in JDK 7 include:
   class file for java.util.Vector$Itr not found
 \end{Verbatim}
 
+There are even classes that were introduced within a single JDK release.
+Classes that appear in JDK 7 release 71 but not in JDK 7 release 45 include:
+
+\begin{Verbatim}
+  class file for java.lang.Class$ReflectionData not found
+\end{Verbatim}
+
 You may be able to solve the problem by running
 
 \begin{Verbatim}
@@ -198,6 +205,8 @@ You may be able to solve the problem by running
 \noindent
 to re-generate files \code{checker/jdk/jdk\{7,8\}.jar} and \code{checker/bin/jdk\{7,8\}.jar}.
 
+That usually works, but if not, then you should recompile the Checker
+Framework from source rather than using the pre-compiled distribution.
 
 
 \item
@@ -456,7 +465,7 @@ fix the problem by instead using a definition of \<@NonNull> that is a type
 annotation, such as the Checker Framework's annotations; often this only
 requires changing an \<import> statement.
 Alternately, if you wish to continue using the legacy annotations in
-declaration locations, see Section~\ref{java7-classfiles}.
+declaration locations, see Section~\ref{running-on-a-java7-jvm}.
 
 
 \item
@@ -474,7 +483,7 @@ constant.  In particular, the type annotations shipped with the Checker
 Framework reference 
 \sunjavadoc{java/lang/annotation/ElementType.html#TYPE\_USE}{ElementType.TYPE\_USE}.  You can use the Checker
 Framework, but still compile and run your code in a Java 6 or 7 JVM, by
-following the instructions in Section~\ref{java7-classfiles}.
+following the instructions in Section~\ref{running-on-a-java7-jvm}.
 
 If you ignore the error and run your code in a Java 6 or 7 JVM, then you will get a run-time error:
 
@@ -688,14 +697,6 @@ not because \<java> might be the version in the JDK or in the JRE):
 \begin{Verbatim}
   export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
 \end{Verbatim}
-
-% # To build your own JDK:
-% mkdir -p /scratch/$USER/jdk7
-% cd /scratch/$USER/jdk7
-% wget http://docs.oracle.com/otn-pub/java/jdk/7/jdk-7-linux-x64.tar.gz
-% tar xzf jdk-7-linux-x64.tar.gz
-% export JAVA_HOME=/scratch/$USER/jdk7/jdk1.7.0
-% export PATH=${JAVA_HOME}/bin:${PATH}
 
 \item
 Compile the Type Annotations tools:
