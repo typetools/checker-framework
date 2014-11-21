@@ -2615,11 +2615,13 @@ public abstract class AnnotatedTypeMirror {
 
 
 
+    /** @see Types#directSupertypes(TypeMirror) */
     public List<? extends AnnotatedTypeMirror> directSuperTypes() {
         return directSuperTypes(this);
     }
 
     // Version of method below for declared types
+    /** @see Types#directSupertypes(TypeMirror) */
     protected final List<AnnotatedDeclaredType> directSuperTypes(
             AnnotatedDeclaredType type) {
         setSuperTypeFinder(type.atypeFactory);
@@ -2630,6 +2632,7 @@ public abstract class AnnotatedTypeMirror {
     }
 
     // Version of method above for all types
+    /** @see Types#directSupertypes(TypeMirror) */
     private final List<? extends AnnotatedTypeMirror> directSuperTypes(
             AnnotatedTypeMirror type) {
         setSuperTypeFinder(type.atypeFactory);

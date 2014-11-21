@@ -124,6 +124,9 @@
         <replaceregexp file="${checker.tutorial}/tests/testdemo/check-tainting.0.expected" byline="true"
                        match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
 
+        <replaceregexp file="${checker.tutorial}/webpages/security-error-cmd.html" byline="true"
+                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
+
         <update file="${checker}/build.properties"
                 start="build.version = " with="${release.ver}"/>
 
@@ -152,6 +155,15 @@
                 with="${release.ver}"/>
 
         <update file="${checker.release.poms}/checkerQualReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <!-- checker-qual-compat -->
+        <update file="${checker.binary.poms}/checkerCompatQualPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/checkerCompatQualReleasePom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
@@ -188,6 +200,23 @@
                 with="${release.ver}"/>
 
         <update file="${checker.release.poms}/mavenPluginReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <!-- artifacts used in Google's error-prone -->
+        <update file="${checker.binary.poms}/dataflowPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/dataflowReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.binary.poms}/javacutilPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/javacutilReleasePom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
@@ -308,6 +337,9 @@
 
         <jar destfile="${dest.dir}/checker-qual-source.jar"  basedir="${maven.release.dir}" includes="README-checker-qual"/>
         <jar destfile="${dest.dir}/checker-qual-javadoc.jar" basedir="${maven.release.dir}" includes="README-checker-qual"/>
+
+        <jar destfile="${dest.dir}/checker-compat-qual-source.jar"  basedir="${maven.release.dir}" includes="README-checker-compat-qual"/>
+        <jar destfile="${dest.dir}/checker-compat-qual-javadoc.jar" basedir="${maven.release.dir}" includes="README-checker-compat-qual"/>
 
         <jar destfile="${dest.dir}/compiler-source.jar"  basedir="${maven.release.dir}" includes="README-compiler"/>
         <jar destfile="${dest.dir}/compiler-javadoc.jar" basedir="${maven.release.dir}" includes="README-compiler"/>

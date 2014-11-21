@@ -1,12 +1,15 @@
 
 // Test references to this and super in a lambda.
 
-import tests.util.function.*;
 import org.checkerframework.checker.nullness.qual.*;
 
 // Tests for the nullable type system
 interface Supplier {
     @NonNull ReceiverTest supply();
+}
+
+interface Function<T extends @Nullable Object, R> {
+    R apply(T t);
 }
 
 class ReceiverTest {

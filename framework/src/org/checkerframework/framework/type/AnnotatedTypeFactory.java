@@ -37,6 +37,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -282,6 +283,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // What's a better name? Maybe "reset" or "start"?
     public void setRoot(/*@Nullable*/ CompilationUnitTree root) {
         this.root = root;
+        treePathCache.clear();
+
         // There is no need to clear the following caches, they
         // are all limited by CACHE_SIZE.
         /*
@@ -507,6 +510,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /** Mapping from an Element to the source Tree of the declaration. */
     private final Map<Element, Tree> elementToTreeCache  = createLRUCache(CACHE_SIZE);
+
+    /** Mapping from a Tree to its TreePath **/
+    private final TreePathCacher treePathCache = new TreePathCacher();
 
     /**
      * Determines the annotated type of an element using
@@ -2036,8 +2042,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             current = current.getParentPath();
         }
 
-        // OK, we give up. Do a full scan.
-        return TreePath.getPath(root, node);
+        // OK, we give up. Use the cache to look up.
+        return treePathCache.getPath(root, node);
     }
 
     /**

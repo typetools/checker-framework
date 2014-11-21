@@ -1,5 +1,11 @@
 \newcommand{\etalchar}[1]{$^{#1}$}
-\begin{thebibliography}{DDE{\etalchar{+}}11}
+\begin{thebibliography}{WPM{\etalchar{+}}09}
+
+\bibitem[AQKE09]{ArtziQKE2009}
+Shay Artzi, Jaime Quinonez, Adam Kie{\.z}un, and Michael~D. Ernst.
+\newblock Parameter reference immutability: Formal definition, inference tool,
+  and comparison.
+\newblock {\em Automated Software Engineering}, 16(1):145--192, March 2009.
 
 \bibitem[Art01]{Artho2001}
 Cyrille Artho.
@@ -32,6 +38,15 @@ Werner Dietl, Stephanie Dietzel, Michael~D. Ernst, K{\i}van{\c{c}} Mu{\c{s}}lu,
   Software Engineering}, pages 681--690, Waikiki, Hawaii, USA, May~25--27,
   2011.
 
+\bibitem[EJM{\etalchar{+}}14]{ErnstJMDPRKBBHVW2014}
+Michael~D. Ernst, Ren{\'e} Just, Suzanne Millstein, Werner~M. Dietl, Stuart
+  Pernsteiner, Franziska Roesner, Karl Koscher, Paulo Barros, Ravi Bhoraskar,
+  Seungyeop Han, Paul Vines, and Edward~X. Wu.
+\newblock Collaborative verification of information flow for a high-assurance
+  app store.
+\newblock In {\em Proceedings of the 21st ACM Conference on Computer and
+  Communications Security (CCS)}, Scottsdale, AZ, USA, November~4--6, 2014.
+
 \bibitem[Ern08]{JSR308-2008-09-12}
 Michael~D. Ernst.
 \newblock {Type Annotations} specification ({JSR} 308).
@@ -59,6 +74,12 @@ Cormac Flanagan, K.~Rustan~M. Leino, Mark Lillibridge, Greg Nelson, James~B.
   on Programming Language Design and Implementation}, pages 234--245, Berlin,
   Germany, June~17--19, 2002.
 
+\bibitem[GDEG13]{GordonDEG2013}
+Colin~S. Gordon, Werner Dietl, Michael~D. Ernst, and Dan Grossman.
+\newblock {JavaUI}: Effects for controlling {UI} object access.
+\newblock In {\em ECOOP 2013 --- Object-Oriented Programming, 27th European
+  Conference}, pages 179--204, Montpellier, France, July~3--5, 2013.
+
 \bibitem[Goe06]{Goetz2006:typedef}
 Brian Goetz.
 \newblock The pseudo-typedef antipattern: Extension is not type definition.
@@ -70,6 +91,20 @@ Brian Goetz, Tim Peierls, Joshua Bloch, Joseph Bowbeer, David Holmes, and Doug
   Lea.
 \newblock {\em Java Concurrency in Practice}.
 \newblock Addison-Wesley, 2006.
+
+\bibitem[HDME12]{HuangDME2012}
+Wei Huang, Werner Dietl, Ana Milanova, and Michael~D. Ernst.
+\newblock Inference and checking of object ownership.
+\newblock In {\em ECOOP 2012 --- Object-Oriented Programming, 26th European
+  Conference}, pages 181--206, Bejing, China, June~14--16, 2012.
+
+\bibitem[HMDE12]{HuangMDE2012}
+Wei Huang, Ana Milanova, Werner Dietl, and Michael~D. Ernst.
+\newblock {ReIm} \& {ReImInfer}: Checking and inference of reference
+  immutability and method purity.
+\newblock In {\em Object-Oriented Programming Systems, Languages, and
+  Applications (OOPSLA 2012)}, pages 879--896, Tucson, AZ, USA, October~23-25,
+  2012.
 
 \bibitem[HP04]{HovemeyerP2004}
 David Hovemeyer and William Pugh.
@@ -111,6 +146,15 @@ Eric Spishak, Werner Dietl, and Michael~D. Ernst.
 \newblock In {\em FTfJP 2012: 14th Workshop on Formal Techniques for Java-like
   Programs}, pages 20--26, Beijing, China, June~12, 2012.
 
+\bibitem[SDF{\etalchar{+}}11]{SampsonDFGCG2011}
+Adrian Sampson, Werner Dietl, Emily Fortuna, Danushen Gnanapragasam, Luis Ceze,
+  and Dan Grossman.
+\newblock {EnerJ}: Approximate data types for safe and general low-power
+  computation.
+\newblock In {\em PLDI 2011, Proceedings of the {ACM} {SIGPLAN} 2011 Conference
+  on Programming Language Design and Implementation}, pages 164--174, San Jose,
+  CA, USA, June~6--8, 2011.
+
 \bibitem[SM11]{SummersM2011}
 Alexander~J. Summers and Peter M{\"u}ller.
 \newblock Freedom before commitment: A lightweight type system for object
@@ -126,6 +170,19 @@ Matthew~S. Tschantz and Michael~D. Ernst.
   Applications (OOPSLA 2005)}, pages 211--230, San Diego, CA, USA,
   October~18--20, 2005.
 
+\bibitem[WKSE14]{WeitzKSE2014}
+Konstantin Weitz, Gene Kim, Siwakorn Srisakaokul, and Michael~D. Ernst.
+\newblock A type system for format strings.
+\newblock In {\em ISSTA 2014, Proceedings of the 2014 International Symposium
+  on Software Testing and Analysis}, pages 127--137, San Jose, CA, USA,
+  July~23--25, 2014.
+
+\bibitem[WPM{\etalchar{+}}09]{WrigstadPMZV2009}
+Tobias Wrigstad, Filip Pizlo, Fadi Meawad, Lei Zhao, and Jan Vitek.
+\newblock Loci: Simple thread-locality for {J}ava.
+\newblock In {\em ECOOP 2009 --- Object-Oriented Programming, 23rd European
+  Conference}, pages 445--469, Genova, Italy, July~8--10, 2009.
+
 \bibitem[ZPA{\etalchar{+}}07]{ZibinPAAKE2007}
 Yoav Zibin, Alex Potanin, Mahmood Ali, Shay Artzi, Adam Kie{\.z}un, and
   Michael~D. Ernst.
@@ -134,5 +191,12 @@ Yoav Zibin, Alex Potanin, Mahmood Ali, Shay Artzi, Adam Kie{\.z}un, and
   Engineering Conference and the 15th {ACM} {SIGSOFT} Symposium on the
   Foundations of Software Engineering}, pages 75--84, Dubrovnik, Croatia,
   September~5--7, 2007.
+
+\bibitem[ZPL{\etalchar{+}}10]{ZibinPLAE2010}
+Yoav Zibin, Alex Potanin, Paley Li, Mahmood Ali, and Michael~D. Ernst.
+\newblock Ownership and immutability in generic {Java}.
+\newblock In {\em Object-Oriented Programming Systems, Languages, and
+  Applications (OOPSLA 2010)}, pages 598--617, Revo, NV, USA, October~19--21,
+  2010.
 
 \end{thebibliography}

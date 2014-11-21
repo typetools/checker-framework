@@ -44,7 +44,10 @@ public class CheckerManager {
         for (String processor : processors ) {
             final String trimmedProc = processor.trim();
             if (pathToChecker.containsKey(trimmedProc)) {
-                selected.add(pathToChecker.get(trimmedProc).getQualsPath());
+                final String qualsPath = pathToChecker.get(trimmedProc).getQualsPath();
+                if(qualsPath != null) {
+                    selected.add(pathToChecker.get(trimmedProc).getQualsPath());
+                }
             }
         }
 

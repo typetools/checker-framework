@@ -984,6 +984,7 @@ expression as an argument are:
 \item \refqualclass{checker/nullness/qual}{RequiresNonNull}
 \item \refqualclass{checker/nullness/qual}{EnsuresNonNull}
 \item \refqualclass{checker/nullness/qual}{EnsuresNonNullIf}
+% Not implemented: \refqualclass{checker/nullness/qual}{AssertNonNullIfNonNull}
 \end{itemize}
 
 The expression is a subset of legal Java expressions:
@@ -1021,7 +1022,7 @@ The expression is a subset of legal Java expressions:
 
 \item literals: string, integer, long, null.
 
-\item a method invocation on any expression
+\item a method invocation on any expression.
   This even works for overloaded methods and methods with type parameters.
   For example:
   \<m1(x, y.z, \#2)>, \<a.m2("hello")>.

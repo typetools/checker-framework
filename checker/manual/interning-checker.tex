@@ -1,7 +1,7 @@
 \htmlhr
 \chapter{Interning Checker\label{interning-checker}}
 
-\urldef{\jlsboxingurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-5.html#jls-5.1.7}
+\urldef{\jlsboxingurl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-5.html#jls-5.1.7}
 
 If the Interning Checker issues no errors for a given program, then all
 reference equality tests (i.e., all uses of ``\code{==}'') are proper;
@@ -36,7 +36,7 @@ from failure to use interning.
 Interning is such an important design pattern that Java builds it in for
 these types: \<String>, \<Boolean>, \<Byte>, \<Character>, \<Integer>,
 \<Short>.  Every string literal in the program is guaranteed to be interned
-(\ahref{\url{http://docs.oracle.com/javase/specs/jls/se7/html/jls-3.html#jls-3.10.5}}{JLS
+(\ahref{\url{https://docs.oracle.com/javase/specs/jls/se7/html/jls-3.html#jls-3.10.5}}{JLS
   \S3.10.5}), and the
 \sunjavadoc{java/lang/String.html#intern()}{String.intern()} method
 performs interning for strings that are computed at run time.
@@ -235,7 +235,7 @@ interned.)
 \section{Examples\label{interning-example}}
 
 To try the Interning Checker on a source file that uses the \refqualclass{checker/interning/qual}{Interned} qualifier,
-use the following command (where \code{javac} is the JSR 308 compiler that
+use the following command (where \code{javac} is the Checker Framework compiler that
 is distributed with the Checker Framework):
 
 \begin{Verbatim}
