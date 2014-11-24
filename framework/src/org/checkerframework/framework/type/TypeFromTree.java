@@ -212,7 +212,7 @@ abstract class TypeFromTree extends
             Element elt = TreeUtils.elementFromUse(node);
             AnnotatedTypeMirror selfType = f.getImplicitReceiverType(node);
             if (selfType != null) {
-                return AnnotatedTypes.asMemberOf(f.types, f, selfType, elt);
+                return AnnotatedTypes.asMemberOf(f.types, f, selfType, elt).asUse();
             }
 
             return f.getAnnotatedType(elt);
@@ -258,7 +258,7 @@ abstract class TypeFromTree extends
                 MethodInvocationTree node, AnnotatedTypeFactory f) {
 
             AnnotatedExecutableType ex = f.methodFromUse(node).first;
-            return ex.getReturnType();
+            return ex.getReturnType().asUse();
         }
 
         @Override

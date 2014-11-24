@@ -356,7 +356,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
 
         QualifiedParameterDeclaration<Q> qualVarDecl = (QualifiedParameterDeclaration<Q>)conv.getQualifiedType(varDecl);
-        QualifiedTypeVariable<Q> qualVarUse = (QualifiedTypeVariable<Q>)conv.getQualifiedType(varUse);
+        QualifiedTypeVariable<Q> qualVarUse = (QualifiedTypeVariable<Q>)conv.getQualifiedType(varUse.asUse());
         QualifiedTypeMirror<Q> qualValue = conv.getQualifiedType(value);
 
         QualifiedTypeMirror<Q> qualResult = underlying.postTypeVarSubstitution(
