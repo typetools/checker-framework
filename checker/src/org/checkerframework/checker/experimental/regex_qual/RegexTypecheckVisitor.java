@@ -41,7 +41,7 @@ public class RegexTypecheckVisitor extends TypecheckVisitorAdapter<Regex> {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         /**
-         * Don't require a Regex annotation on the String argument to
+         * Case 1: Don't require a Regex.RegexVal qualifier on the String argument to
          * Pattern.compile if the Pattern.LITERAL flag is passed.
          */
         ProcessingEnvironment env = checker.getProcessingEnvironment();
@@ -65,7 +65,7 @@ public class RegexTypecheckVisitor extends TypecheckVisitorAdapter<Regex> {
                 || TreeUtils.isMethodInvocation(node, matchResultGroup, env)
                 || TreeUtils.isMethodInvocation(node, matchResultStart, env)) {
             /**
-             * Checks calls to {@code MatchResult.start}, {@code MatchResult.end}
+             * Case 3: Checks calls to {@code MatchResult.start}, {@code MatchResult.end}
              * and {@code MatchResult.group} to ensure that a valid group number is passed.
              */
             ExpressionTree group = node.getArguments().get(0);

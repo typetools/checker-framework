@@ -33,6 +33,9 @@ import javax.lang.model.element.ExecutableElement;
  */
 public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
 
+    private static final String IS_REGEX_METHOD_SIG = "isRegex(java.lang.String,int)";
+    private static final String AS_REGEX_METHOD_SIG = "asRegex(java.lang.String,int)";
+
     public RegexQualifiedTransfer(QualAnalysis<QualParams<Regex>> analysis) {
         super(analysis);
     }
@@ -47,15 +50,17 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
         MethodAccessNode target = n.getTarget();
         ExecutableElement method = target.getMethod();
         Node receiver = target.getReceiver();
-        if (receiver instanceof ClassNameNode) {
-            ClassNameNode cn = (ClassNameNode) receiver;
-            String receiverName = cn.getElement().toString();
-            // RegexUtil.isRegex(s, groups) method
-            // (No special case is needed for isRegex(String) because of
-            // the annotatation on that method's definition.)
-            if (isRegexUtil(receiverName)
-                    && method.toString().equals(
-                    "isRegex(java.lang.String,int)")) {
+        if (!(receiver instanceof ClassNameNode)) {
+            return result;
+        }
+        ClassNameNode cn = (ClassNameNode) receiver;
+        String receiverName = cn.getElement().toString();
+
+        if (isRegexUtil(receiverName)) {
+            if (IS_REGEX_METHOD_SIG.equals(method.toString())) {
+                // RegexUtil.isRegex(s, groups) method
+                // (No special case is needed for isRegex(String) because of
+                // the annotation on that method's definition.)
 
                 QualStore<QualParams<Regex>> thenStore = result.getRegularStore();
                 QualStore<QualParams<Regex>> elseStore = thenStore.copy();
@@ -81,14 +86,11 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
                     assert false;
                 }
                 return newResult;
-            }
 
-            // RegexUtil.asRegex(s, groups) method
-            // (No special case is needed for asRegex(String) because of
-            // the annotatation on that method's definition.)
-            if (isRegexUtil(receiverName)
-                    && method.toString().equals(
-                    "asRegex(java.lang.String,int)")) {
+            } else if (AS_REGEX_METHOD_SIG.equals(method.toString())) {
+                // RegexUtil.asRegex(s, groups) method
+                // (No special case is needed for asRegex(String) because of
+                // the annotation on that method's definition.)
 
                 // add annotation with correct group count (if possible,
                 // regex annotation without count otherwise)
@@ -103,7 +105,7 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
                 }
                 QualValue<QualParams<Regex>> newResultValue = analysis
                         .createSingleAnnotationValue(regex,
-                        result.getResultValue().getType().getUnderlyingType().getOriginalType());
+                                result.getResultValue().getType().getUnderlyingType().getOriginalType());
                 return new RegularTransferResult<>(newResultValue,
                         result.getRegularStore());
             }
