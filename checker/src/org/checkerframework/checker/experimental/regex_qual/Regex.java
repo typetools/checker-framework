@@ -5,7 +5,6 @@ package org.checkerframework.checker.experimental.regex_qual;
  * Qualifier for the Regex-Qual type system.
  *
  * The static instances TOP and BOTTOM are used as the top and bottom of the hierarchy.
- * Comparisons using TOP or BOTTOM must use reference equality.
  *
  * {@link Regex.PartialRegex} is used to track string values that are not value regex.
  *
@@ -14,7 +13,7 @@ package org.checkerframework.checker.experimental.regex_qual;
  */
 public abstract class Regex {
 
-    /* Top qualifier. Comparisons using TOP or BOTTOM must use reference equality. */
+    /* Top qualifier. */
     public static final Regex TOP = new Regex() {
         @Override
         public String toString() {
@@ -22,7 +21,7 @@ public abstract class Regex {
         }
     };
 
-    /* Bottom qualifier. Comparisons using TOP or BOTTOM must use reference equality. */
+    /* Bottom qualifier. */
     public static final Regex BOTTOM = new Regex() {
         @Override
         public String toString() {
