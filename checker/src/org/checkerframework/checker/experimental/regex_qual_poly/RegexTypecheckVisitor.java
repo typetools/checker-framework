@@ -43,7 +43,7 @@ public class RegexTypecheckVisitor extends TypecheckVisitorAdapter<QualParams<Re
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         /**
-         * Case 1: Don't require a Regex annotation on the String argument to
+         * Case 1: Don't require a Regex.RegexVal qualifier on the String argument to
          * Pattern.compile if the Pattern.LITERAL flag is passed.
          */
         ProcessingEnvironment env = checker.getProcessingEnvironment();
