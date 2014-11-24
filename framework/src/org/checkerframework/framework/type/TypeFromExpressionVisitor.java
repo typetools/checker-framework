@@ -6,6 +6,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ConstructorReturnUtil;
 import org.checkerframework.javacutil.InternalUtils;
@@ -317,10 +318,17 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
         AnnotatedTypeMirror result = f.type(node);
         assert result instanceof AnnotatedWildcardType;
+
+        //the first time getSuperBound/getExtendsBound is called the bound of this wildcard will be
+        //appropriately initialized where for the type of node, instead of replacing that bound
+        //we merge the annotations onto the initialized bound
+        //This ensures that the structure of the wildcard will match that created by BoundsInitializer/createType
         if (node.getKind() == Tree.Kind.SUPER_WILDCARD) {
-            ((AnnotatedWildcardType)result).setSuperBound(bound);
+            AnnotatedTypeMerger.merge(bound, ((AnnotatedWildcardType) result).getSuperBound());
+
         } else if (node.getKind() == Tree.Kind.EXTENDS_WILDCARD) {
-            ((AnnotatedWildcardType)result).setExtendsBound(bound);
+            AnnotatedTypeMerger.merge(bound, ((AnnotatedWildcardType) result).getExtendsBound());
+
         }
         return result;
     }
