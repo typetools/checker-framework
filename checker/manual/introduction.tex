@@ -738,12 +738,15 @@ omit the package name.  The following two commands are equivalent:
   javac -processor \textbf{NullnessChecker} MyFile.java
 \end{alltt}
 
-This feature does not apply to Javac \ahref{\url{https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html#commandlineargfile}}{@argfiles}.
-This feature will work when multiple checkers are specified.  For example:
+This feature will work when multiple checkers are specified.
+For example:
 
 \begin{alltt}
   javac -processor NullnessChecker,RegexChecker MyFile.java
 \end{alltt}
+
+This feature does not apply to Javac \ahref{\url{https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html#commandlineargfile}}{@argfiles}.
+
 
 \section{What the checker guarantees\label{checker-guarantees}}
 
