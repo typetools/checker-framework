@@ -27,10 +27,10 @@
         <format property="timestamp" pattern="yy-MM-dd-hh-mm-ss-SS" />
     </tstamp>
     <!-- Prevent printing a literal ${env.BUILD_NUMBER} if it's not in env-->
-    <property name="env.BUILD_NUMBER" value="" />
+    <property name="env.EXECUTOR_NUMBER" value="" />
 
     <property name="tmpdir"
-        value="${java.io.tmpdir}/${user.name}/${timestamp}${env.BUILD_NUMBER}/${ant.project.name}" />
+        value="${java.io.tmpdir}/${user.name}/${timestamp}${env.EXECUTOR_NUMBER}/${ant.project.name}" />
 
     <property name="compiler.version.goal.jsr308"
               value="javac 1.8.0-jsr308-${build.version}"/>
