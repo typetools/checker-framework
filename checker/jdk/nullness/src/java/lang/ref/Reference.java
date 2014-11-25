@@ -39,6 +39,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * @since    1.2
  */
 
+@SuppressWarnings("rawtypes")
 public abstract class Reference<T> {
 
     /* A Reference instance is in one of four possible internal states:
@@ -131,6 +132,7 @@ public abstract class Reference<T> {
             super(g, name);
         }
 
+        @SuppressWarnings("unchecked")
         public void run() {
             for (;;) {
                 Reference r;
@@ -239,6 +241,7 @@ public abstract class Reference<T> {
         this(referent, null);
     }
 
+    @SuppressWarnings("unchecked")
     Reference(T referent, ReferenceQueue<? super T> queue) {
         this.referent = referent;
         this.queue = (queue == null) ? ReferenceQueue.NULL : queue;
