@@ -166,6 +166,7 @@ public class LubTypeVariableAnnotator {
         return (AnnotatedTypeVariable) typeUpperBound;
     }
 
+    //TODO: Reconcile this with CFAbstractValue findSourceAtm
     private static AnnotationMirror findSourceAnnotation(final QualifierHierarchy qualifierHierarchy,
                                                          final AnnotatedTypeMirror toSearch,
                                                          final AnnotationMirror top) {
