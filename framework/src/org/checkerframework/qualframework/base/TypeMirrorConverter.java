@@ -65,7 +65,7 @@ public class TypeMirrorConverter<Q> {
     /** Cache @Key annotation mirrors so they are not to be recreated on every conversion */
     public LinkedHashMap<Integer, AnnotationMirror> keyToAnnoCache = new LinkedHashMap<Integer, AnnotationMirror>(10, .75f, true) {
          private static final long serialVersionUID = 1L;
-         private static final int MAX_SIZE = 100;
+         private static final int MAX_SIZE = 1000;
          @Override
          protected boolean removeEldestEntry(Map.Entry<Integer, AnnotationMirror> eldest) {
             return size() > MAX_SIZE;

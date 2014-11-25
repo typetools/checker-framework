@@ -161,7 +161,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
             primary = new GroundQual<>(DEFAULT_QUAL);
         }
 
-        return (params.isEmpty() && primary == null ? null : new QualParams<>(params, primary));
+        return new QualParams<>(params, primary);
     }
 
     /**

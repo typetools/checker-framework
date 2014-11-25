@@ -3,7 +3,7 @@ import org.checkerframework.checker.experimental.regex_qual_poly.qual.*;
 package java.util.regex;
 
 class Pattern {
-    @PolyRegex Pattern compile(@Regex String regex);
+    @Regex Pattern compile(@Regex String regex);
     Pattern compile(@Regex String regex, int flags);
     boolean matches(@Regex String regex, CharSequence input);
     @PolyRegex Matcher matcher(CharSequence input) @PolyRegex;
