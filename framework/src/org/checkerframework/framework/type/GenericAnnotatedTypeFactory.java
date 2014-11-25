@@ -45,6 +45,14 @@ import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -87,6 +95,9 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /** to annotate types based on the given tree */
     protected TypeAnnotator typeAnnotator;
+
+    /** for use in addTypeImplicits */
+    private ImplicitsTypeAnnotator implicitsTypeAnnotator;
 
     /** to annotate types based on the given un-annotated types */
     protected TreeAnnotator treeAnnotator;
@@ -213,13 +224,22 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns a {@link TypeAnnotator} that adds annotations to a type based
+     * Returns a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator} that adds annotations to a type based
      * on the content of the type itself.
      *
      * @return a type annotator
      */
     protected TypeAnnotator createTypeAnnotator() {
-        return new TypeAnnotator(this);
+        implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
+
+        return new ListTypeAnnotator(
+                new PropagationTypeAnnotator(this),
+                implicitsTypeAnnotator
+        );
+    }
+
+    protected void addTypeNameImplicit(Class<?> clazz, AnnotationMirror implicitAnno) {
+        implicitsTypeAnnotator.addTypeName(clazz, implicitAnno);
     }
 
     /**

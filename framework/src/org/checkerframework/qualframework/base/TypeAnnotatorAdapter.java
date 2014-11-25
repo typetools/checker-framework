@@ -2,14 +2,15 @@ package org.checkerframework.qualframework.base;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 
 /**
  * Adapter for {@link TypeAnnotator}, extending
- * {@link org.checkerframework.framework.type.TypeAnnotator org.checkerframework.framework.type.TypeAnnotator}.
+ * {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator org.checkerframework.framework.type.TypeAnnotator}.
  */
-class TypeAnnotatorAdapter<Q> extends org.checkerframework.framework.type.TypeAnnotator {
+class TypeAnnotatorAdapter<Q> extends ImplicitsTypeAnnotator {
     private final TypeAnnotator<Q> underlying;
     private final TypeMirrorConverter<Q> converter;
 

@@ -47,9 +47,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TreeAnnotator;
-import org.checkerframework.framework.type.TypeAnnotator;
-import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -217,7 +218,10 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
-        return new ValueTypeAnnotator(this);
+        return new ListTypeAnnotator(
+                new ValueTypeAnnotator(this),
+                super.createTypeAnnotator()
+        );
     }
 
     private class ValueTypeAnnotator extends TypeAnnotator {

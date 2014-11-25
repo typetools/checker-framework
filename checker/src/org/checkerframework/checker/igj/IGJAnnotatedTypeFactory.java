@@ -29,6 +29,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 import org.checkerframework.framework.type.visitor.VisitHistory;
@@ -180,7 +186,10 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
-        return new IGJTypePostAnnotator(this);
+        return new ListTypeAnnotator(
+                new IGJTypePostAnnotator(this),
+                super.createTypeAnnotator()
+        );
     }
 
     // TODO: do store annotations into the Element -> remove this override

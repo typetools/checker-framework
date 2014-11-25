@@ -8,6 +8,7 @@ import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.dataflow.qual.LockingFree;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -80,11 +81,6 @@ public class LockAnnotatedTypeFactory
     @Override
     public LockTransfer createFlowTransferFunction(CFAbstractAnalysis<CFValue, LockStore, LockTransfer> analysis) {
         return new LockTransfer((LockAnalysis) analysis,(LockChecker)this.checker);
-    }
-
-    @Override
-    protected TypeAnnotator createTypeAnnotator() {
-        return new TypeAnnotator(this);
     }
 
     class LockQualifierHierarchy extends GraphQualifierHierarchy {

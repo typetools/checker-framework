@@ -1,4 +1,4 @@
-package org.checkerframework.framework.type;
+package org.checkerframework.framework.type.treeannotator;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -7,6 +7,7 @@ import java.util.Set;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /** A ListTreeAnnotator implementation that additionally
  * outputs debugging information.
