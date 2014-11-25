@@ -2001,6 +2001,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         if (node == null) return null;
 
+        if (treePathCache.isCached(node)) {
+            return treePathCache.getPath(root, node);
+        };
+
         TreePath currentPath = visitorState.getPath();
         if (currentPath == null)
             return TreePath.getPath(root, node);

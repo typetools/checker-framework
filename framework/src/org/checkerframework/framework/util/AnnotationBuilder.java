@@ -102,6 +102,8 @@ public class AnnotationBuilder {
         wasBuilt = true;
         return new AnnotationMirror() {
 
+            private String toStringVal;
+
             @Override
             public DeclaredType getAnnotationType() {
                 return annotationType;
@@ -115,28 +117,32 @@ public class AnnotationBuilder {
             @SideEffectFree
             @Override
             public String toString() {
-                StringBuilder buf = new StringBuilder();
-                buf.append("@");
-                buf.append(annotationType);
-                int len = elementValues.size();
-                if (len > 0) {
-                    buf.append('(');
-                    boolean first = true;
-                    for (Map.Entry<ExecutableElement, AnnotationValue> pair : elementValues.entrySet()) {
-                        if (!first)
-                            buf.append(", ");
-                        first = false;
+                if (toStringVal == null) {
+                    StringBuilder buf = new StringBuilder();
+                    buf.append("@");
+                    buf.append(annotationType);
+                    int len = elementValues.size();
+                    if (len > 0) {
+                        buf.append('(');
+                        boolean first = true;
+                        for (Map.Entry<ExecutableElement, AnnotationValue> pair : elementValues.entrySet()) {
+                            if (!first)
+                                buf.append(", ");
+                            first = false;
 
-                        String name = pair.getKey().getSimpleName().toString();
-                        if (len > 1 || !name.equals("value")) {
-                            buf.append(name);
-                            buf.append('=');
+                            String name = pair.getKey().getSimpleName().toString();
+                            if (len > 1 || !name.equals("value")) {
+                                buf.append(name);
+                                buf.append('=');
+                            }
+                            buf.append(pair.getValue());
                         }
-                        buf.append(pair.getValue());
+                        buf.append(')');
                     }
-                    buf.append(')');
+                    toStringVal = buf.toString();
                 }
-                return buf.toString();
+                return toStringVal;
+
                 // return "@" + annotationType + "(" + elementValues + ")";
             }
         };

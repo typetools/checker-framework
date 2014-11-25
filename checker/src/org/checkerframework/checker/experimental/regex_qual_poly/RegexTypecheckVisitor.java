@@ -78,7 +78,8 @@ public class RegexTypecheckVisitor extends TypecheckVisitorAdapter<QualParams<Re
                 int annoGroups = 0;
                 QualifiedTypeMirror<QualParams<Regex>> receiverType = context.getTypeFactory().getQualifiedType(receiver);
                 Regex regex = receiverType.getQualifier().getPrimary().getMaximum();
-                if (!regex.isRegexVal() || ((Regex.RegexVal) regex).getCount() < paramGroups) {
+                if (paramGroups > 0 &&
+                        (!regex.isRegexVal() || ((Regex.RegexVal) regex).getCount() < paramGroups)) {
                     checker.report(Result.failure("group.count.invalid", paramGroups, annoGroups, receiver), group);
                 }
             } else {

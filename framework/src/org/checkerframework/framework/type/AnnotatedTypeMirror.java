@@ -945,9 +945,19 @@ public abstract class AnnotatedTypeMirror {
 
             List<AnnotatedTypeMirror> newArgs = new ArrayList<>();
             for (AnnotatedTypeMirror arg : result.getTypeArguments()) {
-                AnnotatedTypeVariable paramDecl = (AnnotatedTypeVariable)arg;
-                assert paramDecl.isDeclaration();
-                newArgs.add(paramDecl.asUse());
+                switch (arg.getKind()) {
+                    case TYPEVAR:
+                        AnnotatedTypeVariable paramTypevar = (AnnotatedTypeVariable)arg;
+                        assert paramTypevar.isDeclaration();
+                        newArgs.add(paramTypevar.asUse());
+                        break;
+                    case WILDCARD:
+                        AnnotatedWildcardType paramWildcard = (AnnotatedWildcardType)arg;
+                        newArgs.add(paramWildcard.asUse());
+                        break;
+                    default:
+                        ErrorReporter.errorAbort("Unexpected type kind: " + arg.getKind() + " for asUse of: " + this);
+                }
             }
             result.setTypeArguments(newArgs);
 

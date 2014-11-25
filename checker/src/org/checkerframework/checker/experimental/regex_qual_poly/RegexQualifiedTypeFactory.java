@@ -18,11 +18,14 @@ import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
 import org.checkerframework.qualframework.base.dataflow.QualTransfer;
 import org.checkerframework.qualframework.base.dataflow.QualValue;
 import org.checkerframework.qualframework.poly.CombiningOperation;
+import org.checkerframework.qualframework.poly.ContainmentHierarchy;
 import org.checkerframework.qualframework.poly.PolyQual;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 import org.checkerframework.qualframework.poly.PolyQual.QualVar;
+import org.checkerframework.qualframework.poly.PolyQualHierarchy;
 import org.checkerframework.qualframework.poly.QualParams;
 import org.checkerframework.qualframework.poly.QualifierParameterTreeAnnotator;
+import org.checkerframework.qualframework.poly.QualifierParameterTypeAnnotator;
 import org.checkerframework.qualframework.poly.QualifierParameterTypeFactory;
 import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 import org.checkerframework.qualframework.poly.Wildcard;
@@ -115,10 +118,17 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
                     ExtendedTypeMirror type) {
 
                 QualifiedTypeMirror<QualParams<Regex>> result = super.visitCompoundAssignment(tree, type);
-                QualParams<Regex> lRegex = getQualifiedType(tree.getExpression()).getQualifier();
-                QualParams<Regex> rRegex = getQualifiedType(tree.getVariable()).getQualifier();
 
-                return handleBinaryOperation(tree, lRegex, rRegex, result);
+                if (TreeUtils.isStringConcatenation(tree)
+                        || (tree instanceof CompoundAssignmentTree
+                        && TreeUtils.isStringCompoundConcatenation(tree))) {
+
+                    QualParams<Regex> lRegex = getQualifiedType(tree.getExpression()).getQualifier();
+                    QualParams<Regex> rRegex = getQualifiedType(tree.getVariable()).getQualifier();
+                    return handleBinaryOperation(tree, lRegex, rRegex, result);
+                } else {
+                    return result;
+                }
             }
 
             /**
@@ -154,10 +164,17 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
             public QualifiedTypeMirror<QualParams<Regex>> visitBinary(BinaryTree tree, ExtendedTypeMirror type) {
 
                 QualifiedTypeMirror<QualParams<Regex>> result = super.visitBinary(tree, type);
-                QualParams<Regex> lRegex = getQualifiedType(tree.getLeftOperand()).getQualifier();
-                QualParams<Regex> rRegex = getQualifiedType(tree.getRightOperand()).getQualifier();
 
-                return handleBinaryOperation(tree, lRegex, rRegex, result);
+                if (TreeUtils.isStringConcatenation(tree)
+                        || (tree instanceof CompoundAssignmentTree
+                        && TreeUtils.isStringCompoundConcatenation((CompoundAssignmentTree)tree))) {
+
+                    QualParams<Regex> lRegex = getQualifiedType(tree.getLeftOperand()).getQualifier();
+                    QualParams<Regex> rRegex = getQualifiedType(tree.getRightOperand()).getQualifier();
+                    return handleBinaryOperation(tree, lRegex, rRegex, result);
+                } else {
+                    return result;
+                }
             }
 
             /**
@@ -178,13 +195,15 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
                         || (tree instanceof CompoundAssignmentTree
                             && TreeUtils.isStringCompoundConcatenation((CompoundAssignmentTree)tree))) {
 
+                    PolyQual<Regex> resultQual = null;
+
                     PolyQual<Regex> rPrimary = rRegexParam.getPrimary();
                     PolyQual<Regex> lPrimary = lRegexParam.getPrimary();
 
-                    Regex lRegex = lRegexParam.getPrimary().getMaximum();
-                    Regex rRegex = rRegexParam.getPrimary().getMaximum();
-                    PolyQual<Regex> resultQual = null;
-
+                    Regex rRegex = getQualifierHierarchy().getBottom() == rRegexParam ?
+                            new Regex.RegexVal(0) : rPrimary.getMaximum();
+                    Regex lRegex = getQualifierHierarchy().getBottom() == lRegexParam ?
+                            new Regex.RegexVal(0) : lPrimary.getMaximum();
 
                     if (isPolyPlusRegex(rPrimary, lRegex)) {
                         // Poly + Regex == Poly
