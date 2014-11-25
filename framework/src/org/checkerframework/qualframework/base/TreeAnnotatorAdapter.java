@@ -3,15 +3,14 @@ package org.checkerframework.qualframework.base;
 import com.sun.source.tree.*;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.PropagationTreeAnnotator;
-import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 
 /**
  * Adapter for {@link TreeAnnotator}, extending
- * {@link org.checkerframework.framework.type.TreeAnnotator org.checkerframework.framework.type.TreeAnnotator}. 
+ * {@link org.checkerframework.framework.type.treeannotator.TreeAnnotator org.checkerframework.framework.type.TreeAnnotator}.
  */
 class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     private TreeAnnotator<Q> underlying;

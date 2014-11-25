@@ -1,21 +1,22 @@
-package org.checkerframework.framework.type;
+package org.checkerframework.framework.type.treeannotator;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import com.sun.source.tree.Tree;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
  * ListTreeAnnotator is a TreeVisitor that executes a list of
- * {@link org.checkerframework.framework.type.TreeAnnotator}
+ * {@link TreeAnnotator}
  * for each tree visited.
  *
  * Checkers should not extend ListTreeAnnotator; they should instead
  * pass a custom TreeAnnotator to the constructor.
  *
- * @see org.checkerframework.framework.type.ImplicitsTreeAnnotator
- * @see org.checkerframework.framework.type.PropagationTreeAnnotator
+ * @see ImplicitsTreeAnnotator
+ * @see PropagationTreeAnnotator
  */
 public class ListTreeAnnotator extends TreeAnnotator {
 

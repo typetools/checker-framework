@@ -1,14 +1,16 @@
-package org.checkerframework.framework.type;
+package org.checkerframework.framework.type.treeannotator;
 
 import com.sun.source.util.SimpleTreeVisitor;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
  * {@link TreeAnnotator} is an abstract SimpleTreeVisitor to be
- * used with {@link org.checkerframework.framework.type.ListTreeAnnotator}
+ * used with {@link ListTreeAnnotator}
  *
- * @see org.checkerframework.framework.type.ListTreeAnnotator
- * @see org.checkerframework.framework.type.PropagationTreeAnnotator
- * @see org.checkerframework.framework.type.ImplicitsTreeAnnotator
+ * @see ListTreeAnnotator
+ * @see PropagationTreeAnnotator
+ * @see ImplicitsTreeAnnotator
  */
 public abstract class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> {
 

@@ -28,7 +28,7 @@ public abstract class AbstractAtmComboVisitor<RETURN_TYPE, PARAM> implements Atm
     protected abstract String defaultErrorMessage(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param);
 
     /**
-     * Called by the default implementation of every AbstractAtmComboVisitor visit method.  This method
+     * Called by the default implementation of every AbstractAtmComboVisitor visit method.  This methodnS
      * issues a runtime exception by default.  In general, it should handle the case where a visit method
      * has been called with a pair of type mirrors that should never be passed to this particular visitor.
      * @param type1 the first AnnotatedTypeMirror parameter to the visit method called
