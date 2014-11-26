@@ -391,14 +391,13 @@
 
         <copy file="${checker.manual}/manual.html" tofile="${dest.dir}/${manual.name}.html"/>
         <copy file="${checker.manual}/manual.pdf"  tofile="${dest.dir}/${manual.name}.pdf"/>
-
-        <copy file="${checker.manual}/${checker.webpage}" tofile="${dest.dir}/${checker.webpage}" />
-
         <copy todir="${dest.dir}" flatten="true">
             <fileset dir="${checker.manual}">
                 <include name="*.svg"/>
             </fileset>
         </copy>
+
+        <copy file="${checker.manual}/${checker.webpage}" tofile="${dest.dir}/${checker.webpage}" />
 
         <copy todir="${dest.dir}/tutorial" >
             <fileset dir="${checker.tutorial}" includes="**"/>
