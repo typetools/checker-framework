@@ -55,11 +55,11 @@ public class NonNullMapValue {
     for (String keyInMap : myMap.keySet()) {
         value = myMap.get(keyInMap);
     }
-    for (Map.Entry<String,@NonNull String> entry : myMap.entrySet()) {
+    for (Map.Entry<@KeyFor("myMap") String,@NonNull String> entry : myMap.entrySet()) {
       String keyInMap = entry.getKey();
       value = entry.getValue();
     }
-    for (Iterator<String> iter = myMap.keySet().iterator(); iter.hasNext();) {
+    for (Iterator<@KeyFor("myMap") String> iter = myMap.keySet().iterator(); iter.hasNext();) {
       String keyInMap = iter.next();
       //value = myMap.get(keyInMap);
     }
@@ -103,21 +103,20 @@ public class NonNullMapValue {
     @NonNull List<T> dom_of_pred2 = dom.get(pred);
   }
 
-  // Too ambitious for now
-  // public static void process_unmatched_procedure_entries() {
-  //   HashMap<Integer,Date> call_hashmap = new HashMap<Integer,Date>();
-  //   for (Integer i : call_hashmap.keySet()) {
-  //     @NonNull Date d = call_hashmap.get(i);
-  //   }
-  //   Set<Integer> keys = call_hashmap.keySet();
-  //   for (Integer i : keys) {
-  //     @NonNull Date d = call_hashmap.get(i);
-  //   }
-  //   Set<Integer> keys_sorted = new TreeSet<Integer>(call_hashmap.keySet());
-  //   for (Integer i : keys_sorted) {
-  //     @NonNull Date d = call_hashmap.get(i);
-  //   }
-  // }
+  public static void process_unmatched_procedure_entries() {
+    HashMap<Integer,Date> call_hashmap = new HashMap<Integer,Date>();
+    for (Integer i : call_hashmap.keySet()) {
+      @NonNull Date d = call_hashmap.get(i);
+    }
+    Set<@KeyFor("call_hashmap") Integer> keys = call_hashmap.keySet();
+    for (Integer i : keys) {
+      @NonNull Date d = call_hashmap.get(i);
+    }
+    Set<@KeyFor("call_hashmap") Integer> keys_sorted = new TreeSet<@KeyFor("call_hashmap") Integer>(call_hashmap.keySet());
+    for (Integer i : keys_sorted) {
+      @NonNull Date d = call_hashmap.get(i);
+    }
+  }
 
   public static Object testPut(Map<Object,Object> map, Object key) {
     if (!map.containsKey(key)) {
@@ -176,18 +175,17 @@ public class NonNullMapValue {
   private static final String KEY = "key";
   private static final String KEY2 = "key2";
 
-  // TODO: Disabled.  Re-enable when bug 67 is fixed.
-//   void testAnd(MyMap<String, String> map, MyMap<String, @Nullable String> map2) {
-//     if (map.containsKey(KEY)) {
-//       map.get(KEY).toString();
-//     }
-//     // Should not get a diagnostic here
-//     if (map.containsKey(KEY2) && map.get(KEY2).toString() != null) {
-//     }
-//     //:: error: (dereference.of.nullable)
-//     if (map2.containsKey(KEY2) && map2.get(KEY2).toString() != null) {
-//     }
-//   }
+  void testAnd(MyMap<String, String> map, MyMap<String, @Nullable String> map2) {
+    if (map.containsKey(KEY)) {
+      map.get(KEY).toString();
+    }
+    //:: warning: (known.nonnull)
+    if (map.containsKey(KEY2) && map.get(KEY2).toString() != null) {
+    }
+    //:: warning: (known.nonnull)
+    if (map2.containsKey(KEY2) && map2.get(KEY2).toString() != null) {
+    }
+  }
 
   void testAndWithIllegalMapAnnotation(MyMap2<String, String> map) {
     if (map.containsKey(KEY)) {
