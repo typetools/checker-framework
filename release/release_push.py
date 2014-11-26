@@ -255,13 +255,8 @@ def main(argv):
 
     print_step( "Push Step 3: Run development sanity tests" )
     continue_or_exit(
-       "Please build and install the Eclipse plugin using the latest artifacts. See\n" +
-       "README-developers.html under the checker-framework/release directory\n\n" +
-
-       "Please run the Eclipse version of  the Checker Framework Tutorial. See:\n"      +
-       dev_checker_website + "\n\n" +
-
-       "Note: You will be prompted to run the Maven tutorial (automatically, via this script) below.\n\n" )
+       "Later in this step you will build and install the Eclipse plugin using the latest artifacts. See\n" +
+       "README-developers.html under the checker-framework/release directory\n\n")
 
     print_step(" 3a: Run javac sanity test on development release." )
     if prompt_yes_no( "Run javac sanity test on development release?", True ):
