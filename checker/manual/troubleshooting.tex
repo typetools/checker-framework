@@ -146,7 +146,7 @@ then an annotation is not present at run time that was present at compile
 time.  For example, maybe when you compiled the code, the \<@Nullable>
 annotation was available, but it was not available at run time.
 You can use JDK 8 at run time, or compile
-with a Java 7 compiler that will ignore the annotations in comments.
+with a Java 6 or 7 compiler that will ignore the annotations in comments.
 
 \item
 A ``class file for \ldots\ not found'' error, especially for an inner class
@@ -157,8 +157,8 @@ your classpath contains code that was compiled
 with some library, but your classpath does not contain that library itself.
 
 For example, suppose that when you run the compiler, you are using JDK 8,
-but some library on your classpath was compiled against JDK 7, and the
-compiled library refers to a class that only appears in JDK 7.  (If only
+but some library on your classpath was compiled against JDK 6 or 7, and the
+compiled library refers to a class that only appears in JDK 6 or 7.  (If only
 one version of Java existed, or the Checker Framework didn't try to support
 multiple different versions of Java, this would not be a problem.)
 
@@ -188,6 +188,13 @@ Examples of classes that were not in JDK 6 but were introduced in JDK 7 include:
   class file for java.util.Vector$Itr not found
 \end{Verbatim}
 
+There are even classes that were introduced within a single JDK release.
+Classes that appear in JDK 7 release 71 but not in JDK 7 release 45 include:
+
+\begin{Verbatim}
+  class file for java.lang.Class$ReflectionData not found
+\end{Verbatim}
+
 You may be able to solve the problem by running
 
 \begin{Verbatim}
@@ -198,6 +205,8 @@ You may be able to solve the problem by running
 \noindent
 to re-generate files \code{checker/jdk/jdk\{7,8\}.jar} and \code{checker/bin/jdk\{7,8\}.jar}.
 
+That usually works, but if not, then you should recompile the Checker
+Framework from source rather than using the pre-compiled distribution.
 
 
 \item
@@ -456,7 +465,7 @@ fix the problem by instead using a definition of \<@NonNull> that is a type
 annotation, such as the Checker Framework's annotations; often this only
 requires changing an \<import> statement.
 Alternately, if you wish to continue using the legacy annotations in
-declaration locations, see Section~\ref{java7-classfiles}.
+declaration locations, see Section~\ref{running-on-a-java7-jvm}.
 
 
 \item
@@ -467,16 +476,16 @@ This compile-time error
 \end{Verbatim}
 
 \noindent
-indicates that you are compiling using a Java 7 JDK, but your code
+indicates that you are compiling using a Java 6 or 7 JDK, but your code
 references an enum constant that is only defined in the Java 8 JDK.  The
 problem might be that your code uses a library that references the enum
 constant.  In particular, the type annotations shipped with the Checker
 Framework reference 
 \sunjavadoc{java/lang/annotation/ElementType.html#TYPE\_USE}{ElementType.TYPE\_USE}.  You can use the Checker
-Framework, but still compile and run your code in a Java 7 JVM, by
-following the instructions in Section~\ref{java7-classfiles}.
+Framework, but still compile and run your code in a Java 6 or 7 JVM, by
+following the instructions in Section~\ref{running-on-a-java7-jvm}.
 
-If you ignore the error and run your code in a Java 7 JVM, then you will get a run-time error:
+If you ignore the error and run your code in a Java 6 or 7 JVM, then you will get a run-time error:
 
 \begin{Verbatim}
   java.lang.ArrayStoreException: sun.reflect.annotation.EnumConstantNotPresentExceptionProxy
@@ -519,7 +528,7 @@ Run \<java -version> to
 determine the version of Java you are using and use a newer version,
 and/or use the \<-target>
 command-line option to \<javac> to specify the version of the class files
-that are created, such as \<javac -target 7 ...>.
+that are created, such as \<javac -source 7 -target 7 ...>.
 
 
 
@@ -677,7 +686,7 @@ adds annotated JDKs and the Checker Framework jars to the classpath.
 %  * the location of tools.jar, below.
 %  * the default location of RTJAR, in checker/jdk/Makefile.
 Set the \<JAVA\_HOME> environment variable to the location of your JDK 
-7 installation (not the JRE installation, and not JDK 6).
+7 or 8 installation (not the JRE installation, and not JDK 6 or earlier).
 This needs to be an Oracle JDK.
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
@@ -688,14 +697,6 @@ not because \<java> might be the version in the JDK or in the JRE):
 \begin{Verbatim}
   export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
 \end{Verbatim}
-
-% # To build your own JDK:
-% mkdir -p /scratch/$USER/jdk7
-% cd /scratch/$USER/jdk7
-% wget http://docs.oracle.com/otn-pub/java/jdk/7/jdk-7-linux-x64.tar.gz
-% tar xzf jdk-7-linux-x64.tar.gz
-% export JAVA_HOME=/scratch/$USER/jdk7/jdk1.7.0
-% export PATH=${JAVA_HOME}/bin:${PATH}
 
 \item
 Compile the Type Annotations tools:

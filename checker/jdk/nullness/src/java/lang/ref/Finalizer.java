@@ -29,6 +29,7 @@ import java.security.PrivilegedAction;
 import java.security.AccessController;
 
 
+@SuppressWarnings("rawtypes")
 final class Finalizer extends FinalReference { /* Package-private; must be in
                                                   same package as the Reference
                                                   class */
@@ -80,6 +81,7 @@ final class Finalizer extends FinalReference { /* Package-private; must be in
         }
     }
 
+    @SuppressWarnings("unchecked")
     private Finalizer(Object finalizee) {
         super(finalizee, queue);
         add();
