@@ -928,14 +928,15 @@ Nullness Checker, as described in Figure~\ref{fig-nullness-refactoring}.
 \begin{tabular}{ll}
 \begin{tabular}{|l|}
 \hline
+ ~android.support.annotation.NonNull~ \\ \hline
  ~com.sun.istack.internal.NotNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.NonNull~ \\ \hline
  ~javax.annotation.Nonnull~ \\ \hline
  ~javax.validation.constraints.NotNull~ \\ \hline
  ~org.eclipse.jdt.annotation.NonNull~ \\ \hline
  ~org.jetbrains.annotations.NotNull~ \\ \hline
- ~org.netbeans.api.annotations.common.NonNull~ \\ \hline
  ~org.jmlspecs.annotation.NonNull~ \\ \hline
+ ~org.netbeans.api.annotations.common.NonNull~ \\ \hline
 \end{tabular}
 &
 $\Rightarrow$
@@ -945,6 +946,7 @@ $\Rightarrow$
 \\
 \begin{tabular}{|l|l|}
 \hline
+ ~android.support.annotation.Nullable~ \\ \hline
  ~com.sun.istack.internal.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.CheckForNull~ \\ \hline
@@ -953,10 +955,10 @@ $\Rightarrow$
  ~javax.annotation.CheckForNull~ \\ \hline
  ~org.eclipse.jdt.annotation.Nullable~ \\ \hline
  ~org.jetbrains.annotations.Nullable~ \\ \hline
- ~org.netbeans.api.annotations.common.CheckForNull~ \\ \hline
- ~org.netbeans.api.annotations.common.NullAllowed~ \\ \hline
- ~org.netbeans.api.annotations.common.NullUnknown~ \\ \hline
  ~org.jmlspecs.annotation.Nullable~ \\ \hline
+ ~org.netbeans.api.annotations.common.NullAllowed~ \\ \hline
+ ~org.netbeans.api.annotations.common.CheckForNull~ \\ \hline
+ ~org.netbeans.api.annotations.common.NullUnknown~ \\ \hline
 \end{tabular}
 &
 $\Rightarrow$
@@ -1241,7 +1243,7 @@ helper routine that is called by constructor.  For example:
   }
 \end{Verbatim}
 
-For compatibility with Java 7 and earlier, you can write the receiver
+For compatibility with Java 6 and 7, you can write the receiver
 parameter in comments (see Section~\ref{annotations-in-comments}):
 \begin{Verbatim}
     private void init_other_fields(/*>>>@UnderInitialization(MyClass.class) MyClass this*/) {
@@ -1376,8 +1378,8 @@ this rule.)
 The Initialization Checker issues an error if the constructor fails to initialize
 any \code{@NonNull} field.  This ensures that the object is in a legal (initialized)
 state by the time that the constructor exits.
-\urldef{\jlsdefiniteassignmenturl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}
-\urldef{\jlsfinalvariablesurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}
+\urldef{\jlsdefiniteassignmenturl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}
+\urldef{\jlsfinalvariablesurl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}
 This is different than Java's test for definite assignment (see
 \ahref{\jlsdefiniteassignmenturl}{JLS ch.16}),
 % , which requires that local
@@ -1576,7 +1578,7 @@ the type of the object being constructed is:
 
 
 
-% \urldef{\jlsconstructorbodyurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
+% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
 % (Recall that the superclass constructor is called on the first line, or is
 % inserted automatically by the compiler before the first line, see
 % \ahref{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
@@ -1834,7 +1836,7 @@ is called by constructor.  For example:
   }
 \end{Verbatim}
 
-For compatibility with Java 7 and earlier, you can write the receiver
+For compatibility with Java 6 and 7, you can write the receiver
 parameter in comments (see Section~\ref{annotations-in-comments}):
 \begin{Verbatim}
     private void init_other_fields(/*>>> @Raw MyClass this*/) {
@@ -1956,8 +1958,8 @@ have been initialized, then \code{this} is treated as non-raw.
 The Nullness Checker issues an error if the constructor fails to initialize
 any \code{@NonNull} field.  This ensures that the object is in a legal (non-raw)
 state by the time that the constructor exits.
-\urldef{\jlsdefiniteassignmenturl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}
-\urldef{\jlsfinalvariablesurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}
+\urldef{\jlsdefiniteassignmenturl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}
+\urldef{\jlsfinalvariablesurl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}
 This is different than Java's test for definite assignment (see
 \ahref{\jlsdefiniteassignmenturl}{JLS ch.16}),
 % , which requires that local
@@ -2179,7 +2181,7 @@ types.)
 
 
 
-% \urldef{\jlsconstructorbodyurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
+% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
 % (Recall that the superclass constructor is called on the first line, or is
 % inserted automatically by the compiler before the first line, see
 % \ahref{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
