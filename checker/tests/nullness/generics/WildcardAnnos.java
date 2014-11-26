@@ -7,10 +7,9 @@ class WildcardAnnos {
 
   // The implicit upper bound is Nullable, because the annotation
   // on the wildcard is propagated. Therefore this type is:
-  // @Nullable List<@Nullable ? super @NonNull Object extends @Nullable Object> l3 = null;
+  // @Nullable List<? super @NonNull Object extends @Nullable Object> l3 = null;
   @Nullable List<@Nullable ? super @NonNull Object> l3 = null;
 
-  //:: error: (type.invalid)
   @Nullable List<@NonNull ? super @Nullable Object> l4 = null;
 
   @Nullable List<? super @Nullable Object> l5 = null;

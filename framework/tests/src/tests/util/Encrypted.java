@@ -3,10 +3,7 @@ package tests.util;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
-import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
-import org.checkerframework.framework.qual.Unqualified;
+import org.checkerframework.framework.qual.*;
 
 import com.sun.source.tree.Tree.Kind;
 
@@ -16,5 +13,6 @@ import com.sun.source.tree.Tree.Kind;
 @TypeQualifier
 @SubtypeOf(Unqualified.class)
 @ImplicitFor(trees = { Kind.NULL_LITERAL })
+@DefaultFor({DefaultLocation.LOWER_BOUNDS})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Encrypted {}

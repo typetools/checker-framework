@@ -14,7 +14,7 @@ import org.checkerframework.framework.source.SupportedOptions;
  * A type-checker that checks that only valid keys are used to access property files
  * and resource bundles.
  * Subclasses can specialize this class for the different uses of property files,
- * for examples see the I18n Checker and Compilermsgs Checker.
+ * for examples see the I18n Checker and Compiler Messages Checker.
  *
  * Currently, the checker supports two methods to check:
  *

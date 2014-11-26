@@ -43,6 +43,10 @@ import org.checkerframework.checker.units.qual.s;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -81,7 +85,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         BOTTOM = AnnotationUtils.fromClass(elements, UnitsBottom.class);
         this.postInit();
 
-        this.typeAnnotator.addTypeName(java.lang.Void.class, BOTTOM);
+        addTypeNameImplicit(java.lang.Void.class, BOTTOM);
     }
 
     protected Map<String, UnitsRelations> getUnitsRel() {

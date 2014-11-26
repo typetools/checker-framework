@@ -22,9 +22,9 @@ class Enumeration {
       checkNotNull(p);
     }
 
-    public <S extends Object> S firstNonNull(S first, S second) {
+    public <SSS extends Object> SSS firstNonNull(SSS first, SSS second) {
       @SuppressWarnings("nullness:known.nonnull")
-      S res = first != null ? first : checkNotNull(second);
+      SSS res = first != null ? first : checkNotNull(second);
       return res;
     }
   }

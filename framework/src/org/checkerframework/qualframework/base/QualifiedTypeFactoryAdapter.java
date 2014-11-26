@@ -12,11 +12,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.Pair;
 
-import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
@@ -27,7 +28,7 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedPara
  */
 class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     /** The underlying {@link QualifiedTypeFactory}. */
-    private QualifiedTypeFactory<Q> underlying;
+    private final QualifiedTypeFactory<Q> underlying;
 
     public QualifiedTypeFactoryAdapter(QualifiedTypeFactory<Q> underlying,
             CheckerAdapter<Q> checker) {
@@ -100,7 +101,9 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
                 underlyingHierarchy,
                 getCheckerAdapter().getTypeMirrorConverter(),
                 getCheckerAdapter(),
-                getQualifierHierarchyAdapter());
+                getQualifierHierarchyAdapter(),
+                checker.hasOption("ignoreRawTypeArguments"),
+                checker.hasOption("invariantArrays"));
 
         // TODO: Move this check (and others like it) into the adapter
         // constructor.
@@ -117,7 +120,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
      * TreeAnnotator.
      */
     @Override
-    protected org.checkerframework.framework.type.TreeAnnotator createTreeAnnotator() {
+    protected org.checkerframework.framework.type.treeannotator.TreeAnnotator createTreeAnnotator() {
         if (!(underlying instanceof DefaultQualifiedTypeFactory)) {
             // In theory, the result of this branch should never be used.  Only
             // DefaultQTFs have a way to access the annotation-based logic
@@ -138,17 +141,19 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         return adapter;
     }
 
+    //
     /* Constructs a TypeAnnotatorAdapter for the underlying factory's
      * TypeAnnotator.
      */
     @Override
-    protected org.checkerframework.framework.type.TypeAnnotator createTypeAnnotator() {
+    protected org.checkerframework.framework.type.typeannotator.TypeAnnotator createTypeAnnotator() {
         if (!(underlying instanceof DefaultQualifiedTypeFactory)) {
             // In theory, the result of this branch should never be used.  Only
             // DefaultQTFs have a way to access the annotation-based logic
             // which requires the TypeAnnotator produced by this method.
             return null;
         }
+
 
         DefaultQualifiedTypeFactory<Q> defaultUnderlying =
             (DefaultQualifiedTypeFactory<Q>)underlying;
@@ -160,7 +165,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
 
         underlyingAnnotator.setAdapter(adapter);
 
-        return adapter;
+        return new ListTypeAnnotator( adapter );
     }
 
 
@@ -316,6 +321,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     }
 
 
+    @Override
     public void postTypeVarSubstitution(AnnotatedTypeVariable varDecl,
             AnnotatedTypeVariable varUse, AnnotatedTypeMirror value) {
         TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();

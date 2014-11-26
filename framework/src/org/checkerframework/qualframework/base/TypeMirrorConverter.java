@@ -7,13 +7,10 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
-import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationBuilder;
 
@@ -21,23 +18,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.*;
-import org.checkerframework.qualframework.util.ExtendedArrayType;
-import org.checkerframework.qualframework.util.ExtendedDeclaredType;
-import org.checkerframework.qualframework.util.ExtendedErrorType;
-import org.checkerframework.qualframework.util.ExtendedExecutableType;
-import org.checkerframework.qualframework.util.ExtendedIntersectionType;
-import org.checkerframework.qualframework.util.ExtendedNoType;
-import org.checkerframework.qualframework.util.ExtendedNullType;
-import org.checkerframework.qualframework.util.ExtendedPrimitiveType;
-import org.checkerframework.qualframework.util.ExtendedTypeVariable;
-import org.checkerframework.qualframework.util.ExtendedUnionType;
-import org.checkerframework.qualframework.util.ExtendedWildcardType;
-import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
-import org.checkerframework.qualframework.util.ExtendedTypeDeclaration;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
-import org.checkerframework.qualframework.util.ExtendedTypeVisitor;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
-import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror.*;
 
 /**
  * Helper class used by adapters to convert between {@link QualifiedTypeMirror}
@@ -56,14 +38,14 @@ import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror.*;
 class TypeMirrorConverter<Q> {
     /** The checker adapter, used for lazy initialization of {@link
      * typeFactory}. */
-    private CheckerAdapter<Q> checkerAdapter;
+    private final CheckerAdapter<Q> checkerAdapter;
     /** Annotation processing environment, used to construct new {@link Key}
      * {@link AnnotationMirror}s. */
-    private ProcessingEnvironment processingEnv;
+    private final ProcessingEnvironment processingEnv;
     /** The {@link Element} corresponding to the {@link Key.index} field. */
-    private ExecutableElement indexElement;
+    private final ExecutableElement indexElement;
     /** A {@link Key} annotation with no <code>index</code> set. */
-    private AnnotationMirror blankKey;
+    private final AnnotationMirror blankKey;
     /** The type factory adapter, used to construct {@link
      * AnnotatedTypeMirror}s. */
     private QualifiedTypeFactoryAdapter<Q> typeFactory;
@@ -74,10 +56,10 @@ class TypeMirrorConverter<Q> {
     /** The qualifier-to-index half of the lookup table.  This lets us ensure
      * that the same qualifier maps to the same <code>@Key</code> annotation.
      */
-    private HashMap<Q, Integer> qualToIndex;
+    private final HashMap<Q, Integer> qualToIndex;
     /** The index-to-qualifier half of the lookup table.  This is used for
      * annotated-to-qualified conversions. */
-    private HashMap<Integer, Q> indexToQual;
+    private final HashMap<Integer, Q> indexToQual;
 
     /** Cache @Key annotation mirrors so they are not to be recreated on every conversion */
     public LinkedHashMap<Integer, AnnotationMirror> keyToAnnoCache = new LinkedHashMap<Integer, AnnotationMirror>(10, .75f, true) {
@@ -214,8 +196,7 @@ class TypeMirrorConverter<Q> {
         }
         AnnotatedTypeMirror atm;
         if (qtm.getUnderlyingType() instanceof WrappedAnnotatedTypeMirror) {
-            atm = AnnotatedTypes.deepCopy(
-                    ((WrappedAnnotatedTypeMirror)qtm.getUnderlyingType()).unwrap());
+            atm = ((WrappedAnnotatedTypeMirror)qtm.getUnderlyingType()).unwrap().deepCopy();
         } else {
             atm = AnnotatedTypeMirror.createType(
                 qtm.getUnderlyingType().getOriginalType(), getTypeFactory(),
@@ -256,22 +237,25 @@ class TypeMirrorConverter<Q> {
      * raw javac TypeMirrors), and this visitor updates that element if
      * necessary to make the augmented TypeMirrors correspond.
      */
-    private SimpleQualifiedTypeVisitor<Q, Void, AnnotatedTypeMirror> APPLY_COMPONENT_QUALIFIERS_VISITOR =
+    private final SimpleQualifiedTypeVisitor<Q, Void, AnnotatedTypeMirror> APPLY_COMPONENT_QUALIFIERS_VISITOR =
         new SimpleQualifiedTypeVisitor<Q, Void, AnnotatedTypeMirror>() {
-            private HashMap<AnnotatedTypeVariable, Void> seenATVs = new HashMap<>();
+            private final HashMap<AnnotatedTypeVariable, Void> seenATVs = new HashMap<>();
 
+            @Override
             public Void visitArray(QualifiedArrayType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedArrayType atm = (AnnotatedArrayType)rawAtm;
                 applyQualifiers(qtm.getComponentType(), atm.getComponentType());
                 return null;
             }
 
+            @Override
             public Void visitDeclared(QualifiedDeclaredType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedDeclaredType atm = (AnnotatedDeclaredType)rawAtm;
-                applyQualifiersToLists(qtm.getTypeArguments(), atm.getTypeArguments());  
+                applyQualifiersToLists(qtm.getTypeArguments(), atm.getTypeArguments());
                 return null;
             }
 
+            @Override
             public Void visitExecutable(QualifiedExecutableType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedExecutableType atm = (AnnotatedExecutableType)rawAtm;
 
@@ -293,39 +277,46 @@ class TypeMirrorConverter<Q> {
                 return null;
             }
 
+            @Override
             public Void visitIntersection(QualifiedIntersectionType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedIntersectionType atm = (AnnotatedIntersectionType)rawAtm;
                 applyQualifiersToLists(qtm.getBounds(), atm.directSuperTypes());
                 return null;
             }
 
+            @Override
             public Void visitNoType(QualifiedNoType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 // NoType has no components.
                 return null;
             }
 
+            @Override
             public Void visitNull(QualifiedNullType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 // NullType has no components.
                 return null;
             }
 
+            @Override
             public Void visitPrimitive(QualifiedPrimitiveType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 // PrimitiveType has no components.
                 return null;
             }
 
+            @Override
             public Void visitTypeVariable(QualifiedTypeVariable<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedTypeVariable atm = (AnnotatedTypeVariable)rawAtm;
                 typeVariableHelper(qtm.getDeclaration(), atm);
                 return null;
             }
 
+            @Override
             public Void visitUnion(QualifiedUnionType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedUnionType atm = (AnnotatedUnionType)rawAtm;
                 applyQualifiersToLists(qtm.getAlternatives(), atm.getAlternatives());
                 return null;
             }
 
+            @Override
             public Void visitWildcard(QualifiedWildcardType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedWildcardType atm = (AnnotatedWildcardType)rawAtm;
                 applyQualifiers(qtm.getExtendsBound(), atm.getExtendsBound());
@@ -348,15 +339,17 @@ class TypeMirrorConverter<Q> {
                 }
             }
 
+            @Override
             public Void visitParameterDeclaration(QualifiedParameterDeclaration<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedTypeVariable atm = (AnnotatedTypeVariable)rawAtm;
                 typeVariableHelper(qtm, atm);
                 return null;
             }
 
+            @Override
             public Void visitTypeDeclaration(QualifiedTypeDeclaration<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedDeclaredType atm = (AnnotatedDeclaredType)rawAtm;
-                applyQualifiersToLists(qtm.getTypeParameters(), atm.getTypeArguments());  
+                applyQualifiersToLists(qtm.getTypeParameters(), atm.getTypeArguments());
                 return null;
             }
         };
