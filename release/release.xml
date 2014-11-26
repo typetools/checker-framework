@@ -387,7 +387,7 @@
         <!-- //TODO: PERHAPS CHECK THAT THESE FILES EXIST -->
         <property name="checker.manual"   value="${checker}/manual" />
         <property name="checker.tutorial" value="${checker}/../tutorial" />
-        <property name="web.root"          value="${dest.dir}/../.." />
+        <property name="web.root"         value="${dest.dir}/../.." />
 
         <copy file="${checker.manual}/manual.html" tofile="${dest.dir}/${manual.name}.html"/>
         <copy file="${checker.manual}/manual.pdf"  tofile="${dest.dir}/${manual.name}.pdf"/>
