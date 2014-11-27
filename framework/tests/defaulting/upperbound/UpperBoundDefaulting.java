@@ -44,16 +44,15 @@ public class UpperBoundDefaulting {
         MyArrayList<@UB_BOTTOM ? extends @UB_IMPLICIT Object> eubImplicitToBottom =  iebList;
     }
 
-    //:: error: (type.argument.type.incompatible) :: error: (type.argument.type.incompatible)
-    public void explicitLowerBoundedWildcard(MyArrayList<? super String> elbList) {
-        //should fail because @LB_EXPLICIT is below @UB_TOP
+    //TODO: NEED TO TEST EXPLICIT_LOWER_BOUNDS and IMPLICIT_LOWER_BOUNDS
+    public void explicitLowerBoundedWildcard(MyArrayList<? super String> elbList) { //@UB_EXPLICIT ? super @UB_BOTTOM
+        //should fail because @UB_EXPLICIT is below UB_TOP
         //:: error: (type.argument.type.incompatible)
         @UB_TOP MyArrayList<@UB_TOP ? super @UB_BOTTOM String> iebLowerBoundIncompatible = elbList;
 
-        //:: error: (type.argument.type.incompatible)
+        //:: error: (assignment.type.incompatible) :: error: (type.argument.type.incompatible)
         @UB_TOP MyArrayList<@UB_IMPLICIT ? super @UB_BOTTOM String> iebLowerBoundStillIncompatible = elbList;
 
-        //:: error: (assignment.type.incompatible)
         @UB_TOP MyArrayList<@UB_EXPLICIT ? super @UB_BOTTOM String> iebLowerBoundCompatible = elbList;
 
     }

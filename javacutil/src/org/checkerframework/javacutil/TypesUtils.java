@@ -1,8 +1,10 @@
 package org.checkerframework.javacutil;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -275,6 +277,23 @@ public final class TypesUtils {
             }
         } while (true);
         return type;
+    }
+
+    /**
+     * Get the type parameter for this wildcard from the underlying type's bound field
+     * This field is sometimes null, in that case this method will return null
+     * @return The TypeParameterElement the wildcard is an argument to
+     */
+    public static TypeParameterElement wildcardToTypeParam(final Type.WildcardType wildcard) {
+
+        final Element typeParamElement;
+        if (wildcard.bound != null) {
+            typeParamElement = wildcard.bound.asElement();
+        } else {
+            typeParamElement = null;
+        }
+
+        return (TypeParameterElement) typeParamElement;
     }
 
     // Version of com.sun.tools.javac.code.Types.wildUpperBound(Type)
