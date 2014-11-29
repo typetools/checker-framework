@@ -51,7 +51,7 @@ The method does not make any use of locks or synchronization.
 \item[\refqualclass{checker/lock/qual}{GuardedBy}\small{(String lock)}]
   indicates a type whose value may be accessed only when the given lock is
   held.
-  See the \ahref{api/org/checkerframework/checker/lock/qual/GuardedBy.html}{GuardedBy
+  See the \href{api/org/checkerframework/checker/lock/qual/GuardedBy.html}{GuardedBy
     Javadoc} for an explanation of the argument and other details.  The lock
   acquisition and the value access may be arbitrarily far in the future;
   or, if the value is never accessed, the lock never need be held.
@@ -364,8 +364,8 @@ side of Figure~\ref{fig-lock-refactoring}.
 
 \subsection{Relationship to annotations in \emph{Java Concurrency in Practice}\label{jcip-annotations}}
 
-The book \ahref{\url{http://jcip.net/}}{\emph{Java Concurrency in Practice}}~\cite{Goetz2006} defines a
-\ahref{\url{http://jcip.net.s3-website-us-east-1.amazonaws.com/annotations/doc/net/jcip/annotations/GuardedBy.html}}{\code{@GuardedBy}} annotation that is the inspiration for ours.  The book's
+The book \href{http://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goetz2006} defines a
+\href{http://jcip.net.s3-website-us-east-1.amazonaws.com/annotations/doc/net/jcip/annotations/GuardedBy.html}{\code{@GuardedBy}} annotation that is the inspiration for ours.  The book's
 \code{@GuardedBy} serves two related but distinct purposes:
 
 \begin{itemize}
@@ -420,7 +420,7 @@ Not-holding:  Specify that a method must not be called if any of the listed
 locks are held.
 
 These features are supported by 
-\ahref{\url{http://clang.llvm.org/docs/ThreadSafetyAnalysis.html}}{Clang's
+\href{http://clang.llvm.org/docs/ThreadSafetyAnalysis.html}{Clang's
   thread-safety analysis}.
 
 
