@@ -2,9 +2,9 @@
 \chapter{How to create a new checker\label{writing-a-checker}}
 
 \newcommand{\TreeAPIBase}{http://types.cs.washington.edu/checker-framework/jdk-api/javac/com/sun/source}
-\newcommand{\refTreeclass}[2]{\ahref{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
+\newcommand{\refTreeclass}[2]{\href{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 \newcommand{\ModelAPIBase}{http://types.cs.washington.edu/checker-framework/jdk-api/javac/javax/lang/model}
-\newcommand{\refModelclass}[2]{\ahref{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
+\newcommand{\refModelclass}[2]{\href{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 
 This chapter describes how to create a checker
 --- a type-checking compiler plugin that detects bugs or verifies their
@@ -107,10 +107,10 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 Other \par tools
 \\ \hline
 \multicolumn{6}{|p{6\bw}|}{\centering Checker Framework \par (enables creation of pluggable type-checkers)} &
-\multicolumn{2}{p{3\bw}|}{\centering \ahref{\url{http://types.cs.washington.edu/annotation-file-utilities/}}{Annotation File Utilities} \par (\code{.java} $\leftrightarrow$ \code{.class} files)} 
+\multicolumn{2}{p{3\bw}|}{\centering \href{http://types.cs.washington.edu/annotation-file-utilities/}{Annotation File Utilities} \par (\code{.java} $\leftrightarrow$ \code{.class} files)} 
 \\ \hline
 \multicolumn{8}{|p{8.5\bw}|}{\centering
-  \ahref{\url{http://types.cs.washington.edu/jsr308/}}{Type Annotations} syntax
+  \href{http://types.cs.washington.edu/jsr308/}{Type Annotations} syntax
   and classfile format (``JSR 308'') \par \centering (no built-in semantics)} \\ \hline
 \end{tabular}
 \end{center}
@@ -297,24 +297,20 @@ hierarchy.
 
 \end{itemize}
 
-\urldef{\isSubtypeURL}\url{api/org/checkerframework/framework/util/GraphQualifierHierarchy.html#isSubtype-java.util.Collection-java.util.Collection-}
-
 The declarative and procedural mechanisms for specifying the hierarchy can
 be used together.  In particular, when using the \refqualclass{framework/qual}{SubtypeOf}
 meta-annotation, further customizations may be
 performed procedurally (Section~\ref{procedural-hierarchy})
-by overriding the \ahref{\isSubtypeURL}{\code{isSubtype}} method in the checker class
+by overriding the \href{api/org/checkerframework/framework/util/GraphQualifierHierarchy.html#isSubtype-java.util.Collection-java.util.Collection-}{\code{isSubtype}} method in the checker class
 (Section~\ref{writing-compiler-interface}).
 However, the declarative mechanism is sufficient for most type systems.
 
 
 \subsection{Procedurally defining the qualifier and type hierarchy\label{procedural-hierarchy}}
-\urldef{\createQualifierHierarchyURL}\url{api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#createQualifierHierarchy--}
-\urldef{\createTypeHierarchyURL}\url{api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#createTypeHierarchy--}
 
 While the declarative syntax suffices for many cases, more complex
 type hierarchies can be expressed by overriding, in \refclass{common/basetype}{BaseTypeVisitor},
-either \ahref{\createQualifierHierarchyURL}{\<createQualifierHierarchy>} or \ahref{\createTypeHierarchyURL}{\<createTypeHierarchy>} (typically
+either \href{api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#createQualifierHierarchy--}{\<createQualifierHierarchy>} or \href{api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#createTypeHierarchy--}{\<createTypeHierarchy>} (typically
 only one of these needs to be overridden).
 For more details, see the Javadoc of those methods and of the classes
 \refclass{framework/type}{QualifierHierarchy} and \refclass{framework/type}{TypeHierarchy}.
@@ -351,8 +347,6 @@ manner (e.g.,
 
 % This paragraph is out of place.
 
-\urldef{\addAbsoluteDefaultURL}\url{api/org/checkerframework/framework/util/QualifierDefaults.html#addAbsoluteDefault-javax.lang.model.element.AnnotationMirror-org.checkerframework.framework.qual.DefaultLocation-}
-
 A type system designer may set a default annotation.  A user may override
 the default; see Section~\ref{defaults}.
 
@@ -366,7 +360,7 @@ files that the checker reads.
 \begin{sloppypar}
 Alternately, the type system designer may specify a default procedurally,
 by calling the
-\ahref{\addAbsoluteDefaultURL}{\<QualifierDefaults.addAbsoluteDefault>}
+\href{api/org/checkerframework/framework/util/QualifierDefaults.html#addAbsoluteDefault-javax.lang.model.element.AnnotationMirror-org.checkerframework.framework.qual.DefaultLocation-}{\<QualifierDefaults.addAbsoluteDefault>}
 method.  You may do this even if you have declaratively defined the
 qualifier hierarchy; see the Nullness Checker's implementation for an
 example.
@@ -516,7 +510,7 @@ specified via any combination of five fields in \refclass{framework/qual}{Implic
 
   \begin{itemize}
   \item \code{trees}: an array of
-    \ahref{\TreeAPIBase{}/tree/Tree.Kind.html?is-external=true}{\code{com.sun.source.tree.Tree.Kind}}, e.g.,
+    \href{\TreeAPIBase{}/tree/Tree.Kind.html?is-external=true}{\code{com.sun.source.tree.Tree.Kind}}, e.g.,
     \code{NEW\_ARRAY} or \code{METHOD\_INVOCATION}
   \item \code{types}: an array of
     \refModelclass{type}{TypeKind}, e.g., \code{ARRAY}
@@ -575,7 +569,7 @@ For more details, see the Javadoc for the \refclass{framework/qual}{ImplicitFor}
   annotation, and the Javadoc for the javac classes that are linked from
 it.  You only need to understand a small amount about the javac AST, such
 as the
-\ahref{\TreeAPIBase{}/tree/Tree.Kind.html?is-external=true}{\code{Tree.Kind}}
+\href{\TreeAPIBase{}/tree/Tree.Kind.html?is-external=true}{\code{Tree.Kind}}
 and
 \refModelclass{type}{TypeKind}
 enums.  All the information you need is in the Javadoc, and
@@ -634,7 +628,7 @@ The Checker Framework provides a \textit{base visitor class},
 \refclass{common/basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
-\ahref{\url{http://types.cs.washington.edu/checker-framework/jdk-api/javac/index.html}}{Tree
+\href{http://types.cs.washington.edu/checker-framework/jdk-api/javac/index.html}{Tree
 API},
 and it issues a warning whenever the type system is violated.
 
@@ -750,8 +744,6 @@ checker classes for the Interning Checker and the Nullness Checker:
 \end{Verbatim}
 
 
-\urldef{\getSupportedTypeQualifiersURL}{\url}{http://types.cs.washington.edu/checker-framework/api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#getSupportedTypeQualifiers--}
-
 The checker class must be annotated by
 \refqualclass{framework/qual}{TypeQualifiers}, which lists the annotations
 that make up the type hierarchy for this checker (including
@@ -759,14 +751,12 @@ polymorphic qualifiers), provided as an array of class literals.  Each
 one is a type qualifier whose definition bears the
 \refqualclass{framework/qual}{TypeQualifier} meta-annotation (or is
 returned by the
-\ahref{\getSupportedTypeQualifiersURL}{\<BaseTypeChecker\-.getSupportedTypeQualifiers>}
+\href{http://types.cs.washington.edu/checker-framework/api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#getSupportedTypeQualifiers--}{\<BaseTypeChecker\-.getSupportedTypeQualifiers>}
 method).
-
-\urldef{\reportURL}{\url}{http://types.cs.washington.edu/dev/checker-framework/api/org/checkerframework/framework/source/SourceChecker.html#report-org.checkerframework.framework.source.Result-java.lang.Object-}
 
 The checker class bridges between the compiler and the rest of the checker.  It
 invokes the type-rule check visitor on every Java source file being
-compiled, and provides a simple API, \ahref{\reportURL}{\<report>}, to issue
+compiled, and provides a simple API, \href{http://types.cs.washington.edu/dev/checker-framework/api/org/checkerframework/framework/source/SourceChecker.html#report-org.checkerframework.framework.source.Result-java.lang.Object-}{\<report>}, to issue
 errors using the compiler error reporting mechanism.
 
 Also, the checker class follows the factory method pattern to
@@ -783,7 +773,7 @@ must specify the component classes for construction.
 A checker can customize the default error messages through a
 \sunjavadoc{java/util/Properties.html}{Properties}-loadable text file named
 \<messages.properties> that appears in the same directory as the checker class.
-The property file keys are the strings passed to \ahref{\reportURL}{\<report>}
+The property file keys are the strings passed to \href{http://types.cs.washington.edu/dev/checker-framework/api/org/checkerframework/framework/source/SourceChecker.html#report-org.checkerframework.framework.source.Result-java.lang.Object-}{\<report>}
 (like \code{type.incompatible}) and the values are the strings to be
 printed (\code{"cannot assign ..."}).
 The \<messages.properties> file only need to mention the new messages that
@@ -1370,8 +1360,8 @@ you may find useful later on.
 The Checker Framework uses Oracle's Tree API to access a program's AST\@.
 The Tree API is specific to the Oracle OpenJDK, so the Checker Framework only
 works with the OpenJDK javac, not with Eclipse's compiler ecj or with
-\ahref{\url{http://gcc.gnu.org/java/}}{gcj}.  This also limits the tightness of
-the integration of the Checker Framework into other IDEs such as \ahref{\url{http://www.jetbrains.com/idea/}}{IntelliJ IDEA}\@.
+\href{http://gcc.gnu.org/java/}{gcj}.  This also limits the tightness of
+the integration of the Checker Framework into other IDEs such as \href{http://www.jetbrains.com/idea/}{IntelliJ IDEA}\@.
 An implementation-neutral API would be preferable.
 In the future, the Checker Framework
 can be migrated to use the Java Model AST of JSR 198 (Extension API for
