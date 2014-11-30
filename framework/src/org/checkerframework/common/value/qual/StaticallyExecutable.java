@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * the method's arguments are compile-time constants.
  * It is used by the Constant Value Checker.
  * 
- * @checker_framework_manual #constant-value-checker Constant Value Checker
+ * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD })

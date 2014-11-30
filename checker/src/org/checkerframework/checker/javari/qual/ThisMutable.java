@@ -15,7 +15,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * This annotation may not be written in source code; it is an
  * implementation detail of the checker.
  *
- * @checker_framework_manual #javari-checker Javari Checker
+ * @checker_framework.manual #javari-checker Javari Checker
  */
 @TypeQualifier
 @Target({}) // empty target prevents programmers from writing this in a program

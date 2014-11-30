@@ -62,7 +62,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * the same immutability type as the passed parameters if p1 and p2 match in
  * immutability, otherwise {@code @I} is resolved to {@code @ReadOnly}.
  *
- * @checker_framework_manual #oigj-checker OIGJ Checker
+ * @checker_framework.manual #oigj-checker OIGJ Checker
  */
 @TypeQualifier
 //@PolymorphicQualifier // TODO: uncomment later
