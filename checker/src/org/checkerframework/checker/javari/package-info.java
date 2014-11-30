@@ -9,6 +9,6 @@
  * @see org.checkerframework.checker.javari.qual.QReadOnly
  * @see org.checkerframework.checker.javari.JavariChecker
  *
- * @checker_framework_manual #javari-checker Javari Checker
+ * @checker_framework.manual #javari-checker Javari Checker
  */
 package org.checkerframework.checker.javari;

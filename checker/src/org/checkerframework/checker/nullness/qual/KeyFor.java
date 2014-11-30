@@ -38,7 +38,7 @@ import org.checkerframework.framework.qual.*;
  * validate the annotations.  Future releases will check for the presence of
  * the key in the map (when possible).
  *
- * @checker_framework_manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @TypeQualifier
 @SubtypeOf(UnknownKeyFor.class)

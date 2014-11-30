@@ -38,7 +38,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
  * @see NonNull
  * @see PolyNull
  * @see NullnessChecker
- * @checker_framework_manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
