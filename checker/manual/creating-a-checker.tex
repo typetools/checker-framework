@@ -1201,9 +1201,14 @@ following sections:
   give an overview of the concepts.  It should state how to run the checker.
 \item[Section: Belly Rub Annotations]
   This section includes descriptions of the annotations with links to the
-  javadoc and a diagram of the type hierarchy.  A textual description of
+  Javadoc and a diagram of the type hierarchy.  A textual description of
   the hieraarchy is not sufficient; the diagram really helps readers to
   understand the system.
+
+  The Javadoc for the annotations deserves the same care as the manual
+  chapter.  Each annotation's Javadoc comment should use the
+  \<@checker\_framework.manual> Javadoc taglet to refer to the chapter that
+  describes the checker; see \refclass{javacutil/dist}{ManualTaglet}.
 \item[Section: What the Belly Rub Checker checks]
   This section gives more details about when an error is issued, with examples.
 \item[Section: Examples]
