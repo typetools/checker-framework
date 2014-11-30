@@ -18,7 +18,7 @@ import com.sun.source.util.TreePath;
 /**
  * Utilities for determining tree-based heuristics.
  *
- * @see org.checkerframework.checker.interning.InterningVisitor for an example
+ * For an example, see {@link org.checkerframework.checker.interning.InterningVisitor}
  */
 public class Heuristics {
 
