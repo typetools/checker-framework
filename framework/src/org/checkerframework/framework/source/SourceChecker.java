@@ -1021,7 +1021,7 @@ public abstract class SourceChecker
      * @param msg The message text.
      * @param args Optional arguments to substitute in the message.
      *
-     * @see SourceChecker#message(Kind, Object, String, Object...)
+     * @see SourceChecker#message(Diagnostic.Kind, Object, String, Object...)
      */
     public void message(Diagnostic.Kind kind, String msg, Object... args) {
         if (messager != null) {
