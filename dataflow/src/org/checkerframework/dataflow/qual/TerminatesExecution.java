@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  * The annotation is a <em>trusted</em> annotation, meaning that it is not
  * checked whether the annotated method really does terminate the program.
  * 
- * @checker_framework_manual #type-refinement Automatic type refinement (flow-sensitive type qualifier inference)
+ * @checker_framework.manual #type-refinement Automatic type refinement (flow-sensitive type qualifier inference)
  *
  * @author Stefan Heule
  * 

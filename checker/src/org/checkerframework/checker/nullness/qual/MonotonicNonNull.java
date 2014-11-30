@@ -56,7 +56,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * @see RequiresNonNull
  * @see MonotonicQualifier
  * @see AbstractNullnessChecker
- * @checker_framework_manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @TypeQualifier

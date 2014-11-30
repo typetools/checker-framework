@@ -7,7 +7,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
- * @checker_framework_manual #linear-checker Linear Checker
+ * @checker_framework.manual #linear-checker Linear Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

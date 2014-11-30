@@ -77,7 +77,7 @@ import org.checkerframework.framework.qual.*;
  * This annotation is part of the Javari language.
  *
  * @see JavariChecker
- * @checker_framework_manual #javari-checker Javari Checker
+ * @checker_framework.manual #javari-checker Javari Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * Indicates that the {@code String} is a key into a property file
  * or resource bundle containing Localized Strings.
  *
- * @checker_framework_manual #i18n-checker Internationalization Checker
+ * @checker_framework.manual #i18n-checker Internationalization Checker
  */
 @TypeQualifier
 @SubtypeOf(PropertyKey.class)

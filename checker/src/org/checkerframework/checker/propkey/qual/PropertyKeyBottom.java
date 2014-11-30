@@ -8,7 +8,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
 /**
  * The bottom qualifier.
  *
- * @checker_framework_manual #propkey-checker Property File Checker
+ * @checker_framework.manual #propkey-checker Property File Checker
  */
 @TypeQualifier
 @SubtypeOf(PropertyKey.class)

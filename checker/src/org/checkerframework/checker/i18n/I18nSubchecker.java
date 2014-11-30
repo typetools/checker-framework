@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.TypeQualifiers;
  * A type-checker that checks that only localized {@code String}s are visible
  * to the user.
  *
- * @checker_framework_manual #i18n-checker Internationalization Checker
+ * @checker_framework.manual #i18n-checker Internationalization Checker
  */
 @TypeQualifiers( {Localized.class, UnknownLocalized.class} )
 public class I18nSubchecker extends BaseTypeChecker {

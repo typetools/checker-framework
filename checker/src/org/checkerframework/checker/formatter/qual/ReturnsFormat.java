@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
  *   <li>On success, the method returns the passed format string unmodified.</li>
  * </ul>
  *
- * @checker_framework_manual #formatter-checker Format String Checker
+ * @checker_framework.manual #formatter-checker Format String Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
