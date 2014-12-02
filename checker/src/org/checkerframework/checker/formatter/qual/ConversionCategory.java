@@ -28,7 +28,7 @@ import org.checkerframework.dataflow.qual.Pure;
  * second parameter ({@link ConversionCategory#INT}).
  *
  * @see Format
- * @checker_framework_manual #formatter-checker Format String Checker
+ * @checker_framework.manual #formatter-checker Format String Checker
  * @author Konstantin Weitz
  */
 public enum ConversionCategory {

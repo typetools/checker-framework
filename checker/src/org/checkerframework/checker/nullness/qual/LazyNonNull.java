@@ -52,7 +52,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @see Nullable
  * @see NullnessChecker
- * @checker_framework_manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @Deprecated
 @Documented

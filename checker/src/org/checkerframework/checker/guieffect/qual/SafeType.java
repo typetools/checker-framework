@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * While the normal default is already {@code @AlwaysSafe} methods,
  * this is useful for a type inside a package marked {@code @UIPackage}.
  *
- * @checker_framework_manual #guieffect-checker GUI Effect Checker
+ * @checker_framework.manual #guieffect-checker GUI Effect Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

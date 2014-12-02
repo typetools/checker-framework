@@ -16,7 +16,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
  *
  * Supports "units" option to add support for additional units.
  *
- * @checker_framework_manual #units-checker Units Checker
+ * @checker_framework.manual #units-checker Units Checker
  */
 @SupportedOptions( { "units" } )
 public class UnitsChecker extends BaseTypeChecker {

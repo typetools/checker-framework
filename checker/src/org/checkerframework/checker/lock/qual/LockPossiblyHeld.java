@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * known to be @LockHeld (see {@link LockHeld}).
  *
  * @see LockHeld
- * @checker_framework_manual #lock-checker Lock Checker
+ * @checker_framework.manual #lock-checker Lock Checker
  */
 @TypeQualifier
 @SubtypeOf({}) // The top type in the hierarchy

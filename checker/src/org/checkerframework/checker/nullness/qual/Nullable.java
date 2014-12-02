@@ -29,7 +29,7 @@ import com.sun.source.tree.Tree;
  * @see NonNull
  * @see MonotonicNonNull
  * @see AbstractNullnessChecker
- * @checker_framework_manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @TypeQualifier
 @SubtypeOf({})
