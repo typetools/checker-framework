@@ -1059,7 +1059,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                                 return null;
                             }
                         }
-                    } catch (ClassNotFoundException e) {
+                    } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
                         if(reportWarnings)
                         checker.report(Result.warning("class.find.failed",
                                 (TreeUtils.elementFromUse(tree))
@@ -1603,7 +1603,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 result.add(field.get(recClass));
 
                 return resultAnnotationHandler(retType, result, tree);
-            } catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
                 if(reportWarnings)
                 checker.report(Result.warning("class.find.failed", clzzname),
                         tree);
@@ -1658,7 +1658,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
 
             try {
                 return Class.forName(stringType);
-            } catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
                 if(reportWarnings)
                 checker.report(Result.failure("class.find.failed", stringType),
                         tree);
