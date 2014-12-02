@@ -33,6 +33,7 @@ package java.lang.ref;
  * @since    1.2
  */
 
+@SuppressWarnings("rawtypes")
 public class ReferenceQueue<T> {
 
     /**
@@ -54,6 +55,7 @@ public class ReferenceQueue<T> {
     private volatile Reference<? extends T> head = null;
     private long queueLength = 0;
 
+    @SuppressWarnings("unchecked")
     boolean enqueue(Reference<? extends T> r) { /* Called only by Reference class */
         synchronized (r) {
             if (r.queue == ENQUEUED) return false;
@@ -71,6 +73,7 @@ public class ReferenceQueue<T> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private Reference<? extends T> reallyPoll() {       /* Must hold lock */
         if (head != null) {
             Reference<? extends T> r = head;

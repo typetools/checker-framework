@@ -13,7 +13,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * A method with an AssignsFields receiver may not use the receiver to
  * invoke other methods with mutable or immutable reciever.
  *
- * @checker_framework_manual #oigj-checker OIGJ Checker
+ * @checker_framework.manual #oigj-checker OIGJ Checker
  */
 // TODO: Document this
 

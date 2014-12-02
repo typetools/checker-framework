@@ -2,7 +2,7 @@
 \chapter{Fake Enum Checker\label{fenum-checker}}
 
 Java's 
-\ahref{\url{https://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.9}}{\code{enum}}
+\href{https://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.9}{\code{enum}}
 keyword lets you define an enumeration type: a finite set of distinct values
 that are related to one another but are disjoint from all other
 types, including other enumerations.
@@ -13,10 +13,10 @@ enumeration, both of which are error-prone:
 \item[the fake enum pattern]  a set of \code{int} or \code{String}
   constants (as often found in older C code).
 
-\item[the \ahref{\url{http://www.oracle.com/technetwork/java/page1-139488.html}}{typesafe
+\item[the \href{http://www.oracle.com/technetwork/java/page1-139488.html}{typesafe
 enum pattern}]  a class with private constructor.
 % This requires
-% \ahref{\url{http://www.javaworld.com/javaworld/javatips/jw-javatip122.html}}{careful development}.
+% \href{http://www.javaworld.com/javaworld/javatips/jw-javatip122.html}{careful development}.
 \end{description}
 
 Sometimes you need to use the fake enum pattern,
@@ -47,7 +47,7 @@ Fenum type system.
 \caption{Partial type hierarchy for the Fenum type system.
 There are two forms of fake enumeration annotations --- above, illustrated
 by \code{@Fenum("A")} and \code{@FenumC}.
-See section~\ref{fenum-annotations} for descriptions of how to
+See Section~\ref{fenum-annotations} for descriptions of how to
 introduce both types of fenums. The type qualifiers in gray
 (\code{@FenumTop}, \code{@FenumUnqualified}, and \code{@Bottom})
 should never be written in
@@ -191,16 +191,16 @@ class FenumUser {
 
 \begin{itemize}
 \item Java Language Specification on enums:\\
-  \ahrefurl{https://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html\#jls-8.9}
+  \url{https://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.9}
 
 \item Tutorial trail on enums:\\
-  \ahrefurl{https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html}
+  \url{https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html}
 
 \item Typesafe enum pattern:\\
-  \ahrefurl{http://www.oracle.com/technetwork/java/page1-139488.html}
+  \url{http://www.oracle.com/technetwork/java/page1-139488.html}
 
 \item Java Tip 122: Beware of Java typesafe enumerations:\\
-  \ahrefurl{http://www.javaworld.com/article/2077487/core-java/java-tip-122--beware-of-java-typesafe-enumerations.html}
+  \url{http://www.javaworld.com/article/2077487/core-java/java-tip-122--beware-of-java-typesafe-enumerations.html}
 
 \end{itemize}
 

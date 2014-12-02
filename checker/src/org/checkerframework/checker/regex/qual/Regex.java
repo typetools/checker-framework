@@ -18,7 +18,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * {@link java.util.regex.MatchResult MatchResult} indicates the number of regular
  * expression groups.
  *
- * @checker_framework_manual #regex-checker Regex Checker
+ * @checker_framework.manual #regex-checker Regex Checker
  */
 @TypeQualifier
 @SubtypeOf(UnknownRegex.class)

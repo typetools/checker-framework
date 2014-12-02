@@ -63,9 +63,7 @@ manual.ps: manual.dvi
 
 html: manual.html
 manual.html: manual.dvi
-	hevea -fix -exec xxdate.exe urlhref.hva manual.tex
-# This was necessary once, but it makes Hevea 2.06 use wrong section anchors.
-# 	hevea -exec xxdate.exe urlhref.hva manual.tex
+	hevea -fix -exec xxdate.exe manual.tex
 # The following three lines are only necessary when using Hevea before version 2.04
 # With version 2.04 they have no effect but do no harm.
 	\mv -f manual.html manual.html-with-htoc
@@ -87,7 +85,7 @@ ifndef NOHG
 endif
 
 clean:
-	@\rm -f doc *.aux *.blg *.haux *.htoc *.log *.pdf *.ps *.dvi *.idx *.ind *.ilg *.toc
+	@\rm -f doc *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc
 
 very_clean: clean
 	@\rm manual.html

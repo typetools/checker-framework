@@ -15,7 +15,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * This annotation may not be written in source code; it is an
  * implementation detail of the checker.
  *
- * @checker_framework_manual #formatter-checker Format String Checker
+ * @checker_framework.manual #formatter-checker Format String Checker
  */
 @TypeQualifier
 @InvisibleQualifier

@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
  *
  * @see NonNull
  * @see org.checkerframework.checker.nullness.NullnessChecker
- * @checker_framework_manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
