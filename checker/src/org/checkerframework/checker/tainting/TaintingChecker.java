@@ -16,7 +16,7 @@ import org.checkerframework.framework.source.SuppressWarningsKeys;
  * It verifies that only verified values are trusted and that user-input
  * is sanitized before use.
  *
- * @checker_framework_manual #tainting-checker Tainting Checker
+ * @checker_framework.manual #tainting-checker Tainting Checker
  */
 @TypeQualifiers({Untainted.class, Tainted.class,
     PolyTainted.class, PolyAll.class})

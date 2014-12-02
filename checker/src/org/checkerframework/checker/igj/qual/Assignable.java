@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  *
  * This annotation is part of the IGJ language.
  *
- * @checker_framework_manual #igj-checker IGJ Checker
+ * @checker_framework.manual #igj-checker IGJ Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

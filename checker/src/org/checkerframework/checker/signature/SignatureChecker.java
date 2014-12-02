@@ -19,7 +19,7 @@ import org.checkerframework.framework.qual.TypeQualifiers;
 import com.sun.source.tree.CompilationUnitTree;
 
 /**
- * @checker_framework_manual #signature-checker Signature Checker
+ * @checker_framework.manual #signature-checker Signature Checker
  */
 @TypeQualifiers({
     UnannotatedString.class,

@@ -19,7 +19,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  *
  * @see GuardedBy
  * @see HoldingOnEntry
- * @checker_framework_manual #lock-checker Lock Checker
+ * @checker_framework.manual #lock-checker Lock Checker
  */
 @Documented
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})

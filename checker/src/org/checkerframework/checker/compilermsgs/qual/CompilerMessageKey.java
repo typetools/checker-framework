@@ -16,7 +16,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * explicitly.
  *
  * @author wmdietl
- * @checker_framework_manual #compilermsgs-checker Compiler Message Key Checker
+ * @checker_framework.manual #compilermsgs-checker Compiler Message Key Checker
  */
 @TypeQualifier
 @SubtypeOf(PropertyKey.class)

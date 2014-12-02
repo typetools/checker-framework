@@ -49,9 +49,9 @@ FILE_PATH_TO_LIVE_SITE  = "/cse/www2/types"
 PGP_PASSPHRASE_FILE = "/projects/swlab1/checker-framework/release-private.password"
 SONATYPE_OSS_URL = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 SONATYPE_STAGING_REPO_ID = "sonatype-nexus-staging"
-SONATYPE_CLOSING_DIRECTIONS_URL = "https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-8.a.1.ClosingaStagingRepository"
-SONATYPE_RELEASE_DIRECTIONS_URL = "https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-8a.ReleaseIt"
-SONATYPE_DROPPING_DIRECTIONS_URL = "https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-DroppingaStagingRepository%28i.e.WhattoDoifYourStagingRepositoryHasErrors%29"
+SONATYPE_CLOSING_DIRECTIONS_URL = "https://central.sonatype.org/pages/releasing-the-deployment.html"
+SONATYPE_RELEASE_DIRECTIONS_URL = "https://central.sonatype.org/pages/releasing-the-deployment.html"
+SONATYPE_DROPPING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
 
 #Location this and other release scripts are contained in
 SCRIPTS_DIR = "/scratch/jsr308-release/scripts"
@@ -197,7 +197,7 @@ os.environ['BIBINPUTS']=  '.:' + PLUME_BIB
 os.environ['TEXINPUTS'] =  '.:/scratch/secs-jenkins/tools/hevea-1.10/lib/hevea:/usr/share/texmf/tex/latex/hevea/:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:..:'
 os.environ['PERLLIB']   =  getAndAppend('PERLLIB', ":")  + perl_libs
 os.environ['PERL5LIB']  =  getAndAppend('PERL5LIB', ":") + perl_libs
-os.environ['JAVA_7_HOME'] =  '/scratch/secs-jenkins/java/jdk1.7.0.newer'
+os.environ['JAVA_7_HOME'] =  '/scratch/secs-jenkins/java/jdk1.7.0'
 os.environ['JAVA_8_HOME'] =  '/scratch/secs-jenkins/java/jdk1.8.0'
 os.environ['JAVA_HOME']   =  os.environ['JAVA_7_HOME']
 
