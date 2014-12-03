@@ -948,7 +948,6 @@ public abstract class AnnotatedTypeMirror {
                 switch (arg.getKind()) {
                     case TYPEVAR:
                         AnnotatedTypeVariable paramTypevar = (AnnotatedTypeVariable)arg;
-                        assert paramTypevar.isDeclaration();
                         newArgs.add(paramTypevar.asUse());
                         break;
                     case WILDCARD:
@@ -956,7 +955,7 @@ public abstract class AnnotatedTypeMirror {
                         newArgs.add(paramWildcard.asUse());
                         break;
                     default:
-                        ErrorReporter.errorAbort("Unexpected type kind: " + arg.getKind() + " for asUse of: " + this);
+                        newArgs.add(arg);
                 }
             }
             result.setTypeArguments(newArgs);

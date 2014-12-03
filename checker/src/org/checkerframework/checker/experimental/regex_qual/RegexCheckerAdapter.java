@@ -9,7 +9,7 @@ import org.checkerframework.qualframework.base.CheckerAdapter;
 public class RegexCheckerAdapter extends CheckerAdapter<Regex> {
 
     public RegexCheckerAdapter() {
-        super(new RegexChecker());
+        super(new RegexQualChecker());
     }
 
     @Override
