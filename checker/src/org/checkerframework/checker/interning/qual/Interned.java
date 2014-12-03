@@ -7,9 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.checker.interning.InterningChecker;
-import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
+import org.checkerframework.framework.qual.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
 import com.sun.source.tree.LiteralTree;
@@ -38,6 +36,7 @@ import com.sun.source.tree.LiteralTree;
 @ImplicitFor(
         treeClasses = { LiteralTree.class },
         typeClasses = { AnnotatedPrimitiveType.class })
+@DefaultFor(value={DefaultLocation.LOWER_BOUNDS} )
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

@@ -7,9 +7,7 @@ import org.checkerframework.checker.oigj.qual.Immutable;
 import org.checkerframework.checker.oigj.qual.Modifier;
 import org.checkerframework.checker.oigj.qual.Mutable;
 import org.checkerframework.checker.oigj.qual.O;
-import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
+import org.checkerframework.framework.qual.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
 import com.sun.source.tree.Tree.Kind;
@@ -34,4 +32,5 @@ import com.sun.source.tree.Tree.Kind;
         typeClasses = { AnnotatedPrimitiveType.class },
         typeNames = { java.lang.Void.class }
 )
+@DefaultFor({DefaultLocation.LOWER_BOUNDS})
 @interface OIGJMutabilityBottom { }

@@ -3,9 +3,6 @@ package org.checkerframework.qualframework.base;
 import java.util.*;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -13,11 +10,7 @@ import com.sun.source.tree.Tree;
 
 import org.checkerframework.javacutil.Pair;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
@@ -54,7 +47,7 @@ import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror.Wrappe
  * QualifierHierarchy}.
  */
 public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFactory<Q> {
-    private IdentityHashMap<ExtendedParameterDeclaration, QualifiedTypeParameterBounds<Q>> paramBoundsMap = new IdentityHashMap<>();
+    private final IdentityHashMap<ExtendedParameterDeclaration, QualifiedTypeParameterBounds<Q>> paramBoundsMap = new IdentityHashMap<>();
 
     private QualifiedTypes<Q> qualifiedTypes;
     private QualifierHierarchy<Q> qualifierHierarchy;
@@ -158,6 +151,7 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     }
 
 
+    @Override
     public final QualifiedTypes<Q> getQualifiedTypes() {
         if (this.qualifiedTypes == null) {
             this.qualifiedTypes = createQualifiedTypes();
@@ -198,7 +192,7 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
      * Constructs a {@link TypeHierarchy} for the current type system.  The
      * default implementation constructs a {@link DefaultTypeHierarchy}.
      *
-     * @param qualifierHierarchy   
+     * @param qualifierHierarchy
      *      a reference to the {@link QualifierHierarchy} used by this type system
      */
     protected TypeHierarchy<Q> createTypeHierarchy(QualifierHierarchy<Q> qualifierHierarchy) {
