@@ -1183,7 +1183,7 @@ public class AnnotatedTypes {
             if (typei.getKind() == TypeKind.WILDCARD) {
                 putOnOrig.addAll(typei.getAnnotations());
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType) typei;
-                if (wildcard.getExtendsBound() != null) //TODO: THIS NEEDS TO CHANGE I BELIEVE
+                if (wildcard.getExtendsBound() != null)
                     types.set(i, wildcard.getExtendsBound().deepCopy());
                 else if (wildcard.getSuperBound() != null)
                     types.set(i, wildcard.getSuperBound().deepCopy());
