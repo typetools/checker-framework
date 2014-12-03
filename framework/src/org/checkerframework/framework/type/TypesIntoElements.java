@@ -370,10 +370,11 @@ public class TypesIntoElements {
         @Override
         public List<TypeCompound> visitWildcard(AnnotatedWildcardType type, TypeAnnotationPosition tapos) {
             List<Attribute.TypeCompound> res;
+            //Note: By default, an Unbound wildcard will return true for both isExtendsBound and isSuperBound
             if (((Type.WildcardType)type.getUnderlyingType()).isExtendsBound()) {
                 res = directAnnotations(type.getSuperBound(), tapos);
 
-                AnnotatedTypeMirror ext = type.getExtendsBoundField();
+                AnnotatedTypeMirror ext = type.getExtendsBound();
                 if (ext != null) {
                     TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(tapos);
                     newpos.location = tapos.location.append(TypePathEntry.WILDCARD);

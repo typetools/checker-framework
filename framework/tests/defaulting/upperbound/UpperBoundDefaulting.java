@@ -27,7 +27,7 @@ public class UpperBoundDefaulting {
 
         @UB_TOP MyArrayList<@UB_BOTTOM ? extends @UB_EXPLICIT String> iwLowerBoundCompatible = myArrayList;
 
-        //:: error: (assignment.type.incompatible) :: error: (type.argument.type.incompatible)
+        //:: error: (type.argument.type.incompatible)
         @UB_TOP MyArrayList<@UB_BOTTOM ? extends @UB_IMPLICIT String> iwLowerBoundStillCompatible = myArrayList;
 
     }

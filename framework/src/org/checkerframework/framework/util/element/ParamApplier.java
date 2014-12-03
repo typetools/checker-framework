@@ -17,6 +17,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +25,7 @@ import static com.sun.tools.javac.code.TargetType.*;
 import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT;
 import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE_TYPE_ARGUMENT;
 import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.partitionByTargetType;
 
 /**
  * Adds annotations to one formal parameter of a method or lambda within a method.
@@ -176,17 +178,15 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
     @Override
     protected void handleTargeted(final List<Attribute.TypeCompound> targeted) {
 
+        final List<TypeCompound> formalParams = new ArrayList<>();
+        Map<TargetType, List<TypeCompound>> targetToAnnos = partitionByTargetType(targeted, formalParams, METHOD_RECEIVER);
+
         if( isReceiver( element ) ) {
-            for( final Attribute.TypeCompound anno : targeted) {
-                if( anno.position.type == METHOD_RECEIVER ) {
-                    annotateViaTypeAnnoPosition(type, anno);
-                }
-            }
+            annotateViaTypeAnnoPosition(type, targetToAnnos.get(METHOD_RECEIVER));
 
         } else {
-            for( final Attribute.TypeCompound anno : targeted) {
-                annotateViaTypeAnnoPosition(type, anno);
-            }
+            annotateViaTypeAnnoPosition(type, formalParams);
+
         }
     }
 

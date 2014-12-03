@@ -110,9 +110,8 @@ public class TypeVarUseApplier {
             //if the outer-most type is an array type then we want to ensure the outer annotations
             //are not applied as the type variables primary annotation
             typeVarAnnotations = removeComponentAnnotations(arrayType, annotations);
-            for( final Attribute.TypeCompound arrayAnno : annotations ) {
-                annotateViaTypeAnnoPosition(arrayType, arrayAnno);
-            }
+            annotateViaTypeAnnoPosition(arrayType, annotations);
+
         } else {
             typeVarAnnotations = annotations;
         }

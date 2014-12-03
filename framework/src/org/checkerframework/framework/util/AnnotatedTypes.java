@@ -4,6 +4,7 @@ package org.checkerframework.framework.util;
 import org.checkerframework.checker.nullness.qual.*;
 */
 
+import com.sun.tools.javac.code.Type.WildcardType;
 import org.checkerframework.framework.flow.util.LubTypeVariableAnnotator;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.TypeQualifier;
@@ -219,6 +220,34 @@ public class AnnotatedTypes {
             return null;
         }
     };
+
+    /**
+     * This method identifies wildcard types that are unbound.
+     */
+    public static boolean hasNoExplicitBound(final AnnotatedTypeMirror wildcard) {
+        return ((Type.WildcardType) wildcard.getUnderlyingType()).isUnbound();
+    }
+
+    /**
+     * This method identifies wildcard types that have an explicit super bound.
+     * NOTE: Type.WildcardType.isSuperBound will return true for BOTH unbound and super bound wildcards
+     * which necessitates this method
+     */
+    public static boolean hasExplicitSuperBound(final AnnotatedTypeMirror wildcard) {
+        final Type.WildcardType wildcardType = (Type.WildcardType) wildcard.getUnderlyingType();
+        return wildcardType.isSuperBound() && !((WildcardType) wildcard.getUnderlyingType()).isUnbound();
+    }
+
+    /**
+     * This method identifies wildcard types that have an explicit extends bound.
+     * NOTE: Type.WildcardType.isExtendsBound will return true for BOTH unbound and extends bound wildcards
+     * which necessitates this method
+     */
+    public static boolean hasExplicitExtendsBound(final AnnotatedTypeMirror wildcard) {
+        final Type.WildcardType wildcardType = (Type.WildcardType) wildcard.getUnderlyingType();
+        return wildcardType.isExtendsBound() && !((WildcardType) wildcard.getUnderlyingType()).isUnbound();
+    }
+
 
     /**
      * Return the base type of t or any of its outer types that starts
@@ -1154,7 +1183,7 @@ public class AnnotatedTypes {
             if (typei.getKind() == TypeKind.WILDCARD) {
                 putOnOrig.addAll(typei.getAnnotations());
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType) typei;
-                if (wildcard.getExtendsBound() != null)
+                if (wildcard.getExtendsBound() != null) //TODO: THIS NEEDS TO CHANGE I BELIEVE
                     types.set(i, wildcard.getExtendsBound().deepCopy());
                 else if (wildcard.getSuperBound() != null)
                     types.set(i, wildcard.getSuperBound().deepCopy());
