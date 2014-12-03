@@ -23,7 +23,7 @@ import org.checkerframework.framework.source.SupportedLintOptions;
  * {@link Interned}.  Optionally, it suggests using "=="
  * instead of ".equals" where possible.
  *
- * @checker_framework_manual #interning-checker Interning Checker
+ * @checker_framework.manual #interning-checker Interning Checker
  */
 @TypeQualifiers({ Interned.class, UnknownInterned.class,
     PolyInterned.class, PolyAll.class})

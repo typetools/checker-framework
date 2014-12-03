@@ -13,7 +13,7 @@ import com.sun.source.tree.Tree;
  * This annotation may not be written in source code; it is an
  * implementation detail of the checker.
  *
- * @checker_framework_manual #formatter-checker Format String Checker
+ * @checker_framework.manual #formatter-checker Format String Checker
  * @author Konstantin Weitz
  */
 @TypeQualifier

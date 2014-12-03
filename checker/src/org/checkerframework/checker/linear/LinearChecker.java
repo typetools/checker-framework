@@ -11,7 +11,7 @@ import org.checkerframework.framework.qual.TypeQualifiers;
  * reference may be used only one time.  After that, it is "used up" and
  * of type {@code @Unusable}, and any further use is a compile-time error.
  *
- * @checker_framework_manual #linear-checker Linear Checker
+ * @checker_framework.manual #linear-checker Linear Checker
 
  */
 @TypeQualifiers({Normal.class, Linear.class, Unusable.class})

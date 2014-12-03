@@ -19,7 +19,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * except if the field is marked {@code Assignable}. Only a method with a
  * readonly receiver can be called using a readonly reference.
  *
- * @checker_framework_manual #igj-checker IGJ Checker
+ * @checker_framework.manual #igj-checker IGJ Checker
  */
 @TypeQualifier
 @SubtypeOf({})

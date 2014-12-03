@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.TypeQualifiers;
  * type annotations ({@code @ReadOnly}, {@code @Mutable},
  * {@code @Assignable}, {@code @PolyRead} and {@code @QReadOnly}).
  *
- * @checker_framework_manual #javari-checker Javari Checker
+ * @checker_framework.manual #javari-checker Javari Checker
  */
 @TypeQualifiers( { ReadOnly.class, ThisMutable.class, Mutable.class,
     PolyRead.class, QReadOnly.class, PolyAll.class })

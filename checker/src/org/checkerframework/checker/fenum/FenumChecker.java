@@ -28,7 +28,7 @@ import org.checkerframework.common.subtyping.SubtypingChecker;
  * </ol>
  *
  * @author wmdietl
- * @checker_framework_manual #fenum-checker Fake Enum Checker
+ * @checker_framework.manual #fenum-checker Fake Enum Checker
  */
 @SupportedOptions( { "quals" } )
 public class FenumChecker extends BaseTypeChecker {
