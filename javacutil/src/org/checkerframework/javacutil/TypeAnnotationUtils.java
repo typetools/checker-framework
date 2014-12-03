@@ -177,7 +177,7 @@ public class TypeAnnotationUtils {
         @Override
         public Attribute visitBoolean(boolean b, Void p) {
             TypeMirror booleanType = modelTypes.getPrimitiveType(TypeKind.BOOLEAN);
-            return new Attribute.Constant((Type)booleanType, b);
+            return new Attribute.Constant((Type) booleanType, b ? 1 : 0);
         }
 
         @Override
