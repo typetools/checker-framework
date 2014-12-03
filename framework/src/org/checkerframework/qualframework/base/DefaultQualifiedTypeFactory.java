@@ -3,25 +3,25 @@ package org.checkerframework.qualframework.base;
 import java.util.*;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
+import com.sun.source.util.TreePath;
 import org.checkerframework.javacutil.Pair;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-
-import org.checkerframework.qualframework.base.QualifiedTypeMirror;
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
+import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
+import org.checkerframework.qualframework.base.dataflow.QualValue;
 import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
+import org.checkerframework.qualframework.util.ExtendedTypeMirror;
+import org.checkerframework.qualframework.util.QualifierContext;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror.WrappedAnnotatedTypeVariable;
 
@@ -64,13 +64,12 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     private TreeAnnotator<Q> treeAnnotator;
     private TypeAnnotator<Q> typeAnnotator;
 
-
     private QualifiedTypeFactoryAdapter<Q> adapter;
+    private QualifierContext<Q> context;
 
-    void setAdapter(QualifiedTypeFactoryAdapter<Q> adapter) {
-        this.adapter = adapter;
+    public DefaultQualifiedTypeFactory(QualifierContext<Q> context) {
+        this.context = context;
     }
-
 
     @Override
     public final QualifiedTypeMirror<Q> getQualifiedType(Element element) {
@@ -153,7 +152,7 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     protected TypeAnnotator<Q> createTypeAnnotator() {
         // Construct a new TypeAnnotator using the TOP qualifier as the
         // default.
-        return new TypeAnnotator<Q>(getAnnotationConverter(),
+        return new TypeAnnotator<Q>(context, getAnnotationConverter(),
                 getQualifierHierarchy().getTop());
     }
 
@@ -240,6 +239,13 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     }
 
     @Override
+    public Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> methodFromUse(ExpressionTree tree,
+            ExecutableElement methodElt, QualifiedTypeMirror<Q> receiverType) {
+
+        return adapter.superMethodFromUse(tree, methodElt, receiverType);
+    }
+
+    @Override
     public Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> constructorFromUse(NewClassTree tree) {
         throw new UnsupportedOperationException();
     }
@@ -248,5 +254,33 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     public QualifiedTypeMirror<Q> postTypeVarSubstitution(QualifiedParameterDeclaration<Q> varDecl,
             QualifiedTypeVariable<Q> varUse, QualifiedTypeMirror<Q> value) {
         return adapter.superPostTypeVarSubstitution(varDecl, varUse, value);
+    }
+
+    @Override
+    public QualAnalysis<Q> createFlowAnalysis(List<Pair<VariableElement, QualValue<Q>>> fieldValues) {
+        return new QualAnalysis<Q>(this.getContext());
+    }
+
+    public QualifierContext<Q> getContext() {
+        return context;
+    }
+
+    void setAdapter(QualifiedTypeFactoryAdapter<Q> adapter) {
+        this.adapter = adapter;
+    }
+
+    @Override
+    public TreePath getPath(Tree node) {
+        return adapter.getPath(node);
+    }
+
+    @Override
+    public QualifiedTypeMirror<Q> getReceiverType(ExpressionTree expression) {
+        return adapter.getCheckerAdapter().getTypeMirrorConverter().getQualifiedType(adapter.getReceiverType(expression));
+    }
+
+    @Override
+    public ExtendedTypeMirror getDecoratedElement(Element element) {
+        return WrappedAnnotatedTypeMirror.wrap(adapter.fromElement(element));
     }
 }
