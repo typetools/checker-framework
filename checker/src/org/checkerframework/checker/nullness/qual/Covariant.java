@@ -25,7 +25,7 @@ import java.lang.annotation.*;
  * The argument to <tt>@Covariant</tt> is the zero-based indices of the 
  * type parameters that should be treated covariantly.
  *
- * @checker_framework_manual #covariant-type-parameters Covariant type parameters
+ * @checker_framework.manual #covariant-type-parameters Covariant type parameters
  */
 @Documented
 @Target({ElementType.TYPE})

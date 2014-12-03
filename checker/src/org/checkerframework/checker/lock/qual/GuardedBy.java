@@ -66,7 +66,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  *
  * @see Holding
  * @see HoldingOnEntry
- * @checker_framework_manual #lock-checker Lock Checker
+ * @checker_framework.manual #lock-checker Lock Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

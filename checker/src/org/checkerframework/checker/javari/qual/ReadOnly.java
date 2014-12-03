@@ -24,7 +24,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @see Mutable
  * @see JavariChecker
- * @checker_framework_manual #javari-checker Javari Checker
+ * @checker_framework.manual #javari-checker Javari Checker
  */
 @TypeQualifier
 @SubtypeOf({})

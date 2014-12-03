@@ -17,7 +17,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * This annotation may not be written in source code; it is an
  * implementation detail of the checker.
  *
- * @checker_framework_manual #fenum-checker Fake Enum Checker
+ * @checker_framework.manual #fenum-checker Fake Enum Checker
  */
 @TypeQualifier
 @SubtypeOf( { } )

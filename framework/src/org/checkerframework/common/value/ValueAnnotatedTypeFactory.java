@@ -105,6 +105,10 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
      * propTreeCache ensures that the ValueATF terminates on compound binary/unary trees.
      */
     private final Map<Tree, AnnotatedTypeMirror> propTreeCache = createLRUCache(200);
+    
+    /** should this type factory report warnings? **/
+    private boolean reportWarnings = true;
+
 
     /**
      * Constructor. Initializes all the AnnotationMirror constants.
@@ -160,6 +164,13 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
         }
+    }
+    
+    public void disableWarnings(){
+        reportWarnings = false;
+    }
+    public void enableWarnings(){
+        reportWarnings = true;
     }
 
     @Override
@@ -1052,7 +1063,8 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                                 return null;
                             }
                         }
-                    } catch (ClassNotFoundException e) {
+                    } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
+                        if(reportWarnings)
                         checker.report(Result.warning("class.find.failed",
                                 (TreeUtils.elementFromUse(tree))
                                         .getEnclosingElement()), tree);
@@ -1062,12 +1074,14 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                         Element classElem = TreeUtils.elementFromUse(tree).getEnclosingElement();
 
                         if (classElem == null) {
+                            if(reportWarnings)
                             checker.report(Result
                                     .warning("method.find.failed",
                                             ((MemberSelectTree) methodTree)
                                                     .getIdentifier(), argTypes),tree);
                         }
                         else {
+                            if(reportWarnings)
                             checker.report(Result
                                     .warning("method.find.failed.in.class",
                                             ((MemberSelectTree) methodTree)
@@ -1240,11 +1254,13 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                         }
                     }
                 } catch (InvocationTargetException e) {
+                    if(reportWarnings)
                     checker.report(Result.warning(
                             "method.evaluation.exception", method, e
                                     .getTargetException().toString()), tree);
                     results = new ArrayList<Object>();
                 } catch (ReflectiveOperationException e) {
+                    if(reportWarnings)
                     checker.report(
                             Result.warning("method.evaluation.failed", method),
                             tree);
@@ -1314,6 +1330,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                             return null;
                         }
                     } catch (ReflectiveOperationException e) {
+                        if(reportWarnings)
                         checker.report(Result.warning(
                                 "constructor.evaluation.failed",
                                 type.getUnderlyingType(), argTypes), tree);
@@ -1448,6 +1465,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                         results.add(constructor.newInstance());
                     }
                 } catch (ReflectiveOperationException e) {
+                    if(reportWarnings)
                     checker.report(
                             Result.warning("constructor.invocation.failed"),
                             tree);
@@ -1589,11 +1607,13 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 result.add(field.get(recClass));
 
                 return resultAnnotationHandler(retType, result, tree);
-            } catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
+                if(reportWarnings)
                 checker.report(Result.warning("class.find.failed", clzzname),
                         tree);
                 return null;
             } catch (ReflectiveOperationException e) {
+                if(reportWarnings)
                 checker.report(Result.warning("field.access.failed", fieldName,
                         clzzname), tree);
                 return null;
@@ -1642,7 +1662,8 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
 
             try {
                 return Class.forName(stringType);
-            } catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
+                if(reportWarnings)
                 checker.report(Result.failure("class.find.failed", stringType),
                         tree);
                 return Object.class;
@@ -1795,6 +1816,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 values = convertBoolVal(anno, castType);
             }
             if (values == null) {
+                if(reportWarnings)
                 checker.report(Result.warning("class.convert.failed", anno,
                         castType), tree);
                 values = Collections.EMPTY_LIST;

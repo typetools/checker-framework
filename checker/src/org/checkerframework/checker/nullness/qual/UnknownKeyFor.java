@@ -7,7 +7,7 @@ import org.checkerframework.framework.qual.*;
 /**
  * TODO: document that this is the top type for the KeyFor system.
  *
- * @checker_framework_manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @TypeQualifier
 @InvisibleQualifier

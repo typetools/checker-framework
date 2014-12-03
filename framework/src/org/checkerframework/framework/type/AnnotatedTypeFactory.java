@@ -121,7 +121,7 @@ import com.sun.source.util.Trees;
  * {@link AnnotatedTypeFactory#annotateImplicit(Element, AnnotatedTypeMirror)}
  * and {@link #annotateImplicit(Tree, AnnotatedTypeMirror)}.
  *
- * @checker_framework_manual #writing-a-checker How to write a checker plug-in
+ * @checker_framework.manual #writing-a-checker How to write a checker plug-in
  */
 public class AnnotatedTypeFactory implements AnnotationProvider {
 

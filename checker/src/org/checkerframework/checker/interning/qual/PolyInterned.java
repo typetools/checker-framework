@@ -17,7 +17,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * in which every instance of @PolyInterned has been replaced by @Interned, and
  * one in which every instance of @PolyInterned has been erased.
  *
- * @checker_framework_manual #interning-checker Interning Checker
+ * @checker_framework.manual #interning-checker Interning Checker
  */
 @TypeQualifier
 @PolymorphicQualifier

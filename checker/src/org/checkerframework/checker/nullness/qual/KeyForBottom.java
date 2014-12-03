@@ -11,7 +11,7 @@ import com.sun.source.tree.Tree;
 /**
  * TODO: document that this is the bottom type for the KeyFor system.
  *
- * @checker_framework_manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

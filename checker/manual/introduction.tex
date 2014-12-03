@@ -176,20 +176,20 @@ synonyms.
 This section describes how to install the Checker Framework.
 (If you wish to
 use the Checker Framework from Eclipse, see the Checker Framework Eclipse
-Plugin webpage: \ahrefurl{http://types.cs.washington.edu/checker-framework/eclipse/}.)
+Plugin webpage: \url{http://types.cs.washington.edu/checker-framework/eclipse/}.)
 The Checker Framework release contains everything that you need, both to
 run checkers and to write your own checkers.  As an alternative, you can
 build the latest development version from source
 (Section~\refwithpage{build-source}).
 
-% Not "\ahrefurl" because it looks bad in the printed manual.
+% Not "\url" because it looks bad in the printed manual.
 \textbf{Requirement:}
 You must have \textbf{JDK 7} or later installed.  You can get JDK 7 from
-\ahref{\url{http://www.oracle.com/technetwork/java/javase/downloads/index.html}}{Oracle}
+\href{http://www.oracle.com/technetwork/java/javase/downloads/index.html}{Oracle}
 or elsewhere.  If you are using Apple Mac OS X, you can use
-\ahref{\url{http://developer.apple.com/search/index.php?q=java}}{Apple's implementation},
-\ahref{\url{http://landonf.bikemonkey.org/static/soylatte/}}{SoyLatte},
-or the \ahref{\url{http://openjdk.java.net/}}{OpenJDK}.
+\href{http://developer.apple.com/search/index.php?q=java}{Apple's implementation},
+\href{http://landonf.bikemonkey.org/static/soylatte/}{SoyLatte},
+or the \href{http://openjdk.java.net/}{OpenJDK}.
 
 The installation process is simple!  It has two required steps and one
 optional step.
@@ -199,7 +199,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \ahrefurl{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip}
+  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip}
 
 \item 
   Unzip it to create a \code{checker-framework} directory.
@@ -272,7 +272,7 @@ the IDE; see Chapter~\ref{external-tools}.
 \begin{enumerate}
 \item
   Let's consider this very simple Java class.  The local variable \<ref> is
-  annotated as \<@NonNull>, indicating that \<ref> must be a reference to a
+  annotated as \refqualclass{checker/nullness/qual}{NonNull}, indicating that \<ref> must be a reference to a
   non-null object.  Save the file as \<GetStarted.java>.
 
 \begin{Verbatim}
@@ -294,7 +294,7 @@ public class GetStarted {
 
 \noindent
 or compile from within your IDE, which you have customized (see
-Chapter~\ref{external-tools} to use the
+Chapter~\ref{external-tools}) to use the
 Checker Framework compiler and to pass the extra arguments.
 
   The compilation should complete without any errors.
@@ -419,7 +419,7 @@ command line.
 
 The syntax of type annotations in Java is specified by
 The Java 8 version of the Java Language Specification.
-% \ahref{\url{http://types.cs.washington.edu/jsr308/}}{JSR 308}~\cite{JSR308-2008-09-12}.  
+% \href{http://types.cs.washington.edu/jsr308/}{JSR 308}~\cite{JSR308-2008-09-12}.  
 Java 5 permitted annotations on declarations.  Java 8 also permits annotations
 anywhere that you would write a type, including generics and casts.  You
 can also write annotations to indicate type qualifiers for array levels and
@@ -745,7 +745,7 @@ For example:
   javac -processor NullnessChecker,RegexChecker MyFile.java
 \end{alltt}
 
-This feature does not apply to Javac \ahref{\url{https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html#commandlineargfile}}{@argfiles}.
+This feature does not apply to Javac \href{https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html#commandlineargfile}{@argfiles}.
 
 
 \section{What the checker guarantees\label{checker-guarantees}}
@@ -983,7 +983,7 @@ overriding definition is permitted to accept \code{null}.
 
 \begin{sloppypar}
 As a bad example, consider an erroneous \code{@Nullable} annotation at
-line 141 of \ahref{\url{http://code.google.com/p/google-collections/source/browse/trunk/src/com/google/common/collect/Multiset.java}}{\code{com/google/common/collect/Multiset.java}}, version r78:
+line 141 of \href{http://code.google.com/p/google-collections/source/browse/trunk/src/com/google/common/collect/Multiset.java}{\code{com/google/common/collect/Multiset.java}}, version r78:
 \end{sloppypar}
 
 \begin{Verbatim}
