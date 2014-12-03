@@ -5,7 +5,7 @@ import org.checkerframework.qualframework.base.Checker;
 /**
  * {@link Checker} for the Regex-Qual type system.
  */
-public class RegexChecker extends Checker<Regex> {
+public class RegexQualChecker extends Checker<Regex> {
 
     @Override
     protected RegexQualifiedTypeFactory createTypeFactory() {

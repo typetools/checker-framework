@@ -11,7 +11,7 @@ import org.checkerframework.qualframework.poly.QualParams;
 public class RegexCheckerAdapter extends CheckerAdapter<QualParams<Regex>> {
 
     public RegexCheckerAdapter() {
-        super(new RegexChecker());
+        super(new RegexQualPolyChecker());
     }
 
     @Override
