@@ -7,7 +7,7 @@ import org.checkerframework.qualframework.poly.QualParams;
 /**
  * {@link Checker} for the Regex-Qual-Param type system.
  */
-public class RegexChecker extends Checker<QualParams<Regex>> {
+public class RegexQualPolyChecker extends Checker<QualParams<Regex>> {
 
     @Override
     protected RegexQualifiedTypeFactory createTypeFactory() {
