@@ -29,26 +29,25 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         assert AnnotatedTypeFactory.validAnnotatedType(type);
         List<? extends AnnotationMirror> annos = InternalUtils.annotationsFromTree(node);
 
-        if(type.getKind() != TypeKind.WILDCARD) {
-            type.addAnnotations(annos);
-        }
-
-        if (type.getKind() == TypeKind.TYPEVAR) {
-            ((AnnotatedTypeVariable)type).getUpperBound().addMissingAnnotations(annos);
-        }
-
         if (type.getKind() == TypeKind.WILDCARD) {
             final ExpressionTree underlyingTree = node.getUnderlyingType();
-            if(underlyingTree.getKind() == Kind.EXTENDS_WILDCARD
-                    || underlyingTree.getKind() == Kind.UNBOUNDED_WILDCARD) {
+
+            if (underlyingTree.getKind() == Kind.UNBOUNDED_WILDCARD) {
+                //primary annotations on unbounded wildcard types apply to both bounds
+                ((AnnotatedWildcardType) type).getExtendsBound().addMissingAnnotations(annos);
                 ((AnnotatedWildcardType) type).getSuperBound().addMissingAnnotations(annos);
 
-            } else if(underlyingTree.getKind() == Kind.SUPER_WILDCARD) {
+            } else if (underlyingTree.getKind() == Kind.EXTENDS_WILDCARD) {
+                ((AnnotatedWildcardType) type).getSuperBound().addMissingAnnotations(annos);
+
+            } else if (underlyingTree.getKind() == Kind.SUPER_WILDCARD) {
                 ((AnnotatedWildcardType) type).getExtendsBound().addMissingAnnotations(annos);
 
             } else {
                 ErrorReporter.errorAbort("Unexpected kind for type!  node=" + node + " type=" + type);
             }
+        } else {
+            type.addAnnotations(annos);
         }
 
         return type;

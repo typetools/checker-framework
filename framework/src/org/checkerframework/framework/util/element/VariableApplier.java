@@ -73,9 +73,7 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
 
     @Override
     protected void handleTargeted(final List<Attribute.TypeCompound> targeted) {
-        for (final Attribute.TypeCompound anno : targeted) {
-            annotateViaTypeAnnoPosition(type, anno);
-        }
+        annotateViaTypeAnnoPosition(type, targeted);
     }
 
     public void extractAndApply() {

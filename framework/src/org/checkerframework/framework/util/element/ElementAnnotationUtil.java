@@ -1,14 +1,18 @@
 package org.checkerframework.framework.util.element;
 
 import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Attribute.TypeCompound;
+import com.sun.tools.javac.code.TargetType;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
+import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
 import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntryKind;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.PluginUtil;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
 import java.util.*;
@@ -85,28 +89,203 @@ public class ElementAnnotationUtil {
     }
 
     /**
+     * Use a map to partition annotations with the given TargetTypes into Lists,
+     * where each target type is a key in the output map.  Any annotation that
+     * does not have one of these target types will be added to unmatched
+     * @param annos The collection of annotations to partition
+     * @param unmatched A list to add annotations with unmatched target types to
+     * @param targetTypes A list of target types to partition annos with
+     * @return A map from targetType -> List of Annotations that have that targetType
+     */
+    static Map<TargetType, List<TypeCompound>> partitionByTargetType(Collection<TypeCompound> annos,
+                                                                     List<TypeCompound> unmatched,
+                                                                     TargetType... targetTypes) {
+        final Map<TargetType, List<TypeCompound>> targetTypeToAnnos = new HashMap<>();
+        for (TargetType targetType : targetTypes) {
+            targetTypeToAnnos.put(targetType, new ArrayList<TypeCompound>(10));
+        }
+
+        for(final TypeCompound anno : annos) {
+            final List<TypeCompound> annoSet = targetTypeToAnnos.get(anno.getPosition().type);
+            if (annoSet != null) {
+                annoSet.add(anno);
+            } else if (unmatched != null) {
+                unmatched.add(anno);
+            }
+        }
+
+        return targetTypeToAnnos;
+    }
+
+    /**
+     * A class used solely to annotate wildcards from Element annotations.  Instances
+     * of WildcardBoundAnnos are used to aggregate ALL annotations for a given Wildcard
+     * and then apply them all at once in order to resolve the annotations in front of
+     * unbound wildcards.
+     *
+     * Wildcard annotations are applied as follows:
+     *
+     * a) If an Annotation is in front of a extends or super bounded wildcard,
+     * it applies to the bound that is NOT explicitly present. e.g.
+     * <@A ? extends Object> - @A is placed on the super bound (Void)
+     * <@B ? super CharSequence> - @B is placed on the extends bound (probably Object)
+     *
+     * b) If an Annotation is on a bound, it applies to that bound.  E.g.
+     * <? extends @A Object> - @A is placed on the extends bound (Object)
+     * <? super @B CharSequence> - @B is placed on the super bound (CharSequence)
+     *
+     * c) If an Annotation is on an unbounded wildard there are two subcases.
+     *    c.1 The user wrote the annotation explicitly - these annotations apply to both bounds
+     *    e.g. the user wrote
+     *    <@C ?> - the annotation is placed on the extends/super bounds
+     *
+     *    c.2 Previous calls to getAnnotatedType have annotated this wildcard with BOTH bounds
+     *    e.g. the user wrote <?> but the checker framework added <@C ? extends @D Object>
+     *         to the corresponding element
+     *    <?> - @C is placed on the lower bound and @D is placed on the upper bound
+     *          This case is treated just like annotations in cases a/b.
+     *
+     */
+    private static final class WildcardBoundAnnos {
+        public final AnnotatedWildcardType wildcard;
+        public final Set<AnnotationMirror> upperBoundAnnos;
+        public final Set<AnnotationMirror> lowerBoundAnnos;
+
+        //indicates that this is an annotation in front of an unbounded wildcard
+        //e.g.  < @A ? >
+        //For each annotation in this set, if there is no annotation in upperBoundAnnos
+        //that is in the same hierarchy then the annotation will be applied to both bounds
+        //otherwise the annotation applies to the lower bound only
+        public final Set<AnnotationMirror> possiblyBoth;
+
+        /**
+         * Whether or not wildcard has an explicit super bound.
+         */
+        private boolean isSuperBounded;
+
+        /**
+         * Whether or not wildcard has NO explicit bound whatsoever
+         */
+        private boolean isUnbounded;
+
+        WildcardBoundAnnos(AnnotatedWildcardType wildcard) {
+            this.wildcard = wildcard;
+            this.upperBoundAnnos = AnnotationUtils.createAnnotationSet();
+            this.lowerBoundAnnos = AnnotationUtils.createAnnotationSet();
+            this.possiblyBoth = AnnotationUtils.createAnnotationSet();
+
+            this.isSuperBounded = AnnotatedTypes.hasExplicitSuperBound(wildcard);
+            this.isUnbounded = AnnotatedTypes.hasNoExplicitBound(wildcard);
+        }
+
+        /**
+         *
+         * @param anno
+         */
+        void addAnnotation(final TypeCompound anno) {
+            //if the typepath entry ends in Wildcard then the annotation should go on a bound
+            //otherwise, the annotation is in front of the wildcard
+            // e.g. @HERE ? extends Object
+            final boolean isInFrontOfWildcard = anno.getPosition().location.last() != TypePathEntry.WILDCARD;
+            if (isInFrontOfWildcard && isUnbounded) {
+                possiblyBoth.add(anno);
+
+            } else {
+                //A TypePathEntry of WILDCARD indicates that is is placed on the bound
+                //use the type of the wildcard bound to determine which set to put it in
+
+                if (isInFrontOfWildcard) {
+                    if (isSuperBounded) {
+                        upperBoundAnnos.add(anno);
+                    } else {
+                        lowerBoundAnnos.add(anno);
+                    }
+                } else { //it's on the bound
+                    if (isSuperBounded) {
+                        lowerBoundAnnos.add(anno);
+                    } else {
+                        upperBoundAnnos.add(anno);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Apply the annotations to wildcard according to the rules outlined in the
+         * comment at the beginning of this class
+         */
+        void apply() {
+            final AnnotatedTypeMirror extendsBound = wildcard.getExtendsBound();
+            final AnnotatedTypeMirror superBound = wildcard.getSuperBound();
+
+            for (AnnotationMirror extAnno : upperBoundAnnos) {
+                extendsBound.addAnnotation(extAnno);
+            }
+            for (AnnotationMirror supAnno : lowerBoundAnnos) {
+                superBound.addAnnotation(supAnno);
+            }
+
+
+            for (AnnotationMirror anno : possiblyBoth) {
+                superBound.addAnnotation(anno);
+
+                //this will be false if we've defaulted the bounds and are reading them again
+                //in that case, we will have already created an annotation for the extends bound
+                //that should be honored and NOT overwritten
+                if (extendsBound.getAnnotationInHierarchy(anno) == null) {
+                    extendsBound.addAnnotation(anno);
+                }
+            }
+
+        }
+    }
+
+    /**
      * TypeCompounds are implementations of AnnotationMirror that are stored on Elements.  Each type compound
      * has a TypeAnnotationPosition which identifies, relative to the "root" of a type, where an annotation
-     * should be placed.  This method adds the given TypeCompound to the correct location on type by interpreting
-     * the TypeAnnotationPosition.
+     * should be placed.  This method adds all of the given TypeCompounds to the correct location on type
+     * by interpreting the TypeAnnotationPosition.
      *
-     * @param type The type in which annoTc should be placed
-     * @param anno A TypeCompound representing an annotation to be placed on type
+     * Note: We handle all of the Element annotations on a type at once because we need to identify whether
+     * or not the element annotation in front of an unbound wildcard (e.g. <@HERE ?>) should apply to
+     * only the super bound or both the super bound and the extends bound.
+     * @see org.checkerframework.framework.util.element.ElementAnnotationUtil.WildcardBoundAnnos
+     *
+     * @param type The type in which annos should be placed
+     * @param annos All of the element annotations, TypeCompounds, for type
      */
-    static void annotateViaTypeAnnoPosition(final AnnotatedTypeMirror type, final Attribute.TypeCompound anno) {
-        TypeAnnotationPosition pos = anno.position;
-        if (pos.location.isEmpty()) {
-            // This check prevents that annotations on the declaration of
-            // the type variable are also added to the type variable use.
-            if (type.getKind() == TypeKind.TYPEVAR) {
-                type.removeAnnotationInHierarchy(anno);
-            }
-            type.addAnnotation(anno);
-        } else { //annotate inner locations
+    static void annotateViaTypeAnnoPosition(final AnnotatedTypeMirror type, final Collection<TypeCompound> annos) {
+        final Map<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos = new IdentityHashMap<>();
+        for(final TypeCompound anno : annos) {
+            AnnotatedTypeMirror target = getTypeAtLocation(type, anno.position.location);
+            if (target.getKind() == TypeKind.WILDCARD) {
+                addWildcardToBoundMap((AnnotatedWildcardType) target, anno, wildcardToAnnos);
 
-            AnnotatedTypeMirror inner = getTypeAtLocation(type, anno.getPosition().location);
-            inner.addAnnotation(anno);
+            } else {
+                target.addAnnotation(anno);
+
+
+            }
         }
+
+        for (WildcardBoundAnnos wildcardAnnos : wildcardToAnnos.values()) {
+            wildcardAnnos.apply();
+        }
+    }
+
+    /**
+     * Creates an entry in wildcardToAnnos for wildcard if one does not already exists.  Adds
+     * anno to the WildcardBoundAnnos object for wildcard.
+     */
+    private static void addWildcardToBoundMap(final AnnotatedWildcardType wildcard, final TypeCompound anno,
+                                              final Map<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos) {
+        WildcardBoundAnnos boundAnnos = wildcardToAnnos.get(wildcard);
+        if (boundAnnos == null) {
+            boundAnnos = new WildcardBoundAnnos(wildcard);
+            wildcardToAnnos.put(wildcard, boundAnnos);
+        }
+
+        boundAnnos.addAnnotation(anno);
     }
 
     /**
@@ -157,16 +336,16 @@ public class ElementAnnotationUtil {
      */
     static AnnotatedTypeMirror getTypeAtLocation(AnnotatedTypeMirror type, List<TypeAnnotationPosition.TypePathEntry> location) {
 
-        if (type.getKind() != TypeKind.WILDCARD && location.isEmpty()) {
+        if (location.isEmpty()) {
             return type;
         } else if (type.getKind() == TypeKind.NULL) {
             return getLocationTypeANT((AnnotatedNullType) type, location);
         } else if (type.getKind() == TypeKind.DECLARED) {
-            return getLocationTypeADT((AnnotatedDeclaredType)type, location);
+            return getLocationTypeADT((AnnotatedDeclaredType) type, location);
         } else if (type.getKind() == TypeKind.WILDCARD) {
-            return getLocationTypeAWT((AnnotatedWildcardType)type, location);
+            return getLocationTypeAWT((AnnotatedWildcardType) type, location);
         } else if (type.getKind() == TypeKind.ARRAY) {
-            return getLocationTypeAAT((AnnotatedArrayType)type, location);
+            return getLocationTypeAAT((AnnotatedArrayType) type, location);
         } else {
             ErrorReporter.errorAbort("ElementAnnotationUtil.getTypeAtLocation: only declared types, "
                                    + "arrays, and null types can have annotations with location; found type: "
@@ -256,42 +435,23 @@ public class ElementAnnotationUtil {
         return null; //dead code
     }
 
-    private static boolean isExtendsBounded(final AnnotatedWildcardType wcType) {
-        return wcType.getUnderlyingType().getExtendsBound() != null;
-    }
-
-    private static boolean isSuperBounded(final AnnotatedWildcardType wcType) {
-        return wcType.getUnderlyingType().getSuperBound() != null;
-    }
-
     private static AnnotatedTypeMirror getLocationTypeAWT(final AnnotatedWildcardType type,
                                                           final List<TypeAnnotationPosition.TypePathEntry> location) {
 
-        if (location.isEmpty()) {
-            //Applying an annotation in front of a wildcard applies it to the bound that is not explicitly written
-            //in the wildcard.  E.g.
-            // @P ? extends Object
-            // In this case, the Type location of @P indicates that it is on the wildcard.  But since the
-            // Checker Framework treats that location as if it applies to the lower bound, we apply the
-            //annotation to the superBound type
-            //That is the type becomease  ? [ super @P <null> extends Object]
+        //the last step into the Wildcard type is handled in WildcardToBoundAnnos.addAnnotation
+        if (location.size() == 1) {
+            return type;
+        }
 
-            if( isExtendsBounded(type) ) {
-                return type.getSuperBound();
-            } else if( isSuperBounded(type) ) {
-                return type.getExtendsBound();
-            }  else {
-                return type.getSuperBound();
-            }
+        if (!location.isEmpty() && location.get(0).tag.equals(TypeAnnotationPosition.TypePathEntryKind.WILDCARD)) {
+            if( AnnotatedTypes.hasExplicitExtendsBound(type) ) {
+                   return getTypeAtLocation(type.getExtendsBound(), tail(location));
+               } else if( AnnotatedTypes.hasExplicitSuperBound(type) ) {
+                   return getTypeAtLocation(type.getSuperBound(), tail(location));
+               }  else {
+                   return getTypeAtLocation(type.getExtendsBound(), tail(location));
+               }
 
-        } else if (location.get(0).tag.equals(TypeAnnotationPosition.TypePathEntryKind.WILDCARD)) {
-            if( isExtendsBounded(type) ) {
-                return getTypeAtLocation(type.getExtendsBound(), tail(location));
-            } else if( isSuperBounded(type) ) {
-                return getTypeAtLocation(type.getSuperBound(), tail(location));
-            }  else {
-                return getTypeAtLocation(type.getExtendsBound(), tail(location));
-            }
         } else {
             ErrorReporter.errorAbort("ElementAnnotationUtil.getLocationTypeAWT: " +
                                       "invalid location " + location + " for type: " + type);
