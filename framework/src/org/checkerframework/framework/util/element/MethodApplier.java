@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.element;
 
 
+import com.sun.tools.javac.code.Attribute.TypeCompound;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import static org.checkerframework.framework.type.AnnotatedTypeMirror.*;
@@ -12,11 +13,14 @@ import static org.checkerframework.framework.util.element.ElementAnnotationUtil.
 import static com.sun.tools.javac.code.TargetType.*;
 
 import com.sun.tools.javac.code.TypeAnnotationPosition;
+import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import java.util.List;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Adds annotations from element to the return type, formal parameter types, type parameters, and
@@ -115,40 +119,52 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     //NOTE that these are the only locations not handled elsewhere, otherwise we call apply
     @Override
     protected void handleTargeted(final List<Attribute.TypeCompound> targeted) {
+        final List<TypeCompound> unmatched = new ArrayList<>();
+        final Map<TargetType, List<TypeCompound>> targetTypeToAnno =
+                partitionByTargetType(targeted, unmatched, METHOD_RECEIVER, METHOD_RETURN, THROWS);
 
-        for( Attribute.TypeCompound anno : targeted) {
-            switch( anno.position.type ) {
 
-                case METHOD_RECEIVER:
-                    annotateViaTypeAnnoPosition(methodType.getReceiverType(), anno);
-                    break;
+        annotateViaTypeAnnoPosition(methodType.getReceiverType(), targetTypeToAnno.get(METHOD_RECEIVER));
+        annotateViaTypeAnnoPosition(methodType.getReturnType(),   targetTypeToAnno.get(METHOD_RETURN));
+        applyThrowsAnnotations(targetTypeToAnno.get(THROWS));
 
-                case METHOD_RETURN:
-                    annotateViaTypeAnnoPosition(methodType.getReturnType(), anno);
-                    break;
-
-                case THROWS:
-                    applyThrowsAnnotation(anno);
-                    break;
-
-                default:
-                    ErrorReporter.errorAbort("Undexpected annotation ( " + anno + " ) for" +
-                            "type ( " + type +" ) and element ( " + element + " ) ");
-            }
+        if (unmatched.size() > 0) {
+            ErrorReporter.errorAbort("Unexpected annotations ( " + PluginUtil.join(",", unmatched) + " ) for" +
+                                      "type ( " + type +" ) and element ( " + element + " ) ");
         }
 
     }
 
-    private void applyThrowsAnnotation( final Attribute.TypeCompound anno ) {
-        final TypeAnnotationPosition annoPos = anno.position;
+    /**
+     * For each thrown type, collect all the annotations for that type and apply them
+     */
+    private void applyThrowsAnnotations( final List<Attribute.TypeCompound> annos ) {
         final List<AnnotatedTypeMirror> thrown = methodType.getThrownTypes();
-        if (annoPos.type_index >= 0 && annoPos.type_index < thrown.size()) {
-            annotateViaTypeAnnoPosition(thrown.get(annoPos.type_index), anno);
-        } else {
-            ErrorReporter.errorAbort("MethodApplier.applyThrowsAnnotation: " +
-                    "invalid throws index " + annoPos.type_index +
-                    " for annotation: " + anno+
-                    " for element: " + ElementUtils.getVerboseName(element));
+        if (thrown.isEmpty()) {
+            return;
+        }
+
+        Map<AnnotatedTypeMirror, List<TypeCompound>> typeToAnnos = new LinkedHashMap<>();
+        for (final AnnotatedTypeMirror thrownType : thrown) {
+            typeToAnnos.put(thrownType, new ArrayList<TypeCompound>());
+        }
+
+        for( TypeCompound anno : annos) {
+            final TypeAnnotationPosition annoPos = anno.position;
+            if (annoPos.type_index >= 0 && annoPos.type_index < thrown.size()) {
+                final AnnotatedTypeMirror thrownType = thrown.get(annoPos.type_index);
+                typeToAnnos.get(thrownType).add(anno);
+
+            } else {
+                ErrorReporter.errorAbort("MethodApplier.applyThrowsAnnotation: " +
+                        "invalid throws index " + annoPos.type_index +
+                        " for annotation: " + anno+
+                        " for element: " + ElementUtils.getVerboseName(element));
+            }
+        }
+
+        for(final Entry<AnnotatedTypeMirror, List<TypeCompound>> typeToAnno : typeToAnnos.entrySet()) {
+            annotateViaTypeAnnoPosition(typeToAnno.getKey(), typeToAnno.getValue());
         }
     }
 

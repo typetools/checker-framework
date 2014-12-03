@@ -110,9 +110,7 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
      */
     @Override
     protected void handleTargeted(List<Attribute.TypeCompound> targeted) {
-        for( Attribute.TypeCompound anno : targeted) {
-            ElementAnnotationUtil.annotateViaTypeAnnoPosition(type, anno);
-        }
+        ElementAnnotationUtil.annotateViaTypeAnnoPosition(type, targeted);
     }
 
     @Override

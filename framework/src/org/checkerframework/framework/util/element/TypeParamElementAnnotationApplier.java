@@ -15,6 +15,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.TypeKind;
 import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Applies Element annotations to a single AnnotatedTypeVariable representing a type parameter.
@@ -157,8 +158,20 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
         }
     }
 
+    private void addAnnotationToMap(final AnnotatedTypeMirror type, final TypeCompound anno,
+                                    final Map<AnnotatedTypeMirror, List<TypeCompound>> typeToAnnos) {
+        List<TypeCompound> annoList = typeToAnnos.get(type);
+        if (annoList == null) {
+            annoList = new ArrayList<>();
+            typeToAnnos.put(type, annoList);
+        }
+        annoList.add(anno);
+    }
+
     private void applyComponentAnnotation(final TypeCompound anno) {
         final AnnotatedTypeMirror upperBoundType = typeParam.getUpperBound();
+
+        Map<AnnotatedTypeMirror, List<TypeCompound>> typeToAnnotations = new HashMap<>();
 
         if (anno.position.type == upperBoundTarget()) {
 
@@ -170,15 +183,19 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
                     ErrorReporter.errorAbort("Invalid bound index on element annotation ( " + anno + " ) " +
                             "for type ( " + typeParam + " ) with upper bound ( " + typeParam.getUpperBound() + " )");
                 }
-                annotateViaTypeAnnoPosition(intersectionTypes.get(boundIndex), anno);
+                addAnnotationToMap(intersectionTypes.get(boundIndex), anno, typeToAnnotations);
 
             } else {
-                annotateViaTypeAnnoPosition(upperBoundType, anno);
+                addAnnotationToMap(upperBoundType, anno, typeToAnnotations);
 
             }
 
         } else {
-            annotateViaTypeAnnoPosition(typeParam.getLowerBound(), anno);
+            addAnnotationToMap(typeParam.getLowerBound(), anno, typeToAnnotations);
+        }
+
+        for (Entry<AnnotatedTypeMirror, List<TypeCompound>> typeToAnno : typeToAnnotations.entrySet()) {
+             annotateViaTypeAnnoPosition(typeToAnno.getKey(), typeToAnno.getValue());
         }
     }
 }
