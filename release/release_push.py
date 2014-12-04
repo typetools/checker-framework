@@ -190,7 +190,6 @@ def print_usage():
             "steps but will NOT actually perform a release.  This is for testing the script." )
 
 def main(argv):
-    # umask g+w
     set_umask()
 
     test_mode = read_args( argv )

@@ -216,7 +216,6 @@ def commit_to_interm_projects(jsr308_version, afu_version, projects_to_release):
         commit_tag_and_push(jsr308_version, CHECKER_FRAMEWORK, "checker-framework-")
 
 def main(argv):
-    # umask g+rw
     set_umask()
 
     projects_to_release = read_projects( argv, print_usage )
