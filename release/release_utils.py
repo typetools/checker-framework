@@ -452,6 +452,7 @@ def purge(repo, all=False):
 
 def clean_repo(repo, prompt):
     if maybe_prompt_yn( 'Remove all modified files, untracked files and outgoing commits from %s ?' % repo, prompt ):
+        ensure_group_access(repo)
         revert(repo)
         strip(repo)
         purge(repo, all)
@@ -594,7 +595,10 @@ def first_line_containing(value, file):
 def ensure_group_access(path):
     # Errs for any file not owned by this user.
     # But, the point is to set group writeability of any *new* files.
-    execute('chmod -f -R g+w %s' % path, halt_if_fail=False)
+    execute('chmod -f -R g+rw %s' % path, halt_if_fail=False)
+
+def set_umask():
+    os.umask(os.umask(0) & 0b001111)
 
 def find_first_instance(regex, file, delim=""):
     with open(file, 'r') as f:

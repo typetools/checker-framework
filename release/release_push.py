@@ -191,7 +191,7 @@ def print_usage():
 
 def main(argv):
     # umask g+w
-    os.umask(os.umask(0) - 16)
+    set_umask()
 
     test_mode = read_args( argv )
 
