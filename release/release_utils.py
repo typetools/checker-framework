@@ -598,6 +598,7 @@ def ensure_group_access(path):
     execute('chmod -f -R g+rw %s' % path, halt_if_fail=False)
 
 def set_umask():
+    # umask g+rw
     os.umask(os.umask(0) & 0b001111)
 
 def find_first_instance(regex, file, delim=""):
