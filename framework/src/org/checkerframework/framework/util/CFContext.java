@@ -8,10 +8,7 @@ import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 
 /** A collection of references to various type checker components. */
-public interface CFContext {
+public interface CFContext extends BaseContext {
     SourceChecker getChecker();
-    ProcessingEnvironment getProcessingEnvironment();
-    Elements getElementUtils();
-    Types getTypeUtils();
     SourceVisitor<?, ?> getVisitor();
 }

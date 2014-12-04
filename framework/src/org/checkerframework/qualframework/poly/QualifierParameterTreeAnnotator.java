@@ -67,7 +67,7 @@ public class QualifierParameterTreeAnnotator<Q> extends TreeAnnotator<QualParams
         QualifiedDeclaredType<QualParams<Q>> declType = (QualifiedDeclaredType<QualParams<Q>>)type;
 
         Set<String> validParams = factory.getAnnotationConverter().getDeclaredParameters(
-                declType.getUnderlyingType().asElement());
+                declType.getUnderlyingType().asElement(), factory.getDecoratedElement(declType.getUnderlyingType().asElement()));
 
         if (validParams.equals(type.getQualifier().keySet())) {
             return type;
@@ -75,6 +75,6 @@ public class QualifierParameterTreeAnnotator<Q> extends TreeAnnotator<QualParams
 
         Map<String, Wildcard<Q>> params = new HashMap<>(type.getQualifier());
         params.keySet().retainAll(validParams);
-        return SetQualifierVisitor.apply(type, new QualParams<>(params));
+        return SetQualifierVisitor.apply(type, new QualParams<>(params, type.getQualifier().getPrimary()));
     }
 }

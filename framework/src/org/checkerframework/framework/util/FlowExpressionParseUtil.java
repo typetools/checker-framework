@@ -34,7 +34,6 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Resolver;
@@ -167,7 +166,7 @@ public class FlowExpressionParseUtil {
         Matcher stringMatcher = stringPattern.matcher(s);
         Matcher nullMatcher = nullPattern.matcher(s);
 
-        ProcessingEnvironment env = context.atypeFactory.getProcessingEnv();
+        ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
         Types types = env.getTypeUtils();
 
         if (intMatcher.matches() && allowLiterals) {
@@ -224,7 +223,7 @@ public class FlowExpressionParseUtil {
                 }
 
                 if (fieldElem == null) { // Try static fields of the enclosing class
-                    Element classElem = context.atypeFactory.getTreeUtils().getElement(TreeUtils.pathTillClass(path));
+                    Element classElem = context.checkerContext.getTreeUtils().getElement(TreeUtils.pathTillClass(path));
                     receiverType = ElementUtils.getType(classElem);
 
                     // Search for field in each enclosing class.
@@ -516,25 +515,26 @@ public class FlowExpressionParseUtil {
     public static class FlowExpressionContext {
         public final Receiver receiver;
         public final List<Receiver> arguments;
-        public final AnnotatedTypeFactory atypeFactory;
         public final Receiver outerReceiver;
+        public final BaseContext checkerContext;
 
         public FlowExpressionContext(Receiver receiver,
-                List<Receiver> arguments, AnnotatedTypeFactory factory) {
-            assert factory != null;
+                List<Receiver> arguments, BaseContext checkerContext) {
+            assert checkerContext != null;
             this.receiver = receiver;
             this.arguments = arguments;
-            this.atypeFactory = factory;
             this.outerReceiver = receiver;
+            this.checkerContext = checkerContext;
         }
 
         public FlowExpressionContext(Receiver receiver, Receiver outerReceiver,
-                List<Receiver> arguments, AnnotatedTypeFactory factory) {
-            assert factory != null;
+                List<Receiver> arguments, BaseContext checkerContext) {
+            assert checkerContext != null;
             this.receiver = receiver;
             this.arguments = arguments;
-            this.atypeFactory = factory;
             this.outerReceiver = outerReceiver;
+            this.checkerContext = checkerContext;
+
         }
 
         /**
@@ -543,7 +543,7 @@ public class FlowExpressionParseUtil {
          */
         public FlowExpressionContext changeReceiver(Receiver receiver) {
             return new FlowExpressionContext(receiver, outerReceiver,
-                    arguments, atypeFactory);
+                    arguments, checkerContext);
         }
 
         /**
@@ -552,7 +552,7 @@ public class FlowExpressionParseUtil {
          */
         public FlowExpressionContext useOuterReceiver() {
             return new FlowExpressionContext(outerReceiver, outerReceiver,
-                    arguments, atypeFactory);
+                    arguments, checkerContext);
         }
     }
 
@@ -593,18 +593,18 @@ public class FlowExpressionParseUtil {
      *         seen at the method declaration.
      */
     public static FlowExpressionContext buildFlowExprContextForDeclaration(
-            MethodTree node, Tree classTree, AnnotatedTypeFactory factory) {
+            MethodTree node, Tree classTree, BaseContext checkerContext) {
         Node receiver = new ImplicitThisLiteralNode(
                 InternalUtils.typeOf(classTree));
-        Receiver internalReceiver = FlowExpressions.internalReprOf(factory,
+        Receiver internalReceiver = FlowExpressions.internalReprOf(checkerContext.getAnnotationProvider(),
                 receiver);
         List<Receiver> internalArguments = new ArrayList<>();
         for (VariableTree arg : node.getParameters()) {
-            internalArguments.add(FlowExpressions.internalReprOf(factory,
+            internalArguments.add(FlowExpressions.internalReprOf(checkerContext.getAnnotationProvider(),
                     new LocalVariableNode(arg, receiver)));
         }
         FlowExpressionContext flowExprContext = new FlowExpressionContext(
-                internalReceiver, internalArguments, factory);
+                internalReceiver, internalArguments, checkerContext);
         return flowExprContext;
     }
 
@@ -613,17 +613,17 @@ public class FlowExpressionParseUtil {
      *         seen at the method declaration.
      */
     public static FlowExpressionContext buildFlowExprContextForDeclaration(
-            MethodTree node, TypeMirror classType, AnnotatedTypeFactory factory) {
+            MethodTree node, TypeMirror classType, BaseContext checkerContext) {
         Node receiver = new ImplicitThisLiteralNode(classType);
-        Receiver internalReceiver = FlowExpressions.internalReprOf(factory,
+        Receiver internalReceiver = FlowExpressions.internalReprOf(checkerContext.getAnnotationProvider(),
                 receiver);
         List<Receiver> internalArguments = new ArrayList<>();
         for (VariableTree arg : node.getParameters()) {
-            internalArguments.add(FlowExpressions.internalReprOf(factory,
+            internalArguments.add(FlowExpressions.internalReprOf(checkerContext.getAnnotationProvider(),
                     new LocalVariableNode(arg, receiver)));
         }
         FlowExpressionContext flowExprContext = new FlowExpressionContext(
-                internalReceiver, internalArguments, factory);
+                internalReceiver, internalArguments, checkerContext);
         return flowExprContext;
     }
 
@@ -632,9 +632,9 @@ public class FlowExpressionParseUtil {
      *         seen at the method declaration.
      */
     public static FlowExpressionContext buildFlowExprContextForDeclaration(
-            MethodTree node, TreePath currentPath, AnnotatedTypeFactory factory) {
+            MethodTree node, TreePath currentPath, BaseContext checkerContext) {
         Tree classTree = TreeUtils.enclosingClass(currentPath);
-        return buildFlowExprContextForDeclaration(node, classTree, factory);
+        return buildFlowExprContextForDeclaration(node, classTree, checkerContext);
     }
 
     /**
@@ -643,16 +643,16 @@ public class FlowExpressionParseUtil {
      *         at a method call site).
      */
     public static FlowExpressionContext buildFlowExprContextForUse(
-            MethodInvocationNode n, AnnotatedTypeFactory factory) {
+            MethodInvocationNode n, BaseContext checkerContext) {
         Node receiver = n.getTarget().getReceiver();
-        Receiver internalReceiver = FlowExpressions.internalReprOf(factory,
+        Receiver internalReceiver = FlowExpressions.internalReprOf(checkerContext.getAnnotationProvider(),
                 receiver);
         List<Receiver> internalArguments = new ArrayList<>();
         for (Node arg : n.getArguments()) {
-            internalArguments.add(FlowExpressions.internalReprOf(factory, arg));
+            internalArguments.add(FlowExpressions.internalReprOf(checkerContext.getAnnotationProvider(), arg));
         }
         FlowExpressionContext flowExprContext = new FlowExpressionContext(
-                internalReceiver, internalArguments, factory);
+                internalReceiver, internalArguments, checkerContext);
         return flowExprContext;
     }
 }

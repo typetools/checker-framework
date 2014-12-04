@@ -1,8 +1,10 @@
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
+import org.checkerframework.checker.experimental.regex_qual_poly.qual.*;
 
+// Test primary annotations with primitives
+// primitives don't have non-primary qualifiers
 class SimplePrims {
 
-    void execute(@Untainted int s) { }
+    void execute(@Regex(1) int s) { }
     void tainted(int s) { }
 
     void intLiteral() {
@@ -17,12 +19,12 @@ class SimplePrims {
         tainted(ref);
     }
 
-    void untaintedRef(@Untainted int ref) {
+    void untaintedRef(@Regex(1) int ref) {
         execute(ref);
         tainted(ref);
     }
 
-    void concatenation(@Untainted int s1, int s2) {
+    void concatenation(@Regex(1) int s1, int s2) {
         execute(s1 + s1);
         execute(s1 += s1);
         //:: error: (argument.type.incompatible)
