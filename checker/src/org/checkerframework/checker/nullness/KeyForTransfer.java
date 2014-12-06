@@ -1,12 +1,12 @@
 package org.checkerframework.checker.nullness;
 
-import java.util.ArrayList;
 import java.util.Map;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.checker.nullness.qual.KeyFor;
+import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -15,9 +15,9 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /*
@@ -31,31 +31,16 @@ public class KeyForTransfer extends
     protected KeyForAnalysis analysis;
     protected KeyForSubchecker checker;
 
+    protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR;
+
     public KeyForTransfer(KeyForAnalysis analysis, KeyForSubchecker checker) {
         super(analysis);
         this.analysis = analysis;
         this.checker = checker;
-    }
-
-    /*
-     * Given a string 'value', returns an AnnotationMirror corresponding to @KeyFor(value)
-     */
-    private AnnotationMirror getKeyForAnnotationMirrorWithValue(String value) {
-        // Create an ArrayList with the value
-
-        ArrayList<String> values = new ArrayList<String>();
-
-        values.add(value);
-
-        // Create an AnnotationBuilder with the ArrayList
-
-        AnnotationBuilder builder =
-                new AnnotationBuilder(analysis.getTypeFactory().getProcessingEnv(), KeyFor.class);
-        builder.setValue("value", values);
-
-        // Return the resulting AnnotationMirror
-
-        return builder.build();
+        UNKNOWNKEYFOR = AnnotationUtils.fromClass(analysis.getTypeFactory()
+                .getElementUtils(), UnknownKeyFor.class);
+        KEYFOR = AnnotationUtils.fromClass(analysis.getTypeFactory()
+                .getElementUtils(), KeyFor.class);
     }
 
     /*
@@ -93,7 +78,9 @@ public class KeyForTransfer extends
 
                 String mapName = flowExprContext.receiver.toString();
                 Receiver keyReceiver = flowExprContext.arguments.get(0);
-                AnnotationMirror am = getKeyForAnnotationMirrorWithValue(mapName); // @KeyFor(mapName)
+
+                KeyForAnnotatedTypeFactory atypeFactory = (KeyForAnnotatedTypeFactory) analysis.getTypeFactory();
+                AnnotationMirror am = atypeFactory.createKeyForAnnotationMirrorWithValue(mapName); // @KeyFor(mapName)
 
                 if (containsKey) {
                     ConditionalTransferResult<CFValue, CFStore> conditionalResult = (ConditionalTransferResult<CFValue, CFStore>) result;
