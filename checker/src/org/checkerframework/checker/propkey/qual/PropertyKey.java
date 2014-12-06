@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * Indicates that the {@code String} type can be used as key in a
  * property file or resource bundle.
  *
- * @checker_framework_manual #propkey-checker Property File Checker
+ * @checker_framework.manual #propkey-checker Property File Checker
  */
 @TypeQualifier
 @SubtypeOf(UnknownPropertyKey.class)

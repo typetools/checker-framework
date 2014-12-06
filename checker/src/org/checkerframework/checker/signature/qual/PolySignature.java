@@ -18,7 +18,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * by {@code @Signature String}, and one in which every instance of
  * {@code @PolySignature String} has been replaced by {@code String}.
  *
- * @checker_framework_manual #signature-checker Signature Checker
+ * @checker_framework.manual #signature-checker Signature Checker
  */
 @Documented
 @TypeQualifier

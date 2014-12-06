@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * expression evaluates to an array whose length is one of the annotation's
  * arguments.
  * 
- * @checker_framework_manual #constant-value-checker Constant Value Checker
+ * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @TypeQualifier
 @SubtypeOf({ UnknownVal.class })

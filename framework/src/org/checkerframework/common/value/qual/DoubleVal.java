@@ -15,7 +15,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * 
  * Annotation for  values
  * 
- * @checker_framework_manual #constant-value-checker Constant Value Checker
+ * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @TypeQualifier
 @SubtypeOf({ UnknownVal.class })

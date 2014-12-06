@@ -17,7 +17,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * This annotation may not be written in source code; it is an implementation
  * detail of the Constant Value Checker.
  *
- * @checker_framework_manual #constant-value-checker Constant Value Checker
+ * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @TypeQualifier
 @SubtypeOf({})

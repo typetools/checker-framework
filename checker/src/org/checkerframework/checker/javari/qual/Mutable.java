@@ -22,7 +22,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @see ReadOnly
  * @see JavariChecker
- * @checker_framework_manual #javari-checker Javari Checker
+ * @checker_framework.manual #javari-checker Javari Checker
  */
 @TypeQualifier
 @SubtypeOf({ThisMutable.class, QReadOnly.class})

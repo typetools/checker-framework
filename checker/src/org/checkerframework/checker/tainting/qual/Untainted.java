@@ -15,7 +15,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
 /**
  * Denotes a reference that is untainted, i.e. can be trusted.
  *
- * @checker_framework_manual #tainting-checker Tainting Checker
+ * @checker_framework.manual #tainting-checker Tainting Checker
  */
 @TypeQualifier
 @SubtypeOf(Tainted.class)

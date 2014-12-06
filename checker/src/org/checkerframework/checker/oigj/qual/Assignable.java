@@ -9,7 +9,7 @@ import static java.lang.annotation.ElementType.*;
  * Indicates the annotated {@code Field} may be re-assigned regardless of the
  * immutability of the enclosing class or object instance.
  *
- * @checker_framework_manual #oigj-checker OIGJ Checker
+ * @checker_framework.manual #oigj-checker OIGJ Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

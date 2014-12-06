@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  *
  * This annotation is part of the Javari language.
  *
- * @checker_framework_manual #javari-checker Javari Checker
+ * @checker_framework.manual #javari-checker Javari Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

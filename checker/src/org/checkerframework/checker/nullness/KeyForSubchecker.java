@@ -4,7 +4,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 
 /**
  * TODO: doc
- * @checker_framework_manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #nullness-checker Nullness Checker
  */
 public class KeyForSubchecker extends BaseTypeChecker {
     /*

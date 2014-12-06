@@ -945,9 +945,18 @@ public abstract class AnnotatedTypeMirror {
 
             List<AnnotatedTypeMirror> newArgs = new ArrayList<>();
             for (AnnotatedTypeMirror arg : result.getTypeArguments()) {
-                AnnotatedTypeVariable paramDecl = (AnnotatedTypeVariable)arg;
-                assert paramDecl.isDeclaration();
-                newArgs.add(paramDecl.asUse());
+                switch (arg.getKind()) {
+                    case TYPEVAR:
+                        AnnotatedTypeVariable paramTypevar = (AnnotatedTypeVariable)arg;
+                        newArgs.add(paramTypevar.asUse());
+                        break;
+                    case WILDCARD:
+                        AnnotatedWildcardType paramWildcard = (AnnotatedWildcardType)arg;
+                        newArgs.add(paramWildcard.asUse());
+                        break;
+                    default:
+                        newArgs.add(arg);
+                }
             }
             result.setTypeArguments(newArgs);
 

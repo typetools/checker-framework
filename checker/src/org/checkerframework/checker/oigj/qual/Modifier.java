@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 import org.checkerframework.framework.qual.*;
 
 /**
- * @checker_framework_manual #oigj-checker OIGJ Checker
+ * @checker_framework.manual #oigj-checker OIGJ Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
