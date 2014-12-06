@@ -36,7 +36,7 @@ import org.checkerframework.framework.source.SupportedOptions;
  *
  * </ol>
  *
- * @checker_framework_manual #propkey-checker Property File Checker
+ * @checker_framework.manual #propkey-checker Property File Checker
  */
 // Subclasses need something similar to this:
 @TypeQualifiers( {PropertyKey.class, UnknownPropertyKey.class, Bottom.class} )

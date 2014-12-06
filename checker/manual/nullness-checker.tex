@@ -342,9 +342,9 @@ the method returns true (false, respectively).
 
 Consider \sunjavadoc{java/lang/Class.html}{java.lang.Class}.
 Method
-\sunjavadoc{java/lang/Class.html#getComponentType()}{Class.getComponentType()}
+\sunjavadoc{java/lang/Class.html\#getComponentType()}{Class.getComponentType()}
 may return null, but it is specified to return a non-null value if
-\sunjavadoc{java/lang/Class.html#isArray()}{Class.isArray()} is
+\sunjavadoc{java/lang/Class.html\#isArray()}{Class.isArray()} is
 true.
 You could declare this relationship in the following way (this particular
 example is already
@@ -372,9 +372,9 @@ uses such a pattern:
     }
 \end{Verbatim}
 
-Another example is \sunjavadoc{java/util/Queue.html#peek()}{Queue.peek}
-and \sunjavadoc{java/util/Queue.html#poll()}{Queue.poll}, which return
-non-null if \sunjavadoc{java/util/Collection.html#isEmpty()}{isEmpty}
+Another example is \sunjavadoc{java/util/Queue.html\#peek()}{Queue.peek}
+and \sunjavadoc{java/util/Queue.html\#poll()}{Queue.poll}, which return
+non-null if \sunjavadoc{java/util/Collection.html\#isEmpty()}{isEmpty}
 returns false.
 
 The argument to \code{@EnsuresNonNullIf} is a Java expression, including method calls
@@ -429,10 +429,10 @@ The Nullness Checker does some special checks in certain circumstances, in
 order to soundly reduce the number of warnings that it produces.
 
 For example, a call to 
-\sunjavadoc{java/lang/System.html#getProperty(java.lang.String)}{System.getProperty(String)}
+\sunjavadoc{java/lang/System.html\#getProperty(java.lang.String)}{System.getProperty(String)}
 can return null in general, but it will not return null if the argument is
 one of the built-in-keys listed in the documentation of 
-\sunjavadoc{java/lang/System.html#getProperties()}{System.getProperties()}.
+\sunjavadoc{java/lang/System.html\#getProperties()}{System.getProperties()}.
 The Nullness Checker is aware of this fact, so you do not have to suppress
 a warning for a call like \<System.getProperty("line.separator")>.  The
 warning is still issued for code like this:
@@ -470,8 +470,8 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
   %
   If your code uses the standard CLIMB-to-top default (Section~\ref{climb-to-top}) or
   the \refclass{checker/nullness/qual}{NonNull} default, then use the
-  \ahref{\url{http://plse.cs.washington.edu/daikon/download/doc/daikon.html#AnnotateNullable}}{AnnotateNullable}
-  tool of the \ahref{\url{http://plse.cs.washington.edu/daikon/}}{Daikon invariant
+  \href{http://plse.cs.washington.edu/daikon/download/doc/daikon.html#AnnotateNullable}{AnnotateNullable}
+  tool of the \href{http://plse.cs.washington.edu/daikon/}{Daikon invariant
     detector}.
 
 \item
@@ -480,12 +480,12 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
   If your code uses the Nullable default, use one of these tools:
 \begin{itemize}
 \item
-  \ahref{\url{http://julia.scienze.univr.it/}}{Julia analyzer},
+  \href{http://julia.scienze.univr.it/}{Julia analyzer},
 \item
-  \ahref{\url{http://nit.gforge.inria.fr}}{Nit: Nullability Inference Tool},
+  \href{http://nit.gforge.inria.fr}{Nit: Nullability Inference Tool},
 \item
-  \ahref{\url{http://jastadd.org/jastadd-tutorial-examples/non-null-types-for-java/}}{Non-null
-    checker and inferencer} of the \ahref{\url{http://jastadd.org/}}{JastAdd
+  \href{http://jastadd.org/jastadd-tutorial-examples/non-null-types-for-java/}{Non-null
+    checker and inferencer} of the \href{http://jastadd.org/}{JastAdd
     Extensible Compiler}.
 \end{itemize}
 
@@ -771,13 +771,13 @@ The Nullness Checker itself.
 
 \item
 The
-\ahref{\url{http://code.google.com/p/plume-lib/}}{Plume-lib library}.
+\href{http://code.google.com/p/plume-lib/}{Plume-lib library}.
 Run the command \code{make check-nullness}.
 
 
 \item
 The
-\ahref{\url{http://plse.cs.washington.edu/daikon/}}{Daikon invariant detector}.
+\href{http://plse.cs.washington.edu/daikon/}{Daikon invariant detector}.
 Run the command \code{make check-nullness}.
 
 % \item
@@ -1065,7 +1065,7 @@ Section~\ref{reporting-bugs}) so that we can enhance the Checker Framework.
 
 FindBugs has a non-standard definition of \<@Nullable>.  FindBugs's treatment is not
 documented in its own
-\ahref{\url{http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}}{Javadoc};
+\href{http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
 it is different from the definition of \<@Nullable> in every other tool for
 nullness analysis; it means the same thing as \<@NonNull> when applied to a
 formal parameter; and it invariably surprises programmers.  Thus, FindBugs's
@@ -1378,15 +1378,13 @@ this rule.)
 The Initialization Checker issues an error if the constructor fails to initialize
 any \code{@NonNull} field.  This ensures that the object is in a legal (initialized)
 state by the time that the constructor exits.
-\urldef{\jlsdefiniteassignmenturl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}
-\urldef{\jlsfinalvariablesurl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}
 This is different than Java's test for definite assignment (see
-\ahref{\jlsdefiniteassignmenturl}{JLS ch.16}),
+\href{https://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}{JLS ch.16}),
 % , which requires that local
 % variables (and blank \code{final} fields) must be assigned.  Java does not
 % require that non-\code{final} fields be assigned, since
 which does not apply to fields (except blank final ones, defined in
-\ahref{\jlsdefiniteassignmenturl}{JLS \S 4.12.4}) because fields
+\href{https://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}{JLS \S 4.12.4}) because fields
 have a default value of null.
 
 
@@ -1581,7 +1579,7 @@ the type of the object being constructed is:
 % \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
 % (Recall that the superclass constructor is called on the first line, or is
 % inserted automatically by the compiler before the first line, see
-% \ahref{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
+% \href{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
 
 
 
@@ -1958,15 +1956,13 @@ have been initialized, then \code{this} is treated as non-raw.
 The Nullness Checker issues an error if the constructor fails to initialize
 any \code{@NonNull} field.  This ensures that the object is in a legal (non-raw)
 state by the time that the constructor exits.
-\urldef{\jlsdefiniteassignmenturl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}
-\urldef{\jlsfinalvariablesurl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}
 This is different than Java's test for definite assignment (see
-\ahref{\jlsdefiniteassignmenturl}{JLS ch.16}),
+\href{https://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}{JLS ch.16}),
 % , which requires that local
 % variables (and blank \code{final} fields) must be assigned.  Java does not
 % require that non-\code{final} fields be assigned, since
 which does not apply to fields (except blank final ones, defined in
-\ahref{\jlsdefiniteassignmenturl}{JLS \S 4.12.4}) because fields
+\href{https://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}{JLS \S 4.12.4}) because fields
 have a default value of null.
 
 
@@ -2184,7 +2180,7 @@ types.)
 % \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
 % (Recall that the superclass constructor is called on the first line, or is
 % inserted automatically by the compiler before the first line, see
-% \ahref{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
+% \href{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
 
 
 
@@ -2236,7 +2232,7 @@ annotation to declare that a value is a key in a given map.
 
 This is relevant to the Nullness Checker because
 Java's
-\sunjavadoc{java/util/Map.html#get(java.lang.Object)}{\code{Map.get}}
+\sunjavadoc{java/util/Map.html\#get(java.lang.Object)}{\code{Map.get}}
 method always has the possibility to return null, if the key is not in the
 map.
 In particular,
@@ -2269,7 +2265,7 @@ is a key in Map \<m>.  Another way of saying this is that the expression
 You usually do not have to write \code{@KeyFor} explicitly, because the
 checker infers it based on usage patterns, such as calls to
 \code{containsKey} or iteration over a map's
-\sunjavadoc{java/util/Map.html#keySet()}{\textrm{key set}}.
+\sunjavadoc{java/util/Map.html\#keySet()}{\textrm{key set}}.
 
 One usage pattern where you \emph{do} have to write \<@KeyFor> is for a
 user-managed collection that is a subset of the key set:

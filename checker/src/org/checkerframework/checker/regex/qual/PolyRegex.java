@@ -18,7 +18,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * by {@code @Regex String}, and one in which every instance of
  * {@code @PolyRegex String} has been replaced by {@code String}.
  *
- * @checker_framework_manual #regex-checker Regex Checker
+ * @checker_framework.manual #regex-checker Regex Checker
  */
 @Documented
 @TypeQualifier
