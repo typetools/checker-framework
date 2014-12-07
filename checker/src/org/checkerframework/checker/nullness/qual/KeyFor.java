@@ -8,19 +8,21 @@ import org.checkerframework.framework.qual.*;
  * Indicates that the annotated reference of an Object that is a key in a map.
  *
  * <p>
- * The value of the annotation should be the reference name of the map.  The
- * following declaration for example:
+ * The value of the annotation should be the reference name of the map.  Suppose that <tt>config<tt> is a <tt>Map&lt;String, String&gt;</tt>.  Then the
+ * declaration
  *
  * <pre><code>
- *   Map&lt;String, String&gt; config = ...;
  *   &#64;KeyFor("config") String key = "HOSTNAME";
- *
- *   String hostname = config.get(key);     // known to be non-null
  * </code></pre>
  *
  * indicates that "HOSTNAME" is a key in config.  The Nullness
- * checker deduce this information to deduce that {@code hostname} reference
- * is a nonnull reference.
+ * checker uses this information to deduce that {@code hostname} reference
+ * is a non-null reference:
+ *
+ * <pre><code>
+ *   String hostname = config.get(key);     // known to be non-null
+ * </code></pre>
+ *
  * <p>
  *
  * Here is a non-trivial example use:
