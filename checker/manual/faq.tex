@@ -673,7 +673,7 @@ The Checker Framework's annotations make apparent a flaw in the JDK
 design, and helps you to avoid problems that might be caused by that flaw.
 
 
-\paragraph{Justification from type theory}
+\paragraph{Justification from type theory\label{faq-list-map-nonnull-typeargs-junification-from-type-theory}}
 Suppose \<B> is a subtype of \<A>.
 Then an overriding method in \<B> must have a stronger (or equal) signature
 than the overridden method in~\<A>.  In a stronger signature, the formal
@@ -706,7 +706,7 @@ permit nulls, then \<Collection> cannot either:
 \end{Verbatim}
 
 
-\paragraph{Justification from checker behavior}
+\paragraph{Justification from checker behavior\label{faq-list-map-nonnull-typeargs-justification-from-behavior}}
 
 Suppose that you changed the bound in the \<Collection> declaration to
 \<extends @Nullable Object>.  Then, the checker would issue no warning for
@@ -765,7 +765,7 @@ Any subclass of \<ArrayList> must also support null elements.
 
 
 
-\paragraph{Suppressing warnings}
+\paragraph{Suppressing warnings\label{faq-list-map-nonnull-typeargs-suppressing-warnings}}
 
 Suppose your program has a list variable, and you know that any list referenced
 by that variable will definitely support null.  Then, you can suppress the
