@@ -142,6 +142,27 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     }
 
     /**
+     * Returns the requested type factory from a checker previously run by the CompoundChecker.
+     * The common usage is that the caller should know the exact index of this checker.
+     * A lookup is not necessary.
+     *
+     * @param index The index of the checker in the list of checkers run by the CompoundChecker.
+     * @return The type factory of the requested previously run checker.
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> T getTypeFactoryOfPreviousChecker(int index) {
+        if (previousCheckers == null || index < 0 || index >= previousCheckers.size())
+            return null;
+
+        SourceChecker checker = previousCheckers.get(index);
+
+        if (checker == null)
+            return null;
+
+        return (T) ((BaseTypeChecker) checker).getTypeFactory();
+    }
+
+    /**
      * Invokes the constructor belonging to the class
      * named by {@code name} having the given parameter types on the given
      * arguments. Returns {@code null} if the class cannot be found, or the

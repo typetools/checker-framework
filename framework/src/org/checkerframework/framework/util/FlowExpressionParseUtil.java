@@ -41,12 +41,10 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type.ClassType;
 
@@ -71,11 +69,11 @@ public class FlowExpressionParseUtil {
      * Matches the self reference. In the future we could allow "#0" as a
      * synonym for "this".
      */
-    protected static final Pattern selfPattern = Pattern.compile("^(this)$");
+    protected static final Pattern selfPattern = Pattern.compile("^this$");
     /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
-    protected static final Pattern itselfPattern = Pattern.compile("^(itself)$");
+    protected static final Pattern itselfPattern = Pattern.compile("^itself$");
     /** Matches 'super' */
-    protected static final Pattern superPattern = Pattern.compile("^(super)$");
+    protected static final Pattern superPattern = Pattern.compile("^super$");
     /** Matches an identifier */
     protected static final Pattern identifierPattern = Pattern.compile("^"
             + identifierRegex + "$");
@@ -89,15 +87,15 @@ public class FlowExpressionParseUtil {
             .compile("^([^.]+)\\.(.+)$");
     /** Matches integer literals */
     protected static final Pattern intPattern = Pattern
-            .compile("^([1-9][0-9]*)$");
+            .compile("^[1-9][0-9]*$");
     /** Matches long literals */
     protected static final Pattern longPattern = Pattern
-            .compile("^([1-9][0-9]*L)$");
+            .compile("^[1-9][0-9]*L$");
     /** Matches string literals */
     protected static final Pattern stringPattern = Pattern
-            .compile("^(\"([^\"\\\\]|\\\\.)*\")$");
+            .compile("^\"([^\"\\\\]|\\\\.)*\"$");
     /** Matches the null literal */
-    protected static final Pattern nullPattern = Pattern.compile("^(null)$");
+    protected static final Pattern nullPattern = Pattern.compile("^null$");
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or
@@ -116,8 +114,8 @@ public class FlowExpressionParseUtil {
             FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
         return parse(s, context, path, false);
-    }    
-    
+    }
+
     private static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
             FlowExpressionContext context, TreePath path, boolean recursiveCall)
             throws FlowExpressionParseException {
@@ -125,7 +123,7 @@ public class FlowExpressionParseUtil {
                 true, recursiveCall);
         return result;
     }
-    
+
     /**
      * Private implementation of {@link #parse} with a choice of which classes
      * of expressions should be parsed.
@@ -184,7 +182,12 @@ public class FlowExpressionParseUtil {
                     s.substring(1, s.length() - 1));
         } else if (selfMatcher.matches() && allowSelf) {
             // this literal, even after the call above to set s = context.receiver.toString();
-            return new ThisReference(context.receiver.getType());
+            if (context.receiver == null || context.receiver.containsUnknown()) {
+                return new ThisReference(context.receiver.getType());
+            }
+            else { // If we already know the receiver, return it.
+                return context.receiver;
+            }
         } else if (superMatcher.matches() && allowSelf) {
             // super literal
             List<? extends TypeMirror> superTypes = types
@@ -211,6 +214,7 @@ public class FlowExpressionParseUtil {
             try {
                 // field access
                 TypeMirror receiverType = context.receiver.getType();
+                boolean originalReceiver = true;
                 VariableElement fieldElem = null;
 
                 // Search for field in each enclosing class.
@@ -220,11 +224,13 @@ public class FlowExpressionParseUtil {
                         break;
                     }
                     receiverType = ((DeclaredType)receiverType).getEnclosingType();
+                    originalReceiver = false;
                 }
 
                 if (fieldElem == null) { // Try static fields of the enclosing class
                     Element classElem = context.checkerContext.getTreeUtils().getElement(TreeUtils.pathTillClass(path));
                     receiverType = ElementUtils.getType(classElem);
+                    originalReceiver = false;
 
                     // Search for field in each enclosing class.
                     while (receiverType.getKind() == TypeKind.DECLARED) {
@@ -247,8 +253,14 @@ public class FlowExpressionParseUtil {
                     return new FieldAccess(staticClassReceiver,
                             fieldType, fieldElem);
                 } else {
-                    return new FieldAccess(context.receiver,
-                            fieldType, fieldElem);
+                    if (originalReceiver) {
+                        return new FieldAccess(context.receiver,
+                                fieldType, fieldElem);
+                    }
+                    else {
+                        return new FieldAccess(FlowExpressions.internalReprOf(context.atypeFactory, new ImplicitThisLiteralNode(receiverType)),
+                                fieldType, fieldElem);
+                    }
                 }
             } catch (Throwable t) { // TODO: It is poor design to use exceptions to pass information around. We should change this.
                 try {
