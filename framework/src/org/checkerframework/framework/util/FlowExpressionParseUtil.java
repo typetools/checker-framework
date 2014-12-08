@@ -258,7 +258,7 @@ public class FlowExpressionParseUtil {
                                 fieldType, fieldElem);
                     }
                     else {
-                        return new FieldAccess(FlowExpressions.internalReprOf(context.atypeFactory, new ImplicitThisLiteralNode(receiverType)),
+                        return new FieldAccess(FlowExpressions.internalReprOf(context.checkerContext.getAnnotationProvider(), new ImplicitThisLiteralNode(receiverType)),
                                 fieldType, fieldElem);
                     }
                 }
