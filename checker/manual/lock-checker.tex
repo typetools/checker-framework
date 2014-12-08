@@ -45,7 +45,7 @@ The method does not make any use of locks or synchronization.
 \\
 \end{tabular}
 
-\subsection{Type annotations for objects protected by locks}
+\subsection{Type annotations for objects protected by locks\label{lock-annotations-objects}}
 
 \begin{description}
 \item[\refqualclass{checker/lock/qual}{GuardedBy}\small{(String lock)}]
@@ -57,7 +57,7 @@ The method does not make any use of locks or synchronization.
   or, if the value is never accessed, the lock never need be held.
 \end{description}
 
-\subsection{Lock method annotations}
+\subsection{Lock method annotations\label{lock-annotations-methods}}
 
 The Lock Checker supports several annotations that specify method behavior.
 These are declaration annotations, not type annotations: they apply to the
@@ -94,21 +94,22 @@ method itself rather than to some particular type.
   the Lock Checker eventually could.
 \end{description}
 
-\subsection{Discussion of \<@Holding>}
+
+\subsection{Discussion of \<@Holding>\label{lock-checker-holding}}
 
 A programmer might choose to use the \code{@Holding} method annotation in
 two different ways:  to specify a higher-level protocol, or to summarize
 intended usage.  Both of these approaches are useful, and the Lock Checker
 supports both.
 
-\paragraph{Higher-level synchronization protocol}
+\paragraph{Higher-level synchronization protocol\label{lock-checker-holding-highlevel}}
 
   \code{@Holding} can specify a higher-level synchronization protocol that
   is not expressible as locks over Java objects.  By requiring locks to be
   held, you can create higher-level protocol primitives without giving up
   the benefits of the annotations and checking of them.
 
-\paragraph{Method summary that simplifies reasoning}
+\paragraph{Method summary that simplifies reasoning\label{lock-checker-holding-method-summary}}
 
   \code{@Holding} can be a method summary that simplifies reasoning.  In
   this case, the \code{@Holding} doesn't necessarily introduce a new
@@ -163,12 +164,12 @@ The advantages of the \<@Holding> annotation include:
 
 \section{Examples\label{lock-examples}}
 
-\subsection{Examples of @GuardedBy and @Holding}
+\subsection{Examples of @GuardedBy and @Holding\label{lock-examples-guardedby-and-holding}}
 
 The most common use of \code{@GuardedBy} is to annotate a field declaration
 type.  However, other uses of \code{@GuardedBy} are possible.
 
-\paragraph{Return types}
+\paragraph{Return types\label{lock-examples-guardedby-return}}
 
 A return type may be annotated with \code{@GuardedBy}:
 
@@ -184,7 +185,7 @@ A return type may be annotated with \code{@GuardedBy}:
   }
 \end{Verbatim}
 
-\paragraph{Formal parameters}
+\paragraph{Formal parameters\label{lock-examples-guardedby-formal-parameters}}
 
 A parameter type may be annotated with \code{@GuardedBy}, which indicates that
 the method body must acquire the lock before accessing the parameter.  A
@@ -259,7 +260,7 @@ public class Monitor {
 }
 \end{Verbatim}
 
-\subsection{Example of @LockingFree}
+\subsection{Example of @LockingFree\label{lockingfree-example}}
 
 \code{@LockingFree} is useful when a method does not make any use of synchronization
 or locks but causes other side effects (hence \code{@SideEffectFree} is not appropriate).

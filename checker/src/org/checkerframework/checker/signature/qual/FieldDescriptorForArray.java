@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
 /**
  * Represents a {@link FieldDescriptor field descriptor} (JVM type format)
  * as defined in the <a
- * href="https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.2">Java
+ * href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2">Java
  * Virtual Machine Specification, section 4.3.2</a>, but <b>not</b> for all
  * array types:  only for an array type whose base type is either a
  * primitive or in the unnamed package.
