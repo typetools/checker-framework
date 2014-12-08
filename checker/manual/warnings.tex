@@ -171,9 +171,9 @@ Additionally, the \code{-AshowSuppressWarningKeys} command-line option
 can be used to show all applicable suppression keys.
 
 
-\subsubsection{Good practices when suppressing warnings}
+\subsubsection{Good practices when suppressing warnings\label{suppresswarnings-best-practices}}
 
-\paragraph{Suppress warnings in the smallest possible scope}
+\paragraph{Suppress warnings in the smallest possible scope\label{suppresswarnings-best-practices-smallest-scope}}
 
 If a particular expression causes a
 false positive warning, you should extract that expression into a local variable
@@ -187,7 +187,7 @@ entire method body.
 % annotation on the class declaration or on the package's
 % \code{package-info.java} file.
 
-\paragraph{Justify why the warning is a false positive}
+\paragraph{Justify why the warning is a false positive\label{suppresswarnings-best-practices-justification}}
 
 An \<@SuppressWarnings> annotation asserts that the code is actually
 correct, even though the type system is unable to prove that the code is
@@ -203,7 +203,7 @@ This documentation will help you and others to understand the reason for
 the \<@SuppressWarnings> annotation.  It will also help if you decide to
 audit your code to verify all the warning suppressions.
 
-\paragraph{Use a specific argument to \code{@SuppressWarnings}}
+\paragraph{Use a specific argument to \code{@SuppressWarnings}\label{suppresswarnings-best-practices-specific-argument}}
 
 \label{compiler-message-keys}
 

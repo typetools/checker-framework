@@ -29,21 +29,21 @@ Figure~\ref{fig-signature-hierarchy} shows how they are related.
 \begin{description}
 
 \item[\refqualclass{checker/signature/qual}{FullyQualifiedName}]
-  A \emph{fully qualified name} (\href{https://docs.oracle.com/javase/specs/jls/se7/html/jls-6.html#jls-6.7}{JLS \S
+  A \emph{fully qualified name} (\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-6.html#jls-6.7}{JLS \S
     6.7}), such as
   \<package.Outer.Inner>, is used in Java code and in messages to
   the user.
 
 \item[\refqualclass{checker/signature/qual}{BinaryName}]
-  A \emph{binary name} (\href{https://docs.oracle.com/javase/specs/jls/se7/html/jls-13.html#jls-13.1}{JLS \S 13.1}), such as
+  A \emph{binary name} (\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1}{JLS \S 13.1}), such as
   \<package.Outer\$Inner>, is
   the representation of a type in its own \<.class> file.
 
 \item[\refqualclass{checker/signature/qual}{FieldDescriptor}]
-  A \emph{field descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.2}{JVMS \S 4.3.2}), such as
+  A \emph{field descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2}{JVMS \S 4.3.2}), such as
   \<Lpackage/Outer\$Inner;>, is used in a \<.class> file's constant pool,
   for example to refer to other types; it abbreviates primitives and
-  arrays, and uses internal form (\href{https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.2.1}{JVMS \S 4.2}) for class names.
+  arrays, and uses internal form (\href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.2.1}{JVMS \S 4.2}) for class names.
 
 \item[\refqualclass{checker/signature/qual}{ClassGetName}]
 \begin{sloppypar}
@@ -51,7 +51,7 @@ Figure~\ref{fig-signature-hierarchy} shows how they are related.
   \href{http://types.cs.washington.edu/checker-framework/jdk-api/jdk/java/lang/Class.html#getName()}{\<Class.getName()>}, \<Class.forName(String)>,
   and \<Class.forName(String, boolean, ClassLoader)> methods.  This format
   is:  for any non-array type, the binary name; and for any array type, a
-  format like the \href{https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.2}{FieldDescriptor field descriptor}, but using
+  format like the \href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2}{FieldDescriptor field descriptor}, but using
   ``\<.>''~where the field descriptor uses ``\</>''.
 \end{sloppypar}
 
@@ -95,7 +95,7 @@ Java defines one format for the string representation of a method signature:
 \begin{description}
 
 \item[\refqualclass{checker/signature/qual}{MethodDescriptor}]
-  A \emph{method descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.3}{JVMS \S
+  A \emph{method descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.3}{JVMS \S
     4.3.3}) identifies a method's signature (its parameter and return
   types), just as a field descriptor identifies a 
   type.   The method descriptor for the method
