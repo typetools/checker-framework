@@ -1695,21 +1695,21 @@ initialization was actually complete, then the receiver should have type
 \subsection{More details about initialization checking\label{initialization-checking}}
 
 
-\paragraph{Suppressing warnings}
+\paragraph{Suppressing warnings\label{initialization-checking-suppressing-warnings}}
 
 \begin{sloppypar}
 You can suppress warnings related to partially-initialized objects with
 \<@SuppressWarnings("initialization")>.
 \end{sloppypar}
 
-\paragraph{Checking initialization of all fields, not just \code{@NonNull} ones}
+\paragraph{Checking initialization of all fields, not just \code{@NonNull} ones\label{initialization-checking-all-fields}}
 
 When the \code{-Alint=uninitialized} command-line option is provided, then
 an object is considered uninitialized until \emph{all} its fields are assigned, not
 just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized-section}.
 
 
-\paragraph{Use of method annotations}
+\paragraph{Use of method annotations\label{initialization-checking-method-annotations}}
 
 A method with a non-initialized receiver may assume that a few fields (but not all
 of them) are non-null, and it sometimes sets some more fields to non-null
@@ -1720,7 +1720,7 @@ values.  To express these concepts, use the
 see Section~\ref{nullness-method-annotations}.
 
 
-\paragraph{Source of the type system}
+\paragraph{Source of the type system\label{initialization-checking-type-system}}
 
 The type system enforced by the Initialization Checker is known as
 ``Freedom Before Commitment''~\cite{SummersM2011}.  Our implementation
@@ -2097,7 +2097,7 @@ the type of the object being constructed is:
   \<@NonRaw(B.class) B>
 \end{enumerate}
 
-\paragraph{Example}
+\paragraph{Example\label{rawness-partial-initialization-example}}
 
 As another example, consider the following 12 declarations:
 
@@ -2187,7 +2187,7 @@ types.)
 \subsubsection{More details about rawness checking\label{rawness-checking}}
 
 
-\paragraph{Suppressing warnings}
+\paragraph{Suppressing warnings\label{rawness-checking-suppressing-warnings}}
 
 \begin{sloppypar}
 You can suppress warnings related to partially-initialized objects with
@@ -2196,14 +2196,14 @@ You can suppress warnings related to partially-initialized objects with
 \end{sloppypar}
 
 
-\paragraph{Checking initialization of all fields, not just \code{@NonNull} ones}
+\paragraph{Checking initialization of all fields, not just \code{@NonNull} ones\label{rawness-checking-checking-all-fields}}
 
 When the \code{-Alint=uninitialized} command-line option is provided, then
 an object is considered raw until \emph{all} its fields are assigned, not
 just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized-section}.
 
 
-\paragraph{Use of method annotations}
+\paragraph{Use of method annotations\label{rawness-checking-method-annotations}}
 
 A method with a raw receiver often assumes that a few fields (but not all
 of them) are non-null, and sometimes sets some more fields to non-null
@@ -2215,7 +2215,7 @@ see Section~\ref{nullness-method-annotations}.
 
 
 % Should we change the terminology?
-\paragraph{The terminology ``raw''}
+\paragraph{The terminology ``raw''\label{rawness-checking-terminology-raw}}
 
 The name ``raw'' comes from a research paper that proposed this
 approach~\cite{FahndrichL2003}.
