@@ -333,6 +333,13 @@
       </junit>
     </target>
 
+    <target name="aliasing-tests" depends="jar,build-tests"
+            description="Run tests for the Aliasing checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.AliasingTest"/>
+        </antcall>
+    </target>
+
     <target name="annotation-builder-tests" depends="jar,build-tests"
             description="Run tests for the Checker Framework">
         <antcall target="-run-tests">
@@ -377,6 +384,7 @@
             <param name="param" value="tests.ReflectionTest"/>
         </antcall>
     </target>
+
 
     <target name="report-tests" depends="jar,build-tests"
             description="Run tests for the Report Checker">
