@@ -389,9 +389,7 @@ would have its own top qualifier and its own bottom qualifier; they don't
 all have to share a single top qualifier or a single bottom qualifier.
 
 
-\label{bottom-qualifier}
-
-\paragraph{Bottom qualifier}
+\paragraph{Bottom qualifier\label{bottom-qualifier}}
 Your type hierarchy must have a bottom qualifier
 --- a qualifier that is a (direct or indirect) subtype of every other
 qualifier.
@@ -431,9 +429,7 @@ defined like this:
 \end{Verbatim}
 
 
-\label{top-qualifier}
-
-\paragraph{Top qualifier}
+\paragraph{Top qualifier\label{top-qualifier}}
 Your type hierarchy must have a top qualifier
 --- a qualifier that is a (direct or indirect) supertype of every other
 qualifier.
@@ -576,7 +572,7 @@ enums.  All the information you need is in the Javadoc, and
 Section~\ref{javac-tips} can help you get started.
 
 
-\subsection{Procedurally specifying implicit annotations}
+\subsection{Procedurally specifying implicit annotations\label{procedurally-specifying-implicit-annotations}}
 
 
 The Checker Framework provides a representation of annotated types,
@@ -1152,7 +1148,7 @@ For more details about message keys, see Section~\refwithpageparen{compiler-mess
 \end{sloppypar}
 
 
-\subsection{Bundling multiple checkers}
+\subsection{Bundling multiple checkers\label{bundling-multiple-checkers}}
 
 To run a checker, a user supplies the \<-processor> command-line option.
 There are two ways to run multiple related checkers as a unit.
@@ -1194,14 +1190,14 @@ Now, a user can pass a single \<-processor> argument on the command line:
 
 
 
-\subsection{Providing command-line options}
+\subsection{Providing command-line options\label{providing-command-line-options}}
 
 A checker can provide two kinds of command-line options:
 boolean flags and
 named string values (the standard annotation processor
 options).
 
-\subsubsection{Boolean flags}
+\subsubsection{Boolean flags\label{providing-command-line-options-boolean-flags}}
 
 To specify a simple boolean flag, add:
 
@@ -1225,7 +1221,7 @@ javac -processor Mine -Alint=flag
 \end{Verbatim}
 
 
-\subsubsection{Named string values}
+\subsubsection{Named string values\label{providing-command-line-options-named-string-values}}
 
 For more complicated options, one can use the standard annotation
 processing \code{@SupportedOptions} annotation on the checker, as in:
@@ -1365,8 +1361,9 @@ changed if the English message is updated.
 \item \code{-Afilenames}: print the name of each file before type-checking it.
 
 \item \code{-Ashowchecks}: print debugging information for each
-pseudo-assignment check (as performed by \refclass{common/basetype}{BaseTypeVisitor}; see Section
-\ref{extending-visitor}.
+pseudo-assignment check (as performed by
+\refclass{common/basetype}{BaseTypeVisitor}; see
+Section~\ref{extending-visitor}.
 
 \end{itemize}
 
@@ -1618,7 +1615,7 @@ This section describes those interfaces.
 
 
 
-\subsection{Checker access to compiler information}
+\subsection{Checker access to compiler information\label{compiler-information}}
 
 The compiler uses and exposes three hierarchies to model the Java
 source code and classfiles.
@@ -1684,7 +1681,7 @@ traverse the source code and retrieve the types/elements corresponding to
 them.  Then, the checker performs any needed checks on the types/elements instead.
 
 
-\subsubsection{Using the APIs}
+\subsubsection{Using the APIs\label{using-the-apis}}
 
 The three APIs use some common idioms and conventions; knowing them will
 help you to create your checker.
@@ -1715,7 +1712,7 @@ the utility class for a \code{Foo} hierarchy is \code{Foos} (e.g.,
 notable exception: \refclass{framework/util}{AnnotatedTypes}.
 
 
-\subsection{How a checker fits in the compiler as an annotation processor}
+\subsection{How a checker fits in the compiler as an annotation processor\label{checker-as-annotation-processor}}
 
 The Checker Framework builds on the Annotation Processing API
 introduced in Java 6.  A type annotation processor is one that extends
@@ -1744,7 +1741,7 @@ implement JSR~198.  Also see Section~\ref{ast-traversal}.
 
 
 
-\subsubsection{Learning more about javac}
+\subsubsection{Learning more about javac\label{learning-more-about-javac}}
 
 Sun's javac compiler interfaces can be daunting to a
 newcomer, and its documentation is a bit sparse. The Checker Framework

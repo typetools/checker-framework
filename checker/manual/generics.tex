@@ -37,7 +37,7 @@ Checker Framework to ignore all subtype tests for type arguments that
 were inferred for a raw type.
 
 
-\subsection{Restricting instantiation of a generic class}
+\subsection{Restricting instantiation of a generic class\label{generics-instantiation}}
 
 When you define a generic class in Java, the \<extends> or \<super> clause
 of the generic type parameter restricts
@@ -135,7 +135,7 @@ or \<?>.  When you wish to specify two identical bounds, you write a
 single annotation in front of the type variable name or \<?>.
 
 
-\subsection{Examples of qualifiers on a type parameter}
+\subsection{Examples of qualifiers on a type parameter\label{type-parameter-qualifier-examples}}
 
 Recall that \<@Nullable \emph{X}> is a supertype of \<@NonNull \emph{X}>,
 for any \emph{X}\@.
@@ -217,7 +217,7 @@ significant when the qualifier hierarchy is more complicated than just
 \<@Nullable> and \<@NonNull>.
 
 
-\subsection{Type annotations on a use of a generic type variable}
+\subsection{Type annotations on a use of a generic type variable\label{type-variable-use}}
 
 A type annotation on a use of a generic type variable overrides/ignores any type
 qualifier (in the same type hierarchy) on the corresponding actual type
