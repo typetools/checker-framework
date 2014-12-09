@@ -1,0 +1,146 @@
+%
+% A Dataflow Framework for Java and the Checker Framework
+%
+% Author: Stefan Heule, 2011 - 2012
+%
+\documentclass[]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{textcomp}
+% \usepackage[scaled=0.88]{luximono}
+\usepackage{graphicx}
+
+\usepackage{ucs}
+\usepackage{longtable}
+
+% At least 80% of every float page must be taken up by
+% floats; there will be no page with more than 20% white space.
+\def\topfraction{.95}
+\def\dbltopfraction{\topfraction}
+\def\floatpagefraction{\topfraction}     % default .5
+\def\dblfloatpagefraction{\topfraction}  % default .5
+\def\textfraction{.05}
+
+%% This doesn't work for longtable.  :-(
+% Add line between figure and text
+\makeatletter
+\def\topfigrule{\kern3\p@ \hrule \kern -3.4\p@} % the \hrule is .4pt high
+\def\botfigrule{\kern-3\p@ \hrule \kern 2.6\p@} % the \hrule is .4pt high
+\def\dblfigrule{\kern3\p@ \hrule \kern -3.4\p@} % the \hrule is .4pt high
+\makeatother
+
+
+\usepackage{listings}
+\lstset{
+    language=Java,
+    basicstyle=\ttfamily\mdseries,
+    identifierstyle=,
+    stringstyle=\color{gray},
+    numbers=left,
+    numbersep=5pt,
+    inputencoding=utf8x,
+    xleftmargin=8pt,
+    xrightmargin=8pt,
+    keywordstyle=[1]\bfseries,
+    keywordstyle=[2]\bfseries,
+    keywordstyle=[3]\bfseries,
+    keywordstyle=[4]\bfseries,
+    numberstyle=\tiny,
+    stepnumber=1,
+    breaklines=true,
+    frame=lines,
+    showstringspaces=false,
+    tabsize=2,
+    commentstyle=\color{gray},
+    captionpos=b
+}
+\newcommand{\code}[1]{\lstinline{#1}}
+
+\usepackage{fullpage}
+
+\def\sectionautorefname{Section}
+\def\subsectionautorefname{Section}
+\def\subsubsectionautorefname{Section}
+\def\paragraphautorefname{Section}
+\def\subsubsubsection{\paragraph}
+\setcounter{secnumdepth}{4}
+
+
+% macros for bnf grammers
+\newenvironment{bnfgrammar}{\begin{center}\renewcommand{\arraystretch}{1.5}\begin{tabular}{rcl}}{\end{tabular}\end{center}}
+\newcommand{\nonterminal}[1]{$\langle \textit{#1} \rangle$}
+\newcommand{\production}[2]{#1 &$::=$& #2\\}
+\newcommand{\literal}[1]{`$\text{\code{#1}}$'}
+\newcommand{\alt}{$~\!\!\mid~$}
+\newcommand{\altline}[1]{&$\mid$&#1\\}
+
+\usepackage{mathtools}
+\usepackage{amssymb,amsfonts,amsmath}
+\usepackage[svgnames]{xcolor}
+\usepackage[colorlinks=true,pdfborder={0 0 0},citecolor=DarkGreen,linkcolor=DarkBlue,urlcolor=DarkBlue]{hyperref}
+
+\usepackage{amsthm}
+% \usepackage{thmtools}
+%\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+% control-flow graph images and listings
+\newcommand{\flowlst}[2]{\lstinputlisting[caption=#2,label=lst:#1,float]{examples/#1.java}}
+\newcommand{\flowimg}[2]{\begin{figure}
+\includegraphics[scale=0.6]{examples/graphs/#1.pdf}
+\centering
+\caption{#2}
+\label{fig:#1}
+\end{figure}}
+\newcommand{\flow}[2]{
+    \flowlst{CFG#1}{{#2 Its CFG is depicted in \autoref{fig:CFG#1}.}}
+    \flowimg{CFG#1}{The control-flow graph for \autoref{lst:CFG#1}.}
+}
+\newcommand{\constantpropagation}[2]{
+    \flowlst{Const#1}{{#2 Its CFG and intermediate analysis results is depicted in \autoref{fig:Const#1}.}}
+    \flowimg{Const#1}{The control-flow graph (including intermediate analysis results) to \autoref{lst:Const#1}.}
+}
+
+% references to the java specification
+\newcommand{\jlsref}[1]{JLS~\textsection{}#1}
+
+
+\usepackage{framed}
+\newenvironment{workinprogress}
+{\color{gray} \begin{leftbar}}
+{\end{leftbar}}
+
+\newenvironment{new}{\begin{framed}}{\end{framed}}
+
+\usepackage{booktabs}
+
+\newcommand{\todo}[1]{{\textcolor{DarkRed}{ [\textbf{TODO}: #1]}}}
+
+\parindent 0em
+\setlength{\parskip}{.5em}
+
+\title{A Dataflow Framework for Java and the Checker Framework}
+\author{
+              Stefan Heule\\\url{stheule@cs.washington.edu}
+              \and
+              Charlie Garrett\\\url{charlie.garrett@gmail.com}
+}
+
+\begin{document}
+
+\maketitle
+
+\input{content.tex}
+
+%\bibliographystyle{alpha}
+%\bibliography{}
+
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-command-default: "PDF"
+%%% End: 
