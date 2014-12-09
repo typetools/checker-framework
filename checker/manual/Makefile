@@ -19,6 +19,7 @@ signature-checker.tex \
 guieffect-checker.tex \
 units-checker.tex \
 constant-value-checker.tex \
+aliasing-checker.tex \
 linear-checker.tex \
 igj-checker.tex \
 javari-checker.tex \
