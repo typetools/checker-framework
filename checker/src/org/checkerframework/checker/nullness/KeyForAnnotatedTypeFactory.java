@@ -629,7 +629,7 @@ public class KeyForAnnotatedTypeFactory extends
       // will then be able to transform "#2.adjList" into "myGraph.adjList"
       // since myGraph is the second actual parameter in the call.
 
-      FlowExpressionContext flowExprContextVarType = FlowExpressionParseUtil.buildFlowExprContextForUse(node, this),
+      FlowExpressionContext flowExprContextVarType = FlowExpressionParseUtil.buildFlowExprContextForUse(node, getContext()),
               flowExprContextValueType = null;
 
       // Building the context for the valueType is more subtle. That's because
@@ -678,7 +678,7 @@ public class KeyForAnnotatedTypeFactory extends
 
           // Create the Flow Expression context in terms of the receiver and parameters.
 
-          flowExprContextValueType = new FlowExpressionContext(internalReceiver, internalArguments, this);
+          flowExprContextValueType = new FlowExpressionContext(internalReceiver, internalArguments, getContext());
 
           keyForIssueWarningIfArgumentValuesContainVariableName(flowExprContextValueType.arguments, t, enclosingMethod.getName(), node);
       }
@@ -689,7 +689,7 @@ public class KeyForAnnotatedTypeFactory extends
           // since they are meaningless in this context. Create the usual Flow Expression context
           // as the context of the call site.
 
-          flowExprContextValueType = FlowExpressionParseUtil.buildFlowExprContextForUse(node, this);
+          flowExprContextValueType = FlowExpressionParseUtil.buildFlowExprContextForUse(node, getContext());
       }
 
       // If they are local variable names, they are already canonicalized. So we only need to canonicalize
@@ -737,7 +737,7 @@ public class KeyForAnnotatedTypeFactory extends
           else {
               Receiver r = FlowExpressions.internalReprOf(this, node);
 
-              FlowExpressionContext flowExprContext = new FlowExpressionContext(r, null, this);
+              FlowExpressionContext flowExprContext = new FlowExpressionContext(r, null, getContext());
 
               canonicalizeKeyForValues(varType, flowExprContext, path, t);
               canonicalizeKeyForValues(valueType, flowExprContext, path, t);
