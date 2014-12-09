@@ -244,7 +244,7 @@ public class NullnessTransfer extends
             if (types.isSubtype(receiverType, mapInterfaceTypeMirror)) {
 
                 FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(n, analysis.getTypeFactory());
+                        .buildFlowExprContextForUse(n, analysis.getTypeFactory().getContext());
 
                 String mapName = flowExprContext.receiver.toString();
                 AnnotationMirror am = keyForTypeFactory.createKeyForAnnotationMirrorWithValue(mapName); // @KeyFor(mapName)
