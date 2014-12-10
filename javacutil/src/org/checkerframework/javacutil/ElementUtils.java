@@ -377,4 +377,38 @@ public class ElementUtils {
                 return false;
         }
     }
+
+    /**
+     * Check that a method Element matches a signature.
+     *
+     * Note: Matching the receiver type must be done elsewhere as
+     * the Element receiver type is only populated when annotated.
+     *
+     * @param method the method Element
+     * @param methodName the name of the method
+     * @param parameters the formal parameters' Classes
+     * @return true if the method matches
+     */
+    public static boolean matchesElement(ExecutableElement method,
+            String methodName,
+            Class<?> ... parameters) {
+
+        if (!method.getSimpleName().toString().equals(methodName)) {
+            return false;
+        }
+
+        if (method.getParameters().size() != parameters.length) {
+            return false;
+        } else {
+            for (int i = 0; i < method.getParameters().size(); i++) {
+                if (!method.getParameters().get(i).asType().toString().equals(
+                        parameters[i].getName())) {
+
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 }
