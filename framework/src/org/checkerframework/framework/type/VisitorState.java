@@ -77,7 +77,7 @@ public class VisitorState {
      */
     public AnnotatedDeclaredType getClassType() {
         if (act == null) return null;
-        return AnnotatedTypes.deepCopy(act);
+        return act.deepCopy();
     }
 
     /**
@@ -92,7 +92,7 @@ public class VisitorState {
      */
     public AnnotatedDeclaredType getMethodReceiver() {
         if (mrt == null) return null;
-        return AnnotatedTypes.deepCopy(mrt);
+        return mrt.deepCopy();
     }
 
     /**

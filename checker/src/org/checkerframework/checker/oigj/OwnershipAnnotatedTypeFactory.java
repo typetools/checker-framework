@@ -8,6 +8,9 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -34,10 +37,10 @@ public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         );
     }
 
-    @Override
-    protected TypeAnnotator createTypeAnnotator() {
-        return new OwnershipTypeAnnotator(this);
-    }
+//    @Override
+//    protected TypeAnnotator createTypeAnnotator() {
+//        return new OwnershipTypeAnnotator(this);
+//    }
 
     // TODO: do store annotations into the Element -> remove this override
     // Currently, many test cases fail without this.
@@ -46,24 +49,24 @@ public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
 
-    private class OwnershipTypeAnnotator extends TypeAnnotator {
-
-        public OwnershipTypeAnnotator(OwnershipAnnotatedTypeFactory atypeFactory) {
-            super(atypeFactory);
-        }
-
-        @Override
-        public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
-            if (type.isAnnotatedInHierarchy(BOTTOM_QUAL))
-                return super.visitDeclared(type, p);
-
-            /*if (elem != null &&
-                    elem.getKind() == ElementKind.CLASS &&
-                    TypesUtils.isObject(type.getUnderlyingType()))
-                type.addAnnotation(World.class);*/
-            return super.visitDeclared(type, p);
-        }
-    }
+//    private class OwnershipTypeAnnotator extends ImplicitsTypeAnnotator {
+//
+//        public OwnershipTypeAnnotator(OwnershipAnnotatedTypeFactory atypeFactory) {
+//            super(atypeFactory);
+//        }
+//
+//        @Override
+//        public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
+//            if (type.isAnnotatedInHierarchy(BOTTOM_QUAL))
+//                return super.visitDeclared(type, p);
+//
+//            /*if (elem != null &&
+//                    elem.getKind() == ElementKind.CLASS &&
+//                    TypesUtils.isObject(type.getUnderlyingType()))
+//                type.addAnnotation(World.class);*/
+//            return super.visitDeclared(type, p);
+//        }
+//    }
 
     private class OwnershipTreeAnnotator extends TreeAnnotator {
         public OwnershipTreeAnnotator(OwnershipAnnotatedTypeFactory atypeFactory) {

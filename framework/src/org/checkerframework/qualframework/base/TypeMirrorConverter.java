@@ -202,8 +202,7 @@ public class TypeMirrorConverter<Q> {
         }
         AnnotatedTypeMirror atm;
         if (qtm.getUnderlyingType() instanceof WrappedAnnotatedTypeMirror) {
-            atm = AnnotatedTypes.deepCopy(
-                    ((WrappedAnnotatedTypeMirror)qtm.getUnderlyingType()).unwrap());
+            atm = ((WrappedAnnotatedTypeMirror)qtm.getUnderlyingType()).unwrap().deepCopy();
         } else {
             atm = AnnotatedTypeMirror.createType(
                 qtm.getUnderlyingType().getOriginalType(), getTypeFactory(),
