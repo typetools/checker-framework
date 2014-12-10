@@ -163,6 +163,7 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
             @Override
             public QualifiedTypeMirror<QualParams<Regex>> visitBinary(BinaryTree tree, ExtendedTypeMirror type) {
 
+                System.out.println("Working on binary tree: " + tree + " "  );
                 QualifiedTypeMirror<QualParams<Regex>> result = super.visitBinary(tree, type);
 
                 if (TreeUtils.isStringConcatenation(tree)

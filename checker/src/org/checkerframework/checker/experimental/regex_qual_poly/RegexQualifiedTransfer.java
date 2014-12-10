@@ -17,6 +17,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
 import org.checkerframework.qualframework.base.dataflow.QualStore;
@@ -33,8 +34,8 @@ import javax.lang.model.element.ExecutableElement;
  */
 public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
 
-    private static final String IS_REGEX_METHOD_SIG = "isRegex(java.lang.String,int)";
-    private static final String AS_REGEX_METHOD_SIG = "asRegex(java.lang.String,int)";
+    private static final String IS_REGEX_METHOD_NAME = "isRegex";
+    private static final String AS_REGEX_METHOD_NAME = "asRegex";
 
     public RegexQualifiedTransfer(QualAnalysis<QualParams<Regex>> analysis) {
         super(analysis);
@@ -57,7 +58,8 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
         String receiverName = cn.getElement().toString();
 
         if (isRegexUtil(receiverName)) {
-            if (IS_REGEX_METHOD_SIG.equals(method.toString())) {
+            if (ElementUtils.matchesElement(method,
+                    IS_REGEX_METHOD_NAME, String.class, int.class)) {
                 // RegexUtil.isRegex(s, groups) method
                 // (No special case is needed for isRegex(String) because of
                 // the annotation on that method's definition.)
@@ -87,7 +89,8 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
                 }
                 return newResult;
 
-            } else if (AS_REGEX_METHOD_SIG.equals(method.toString())) {
+            } else if (ElementUtils.matchesElement(method,
+                    AS_REGEX_METHOD_NAME, String.class, int.class)) {
                 // RegexUtil.asRegex(s, groups) method
                 // (No special case is needed for asRegex(String) because of
                 // the annotation on that method's definition.)
