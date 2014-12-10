@@ -66,12 +66,11 @@ public abstract class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, A
         ErrorReporter.errorAbort("AnnotatedTypeComparer.scanAndReduce: " + p + "is not Iterable<? extends AnnotatedTypeMirror>");
         return null;
     }
+
     @Override
     protected R scan(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {
-        return compare(type, p);
+        return reduce(super.scan(type, p), compare(type, p));
     }
-
-
 
     @Override
     public final R visitDeclared(AnnotatedDeclaredType type, AnnotatedTypeMirror p) {
@@ -109,8 +108,7 @@ public abstract class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, A
             return visitedNodes.get(type);
         }
 
-        r = scan(type, p);
-        visitedNodes.put(type, r);
+        visitedNodes.put(type, null);
 
         if (p instanceof AnnotatedTypeVariable) {
             AnnotatedTypeVariable tv = (AnnotatedTypeVariable) p;
@@ -134,6 +132,8 @@ public abstract class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, A
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
+
+        visitedNodes.put(type, null);
         R r = scan(type.getExtendsBound(), w.getExtendsBound());
         visitedNodes.put(type, r);
         r = scanAndReduce(type.getSuperBound(), w.getSuperBound(), r);
@@ -153,24 +153,6 @@ public abstract class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, A
         R r = scan(type.directSuperTypes(),
                 ((AnnotatedIntersectionType) p).directSuperTypes());
         return r;
-    }
-
-    @Override
-    public R visitNoType(AnnotatedNoType type, AnnotatedTypeMirror p) {
-        assert p instanceof AnnotatedNoType : p;
-        return scan(type, p);
-    }
-
-    @Override
-    public R visitNull(AnnotatedNullType type, AnnotatedTypeMirror p) {
-        assert p instanceof AnnotatedNullType : p;
-        return scan(type, p);
-    }
-
-    @Override
-    public R visitPrimitive(AnnotatedPrimitiveType type, AnnotatedTypeMirror p) {
-        assert p instanceof AnnotatedPrimitiveType : p;
-        return scan(type, p);
     }
 
     @Override

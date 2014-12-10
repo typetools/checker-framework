@@ -7,15 +7,15 @@ import javax.lang.model.type.TypeKind;
  * to compare qualifiers.
  */
 public class DefaultTypeHierarchy<Q> implements TypeHierarchy<Q> {
-    // private final QualifierHierarchy<Q> qualifierHierarchy;
+    private QualifierHierarchy<Q> qualifierHierarchy;
     private TypeHierarchyAdapter<Q> adapter;
 
     /**
-     * @param qualifierHierarchy
+     * @param qualifierHierarchy   
      *      a {@link QualifierHierarchy} to use for comparing individual qualifiers
      */
     public DefaultTypeHierarchy(QualifierHierarchy<Q> qualifierHierarchy) {
-        // this.qualifierHierarchy = qualifierHierarchy;
+        this.qualifierHierarchy = qualifierHierarchy;
     }
 
     void setAdapter(TypeHierarchyAdapter<Q> adapter) {
@@ -36,7 +36,6 @@ public class DefaultTypeHierarchy<Q> implements TypeHierarchy<Q> {
                 case NULL:
                 case TYPEVAR:
                     return true;
-                default:
             }
         }
 

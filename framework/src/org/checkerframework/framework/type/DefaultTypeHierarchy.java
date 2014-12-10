@@ -339,6 +339,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         return equalityComparer.areEqual(type1, type2);
     }
 
+    protected boolean areEqualInHierarchy(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2,
+                                          final AnnotationMirror top) {
+        return equalityComparer.areEqualInHierarchy(type1, type2, top);
+    }
+
     /**
      * A declared type is considered a supertype of another declared type only if all of the
      * type arguments of the declared type "contain" the corresponding type arguments of the subtype.
@@ -637,7 +642,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                 // as the bounds are the same
                 return isPrimarySubtype(subtype, supertype, true);
 
-            } else if(!subtypeHasAnno && !supertypeHasAnno) {
+            } else if(!subtypeHasAnno && !supertypeHasAnno && areEqualInHierarchy(subtype, supertype, currentTop)) {
                 // two unannotated uses of the same type parameter are of the same type
                 return true;
             }

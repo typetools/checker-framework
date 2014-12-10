@@ -10,17 +10,18 @@ import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 
 /**
  * Adapter for {@link TreeAnnotator}, extending
- * {@link org.checkerframework.framework.type.treeannotator.TreeAnnotator org.checkerframework.framework.type.TreeAnnotator}.
+ * {@link org.checkerframework.framework.type.treeannotator.TreeAnnotator org.checkerframework.framework.type.treeannotator.TreeAnnotator}.
  */
 class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
+    private final QualifiedTypeFactoryAdapter<Q> factoryAdapter;
     private TreeAnnotator<Q> underlying;
     private TypeMirrorConverter<Q> converter;
 
     public TreeAnnotatorAdapter(TreeAnnotator<Q> underlying,
-            TypeMirrorConverter<Q> converter,
-            QualifiedTypeFactoryAdapter<Q> factoryAdapter) {
+                                TypeMirrorConverter<Q> converter,
+                                QualifiedTypeFactoryAdapter<Q> factoryAdapter) {
         super(factoryAdapter);
-
+        this.factoryAdapter = factoryAdapter;
         this.underlying = underlying;
         this.converter = converter;
     }
