@@ -335,7 +335,7 @@ section or add it if necessary.
 \end{alltt}
 
 On Windows, the \code{javac\_maven.bat} script is automatically used instead
-of the \code{javac\_maven} script -- it is not necessary to include the .bat
+of the \code{javac\_maven} script -- it is not necessary to include the \code{.bat}
 extension in the absolute path above.
 
 This script assumes that the Checker Framework is the only annotation processor being run.
@@ -452,7 +452,7 @@ implemented JSR 198~\cite{JSR198}, then it would be possible to build
 type-checking plug-ins that work with both compilers.)
 
 
-\paragraph{Using an Ant task}
+\paragraph{Using an Ant task\label{eclipse-ant}}
 
 Add an Ant target as described in Section~\ref{ant-task}.  You can
 run the Ant target by executing the following steps
@@ -479,7 +479,7 @@ run the Ant target by executing the following steps
 
 \end{enumerate}
 
-\paragraph{Eclipse plug-in for the Checker Framework}
+\paragraph{Eclipse plug-in for the Checker Framework\label{eclipse-plug-in}}
 
 The Checker Plugin is an Eclipse plugin that enables the use of the Checker
 Framework.
@@ -499,7 +499,7 @@ documentation at \myurl{http://tide.olympe.in/}.
 
 \section{Type inference tools\label{type-inference-tools}}
 
-\subsection{Varieties of type inference}
+\subsection{Varieties of type inference\label{type-inference-varieties}}
 
 There are two different tasks that are commonly called ``type inference''.
 
@@ -573,12 +573,15 @@ Advantages of both varieties of inference include:
 Each variety of type inference has its place.  When using the Checker
 Framework, type inference during type-checking is performed only
 \emph{within} a method (Section~\ref{type-refinement}).  Every method
-signature (arguments and return values) and field must be explicitly annotated,
+signature (arguments and return values) and field must have already been explicitly annotated,
 either by the programmer or by a separate type-checking tool
-(Section~\ref{type-inference-to-annotate}).  This choice reduces programmer
-effort (typically, a programmer does not have to write any qualifiers
-inside the body of a method) while still retaining modular checking and
-documentation benefits.
+(Section~\ref{type-inference-to-annotate}).
+This approach enables modular checking (one class or method at a time) and
+gives documentation benefits.
+The programmer still has to
+put in some effort, but much less than without inference:  typically, a
+programmer does not have to write any qualifiers
+inside the body of a method.
 
 
 \subsection{Type inference to annotate a program\label{type-inference-to-annotate}}
@@ -591,6 +594,15 @@ annotations for the Nullness Checker.
 
 Section~\ref{javari-inference} lists a tool that infers
 annotations for the Javari Checker, which detects mutation errors.
+
+\href{https://github.com/reprogrammer/cascade/wiki/Installation}{Cascade}~\cite{VakilianPEJ2014}
+is an Eclipse plug-in that implements interactive type qualifier inference.
+Cascade is interactive rather than fully-automated:  it makes it easier for
+a developer to insert annotations.
+Cascade starts with an unannotated program and runs a type-checker.  For each
+warning it suggests multiple fixes, the developer chooses a fix, and
+Cascade applies it.  Cascade works with any checker built on the Checker
+Framework.
 
 
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle

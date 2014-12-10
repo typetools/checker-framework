@@ -1379,12 +1379,12 @@ The Initialization Checker issues an error if the constructor fails to initializ
 any \code{@NonNull} field.  This ensures that the object is in a legal (initialized)
 state by the time that the constructor exits.
 This is different than Java's test for definite assignment (see
-\href{https://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}{JLS ch.16}),
+\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-16.html}{JLS ch.16}),
 % , which requires that local
 % variables (and blank \code{final} fields) must be assigned.  Java does not
 % require that non-\code{final} fields be assigned, since
 which does not apply to fields (except blank final ones, defined in
-\href{https://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}{JLS \S 4.12.4}) because fields
+\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.12.4}{JLS \S 4.12.4}) because fields
 have a default value of null.
 
 
@@ -1576,7 +1576,7 @@ the type of the object being constructed is:
 
 
 
-% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
+% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se8/html/jls-8.html#jls-8.8.7}
 % (Recall that the superclass constructor is called on the first line, or is
 % inserted automatically by the compiler before the first line, see
 % \href{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
@@ -1695,21 +1695,21 @@ initialization was actually complete, then the receiver should have type
 \subsection{More details about initialization checking\label{initialization-checking}}
 
 
-\paragraph{Suppressing warnings}
+\paragraph{Suppressing warnings\label{initialization-checking-suppressing-warnings}}
 
 \begin{sloppypar}
 You can suppress warnings related to partially-initialized objects with
 \<@SuppressWarnings("initialization")>.
 \end{sloppypar}
 
-\paragraph{Checking initialization of all fields, not just \code{@NonNull} ones}
+\paragraph{Checking initialization of all fields, not just \code{@NonNull} ones\label{initialization-checking-all-fields}}
 
 When the \code{-Alint=uninitialized} command-line option is provided, then
 an object is considered uninitialized until \emph{all} its fields are assigned, not
 just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized-section}.
 
 
-\paragraph{Use of method annotations}
+\paragraph{Use of method annotations\label{initialization-checking-method-annotations}}
 
 A method with a non-initialized receiver may assume that a few fields (but not all
 of them) are non-null, and it sometimes sets some more fields to non-null
@@ -1720,7 +1720,7 @@ values.  To express these concepts, use the
 see Section~\ref{nullness-method-annotations}.
 
 
-\paragraph{Source of the type system}
+\paragraph{Source of the type system\label{initialization-checking-type-system}}
 
 The type system enforced by the Initialization Checker is known as
 ``Freedom Before Commitment''~\cite{SummersM2011}.  Our implementation
@@ -1957,12 +1957,12 @@ The Nullness Checker issues an error if the constructor fails to initialize
 any \code{@NonNull} field.  This ensures that the object is in a legal (non-raw)
 state by the time that the constructor exits.
 This is different than Java's test for definite assignment (see
-\href{https://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}{JLS ch.16}),
+\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-16.html}{JLS ch.16}),
 % , which requires that local
 % variables (and blank \code{final} fields) must be assigned.  Java does not
 % require that non-\code{final} fields be assigned, since
 which does not apply to fields (except blank final ones, defined in
-\href{https://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}{JLS \S 4.12.4}) because fields
+\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.12.4}{JLS \S 4.12.4}) because fields
 have a default value of null.
 
 
@@ -2097,7 +2097,7 @@ the type of the object being constructed is:
   \<@NonRaw(B.class) B>
 \end{enumerate}
 
-\paragraph{Example}
+\paragraph{Example\label{rawness-partial-initialization-example}}
 
 As another example, consider the following 12 declarations:
 
@@ -2177,7 +2177,7 @@ types.)
 
 
 
-% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
+% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se8/html/jls-8.html#jls-8.8.7}
 % (Recall that the superclass constructor is called on the first line, or is
 % inserted automatically by the compiler before the first line, see
 % \href{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
@@ -2187,7 +2187,7 @@ types.)
 \subsubsection{More details about rawness checking\label{rawness-checking}}
 
 
-\paragraph{Suppressing warnings}
+\paragraph{Suppressing warnings\label{rawness-checking-suppressing-warnings}}
 
 \begin{sloppypar}
 You can suppress warnings related to partially-initialized objects with
@@ -2196,14 +2196,14 @@ You can suppress warnings related to partially-initialized objects with
 \end{sloppypar}
 
 
-\paragraph{Checking initialization of all fields, not just \code{@NonNull} ones}
+\paragraph{Checking initialization of all fields, not just \code{@NonNull} ones\label{rawness-checking-checking-all-fields}}
 
 When the \code{-Alint=uninitialized} command-line option is provided, then
 an object is considered raw until \emph{all} its fields are assigned, not
 just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized-section}.
 
 
-\paragraph{Use of method annotations}
+\paragraph{Use of method annotations\label{rawness-checking-method-annotations}}
 
 A method with a raw receiver often assumes that a few fields (but not all
 of them) are non-null, and sometimes sets some more fields to non-null
@@ -2215,7 +2215,7 @@ see Section~\ref{nullness-method-annotations}.
 
 
 % Should we change the terminology?
-\paragraph{The terminology ``raw''}
+\paragraph{The terminology ``raw''\label{rawness-checking-terminology-raw}}
 
 The name ``raw'' comes from a research paper that proposed this
 approach~\cite{FahndrichL2003}.
