@@ -177,6 +177,12 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
     execute("cp " + os.path.join(SCRIPTS_DIR, "comment.sty") + " .", True, False, checker_manual_dir)
     execute("make manual.pdf manual.html", True, False, checker_manual_dir)
 
+    #make the dataflow manual
+    dataflow_manual_dir = os.path.join(CHECKER_FRAMEWORK, "dataflow", "manual")
+    execute("pdflatex dataflow.tex", True, False, dataflow_manual_dir)
+    # Yes, run it twice
+    execute("pdflatex dataflow.tex", True, False, dataflow_manual_dir)
+
     #make the checker framework tutorial
     checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
     execute("make", True, False, checker_tutorial_dir)
@@ -190,9 +196,10 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
     ant_cmd   = "ant -f release.xml %s zip-maven-examples " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    #copy the remaining checker-framework website files to checker_framework_interm_dir
-    ant_props = "-Dchecker=%s -Ddest.dir=%s -Dmanual.name=%s -Dchecker.webpage=%s" % (
-                 checker_dir, checker_framework_interm_dir, "checker-framework-manual", "checker-framework-webpage.html"
+#    #copy the remaining checker-framework website files to checker_framework_interm_dir
+    ant_props = "-Dchecker=%s -Ddest.dir=%s -Dmanual.name=%s -Ddataflow.manual.name=%s -Dchecker.webpage=%s" % (
+                 checker_dir, checker_framework_interm_dir, "checker-framework-manual",
+                 "checker-framework-dataflow-manual", "checker-framework-webpage.html"
     )
 
     ant_cmd   = "ant -f release.xml %s checker-framework-website-docs " % ant_props
