@@ -21,12 +21,13 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 
 public class RegexTransfer extends
         CFAbstractTransfer<CFValue, CFStore, RegexTransfer> {
 
-    private static final String IS_REGEX_METHOD_SIG = "isRegex(java.lang.String,int)";
-    private static final String AS_REGEX_METHOD_SIG = "asRegex(java.lang.String,int)";
+    private static final String IS_REGEX_METHOD_NAME = "isRegex";
+    private static final String AS_REGEX_METHOD_NAME = "asRegex";
 
     /** Like super.analysis, but more specific type. */
     protected RegexAnalysis analysis;
@@ -58,7 +59,8 @@ public class RegexTransfer extends
         String receiverName = cn.getElement().toString();
 
         if (isRegexUtil(receiverName)) {
-            if (IS_REGEX_METHOD_SIG.equals(method.toString())) {
+            if (ElementUtils.matchesElement(method,
+                   IS_REGEX_METHOD_NAME, String.class, int.class)) {
                 // RegexUtil.isRegex(s, groups) method
                 // (No special case is needed for isRegex(String) because of
                 // the annotation on that method's definition.)
@@ -91,7 +93,8 @@ public class RegexTransfer extends
                 }
                 return newResult;
 
-            } else if (AS_REGEX_METHOD_SIG.equals(method.toString())) {
+            } else if (ElementUtils.matchesElement(method,
+                    AS_REGEX_METHOD_NAME, String.class, int.class)) {
                 // RegexUtil.asRegex(s, groups) method
                 // (No special case is needed for asRegex(String) because of
                 // the annotation on that method's definition.)

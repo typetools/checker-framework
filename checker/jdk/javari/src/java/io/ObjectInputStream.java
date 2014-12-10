@@ -43,7 +43,7 @@ public class ObjectInputStream
     private byte[] primVals;
     private final boolean enableOverride;
     private boolean enableResolve;
-    private CallbackContext curContext;
+    // private CallbackContext curContext;
     public ObjectInputStream(InputStream in) throws IOException { throw new RuntimeException("skeleton method"); }
     protected ObjectInputStream() throws IOException, SecurityException { throw new RuntimeException("skeleton method"); }
     public final Object readObject() throws IOException, ClassNotFoundException { throw new RuntimeException("skeleton method"); }
@@ -262,14 +262,14 @@ public class ObjectInputStream
         }
     }
     private static Object cloneArray(@ReadOnly Object array) { throw new RuntimeException("skeleton method"); }
-    private static class CallbackContext {
-        private final Object obj;
-        private final ObjectStreamClass desc;
-        private final AtomicBoolean used = new AtomicBoolean();
-        public CallbackContext(Object obj, ObjectStreamClass desc) { throw new RuntimeException("skeleton method"); }
-        public Object getObj() throws NotActiveException { throw new RuntimeException("skeleton method"); }
-        public ObjectStreamClass getDesc(@ReadOnly CallbackContext this) { throw new RuntimeException("skeleton method"); }
-        private void checkAndSetUsed() throws NotActiveException { throw new RuntimeException("skeleton method"); }
-        public void setUsed() { throw new RuntimeException("skeleton method"); }
-    }
+    // private static class CallbackContext {
+    //     private final Object obj;
+    //     private final ObjectStreamClass desc;
+    //     private final AtomicBoolean used = new AtomicBoolean();
+    //     public CallbackContext(Object obj, ObjectStreamClass desc) { throw new RuntimeException("skeleton method"); }
+    //     public Object getObj() throws NotActiveException { throw new RuntimeException("skeleton method"); }
+    //     public ObjectStreamClass getDesc(@ReadOnly CallbackContext this) { throw new RuntimeException("skeleton method"); }
+    //     private void checkAndSetUsed() throws NotActiveException { throw new RuntimeException("skeleton method"); }
+    //     public void setUsed() { throw new RuntimeException("skeleton method"); }
+    // }
 }
