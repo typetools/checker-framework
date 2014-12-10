@@ -84,6 +84,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         AnnotatedTypeMirror trueType = f.getAnnotatedType(node.getTrueExpression());
         AnnotatedTypeMirror falseType = f.getAnnotatedType(node.getFalseExpression());
 
+        //here
         if (trueType.equals(falseType))
             return trueType;
 
@@ -133,7 +134,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         Element elt = TreeUtils.elementFromUse(node);
         AnnotatedTypeMirror selfType = f.getImplicitReceiverType(node);
         if (selfType != null) {
-            return AnnotatedTypes.asMemberOf(f.types, f, selfType, elt);
+            return AnnotatedTypes.asMemberOf(f.types, f, selfType, elt).asUse();
         }
 
         return f.getAnnotatedType(elt);
@@ -168,7 +169,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             // We need the original t with the implicit annotations
             AnnotatedTypeMirror t = f.getAnnotatedType(node.getExpression());
             if (t instanceof AnnotatedDeclaredType || t instanceof AnnotatedArrayType)
-                return AnnotatedTypes.asMemberOf(f.types, f, t, elt);
+                return AnnotatedTypes.asMemberOf(f.types, f, t, elt).asUse();
         }
 
         return f.fromElement(elt);
@@ -179,7 +180,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             MethodInvocationTree node, AnnotatedTypeFactory f) {
 
         AnnotatedExecutableType ex = f.methodFromUse(node).first;
-        return ex.getReturnType();
+        return ex.getReturnType().asUse();
     }
 
     @Override

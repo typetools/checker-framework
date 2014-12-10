@@ -98,6 +98,8 @@ public class LubTypeVariableAnnotator {
             final AnnotationMirror subPrimary = subtype.getAnnotationInHierarchy(top);
 
             if(lubPrimary == null && subPrimary == null) {
+                //TODO: After merging with Qual Param etc... there is a problem where we have two different
+                //TODO: bounds but empty primary annotations here, leading to a bad LUB
                 continue; //lub is already annotated as subtype is either the same type
                           //or extends lub without adding a primary annotation.
                           //so continue to the next hierarchy

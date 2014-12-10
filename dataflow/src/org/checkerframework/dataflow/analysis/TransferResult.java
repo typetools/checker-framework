@@ -87,6 +87,15 @@ abstract public class TransferResult<A extends AbstractValue<A>, S extends Store
     }
 
     /**
+     * @return Returns a Map of {@link TypeMirror} to {@link Store}.
+     *
+     * @see TransferResult#getExceptionalStore(TypeMirror)
+     */
+    public Map<TypeMirror, S> getExceptionalStores() {
+        return exceptionalStores;
+    }
+
+    /**
      * @return {@code true} if and only if this transfer result contains two
      *         stores that are potentially not equal. Note that the result
      *         {@code true} does not imply that {@code getRegularStore} cannot

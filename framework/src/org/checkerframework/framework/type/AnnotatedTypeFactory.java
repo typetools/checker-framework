@@ -34,6 +34,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -1477,9 +1478,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             AnnotatedTypes.findTypeArguments(processingEnv, this, tree, methodElt, methodType);
 
         if (!typeVarMapping.isEmpty()) {
+
+
             for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
                 // TODO: call to getTypeParmaeterDeclaration should not be needed, as
                 // methodType should only contain declarations.
+
+                final List<AnnotatedTypeVariable> hashcodeEq = matchingHashCode(tv.getTypeParameterDeclaration(), typeVarMapping);
+                final AnnotatedTypeVariable match = matching(tv.getTypeParameterDeclaration(), hashcodeEq);
+
                 if (typeVarMapping.get(tv.getTypeParameterDeclaration()) == null) {
                     ErrorReporter.errorAbort("AnnotatedTypeFactory.methodFromUse:" +
                             "mismatch between declared method type variables and the inferred method type arguments! " +
@@ -1492,6 +1499,28 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         return Pair.of(methodType, typeargs);
+    }
+
+
+    public List<AnnotatedTypeVariable> matchingHashCode(final AnnotatedTypeVariable target, final Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeVarMapping) {
+        final List<AnnotatedTypeVariable> targets = new ArrayList<>(5);
+        for(final AnnotatedTypeVariable key : typeVarMapping.keySet()) {
+            if (key.hashCode() == target.hashCode()) {
+                targets.add(key);
+            }
+        }
+
+        return targets;
+    }
+
+    public AnnotatedTypeVariable matching(final AnnotatedTypeVariable target, List<AnnotatedTypeVariable> candidates) {
+        for(final AnnotatedTypeVariable candidate : candidates) {
+            if (candidate.equals(target)) {
+                return candidate;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -2022,6 +2051,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         assert root != null : "AnnotatedTypeFactory.getPath: root needs to be set when used on trees; factory: " + this.getClass();
 
         if (node == null) return null;
+
+        if (treePathCache.isCached(node)) {
+            return treePathCache.getPath(root, node);
+        };
 
         TreePath currentPath = visitorState.getPath();
         if (currentPath == null)
@@ -2676,5 +2709,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public ProcessingEnvironment getProcessingEnv() {
         return this.processingEnv;
+    }
+
+    /** Accessor for the {@link CFContext}.
+     */
+    public CFContext getContext() {
+        return checker;
     }
 }

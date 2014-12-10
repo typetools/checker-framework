@@ -3,18 +3,28 @@ package org.checkerframework.qualframework.base;
 import java.util.List;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
+import com.sun.source.util.TreePath;
+import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.javacutil.Pair;
 
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
+import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
+import org.checkerframework.qualframework.base.dataflow.QualValue;
 import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
+import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
 /**
  * Used to compute the qualified type of a {@link Tree} or {@link Element}.
@@ -81,6 +91,12 @@ public interface QualifiedTypeFactory<Q> {
     Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> methodFromUse(MethodInvocationTree tree);
 
     /**
+     * @see QualifiedTypeFactory#methodFromUse(MethodInvocationTree)
+     */
+    Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> methodFromUse(ExpressionTree tree,
+            ExecutableElement methodElt, QualifiedTypeMirror<Q> receiverType);
+
+    /**
      * Hook for customizing type parameter inference for constructors.
      *
      * @param tree
@@ -97,4 +113,43 @@ public interface QualifiedTypeFactory<Q> {
      */
     QualifiedTypeMirror<Q> postTypeVarSubstitution(QualifiedParameterDeclaration<Q> varDecl, QualifiedTypeVariable<Q> varUse,
             QualifiedTypeMirror<Q> value);
+
+    /**
+     * Create the {@link Analysis} to configure dataflow.
+     *
+     * @param fieldValues The initial field values
+     * @return The {@link QualAnalysis} to use
+     */
+    QualAnalysis<Q> createFlowAnalysis(List<Pair<VariableElement, QualValue<Q>>> fieldValues);
+
+    /**
+     * @param node The @{@link Tree} to look up the {@link TreePath} for
+     * @return The {@link TreePath}
+     */
+    TreePath getPath(Tree node);
+
+    /**
+     * Returns the receiver type of the expression tree, or null if it does not exist.
+     *
+     * The only trees that could potentially have a receiver are:
+     * <ul>
+     *  <li> ArrayAccessTree
+     *  <li> IdentifierTree (whose receivers are usually self type)
+     *  <li> MethodInvocationTree
+     *  <li> MemberSelectTree
+     * </ul>
+     *
+     * @param expression The expression for which to determine the receiver type
+     * @return  the type of the receiver of this expression
+     */
+    QualifiedTypeMirror<Q> getReceiverType(ExpressionTree expression);
+
+    /**
+     * Get an {@link ExtendedTypeMirror} for an {@link Element} that has all the Annotations
+     * that were located on the element in source code or in stub files.
+     *
+     * @param element The {@link Element}
+     * @return The {@link ExtendedTypeMirror}
+     */
+    ExtendedTypeMirror getDecoratedElement(Element element);
 }

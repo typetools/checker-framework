@@ -9,6 +9,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
+import javax.lang.model.element.AnnotationMirror;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -29,7 +30,11 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     //TODO: THE PROBLEM IS THIS CLASS SHOULD FAIL WHEN INCOMPARABLE TYPES ARE COMPARED BUT
     //TODO: TO CURRENTLY SUPPORT THE BUGGY inferTypeArgs WE FALL BACK TO the RawnessComparer
     //TODO: WHICH IS CLOSE TO THE OLD TypeHierarchy behavior
-    public AbstractAtmComboVisitor<Boolean, VisitHistory> fallback;
+    private AbstractAtmComboVisitor<Boolean, VisitHistory> fallback;
+
+
+    //explain this one
+    private AnnotationMirror currentTop = null;
 
     public StructuralEqualityComparer() {
         this(null);
@@ -38,7 +43,6 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     public StructuralEqualityComparer(final AbstractAtmComboVisitor<Boolean, VisitHistory> fallback) {
         this.fallback = fallback;
     }
-
 
     @Override
     protected Boolean defaultAction(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, VisitHistory visitHistory) {
@@ -71,15 +75,29 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      */
     public boolean areEqual(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2,
                             final VisitHistory visited ) {
-        if(type1 == null) {
+        if (type1 == null) {
             return type2 == null;
         }
 
-        if(type2 == null) {
+        if (type2 == null) {
             return false;
         }
 
         return AtmCombo.accept(type1, type2, visited, this);
+    }
+
+    public boolean areEqualInHierarchy(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2,
+                                       final AnnotationMirror top) {
+        boolean areEqual;
+        AnnotationMirror prevTop = currentTop;
+        currentTop = top;
+        try {
+            areEqual = areEqual(type1, type2);
+        } finally {
+            currentTop = prevTop;
+        }
+
+        return areEqual;
     }
 
     /**

@@ -9,6 +9,7 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.EnsuresQualifiersIf;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.*;
@@ -153,7 +154,9 @@ public class RegexUtil {
    * @return true iff s is a regular expression
    */
   /*@Pure*/
-  @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)
+  @EnsuresQualifiersIf({
+          @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class),
+          @EnsuresQualifierIf(result=true, expression="#1", qualifier=org.checkerframework.checker.experimental.regex_qual_poly.qual.Regex.class)})
   public static boolean isRegex(String s) {
     return isRegex(s, 0);
   }
@@ -191,7 +194,9 @@ public class RegexUtil {
   @SuppressWarnings("regex")    // RegexUtil
   */
   /*@Pure*/
-  @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)
+  @EnsuresQualifiersIf({
+          @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class),
+          @EnsuresQualifierIf(result=true, expression="#1", qualifier=org.checkerframework.checker.experimental.regex_qual_poly.qual.Regex.class)})
   public static boolean isRegex(final char c) {
     return isRegex(Character.toString(c));
   }
@@ -287,7 +292,9 @@ public class RegexUtil {
    */
   /*@SideEffectFree*/
   // The return type annotation is a conservative bound.
-  public static /*@Regex*/ String asRegex(String s) {
+  public static /*@Regex*/
+  /*@org.checkerframework.checker.experimental.regex_qual_poly.qual.Regex*/
+  String asRegex(String s) {
     return asRegex(s, 0);
   }
 
@@ -307,7 +314,9 @@ public class RegexUtil {
   /*@SideEffectFree*/
   // The return type annotation is irrelevant; it is special-cased by
   // RegexAnnotatedTypeFactory.
-  public static /*@Regex*/ String asRegex(String s, int groups) {
+  public static /*@Regex*/
+  /*@org.checkerframework.checker.experimental.regex_qual_poly.qual.Regex*/
+  String asRegex(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
       int actualGroups = getGroupCount(p);

@@ -4,20 +4,33 @@ import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.dataflow.analysis.TransferFunction;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.Pair;
 
+import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
+import org.checkerframework.qualframework.base.dataflow.QualTransferAdapter;
+import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
@@ -28,7 +41,10 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedPara
  */
 class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     /** The underlying {@link QualifiedTypeFactory}. */
-    private final QualifiedTypeFactory<Q> underlying;
+    private QualifiedTypeFactory<Q> underlying;
+
+    /** The qualAnalysis instance to use for dataflow. */
+    private QualAnalysis<Q> qualAnalysis;
 
     public QualifiedTypeFactoryAdapter(QualifiedTypeFactory<Q> underlying,
             CheckerAdapter<Q> checker) {
@@ -79,12 +95,15 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     @Override
     public MultiGraphQualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         QualifierHierarchy<Q> underlyingHierarchy = underlying.getQualifierHierarchy();
+        DefaultQualifiedTypeFactory<Q> defaultUnderlying = (DefaultQualifiedTypeFactory<Q>)underlying;
+        AnnotationConverter<Q> annoConverter = defaultUnderlying.getAnnotationConverter();
 
         // See QualifierHierarchyAdapter for an explanation of why we need this
         // strange pattern instead of just making a single call to the
         // QualifierHierarchyAdapter constructor.
         QualifierHierarchyAdapter<Q>.Implementation adapter =
             new QualifierHierarchyAdapter<Q>(
+                annoConverter,
                 underlyingHierarchy,
                 getCheckerAdapter().getTypeMirrorConverter())
             .createImplementation(factory);
@@ -97,6 +116,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     @Override
     protected org.checkerframework.framework.type.TypeHierarchy createTypeHierarchy() {
         TypeHierarchy<Q> underlyingHierarchy = underlying.getTypeHierarchy();
+
         TypeHierarchyAdapter<Q> adapter = new TypeHierarchyAdapter<Q>(
                 underlyingHierarchy,
                 getCheckerAdapter().getTypeMirrorConverter(),
@@ -141,7 +161,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         return adapter;
     }
 
-    //
     /* Constructs a TypeAnnotatorAdapter for the underlying factory's
      * TypeAnnotator.
      */
@@ -154,7 +173,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-
         DefaultQualifiedTypeFactory<Q> defaultUnderlying =
             (DefaultQualifiedTypeFactory<Q>)underlying;
         TypeAnnotator<Q> underlyingAnnotator = defaultUnderlying.getTypeAnnotator();
@@ -165,7 +183,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
 
         underlyingAnnotator.setAdapter(adapter);
 
-        return new ListTypeAnnotator( adapter );
+        return adapter;
     }
 
 
@@ -185,7 +203,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         AnnotationConverter<Q> annoConverter = defaultUnderlying.getAnnotationConverter();
 
         return annoConverter.isAnnotationSupported(anno)
-            || getCheckerAdapter().getTypeMirrorConverter().isKey(anno);
+                || getCheckerAdapter().getTypeMirrorConverter().isKey(anno);
     }
 
 
@@ -233,15 +251,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         typeAnnotator.scanAndReduce(result, null, null);
         return result;
     }
-
-    @Override
-    public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable var) {
-        // Same logic as getWildcardBoundedBy.
-        AnnotatedWildcardType result = super.getUninferredWildcardType(var);
-        typeAnnotator.scanAndReduce(result, null, null);
-        return result;
-    }
-
 
     @Override
     public void postDirectSuperTypes(AnnotatedTypeMirror subtype, List<? extends AnnotatedTypeMirror> supertypes) {
@@ -320,14 +329,38 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         return qualResult;
     }
 
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(ExpressionTree tree,
+            ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
-    @Override
+        TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
+        Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> qualResult =
+                underlying.methodFromUse(tree, methodElt, conv.getQualifiedType(receiverType));
+
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> annoResult =
+                Pair.of((AnnotatedExecutableType)conv.getAnnotatedType(qualResult.first),
+                        conv.getAnnotatedTypeList(qualResult.second));
+        return annoResult;
+    }
+
+    Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> superMethodFromUse(ExpressionTree tree,
+            ExecutableElement methodElt, QualifiedTypeMirror<Q> receiverType) {
+        TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
+
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> annoResult =
+                super.methodFromUse(tree, methodElt, conv.getAnnotatedType(receiverType));
+
+        Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> qualResult =
+                Pair.of((QualifiedExecutableType<Q>)conv.getQualifiedType(annoResult.first),
+                        conv.getQualifiedTypeList(annoResult.second));
+        return qualResult;
+    }
+
     public void postTypeVarSubstitution(AnnotatedTypeVariable varDecl,
             AnnotatedTypeVariable varUse, AnnotatedTypeMirror value) {
         TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
 
         QualifiedParameterDeclaration<Q> qualVarDecl = (QualifiedParameterDeclaration<Q>)conv.getQualifiedType(varDecl);
-        QualifiedTypeVariable<Q> qualVarUse = (QualifiedTypeVariable<Q>)conv.getQualifiedType(varUse);
+        QualifiedTypeVariable<Q> qualVarUse = (QualifiedTypeVariable<Q>)conv.getQualifiedType(varUse.asUse());
         QualifiedTypeMirror<Q> qualValue = conv.getQualifiedType(value);
 
         QualifiedTypeMirror<Q> qualResult = underlying.postTypeVarSubstitution(
@@ -348,5 +381,21 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
 
         QualifiedTypeMirror<Q> qualResult = conv.getQualifiedType(annoValue);
         return qualResult;
+    }
+
+    /**
+     * Create the {@link TransferFunction} to be used.
+     *
+     * @param analysis The {@link CFAbstractAnalysis} that the checker framework will actually use
+     * @return The {@link CFTransfer} to be used
+     */
+    @Override
+    public CFTransfer createFlowTransferFunction(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+        if (qualAnalysis == null) {
+            // TODO: When we actually use the qual analysis, we will have to initialize it with real data.
+            qualAnalysis = underlying.createFlowAnalysis(null);
+            qualAnalysis.setAdapter(analysis);
+        }
+        return new QualTransferAdapter<>(qualAnalysis.createTransferFunction(), analysis, qualAnalysis);
     }
 }

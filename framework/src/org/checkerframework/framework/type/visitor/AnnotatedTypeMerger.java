@@ -1,6 +1,7 @@
 package org.checkerframework.framework.type.visitor;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.ErrorReporter;
 
 import javax.lang.model.element.AnnotationMirror;
 
@@ -57,10 +58,16 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
     }
 
     public static void merge(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
+        if (from == to) {
+            ErrorReporter.errorAbort("From == to");
+        }
         new AnnotatedTypeMerger().visit(from, to);
     }
 
     public static void merge(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to, final AnnotationMirror top) {
+        if (from == to) {
+            ErrorReporter.errorAbort("From == to");
+        }
         new AnnotatedTypeMerger(top).visit(from, to);
     }
 }

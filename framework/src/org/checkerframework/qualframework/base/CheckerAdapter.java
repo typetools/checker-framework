@@ -88,4 +88,8 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
             }
         };
     }
+
+    public Checker<Q> getUnderlying() {
+        return underlying;
+    }
 }

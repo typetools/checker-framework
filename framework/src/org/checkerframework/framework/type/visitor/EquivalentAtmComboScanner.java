@@ -26,7 +26,21 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM> extends Abst
         return scan(type1, type2, param);
     }
 
+    /**
+     * In an AnnotatedTypeScanner a null type is encounter than null is returned.  A user may want to customize
+     * the behavior of this scanner depending on whether or not one or both types is null.
+     * @param type1 A nullable AnnotatedTypeMirror
+     * @param type2 A nullable AnnotatedTypeMirror
+     * @param param The visitor param
+     * @return a subclass specific return type/value
+     */
+    protected abstract RETURN_TYPE scanWithNull(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param);
+
     protected RETURN_TYPE scan(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param) {
+        if (type1 == null || type2 == null) {
+            return scanWithNull(type1, type2, param);
+        }
+
         return AtmCombo.accept(type1, type2, param, this);
     }
 
@@ -173,7 +187,7 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM> extends Abst
         }
 
         public int hashCode() {
-            return 503 * (this.type1.getUnderlyingType().hashCode() + this.type2.getUnderlyingType().hashCode());
+            return 503 * (this.type1.hashCode() + this.type2.hashCode());
         }
 
         @SuppressWarnings("unchecked")
@@ -188,7 +202,7 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM> extends Abst
     }
 
     protected class Visited {
-        private final Map<Visit, RETURN_TYPE> visits = new IdentityHashMap<Visit, RETURN_TYPE>();
+        private final Map<Visit, RETURN_TYPE> visits = new HashMap<Visit, RETURN_TYPE>();
 
         public boolean contains(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
             return visits.containsKey(new Visit(type1, type2));
