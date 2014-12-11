@@ -18,6 +18,9 @@
 
     <property name="javacc.home" value="${env.JAVACC_HOME}"/>
 
+    <!-- If adding dependencies to other projects, ensure
+         the Javadoc dependencies are also updated accordingly
+         (and vice versa). -->
     <target name="prep" depends="prep-all"
             description="Create required directories">
         <mkdir dir="${build}"/>
@@ -49,6 +52,9 @@
 
     <target name="javadoc" depends="build"
             description="Create Javadoc API documentation">
+        <!-- If adding a Javadoc dependency to another project,
+             there is likely also a build dependency to that project.
+             Please add it as well and keep both in sync. -->
         <javadoc destdir="${api.doc}">
             <fileset dir="src">
                 <include name="**/*.java"/>

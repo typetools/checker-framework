@@ -17,6 +17,10 @@
     <property name="halt.on.test.failure" value="true"/>
 
 
+    <!-- Dependendencies on other projects (such as dataflow)
+         mirrors javadoc dependencies. If changing project
+         dependencies, change the Javadoc dependencies to keep
+         them in sync (and vice versa). -->
     <target name="prep" depends="prep-all"
             description="Create required directories">
         <mkdir dir="${build}"/>
@@ -191,6 +195,10 @@
 
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
+        <!-- Dependendencies on other projects (such as dataflow)
+             mirrors javadoc dependencies. If changing project
+             dependencies, change the Javadoc dependencies to keep
+             them in sync (and vice versa). -->
         <javadoc sourcepath="${src}:${checker.loc}/${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}" destdir="${api.doc}"
                  failonerror="true"
                  executable="${javadoc.bin}"

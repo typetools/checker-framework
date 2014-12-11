@@ -14,6 +14,10 @@
     <import file="${basedir}/../build-common.xml"/>
 
 
+    <!-- Dependendencies on other projects (such as javacutil)
+         mirrors javadoc dependencies. If changing project
+         dependencies, change the Javadoc dependencies to keep
+         them in sync (and vice versa). -->
     <target name="prep" depends="prep-all"
             description="Create required directories">
         <mkdir dir="${build}"/>
@@ -126,6 +130,10 @@
     classpath (despite the attempt in the body to add tools.jar to the
     classpath).  Also, ${java.home} is the jre/ directory.
     -->
+    <!-- Dependendencies on other projects (such as javacutil)
+         mirrors javadoc dependencies. If changing project
+         dependencies, change the Javadoc dependencies to keep
+         them in sync (and vice versa). -->
     <target name="javadoc" depends="prep,prep-ManualTaglet" description="Create Javadoc documentation">
         <ant dir="${javacutil.loc}">
             <target name="javadoc"/>
