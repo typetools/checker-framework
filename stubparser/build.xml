@@ -27,6 +27,7 @@
         <delete dir="${build}"/>
         <delete file="${stubparser.lib}"/>
         <delete dir="${dist}"/>
+        <delete dir="${api.doc}"/>
     </target>
 
     <target name="gen-parser" description="Generate parser files">
@@ -48,12 +49,14 @@
 
     <target name="javadoc" depends="build"
             description="Create Javadoc API documentation">
-        <javadoc destdir="docs/api">
+        <javadoc destdir="${api.doc}">
             <fileset dir="src">
                 <include name="**/*.java"/>
             </fileset>
-            <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
-            <link href="http://types.cs.washington.edu/checker-framework/api/javac/tree/"/>
+            <package name="org.checkerframework.stubparser.*"/>
+
+            <link href="http://docs.oracle.com/javase/8/docs/api/"/>
+            <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
         </javadoc>
     </target>
 

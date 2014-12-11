@@ -79,7 +79,7 @@
         </ant>
 
         <delete dir="${build}"/>
-        <delete dir="${dist.doc}"/>
+        <delete dir="${api.doc}"/>
         <delete dir="${temp.dir}"/>
 
         <delete file="${checker.lib}"/>
@@ -335,17 +335,14 @@
 
             <package name="org.checkerframework.javacutil.*"/>
             <package name="org.checkerframework.dataflow.*"/>
-            <!-- TODO: should contain stubparser, but there are
-                 build errors with it!
             <package name="org.checkerframework.stubparser.*"/>
-            -->
             <package name="org.checkerframework.framework.*"/>
             <package name="org.checkerframework.qualframework.*"/>
             <package name="org.checkerframework.common.*"/>
             <package name="org.checkerframework.checker.*"/>
 
-            <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
-            <link href="http://types.cs.washington.edu/checker-framework/api/javac/tree/"/>
+            <link href="http://docs.oracle.com/javase/8/docs/api/"/>
+            <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
             <taglet name="org.checkerframework.javacutil.dist.ManualTaglet"
                     path="${build}:${javacutil.loc}/${build}:${javacutil.lib}"/>
         </javadoc>
