@@ -22,7 +22,7 @@
         <mkdir dir="${build}"/>
         <mkdir dir="${tests.build}"/>
         <mkdir dir="${tests.build}/testclasses"/>
-        <mkdir dir="${dist.doc}" />
+        <mkdir dir="${api.doc}" />
 
         <available property="stubparser.project"
                    file="${stubparser.loc}/build.xml"/>
@@ -73,7 +73,7 @@
         </ant>
 
         <delete dir="${build}"/>
-        <delete dir="${dist.doc}"/>
+        <delete dir="${api.doc}"/>
         <delete dir="${temp.dir}"/>
         <delete dir="dist" />
 
@@ -191,7 +191,7 @@
 
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
-        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}" destdir="${dist.doc}"
+        <javadoc sourcepath="${src}:${checker.loc}/${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}" destdir="${api.doc}"
                  failonerror="true"
                  executable="${javadoc.bin}"
                  classpath="${build}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${javac.lib}:${javadoc.lib}:${junit.lib}"
@@ -199,16 +199,14 @@
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
             <package name="org.checkerframework.javacutil.*"/>
             <package name="org.checkerframework.dataflow.*"/>
-            <!-- TODO: should contain stubparser, but there
-                 build errors with it!
             <package name="org.checkerframework.stubparser.*"/>
-            -->
             <package name="org.checkerframework.framework.*"/>
             <package name="org.checkerframework.qualframework.*"/>
+            <package name="org.checkerframework.common.*"/>
             <package name="org.checkerframework.checker.*"/>
 
-            <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
-            <link href="http://types.cs.washington.edu/checker-framework/api/javac/tree/"/>
+            <link href="http://docs.oracle.com/javase/8/docs/api/"/>
+            <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
             <taglet name="org.checkerframework.javacutil.dist.ManualTaglet"
                     path="${javacutil.loc}/${build}"/>
         </javadoc>
