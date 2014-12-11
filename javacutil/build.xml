@@ -14,6 +14,9 @@
     <import file="${basedir}/../build-common.xml"/>
 
 
+    <!-- If adding dependencies to other projects, ensure
+         the Javadoc dependencies are also updated accordingly
+         (and vice versa). -->
     <target name="prep" depends="prep-all"
             description="Create required directories">
         <mkdir dir="${build}"/>
@@ -108,6 +111,9 @@
     classpath (despite the attempt in the body to add tools.jar to the
     classpath).  Also, ${java.home} is the jre/ directory.
     -->
+    <!-- If adding a Javadoc dependency to another project,
+         there is likely also a build dependency to that project.
+         Please add it as well and keep both in sync. -->
     <target name="javadoc" depends="prep,prep-ManualTaglet"
             description="Create Javadoc documentation">
 
