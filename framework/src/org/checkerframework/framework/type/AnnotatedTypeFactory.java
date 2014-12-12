@@ -75,6 +75,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -1008,10 +1009,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         //System.err.printf("TVFU\n  type: %s\n  generic: %s\n", type, generic);
 
-        Map<AnnotatedTypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
+        Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
 
         for (int i = 0; i < targs.size(); ++i) {
-            mapping.put((AnnotatedTypeVariable)tvars.get(i), targs.get(i));
+            mapping.put(((AnnotatedTypeVariable)tvars.get(i)).getUnderlyingType(), targs.get(i));
         }
 
         List<AnnotatedTypeParameterBounds> res = new LinkedList<>();
@@ -1474,7 +1475,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedExecutableType methodType = AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt);
         List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
 
-        Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeVarMapping =
+        Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping =
             AnnotatedTypes.findTypeArguments(processingEnv, this, tree, methodElt, methodType);
 
         if (!typeVarMapping.isEmpty()) {
@@ -1484,43 +1485,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // TODO: call to getTypeParmaeterDeclaration should not be needed, as
                 // methodType should only contain declarations.
 
-                final List<AnnotatedTypeVariable> hashcodeEq = matchingHashCode(tv.getTypeParameterDeclaration(), typeVarMapping);
-                final AnnotatedTypeVariable match = matching(tv.getTypeParameterDeclaration(), hashcodeEq);
-
-                if (typeVarMapping.get(tv.getTypeParameterDeclaration()) == null) {
+                if (typeVarMapping.get(tv.getUnderlyingType()) == null) {
                     ErrorReporter.errorAbort("AnnotatedTypeFactory.methodFromUse:" +
                             "mismatch between declared method type variables and the inferred method type arguments! " +
                             "Method type variables: " + methodType.getTypeVariables() + "; " +
                             "Inferred method type arguments: " + typeVarMapping);
                 }
-                typeargs.add(typeVarMapping.get(tv.getTypeParameterDeclaration()));
+                typeargs.add(typeVarMapping.get(tv.getUnderlyingType()));
             }
             methodType = (AnnotatedExecutableType) typeVarSubstitutor.subtitute(typeVarMapping, methodType);
         }
 
         return Pair.of(methodType, typeargs);
-    }
-
-
-    public List<AnnotatedTypeVariable> matchingHashCode(final AnnotatedTypeVariable target, final Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeVarMapping) {
-        final List<AnnotatedTypeVariable> targets = new ArrayList<>(5);
-        for(final AnnotatedTypeVariable key : typeVarMapping.keySet()) {
-            if (key.hashCode() == target.hashCode()) {
-                targets.add(key);
-            }
-        }
-
-        return targets;
-    }
-
-    public AnnotatedTypeVariable matching(final AnnotatedTypeVariable target, List<AnnotatedTypeVariable> candidates) {
-        for(final AnnotatedTypeVariable candidate : candidates) {
-            if (candidate.equals(target)) {
-                return candidate;
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -1558,12 +1534,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
 
-        Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeVarMapping =
+        Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping =
             AnnotatedTypes.findTypeArguments(processingEnv, this, tree, ctor, con);
 
         if (!typeVarMapping.isEmpty()) {
             for (AnnotatedTypeVariable tv : con.getTypeVariables()) {
-                typeargs.add(typeVarMapping.get(tv));
+                typeargs.add(typeVarMapping.get(tv.getUnderlyingType()));
             }
             con = (AnnotatedExecutableType) typeVarSubstitutor.subtitute(typeVarMapping,con);
         }
