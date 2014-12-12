@@ -391,11 +391,11 @@
         <property name="checker.tutorial" value="${checker}/../tutorial" />
         <property name="web.root"         value="${dest.dir}/../.." />
 
+        <copy file="${checker.manual}/${checker.webpage}" tofile="${dest.dir}/${checker.webpage}" />
+
         <copy file="${checker.manual}/manual.html" tofile="${dest.dir}/${manual.name}.html"/>
         <copy file="${checker.manual}/manual.pdf"  tofile="${dest.dir}/${manual.name}.pdf"/>
         <copy file="${dataflow.manual}/dataflow.pdf"  tofile="${dest.dir}/${dataflow.manual.name}.pdf"/>
-
-        <copy file="${checker.manual}/${checker.webpage}" tofile="${dest.dir}/${checker.webpage}" />
 
         <copy todir="${dest.dir}" flatten="true">
             <fileset dir="${checker.manual}">
