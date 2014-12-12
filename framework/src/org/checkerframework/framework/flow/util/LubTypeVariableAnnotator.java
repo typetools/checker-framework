@@ -1,10 +1,7 @@
 package org.checkerframework.framework.flow.util;
 
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.javacutil.ErrorReporter;
 
@@ -83,8 +80,7 @@ public class LubTypeVariableAnnotator {
             final AnnotatedTypeMirror src = asLubType(headSubtype, lub, top, types);
 
             //lub has no annotation, so copy all annotations from headSubtype
-            final AnnotatedTypeMerger merger = new AnnotatedTypeMerger(top);
-            src.accept(merger, lub);
+            AnnotatedTypeMerger.merge(src, lub);
         }
     }
 
@@ -98,8 +94,12 @@ public class LubTypeVariableAnnotator {
             final AnnotationMirror subPrimary = subtype.getAnnotationInHierarchy(top);
 
             if(lubPrimary == null && subPrimary == null) {
-                //TODO: After merging with Qual Param etc... there is a problem where we have two different
-                //TODO: bounds but empty primary annotations here, leading to a bad LUB
+                //TODO: Sometimes during dataflow the subtype does not have all annotations in its components.  Now,
+                //TODO: This always occurs deep into the type in locations where we would expect the annotations to
+                //TODO: be the same as lub and not transfer them over.  We should figure out why this happens and
+                //TODO: create fully-annotated types rather than partially anntoated types
+                //TODO: !new StructuralEqualityComparer().areEqualInHierarchy(lub,subAsLub, top)) will return false
+                //TODO: in these cases
                 continue; //lub is already annotated as subtype is either the same type
                           //or extends lub without adding a primary annotation.
                           //so continue to the next hierarchy
@@ -138,7 +138,7 @@ public class LubTypeVariableAnnotator {
 
     /**
      *
-     * @param type if lub is a type variable T then is a type variable that extends T (e.g. <E extends T>
+     * @param type if lub is a type variable T but type is not, then type is a type variable that extends T (e.g. <E extends T>
      * @param lub the type variable that is a supertype of T
      * @return the bound of type that has a underlying type T with the first primary annotation encounter
      *         while finding that bound
@@ -161,7 +161,7 @@ public class LubTypeVariableAnnotator {
         }
 
         if(anno != null) {
-            typeUpperBound = typeUpperBound.shallowCopy();
+            typeUpperBound = typeUpperBound.deepCopy();
             typeUpperBound.addAnnotation(anno);
         }
 
