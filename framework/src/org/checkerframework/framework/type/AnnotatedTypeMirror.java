@@ -127,6 +127,9 @@ public abstract class AnnotatedTypeMirror {
         return result;
     }
 
+    protected static final EqualityAtmComparer equalityComparer = new EqualityAtmComparer();
+    protected static final HashcodeAtmVisitor hashcodeVisitor = new HashcodeAtmVisitor();
+
     /** The factory to use for lazily creating annotated types. */
     protected final AnnotatedTypeFactory atypeFactory;
 
@@ -172,13 +175,13 @@ public abstract class AnnotatedTypeMirror {
             return false;
         }
 
-        return new EqualityAtmComparer().visit(this, (AnnotatedTypeMirror) o, null);
+        return equalityComparer.visit(this, (AnnotatedTypeMirror) o, null);
     }
 
     @Pure
     @Override
     public int hashCode() {
-        return new HashcodeAtmVisitor().visit(this);
+        return hashcodeVisitor.visit(this);
     }
 
     /**
