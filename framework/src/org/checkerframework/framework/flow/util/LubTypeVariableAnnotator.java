@@ -94,12 +94,12 @@ public class LubTypeVariableAnnotator {
             final AnnotationMirror subPrimary = subtype.getAnnotationInHierarchy(top);
 
             if(lubPrimary == null && subPrimary == null) {
-                //TODO: Sometimes during dataflow the subtype does not have all annotations in its components.  Now,
-                //TODO: This always occurs deep into the type in locations where we would expect the annotations to
-                //TODO: be the same as lub and not transfer them over.  We should figure out why this happens and
-                //TODO: create fully-annotated types rather than partially anntoated types
+                //TODO: Sometimes we need to lub a NULL type with annotations
+                //TODO: In these cases we may see a type var with bounds that lack annotations on their
+                //TODO: type args.  To find these cases:
                 //TODO: !new StructuralEqualityComparer().areEqualInHierarchy(lub,subAsLub, top)) will return false
-                //TODO: in these cases
+                //TODO: Perhaps instead we should handle this case by aggregating the null values and
+                //TODO: rather than converting them to type variables we should handle them separately
                 continue; //lub is already annotated as subtype is either the same type
                           //or extends lub without adding a primary annotation.
                           //so continue to the next hierarchy
@@ -112,7 +112,11 @@ public class LubTypeVariableAnnotator {
                     //do nothing lub is already above top
                 } else if(typeHierarchy.isSubtype(lub, subAsLub, top)) {
                     if(lubPrimary != null) { //&& subPrimary == null
+                        //since primary annotations are added to the bounds
+                        //we need to replace the upper/lower bound annotations
                         lub.removeAnnotation(lubPrimary);
+                        lub.getUpperBound().replaceAnnotation(subAsLub.getUpperBound().getAnnotationInHierarchy(top));
+                        lub.getLowerBound().replaceAnnotation(subAsLub.getLowerBound().getAnnotationInHierarchy(top));
 
                     } else { //lubPrimary == null && subPrimary != null
                         lub.replaceAnnotation(subPrimary);
@@ -148,7 +152,7 @@ public class LubTypeVariableAnnotator {
         AnnotatedTypeMirror typeUpperBound = type;
         AnnotationMirror anno = typeUpperBound.getAnnotationInHierarchy(top);
         while(typeUpperBound.getKind() == TypeKind.TYPEVAR
-                && !haveSameDeclaration(types, (AnnotatedTypeVariable) typeUpperBound, lub)) {
+           && !haveSameDeclaration(types, (AnnotatedTypeVariable) typeUpperBound, lub)) {
             typeUpperBound = ((AnnotatedTypeVariable) typeUpperBound).getUpperBound();
             if(anno == null) {
                 anno = typeUpperBound.getAnnotationInHierarchy(top);
