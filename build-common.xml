@@ -18,9 +18,7 @@
     <property name="tests" value="tests"/>
     <property name="tests.build" value="${tests}/build"/>
 
-    <!-- TODO describe distinction -->
-    <property name="dist.doc" value="doc"/>
-    <property name="api.doc" value="${basedir}/../api"/>
+    <property name="api.doc" value="api"/>
 
     <property environment="env"/>
     <tstamp>

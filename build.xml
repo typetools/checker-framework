@@ -4,6 +4,12 @@
   This top-level build file simply delegates to the subprojects.
   It assumes that the "checker" project is aware of all dependencies
   and that it is sufficient to run targets from there.
+
+  Each subproject builds its own Javadoc including the documentation
+  of all projects it in turn depends on. This would allow us to
+  easily ship each subproject independently. Subprojects that
+  already ship independently also build a Javadoc JAR file
+  containing all its documentation.
 -->
 <project name="checkerframework" default="dist"
         basedir=".">
