@@ -1121,9 +1121,12 @@ public class AnnotatedTypes {
             }
             if (subtypes.size() > 0) {
                 if (!lub.getAnnotations().isEmpty()) {
-                    ErrorReporter.errorAbort("Why would LUB have annotations here!");
+                    //The lub was created immediately before this method and if we reached this
+                    //point it has had no annotations added to it
+                    ErrorReporter.errorAbort("LUB should not have annotations here\n"
+                                          +  "lub=" + lub + "\n"
+                                          +  "subtypes=" + PluginUtil.join(", ", subtypes));
                 }
-                lub.clearAnnotations();
             }
 
             if(lub.getKind() == TypeKind.TYPEVAR) {
