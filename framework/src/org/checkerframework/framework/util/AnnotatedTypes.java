@@ -933,9 +933,13 @@ public class AnnotatedTypes {
                 }
                 accum.put(entry.getKey(), merged);
             } else {
+                //TODO: Solely to stop the concurrent modification exception until Werner gets a chance to look at this
+                Map<AnnotatedTypeVariable, AnnotatedTypeMirror> copy = new HashMap<>();
+                copy.putAll(accum);
+
                 // TODO tests break without this :-(
                 // What does this do??
-                for (Map.Entry<AnnotatedTypeVariable, AnnotatedTypeMirror> accumentry : accum.entrySet()) {
+                for (Map.Entry<AnnotatedTypeVariable, AnnotatedTypeMirror> accumentry : copy.entrySet()) {
                     if (accumentry.getKey().getUnderlyingType() == entry.getKey().getUnderlyingType()) {
                         // GLB
                         // System.out.println("222What should be done with: " + accumentry.getKey() + " and: " + entry.getKey());
@@ -1113,6 +1117,9 @@ public class AnnotatedTypes {
                 }
             }
             if (subtypes.size() > 0) {
+                if (!lub.getAnnotations().isEmpty()) {
+                    ErrorReporter.errorAbort("Why would LUB have annotations here!");
+                }
                 lub.clearAnnotations();
             }
 
