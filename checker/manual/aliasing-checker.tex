@@ -4,8 +4,8 @@
 The Aliasing Checker identifies expressions that definitely have no
 aliases.
 
-Two expressions might be aliased when they have the same non-primitive value.
-Two expressions are aliased if they are references to the identical Java object
+Two expressions are aliased when they have the same non-primitive value;
+that is, they are references to the identical Java object
 in the heap. Another way of saying this is that two expressions,
 $\mathit{exprA}$ and $\mathit{exprB}$, are aliases of each other when
 $\mathit{exprA} \<==> \mathit{exprB}$ at the same program point.
@@ -35,7 +35,7 @@ assumptions.
 \label{fig-aliasing-hierarchy}
 \end{figure}
 
-There are two possible types for an expression in the program:
+There are two possible types for an expression:
 
 \begin{description}
 
@@ -50,18 +50,18 @@ is the type of an expression that has no aliases.
 The \code{@Unique} annotation is only allowed at local variables, method
 parameters, constructor results, and method returns.
 A constructor's result should be annotated with \code{@Unique} only if the
-constructor's body does not creates a new alias to the constructed object.
+constructor's body does not creates an alias to the constructed object.
 
 \end{description}
 
 There are also two annotations, which are currently trusted instead of verified,
-that can be used on parameters of a constructor or method declaration (including
+that can be used on formal parameters (including
 the receiver parameter, \<this>):
 
 \begin{description}
 
 \item[\refqualclass{checker/aliasing/qual}{NonLeaked}]
-is used to identify method parameters that are not leaked nor
+identifies a formal parameter that is not leaked nor
 returned by the method body.
 For example, the formal parameter of the String copy constructor,
 \code{String(String s)}, is \code{@NonLeaked} because the body of the method
@@ -87,8 +87,8 @@ typically aliased.  (The only counterexample is when the right-hand side is
 a fresh expression; see Section~\ref{aliasing-refinement}.)
 
 \begin{Verbatim}
-    @Unique Object u = ...;
-    Object o = u;                    // (not.unique) type-checking error!
+  @Unique Object u = ...;
+  Object o = u;                    // (not.unique) type-checking error!
 \end{Verbatim}
 
 If this example type-checked, then \<u> and \<o> would be aliased.
@@ -97,29 +97,28 @@ type of \<u>, or the \<o = u;> assignment, must be removed.
 
 \item[Method calls and returns (pseudo-assignments)]
 Passing an argument to a method is a ``pseudo-assignment'' because it effectively
-assigns the argument to the formal parameter. Expressions returned by methods
-are effectively assigned to the method call itself and are also
-pseudo-assignments. Like assignments, the left-hand side and right-hand side of
+assigns the argument to the formal parameter.  Return statements are also
+pseudo-assignments.
+As with assignments, the left-hand side and right-hand side of
 pseudo-assignments are typically aliased.
 
-Here is an example for argument-passing.
+Here is an example for argument-passing:
 
 \begin{Verbatim}
-    void foo(Object o) { ... }
+  void foo(Object o) { ... }
 
-    @Unique Object u = ...;
-    foo(u);     // type-checking error, because foo may create an alias of the passed argument.
+  @Unique Object u = ...;
+  foo(u);   // type-checking error, because foo may create an alias of the passed argument
 \end{Verbatim}
 
 Passing a non-aliased
-reference to a method does not necessarily create an alias, because the
-argument and the parameter might not be in scope at the same program point.
+reference to a method does not necessarily create an alias.
 However, the body of the method might create an alias or leak the
 reference.  Thus, the Aliasing Checker always treats a method call as
-creating aliases for the argument unless the corresponding formal
-parameters are marked as
+creating aliases for each argument unless the corresponding formal
+parameter is marked as
 @\refqualclass{checker/aliasing/qual}{NonLeaked} or
-@\refqualclass{checker/aliasing/qual}{LeakedToResult}
+@\refqualclass{checker/aliasing/qual}{LeakedToResult}.
 
 Here is an example for a return statement:
 
@@ -147,6 +146,18 @@ Object id(@LeakedToResult Object p) {
     return p;
 }
 \end{Verbatim}
+
+\noindent
+after which the following code type-checks:
+
+\begin{Verbatim}
+@Unique Object u = ...;
+id(u);                   // method call result is not used
+Object o1 = ...;
+Object o2 = id(o1);      // argument is not @Unique
+\end{Verbatim}
+
+
 
 \item[Throws]
 A thrown exception can be captured by a catch block, which creates an
@@ -205,6 +216,19 @@ the \<@Unique> qualifier on subcomponents of a structure, such as fields.
 Other solutions might be possible; they would be more complicated but would
 permit more code to type-check.
 
+\<@Unique> may not be written on a type parameter for similar reasons.
+The assignment
+
+\begin{Verbatim}
+List<@Unique Object> l1 = ...;
+List<@Unique Object> l2 = l1;
+\end{Verbatim}
+
+\noindent
+must be forbidden because it would alias \<l1.get(0)> with \<l2.get(0)>
+even though both have type \<@Unique>.  The Aliasing Checker forbids this
+code by rejecting the type \code{List<@Unique Object>}.
+
 
 \section{Aliasing type refinement\label{aliasing-refinement}}
 
@@ -231,15 +255,16 @@ each time it is evaluated. In practice, this is only method/constructor calls
 with \code{@Unique} return type. A variable/field is not fresh because it can
 return the same value when evaluated twice.
 \item
-The LHS is a \code{@NonLeaked} method parameter.
-(That can only happen when the RHS is an argument in a method call.)
+The LHS is a \code{@NonLeaked} formal parameter and the RHS is an argument in a
+method call or constructor invocation.
 \item
-The LHS is a \code{@LeakedToResult} method parameter, and the method's return
-value is discarded --- that is, the method call is written syntactically as a
-statement rather than as a part of a larger expression or statement.
+The LHS is a \code{@LeakedToResult} formal parameter, the RHS is an argument in
+a method call or constructor invocation, and the method's return value is
+discarded --- that is, the method call is written syntactically as a statement
+rather than as a part of a larger expression or statement.
 \end{itemize}
+%(Notice that the last two rules above are restricted to pseudo-assignments.)
 
-(Notice that the last two rules above are restricted to pseudo-assignments.)
 A consequence of the above rules is that most method calls are treated conservatively.
 If a variable with declared type \code{@MaybeAliased} has been refined
 to \code{@Unique} and is used as an argument of a method call, it usually loses its
@@ -254,6 +279,11 @@ type refinement rules.
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
+// Annotations on the StringBuffer class, used in the examples below.
+// class StringBuffer {
+//  @Unique StringBuffer();
+//  StringBuffer append(@LeakedToResult StringBuffer this, @NonLeaked String s);
+// }
 
 void foo() {
     StringBuffer sb = new StringBuffer();    // sb is refined to @Unique.
@@ -263,18 +293,15 @@ void foo() {
 }
 
 void bar() {
-    String s = new String("MyUniqueString");  // s is refined to @Unique.
-
     StringBuffer sb = new StringBuffer();     // sb is refined to @Unique.
 
-    sb.append(s);
-    // Both s and sb stay @Unique, as no aliases are created.
+    sb.append("someString");
+    // sb stays @Unique, as no aliases are created.
 
-    StringBuffer sb2 = sb.append(s);
+    StringBuffer sb2 = sb.append("someString");
     // sb is leaked and becomes @MaybeAliased.
 
-    // Both sb and sb2 have aliases and because of that have type @MaybeAliased,
-    // but s remains @Unique.
+    // Both sb and sb2 have aliases and because of that have type @MaybeAliased.
 }
 
 \end{Verbatim}
