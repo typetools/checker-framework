@@ -33,8 +33,7 @@ class TypeFromTree {
     public static AnnotatedTypeMirror fromExpression(final AnnotatedTypeFactory typeFactory, final ExpressionTree tree) {
         abortIfTreeIsNull(typeFactory, tree);
 
-        final AnnotatedTypeMirror type;
-        type = expressionVisitor.visit(tree, typeFactory);
+        final AnnotatedTypeMirror type = expressionVisitor.visit(tree, typeFactory);
         ifExecutableCheckElement(typeFactory, tree, type);
 
         return type;
