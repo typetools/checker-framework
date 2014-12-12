@@ -170,6 +170,12 @@ Matthew~S. Tschantz and Michael~D. Ernst.
   Applications (OOPSLA 2005)}, pages 211--230, San Diego, CA, USA,
   October~18--20, 2005.
 
+\bibitem[VPEJ14]{VakilianPEJ2014}
+Mohsen Vakilian, Amarin Phaosawasdi, Michael~D. Ernst, and Ralph~E. Johnson.
+\newblock Cascade: A universal type qualifier inference tool.
+\newblock Technical report, University of Illinois at Urbana-Champaign, Urbana,
+  IL, USA, September 2014.
+
 \bibitem[WKSE14]{WeitzKSE2014}
 Konstantin Weitz, Gene Kim, Siwakorn Srisakaokul, and Michael~D. Ernst.
 \newblock A type system for format strings.
