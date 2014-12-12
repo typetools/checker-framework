@@ -10,8 +10,10 @@ class TypeRefinement {
  * its declared type must have been @MaybeAliased) except in the following
  * cases:
  * 1.The RHS is a fresh expression.
- * 2.The LHS is a @NonLeaked method parameter.
- * 3.The LHS is a @LeakedToResult method parameter, and the method's return
+ * 2.The LHS is a @NonLeaked formal parameter and the RHS is an
+ * argument in a method call or constructor invocation.
+ * 3.The LHS is a @LeakedToResult formal parameter, the RHS is an
+ * argument in a method call or constructor invocation, and the method's return
  * value is discarded.
  */
 
@@ -41,6 +43,7 @@ class TypeRefinement {
         nonLeaked(unique);
         isUnique(unique);
 
+        //:: error: (unique.leaked)
         leaked(unique);
         //:: error: (argument.type.incompatible)
         isUnique(unique);
@@ -51,6 +54,8 @@ class TypeRefinement {
         isUnique(unique);
         leakedToResult(unique);
         isUnique(unique);
+
+        //:: error: (unique.leaked)
         String notUnique = leakedToResult(unique);
         //:: error: (argument.type.incompatible)
         isUnique(unique);
