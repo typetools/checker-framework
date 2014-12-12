@@ -42,6 +42,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -468,10 +469,10 @@ public class AnnotatedTypes {
                                              AnnotatedTypeMirror t,
                                              List<? extends AnnotatedTypeVariable> from,
                                              List<? extends AnnotatedTypeMirror> to) {
-        final Map<AnnotatedTypeVariable, AnnotatedTypeMirror> mappings = new HashMap<>();
+        final Map<TypeVariable, AnnotatedTypeMirror> mappings = new HashMap<>();
 
         for (int i = 0; i < from.size(); ++i) {
-            mappings.put(from.get(i), to.get(i));
+            mappings.put(from.get(i).getUnderlyingType(), to.get(i));
         }
         return atypeFactory.getTypeVarSubstitutor().subtitute(mappings, t);
     }
@@ -634,7 +635,7 @@ public class AnnotatedTypes {
      * @return the mapping of the type variables to type arguments for
      *   this method or constructor invocation.
      */
-    public static Map<AnnotatedTypeVariable, AnnotatedTypeMirror>
+    public static Map<TypeVariable, AnnotatedTypeMirror>
     findTypeArguments(final ProcessingEnvironment processingEnv,
                       final AnnotatedTypeFactory atypeFactory,
                       final ExpressionTree expr,
@@ -666,17 +667,17 @@ public class AnnotatedTypes {
         if (!targs.isEmpty()) {
             List<? extends AnnotatedTypeVariable> tvars = preType.getTypeVariables();
 
-            Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArguments = new HashMap<>();
+            Map<TypeVariable, AnnotatedTypeMirror> typeArguments = new HashMap<>();
             for (int i = 0; i < elt.getTypeParameters().size(); ++i) {
                 AnnotatedTypeVariable typeVar = tvars.get(i);
                 AnnotatedTypeMirror typeArg = atypeFactory.getAnnotatedTypeFromTypeTree(targs.get(i));
                 // TODO: the call to getTypeParameterDeclaration shouldn't be necessary - typeVar already
                 // should be a declaration.
-                typeArguments.put(typeVar.getTypeParameterDeclaration(), typeArg);
+                typeArguments.put(typeVar.getUnderlyingType(), typeArg);
             }
             return typeArguments;
         } else {
-            Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArguments =
+            Map<TypeVariable, AnnotatedTypeMirror> typeArguments =
                     inferTypeArguments(processingEnv, atypeFactory, expr, elt, preType);
             return typeArguments;
         }
@@ -705,7 +706,7 @@ public class AnnotatedTypes {
      * @return the mapping of the type variables to type arguments for
      *   this method or constructor invocation.
      */
-    private static Map<AnnotatedTypeVariable, AnnotatedTypeMirror>
+    private static Map<TypeVariable, AnnotatedTypeMirror>
     inferTypeArguments(final ProcessingEnvironment processingEnv,
                        final AnnotatedTypeFactory atypeFactory,
                        final ExpressionTree expr,
@@ -736,7 +737,7 @@ public class AnnotatedTypes {
             returnTypeAsAssigned = null;
         }
 
-        Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArgumentsFromAssignment;
+        Map<TypeVariable, AnnotatedTypeMirror> typeArgumentsFromAssignment;
         if (returnTypeAsAssigned != null) {
             typeArgumentsFromAssignment = matchTypeVars(assigned, returnTypeAsAssigned);
         } else {
@@ -749,13 +750,13 @@ public class AnnotatedTypes {
                 atypeFactory.annotateImplicit(expr, basicReturnType);
                 AnnotatedTypeMirror ret = assigned.shallowCopy();
                 ret.replaceAnnotations(basicReturnType.getAnnotations());
-                typeArgumentsFromAssignment = Collections.singletonMap(((AnnotatedTypeVariable) returnType).getTypeParameterDeclaration(), ret);
+                typeArgumentsFromAssignment = Collections.singletonMap(((AnnotatedTypeVariable) returnType).getUnderlyingType(), ret);
             } else {
                 typeArgumentsFromAssignment = Collections.emptyMap();
             }
         }
 
-        Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArguments;
+        Map<TypeVariable, AnnotatedTypeMirror> typeArguments;
         typeArguments = inferTypeArgsUsingArgs(processingEnv, atypeFactory, expr, preType, returnType, typeArgumentsFromAssignment);
 
         if (typeArguments.size() != preType.getTypeVariables().size()) {
@@ -763,17 +764,17 @@ public class AnnotatedTypes {
             for (AnnotatedTypeVariable atv : preType.getTypeVariables()) {
                 if (!typeArguments.containsKey(atv)) {
                     AnnotatedTypeMirror dummy = atypeFactory.getUninferredWildcardType(atv);
-                    typeArguments.put(atv.getTypeParameterDeclaration(), dummy);
+                    typeArguments.put(atv.getUnderlyingType(), dummy);
                 }
             }
         }
         return typeArguments;
     }
 
-    private static Map<AnnotatedTypeVariable, AnnotatedTypeMirror> matchTypeVars(
+    private static Map<TypeVariable, AnnotatedTypeMirror> matchTypeVars(
             AnnotatedTypeMirror lhs,
             AnnotatedTypeMirror rhs) {
-        Map<AnnotatedTypeVariable, AnnotatedTypeMirror> result = new HashMap<>();
+        Map<TypeVariable, AnnotatedTypeMirror> result = new HashMap<>();
         matchTypeVars(lhs, rhs, result, true);
         return result;
     }
@@ -781,7 +782,7 @@ public class AnnotatedTypes {
     private static void matchTypeVars(
             AnnotatedTypeMirror lhs,
             AnnotatedTypeMirror rhs,
-            Map<AnnotatedTypeVariable, AnnotatedTypeMirror> accum,
+            Map<TypeVariable, AnnotatedTypeMirror> accum,
             boolean toplevel) {
         if (rhs.getKind().isPrimitive()) {
             // TODO: handle boxing?
@@ -790,7 +791,7 @@ public class AnnotatedTypes {
 
         switch (rhs.getKind()) {
             case TYPEVAR:
-                AnnotatedTypeVariable key = ((AnnotatedTypeVariable) rhs).getTypeParameterDeclaration();
+                TypeVariable key = ((AnnotatedTypeVariable) rhs).getUnderlyingType();
 
                 if (toplevel && lhs.getKind() == TypeKind.WILDCARD) {
                     accum.put(key, ((AnnotatedWildcardType)lhs).getExtendsBound().deepCopy());
@@ -841,13 +842,13 @@ public class AnnotatedTypes {
      *   has to be a subtype of MethodInvocationTree or NewClassTree.
      * @return the type argument
      */
-    private static Map<AnnotatedTypeVariable, AnnotatedTypeMirror> inferTypeArgsUsingArgs(
+    private static Map<TypeVariable, AnnotatedTypeMirror> inferTypeArgsUsingArgs(
             final ProcessingEnvironment processingEnv,
             final AnnotatedTypeFactory atypeFactory,
             final ExpressionTree expr,
             final AnnotatedExecutableType preType,
             final AnnotatedTypeMirror returnType,
-            final Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArgumentsFromAssignment) {
+            final Map<TypeVariable, AnnotatedTypeMirror> typeArgumentsFromAssignment) {
         final Types types = processingEnv.getTypeUtils();
 
         final List<? extends ExpressionTree> argumentExprs =
@@ -873,23 +874,23 @@ public class AnnotatedTypes {
             passedArgs.add(atypeFactory.getAnnotatedType(argExp));
         }
 
-        Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArgumentsFromArguments = new HashMap<>(typeArgumentsFromAssignment);
+        Map<TypeVariable, AnnotatedTypeMirror> typeArgumentsFromArguments = new HashMap<>(typeArgumentsFromAssignment);
 
         for (int i = 0; i < requiredParams.size(); ++i) {
             AnnotatedTypeMirror requiredParam = requiredParams.get(i);
             AnnotatedTypeMirror passedArg = passedArgs.get(i);
             AnnotatedTypeMirror argumentAsParamType = asSuper(types, atypeFactory, passedArg, requiredParam);
 
-            Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArgsFromArgument;
+            Map<TypeVariable, AnnotatedTypeMirror> typeArgsFromArgument;
             if (requiredParam.getKind() == TypeKind.TYPEVAR) {
                 typeArgsFromArgument = matchTypeVars(passedArg, requiredParam);
 
-                AnnotatedTypeMirror pre = typeArgsFromArgument.get(((AnnotatedTypeVariable) requiredParam).getTypeParameterDeclaration());
+                AnnotatedTypeMirror pre = typeArgsFromArgument.get(((AnnotatedTypeVariable) requiredParam).getUnderlyingType());
                 if (pre != null) {
                     for (AnnotationMirror am : requiredParam.getAnnotations()) {
                         pre.replaceAnnotation(atypeFactory.getQualifierHierarchy().getBottomAnnotation(am));
                     }
-                    typeArgsFromArgument.put((AnnotatedTypeVariable) requiredParam, pre);
+                    typeArgsFromArgument.put(((AnnotatedTypeVariable) requiredParam).getUnderlyingType(), pre);
                 }
             } else if (argumentAsParamType == null) {
                 typeArgsFromArgument = matchTypeVars(passedArg, requiredParam);
@@ -902,13 +903,15 @@ public class AnnotatedTypes {
     }
 
     // TODO: this method needs some more thought and cleanup.
-    private static Map<AnnotatedTypeVariable, AnnotatedTypeMirror> mergeTypeArgs(
+    private static Map<TypeVariable, AnnotatedTypeMirror> mergeTypeArgs(
             final AnnotatedTypeFactory atypeFactory,
-            final Map<AnnotatedTypeVariable, AnnotatedTypeMirror> accum,
-            final Map<AnnotatedTypeVariable, AnnotatedTypeMirror> add) {
-        for (Map.Entry<AnnotatedTypeVariable, AnnotatedTypeMirror> entry : add.entrySet()) {
+            final Map<TypeVariable, AnnotatedTypeMirror> accum,
+            final Map<TypeVariable, AnnotatedTypeMirror> add) {
+
+        for (Map.Entry<TypeVariable, AnnotatedTypeMirror> entry : add.entrySet()) {
             if (accum.isEmpty()) {
-                accum.put(entry.getKey().getTypeParameterDeclaration(), entry.getValue());
+                accum.put(entry.getKey(), entry.getValue());
+
             } else if (accum.containsKey(entry.getKey())) {
                 AnnotatedTypeMirror prev = accum.get(entry.getKey());
                 AnnotatedTypeMirror toadd = entry.getValue();
@@ -934,17 +937,17 @@ public class AnnotatedTypes {
                 accum.put(entry.getKey(), merged);
             } else {
                 //TODO: Solely to stop the concurrent modification exception until Werner gets a chance to look at this
-                Map<AnnotatedTypeVariable, AnnotatedTypeMirror> copy = new HashMap<>();
+                Map<TypeVariable, AnnotatedTypeMirror> copy = new HashMap<>();
                 copy.putAll(accum);
 
                 // TODO tests break without this :-(
                 // What does this do??
-                for (Map.Entry<AnnotatedTypeVariable, AnnotatedTypeMirror> accumentry : copy.entrySet()) {
-                    if (accumentry.getKey().getUnderlyingType() == entry.getKey().getUnderlyingType()) {
+                for (Map.Entry<TypeVariable, AnnotatedTypeMirror> accumentry : copy.entrySet()) {
+                    if (accumentry.getKey() == entry.getKey()) {
                         // GLB
                         // System.out.println("222What should be done with: " + accumentry.getKey() + " and: " + entry.getKey());
                     } else {
-                        accum.put(entry.getKey().getTypeParameterDeclaration(), entry.getValue());
+                        accum.put(entry.getKey(), entry.getValue());
                     }
                 }
             }

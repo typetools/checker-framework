@@ -1701,22 +1701,6 @@ public abstract class AnnotatedTypeMirror {
             // |T extends A&B| = |A|
             return this.getUpperBound().getErased();
         }
-
-        /**
-         * This method returns the type parameter declaration corresponding
-         * to this type variable.
-         * TODO: this should be a separate class, something like AnnotatedTypeParameter,
-         * which is not a subtype of AnnotatedTypeMirror.
-         * At the moment, it is a ATV without qualifiers, suitable for use in
-         * class/method type argument mappings.
-         *
-         * @return The type parameter declaration.
-         */
-        public AnnotatedTypeVariable getTypeParameterDeclaration() {
-            AnnotatedTypeVariable res = this.shallowCopy(false);
-            res.declaration = true;
-            return res;
-        }
     }
 
     /**
