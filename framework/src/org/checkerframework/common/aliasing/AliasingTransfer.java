@@ -41,10 +41,12 @@ import com.sun.source.tree.Tree.Kind;
  * <p>
  * 1.The RHS is a fresh expression.
  * <p>
- * 2.The LHS is a {@literal @}NonLeaked method parameter.
+ * 2.The LHS is a {@literal @}NonLeaked formal parameter and the RHS is an
+ * argument in a method call or constructor invocation.
  * <p>
- * 3.The LHS is a {@literal @}LeakedToResult method parameter, and the method's
- * return value is discarded.
+ * 3.The LHS is a {@literal @}LeakedToResult formal parameter, the RHS is an
+ * argument in a method call or constructor invocation, and the method's return
+ * value is discarded.
  * <p>
  */
 
@@ -83,8 +85,8 @@ public class AliasingTransfer extends CFTransfer {
      * Handling pseudo-assignments. Called by
      * <tt>CFAbstractTransfer.visitMethodInvocation()</tt>.
      * <p>
-     * Case 2: Given a method call, traverses all parameters of the method
-     * declaration, and if it doesn't have the {@literal @}NonLeaked or
+     * Case 2: Given a method call, traverses all formal parameters of the
+     * method declaration, and if it doesn't have the {@literal @}NonLeaked or
      * {@literal @}LeakedToResult annotations, we remove the node of the
      * respective argument in the method call from the store. If parameter has
      * {@literal @}LeakedToResult, <tt>visitMethodInvocation()</tt> handles it.

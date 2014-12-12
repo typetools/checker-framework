@@ -10,14 +10,15 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
- * This annotation is used on a method parameter or a receiver parameter
- * to indicate that it may be returned, but it is not otherwise leaked.
- * (The parameter is leaked if it is stored in a field where it could be
- * accessed later, and in that case this annotation would not apply.)
+ * This annotation is used on a formal parameter to indicate that the
+ * parameter may be returned, but it is not otherwise leaked.  (A parameter
+ * is leaked if it is stored in a field where it could be accessed later,
+ * and in that case this annotation would not apply.)
  * <p>
  *
- * For example, the receiver parameter of {@link StringBuffer#append(String s)} is
- * annotated as <tt>@LeakedToResult</tt>, because the method returns the updated receiver.
+ * For example, the receiver parameter of {@link StringBuffer#append(String
+ * s)} is annotated as <tt>@LeakedToResult</tt>, because the method returns
+ * the updated receiver.
  *
  * @see NonLeaked
  * @checker_framework.manual #aliasing-checker Aliasing Checker

@@ -10,13 +10,13 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
- * This annotation is used on method parameters and indicates
+ * This annotation is used on a formal parameter to indicate
  * that the parameter is not leaked (stored in a location that could
  * be accessed later) nor returned by the method body.
  * <p>
  *
- * For example, the parameter of <tt>String(String s)</tt> is
- * <tt>@NonLeaked</tt>, because
+ * For example, the parameter of {@link String#String(String s)} is
+ * <code>@NonLeaked</code>, because
  * the method only uses the parameter to make a copy of it.
  *
  * @see LeakedToResult
