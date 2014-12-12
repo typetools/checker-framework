@@ -16,7 +16,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * This annotation may not be written in source code; it is an
  * implementation detail of the Regex Checker.
  *
- * @checker_framework_manual #regex-checker Regex Checker
+ * @checker_framework.manual #regex-checker Regex Checker
  */
 @TypeQualifier
 @InvisibleQualifier

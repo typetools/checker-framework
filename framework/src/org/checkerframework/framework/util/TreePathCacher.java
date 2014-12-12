@@ -28,6 +28,14 @@ public class TreePathCacher  extends TreeScanner<TreePath, Tree> {
     private TreePath path;
 
     /**
+     * @param target The tree to search for
+     * @return true if the tree is cached
+     */
+    public boolean isCached(Tree target) {
+        return foundPaths.containsKey(target);
+    }
+
+    /**
      * Return the TreePath for a Tree.
      *
      * This method uses try/catch and the Result Error for control flow to
@@ -39,12 +47,13 @@ public class TreePathCacher  extends TreeScanner<TreePath, Tree> {
      *  or null if target is not found in the compilation root
      */
     public TreePath getPath(CompilationUnitTree root, Tree target) {
+        if (foundPaths.containsKey(target)) {
+            return foundPaths.get(target);
+        }
+
         TreePath path = new TreePath(root);
         if (path.getLeaf() == target) {
             return path;
-        }
-        if (foundPaths.containsKey(target)) {
-            return foundPaths.get(target);
         }
 
         try {

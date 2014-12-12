@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * used as a lock and the lock is known to be held on the current thread.
  *
  * @see LockPossiblyHeld
- * @checker_framework_manual #lock-checker Lock Checker
+ * @checker_framework.manual #lock-checker Lock Checker
  */
 @TypeQualifier
 @SubtypeOf(LockPossiblyHeld.class) // This is the bottom type in this hierarchy

@@ -20,7 +20,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * This annotation is associated with the {@link InterningChecker}.
  *
  * @see InterningChecker
- * @checker_framework_manual #interning-checker Interning Checker
+ * @checker_framework.manual #interning-checker Interning Checker
  */
 @TypeQualifier
 @InvisibleQualifier

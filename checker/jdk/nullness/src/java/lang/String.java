@@ -1,5 +1,6 @@
 package java.lang;
 
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -35,9 +36,11 @@ public final class String implements java.io.Serializable, Comparable<String>, C
   @SideEffectFree public byte[] getBytes(String a1) throws java.io.UnsupportedEncodingException { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public byte[] getBytes(java.nio.charset.Charset a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public byte[] getBytes() { throw new RuntimeException("skeleton method"); }
+  @EnsuresNonNullIf(expression="#1", result=true)
   @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @Pure public boolean contentEquals(StringBuffer a1) { throw new RuntimeException("skeleton method"); }
   @Pure public boolean contentEquals(CharSequence a1) { throw new RuntimeException("skeleton method"); }
+  @EnsuresNonNullIf(expression="#1", result=true)
   @Pure public boolean equalsIgnoreCase(@Nullable String a1) { throw new RuntimeException("skeleton method"); }
   @Pure public int compareTo(String a1) { throw new RuntimeException("skeleton method"); }
   @Pure public int compareToIgnoreCase(String a1) { throw new RuntimeException("skeleton method"); }

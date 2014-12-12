@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
 /**
  * Represents a method descriptor (JVM representation of method signature)
  * as defined in the <a
- * href="https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.3">Java Virtual Machine Specification, section 4.3.3</a>.
+ * href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.3">Java Virtual Machine Specification, section 4.3.3</a>.
  *
  * <p>
  * Example:
@@ -23,7 +23,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * </pre>
  * In this example method descriptor for method 'method': (Ljava/lang/Object;I)Z
  *
- * @checker_framework_manual #signature-checker Signature Checker
+ * @checker_framework.manual #signature-checker Signature Checker
  */
 @TypeQualifier
 @SubtypeOf(UnannotatedString.class)

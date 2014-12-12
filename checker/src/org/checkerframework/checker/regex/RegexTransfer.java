@@ -21,9 +21,13 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 
 public class RegexTransfer extends
         CFAbstractTransfer<CFValue, CFStore, RegexTransfer> {
+
+    private static final String IS_REGEX_METHOD_NAME = "isRegex";
+    private static final String AS_REGEX_METHOD_NAME = "asRegex";
 
     /** Like super.analysis, but more specific type. */
     protected RegexAnalysis analysis;
@@ -48,21 +52,25 @@ public class RegexTransfer extends
         MethodAccessNode target = n.getTarget();
         ExecutableElement method = target.getMethod();
         Node receiver = target.getReceiver();
-        if (receiver instanceof ClassNameNode) {
-            ClassNameNode cn = (ClassNameNode) receiver;
-            String receiverName = cn.getElement().toString();
-            // RegexUtil.isRegex(s, groups) method
-            // (No special case is needed for isRegex(String) because of
-            // the annotatation on that method's definition.)
-            if (isRegexUtil(receiverName)
-                    && method.toString().equals(
-                            "isRegex(java.lang.String,int)")) {
+        if (!(receiver instanceof ClassNameNode)) {
+            return result;
+        }
+        ClassNameNode cn = (ClassNameNode) receiver;
+        String receiverName = cn.getElement().toString();
+
+        if (isRegexUtil(receiverName)) {
+            if (ElementUtils.matchesElement(method,
+                   IS_REGEX_METHOD_NAME, String.class, int.class)) {
+                // RegexUtil.isRegex(s, groups) method
+                // (No special case is needed for isRegex(String) because of
+                // the annotation on that method's definition.)
+
                 CFStore thenStore = result.getRegularStore();
                 CFStore elseStore = thenStore.copy();
                 ConditionalTransferResult<CFValue, CFStore> newResult = new ConditionalTransferResult<>(
                         result.getResultValue(), thenStore, elseStore);
                 FlowExpressionContext context = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(n, factory);
+                        .buildFlowExprContextForUse(n, factory.getContext());
                 try {
                     Receiver firstParam = FlowExpressionParseUtil.parse(
                             "#1", context, factory.getPath(n.getTree()));
@@ -84,14 +92,13 @@ public class RegexTransfer extends
                     assert false;
                 }
                 return newResult;
-            }
 
-            // RegexUtil.asRegex(s, groups) method
-            // (No special case is needed for asRegex(String) because of
-            // the annotatation on that method's definition.)
-            if (isRegexUtil(receiverName)
-                    && method.toString().equals(
-                            "asRegex(java.lang.String,int)")) {
+            } else if (ElementUtils.matchesElement(method,
+                    AS_REGEX_METHOD_NAME, String.class, int.class)) {
+                // RegexUtil.asRegex(s, groups) method
+                // (No special case is needed for asRegex(String) because of
+                // the annotation on that method's definition.)
+
                 // add annotation with correct group count (if possible,
                 // regex annotation without count otherwise)
                 AnnotationMirror regexAnnotation;

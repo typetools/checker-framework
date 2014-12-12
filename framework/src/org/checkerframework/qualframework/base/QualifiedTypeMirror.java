@@ -624,6 +624,14 @@ public abstract class QualifiedTypeMirror<Q> {
             }
         }
 
+        /**
+         * @return if the primary qualifier in this QualifiedTypeVariable is valid
+         *      and should be used.
+         */
+        public boolean isPrimaryQualifierValid() {
+            return getUnderlyingType().getAnnotationMirrors().size() > 0;
+        }
+
         @Override
         public <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p) {
             return visitor.visitTypeVariable(this, p);

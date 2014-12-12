@@ -34,6 +34,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -121,7 +122,7 @@ import com.sun.source.util.Trees;
  * {@link AnnotatedTypeFactory#annotateImplicit(Element, AnnotatedTypeMirror)}
  * and {@link #annotateImplicit(Tree, AnnotatedTypeMirror)}.
  *
- * @checker_framework_manual #writing-a-checker How to write a checker plug-in
+ * @checker_framework.manual #writing-a-checker How to write a checker plug-in
  */
 public class AnnotatedTypeFactory implements AnnotationProvider {
 
@@ -2000,6 +2001,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         if (node == null) return null;
 
+        if (treePathCache.isCached(node)) {
+            return treePathCache.getPath(root, node);
+        };
+
         TreePath currentPath = visitorState.getPath();
         if (currentPath == null)
             return TreePath.getPath(root, node);
@@ -2670,5 +2675,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public ProcessingEnvironment getProcessingEnv() {
         return this.processingEnv;
+    }
+
+    /** Accessor for the {@link CFContext}.
+     */
+    public CFContext getContext() {
+        return checker;
     }
 }

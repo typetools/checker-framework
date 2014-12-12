@@ -4,6 +4,8 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import com.sun.source.util.Trees;
+import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.qualframework.util.QualifierContext;
 
 /** Main entry point for a pluggable type system.  Each type system must
@@ -50,6 +52,16 @@ public abstract class Checker<Q> implements QualifierContext<Q> {
     @Override
     public QualifiedTypes<Q> getQualifiedTypeUtils() {
         return getTypeFactory().getQualifiedTypes();
+    }
+
+    @Override
+    public AnnotationProvider getAnnotationProvider() {
+        return getCheckerAdapter().getTypeFactory();
+    }
+
+    @Override
+    public Trees getTreeUtils() {
+        return getCheckerAdapter().getTreeUtils();
     }
 
     /**

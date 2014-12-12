@@ -149,6 +149,13 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
+     * @return The {@link Node} for this {@link TransferInput}.
+     */
+    public Node getNode() {
+        return node;
+    }
+
+    /**
      * @return The abstract value of {@link Node} {@code n}, which is required
      *         to be a 'sub-node' (that is, a direct or indirect child) of the
      *         node this transfer input is associated with. Furthermore,

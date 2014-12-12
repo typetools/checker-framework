@@ -49,9 +49,9 @@ FILE_PATH_TO_LIVE_SITE  = "/cse/www2/types"
 PGP_PASSPHRASE_FILE = "/projects/swlab1/checker-framework/release-private.password"
 SONATYPE_OSS_URL = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 SONATYPE_STAGING_REPO_ID = "sonatype-nexus-staging"
-SONATYPE_CLOSING_DIRECTIONS_URL = "https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-8.a.1.ClosingaStagingRepository"
-SONATYPE_RELEASE_DIRECTIONS_URL = "https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-8a.ReleaseIt"
-SONATYPE_DROPPING_DIRECTIONS_URL = "https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-DroppingaStagingRepository%28i.e.WhattoDoifYourStagingRepositoryHasErrors%29"
+SONATYPE_CLOSING_DIRECTIONS_URL = "https://central.sonatype.org/pages/releasing-the-deployment.html"
+SONATYPE_RELEASE_DIRECTIONS_URL = "https://central.sonatype.org/pages/releasing-the-deployment.html"
+SONATYPE_DROPPING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
 
 #Location this and other release scripts are contained in
 SCRIPTS_DIR = "/scratch/jsr308-release/scripts"
