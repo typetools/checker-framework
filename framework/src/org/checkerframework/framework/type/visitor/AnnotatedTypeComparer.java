@@ -68,7 +68,7 @@ public abstract class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, A
     }
     @Override
     protected R scan(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {
-        return compare(type, p);
+        return reduce(super.scan(type, p), compare(type, p));
     }
 
 
@@ -149,24 +149,6 @@ public abstract class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, A
         R r = scan(type.directSuperTypes(),
                 ((AnnotatedIntersectionType) p).directSuperTypes());
         return r;
-    }
-
-    @Override
-    public R visitNoType(AnnotatedNoType type, AnnotatedTypeMirror p) {
-        assert p instanceof AnnotatedNoType : p;
-        return scan(type, p);
-    }
-
-    @Override
-    public R visitNull(AnnotatedNullType type, AnnotatedTypeMirror p) {
-        assert p instanceof AnnotatedNullType : p;
-        return scan(type, p);
-    }
-
-    @Override
-    public R visitPrimitive(AnnotatedPrimitiveType type, AnnotatedTypeMirror p) {
-        assert p instanceof AnnotatedPrimitiveType : p;
-        return scan(type, p);
     }
 
     @Override

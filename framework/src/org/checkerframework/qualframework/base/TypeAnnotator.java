@@ -38,6 +38,7 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedUnio
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeDeclaration;
+import org.checkerframework.qualframework.util.QualifierContext;
 
 /**
  * {@link DefaultQualifiedTypeFactory} component for annotating a {@link
@@ -50,11 +51,16 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
     private Q defaultQual;
 
     private TypeAnnotatorAdapter<Q> adapter;
+    protected QualifierContext<Q> qualContext;
 
-    public TypeAnnotator(AnnotationConverter<Q> annotationConverter,
+    public TypeAnnotator(
+            QualifierContext<Q> qualContext,
+            AnnotationConverter<Q> annotationConverter,
             Q defaultQual) {
+
         this.annotationConverter = annotationConverter;
         this.defaultQual = defaultQual;
+        this.qualContext = qualContext;
     }
 
     void setAdapter(TypeAnnotatorAdapter<Q> adapter) {

@@ -12,7 +12,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
 /**
  * Annotation for the UI effect.
  *
- * @checker_framework_manual #guieffect-checker GUI Effect Checker
+ * @checker_framework.manual #guieffect-checker GUI Effect Checker
  */
 @TypeQualifier
 @SubtypeOf({})

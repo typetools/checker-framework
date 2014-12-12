@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * when performing pluggable type-checking, is usually {@link
  * SideEffectFree}.
  *
- * @checker_framework_manual #type-refinement-purity Side effects, determinism, purity, and flow-sensitive analysis
+ * @checker_framework.manual #type-refinement-purity Side effects, determinism, purity, and flow-sensitive analysis
  *
  * @author Stefan Heule
  *

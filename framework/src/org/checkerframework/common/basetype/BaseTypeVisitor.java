@@ -518,7 +518,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (flowExprContext == null) {
                 flowExprContext = FlowExpressionParseUtil
                         .buildFlowExprContextForDeclaration(node,
-                                getCurrentPath(), atypeFactory);
+                                getCurrentPath(), checker.getContext());
             }
 
             FlowExpressions.Receiver expr = null;
@@ -573,7 +573,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (flowExprContext == null) {
                 flowExprContext = FlowExpressionParseUtil
                         .buildFlowExprContextForDeclaration(node,
-                                getCurrentPath(), atypeFactory);
+                                getCurrentPath(), checker.getContext());
             }
 
             // Only check if the postcondition concerns this checker
@@ -614,7 +614,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (flowExprContext == null) {
                 flowExprContext = FlowExpressionParseUtil
                         .buildFlowExprContextForDeclaration(node,
-                                getCurrentPath(), atypeFactory);
+                                getCurrentPath(), checker.getContext());
             }
 
             FlowExpressions.Receiver expr = null;
@@ -701,7 +701,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (flowExprContext == null) {
                 flowExprContext = FlowExpressionParseUtil
                         .buildFlowExprContextForDeclaration(node,
-                                getCurrentPath(), atypeFactory);
+                                getCurrentPath(), checker.getContext());
             }
 
             // Only check if the postcondition concerns this checker
@@ -907,7 +907,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 if (methodCall) {
                     flowExprContext = FlowExpressionParseUtil
                             .buildFlowExprContextForUse(
-                                    (MethodInvocationNode) nodeNode, atypeFactory);
+                                    (MethodInvocationNode) nodeNode, checker.getContext());
                 }
                 else if (nodeNode instanceof FieldAccessNode) {
                     // Adapted from FlowExpressionParseUtil.buildFlowExprContextForUse
@@ -916,7 +916,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         ((FieldAccessNode) nodeNode).getReceiver());
 
                     flowExprContext = new FlowExpressionContext(
-                            internalReceiver, null, atypeFactory);
+                            internalReceiver, null, checker.getContext());
                 }
                 else if (nodeNode instanceof LocalVariableNode) {
                     // Adapted from org.checkerframework.dataflow.cfg.CFGBuilder.CFGTranslationPhaseOne.visitVariable
@@ -931,7 +931,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             receiver);
 
                     flowExprContext = new FlowExpressionContext(
-                            internalReceiver, null, atypeFactory);
+                            internalReceiver, null, checker.getContext());
                 }
             }
 
@@ -1013,7 +1013,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (flowExprContext == null) {
                 flowExprContext = FlowExpressionParseUtil
                         .buildFlowExprContextForDeclaration(node,
-                                getCurrentPath(), atypeFactory);
+                                getCurrentPath(), checker.getContext());
             }
 
             // Only check if the precondition concerns this checker
@@ -2419,7 +2419,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 flowExprContext = FlowExpressionParseUtil
                         .buildFlowExprContextForDeclaration(methodTree, method
                                 .getReceiverType().getUnderlyingType(),
-                                atypeFactory);
+                                checker.getContext());
             }
 
             try {

@@ -39,7 +39,7 @@ import org.checkerframework.framework.qual.*;
  * @see java.awt.color.ColorSpace#CS_CIEXYZ
  * @see java.awt.color.ColorSpace#CS_PYCC
  * @see java.awt.color.ColorSpace#CS_GRAY
- * @checker_framework_manual #fenum-checker Fake Enum Checker
+ * @checker_framework.manual #fenum-checker Fake Enum Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

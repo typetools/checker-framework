@@ -9,6 +9,7 @@ import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.util.ExtendedDeclaredType;
 import org.checkerframework.qualframework.util.ExtendedExecutableType;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
+import org.checkerframework.qualframework.util.QualifierContext;
 
 /*
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
@@ -23,9 +24,11 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
     private QualifierHierarchy<Wildcard<Q>> containmentHierarchy;
 
     public QualifierParameterTypeAnnotator(
+            QualifierContext<QualParams<Q>> qualContext,
             QualifierParameterAnnotationConverter<Q> annotationConverter,
             QualifierHierarchy<Wildcard<Q>> containmentHierarchy) {
-        super(annotationConverter, new QualParams<Q>());
+
+        super(qualContext, annotationConverter, new QualParams<Q>());
         this.containmentHierarchy = containmentHierarchy;
     }
 
@@ -49,19 +52,19 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
 
         switch (type.getKind()) {
             case DECLARED:
-                names = getAnnotationConverter().getDeclaredParameters(((ExtendedDeclaredType)type).asElement());
+                names = getAnnotationConverter().getDeclaredParameters(((ExtendedDeclaredType)type).asElement(),
+                        qualContext.getTypeFactory().getDecoratedElement(((ExtendedDeclaredType) type).asElement()));
                 break;
             case EXECUTABLE:
-                names = getAnnotationConverter().getDeclaredParameters(((ExtendedExecutableType)type).asElement());
+                names = getAnnotationConverter().getDeclaredParameters(((ExtendedExecutableType)type).asElement(),
+                        qualContext.getTypeFactory().getDecoratedElement(((ExtendedDeclaredType) type).asElement()));
                 break;
             case VOID:
             case PACKAGE:
             case NONE:
             case TYPEVAR:
-                names = Collections.emptySet();
-                break;
             case ARRAY:
-                names = Collections.singleton("Main");
+                names = Collections.emptySet();
                 break;
             case INTERSECTION:
             case UNION:
@@ -75,7 +78,7 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
                 // take the parameters from the declaration of the boxed
                 // version of the primitive type?
                 if (type.getKind().isPrimitive()) {
-                    names = Collections.singleton("Main");
+                    names = Collections.emptySet();
                     break;
                 }
                 throw new IllegalArgumentException("unexpected type kind: " + type.getKind());
@@ -95,7 +98,7 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
             }
         }
 
-        return new QualParams<>(newParams);
+        return new QualParams<>(newParams, result.getPrimary());
     }
 }
 

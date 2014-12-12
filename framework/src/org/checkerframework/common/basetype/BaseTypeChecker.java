@@ -19,6 +19,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
+import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
@@ -219,5 +220,10 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     @Override
     public GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory() {
         return getVisitor().getTypeFactory();
+    }
+
+    @Override
+    public AnnotationProvider getAnnotationProvider() {
+        return getTypeFactory();
     }
 }

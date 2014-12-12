@@ -11,6 +11,7 @@ import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
+import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorHandler;
@@ -395,6 +396,11 @@ public abstract class SourceChecker
     }
 
     @Override
+    public Trees getTreeUtils() {
+        return Trees.instance(getProcessingEnvironment());
+    }
+
+    @Override
     public SourceVisitor<?, ?> getVisitor() {
         return this.visitor;
     }
@@ -406,6 +412,11 @@ public abstract class SourceChecker
      * @return a {@link SourceVisitor} to use to scan source trees
      */
     protected abstract SourceVisitor<?, ?> createSourceVisitor();
+
+    @Override
+    public AnnotationProvider getAnnotationProvider() {
+        throw new UnsupportedOperationException("getAnnotationProvider is not implemented for this class.");
+    }
 
     /**
      * Provides a mapping of error keys to custom error messages.
@@ -1021,7 +1032,7 @@ public abstract class SourceChecker
      * @param msg The message text.
      * @param args Optional arguments to substitute in the message.
      *
-     * @see SourceChecker#message(Kind, Object, String, Object...)
+     * @see SourceChecker#message(Diagnostic.Kind, Object, String, Object...)
      */
     public void message(Diagnostic.Kind kind, String msg, Object... args) {
         if (messager != null) {

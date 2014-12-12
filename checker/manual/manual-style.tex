@@ -6,6 +6,7 @@
 \usepackage{graphicx}
 \usepackage{hevea}
 \usepackage{url}
+\usepackage{hyperref}
 % Not supported by Hevea, so don't bother: \usepackage{minitoc}
 
 \usepackage{relsize}
@@ -18,11 +19,17 @@
 %\DeclareRobustCommand{\code}[1]{\codesize{\path{#1}}}
 %%END LATEX
 %%HEVEA \newcommand{\code}[1]{\codesize{\texttt{#1}}}
+\def\<#1>{\code{#1}}
 
 % This can't handle a URL with an embedded "#" -- at least at UW CSE
 \newcommand{\myurl}[1]{{\codesize\url{#1}}}
 %HEVEA \def\myurl{\url}
-\def\<#1>{\code{#1}}
+% A command that shows the URL in the printed manual.
+% make a URL visible in PDF the but just be attached to anchor text in HTML:
+%BEGIN LATEX
+\newcommand{\ahreforurl}[2]{#2 (\url{#1})}
+%END LATEX
+%HEVEA \newcommand{\ahreforurl}[2]{\href{#1}{#2}}
 
 \usepackage{listings}
 \usepackage{alltt}
@@ -107,11 +114,11 @@
 % Arg 2: class name.
 % In the printed version, only the base class name appears.
 % In the HTML version, it's a link to the Javadoc.
-\newcommand{\refclass}[2]{\ahref{api/org/checkerframework/#1/#2.html}{\<#2>}}
+\newcommand{\refclass}[2]{\href{api/org/checkerframework/#1/#2.html}{\<#2>}}
 
 % Reference to Checker Framework Javadoc for a type qualifier/annotation class
 % (not a method, etc.).  This prepends an @ to the qualifier name.
-\newcommand{\refqualclass}[2]{\ahref{api/org/checkerframework/#1/#2.html}{\<@#2>}}
+\newcommand{\refqualclass}[2]{\href{api/org/checkerframework/#1/#2.html}{\<@#2>}}
 
 
 % Reference to Checker Framework Javadoc for a method or field.).
@@ -122,14 +129,14 @@
 % Arg 4: fully-qualified arguments.  Example: "(T)"
 % In the printed version, only "class.method" appears.
 % In the HTML version, it's a link to the Javadoc.
-\newcommand{\refmethod}[4]{\ahref{api/org/checkerframework/#1/#2.html\##3#4}{\<#2.#3>}}
+\newcommand{\refmethod}[4]{\href{api/org/checkerframework/#1/#2.html\##3#4}{\<#2.#3>}}
 % Reference to Sun Javadoc.
 % Arg 1: .html reference, without the .../api/ prefix
 % Arg 2: What will appear in the formatted manual.
 % Do not use \url in the body of any macro
-\newcommand{\sunjavadoc}[2]{\ahref{http://types.cs.washington.edu/checker-framework/jdk-api/jdk/#1}{\<#2>}}
+\newcommand{\sunjavadoc}[2]{\href{http://types.cs.washington.edu/checker-framework/jdk-api/jdk/#1}{\<#2>}}
 % Like \sunjavadoc, but for annotations and prepends "@".
-\newcommand{\sunjavadocanno}[2]{\ahref{http://types.cs.washington.edu/checker-framework/jdk-api/jdk/#1}{\<@#2>}}
+\newcommand{\sunjavadocanno}[2]{\href{http://types.cs.washington.edu/checker-framework/jdk-api/jdk/#1}{\<@#2>}}
 
 
 \newcommand{\refwithpage}[1]{\ref{#1}, page~\pageref{#1}}

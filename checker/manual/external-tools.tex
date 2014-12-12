@@ -22,9 +22,9 @@ documentation to learn how to
 customize it, adapting the instructions for javac in Section~\ref{javac-installation}.
 If you make another tool support running a checker, please
 inform us via the
-\ahref{\url{http://groups.google.com/group/checker-framework-discuss}}{mailing
+\href{http://groups.google.com/group/checker-framework-discuss}{mailing
   list} or
-\ahref{\url{http://code.google.com/p/checker-framework/issues/list}}{issue tracker} so
+\href{http://code.google.com/p/checker-framework/issues/list}{issue tracker} so
 we can add it to this manual.
 
 This chapter also discusses type inference tools (see
@@ -54,13 +54,13 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-1.8.7/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-1.8.8/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.  Now, whenever
     you run \code{javac}, you will use the updated compiler.  If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.7
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.8
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -76,7 +76,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.7
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.8
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -95,11 +95,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.7
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.8
   alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.7\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.8\
   doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
 \end{Verbatim}
 
@@ -118,7 +118,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-1.8.7
+  javac 1.8.0-jsr308-1.8.8
 \end{Verbatim}
 
 
@@ -179,7 +179,7 @@ The output should be:
 
 \section{Ant task\label{ant-task}}
 
-If you use the \ahref{\url{http://ant.apache.org/}}{Ant} build tool to compile
+If you use the \href{http://ant.apache.org/}{Ant} build tool to compile
 your software, then you can add an Ant task that runs a checker.  We assume
 that your Ant file already contains a compilation target that uses the
 \code{javac} task.
@@ -292,7 +292,7 @@ run.  You can supply additional arguments to the checker as well.
 was deprecated in favor of the following approach.  The plugin is no
 longer maintained and the final release was on June 2, 2014.}
 
-If you use the \ahref{\url{http://maven.apache.org/}}{Maven} tool,
+If you use the \href{http://maven.apache.org/}{Maven} tool,
 then you can specify pluggable type-checking as part of your build
 process. This is done by pointing Maven to a script that
 makes Maven use the Type Annotations compiler.
@@ -335,7 +335,7 @@ section or add it if necessary.
 \end{alltt}
 
 On Windows, the \code{javac\_maven.bat} script is automatically used instead
-of the \code{javac\_maven} script -- it is not necessary to include the .bat
+of the \code{javac\_maven} script -- it is not necessary to include the \code{.bat}
 extension in the absolute path above.
 
 This script assumes that the Checker Framework is the only annotation processor being run.
@@ -392,7 +392,7 @@ the resulting file.
 % http://jira.codehaus.org/browse/GRADLE-342
 % http://docs.codehaus.org/display/GRADLE/Gradle+0.8+Breaking+Changes
 
-If you fork the compilation task, \ahref{\url{http://www.gradle.org/}}{Gradle}
+If you fork the compilation task, \href{http://www.gradle.org/}{Gradle}
 lets you specify the executable to compile java programs.
 
 To specify the appropriate executable, set
@@ -423,7 +423,7 @@ allprojects {
 \section{IntelliJ IDEA\label{intellij}}
 
 IntelliJ IDEA (Maia release)
-\ahref{\url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}}{supports}
+\href{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}{supports}
 the Type Annotations (JSR-308) syntax.
 See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}.
 
@@ -452,13 +452,11 @@ implemented JSR 198~\cite{JSR198}, then it would be possible to build
 type-checking plug-ins that work with both compilers.)
 
 
-\paragraph{Using an Ant task}
-
-\urldef{\eclipseRunningAnt}\url{http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.platform.doc.user%2FgettingStarted%2Fqs-84_run_ant.htm}
+\paragraph{Using an Ant task\label{eclipse-ant}}
 
 Add an Ant target as described in Section~\ref{ant-task}.  You can
 run the Ant target by executing the following steps
-(instructions copied from {\codesize\eclipseRunningAnt}):
+(instructions copied from {\codesize\url{http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.platform.doc.user%2FgettingStarted%2Fqs-84_run_ant.htm}}):
 
 \begin{enumerate}
 
@@ -481,7 +479,7 @@ run the Ant target by executing the following steps
 
 \end{enumerate}
 
-\paragraph{Eclipse plug-in for the Checker Framework}
+\paragraph{Eclipse plug-in for the Checker Framework\label{eclipse-plug-in}}
 
 The Checker Plugin is an Eclipse plugin that enables the use of the Checker
 Framework.
@@ -501,7 +499,7 @@ documentation at \myurl{http://tide.olympe.in/}.
 
 \section{Type inference tools\label{type-inference-tools}}
 
-\subsection{Varieties of type inference}
+\subsection{Varieties of type inference\label{type-inference-varieties}}
 
 There are two different tasks that are commonly called ``type inference''.
 
@@ -575,12 +573,15 @@ Advantages of both varieties of inference include:
 Each variety of type inference has its place.  When using the Checker
 Framework, type inference during type-checking is performed only
 \emph{within} a method (Section~\ref{type-refinement}).  Every method
-signature (arguments and return values) and field must be explicitly annotated,
+signature (arguments and return values) and field must have already been explicitly annotated,
 either by the programmer or by a separate type-checking tool
-(Section~\ref{type-inference-to-annotate}).  This choice reduces programmer
-effort (typically, a programmer does not have to write any qualifiers
-inside the body of a method) while still retaining modular checking and
-documentation benefits.
+(Section~\ref{type-inference-to-annotate}).
+This approach enables modular checking (one class or method at a time) and
+gives documentation benefits.
+The programmer still has to
+put in some effort, but much less than without inference:  typically, a
+programmer does not have to write any qualifiers
+inside the body of a method.
 
 
 \subsection{Type inference to annotate a program\label{type-inference-to-annotate}}
@@ -593,6 +594,15 @@ annotations for the Nullness Checker.
 
 Section~\ref{javari-inference} lists a tool that infers
 annotations for the Javari Checker, which detects mutation errors.
+
+\href{https://github.com/reprogrammer/cascade/wiki/Installation}{Cascade}~\cite{VakilianPEJ2014}
+is an Eclipse plug-in that implements interactive type qualifier inference.
+Cascade is interactive rather than fully-automated:  it makes it easier for
+a developer to insert annotations.
+Cascade starts with an unannotated program and runs a type-checker.  For each
+warning it suggests multiple fixes, the developer chooses a fix, and
+Cascade applies it.  Cascade works with any checker built on the Checker
+Framework.
 
 
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle

@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * Indicates that the {@code String} type has an unknown
  * property key property.
  *
- * @checker_framework_manual #propkey-checker Property File Checker
+ * @checker_framework.manual #propkey-checker Property File Checker
  */
 @TypeQualifier
 @SubtypeOf({})

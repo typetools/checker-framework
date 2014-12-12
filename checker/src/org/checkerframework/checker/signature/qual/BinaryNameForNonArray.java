@@ -9,14 +9,14 @@ import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Represents a {@link BinaryName binary name} as defined in the <a
- * href="https://docs.oracle.com/javase/specs/jls/se7/html/jls-13.html#jls-13.1">Java
+ * href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1">Java
  * Language Specification, section 13.1</a>, but only for a non-array type.
  * <p>
  *
  * This annotation may not be written in source code; it is an
  * implementation detail of the checker.
  *
- * @checker_framework_manual #signature-checker Signature Checker
+ * @checker_framework.manual #signature-checker Signature Checker
  */
 @TypeQualifier
 @SubtypeOf({BinaryName.class, ClassGetName.class})

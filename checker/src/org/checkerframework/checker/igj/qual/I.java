@@ -63,7 +63,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * immutability, otherwise {@code @I} is resolved to {@code @ReadOnly}.
  *
  *
- * @checker_framework_manual #igj-checker IGJ Checker
+ * @checker_framework.manual #igj-checker IGJ Checker
  */
 @TypeQualifier
 //@PolymorphicQualifier // TODO: uncomment later

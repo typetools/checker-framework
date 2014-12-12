@@ -11,7 +11,7 @@ import org.checkerframework.framework.qual.TypeQualifiers;
  * A type-checker plug-in for the {@link Format} qualifier that finds
  * syntactically invalid formatter calls.
  *
- * @checker_framework_manual #formatter-checker Format String Checker
+ * @checker_framework.manual #formatter-checker Format String Checker
  * @author Konstantin Weitz
  */
 @TypeQualifiers({ UnknownFormat.class, Format.class, FormatBottom.class, InvalidFormat.class })

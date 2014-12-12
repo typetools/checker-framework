@@ -2,9 +2,9 @@
 \chapter{How to create a new checker\label{writing-a-checker}}
 
 \newcommand{\TreeAPIBase}{http://types.cs.washington.edu/checker-framework/jdk-api/javac/com/sun/source}
-\newcommand{\refTreeclass}[2]{\ahref{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
+\newcommand{\refTreeclass}[2]{\href{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 \newcommand{\ModelAPIBase}{http://types.cs.washington.edu/checker-framework/jdk-api/javac/javax/lang/model}
-\newcommand{\refModelclass}[2]{\ahref{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
+\newcommand{\refModelclass}[2]{\href{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 
 This chapter describes how to create a checker
 --- a type-checking compiler plugin that detects bugs or verifies their
@@ -107,10 +107,10 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 Other \par tools
 \\ \hline
 \multicolumn{6}{|p{6\bw}|}{\centering Checker Framework \par (enables creation of pluggable type-checkers)} &
-\multicolumn{2}{p{3\bw}|}{\centering \ahref{\url{http://types.cs.washington.edu/annotation-file-utilities/}}{Annotation File Utilities} \par (\code{.java} $\leftrightarrow$ \code{.class} files)} 
+\multicolumn{2}{p{3\bw}|}{\centering \href{http://types.cs.washington.edu/annotation-file-utilities/}{Annotation File Utilities} \par (\code{.java} $\leftrightarrow$ \code{.class} files)} 
 \\ \hline
 \multicolumn{8}{|p{8.5\bw}|}{\centering
-  \ahref{\url{http://types.cs.washington.edu/jsr308/}}{Type Annotations} syntax
+  \href{http://types.cs.washington.edu/jsr308/}{Type Annotations} syntax
   and classfile format (``JSR 308'') \par \centering (no built-in semantics)} \\ \hline
 \end{tabular}
 \end{center}
@@ -297,24 +297,20 @@ hierarchy.
 
 \end{itemize}
 
-\urldef{\isSubtypeURL}\url{api/org/checkerframework/framework/util/GraphQualifierHierarchy.html#isSubtype-java.util.Collection-java.util.Collection-}
-
 The declarative and procedural mechanisms for specifying the hierarchy can
 be used together.  In particular, when using the \refqualclass{framework/qual}{SubtypeOf}
 meta-annotation, further customizations may be
 performed procedurally (Section~\ref{procedural-hierarchy})
-by overriding the \ahref{\isSubtypeURL}{\code{isSubtype}} method in the checker class
+by overriding the \href{api/org/checkerframework/framework/util/GraphQualifierHierarchy.html#isSubtype-java.util.Collection-java.util.Collection-}{\code{isSubtype}} method in the checker class
 (Section~\ref{writing-compiler-interface}).
 However, the declarative mechanism is sufficient for most type systems.
 
 
 \subsection{Procedurally defining the qualifier and type hierarchy\label{procedural-hierarchy}}
-\urldef{\createQualifierHierarchyURL}\url{api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#createQualifierHierarchy--}
-\urldef{\createTypeHierarchyURL}\url{api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#createTypeHierarchy--}
 
 While the declarative syntax suffices for many cases, more complex
 type hierarchies can be expressed by overriding, in \refclass{common/basetype}{BaseTypeVisitor},
-either \ahref{\createQualifierHierarchyURL}{\<createQualifierHierarchy>} or \ahref{\createTypeHierarchyURL}{\<createTypeHierarchy>} (typically
+either \href{api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#createQualifierHierarchy--}{\<createQualifierHierarchy>} or \href{api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#createTypeHierarchy--}{\<createTypeHierarchy>} (typically
 only one of these needs to be overridden).
 For more details, see the Javadoc of those methods and of the classes
 \refclass{framework/type}{QualifierHierarchy} and \refclass{framework/type}{TypeHierarchy}.
@@ -351,8 +347,6 @@ manner (e.g.,
 
 % This paragraph is out of place.
 
-\urldef{\addAbsoluteDefaultURL}\url{api/org/checkerframework/framework/util/QualifierDefaults.html#addAbsoluteDefault-javax.lang.model.element.AnnotationMirror-org.checkerframework.framework.qual.DefaultLocation-}
-
 A type system designer may set a default annotation.  A user may override
 the default; see Section~\ref{defaults}.
 
@@ -366,7 +360,7 @@ files that the checker reads.
 \begin{sloppypar}
 Alternately, the type system designer may specify a default procedurally,
 by calling the
-\ahref{\addAbsoluteDefaultURL}{\<QualifierDefaults.addAbsoluteDefault>}
+\href{api/org/checkerframework/framework/util/QualifierDefaults.html#addAbsoluteDefault-javax.lang.model.element.AnnotationMirror-org.checkerframework.framework.qual.DefaultLocation-}{\<QualifierDefaults.addAbsoluteDefault>}
 method.  You may do this even if you have declaratively defined the
 qualifier hierarchy; see the Nullness Checker's implementation for an
 example.
@@ -395,9 +389,7 @@ would have its own top qualifier and its own bottom qualifier; they don't
 all have to share a single top qualifier or a single bottom qualifier.
 
 
-\label{bottom-qualifier}
-
-\paragraph{Bottom qualifier}
+\paragraph{Bottom qualifier\label{bottom-qualifier}}
 Your type hierarchy must have a bottom qualifier
 --- a qualifier that is a (direct or indirect) subtype of every other
 qualifier.
@@ -437,9 +429,7 @@ defined like this:
 \end{Verbatim}
 
 
-\label{top-qualifier}
-
-\paragraph{Top qualifier}
+\paragraph{Top qualifier\label{top-qualifier}}
 Your type hierarchy must have a top qualifier
 --- a qualifier that is a (direct or indirect) supertype of every other
 qualifier.
@@ -516,7 +506,7 @@ specified via any combination of five fields in \refclass{framework/qual}{Implic
 
   \begin{itemize}
   \item \code{trees}: an array of
-    \ahref{\TreeAPIBase{}/tree/Tree.Kind.html?is-external=true}{\code{com.sun.source.tree.Tree.Kind}}, e.g.,
+    \href{\TreeAPIBase{}/tree/Tree.Kind.html?is-external=true}{\code{com.sun.source.tree.Tree.Kind}}, e.g.,
     \code{NEW\_ARRAY} or \code{METHOD\_INVOCATION}
   \item \code{types}: an array of
     \refModelclass{type}{TypeKind}, e.g., \code{ARRAY}
@@ -575,14 +565,14 @@ For more details, see the Javadoc for the \refclass{framework/qual}{ImplicitFor}
   annotation, and the Javadoc for the javac classes that are linked from
 it.  You only need to understand a small amount about the javac AST, such
 as the
-\ahref{\TreeAPIBase{}/tree/Tree.Kind.html?is-external=true}{\code{Tree.Kind}}
+\href{\TreeAPIBase{}/tree/Tree.Kind.html?is-external=true}{\code{Tree.Kind}}
 and
 \refModelclass{type}{TypeKind}
 enums.  All the information you need is in the Javadoc, and
 Section~\ref{javac-tips} can help you get started.
 
 
-\subsection{Procedurally specifying implicit annotations}
+\subsection{Procedurally specifying implicit annotations\label{procedurally-specifying-implicit-annotations}}
 
 
 The Checker Framework provides a representation of annotated types,
@@ -608,7 +598,7 @@ written one.  The type system designer may subclass
 such constructs.
 
 
-\subsection{Flow-sensitive type qualifier inference}
+\section{Dataflow: enhancing flow-sensitive type qualifier inference\label{dataflow}}
 
 The Checker Framework provides automatic type refinement as described
 in Section~\ref{type-refinement}.
@@ -623,6 +613,374 @@ To disable flow inference, call
 in your subtype of
 \refclass{common/basetype}{BaseAnnotatedTypeFactory}.
 
+You can enhance the Checker Framework's built-in flow-sensitive type refinement,
+so that it is more powerful and is customized to your type system. In
+particular, your enhancement will yield a more refined type for certain
+expressions. However, most enhancements to type refinement are based on a
+run-time test specific to the type system and not all type-systems have
+applicable run-time tests.  See
+Section~\refwithpageparen{type-refinement-runtime-tests} to determine if
+run-time tests are applicable to your type system.
+
+The Checker Framework's type refinement is implemented with a dataflow algorithm
+which can be customized to enhance the built-in type refinement. The next
+sections detail dataflow customization.  It would also be helpful to read the
+\href{http://types.cs.washington.edu/checker-framework/current/checker-framework-dataflow-manual.pdf}
+{Dataflow Manual}, which gives a more in-depth description of the Checker
+Framework's dataflow framework.
+
+The steps to customizing type refinement are:
+\begin{enumerate}
+\item{\ref{dataflow-create-classes}} Create required classes and configure their
+    use
+\item{\ref{dataflow-override-methods}} Override methods that handle
+    \refclass{dataflow/cfg/node}{Node}s of interest
+\item{\ref{dataflow-determine-expressions}} Determine which expressions will be
+    refined
+\item{\ref{dataflow-implement-refinement}} Implement the refinement
+\end{enumerate}
+
+The Regex Checker's dataflow customization for the \code{RegexUtil.asRegex}
+run-time check is used as an example throughout the steps.
+
+The \code{RegexUtil.asRegex} method is declared as:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  @Regex(0) String asRegex(String s, int groups) { ... }
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\noindent
+which means that an expression such as \code{RegexUtil.asRegex(myString, myInt)}
+has type \code{@Regex(0)} String. When \code{int} parameter \code{group} is
+known or can be inferred at compile time, a better estimate can be given.  For
+example, \code{RegexUtil.asRegex(myString, 2)} has type \code{@Regex(2)} String.
+
+\subsection{Create required classes and configure their
+  use\label{dataflow-create-classes}}
+
+The following classes must be created to customize dataflow. These classes must
+be included on the classpath like other components of your checker.
+
+\begin{enumerate}
+\item \textbf{Create a class that extends
+    \refclass{framework/flow}{CFAbstractTransfer}}
+
+  \refclass{framework/flow}{CFAbstractTransfer} performs the default Checker
+  Framework type refinement.  The extended class will add functionality by
+  overriding superclass methods.
+
+  The Regex Checker's extended \refclass{framework/flow}{CFAbstractTransfer} is
+  \refclass{checker/regex}{RegexTransfer}.
+
+\item \textbf{Create a class that extends
+    \refclass{framework/flow}{CFAbstractAnalysis} and uses the extended
+    \refclass{framework/flow}{CFAbstractTransfer}}
+
+  \refclass{framework/flow}{CFAbstractTransfer} and its superclass,
+  \refclass{dataflow/analysis}{Analysis}, are the central coordinating classes
+  in the Checker Framework's dataflow algorithm. The
+  \code{createTransferFunction} method must be overridden in an extended
+  \refclass{framework/flow}{CFAbstractTransfer} to return a new instance of the
+  extended \refclass{framework/flow}{CFAbstractTransfer}.
+
+  The Regex Checker's extended \refclass{framework/flow}{CFAbstractAnalysis} is
+  \refclass{checker/regex}{RegexAnalysis}, which overrides the
+  \code{createTransferFunction} to return a new
+  \refclass{checker/regex}{RegexTransfer} instance:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  @Override
+  public RegexTransfer createTransferFunction() {
+      return new RegexTransfer(this);
+  }
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\item \textbf{Configure the checker's type factory to use the extended
+    \refclass{framework/flow}{CFAbstractAnalysis}}
+
+To configure your checker's type factory to use the new extended
+\refclass{framework/flow}{CFAbstractAnalysis}, override the
+\code{createFlowAnalysis} method in your type factory to return a new instance
+of the extended \refclass{framework/flow}{CFAbstractAnalysis}.
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  @Override
+  protected RegexAnalysis createFlowAnalysis(
+          List<Pair<VariableElement, CFValue>> fieldValues) {
+
+      return new RegexAnalysis(checker, this, fieldValues);
+  }
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\end{enumerate}
+
+\subsection{Override methods that handle Nodes of
+interest\label{dataflow-override-methods}}
+
+At this point, your checker is configured to use your extended
+\refclass{framework/flow}{CFAbstractAnalysis}, but it uses only the default
+behavior. Next, in your extended \refclass{framework/flow}{CFAbstractTransfer}
+override the visitor method that handles the \refclass{dataflow/cfg/node}{Node}s
+relevant to your run-time check or run-time operation can be used to refine
+types.
+
+A \refclass{dataflow/cfg/node}{Node} is basically equivalent to a javac compiler
+\refTreeclass{tree}{Tree}.  A tree is a node in the abstract syntax tree of the
+program being checked. See \ref{javac-tips} for more information about trees.
+
+A \refclass{dataflow/cfg/node}{Node} generally maps one-to-one with a
+\refTreeclass{tree}{Tree}. When dataflow processes a method, it translates
+\refTreeclass{tree}{Tree}s into \refclass{dataflow/cfg/node}{Node}s and then
+calls the appropriate visit method on
+\refclass{framework/flow}{CFAbstractTransfer} which then performs the dataflow
+analysis for the passed in \refclass{dataflow/cfg/node}{Node}.
+
+Decide what \refclass{dataflow/cfg/node}{Node} kinds are of interest with
+respect to the run-time checks or run-time operations you are trying to support.
+The \refclass{dataflow/cfg/node}{Node} subclasses can be found in the
+\code{org.checkerframework.dataflow.cfg.node} package.  Some examples are
+\refclass{dataflow/cfg/node}{EqualToNode},
+\refclass{dataflow/cfg/node}{LeftShiftNode},
+\refclass{dataflow/cfg/node}{VariableDeclarationNode}.
+
+The Regex Checker refines the type of a run-time test method call, so
+\refclass{checker/regex}{RegexTransfer} overrides the method that handles
+\refclass{dataflow/cfg/node}{MethodInvocationNode}s,
+\code{visitMethodInvocation}.
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  public TransferResult<CFValue, CFStore> visitMethodInvocation(
+    MethodInvocationNode n, TransferInput<CFValue, CFStore> in)  { ... }
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\subsection{Determine the expressions to refine the types
+of\label{dataflow-determine-expressions}}
+
+There are usually multiple expressions used in a run-time check or run-time
+operation; determine which expression the customization will refine.  This is
+usually specific to the type system and run-time test.
+
+Expressions are refined by modifying the return value of a visitor method in
+\refclass{framework/flow}{CFAbstractTransfer}.
+\refclass{framework/flow}{CFAbstractTransfer} visitor methods return a
+\refclass{dataflow/analysis}{TransferResult}.  The constructor of a
+\refclass{dataflow/analysis}{TransferResult} takes two parameters: the resulting
+type for the \refclass{dataflow/cfg/node}{Node} being evaluated (the result
+type) and a map from expressions in scopes to estimates of their types (a
+\refclass{dataflow/analysis}{Store}).
+
+For the program operation \code{op(a,b)}, an enhancement may improve the Checker
+Framework's types by:
+\begin{enumerate}
+\item Changing the resulting type to refine the estimate of the type of entire
+    expression \code{op(a,b)}, or
+\item Changing the store to refine the estimate of some other expression, such
+    as \code{a} or \code{b}.
+\end{enumerate}
+
+Changing the \refclass{dataflow/analysis}{TransferResult}'s result type changes
+the type that is returned by the \refclass{framework/type}{AnnotatedTypeFactory}
+for the tree corresponding to the \refclass{dataflow/cfg/node}{Node} that was
+visited.  (Remember that \refclass{common/basetype}{BaseTypeVisitor} uses the
+\refclass{framework/type}{AnnotatedTypeFactory} to look up the type of a
+\refTreeclass{tree}{Tree}, and then performs checks on types of one or more
+\refTreeclass{tree}{Tree}s).
+
+When \refclass{checker/regex}{RegexTransfer} evaluates a
+\code{RegexUtils.asRegex} invocation, it updates the
+\refclass{dataflow/analysis}{TransferResult}'s result type. This changes the
+type of the \code{RegexUtils.asRegex} invocation when it's
+\refTreeclass{tree}{Tree} is looked up by the
+\refclass{framework/type}{AnnotatedTypeFactory}.  Regex Checker's
+\code{visitMethodInvocation} is shown in more detail in
+\ref{dataflow-implement-refinement}.
+
+Updating the \refclass{dataflow/analysis}{Store} treats an expression as a
+having a refined type for the remainder of the method or conditional block. For
+example, when the Nullness Checker's dataflow evaluates \code{myvar != null}, it
+updates the \refclass{dataflow/analysis}{Store} to specify that the variable
+\code{myvar} hould be treated as having type \code{@NonNull} for the rest of the
+then conditional block.  Not all kinds of expressions can be refined; currently
+method return values, local variables, fields, and array values can be stored in
+the \refclass{dataflow/analysis}{Store}.  Other kinds of expressions, like
+binary expressions or casts, cannot be stored in the
+\refclass{dataflow/analysis}{Store}.
+
+Both the \refclass{dataflow/analysis}{Store} and the result type may be updated
+in the same \refclass{dataflow/analysis}{TransferResult}.
+
+\subsection{Implement the refinement\label{dataflow-implement-refinement}}
+
+This section details implementing the visitor method
+\code{RegexTransfer.visitMethodInvocation} for the \code{RegexUtil.asRegex}
+run-time test.  You can find other examples of visitor methods in
+\refclass{checker/lock}{LockTransfer} and
+\refclass{checker/Formatter}{FormatterTransfer}.
+
+A general outline of the visit method is to:
+\begin{enumerate}
+\item Determine if the visited \refclass{dataflow/cfg/node}{Node} is of interest
+\item Determine the refined type
+\item Return a \refclass{dataflow/analysis}{TransferResult} with the refined
+    types
+\end{enumerate}
+
+
+\begin{enumerate}
+\item \textbf{Determine if the visited \refclass{dataflow/cfg/node}{Node} is of
+    interest}
+
+The visitor method for a \refclass{dataflow/cfg/node}{Node} is invoked for all
+instances of that \refclass{dataflow/cfg/node}{Node} kind in the program, so the
+\refclass{dataflow/cfg/node}{Node} must be inspected to determine if it is an
+instance of the desired run-time test or operation. For example,
+\code{visitMethodInvocation} is called when dataflow processes any method
+invocation, but the \refclass{checker/regex}{RegexTransfer} should only refine
+the result of \code{RegexUtils.asRegex} invocations:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  @Override
+  public TransferResult<CFValue, CFStore> visitMethodInvocation(...)
+    ...
+    MethodAccessNode target = n.getTarget();
+    ExecutableElement method = target.getMethod();
+    Node receiver = target.getReceiver();
+    if (receiver instanceof ClassNameNode) {
+      ClassNameNode cn = (ClassNameNode) receiver;
+      String receiverName = cn.getElement().toString();
+
+      // Is this a RegexUtil.isRegex(s, groups) method call?
+      if (isRegexUtil(receiverName)) {
+        if (ElementUtils.matchesElement(method,
+          null, IS_REGEX_METHOD_NAME, String.class, int.class)) {
+
+          ...
+
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\item \textbf{Determine the refined type}
+
+Some run-time tests, like the null comparison test, have a deterministic type
+refinement, e.g. the Nullness Checker always refines the argument in the
+expression to \code{@NonNull}.  However, sometimes the refined type is dependent
+on the parts of run-time test or operation itself, such as arguments passed to
+it.
+
+For example, the refined type of \code{RegexUtils.asRegex} is dependent on the
+integer argument to the method call. The \refclass{checker/regex}{RegexTransfer}
+uses this argument to build the resulting type \code{@Regex(i)}, where \code{i}
+is the value of the integer argument.  Note that currently this code only uses
+the value of the integer argument if the argument was an integer literal.  It
+could be extended to use the value of the argument if it was any compile-time
+constant or was inferred at compile time by another analysis, such as the
+\ref{constant-value-checker}.
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+  \begin{Verbatim}
+  AnnotationMirror regexAnnotation;
+  Node count = n.getArgument(1);
+  if (count instanceof IntegerLiteralNode) {
+    IntegerLiteralNode iln = (IntegerLiteralNode) count;
+    Integer groupCount = iln.getValue();
+    regexAnnotation = factory.createRegexAnnotation(groupCount);
+
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+If the integer argument was not a literal integer, the
+\refclass{checker/regex}{RegexTransfer} falls back to refining the type to just
+\code{@Regex(0)}.
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  } else {
+    regexAnnotation = AnnotationUtils.fromClass(factory.getElementUtils(), Regex.class);
+  }
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\item \textbf{Return a \refclass{dataflow/analysis}{TransferResult} with the
+    refined types}
+
+As discussed in section \ref{dataflow-determine-expressions}, the type of an
+expression is refined by modifying the
+\refclass{dataflow/analysis}{TransferResult}.  Since the
+\refclass{checker/regex}{RegexTransfer} is updating the type of the run-time
+test itself, it will update the result type and not the
+\refclass{dataflow/analysis}{Store}.
+
+A \refclass{framework/flow}{CFValue} is created to hold the type inferred.
+\refclass{framework/flow}{CFValue} is a wrapper class for values being inferred
+by dataflow:
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  CFValue newResultValue = analysis.createSingleAnnotationValue(regexAnnotation,
+      result.getResultValue().getType().getUnderlyingType());
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+Then, RegexTransfer's \code{visitMethodInvocation} creates and returns a
+\refclass{dataflow/analysis}{TransferResult} using \code{newResultValue} as the
+result type.
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  return new RegularTransferResult<>(newResultValue, result.getRegularStore());
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+Finally, when the Regex Checker encounters a \code{RegexUtils.asRegex} method
+call, the checker will refine the return type of the method if it can determine
+the value of the integer parameter at compile time.
+
+\end{enumerate}
+
 
 \section{Visitor: Type rules\label{extending-visitor}}
 
@@ -634,7 +992,7 @@ The Checker Framework provides a \textit{base visitor class},
 \refclass{common/basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
-\ahref{\url{http://types.cs.washington.edu/checker-framework/jdk-api/javac/index.html}}{Tree
+\href{http://types.cs.washington.edu/checker-framework/jdk-api/javac/index.html}{Tree
 API},
 and it issues a warning whenever the type system is violated.
 
@@ -750,8 +1108,6 @@ checker classes for the Interning Checker and the Nullness Checker:
 \end{Verbatim}
 
 
-\urldef{\getSupportedTypeQualifiersURL}{\url}{http://types.cs.washington.edu/checker-framework/api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#getSupportedTypeQualifiers--}
-
 The checker class must be annotated by
 \refqualclass{framework/qual}{TypeQualifiers}, which lists the annotations
 that make up the type hierarchy for this checker (including
@@ -759,14 +1115,12 @@ polymorphic qualifiers), provided as an array of class literals.  Each
 one is a type qualifier whose definition bears the
 \refqualclass{framework/qual}{TypeQualifier} meta-annotation (or is
 returned by the
-\ahref{\getSupportedTypeQualifiersURL}{\<BaseTypeChecker\-.getSupportedTypeQualifiers>}
+\href{http://types.cs.washington.edu/checker-framework/api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#getSupportedTypeQualifiers--}{\<BaseTypeChecker\-.getSupportedTypeQualifiers>}
 method).
-
-\urldef{\reportURL}{\url}{http://types.cs.washington.edu/dev/checker-framework/api/org/checkerframework/framework/source/SourceChecker.html#report-org.checkerframework.framework.source.Result-java.lang.Object-}
 
 The checker class bridges between the compiler and the rest of the checker.  It
 invokes the type-rule check visitor on every Java source file being
-compiled, and provides a simple API, \ahref{\reportURL}{\<report>}, to issue
+compiled, and provides a simple API, \href{http://types.cs.washington.edu/dev/checker-framework/api/org/checkerframework/framework/source/SourceChecker.html#report-org.checkerframework.framework.source.Result-java.lang.Object-}{\<report>}, to issue
 errors using the compiler error reporting mechanism.
 
 Also, the checker class follows the factory method pattern to
@@ -783,7 +1137,7 @@ must specify the component classes for construction.
 A checker can customize the default error messages through a
 \sunjavadoc{java/util/Properties.html}{Properties}-loadable text file named
 \<messages.properties> that appears in the same directory as the checker class.
-The property file keys are the strings passed to \ahref{\reportURL}{\<report>}
+The property file keys are the strings passed to \href{http://types.cs.washington.edu/dev/checker-framework/api/org/checkerframework/framework/source/SourceChecker.html#report-org.checkerframework.framework.source.Result-java.lang.Object-}{\<report>}
 (like \code{type.incompatible}) and the values are the strings to be
 printed (\code{"cannot assign ..."}).
 The \<messages.properties> file only need to mention the new messages that
@@ -794,7 +1148,7 @@ For more details about message keys, see Section~\refwithpageparen{compiler-mess
 \end{sloppypar}
 
 
-\subsection{Bundling multiple checkers}
+\subsection{Bundling multiple checkers\label{bundling-multiple-checkers}}
 
 To run a checker, a user supplies the \<-processor> command-line option.
 There are two ways to run multiple related checkers as a unit.
@@ -836,14 +1190,14 @@ Now, a user can pass a single \<-processor> argument on the command line:
 
 
 
-\subsection{Providing command-line options}
+\subsection{Providing command-line options\label{providing-command-line-options}}
 
 A checker can provide two kinds of command-line options:
 boolean flags and
 named string values (the standard annotation processor
 options).
 
-\subsubsection{Boolean flags}
+\subsubsection{Boolean flags\label{providing-command-line-options-boolean-flags}}
 
 To specify a simple boolean flag, add:
 
@@ -867,7 +1221,7 @@ javac -processor Mine -Alint=flag
 \end{Verbatim}
 
 
-\subsubsection{Named string values}
+\subsubsection{Named string values\label{providing-command-line-options-named-string-values}}
 
 For more complicated options, one can use the standard annotation
 processing \code{@SupportedOptions} annotation on the checker, as in:
@@ -1007,8 +1361,9 @@ changed if the English message is updated.
 \item \code{-Afilenames}: print the name of each file before type-checking it.
 
 \item \code{-Ashowchecks}: print debugging information for each
-pseudo-assignment check (as performed by \refclass{common/basetype}{BaseTypeVisitor}; see Section
-\ref{extending-visitor}.
+pseudo-assignment check (as performed by
+\refclass{common/basetype}{BaseTypeVisitor}; see
+Section~\ref{extending-visitor}.
 
 \end{itemize}
 
@@ -1211,9 +1566,14 @@ following sections:
   give an overview of the concepts.  It should state how to run the checker.
 \item[Section: Belly Rub Annotations]
   This section includes descriptions of the annotations with links to the
-  javadoc and a diagram of the type hierarchy.  A textual description of
+  Javadoc and a diagram of the type hierarchy.  A textual description of
   the hieraarchy is not sufficient; the diagram really helps readers to
   understand the system.
+
+  The Javadoc for the annotations deserves the same care as the manual
+  chapter.  Each annotation's Javadoc comment should use the
+  \<@checker\_framework.manual> Javadoc taglet to refer to the chapter that
+  describes the checker; see \refclass{javacutil/dist}{ManualTaglet}.
 \item[Section: What the Belly Rub Checker checks]
   This section gives more details about when an error is issued, with examples.
 \item[Section: Examples]
@@ -1225,8 +1585,12 @@ additional sections, such as tips on suppressing warnings, comparisons to
 other tools, and run-time support.
 
 Don't forget to add the checker to a logical place in the manual (not
-necessarily as the last checker-related chapter) and to add a reference
-from the beginning of chapter~\ref{introduction}.
+necessarily as the last checker-related chapter).  Also add two references
+to the checker's chapter:  one at the beginning of
+chapter~\ref{introduction}, and identical text in
+Section~\ref{type-refinement-runtime-tests} (both of these lists appear in
+the same order as the manual chapters, to help us notice if anything is
+missing).
 
 Every chapter and (sub)section should have a label defined \emph{within} the 
 \verb|\section| command.  Section labels should starting with the checker
@@ -1251,7 +1615,7 @@ This section describes those interfaces.
 
 
 
-\subsection{Checker access to compiler information}
+\subsection{Checker access to compiler information\label{compiler-information}}
 
 The compiler uses and exposes three hierarchies to model the Java
 source code and classfiles.
@@ -1317,7 +1681,7 @@ traverse the source code and retrieve the types/elements corresponding to
 them.  Then, the checker performs any needed checks on the types/elements instead.
 
 
-\subsubsection{Using the APIs}
+\subsubsection{Using the APIs\label{using-the-apis}}
 
 The three APIs use some common idioms and conventions; knowing them will
 help you to create your checker.
@@ -1348,7 +1712,7 @@ the utility class for a \code{Foo} hierarchy is \code{Foos} (e.g.,
 notable exception: \refclass{framework/util}{AnnotatedTypes}.
 
 
-\subsection{How a checker fits in the compiler as an annotation processor}
+\subsection{How a checker fits in the compiler as an annotation processor\label{checker-as-annotation-processor}}
 
 The Checker Framework builds on the Annotation Processing API
 introduced in Java 6.  A type annotation processor is one that extends
@@ -1366,8 +1730,8 @@ you may find useful later on.
 The Checker Framework uses Oracle's Tree API to access a program's AST\@.
 The Tree API is specific to the Oracle OpenJDK, so the Checker Framework only
 works with the OpenJDK javac, not with Eclipse's compiler ecj or with
-\ahref{\url{http://gcc.gnu.org/java/}}{gcj}.  This also limits the tightness of
-the integration of the Checker Framework into other IDEs such as \ahref{\url{http://www.jetbrains.com/idea/}}{IntelliJ IDEA}\@.
+\href{http://gcc.gnu.org/java/}{gcj}.  This also limits the tightness of
+the integration of the Checker Framework into other IDEs such as \href{http://www.jetbrains.com/idea/}{IntelliJ IDEA}\@.
 An implementation-neutral API would be preferable.
 In the future, the Checker Framework
 can be migrated to use the Java Model AST of JSR 198 (Extension API for
@@ -1377,7 +1741,7 @@ implement JSR~198.  Also see Section~\ref{ast-traversal}.
 
 
 
-\subsubsection{Learning more about javac}
+\subsubsection{Learning more about javac\label{learning-more-about-javac}}
 
 Sun's javac compiler interfaces can be daunting to a
 newcomer, and its documentation is a bit sparse. The Checker Framework

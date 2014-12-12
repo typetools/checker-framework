@@ -13,7 +13,7 @@ import org.checkerframework.framework.qual.TypeQualifiers;
  * A type-checker plug-in for the {@link Regex} qualifier that finds
  * syntactically invalid regular expressions.
  *
- * @checker_framework_manual #regex-checker Regex Checker
+ * @checker_framework.manual #regex-checker Regex Checker
  */
 @TypeQualifiers({ Regex.class, PartialRegex.class, RegexBottom.class,
     UnknownRegex.class, PolyRegex.class, PolyAll.class })

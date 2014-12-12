@@ -481,7 +481,7 @@ references an enum constant that is only defined in the Java 8 JDK.  The
 problem might be that your code uses a library that references the enum
 constant.  In particular, the type annotations shipped with the Checker
 Framework reference 
-\sunjavadoc{java/lang/annotation/ElementType.html#TYPE\_USE}{ElementType.TYPE\_USE}.  You can use the Checker
+\sunjavadoc{java/lang/annotation/ElementType.html\#TYPE\_USE}{ElementType.TYPE\_USE}.  You can use the Checker
 Framework, but still compile and run your code in a Java 6 or 7 JVM, by
 following the instructions in Section~\ref{running-on-a-java7-jvm}.
 
@@ -648,7 +648,7 @@ the Checker Framework, rather than an official release.
 % problems more effectively.
 
 
-\subsection{Obtain the source}
+\subsection{Obtain the source\label{building-obtain-source}}
 
 Obtain the latest source code from the version control repository:
 
@@ -670,7 +670,7 @@ in the Checker Framework release.)
 % checker-framework.zip file!
 
 
-\subsection{Build the Type Annotations compiler}
+\subsection{Build the Type Annotations compiler\label{building-compiler}}
 
 The Checker Framework compiler is built upon a compiler called the Type
 Annotations compiler.  The Type Annotations compiler is a variant of the
@@ -808,7 +808,7 @@ Run \code{ant} to create \<checker.jar>:
 
 \end{enumerate}
 
-\subsection{Build the Checker Framework Manual (this document)}
+\subsection{Build the Checker Framework Manual (this document)\label{building-manual}}
 
 \begin{enumerate}
 \item
@@ -959,11 +959,11 @@ and
 ``Ownership and immutability in generic Java''~\cite{ZibinPLAE2010} (OOPSLA 2010, \myurl{http://homes.cs.washington.edu/~mernst/pubs/ownership-immutability-oopsla2010-abstract.html})
             describe the IGJ and OIGJ immutability type systems.
 
-\item[\ahref{\url{https://ece.uwaterloo.ca/~wdietl/ownership/}}{Generic Universe Types}]
+\item[\href{https://ece.uwaterloo.ca/~wdietl/ownership/}{Generic Universe Types}]
 ``Tunable static inference for Generic Universe Types'' (ECOOP 2011, \myurl{http://homes.cs.washington.edu/~mernst/pubs/tunable-typeinf-ecoop2011-abstract.html})
             describes inference for the Generic Universe Types type system.
 
-Another implementation of Universe Types and \ahref{\url{http://www.cs.rpi.edu/~huangw5/cf-inference/}}{ownership types} is  described in
+Another implementation of Universe Types and \href{http://www.cs.rpi.edu/~huangw5/cf-inference/}{ownership types} is  described in
 ``Inference and checking of object ownership''~\cite{HuangDME2012} (ECOOP 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-ownership-ecoop2012-abstract.html}).
 
 \item[ReIm immutability]
@@ -1002,9 +1002,9 @@ Framework developers.)
 A pluggable type-checker, such as those created by the Checker Framework,
 aims to help you prevent or detect all errors of a given variety.  An
 alternate approach is to use a bug detector such as
-\ahref{\url{http://findbugs.sourceforge.net/}}{FindBugs},
-\ahref{\url{http://jlint.sourceforge.net/}}{Jlint}, or
-\ahref{\url{http://pmd.sourceforge.net/}}{PMD}.
+\href{http://findbugs.sourceforge.net/}{FindBugs},
+\href{http://jlint.sourceforge.net/}{Jlint}, or
+\href{http://pmd.sourceforge.net/}{PMD}.
 
 A pluggable type-checker
 differs from a bug detector in several ways:
@@ -1047,7 +1047,7 @@ nullness errors (that is, null pointer dereferences).  None of the other
 tools found any errors.
 
 Also see the
-\ahref{\url{http://types.cs.washington.edu/jsr308/}}{JSR 308}~\cite{JSR308-2008-09-12}
+\href{http://types.cs.washington.edu/jsr308/}{JSR 308}~\cite{JSR308-2008-09-12}
 documentation for a detailed discussion of related work.
 
 

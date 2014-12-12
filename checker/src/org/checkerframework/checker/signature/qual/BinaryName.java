@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Represents a binary name as defined in the <a
- * href="https://docs.oracle.com/javase/specs/jls/se7/html/jls-13.html#jls-13.1">Java
+ * href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1">Java
  * Language Specification, section 13.1</a>.
  * <p>
  *
@@ -27,7 +27,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * Binary names and {@linkplain FullyQualifiedName fully qualified names} are the
  * same for top-level classes and only differ by a '$' vs. '.' for inner classes.
  *
- * @checker_framework_manual #signature-checker Signature Checker
+ * @checker_framework.manual #signature-checker Signature Checker
  */
 @TypeQualifier
 @SubtypeOf(UnannotatedString.class)
