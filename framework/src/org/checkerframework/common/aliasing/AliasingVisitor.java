@@ -96,11 +96,12 @@ public class AliasingVisitor extends
                 boolean parentIsStatement = parent.getKind() == Kind.
                         EXPRESSION_STATEMENT;
                 ExecutableElement methodElement = TreeUtils.elementFromUse(node);
-                List<? extends VariableElement> params = methodElement.getParameters();
+                List<? extends VariableElement> params = methodElement.
+                        getParameters();
                 List<? extends ExpressionTree> args = node.getArguments();
-                assert (args.size() == params.size()) : "Number of arguments in " +
-                "the method call " + n.toString() + " is different from the" +
-                " number of parameters for the method declaration: "
+                assert (args.size() == params.size()) : "Number of arguments in"
+                + " the method call " + n.toString() + " is different from the "
+                + "number of parameters for the method declaration: "
                 + methodElement.getSimpleName().toString();
                 for (int i = 0; i < args.size(); i++) {
                     // Here we are traversing the arguments of the method call.
@@ -109,9 +110,11 @@ public class AliasingVisitor extends
                         // If it is a reference to "this", there is still hope that
                         // it is not being leaked (2. and 3. from the javadoc).
                         VariableElement param = params.get(i);
-                        boolean hasNonLeaked = atypeFactory.getAnnotatedType(param).
+                        boolean hasNonLeaked = atypeFactory.getAnnotatedType(
+                                param).
                                 hasAnnotation(NonLeaked.class);
-                        boolean hasLeakedToResult = atypeFactory.getAnnotatedType(param).
+                        boolean hasLeakedToResult = atypeFactory.
+                                getAnnotatedType(param).
                                 hasAnnotation(LeakedToResult.class);
                         isUniqueCheck(node, parentIsStatement, hasNonLeaked,
                                 hasLeakedToResult);
@@ -121,16 +124,20 @@ public class AliasingVisitor extends
                 }
 
                 // Now, doing the same as above for the receiver parameter
-                AnnotatedExecutableType annotatedType = atypeFactory.getAnnotatedType(methodElement);
-                AnnotatedDeclaredType receiverType = annotatedType.getReceiverType();
+                AnnotatedExecutableType annotatedType = atypeFactory.
+                        getAnnotatedType(methodElement);
+                AnnotatedDeclaredType receiverType = annotatedType.
+                        getReceiverType();
                 if (receiverType != null) {
-                    boolean hasNonLeaked = receiverType.hasAnnotation(NonLeaked.class);
-                    boolean hasLeakedToResult = receiverType.hasAnnotation(LeakedToResult.class);
-                    isUniqueCheck(node, parentIsStatement, hasNonLeaked, hasLeakedToResult);
+                    boolean hasNonLeaked = receiverType.hasAnnotation(
+                            NonLeaked.class);
+                    boolean hasLeakedToResult = receiverType.hasAnnotation(
+                            LeakedToResult.class);
+                    isUniqueCheck(node, parentIsStatement, hasNonLeaked,
+                            hasLeakedToResult);
                 }
             }
         }
-
         return super.visitMethodInvocation(node, p);
     }
 
@@ -145,6 +152,16 @@ public class AliasingVisitor extends
         }
     }
 
+    // TODO: Merge that code in
+    // commonAssignmentCheck(AnnotatedTypeMirror varType, ExpressionTree
+    // valueExp, String errorKey, boolean isLocalVariableAssignement), because
+    // the method below isn't called for pseudo-assignments, but the mentioned
+    // one is. The issue of copy-pasting the code from this method to the other
+    // one is that a declaration such as: List<@Unique Object> will raise a
+    // unique.leaked warning, as there is a pseudo-assignment from @Unique to a
+    // @MaybeAliased object, if the @Unique annotation is not in the stubfile.
+    // TODO: Change the documentation in BaseTypeVisitor to point out that
+    // this isn't called for pseudo-assignments.
     @Override
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp,
             String errorKey) {
@@ -157,6 +174,32 @@ public class AliasingVisitor extends
             checker.report(Result.failure("unique.leaked"), valueExp);
         } else if (canBeLeaked(valueExp)) {
             checker.report(Result.failure("unique.leaked"), valueExp);
+        }
+    }
+
+    @Override
+    protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType, Tree valueTree, String errorKey,
+            boolean isLocalVariableAssignement) {
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey,
+                isLocalVariableAssignement);
+
+        // If we are visiting a pseudo-assignment, visitorLeafKind is either
+        // Kind.NEW_CLASS or Kind.METHOD_INVOCATION.
+        Kind visitorLeafKind = visitorState.getPath().getLeaf().getKind();
+        Kind parentKind = visitorState.getPath().getParentPath().getLeaf().
+                getKind();
+
+        if (visitorLeafKind == Kind.NEW_CLASS ||
+                visitorLeafKind == Kind.METHOD_INVOCATION) {
+            // Handling pseudo-assignments
+            if (valueType.hasAnnotation(Unique.class)) {
+                if (!varType.hasAnnotation(NonLeaked.class) &&
+                        !(varType.hasAnnotation(LeakedToResult.class) &&
+                        parentKind == Kind.EXPRESSION_STATEMENT)) {
+                    checker.report(Result.failure("unique.leaked"), valueTree);
+                }
+            }
         }
     }
 
@@ -223,12 +266,12 @@ public class AliasingVisitor extends
      * @param exp
      * <p>
      */
-    private boolean canBeLeaked(ExpressionTree exp) {
+    private boolean canBeLeaked(Tree exp) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
         boolean isMethodInvocation = exp.getKind() == Kind.METHOD_INVOCATION;
         boolean isNewClass = exp.getKind() == Kind.NEW_CLASS;
-        return type.hasAnnotation(Unique.class) && !(isMethodInvocation) &&
-                !(isNewClass);
+        return type.hasAnnotation(Unique.class) && !isMethodInvocation &&
+                !isNewClass;
     }
 
     private boolean isInUniqueConstructor(Tree tree) {
