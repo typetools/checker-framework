@@ -14,10 +14,14 @@
     <import file="${basedir}/../build-common.xml"/>
 
 
+    <!-- Dependendencies on other projects (such as javacutil)
+         mirrors javadoc dependencies. If changing project
+         dependencies, change the Javadoc dependencies to keep
+         them in sync (and vice versa). -->
     <target name="prep" depends="prep-all"
             description="Create required directories">
         <mkdir dir="${build}"/>
-        <mkdir dir="${dist.doc}"/>
+        <mkdir dir="${api.doc}"/>
 
         <available property="javacutil.project"
                    file="${javacutil.loc}/build.xml"/>
@@ -38,7 +42,7 @@
 
         <delete dir="${build}"/>
         <delete file="${dataflow.lib}"/>
-        <delete dir="${dist.doc}"/>
+        <delete dir="${api.doc}"/>
         <delete dir="${temp.dir}"/>
         <delete dir="dist" />
     </target>
@@ -126,6 +130,10 @@
     classpath (despite the attempt in the body to add tools.jar to the
     classpath).  Also, ${java.home} is the jre/ directory.
     -->
+    <!-- Dependendencies on other projects (such as javacutil)
+         mirrors javadoc dependencies. If changing project
+         dependencies, change the Javadoc dependencies to keep
+         them in sync (and vice versa). -->
     <target name="javadoc" depends="prep,prep-ManualTaglet" description="Create Javadoc documentation">
         <ant dir="${javacutil.loc}">
             <target name="javadoc"/>
@@ -133,14 +141,15 @@
 
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
-        <javadoc sourcepath="${src}" destdir="${dist.doc}"
+        <javadoc sourcepath="${src}:${javacutil.loc}/${src}" destdir="${api.doc}"
                  failonerror="true"
                  executable="${javadoc.bin}"
                  classpath="${build}:${javacutil.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
             <package name="org.checkerframework.dataflow.*"/>
-            <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
-            <link href="http://types.cs.washington.edu/checker-framework/api/javac/tree/"/>
+            <package name="org.checkerframework.javacutil.*"/>
+            <link href="http://docs.oracle.com/javase/8/docs/api/"/>
+            <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
             <taglet name="org.checkerframework.javacutil.dist.ManualTaglet" path="${build}"/>
             <arg line="-XDTA:noannotationsincomments"/>
         </javadoc>
@@ -158,7 +167,7 @@
     </target>
 
     <target name="javadoc-jar" depends="javadoc">
-        <jar destfile="${dataflow.javadoc.lib}" basedir="${dist.doc}" includes="**"/>
+        <jar destfile="${dataflow.javadoc.lib}" basedir="${api.doc}" includes="**"/>
     </target>
 
 </project>

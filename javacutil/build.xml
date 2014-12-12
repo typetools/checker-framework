@@ -14,6 +14,9 @@
     <import file="${basedir}/../build-common.xml"/>
 
 
+    <!-- If adding dependencies to other projects, ensure
+         the Javadoc dependencies are also updated accordingly
+         (and vice versa). -->
     <target name="prep" depends="prep-all"
             description="Create required directories">
         <mkdir dir="${build}"/>
@@ -24,7 +27,7 @@
         <delete dir="${build}"/>
         <delete file="${javacutil.lib}"/>
         <delete dir="dist"/>
-        <delete dir="${dist.doc}"/>
+        <delete dir="${api.doc}"/>
         <delete dir="${tmpdir}"/>
         <delete dir="${temp.dir}"/>
     </target>
@@ -100,7 +103,7 @@
     </target>
 
     <target name="javadoc-jar" depends="javadoc">
-        <jar destfile="${javacutil.javadoc.lib}" basedir="${dist.doc}" includes="**"/>
+        <jar destfile="${javacutil.javadoc.lib}" basedir="${api.doc}" includes="**"/>
     </target>
 
     <!--
@@ -108,20 +111,23 @@
     classpath (despite the attempt in the body to add tools.jar to the
     classpath).  Also, ${java.home} is the jre/ directory.
     -->
+    <!-- If adding a Javadoc dependency to another project,
+         there is likely also a build dependency to that project.
+         Please add it as well and keep both in sync. -->
     <target name="javadoc" depends="prep,prep-ManualTaglet"
             description="Create Javadoc documentation">
 
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
-        <javadoc sourcepath="${src}" destdir="${dist.doc}"
+        <javadoc sourcepath="${src}" destdir="${api.doc}"
                  failonerror="true"
                  executable="${javadoc.bin}"
                  classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
             <package name="org.checkerframework.javacutil.*"/>
 
-            <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
-            <link href="http://types.cs.washington.edu/checker-framework/api/javac/tree/"/>
+            <link href="http://docs.oracle.com/javase/8/docs/api/"/>
+            <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
             <taglet name="org.checkerframework.javacutil.dist.ManualTaglet" path="${build}"/>
             <arg line="-XDTA:noannotationsincomments"/>
         </javadoc>
