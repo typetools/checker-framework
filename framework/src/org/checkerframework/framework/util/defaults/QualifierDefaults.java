@@ -647,24 +647,22 @@ public class QualifierDefaults {
                 boundType = getBoundType(boundedType, atypeFactory);
 
                 try {
-                    try {
-                        isLowerBound = true;
-                        scanAndReduce(lowerBound, qual, null);
-                    } finally {
-                        isLowerBound = prevIsLowerBound;
-                    }
+                    isLowerBound = true;
+                    isUpperBound = false;
+                    scanAndReduce(lowerBound, qual, null);
+
                     visitedNodes.put(type, null);
 
 
-                    try {
-                        isUpperBound = true;
-                        scanAndReduce(upperBound, qual, null);
-                    } finally {
-                        isUpperBound = prevIsUpperBound;
-                    }
+                    isLowerBound = false;
+                    isUpperBound = true;
+                    scanAndReduce(upperBound, qual, null);
+
                     visitedNodes.put(type, null);
 
                 } finally {
+                    isUpperBound = prevIsUpperBound;
+                    isLowerBound = prevIsLowerBound;
                     boundType = prevBoundType;
                 }
             }
