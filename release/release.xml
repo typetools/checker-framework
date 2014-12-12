@@ -389,19 +389,22 @@
         <property name="checker.manual"   value="${checker}/manual" />
         <property name="dataflow.manual"  value="${checker}/../dataflow/manual" />
         <property name="checker.tutorial" value="${checker}/../tutorial" />
-        <property name="web.root"          value="${dest.dir}/../.." />
+        <property name="web.root"         value="${dest.dir}/../.." />
+
+        <copy file="${checker.manual}/${checker.webpage}" tofile="${dest.dir}/${checker.webpage}" />
 
         <copy file="${checker.manual}/manual.html" tofile="${dest.dir}/${manual.name}.html"/>
         <copy file="${checker.manual}/manual.pdf"  tofile="${dest.dir}/${manual.name}.pdf"/>
         <copy file="${dataflow.manual}/dataflow.pdf"  tofile="${dest.dir}/${dataflow.manual.name}.pdf"/>
-
-        <copy file="${checker.manual}/${checker.webpage}" tofile="${dest.dir}/${checker.webpage}" />
 
         <copy todir="${dest.dir}" flatten="true">
             <fileset dir="${checker.manual}">
                 <include name="*.svg"/>
             </fileset>
         </copy>
+
+        <copy file="${checker.manual}/logo/Checkmark/CFCheckmark_favicon.png" tofile="${dest.dir}/favicon-checkerframework.png" />
+        <copy file="${checker.manual}/logo/Checkmark/CFCheckmark_favicon.png" tofile="${web.root}/favicon-checkerframework.png" />
 
         <copy todir="${dest.dir}/tutorial" >
             <fileset dir="${checker.tutorial}" includes="**"/>

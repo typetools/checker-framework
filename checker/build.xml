@@ -354,6 +354,8 @@
             <taglet name="org.checkerframework.javacutil.dist.ManualTaglet"
                     path="${build}:${javacutil.loc}/${build}:${javacutil.lib}"/>
         </javadoc>
+        <copy file="manual/logo/Checkmark/CFCheckmark_favicon.png" tofile="${api.doc}/favicon-checkerframework.png" />
+        <!-- TODO: patch the favicon into the generated HTML here -->
     </target>
 
     <target name="javadoc.jar" depends="javadoc" description="Create jar of all javadoc documentation">
