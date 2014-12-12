@@ -8,7 +8,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
- * Represents a fully-qualified name as defined in the <a href="https://docs.oracle.com/javase/specs/jls/se7/html/jls-6.html#jls-6.7">Java Language Specification, section 6.7</a>.
+ * Represents a fully-qualified name as defined in the <a href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-6.html#jls-6.7">Java Language Specification, section 6.7</a>.
  * <p>
  *
  * For example, in
