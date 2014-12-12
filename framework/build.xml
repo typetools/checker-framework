@@ -278,7 +278,7 @@
         <mkdir dir="${build.reports}"/>
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
-               printsummary="true"
+               printsummary="false"
                haltonfailure="${halt.on.test.failure}">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="-ea"/>
@@ -310,7 +310,7 @@
 
       <junit fork="${run.tests.should.fork}"
              dir="${basedir}"
-             printsummary="true"
+             printsummary="false"
              haltonfailure="${halt.on.test.failure}">
           <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
           <jvmarg line="-ea"/>
@@ -362,6 +362,21 @@
             <param name="param" value="tests.FrameworkTest"/>
         </antcall>
     </target>
+
+    <target name="defaulting-upper-bound-tests" depends="jar,build-tests"
+            description="Run tests for the Checker Framework">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.DefaultingUpperBoundTest"/>
+        </antcall>
+    </target>
+
+    <target name="defaulting-lower-bound-tests" depends="jar,build-tests"
+            description="Run tests for the Checker Framework">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.DefaultingLowerBoundTest"/>
+        </antcall>
+    </target>
+
 
     <target name="lubglb-tests" depends="jar,build-tests"
             description="Run tests for the Lubglb Checker">

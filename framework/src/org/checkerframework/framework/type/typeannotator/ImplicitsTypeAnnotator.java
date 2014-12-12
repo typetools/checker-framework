@@ -1,4 +1,4 @@
-package org.checkerframework.framework.type;
+package org.checkerframework.framework.type.typeannotator;
 
 import java.lang.annotation.Annotation;
 import java.util.EnumMap;
@@ -14,7 +14,10 @@ import javax.lang.model.type.TypeKind;
 
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.TypeQualifiers;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -28,22 +31,22 @@ import com.sun.source.tree.Tree;
  * annotations specified by {@link ImplicitFor} for any type whose visitor is
  * not overridden or does not call {@code super}; it is designed to be invoked
  * from
- * {@link AnnotatedTypeFactory#annotateImplicit(Element, AnnotatedTypeMirror)}
+ * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#annotateImplicit(Element, org.checkerframework.framework.type.AnnotatedTypeMirror)}
  * and
- * {@link AnnotatedTypeFactory#annotateImplicit(Tree, AnnotatedTypeMirror)}.
+ * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#annotateImplicit(Tree, org.checkerframework.framework.type.AnnotatedTypeMirror)}.
  *
  * <p>
  *
- * {@link TypeAnnotator} traverses types deeply by default, except that it skips
+ * {@link ImplicitsTypeAnnotator} traverses types deeply by default, except that it skips
  * the method receiver of executable types (for interoperability with
- * {@link AnnotatedTypeFactory#annotateInheritedFromClass(AnnotatedTypeMirror)}).
+ * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#annotateInheritedFromClass(org.checkerframework.framework.type.AnnotatedTypeMirror)}).
  *
  * This class takes care of two of the attributes of {@link ImplicitFor};
- * the others are handled in {@link TreeAnnotator}.
+ * the others are handled in {@link org.checkerframework.framework.type.treeannotator.TreeAnnotator}.
  *
- * @see TreeAnnotator
+ * @see org.checkerframework.framework.type.treeannotator.TreeAnnotator
  */
-public class TypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
+public class ImplicitsTypeAnnotator extends TypeAnnotator {
 
     private final Map<TypeKind, Set<AnnotationMirror>> typeKinds;
     private final Map<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>> typeClasses;
@@ -53,21 +56,21 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
     // private final AnnotatedTypeFactory atypeFactory;
 
     /**
-     * Creates a {@link TypeAnnotator} from the given checker, using that checker's
+     * Creates a {@link ImplicitsTypeAnnotator} from the given checker, using that checker's
      * {@link TypeQualifiers} annotation to determine the annotations that are
      * in the type hierarchy.
      */
-    public TypeAnnotator(AnnotatedTypeFactory atypeFactory) {
-
+    public ImplicitsTypeAnnotator(AnnotatedTypeFactory typeFactory) {
+        super(typeFactory);
         this.typeKinds = new EnumMap<TypeKind, Set<AnnotationMirror>>(TypeKind.class);
         this.typeClasses = new HashMap<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>>();
         this.typeNames = new IdentityHashMap<String, Set<AnnotationMirror>>();
 
-        this.qualHierarchy = atypeFactory.getQualifierHierarchy();
+        this.qualHierarchy = typeFactory.getQualifierHierarchy();
         // this.atypeFactory = atypeFactory;
 
         // Get type qualifiers from the checker.
-        Set<Class<? extends Annotation>> quals = atypeFactory.getSupportedTypeQualifiers();
+        Set<Class<? extends Annotation>> quals = typeFactory.getSupportedTypeQualifiers();
 
         // For each qualifier, read the @ImplicitFor annotation and put its type
         // classes and kinds into maps.
@@ -75,7 +78,7 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
             ImplicitFor implicit = qual.getAnnotation(ImplicitFor.class);
             if (implicit == null) continue;
 
-            AnnotationMirror theQual = AnnotationUtils.fromClass(atypeFactory.elements, qual);
+            AnnotationMirror theQual = AnnotationUtils.fromClass(typeFactory.getElementUtils(), qual);
             for (TypeKind typeKind : implicit.types()) {
                 addTypeKind(typeKind, theQual);
             }
@@ -152,15 +155,5 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
         }
 
         return super.scan(type, p);
-    }
-
-    @Override
-    public Void visitExecutable(AnnotatedExecutableType t, Void p) {
-        // skip the receiver
-        scan(t.getReturnType(), p);
-        scanAndReduce(t.getParameterTypes(), p, null);
-        scanAndReduce(t.getThrownTypes(), p, null);
-        scanAndReduce(t.getTypeVariables(), p, null);
-        return null;
     }
 }

@@ -15,7 +15,7 @@ import javax.lang.model.element.VariableElement;
  * transfer function, stores and abstract values.
  */
 public class LockAnalysis extends
-	CFAbstractAnalysis<CFValue, LockStore, LockTransfer> {
+        CFAbstractAnalysis<CFValue, LockStore, LockTransfer> {
 
     public LockAnalysis(BaseTypeChecker checker,
             LockAnnotatedTypeFactory factory,
@@ -40,6 +40,6 @@ public class LockAnalysis extends
 
     @Override
     public CFValue createAbstractValue(AnnotatedTypeMirror type) {
-    	return defaultCreateAbstractValue(this, type);
+        return defaultCreateAbstractValue(this, type);
     }
 }
