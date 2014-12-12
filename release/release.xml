@@ -403,6 +403,9 @@
             </fileset>
         </copy>
 
+        <copy file="${checker.manual}/logo/Checkmark/CFCheckmark_favicon.png" tofile="${dest.dir}/favicon-checkerframework.png" />
+        <copy file="${checker.manual}/logo/Checkmark/CFCheckmark_favicon.png" tofile="${web.root}/favicon-checkerframework.png" />
+
         <copy todir="${dest.dir}/tutorial" >
             <fileset dir="${checker.tutorial}" includes="**"/>
         </copy>
