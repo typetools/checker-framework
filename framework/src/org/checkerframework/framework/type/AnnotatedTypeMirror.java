@@ -163,29 +163,22 @@ public abstract class AnnotatedTypeMirror {
     }
 
     @Override
-    public boolean equals(Object o) {
-       if(this == o) {
+    public final boolean equals(Object o) {
+        if (o == this) {
             return true;
-       }
-       if (!(o instanceof AnnotatedTypeMirror))
-           return false;
-       AnnotatedTypeMirror t = (AnnotatedTypeMirror) o;
+        }
 
-       //Note: isSameType never returns true for wildcards.  That is isSameType(myWildcard, myWildcard)
-       //will return false.  This means, only referentially equal wildcards will return true in this method
-       //because of the == test on the first line.  Two wildcards that are structurally equivalent
-       //will NOT equal each other
-       if (atypeFactory.types.isSameType(this.actualType, t.actualType)
-               && AnnotationUtils.areSame(getAnnotations(), t.getAnnotations()))
-           return true;
-       return false;
+        if (o == null || !(o instanceof AnnotatedTypeMirror)) {
+            return false;
+        }
+
+        return new EqualityAtmComparer().visit(this, (AnnotatedTypeMirror) o, null);
     }
 
     @Pure
     @Override
     public int hashCode() {
-        return this.annotations.toString().hashCode() * 17
-            + this.actualType.toString().hashCode() * 13;
+        return new HashcodeAtmVisitor().visit(this);
     }
 
     /**
@@ -1707,12 +1700,6 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedTypeMirror getErased() {
             // |T extends A&B| = |A|
             return this.getUpperBound().getErased();
-        }
-
-        @Pure
-        @Override
-        public int hashCode() {
-            return this.getUnderlyingType().hashCode();
         }
 
         /**
