@@ -31,15 +31,18 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
-import org.checkerframework.framework.type.ImplicitsTreeAnnotator;
-import org.checkerframework.framework.type.ListTreeAnnotator;
-import org.checkerframework.framework.type.PropagationTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TreeAnnotator;
-import org.checkerframework.framework.type.TypeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.DependentTypes;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -239,6 +242,14 @@ public class NullnessAnnotatedTypeFactory
         return new NullnessTransfer((NullnessAnalysis) analysis);
     }
 
+    /**
+     * @return an AnnotatedTypeFormatter that does not print the qualifiers on null literals
+     */
+    @Override
+    protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
+        return new NullnessAnnotatedTypeFormatter(checker.hasOption("printAllQualifiers"));
+    }
+
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
             MethodInvocationTree tree) {
@@ -270,12 +281,15 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
-        return new NullnessTypeAnnotator(this);
+        return new ListTypeAnnotator(
+                super.createTypeAnnotator(),
+                new NullnessTypeAnnotator(this)
+        );
     }
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
+        return new ListTreeAnnotator( // DebugListTreeAnnotator(new Tree.Kind[] {Tree.Kind.CONDITIONAL_EXPRESSION},
                 new NullnessPropagationAnnotator(this),
                 new ImplicitsTreeAnnotator(this),
                 new NullnessTreeAnnotator(this),
@@ -410,7 +424,7 @@ public class NullnessAnnotatedTypeFactory
         public Void visitCompoundAssignment(CompoundAssignmentTree node,
                 AnnotatedTypeMirror type) {
             type.replaceAnnotation(NONNULL);
-            // Committment will run after for initialization defaults
+            // Commitment will run after for initialization defaults
             return null;
         }
 

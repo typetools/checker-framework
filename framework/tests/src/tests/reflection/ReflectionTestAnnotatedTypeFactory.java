@@ -2,12 +2,14 @@ package tests.reflection;
 
 import javax.lang.model.element.AnnotationMirror;
 
-import com.sun.source.tree.Tree;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.ReflectionResolutionAnnotatedTypeFactory;
-import org.checkerframework.framework.qual.Bottom;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -33,7 +35,7 @@ public final class ReflectionTestAnnotatedTypeFactory extends
         postInit();
         AnnotationMirror bottom = AnnotationUtils.fromClass(elements,
                 ReflectBottom.class);
-        this.typeAnnotator.addTypeName(java.lang.Void.class, bottom);
+        addTypeNameImplicit(java.lang.Void.class, bottom);
     }
 
     @Override

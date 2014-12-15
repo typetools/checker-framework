@@ -10,7 +10,7 @@ public class MethodTypeVars {
         Object a = A.badMethod(null);
         Object b = A.badMethod(new Object());
 
-        //:: error: (argument.type.incompatible)
+        //:: error: (type.argument.type.incompatible)
         A.goodMethod(null);
         A.goodMethod(new Object());
     }

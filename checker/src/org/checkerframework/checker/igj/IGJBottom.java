@@ -5,9 +5,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.checker.igj.qual.I;
 import org.checkerframework.checker.igj.qual.Immutable;
 import org.checkerframework.checker.igj.qual.Mutable;
-import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
+import org.checkerframework.framework.qual.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
 import com.sun.source.tree.Tree.Kind;
@@ -27,5 +25,6 @@ import com.sun.source.tree.Tree.Kind;
         trees = { Kind.NULL_LITERAL },
         typeClasses = { AnnotatedPrimitiveType.class }
 )
+@DefaultFor({DefaultLocation.LOWER_BOUNDS})
 @Target({}) // empty target prevents programmers from writing this in a program
 @interface IGJBottom {}

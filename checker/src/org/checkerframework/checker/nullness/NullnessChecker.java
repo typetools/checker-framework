@@ -15,7 +15,7 @@ public class NullnessChecker extends CompoundChecker {
 
     @Override
     protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
-        Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>();
+        Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>(2);
         checkers.add(KeyForSubchecker.class);
         checkers.add(AbstractNullnessFbcChecker.class);
         return checkers;

@@ -2,9 +2,7 @@ package org.checkerframework.checker.signature.qual;
 
 import java.lang.annotation.Target;
 
-import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
+import org.checkerframework.framework.qual.*;
 
 import com.sun.source.tree.Tree;
 
@@ -25,4 +23,5 @@ import com.sun.source.tree.Tree;
 @Target({}) // empty target prevents programmers from writing this in a program
 @ImplicitFor(trees = {Tree.Kind.NULL_LITERAL},
   typeNames = {java.lang.Void.class})
+@DefaultFor({DefaultLocation.LOWER_BOUNDS})
 public @interface SignatureBottom {}
