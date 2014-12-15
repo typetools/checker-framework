@@ -1,6 +1,7 @@
 package org.checkerframework.checker.nullness;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -23,6 +24,7 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.checker.initialization.InitializationTransfer;
 import org.checkerframework.checker.initialization.qual.Initialized;
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.NonRaw;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -31,8 +33,11 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -191,6 +196,10 @@ public class NullnessTransfer extends
         return result;
     }
 
+    /*
+     * Provided that m is of a type that implements interface java.util.Map:
+     * -Given a call m.get(k), if k is @KeyFor("m"), ensures that the result is @NonNull in the thenStore and elseStore of the transfer result.
+     */
     @Override
     public TransferResult<NullnessValue, NullnessStore> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<NullnessValue, NullnessStore> in) {
@@ -213,6 +222,54 @@ public class NullnessTransfer extends
                 makeNonNull(result, n.getArgument(i));
             }
         }
+
+        // Handle KeyFor annotations
+        
+    	String methodName = n.getTarget().getMethod().toString();
+
+        // First verify if the method name is get. This is an inexpensive check.
+
+        if (methodName.startsWith("get(")) {
+        	KeyForAnnotatedTypeFactory keyForTypeFactory = analysis.getTypeFactory().getTypeFactoryOfPreviousChecker(0);
+
+        	// Now verify that the receiver of the method invocation is of a type
+            // that extends that java.util.Map interface. This is a more expensive check.
+
+            javax.lang.model.util.Types types = analysis.getTypes();
+
+            TypeMirror mapInterfaceTypeMirror = types.erasure(TypesUtils.typeFromClass(types, analysis.getEnv().getElementUtils(), Map.class));
+
+            TypeMirror receiverType = types.erasure(n.getTarget().getReceiver().getType());
+
+            if (types.isSubtype(receiverType, mapInterfaceTypeMirror)) {
+
+                FlowExpressionContext flowExprContext = FlowExpressionParseUtil
+                        .buildFlowExprContextForUse(n, analysis.getTypeFactory().getContext());
+
+                String mapName = flowExprContext.receiver.toString();
+                AnnotationMirror am = keyForTypeFactory.createKeyForAnnotationMirrorWithValue(mapName); // @KeyFor(mapName)
+
+                AnnotatedTypeMirror type = keyForTypeFactory.getAnnotatedType(methodArgs.get(0));
+
+                if (type != null) {
+                    AnnotationMirror am1  = type.getAnnotation(KeyFor.class);
+
+                    if (am1 != null) {
+                        if (keyForTypeFactory.keyForValuesSubtypeCheck(am, am1, tree, n)) {
+                            makeNonNull(result, n);
+
+                            NullnessValue oldResultValue = result.getResultValue();
+                            NullnessValue refinedResultValue = analysis.createSingleAnnotationValue(
+                                    NONNULL, oldResultValue.getType().getUnderlyingType());
+                            NullnessValue newResultValue = refinedResultValue.mostSpecific(
+                                    oldResultValue, null);
+                            result.setResultValue(newResultValue);
+                        }
+                    }
+                }
+            }
+        }
+
         return result;
     }
 

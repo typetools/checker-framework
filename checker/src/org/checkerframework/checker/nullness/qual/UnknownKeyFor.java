@@ -12,8 +12,8 @@ import org.checkerframework.framework.qual.*;
 @TypeQualifier
 @InvisibleQualifier
 @SubtypeOf({})
+@DefaultQualifierInHierarchy
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@DefaultFor({DefaultLocation.LOCAL_VARIABLE})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface UnknownKeyFor {}

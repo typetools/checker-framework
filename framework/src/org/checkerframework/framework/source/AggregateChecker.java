@@ -88,9 +88,7 @@ public abstract class AggregateChecker extends SourceChecker {
         messager = processingEnv.getMessager();
 
         // first initialize all checkers
-        for (SourceChecker checker : checkers) {
-            checker.initChecker();
-        }
+        initializeCheckers();
         // then share options as necessary
         for (SourceChecker checker : checkers) {
             // We need to add all options that are activated for the aggregate to
@@ -101,6 +99,12 @@ public abstract class AggregateChecker extends SourceChecker {
             checker.setSupportedLintOptions(this.getSupportedLintOptions());
         }
         allCheckersInited = true;
+    }
+
+    protected void initializeCheckers() {
+        for (SourceChecker checker : checkers) {
+            checker.initChecker();
+        }
     }
 
     // Whether all checkers were successfully initialized.
