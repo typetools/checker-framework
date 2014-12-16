@@ -748,7 +748,17 @@ public class AnnotatedTypes {
                 // Tree, with defaults applied.
                 final AnnotatedTypeMirror basicReturnType = atypeFactory.type(expr);
                 atypeFactory.annotateImplicit(expr, basicReturnType);
-                AnnotatedTypeMirror ret = assigned.shallowCopy();
+
+                AnnotatedTypeMirror ret = assigned.deepCopy();
+                if (basicReturnType.getKind() == TypeKind.TYPEVAR
+                 && ret.getKind() == TypeKind.TYPEVAR) {
+                    ret.clearAnnotations();
+                    final AnnotatedTypeVariable retTv = (AnnotatedTypeVariable) ret;
+                    final AnnotatedTypeVariable basicReturnTv = (AnnotatedTypeVariable) basicReturnType;
+                    retTv.getUpperBound().replaceAnnotations(basicReturnTv.getUpperBound().getAnnotations());
+                    retTv.getLowerBound().replaceAnnotations(basicReturnTv.getLowerBound().getAnnotations());
+                }
+
                 ret.replaceAnnotations(basicReturnType.getAnnotations());
                 typeArgumentsFromAssignment = Collections.singletonMap(((AnnotatedTypeVariable) returnType).getUnderlyingType(), ret);
             } else {
