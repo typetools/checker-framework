@@ -392,15 +392,23 @@ public class QualifierDefaults {
 
         private final DefaultApplierElementImpl impl;
 
-        //This flag is turned on, to allow defaulting of local variables that are also typevariables
-        private final boolean applyToTypeVar;
+        /*Local type variables are defaulted to top when flow is turned on
+          We only want to default the top level type variable (and not type variables that are nested
+          in its bounds). E.g.,
+            <T extends List<E>, E extends Object> void method() {
+               T t;
+            }
+          We would like t to have its primary annotation defaulted but NOT the E inside its upper bound.
+          we use referential equality with the top level type var to determine which ones are defaultable
+        */
+        private final AnnotatedTypeVariable defaultableTypeVar;
 
         public DefaultApplierElement(AnnotatedTypeFactory atypeFactory, Element scope, AnnotatedTypeMirror type, boolean applyToTypeVar) {
             this.atypeFactory = atypeFactory;
             this.scope = scope;
             this.type = type;
             this.impl = new DefaultApplierElementImpl();
-            this.applyToTypeVar = applyToTypeVar;
+            this.defaultableTypeVar = (applyToTypeVar) ? (AnnotatedTypeVariable) type : null;
         }
 
         public void apply(Default def) {
@@ -457,7 +465,7 @@ public class QualifierDefaults {
 
             @Override
             public Void scan(AnnotatedTypeMirror t, AnnotationMirror qual) {
-                if (!shouldBeAnnotated(t, applyToTypeVar)) {
+                if (!shouldBeAnnotated(t, t == defaultableTypeVar)) {
                     return super.scan(t, qual);
                 }
 
