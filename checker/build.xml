@@ -888,12 +888,17 @@
             </path>
         </pathconvert>
 
+        <condition property="maybeDebug" value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=${debugPort}" else="">
+            <isset property="debugPort"/>
+        </condition>
+
         <echo message="${src.files}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
               classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg line="${maybeDebug}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
