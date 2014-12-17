@@ -376,9 +376,8 @@ public abstract class SourceChecker
         return this.processingEnv;
     }
 
-    /* This method is package visible only to allow the AggregateChecker. */
-    /* package-visible */
-    void setProcessingEnvironment(ProcessingEnvironment env) {
+    /* This method is protected only to allow the AggregateChecker and BaseTypeChecker to call it. */
+    protected void setProcessingEnvironment(ProcessingEnvironment env) {
         this.processingEnv = env;
     }
 
@@ -791,9 +790,8 @@ public abstract class SourceChecker
     // The number of errors at the last exit of the type processor.
     // At entry to the type processor we check whether the current error count is
     // higher and then don't process the file, as it contains some Java errors.
-    // Needs to be package-visible to allow access from AggregateChecker.
-    /* package-visible */
-    int errsOnLastExit = 0;
+    // Needs to be protected to allow access from AggregateChecker and BaseTypeChecker.
+    protected int errsOnLastExit = 0;
 
     /**
      * Type-check the code with Java specifications and then runs the Checker
