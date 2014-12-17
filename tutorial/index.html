@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Checker Framework Tutorial</title>
+
+<link href="webpages/bootstrap/css/bootstrap.css" rel="stylesheet" />
+<script type="text/javascript"
+	src="webpages/bootstrap/js/bootstrap.min.js"></script>
+
+<link href="webpages/css/main.css" rel="stylesheet" />
+<link rel="icon" type="image/png" href="http://types.cs.washington.edu/checker-framework/favicon-checkerframework.png" />
+
+</head>
+
+<body>
+
+	 <div class="top_liner"></div>
+ <div class="navbar navbar-inverse navbar-fixed-top" style="border-bottom: 1px solid #66d;">
+  <div class="navbar-inner">
+   <div class="contained">
+    <ul class="nav">
+     <li class="heading">Checker Framework:
+      </h4>
+     </li>
+     <li><a href="http://checkerframework.org/">Main Site</a></li>
+     <li><a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">Manual</a></li>
+     <li><a href="https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">Discussion List</a></li>
+     <li><a href="http://code.google.com/p/checker-framework/issues/list">Issue Tracker</a></li>
+     <li><a href="http://code.google.com/p/checker-framework/source/checkout">Source Code</a></li>
+     <li><a href="http://types.cs.washington.edu/checker-framework/eclipse/">Eclipse Plugin</a></li>
+     <li class="active"><a href="http://types.cs.washington.edu/checker-framework/tutorial/">Tutorial</a></li>
+    </ul>
+   </div>
+  </div>
+ </div>
+
+	<img src="CFLogo.png" alt="Checker Framework logo" />
+
+	<div class="page-header short"
+		style="border-bottom: 1px solid #EEE; border-top: none;">
+		<h1>Checker Framework Tutorial</h1>
+	</div>
+
+	<section id="introduction">
+		<div class="page-header short" style="border-top: none;">
+			<h2>Introduction</h2>
+		</div>
+
+		<div class="section">
+
+			<p>The Checker Framework enhances Java's type system to make it
+				more powerful and useful. This lets software developers detect and
+				prevent errors in their Java programs. The Checker Framework
+				includes compiler plug-ins ("checkers") that find bugs or verify
+				their absence. It also permits software developers to write their
+				own compiler plug-ins.</p>
+
+			<p>
+				In this tutorial, you will learn to use the Checker Framework to
+				prevent null pointer exceptions, to prevent SQL injection attacks,
+				and to improve code quality. In this tutorial, you can either follow
+				the Eclipse Plugin tutorial, or the Command Line tutorial. Both
+				tutorials use the same examples, but have instructions for the
+				command line or the Checker Framework Eclipse Plugin. The Checker
+				Framework can also be used with other <a
+					ref="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#external-tools">external
+					tools</a> such as Maven or InteliJ IDEA, but they are outside of the
+				scope of this tutorial.
+			</p>
+		</div>
+	</section>
+
+	<section id="eclipsetutorial">
+		<div class="page-header short">
+			<h2>Using the Checker Framework Eclipse Plugin</h2>
+		</div>
+		<div class="section">
+
+			<ol>
+				<li><a
+					href="http://types.cs.washington.edu/checker-framework/eclipse/">
+						Install the Eclipse Plugin</a> and then return to this page.</li>
+				<li><a href="eclipse-projects.zip">Download</a> and unzip the
+					Eclipse projects for the tutorial.</li>
+				<li><a href="webpages/get-started-eclipse.html"> Getting
+						Started</a>, a simple example use of the Nullness Checker</li>
+				<li><a href="webpages/user-input-eclipse.html"> Validating
+						User Input</a>, an example using the Regex Checker</li>
+				<li><a href="webpages/security-error-eclipse.html"> Finding
+						a Security Error</a>, a complex example using the Tainting Checker</li>
+				<li><a href="webpages/encryption-checker-eclipse.html">
+						Writing an Encryption Checker</a>, an example of writing your own type
+					checker</li>
+			</ol>
+		</div>
+
+
+	</section>
+
+	<section id="commandlinetutorial">
+		<div class="page-header short">
+			<h2>Using the Checker Framework from the Command Line</h2>
+		</div>
+		<div class="section">
+
+			<ol>
+				<li><a
+					href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#installation">
+						Install the Checker Framework</a> and then return to this page.</li> As
+				described in the installation instructions,set the alias
+				<code>javacheck</code>
+				to the Checker Framework compiler.
+				<li><a href="sourcefiles.zip">Download</a> and unzip the source
+					files for the tutorial.</li>
+				<li><a href="webpages/get-started-cmd.html"> Getting
+						Started</a>, a simple example use of the Nullness Checker</li>
+				<li><a href="webpages/user-input-cmd.html"> Validating User
+						Input</a>, an example using the Regex Checker</li>
+				<li><a href="webpages/security-error-cmd.html"> Finding a
+						Security Error</a>, a complex example using the Tainting Checker</li>
+				<li><a href="webpages/encryption-checker-cmd.html"> Writing
+						an Encryption Checker</a>, an example of writing a declarative type
+					checker</li>
+			</ol>
+		</div>
+
+	</section>
+
+	<section id="resources">
+		<div class="page-header short">
+			<h2>Resources</h2>
+		</div>
+		<div class="section">
+
+			<ul>
+				<li><a
+					href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">The
+						Checker Framework Manual</a></li>
+				<li><a href="http://checkerframework.org/">The
+						Checker Framework homepage</a></li>
+
+				<li><a href="http://types.cs.washington.edu/jsr308/">Type
+						Annotations (JSR 308)</a></li>
+				<li>Feel free to <b>contact</b> us! Email <a
+					href="mailto:checker-framework-dev@googlegroups.com">checker-framework-dev@googlegroups.com</a>
+				</li>
+			</ul>
+		</div>
+
+	</section>
+
+
+
+	<div class="bottom_liner"></div>
+
+</body>
+</html>
+
+<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath 
+ -->
+<!--  LocalWords:  NullnessChecker plugin's hg
+ -->

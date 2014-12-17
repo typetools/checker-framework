@@ -1,0 +1,314 @@
+\htmlhr
+\chapter{Interning Checker\label{interning-checker}}
+
+If the Interning Checker issues no errors for a given program, then all
+reference equality tests (i.e., all uses of ``\code{==}'') are proper;
+that is,
+\code{==} is not misused where \code{equals()} should have been used instead.
+
+Interning is a design pattern in which the same object is used whenever two
+different objects would be considered equal.  Interning is also known as
+canonicalization or hash-consing, and it is related to the flyweight design
+pattern.
+Interning has two benefits:  it can save memory, and it can speed up testing for
+equality by permitting use of \code{==}.
+
+The Interning Checker prevents two types of errors in your code.  First, 
+\code{==} should be used
+only on interned values; using \code{==} on
+non-interned values can result in subtle bugs.  For example:
+
+\begin{Verbatim}
+  Integer x = new Integer(22);
+  Integer y = new Integer(22);
+  System.out.println(x == y);  // prints false!
+\end{Verbatim}
+
+\noindent
+The Interning Checker helps programmers to prevent such bugs.
+Second, 
+the Interning Checker also helps to prevent performance problems that result
+from failure to use interning.
+(See Section~\ref{checker-guarantees} for caveats to the checker's guarantees.)
+
+Interning is such an important design pattern that Java builds it in for
+these types: \<String>, \<Boolean>, \<Byte>, \<Character>, \<Integer>,
+\<Short>.  Every string literal in the program is guaranteed to be interned
+(\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-3.html#jls-3.10.5}{JLS
+  \S3.10.5}), and the
+\sunjavadoc{java/lang/String.html\#intern()}{String.intern()} method
+performs interning for strings that are computed at run time.
+The \<valueOf> methods in wrapper classes always (\<Boolean>, \<Byte>) or
+sometimes (\<Character>, \<Integer>, \<Short>) return an interned result
+(\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.1.7}{JLS \S5.1.7}).
+Users can also write their own interning methods for other types.
+
+It is a proper optimization to use \code{==}, rather than \code{equals()},
+whenever the comparison is guaranteed to produce the same result --- that
+is, whenever the comparison is never provided with two different objects
+for which \code{equals()} would return true.  Here are three reasons that
+this property could hold:
+
+\begin{enumerate}
+\item
+  Interning.  A factory method ensures that, globally, no two different
+  interned objects are \code{equals()} to one another.  (In some cases
+  other, non-interned objects of the class might be \code{equals()} to one
+  another; in other cases, every object of the class is interned.)
+  Interned objects should always be immutable.
+\item
+  Global control flow.  The program's control flow is such that the
+  constructor for class $C$ is called a limited number of times, and with
+  specific values that ensure the results are not \code{equals()} to one
+  another.  Objects of class $C$ can always be compared with \code{==}.
+  Such objects may be mutable or immutable.
+\item
+  Local control flow.  Even though not all objects of the given type may be
+  compared with \code{==}, the specific objects that can reach a given
+  comparison may be.  For example, suppose that an array contains no
+  duplicates.  Then testing to find the index of a given element that is
+  known to be in the array can use \code{==}.
+\end{enumerate}
+
+To eliminate Interning Checker errors, you will need to annotate the
+declarations of any expression used as an argument to \code{==}.
+Thus, the Interning Checker
+could also have been called the Reference Equality Checker.  In the
+future, the checker will include annotations that target the non-interning
+cases above, but for now you need to use \<@Interned>, \<@UsesObjectEquals>
+(which handles a surprising number of cases), and/or
+\<@SuppressWarnings>.
+
+To run the Interning Checker, supply the
+\code{-processor org.checkerframework.checker.interning.InterningChecker}
+command-line option to javac.  For examples, see Section~\ref{interning-example}.
+
+
+\section{Interning annotations\label{interning-annotations}}
+
+These qualifiers are part of the Interning type system:
+
+\begin{description}
+
+\item[\refqualclass{checker/interning/qual}{Interned}]
+  indicates a type that includes only interned values (no non-interned
+  values).
+
+\item[\refqualclass{checker/interning/qual}{PolyInterned}]
+  indicates qualifier polymorphism.  For a description of
+  \refqualclass{checker/interning/qual}{PolyInterned}, see
+  Section~\ref{qualifier-polymorphism}.
+
+\item[\refqualclass{checker/interning/qual}{UsesObjectEquals}]
+  is a class (not type) annotation that indicates that this class's
+  \<equals> method is the same as that of \<Object>.  In other words,
+  neither this class nor any of its superclasses overrides the \<equals>
+  method.  Since \<Object.equals> uses reference equality, this means that
+  for such a class, \<==> and \<equals> are equivalent, and so the
+  Interning Checker does not issue errors or warnings for either one.
+
+\end{description}
+
+
+\section{Annotating your code with \code{@Interned}\label{annotating-with-interned}}
+
+\begin{figure}
+\includeimage{interning}{2.5cm}
+\caption{Type hierarchy for the Interning type system.}
+\label{fig-interning-hierarchy}
+\end{figure}
+
+In order to perform checking, you must annotate your code with the \refqualclass{checker/interning/qual}{Interned}
+type annotation, which indicates a type for the canonical representation of an
+object:
+
+\begin{Verbatim}
+            String s1 = ...;  // type is (uninterned) "String"
+  @Interned String s2 = ...;  // Java type is "String", but checker treats it as "@Interned String"
+\end{Verbatim}
+
+The type system enforced by the checker plugin ensures that only interned
+values can be assigned to \code{s2}.
+
+To specify that \emph{all} objects of a given type are interned, annotate the
+class declaration:
+
+\begin{Verbatim}
+  public @Interned class MyInternedClass { ... }
+\end{Verbatim}
+
+This is equivalent to annotating every use of \code{MyInternedClass}, in a
+declaration or elsewhere.  For example, \code{enum} classes are implicitly
+so annotated.
+
+
+\subsection{Implicit qualifiers\label{interning-implicit-qualifiers}}
+
+As described in Section~\ref{effective-qualifier}, the Interning Checker
+adds implicit qualifiers, reducing the number of annotations that must
+appear in your code.
+For example, String literals and the null literal are always considered interned, and
+object creation expressions (using \code{new}) are never considered
+\refqualclass{checker/interning/qual}{Interned} unless they are annotated as such, as in
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+@Interned Double internedDoubleZero = new @Interned Double(0); // canonical representation for Double zero
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+For a complete description of all implicit interning qualifiers, see the
+Javadoc for \refclass{checker/interning}{InterningAnnotatedTypeFactory}.
+
+
+\section{What the Interning Checker checks\label{interning-checks}}
+
+Objects of an \refqualclass{checker/interning/qual}{Interned} type may be safely compared using the ``\code{==}''
+operator.
+
+The checker issues an error in two cases:
+
+\begin{enumerate}
+
+\item
+  When a reference (in)equality operator (``\code{==}'' or ``\code{!=}'')
+  has an operand of non-\refqualclass{checker/interning/qual}{Interned} type.
+
+\item
+  When a non-\refqualclass{checker/interning/qual}{Interned} type is used where an \refqualclass{checker/interning/qual}{Interned} type
+  is expected.
+
+\end{enumerate}
+
+This example shows both sorts of problems:
+
+\begin{Verbatim}
+            Date  date;
+  @Interned Date idate;
+  ...
+  if (date == idate) { ... }  // error: reference equality test is unsafe
+  idate = date;               // error: idate's referent may no longer be interned
+\end{Verbatim}
+
+\label{lint-dotequals}
+
+The checker also issues a warning when \code{.equals} is used where
+\code{==} could be safely used.  You can disable this behavior via the
+javac \code{-Alint} command-line option, like so: \code{-Alint=-dotequals}.
+
+For a complete description of all checks performed by
+  the checker, see the Javadoc for
+  \refclass{checker/interning}{InterningVisitor}.
+
+\label{checking-class}
+You can also restrict which types the checker should examine and type-check,
+using the \code{-Acheckclass} option.  For example, to find only the
+interning errors related to uses of \code{String}, you can pass
+\code{-Acheckclass=java.lang.String}.  The Interning Checker always checks all
+subclasses and superclasses of the given class.
+
+
+\subsection{Limitations of the Interning Checker\label{interning-limitations}}
+
+% There is no point to linking to the Javadoc for the valueOf methods,
+% which don't discuss interning.
+
+The Interning Checker conservatively assumes that the \<Character>, \<Integer>,
+and \<Short> \<valueOf> methods return a non-interned value.  In fact, these
+methods sometimes return an interned value and sometimes a non-interned
+value, depending on the run-time argument (\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.1.7}{JLS
+\S5.1.7}).  If you know that the run-time argument to \<valueOf> implies that
+the result is interned, then you will need to suppress an error.  (An
+alternative would be to enhance the Interning Checker to estimate the upper
+and lower bounds on char, int, and short values so that it can more
+precisely determine whether the result of a given \<valueOf> call is
+interned.)
+
+
+
+\section{Examples\label{interning-example}}
+
+To try the Interning Checker on a source file that uses the \refqualclass{checker/interning/qual}{Interned} qualifier,
+use the following command (where \code{javac} is the Checker Framework compiler that
+is distributed with the Checker Framework):
+
+\begin{Verbatim}
+  javac -processor org.checkerframework.checker.interning.InterningChecker examples/InterningExample.java
+\end{Verbatim}
+
+\noindent
+Compilation will complete without errors or warnings.
+
+To see the checker warn about incorrect usage of annotations, use the following
+command:
+
+\begin{Verbatim}
+  javac -processor org.checkerframework.checker.interning.InterningChecker examples/InterningExampleWithWarnings.java
+\end{Verbatim}
+
+\noindent
+The compiler will issue an error regarding violation of the semantics of
+\refqualclass{checker/interning/qual}{Interned}.
+% in the \code{InterningExampleWithWarnings.java} file.
+
+
+The Daikon invariant detector
+(\myurl{http://plse.cs.washington.edu/daikon/}) is also annotated with
+\refqualclass{checker/interning/qual}{Interned}.  From directory \code{java},
+run \code{make check-interning}.
+
+
+
+\section{Other interning annotations\label{other-interning-annotations}}
+
+The Checker Framework's interning annotations are similar to annotations used
+elsewhere.
+
+If your code is already annotated with a different interning
+annotation, you can reuse that effort.  The Checker Framework comes with
+cleanroom re-implementations of annotations from other tools.  It treats
+them exactly as if you had written the corresponding annotation from the
+Interning Checker, as described in Figure~\ref{fig-interning-refactoring}.
+
+
+% These lists should be kept in sync with InterningAnnotatedTypeFactory.java .
+\begin{figure}
+\begin{center}
+% The ~ around the text makes things look better in Hevea (and not terrible
+% in LaTeX).
+\begin{tabular}{ll}
+\begin{tabular}{|l|}
+\hline
+ ~com.sun.istack.internal.Interned~ \\ \hline
+\end{tabular}
+&
+$\Rightarrow$
+~org.checkerframework.checker.interning.qual.Interned~
+\end{tabular}
+\end{center}
+%BEGIN LATEX
+\vspace{-1.5\baselineskip}
+%END LATEX
+\caption{Correspondence between other interning annotations and the
+  Checker Framework's annotations.}
+\label{fig-interning-refactoring}
+\end{figure}
+
+Alternately, the Checker Framework can process those other annotations (as
+well as its own, if they also appear in your program).  The Checker
+Framework has its own definition of the annotations on the left side of
+Figure~\ref{fig-interning-refactoring}, so that they can be used as type
+qualifiers.  The Checker Framework interprets them according to the right
+side of Figure~\ref{fig-interning-refactoring}.
+
+
+
+% LocalWords:  plugin MyInternedClass enum InterningExampleWithWarnings java
+% LocalWords:  PolyInterned Alint dotequals quals InterningAnnotatedTypeFactory
+% LocalWords:  javac InterningVisitor JLS Acheckclass UsesObjectEquals 5cm
+%  LocalWords:  consing valueOf superclasses s2 cleanroom canonicalization
+%  LocalWords:  5cm
