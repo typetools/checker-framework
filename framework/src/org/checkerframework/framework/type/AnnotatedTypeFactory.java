@@ -409,13 +409,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return qualHierarchy;
     }
 
-    /*
-     * @see BaseTypeChecker#getTypeFactoryOfPreviousChecker(int)
-     */
-    public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> T getTypeFactoryOfPreviousChecker(int index) {
-        return checker.getTypeFactoryOfPreviousChecker(index);
-    }
-
     /**
      * Creates the type subtyping checker using the current type qualifier
      * hierarchy.
