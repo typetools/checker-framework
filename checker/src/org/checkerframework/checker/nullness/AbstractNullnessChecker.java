@@ -2,9 +2,11 @@ package org.checkerframework.checker.nullness;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 
 /**
@@ -44,6 +46,14 @@ public abstract class AbstractNullnessChecker extends InitializationChecker {
         super.initChecker();
     }
     */
+    
+    @Override
+    protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+        LinkedHashSet<Class<? extends BaseTypeChecker>> checkers
+            = new LinkedHashSet<Class<? extends BaseTypeChecker>>(1);
+        checkers.add(KeyForSubchecker.class);
+    	return checkers;
+    }
 
     @Override
     public Collection<String> getSuppressWarningsKeys() {

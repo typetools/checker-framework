@@ -29,6 +29,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.NonRaw;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -66,9 +67,12 @@ public class NullnessTransfer extends
     /** Annotations of the non-null type system. */
     protected final AnnotationMirror NONNULL, NULLABLE;
 
+	protected final KeyForAnnotatedTypeFactory keyForTypeFactory;
+	
     public NullnessTransfer(NullnessAnalysis analysis) {
         super(analysis);
         this.analysis = analysis;
+    	this.keyForTypeFactory = ((BaseTypeChecker)analysis.getTypeFactory().getContext().getChecker()).getTypeFactoryOfSubchecker(KeyForSubchecker.class);
         NONNULL = AnnotationUtils.fromClass(analysis.getTypeFactory()
                 .getElementUtils(), NonNull.class);
         NULLABLE = AnnotationUtils.fromClass(analysis.getTypeFactory()
@@ -230,8 +234,6 @@ public class NullnessTransfer extends
         // First verify if the method name is get. This is an inexpensive check.
 
         if (methodName.startsWith("get(")) {
-        	KeyForAnnotatedTypeFactory keyForTypeFactory = analysis.getTypeFactory().getTypeFactoryOfPreviousChecker(0);
-
         	// Now verify that the receiver of the method invocation is of a type
             // that extends that java.util.Map interface. This is a more expensive check.
 
