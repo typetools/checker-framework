@@ -486,8 +486,7 @@ JVM\@.  Sections~\ref{annotations-in-java7-class-files} and~\ref{running-on-a-ja
 (\textbf{Note:} These are features of the javac compiler that is
 distributed along with the Checker Framework.  They are \emph{not}
 supported by the mainline OpenJDK javac.  These features are the key
-difference between the Checker Framework compiler and the OpenJDK compiler
-on which it is built.)
+difference between the Checker Framework compiler and the OpenJDK compiler.)
 
 %   For more details
 % about the differences, see file \code{README-jsr308.html} in the Type
@@ -646,7 +645,8 @@ program requires a Java 8 JDK at run time.
 
 To ensure that your program can run on a Java 6 or 7 JVM, you will use the
 \<-target 6> or \<-target 7> command-line option to javac.  In addition,
-you cannot use the standard Checker Framework type annotations.  You
+you have to change the way you write type annotations, and the classfiles
+will not contain all the type annotations.  You
 have two options:
 
 \begin{enumerate}
@@ -662,11 +662,15 @@ Here are some disadvantages of this approach:
 \begin{itemize}
 \item
 It produces classfiles that contain no trace of your type annotations.
-This means that you need to compile your entire application every time you
+This means that modular typechecking (also known as separate compilation)
+is not possible.
+
+You need to compile your entire application every time you
 do pluggable type-checking, rather than just compiling a subset of the
-files.  Furthermore, it means that clients of your code cannot do pluggable
+files.  Furthermore, clients of your code cannot do pluggable
 type-checking to verify that they are using your code correctly, unless
-they re-compile your code every time that they compile their own.
+they re-compile your code (or at least all the interfaces that they use)
+every time that they compile their own.
 
 \item
 It makes pluggable type-checking a
@@ -691,9 +695,21 @@ At locations where a declaration annotation is not permitted
 annotations in comments.
 \end{itemize}
 
-The disadvantage of this approach is the need to use nonstandard names for
-some annotations, and to remember which annotations to write in comments
-and which to write normally.
+Here are some disadvantages of this approach:
+
+\begin{itemize}
+\item
+  You need to use nonstandard names for
+  some annotations, and to remember which annotations to write in comments
+  and which to write normally.
+\item
+  It produces classfiles that contain only some of your type annotations
+  --- the ones that were not written in comments.
+  If your code uses type annotations at 
+  locations such as generic type parameters and \<extends> clauses, then
+  modular type-checking is not possible; the implications of that were
+  described just above.
+\end{itemize}
 
 \end{enumerate}
 
@@ -740,8 +756,8 @@ have distinct names.  This enables a programmer to import both sets of
 annotations without a name conflict.  But, you must remember to use the
 correct name, depending on where the annotations are written.
 
-Eventually, when backward compatibility with Java 6 or 7 is not important, the
-codebase should be refactored to use only the regular Checker Framework
+Eventually, when backward compatibility with Java 6 or 7 is not important,
+you should refactor your codebase to use only the regular Checker Framework
 annotations, and not to write them in comments.
 
 
