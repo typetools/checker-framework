@@ -409,7 +409,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return qualHierarchy;
     }
 
-
     /**
      * Creates the type subtyping checker using the current type qualifier
      * hierarchy.

@@ -17,7 +17,7 @@ abstract class Precondition {
     return checkNotNull(map.get(key)).x;
   }
 
-  int method2(Map<Object, Foo> map, @KeyFor("map") Object key) {
-    return checkNotNull(map.get(key)).x;
+  int method2(Map<Object, Foo> map, @KeyFor("#1") Object key) {
+    return (map.get(key)).x;
   }
 }

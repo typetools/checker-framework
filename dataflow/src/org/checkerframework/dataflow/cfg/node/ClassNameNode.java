@@ -14,6 +14,7 @@ import java.util.Collections;
 
 import javax.lang.model.element.Element;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
@@ -42,6 +43,14 @@ public class ClassNameNode extends Node {
         assert tree.getKind() == Tree.Kind.IDENTIFIER;
         this.tree = tree;
         this.element = TreeUtils.elementFromUse(tree);
+        this.parent = null;
+    }
+
+    public ClassNameNode(ClassTree tree) {
+        super(InternalUtils.typeOf(tree));
+        assert tree.getKind() == Tree.Kind.CLASS || tree.getKind() == Tree.Kind.ENUM || tree.getKind() == Tree.Kind.INTERFACE || tree.getKind() == Tree.Kind.ANNOTATION_TYPE;
+        this.tree = tree;
+        this.element = TreeUtils.elementFromDeclaration(tree);
         this.parent = null;
     }
 
