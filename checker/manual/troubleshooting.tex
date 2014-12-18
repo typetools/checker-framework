@@ -340,9 +340,7 @@ this code:
 
 \begin{Verbatim}
 if (currentOutgoing != null && !message.isCompleted()) {
-    if (!sendSuspended && currentOutgoing.continueBuffering(message)) {
-        ...
-    }
+    currentOutgoing.continueBuffering(message);
 }
 \end{Verbatim}
 
@@ -350,8 +348,8 @@ if (currentOutgoing != null && !message.isCompleted()) {
 the Nullness Checker will issue a warning on the second line:
 \begin{Verbatim}
 warning: [dereference.of.nullable] dereference of possibly-null reference currentOutgoing
-    if (!sendSuspended && currentOutgoing.continueBuffering(message))
-                          ^
+    currentOutgoing.continueBuffering(message);
+    ^
 \end{Verbatim}
 
 If \<currentOutgoing> is a field rather than a local variable, and
@@ -521,9 +519,9 @@ Unsupported major.minor version 51.0
 
 means that you have compiled some files into the Java 7 format (version
 51.0), but you are trying to run them with Java 6.
-(Likewise, ``Unsupported major.minor version 52.0''
+Likewise, ``Unsupported major.minor version 52.0''
 means that you have compiled some files into the Java 8 format (version
-52.0), but you are trying to run them with Java 7 or earlier.)
+52.0), but you are trying to run them with Java 7 or earlier.
 Run \<java -version> to
 determine the version of Java you are using and use a newer version,
 and/or use the \<-target>
