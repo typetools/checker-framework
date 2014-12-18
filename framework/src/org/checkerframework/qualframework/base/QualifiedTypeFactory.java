@@ -109,12 +109,6 @@ public interface QualifiedTypeFactory<Q> {
     Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> constructorFromUse(NewClassTree tree);
 
     /**
-     * Hook for customizing type variable substitution behavior.
-     */
-    QualifiedTypeMirror<Q> postTypeVarSubstitution(QualifiedParameterDeclaration<Q> varDecl, QualifiedTypeVariable<Q> varUse,
-            QualifiedTypeMirror<Q> value);
-
-    /**
      * Create the {@link Analysis} to configure dataflow.
      *
      * @param fieldValues The initial field values
@@ -152,4 +146,9 @@ public interface QualifiedTypeFactory<Q> {
      * @return The {@link ExtendedTypeMirror}
      */
     ExtendedTypeMirror getDecoratedElement(Element element);
+
+    /**
+     * @return a TypeVariableSubstitutor
+     */
+    TypeVariableSubstitutor<Q> createTypeVariableSubstitutor();
 }

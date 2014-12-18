@@ -1,39 +1,28 @@
 package org.checkerframework.qualframework.base;
 
-import java.util.*;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
-import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.Pair;
-
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
 import org.checkerframework.qualframework.base.dataflow.QualTransferAdapter;
-import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import java.util.List;
 
 /**
  * Adapter class for {@link QualifiedTypeFactory}, extending
@@ -355,34 +344,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         return qualResult;
     }
 
-    public void postTypeVarSubstitution(AnnotatedTypeVariable varDecl,
-            AnnotatedTypeVariable varUse, AnnotatedTypeMirror value) {
-        TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
-
-        QualifiedParameterDeclaration<Q> qualVarDecl = (QualifiedParameterDeclaration<Q>)conv.getQualifiedType(varDecl);
-        QualifiedTypeVariable<Q> qualVarUse = (QualifiedTypeVariable<Q>)conv.getQualifiedType(varUse.asUse());
-        QualifiedTypeMirror<Q> qualValue = conv.getQualifiedType(value);
-
-        QualifiedTypeMirror<Q> qualResult = underlying.postTypeVarSubstitution(
-                qualVarDecl, qualVarUse, qualValue);
-
-        conv.applyQualifiers(qualResult, value);
-    }
-
-    QualifiedTypeMirror<Q> superPostTypeVarSubstitution(QualifiedParameterDeclaration<Q> varDecl,
-            QualifiedTypeVariable<Q> varUse, QualifiedTypeMirror<Q> value) {
-        TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
-
-        AnnotatedTypeVariable annoVarDecl = (AnnotatedTypeVariable)conv.getAnnotatedType(varDecl);
-        AnnotatedTypeVariable annoVarUse = (AnnotatedTypeVariable)conv.getAnnotatedType(varUse);
-        AnnotatedTypeMirror annoValue = conv.getAnnotatedType(value);
-
-        super.postTypeVarSubstitution(annoVarDecl, annoVarUse, annoValue);
-
-        QualifiedTypeMirror<Q> qualResult = conv.getQualifiedType(annoValue);
-        return qualResult;
-    }
-
     /**
      * Create the {@link TransferFunction} to be used.
      *
@@ -397,5 +358,19 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
             qualAnalysis.setAdapter(analysis);
         }
         return new QualTransferAdapter<>(qualAnalysis.createTransferFunction(), analysis, qualAnalysis);
+    }
+
+    /**
+     * Create an adapter using a TypeVariableSubstitutor from the qual type system.
+     */
+    @Override
+    protected TypeVariableSubstitutorAdapter<Q> createTypeVariableSubstitutor() {
+
+        TypeVariableSubstitutor<Q> substitutor = underlying.createTypeVariableSubstitutor();
+        TypeVariableSubstitutorAdapter<Q> adapter = new TypeVariableSubstitutorAdapter<Q>(substitutor,
+                this.getCheckerAdapter().getTypeMirrorConverter());
+        substitutor.setAdapter(adapter);
+
+        return adapter;
     }
 }
