@@ -12,20 +12,21 @@ import org.checkerframework.checker.experimental.regex_qual.RegexQualifierHierar
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.SetQualifierVisitor;
+import org.checkerframework.qualframework.base.TypeVariableSubstitutor;
 import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
 import org.checkerframework.qualframework.base.dataflow.QualTransfer;
 import org.checkerframework.qualframework.base.dataflow.QualValue;
 import org.checkerframework.qualframework.poly.CombiningOperation;
-import org.checkerframework.qualframework.poly.ContainmentHierarchy;
 import org.checkerframework.qualframework.poly.PolyQual;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 import org.checkerframework.qualframework.poly.PolyQual.QualVar;
-import org.checkerframework.qualframework.poly.PolyQualHierarchy;
 import org.checkerframework.qualframework.poly.QualParams;
+import org.checkerframework.qualframework.poly.QualifiedParameterTypeVariableSubstitutor;
 import org.checkerframework.qualframework.poly.QualifierParameterTreeAnnotator;
-import org.checkerframework.qualframework.poly.QualifierParameterTypeAnnotator;
 import org.checkerframework.qualframework.poly.QualifierParameterTypeFactory;
 import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 import org.checkerframework.qualframework.poly.Wildcard;
@@ -123,8 +124,8 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
                         || (tree instanceof CompoundAssignmentTree
                         && TreeUtils.isStringCompoundConcatenation(tree))) {
 
-                    QualParams<Regex> lRegex = getQualifiedType(tree.getExpression()).getQualifier();
-                    QualParams<Regex> rRegex = getQualifiedType(tree.getVariable()).getQualifier();
+                    QualParams<Regex> lRegex = getEffectiveQualifier(getQualifiedType(tree.getExpression()));
+                    QualParams<Regex> rRegex = getEffectiveQualifier(getQualifiedType(tree.getVariable()));
                     return handleBinaryOperation(tree, lRegex, rRegex, result);
                 } else {
                     return result;
@@ -144,10 +145,10 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
                         getContext().getProcessingEnvironment())) {
 
                     ExpressionTree arg0 = tree.getArguments().get(0);
-                    if (getQualifiedType(arg0).getQualifier() == QualParams.<Regex>getBottom()) {
+                    if (getEffectiveQualifier(getQualifiedType(arg0)) == QualParams.<Regex>getBottom()) {
                         result = SetQualifierVisitor.apply(result, QualParams.<Regex>getBottom());
                     } else {
-                        Regex qual = getQualifiedType(arg0).getQualifier().getPrimary().getMaximum();
+                        Regex qual = getEffectiveQualifier(getQualifiedType(arg0)).getPrimary().getMaximum();
                         QualParams<Regex> clone = result.getQualifier().clone();
                         clone.setPrimary(new GroundQual<>(qual));
                         result = SetQualifierVisitor.apply(result, clone);
@@ -169,8 +170,8 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
                         || (tree instanceof CompoundAssignmentTree
                         && TreeUtils.isStringCompoundConcatenation((CompoundAssignmentTree)tree))) {
 
-                    QualParams<Regex> lRegex = getQualifiedType(tree.getLeftOperand()).getQualifier();
-                    QualParams<Regex> rRegex = getQualifiedType(tree.getRightOperand()).getQualifier();
+                    QualParams<Regex> lRegex = getEffectiveQualifier(getQualifiedType(tree.getLeftOperand()));
+                    QualParams<Regex> rRegex = getEffectiveQualifier(getQualifiedType(tree.getRightOperand()));
                     return handleBinaryOperation(tree, lRegex, rRegex, result);
                 } else {
                     return result;
@@ -292,12 +293,31 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
     }
 
     @Override
-    protected Wildcard<Regex> combineForSubstitution(Wildcard<Regex> a, Wildcard<Regex> b) {
-        return a.combineWith(b, lubOp, lubOp);
+    public TypeVariableSubstitutor<QualParams<Regex>> createTypeVariableSubstitutor() {
+        return new QualifiedParameterTypeVariableSubstitutor<Regex>() {
+            @Override
+            protected Wildcard<Regex> combineForSubstitution(Wildcard<Regex> a, Wildcard<Regex> b) {
+                return a.combineWith(b, lubOp, lubOp);
+            }
+
+            @Override
+            protected PolyQual<Regex> combineForSubstitution(PolyQual<Regex> a, PolyQual<Regex> b) {
+                return a.combineWith(b, lubOp);
+            }
+        };
     }
 
-    @Override
-    protected PolyQual<Regex> combineForSubstitution(PolyQual<Regex> a, PolyQual<Regex> b) {
-        return a.combineWith(b, lubOp);
+    public QualParams<Regex> getEffectiveQualifier(QualifiedTypeMirror<QualParams<Regex>> mirror) {
+        switch (mirror.getKind()) {
+            case TYPEVAR:
+                return this.getQualifiedTypeParameterBounds(
+                        ((QualifiedTypeVariable<QualParams<Regex>>) mirror).
+                                getDeclaration().getUnderlyingType()).getUpperBound().getQualifier();
+            case WILDCARD:
+                return ((QualifiedWildcardType<QualParams<Regex>>)mirror).getExtendsBound().getQualifier();
+
+            default:
+                return mirror.getQualifier();
+        }
     }
 }
