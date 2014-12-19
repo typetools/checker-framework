@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Checker Framework Tutorial - Security Error - Eclipse</title>
+
+<link href="bootstrap/css/bootstrap.css" rel="stylesheet" />
+<script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+
+<link href="css/main.css" rel="stylesheet" />
+<link rel="icon" type="image/png"	href="http://types.cs.washington.edu/checker-framework/favicon-checkerframework.png" />
+
+</head>
+
+<body>
+
+	 <div class="top_liner"></div>
+ <div class="navbar navbar-inverse navbar-fixed-top" style="border-bottom: 1px solid #66d;">
+  <div class="navbar-inner">
+   <div class="contained">
+    <ul class="nav">
+     <li class="heading">Checker Framework:
+      </h4>
+     </li>
+     <li><a href="http://checkerframework.org/">Main Site</a></li>
+     <li><a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">Manual</a></li>
+     <li><a href="https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">Discussion List</a></li>
+     <li><a href="http://code.google.com/p/checker-framework/issues/list">Issue Tracker</a></li>
+     <li><a href="http://code.google.com/p/checker-framework/source/checkout">Source Code</a></li>
+     <li><a href="http://types.cs.washington.edu/checker-framework/eclipse/">Eclipse Plugin</a></li>
+     <li class="active"><a href="http://types.cs.washington.edu/checker-framework/tutorial/">Tutorial</a></li>
+    </ul>
+   </div>
+  </div>
+ </div>
+
+	<img src="CFLogo.png" alt="Checker Framework logo" />
+	<div class="page-header short"
+		style="border-bottom: 1px solid #EEE; border-top: none;">
+		<h1>Checker Framework Tutorial</h1>
+		<h2>
+			<small>Previous <a href="user-input-eclipse.html">Validating
+					User Input</a>
+			</small>
+		</h2>
+	</div>
+
+	<section id="introduction">
+		<div class="page-header short" style="border-top: none;">
+
+
+			<h2>Finding a Security Error</h2>
+		</div>
+		<p>This example uses the Tainting Checker to verify that user
+			input does not contain SQL statements to prevent SQL injection.
+		<p>
+		<div class="well">
+			<h5>Outline</h5>
+			<ol>
+				<li><a href="#import">Import <strong>
+							personalblog-demo</strong></a></li>
+				<li><a href="#run1">Run the Tainting Checker--1 error found
+				</a></li>
+				<li><a href="#error1">Correct the error</a></li>
+				<li><a href="#run2">Run the Tainting Checker--a new error
+						is found</a></li>
+				<li><a href="#error2">Correct the new error</a></li>
+				<li><a href="#run3">Run the Tainting Checker--no errors</a></li>
+			</ol>
+		</div>
+
+		<div class="section">
+			<section id="import">
+				<h4>
+					1. Import <strong>personalblog-demo</strong>
+				</h4>
+
+				<p>
+					To begin, load the <strong>personalblog-demo</strong> project into
+					Eclipse. (Download it <a href="../eclipse-projects.zip">here.</a>)
+					The project has two warnings that can be ignored.
+				</p>
+				<div class="well">
+					<h5>Expected Warnings</h5>
+					<ol>
+						<li>Unsupported @SuppressWarnings("untainted")
+							ReadAction.java</li>
+						<li>Unsupported @SuppressWarnings("untainted")
+							PersonalBlogService.java</li>
+					</ol>
+				</div>
+
+				<p>
+					This example has already been annotated to prevent the SQL
+					injections. It does this by annotating
+					<code>PersonalBlogService.executeQuery(String)</code>
+					with <a
+						href="http://types.cs.washington.edu/checker-framework/current/api/org/checkerframework/checker/tainting/qual/Untainted.html"><code>@Untainted</code></a>
+					and providing a method,
+					<code>ReadAction.validate(String)</code>
+					, to validate the user input.
+			</section>
+
+			<section id="run1">
+
+				<h4>2. Run the Tainting Checker--1 error found</h4>
+
+				<p>Run the Tainting Checker on the entire src folder. The
+					following warning will be produced.</p>
+
+				<pre>
+incompatible types in argument.
+                    "where post.category like '%", category,
+  found   : @Tainted String
+  required: @Untainted String	PersonalBlogService.java	
+</pre>
+				<p>
+					The checker issues a warning for
+					<code>getPostsByCategory()</code>
+					because a possibly tainted string
+					<code>category</code>
+					is used in the query construction. This String could contain SQL
+					statements that could taint the database. The programmer must
+					require
+					<code>category</code>
+					to be untainted.
+				</p>
+			</section>
+
+			<section id="error1">
+				<h4>3. Correct the Error</h4>
+
+
+				<p>
+					To correct this, <b> add <code>@Untainted</code>
+					</b> to category parameter declaration. This forces clients to pass an
+					<code>@Untainted</code>
+					value, which was the intention of the designer of the
+					getPostsByCategory method. See the change below.
+				</p>
+
+				<pre>
+  public List&lt;?&gt; getPostsByCategory(<b>/*@Untainted*/ </b>String category) throws ServiceException {
+</pre>
+			</section>
+
+			<section id="run2">
+				<h4>4. Run the Tainting Checker--a new error is found</h4>
+
+				<p>
+					Run the Tainting Checker again. There is an error in
+					<code>ReadAction.executeSub()</code>
+					, which is a client of getPostsByCategory. The
+					<code>reqCategory</code>
+					is accepted from the user (from request object) without validation.
+					Below is the warning message.
+				</p>
+
+				<pre>
+incompatible types in argument.
+                  	pblog.getPostsByCategory(reqCategory));
+  found   : @Tainted String
+  required: @Untainted String	ReadAction.java	
+</pre>
+			</section>
+
+			<section id="error2">
+				<h4>5. Correct the New Error</h4>
+
+				</p>
+				To correct, <b> use the <code>validate</code> method
+				</b> as shown below.
+				</p>
+				<pre>
+    String reqCategory = <b>validate</b>(cleanNull(request.getParameter("cat"))); 
+</pre>
+			</section>
+
+			<section id="run3">
+				<h4>6. Run the Tainting Checker--no errors</h4>
+
+				<p>There should be no errors.</p>
+
+				For a complete discussion of how to use the Tainting Checker, please
+				read the <a
+					href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#tainting-checker">
+					Tainting Checker chapter</a> in the Checker Framework manual.
+		</div>
+	</section>
+
+
+
+	<section id="installation">
+		<div class="page-header short">
+			<h2>
+				<small>Next, try <a href="encryption-checker-eclipse.html">
+						Writing an Encryption Checker</a></small>
+			</h2>
+		</div>
+
+	</section>
+	<div class="bottom_liner"></div>
+
+</body>
+</html>
+
+<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath 
+ -->
+<!--  LocalWords:  NullnessChecker plugin's hg
+ -->

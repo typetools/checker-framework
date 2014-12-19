@@ -1,0 +1,60 @@
+\section{Typestate checkers\label{typestate-checker}}
+
+In a regular type system, a variable has the same type throughout its
+scope.
+In a typestate system, a variable's type can change as operations
+are performed on it.
+
+The most common example of typestate is for a \<File> object.  Assume a file
+can be in two states, \<@Open> and \<@Closed>.  Calling the \<close()> method
+changes the file's state.  Any subsequent attempt to read, write, or close
+the file will lead to a run-time error.  It would be better for the type
+system to warn about such problems, or guarantee their absence, at compile
+time.
+
+Just as you can extend the Subtyping Checker to create a type-checker, you can
+extend a typestate checker to create a type-checker that supports typestate
+analysis.  Two extensible typestate analyses that build on the Checker
+Framework are available.  One is by Adam Warski:
+\myurl{http://www.warski.org/typestate.html}.
+The other is by Daniel Wand:
+\myurl{http://typestate.ewand.de/}.
+
+
+\subsection{Comparison to flow-sensitive type refinement\label{typestate-vs-type-refinement}}
+
+The Checker Framework's flow-sensitive type refinement
+(Section~\ref{type-refinement}) implements a form of typestate analysis.
+For example, after code that tests a variable against null, the Nullness
+Checker (Chapter~\ref{nullness-checker}) treats the variable's type as
+\<@NonNull \emph{T}>, for some \<\emph{T}>\@.
+
+For many type systems, flow-sensitive type refinement is sufficient.  But
+sometimes, you need full typestate analysis.  This section compares the
+two.
+% (Dependent types and unused variables
+(Unused variables
+% (Section~\ref{unused-fields-and-dependent-types})
+(Section~\ref{unused-fields})
+also have similarities
+with typestate analysis and can occasionally substitute for it.  For
+brevity, this discussion omits them.)
+
+A typestate analysis is easier for a user to create or extend.
+Flow-sensitive type refinement is built into the Checker Framework and is
+optionally extended by each checker.  Modifying the rules requires writing
+Java code in your checker.  By contrast, it is possible to write a simple
+typestate checker declaratively, by writing annotations on the methods
+(such as \<close()>) that change a reference's typestate.
+
+A typestate analysis can change a reference's type to something that is not
+consistent with its original definition.  For example, suppose that a
+programmer decides that the \<@Open> and \<@Closed> qualifiers are
+incomparable --- neither is a subtype of the other.  A typestate analysis
+can specify that the \<close()> operation converts an \<@Open File> into a
+\<@Closed File>.  By contrast, flow-sensitive type refinement can only give
+a new type that is a subtype of the declared type --- for flow-sensitive
+type refinement to be effective, \<@Closed> would need to be a child of
+\<@Open> in the qualifier hierarchy (and \<close()> would need to be
+treated specially by the checker).
+
