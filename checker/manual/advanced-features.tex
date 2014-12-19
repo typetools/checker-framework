@@ -656,6 +656,9 @@ additional implementation work, are
   \ahrefloc{interning-checker}{Interning Checker} for errors in equality
   testing and interning (see \chapterpageref{interning-checker})
 \item
+  \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
+  (see \chapterpageref{lock-checker})
+\item
   \ahrefloc{propkey-checker}{Property File Checker} to ensure that valid
   keys are used for property files and resource bundles (see
   \chapterpageref{propkey-checker})
@@ -663,10 +666,17 @@ additional implementation work, are
   \ahrefloc{i18n-checker}{Internationalization Checker} to
   ensure that code is properly internationalized (see
   \chapterpageref{i18n-checker})
+% The Compiler Message Key Checker is neither here nor in the introduction
+% chapter because it is really meant for Checker Framework developers and
+% as sample code, and is not meant for Checker Framework users at large.  
 \item
   \ahrefloc{signature-checker}{Signature String Checker} to ensure that the
   string representation of a type is properly used, for example in
   \<Class.forName> (see \chapterpageref{signature-checker}).
+\item
+  \ahrefloc{constant-value-checker}{Constant Value Checker} to determine
+  whether an expression's value can be known at compile time
+  (see \chapterpageref{constant-value-checker})
 \end{itemize}
 
 
@@ -677,9 +687,6 @@ Type systems that cannot support a run-time test are:
   \ahrefloc{initialization-checker}{Initialization Checker} to ensure all
   fields are set in the constructor (see
   \chapterpageref{initialization-checker})
-\item
-  \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
-  (see \chapterpageref{lock-checker})
 \item
   \ahrefloc{fenum-checker}{Fake Enum Checker} to allow type-safe fake enum
   patterns (see \chapterpageref{fenum-checker})
@@ -695,9 +702,8 @@ Type systems that cannot support a run-time test are:
   performed on correct units of measurement
   (see \chapterpageref{units-checker})
 \item
-  \ahrefloc{constant-value-checker}{Constant Value Checker} to determine
-  whether an expression's value can be known at compile time
-  (see \chapterpageref{constant-value-checker})
+  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
+  expressions have aliases (see \chapterpageref{aliasing-checker})
 \item
   \ahrefloc{linear-checker}{Linear Checker} to control aliasing and prevent
   re-use (see \chapterpageref{linear-checker})

@@ -1,3 +1,11 @@
+Version 1.8.9, 19 December 2014
+
+Aliasing Checker:
+This new type-checker ensures that an expression has no aliases.
+
+Fixed issues: 362, 380, 382.
+
+----------------------------------------------------------------------
 Version 1.8.8, 26 November 2014
 
 @SuppressWarnings("all") suppresses all Checker Framework warnings.
