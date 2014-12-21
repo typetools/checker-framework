@@ -97,10 +97,10 @@
     <ant dir="stubparser">
       <target name="tags"/>
     </ant>
-    <exec executable="make" dir="checker/manual">
+    <exec executable="make" dir="checker/manual" failonerror="true">
       <arg value="tags"/>
     </exec>
-    <exec executable="etags">
+    <exec executable="etags" failonerror="true">
       <arg value="-i"/>
       <arg value="checker/TAGS"/>
       <arg value="-i"/>
