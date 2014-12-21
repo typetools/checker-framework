@@ -2,8 +2,6 @@
 # Add favicon to header of HTML files.
 # One use case is for javadoc-generated API documentation.
 #
-# Copied from https://code.google.com/p/plume-lib/source/browse/bin/add-favicon
-#
 # Run like this:
 # add-favicon <directory> <favicon.png>
 # The arguments should be paths relative to the current working directory.
@@ -17,13 +15,13 @@
 # This version corrects these issues.
 
 
-function patchIt () {
+patchIt () {
   for f in $1/*.html ; do
     if [ -f "$f" ]; then     # if no .html files exist, f is literal "*.html"
       tmpfile=`mktemp patch_favicon_XXXXX`
       sed -e " s%<head>\$%<head><link rel=\"icon\" href=\"$2\" type=\"image/png\"/>%" \
 	  $f > $tmpfile  ; mv -f $tmpfile $f ;
-    fi; 
+    fi;
   done ;
   for d in $1/* ; do
     if [ -d $d ]; then echo "descending to "$d ; patchIt $d ../$2 ; fi ;
