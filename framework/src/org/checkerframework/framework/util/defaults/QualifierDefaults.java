@@ -471,14 +471,14 @@ public class QualifierDefaults {
 
                 switch (location) {
                 case FIELD: {
-                    if (scope.getKind() == ElementKind.FIELD &&
+                    if (scope != null && scope.getKind() == ElementKind.FIELD &&
                             t == type) {
                         doApply(t, qual);
                     }
                     break;
                 }
                 case LOCAL_VARIABLE: {
-                    if (scope.getKind() == ElementKind.LOCAL_VARIABLE &&
+                    if (scope != null && scope.getKind() == ElementKind.LOCAL_VARIABLE &&
                             t == type) {
                         // TODO: how do we determine that we are in a cast or instanceof type?
                         doApply(t, qual);
@@ -486,21 +486,21 @@ public class QualifierDefaults {
                     break;
                 }
                 case RESOURCE_VARIABLE: {
-                    if (scope.getKind() == ElementKind.RESOURCE_VARIABLE &&
+                    if (scope != null && scope.getKind() == ElementKind.RESOURCE_VARIABLE &&
                             t == type) {
                         doApply(t, qual);
                     }
                     break;
                 }
                 case EXCEPTION_PARAMETER: {
-                    if (scope.getKind() == ElementKind.EXCEPTION_PARAMETER &&
+                    if (scope != null && scope.getKind() == ElementKind.EXCEPTION_PARAMETER &&
                             t == type) {
                         doApply(t, qual);
                     }
                     break;
                 }
                 case PARAMETERS: {
-                    if (scope.getKind() == ElementKind.PARAMETER &&
+                    if (scope != null && scope.getKind() == ElementKind.PARAMETER &&
                             t == type) {
                         doApply(t, qual);
                     } else if ((scope.getKind() == ElementKind.METHOD || scope.getKind() == ElementKind.CONSTRUCTOR) &&
@@ -516,12 +516,12 @@ public class QualifierDefaults {
                     break;
                 }
                 case RECEIVERS: {
-                    if (scope.getKind() == ElementKind.PARAMETER &&
+                    if (scope != null && scope.getKind() == ElementKind.PARAMETER &&
                             t == type && "this".equals(scope.getSimpleName())) {
                         // TODO: comparison against "this" is ugly, won't work
                         // for all possible names for receiver parameter.
                         doApply(t, qual);
-                    } else if ((scope.getKind() == ElementKind.METHOD) &&
+                    } else if (scope != null && (scope.getKind() == ElementKind.METHOD) &&
                             t.getKind() == TypeKind.EXECUTABLE &&
                             t == type) {
 
@@ -533,7 +533,7 @@ public class QualifierDefaults {
                     break;
                 }
                 case RETURNS: {
-                    if (scope.getKind() == ElementKind.METHOD &&
+                    if (scope != null && scope.getKind() == ElementKind.METHOD &&
                             t.getKind() == TypeKind.EXECUTABLE &&
                             t == type) {
                         final AnnotatedTypeMirror returnType = ((AnnotatedExecutableType)t).getReturnType();
