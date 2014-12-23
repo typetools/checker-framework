@@ -14,6 +14,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
@@ -22,6 +23,7 @@ import org.checkerframework.qualframework.base.dataflow.QualTransferAdapter;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeMirror;
 import java.util.List;
 
 /**
@@ -49,6 +51,13 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
      */
     void doPostInit() {
         this.postInit();
+    }
+
+    @Override
+    protected QualifierDefaults createQualifierDefaults() {
+        QualifierDefaults result = super.createQualifierDefaults();
+        getCheckerAdapter().setupDefaults(result);
+        return result;
     }
 
     /** Returns the underlying {@link QualifiedTypeFactory}. */
@@ -245,6 +254,10 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     public void postDirectSuperTypes(AnnotatedTypeMirror subtype, List<? extends AnnotatedTypeMirror> supertypes) {
         TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
 
+        for (AnnotatedTypeMirror atm: supertypes) {
+            defaults.annotate((Element)null, atm);
+        }
+
         QualifiedTypeMirror<Q> qualSubtype = conv.getQualifiedType(subtype);
         List<QualifiedTypeMirror<Q>> qualSupertypes = conv.getQualifiedTypeList(supertypes);
 
@@ -313,7 +326,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
 
         TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
         Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> qualResult =
-            Pair.of((QualifiedExecutableType<Q>)conv.getQualifiedType(annoResult.first),
+            Pair.of((QualifiedExecutableType<Q>) conv.getQualifiedType(annoResult.first),
                     conv.getQualifiedTypeList(annoResult.second));
         return qualResult;
     }
@@ -326,7 +339,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
                 underlying.methodFromUse(tree, methodElt, conv.getQualifiedType(receiverType));
 
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> annoResult =
-                Pair.of((AnnotatedExecutableType)conv.getAnnotatedType(qualResult.first),
+                Pair.of((AnnotatedExecutableType) conv.getAnnotatedType(qualResult.first),
                         conv.getAnnotatedTypeList(qualResult.second));
         return annoResult;
     }
@@ -339,7 +352,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
                 super.methodFromUse(tree, methodElt, conv.getAnnotatedType(receiverType));
 
         Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> qualResult =
-                Pair.of((QualifiedExecutableType<Q>)conv.getQualifiedType(annoResult.first),
+                Pair.of((QualifiedExecutableType<Q>) conv.getQualifiedType(annoResult.first),
                         conv.getQualifiedTypeList(annoResult.second));
         return qualResult;
     }
@@ -373,4 +386,50 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
 
         return adapter;
     }
+
+    /**
+     * The qual framework's tree and type annotators behave differently than the
+     * checker frameworks. The default of the checker framework also does not apply.
+     *
+     * @param tree
+     * @param type
+     * @param iUseFlow
+     */
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+        assert root != null : "GenericAnnotatedTypeFactory.annotateImplicit: " +
+                " root needs to be set when used on trees; factory: " + this.getClass();
+
+        if (iUseFlow) {
+            /**
+             * We perform flow analysis on each {@link ClassTree} that is
+             * passed to annotateImplicitWithFlow.  This works correctly when
+             * a {@link ClassTree} is passed to this method before any of its
+             * sub-trees.  It also helps to satisfy the requirement that a
+             * {@link ClassTree} has been advanced to annotation before we
+             * analyze it.
+             */
+            checkAndPerformFlowAnalysis(tree);
+        }
+
+        defaults.annotate(tree, type);
+        treeAnnotator.visit(tree, type);
+        typeAnnotator.visit(type, null);
+//        defaults.annotate(tree, type);
+
+        if (iUseFlow) {
+            CFValue as = getInferredValueFor(tree);
+            if (as != null) {
+                applyInferredAnnotations(type, as);
+            }
+        }
+
+    }
+
+    @Override
+    public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
+        defaults.annotate(elt, type);
+        typeAnnotator.visit(type, null);
+//        defaults.annotate(elt, type);
+    }
+
 }

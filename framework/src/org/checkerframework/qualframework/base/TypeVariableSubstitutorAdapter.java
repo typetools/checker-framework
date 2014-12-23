@@ -21,7 +21,7 @@ public class TypeVariableSubstitutorAdapter<Q> extends org.checkerframework.fram
             final AnnotatedTypeVariable use) {
 
         QualifiedTypeMirror<Q> qArgument = converter.getQualifiedType(argument);
-        QualifiedTypeVariable<Q> qUse = (QualifiedTypeVariable<Q>) converter.getQualifiedType(use);
+        QualifiedTypeVariable<Q> qUse = (QualifiedTypeVariable<Q>) converter.getQualifiedType(use.asUse());
         return converter.getAnnotatedType(underlying.substituteTypeVariable(qArgument, qUse));
     }
 

@@ -2,6 +2,8 @@ package org.checkerframework.qualframework.base;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 
 /** Adapter class for {@link Checker}, extending
  * {@link BaseTypeChecker org.checkerframework.common.basetype.BaseTypeChecker}.
@@ -91,5 +93,16 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
 
     public Checker<Q> getUnderlying() {
         return underlying;
+    }
+
+    public void setupDefaults(QualifierDefaults defaults) {
+        defaults.addAbsoluteDefault(
+                getTypeMirrorConverter().getAnnotation(
+                        underlying.getTypeFactory().getQualifierHierarchy().getBottom()),
+                DefaultLocation.IMPLICIT_LOWER_BOUNDS);
+        defaults.addAbsoluteDefault(
+                getTypeMirrorConverter().getAnnotation(
+                        underlying.getTypeFactory().getQualifierHierarchy().getTop()),
+                DefaultLocation.LOCAL_VARIABLE);
     }
 }
