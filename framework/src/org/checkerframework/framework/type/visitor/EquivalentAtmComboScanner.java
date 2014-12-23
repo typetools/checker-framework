@@ -177,43 +177,24 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM> extends Abst
         return r;
     }
 
-    protected class Visit {
-        public final AnnotatedTypeMirror type1;
-        public final AnnotatedTypeMirror type2;
-
-        public Visit(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
-            this.type1 = type1;
-            this.type2 = type2;
-        }
-
-        public int hashCode() {
-            return 503 * (this.type1.hashCode() + this.type2.hashCode());
-        }
-
-        @SuppressWarnings("unchecked")
-        public boolean equals(final Object obj) {
-            if (this == obj) return true;
-            if (obj == null || !(obj.getClass().equals(this.getClass()))) return false;
-
-            final Visit that = (Visit) obj;
-            return this.type1 == that.type1
-                && this.type2 == that.type2;
-        }
-    }
-
     protected class Visited {
-        private final Map<Visit, RETURN_TYPE> visits = new HashMap<Visit, RETURN_TYPE>();
+
+        private final Map<Integer, RETURN_TYPE> visits = new HashMap<>();
+
+        private int hash(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+            return 503 * (type1.hashCode() + type2.hashCode());
+        }
 
         public boolean contains(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
-            return visits.containsKey(new Visit(type1, type2));
+            return visits.containsKey(hash(type1, type2));
         }
 
         public RETURN_TYPE getResult(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
-            return visits.get(new Visit(type1, type2));
+            return visits.get(hash(type1, type2));
         }
 
         public void add(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2, final RETURN_TYPE ret) {
-            visits.put(new Visit(type1, type2), ret);
+            visits.put(hash(type1, type2), ret);
         }
     }
 }
