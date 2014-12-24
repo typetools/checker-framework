@@ -107,7 +107,12 @@ public final
     }
 
 
-    public Object invoke(@Nullable Object obj, @Nullable Object @Nullable ... args)
+    // The method being invoked might be one that requires non-null
+    // arguments, or might be one that permits null.  We don't know which.
+    // Therefore, the Nullness Checker should conservatively issue a
+    // warning whenever null is passed, in order to give a guarantee that
+    // no nullness-related exception will be thrown by the invoked method.
+    public @Nullable Object invoke(Object obj, Object ... args)
 	throws IllegalAccessException, IllegalArgumentException,
            InvocationTargetException
     {
