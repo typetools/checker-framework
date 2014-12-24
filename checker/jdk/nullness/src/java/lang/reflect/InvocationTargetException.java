@@ -25,7 +25,7 @@
 
 package java.lang.reflect;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * InvocationTargetException is a checked exception that wraps
