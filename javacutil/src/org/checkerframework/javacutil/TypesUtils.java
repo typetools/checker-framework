@@ -1,8 +1,10 @@
 package org.checkerframework.javacutil;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -277,6 +279,23 @@ public final class TypesUtils {
         return type;
     }
 
+    /**
+     * Get the type parameter for this wildcard from the underlying type's bound field
+     * This field is sometimes null, in that case this method will return null
+     * @return The TypeParameterElement the wildcard is an argument to
+     */
+    public static TypeParameterElement wildcardToTypeParam(final Type.WildcardType wildcard) {
+
+        final Element typeParamElement;
+        if (wildcard.bound != null) {
+            typeParamElement = wildcard.bound.asElement();
+        } else {
+            typeParamElement = null;
+        }
+
+        return (TypeParameterElement) typeParamElement;
+    }
+
     // Version of com.sun.tools.javac.code.Types.wildUpperBound(Type)
     // that works with both jdk8 (called upperBound there) and jdk8u.
     // TODO: contrast to upperBound.
@@ -295,6 +314,12 @@ public final class TypesUtils {
         else {
             return TypeAnnotationUtils.unannotatedType(t);
         }
+    }
+
+    public static Type wildLowerBound(ProcessingEnvironment env, TypeMirror tm) {
+        com.sun.tools.javac.code.Type.WildcardType wct = (com.sun.tools.javac.code.Type.WildcardType) tm;
+        com.sun.tools.javac.util.Context ctx = ((com.sun.tools.javac.processing.JavacProcessingEnvironment) env).getContext();
+        return com.sun.tools.javac.code.Types.instance(ctx).wildLowerBound(wct);
     }
 
     /**
@@ -326,5 +351,30 @@ public final class TypesUtils {
     public static ArrayType createArrayType(Types types, TypeMirror componentType) {
         JavacTypes t = (JavacTypes) types;
         return t.getArrayType(componentType);
+    }
+
+    /**
+     * Returns true if declaredType is a Class that is used to box primitive type
+     * (e.g. declaredType=java.lang.Double and primitiveType=22.5d )
+     */
+    public static boolean isBoxOf(TypeMirror declaredType, TypeMirror primitiveType) {
+        if(declaredType.getKind() != TypeKind.DECLARED) {
+            return false;
+        }
+
+        final String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
+        switch (primitiveType.getKind()) {
+            case BOOLEAN:  return qualifiedName.equals("java.lang.Boolean");
+            case BYTE:     return qualifiedName.equals("java.lang.Byte");
+            case CHAR:     return qualifiedName.equals("java.lang.Character");
+            case DOUBLE:   return qualifiedName.equals("java.lang.Double");
+            case FLOAT:    return qualifiedName.equals("java.lang.Float");
+            case INT:      return qualifiedName.equals("java.lang.Integer");
+            case LONG:     return qualifiedName.equals("java.lang.Long");
+            case SHORT:    return qualifiedName.equals("java.lang.Short");
+
+            default:
+                return false;
+        }
     }
 }
