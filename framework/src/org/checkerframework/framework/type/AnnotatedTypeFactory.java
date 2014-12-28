@@ -431,13 +431,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return qualHierarchy;
     }
 
-    /*
-     * @see BaseTypeChecker#getTypeFactoryOfPreviousChecker(int)
-     */
-    public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> T getTypeFactoryOfPreviousChecker(int index) {
-        return checker.getTypeFactoryOfPreviousChecker(index);
-    }
-
     /**
      * Creates the type subtyping checker using the current type qualifier
      * hierarchy.
@@ -1252,34 +1245,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Determine whether the given expression is either "this" or an outer
-     * "C.this".
-     *
-     * TODO: Should this also handle "super"?
-     *
-     * @param tree
-     * @return
-     */
-    private final boolean isExplicitThisDereference(ExpressionTree tree) {
-        if (tree.getKind() == Tree.Kind.IDENTIFIER
-                && ((IdentifierTree)tree).getName().contentEquals("this")) {
-            // Explicit this reference "this"
-            return true;
-        }
-
-        if (tree.getKind() != Tree.Kind.MEMBER_SELECT) {
-            return false;
-        }
-
-        MemberSelectTree memSelTree = (MemberSelectTree) tree;
-        if (memSelTree.getIdentifier().contentEquals("this")) {
-            // Outer this reference "C.this"
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Does this expression have (the innermost or an outer) "this" as receiver?
      * Note that the receiver can be either explicit or implicit.
      *
@@ -1326,7 +1291,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return false;
         }
 
-        return isExplicitThisDereference(recv);
+        return TreeUtils.isExplicitThisDereference(recv);
     }
 
     /**

@@ -342,15 +342,6 @@ public abstract class SourceChecker
      */
     private Map<String, String> activeOptions;
 
-    /** When used with a CompoundChecker, this contains the checkers that ran analysis
-     *  prior to this one. This is useful when one needs to call getAnnotatedType on the
-     *  AnnotatedTypeFactory of the previous checker in order to retrieve the result
-     *  of dataflow analysis performed by that checker on a given tree. This allows
-     *  the current checker to make decisions partly based on the analysis of previous
-     *  checkers.
-     */
-    protected List<SourceChecker> previousCheckers;
-
     // The string that separates the checker name from the option name.
     // This string may only consist of valid Java identifier part characters,
     // because it will be used within the key of an option.
@@ -376,9 +367,8 @@ public abstract class SourceChecker
         return this.processingEnv;
     }
 
-    /* This method is package visible only to allow the AggregateChecker. */
-    /* package-visible */
-    void setProcessingEnvironment(ProcessingEnvironment env) {
+    /* This method is protected only to allow the AggregateChecker and BaseTypeChecker to call it. */
+    protected void setProcessingEnvironment(ProcessingEnvironment env) {
         this.processingEnv = env;
     }
 
@@ -724,19 +714,6 @@ public abstract class SourceChecker
     }
 
     /**
-     * Initialize the checker and store the list of checkers that ran prior to this one.
-     * The stored list will be unmodifiable.
-     * Called by CompoundChecker.
-     *
-     * @see SourceChecker#initChecker()
-     * @see SourceChecker#previousCheckers
-     */
-    public void initChecker(List<SourceChecker> prevCheckers) {
-        previousCheckers = Collections.unmodifiableList(prevCheckers);
-        initChecker();
-    }
-
-    /**
      * Initialize the checker.
      *
      * @see AbstractProcessor#init(ProcessingEnvironment)
@@ -796,9 +773,8 @@ public abstract class SourceChecker
     // The number of errors at the last exit of the type processor.
     // At entry to the type processor we check whether the current error count is
     // higher and then don't process the file, as it contains some Java errors.
-    // Needs to be package-visible to allow access from AggregateChecker.
-    /* package-visible */
-    int errsOnLastExit = 0;
+    // Needs to be protected to allow access from AggregateChecker and BaseTypeChecker.
+    protected int errsOnLastExit = 0;
 
     /**
      * Type-check the code with Java specifications and then runs the Checker
@@ -1437,39 +1413,6 @@ public abstract class SourceChecker
         Map<String, String> activeOpts = new HashMap<String, String>(getOptions());
         activeOpts.putAll(moreopts);
         activeOptions = Collections.unmodifiableMap(activeOpts);
-    }
-
-    /**
-     * Returns the unmodifiable list of checkers that the CompoundChecker ran
-     * prior to this one. If this is the first checker that is run by the
-     * CompoundChecker, returns an empty list. If this checker is not being
-     * run by a CompoundChecker, returns null.
-     *
-     * @see SourceChecker#previousCheckers
-     */
-    public List<SourceChecker> getPreviousCheckers() {
-        return previousCheckers;
-    }
-
-    /**
-     * Returns the requested checker from the list of checkers run by the CompoundChecker.
-     * The common usage is that the caller should know the exact index of this checker.
-     * A lookup is not necessary.
-     *
-     * @param index The index of the checker in the list of checkers run by the CompoundChecker.
-     * @return The requested previously run checker.
-     */
-    @SuppressWarnings("unchecked")
-    public <T extends SourceChecker> T getPreviousChecker(int index) {
-        if (previousCheckers == null || index < 0 || index >= previousCheckers.size())
-            return null;
-
-        SourceChecker checker = previousCheckers.get(index);
-
-        if (checker == null)
-            return null;
-
-        return (T) checker;
     }
 
     /**
