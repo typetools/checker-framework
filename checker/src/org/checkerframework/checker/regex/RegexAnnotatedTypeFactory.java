@@ -1,7 +1,6 @@
 package org.checkerframework.checker.regex;
 
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -18,6 +17,13 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -296,16 +302,16 @@ public class RegexAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<CFVal
                 AnnotatedTypeMirror lExpr = getAnnotatedType(tree.getLeftOperand());
                 AnnotatedTypeMirror rExpr = getAnnotatedType(tree.getRightOperand());
 
-                boolean lExprRE = lExpr.hasAnnotation(Regex.class);
-                boolean rExprRE = rExpr.hasAnnotation(Regex.class);
+                Integer lGroupCount = getMinimumRegexCount(lExpr);
+                Integer rGroupCount = getMinimumRegexCount(rExpr);
+                boolean lExprRE = lGroupCount != null;
+                boolean rExprRE = rGroupCount != null;
                 boolean lExprPart = lExpr.hasAnnotation(PartialRegex.class);
                 boolean rExprPart = rExpr.hasAnnotation(PartialRegex.class);
                 boolean lExprPoly = lExpr.hasAnnotation(PolyRegex.class);
                 boolean rExprPoly = rExpr.hasAnnotation(PolyRegex.class);
 
                 if (lExprRE && rExprRE) {
-                    int lGroupCount = getGroupCount(lExpr.getAnnotation(Regex.class));
-                    int rGroupCount = getGroupCount(rExpr.getAnnotation(Regex.class));
                     // Remove current @Regex annotation...
                     type.removeAnnotationInHierarchy(REGEX);
                     // ...and add a new one with the correct group count value.
@@ -345,7 +351,11 @@ public class RegexAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<CFVal
             if (TreeUtils.isStringCompoundConcatenation(node)) {
                 AnnotatedTypeMirror rhs = getAnnotatedType(node.getExpression());
                 AnnotatedTypeMirror lhs = getAnnotatedType(node.getVariable());
-                if (lhs.hasAnnotation(Regex.class) && rhs.hasAnnotation(Regex.class)) {
+
+                final Integer lhsRegexCount = getMinimumRegexCount(lhs);
+                final Integer rhsRegexCount = getMinimumRegexCount(rhs);
+
+                if (lhsRegexCount != null && rhsRegexCount != null) {
                     int lCount = getGroupCount(lhs.getAnnotation(Regex.class));
                     int rCount = getGroupCount(rhs.getAnnotation(Regex.class));
                     type.removeAnnotationInHierarchy(REGEX);
@@ -366,13 +376,15 @@ public class RegexAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<CFVal
             // TODO: Also get this to work with 2 argument Pattern.compile.
             if (TreeUtils.isMethodInvocation(tree, patternCompile, processingEnv)) {
                 ExpressionTree arg0 = tree.getArguments().get(0);
-                AnnotationMirror regexAnno = getAnnotatedType(arg0).getAnnotation(Regex.class);
+
+                final AnnotatedTypeMirror argType = getAnnotatedType(arg0);
+                Integer regexCount = getMinimumRegexCount(argType);
                 AnnotationMirror bottomAnno = getAnnotatedType(arg0).getAnnotation(RegexBottom.class);
-                if (regexAnno != null) {
-                    int groupCount = getGroupCount(regexAnno);
+
+                if (regexCount != null) {
                     // Remove current @Regex annotation...
                     // ...and add a new one with the correct group count value.
-                    type.replaceAnnotation(createRegexAnnotation(groupCount));
+                    type.replaceAnnotation(createRegexAnnotation(regexCount));
                 } else if (bottomAnno != null) {
                     type.replaceAnnotation(AnnotationUtils.fromClass(elements, RegexBottom.class));
                 }
@@ -396,6 +408,45 @@ public class RegexAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<CFVal
          */
         private String getPartialRegexValue(AnnotatedTypeMirror type) {
             return (String) AnnotationUtils.getElementValuesWithDefaults(type.getAnnotation(PartialRegex.class)).get(partialRegexValue).getValue();
+        }
+
+        /**
+         * Returns the value of the Regex annotation on the given type or NULL if there is no Regex annotation.
+         * If type is a TYPEVAR, WILDCARD, or INTERSECTION type, visit first their primary annotation
+         * then visit their upper bounds to get the Regex annotation.  It's get "minimum" regex count
+         * because, depending on the bounds of a typevar or wildcard, the actual type may have more than
+         * the upper bound's count.
+         * @param type Type that may carry a Regex annotation
+         * @return The Integer value of the Regex annotation (0 if no value exists)
+         */
+        private Integer getMinimumRegexCount(final AnnotatedTypeMirror type) {
+            final AnnotationMirror primaryRegexAnno = type.getAnnotation(Regex.class);
+            if(primaryRegexAnno == null) {
+                switch (type.getKind()) {
+                    case TYPEVAR:
+                        return getMinimumRegexCount(((AnnotatedTypeVariable) type).getUpperBound());
+
+                    case WILDCARD:
+                        return getMinimumRegexCount(((AnnotatedWildcardType) type).getExtendsBound());
+
+                    case INTERSECTION:
+                        Integer maxBound = null;
+                        for (final AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) type).directSuperTypes()) {
+                            Integer boundRegexNum = getMinimumRegexCount(bound);
+                            if (boundRegexNum != null) {
+                                if (maxBound == null || boundRegexNum > maxBound)
+                                    maxBound = boundRegexNum;
+                            }
+                        }
+                        return maxBound;
+                    default:
+                        // Nothing to do for other cases.
+                }
+
+                return null;
+            }
+
+            return getGroupCount(primaryRegexAnno);
         }
 
 //         This won't work correctly until flow sensitivity is supported by the

@@ -33,6 +33,24 @@ class MethodTypeVars5 {
         return doit3( null );
     }
 
+    String doit3b( ) {
+        return doit3( new B<String>("Hi") );
+    }
+
+    String doit3c( ) {
+        //:: error: (return.type.incompatible)
+        return doit3( new B<@Nullable String>("Hi") );
+    }
+
+    void doit3d( ) {
+        //:: error: (assignment.type.incompatible)
+        @NonNull String s = doit3( new B<@Nullable String>("Hi") );
+    }
+
+    void doit3e( ) {
+        String s = doit3( new B<String>("Hi") );
+    }
+
     <T extends @Nullable Object> T doit3( @Nullable B<T> x ) {
         if (x != null) {
             return x.get( );

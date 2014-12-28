@@ -5,7 +5,7 @@ public class ArrayArgs {
     public void test(@NonNull String[] args) {
     }
 
-    public void test(Class<? extends java.lang.annotation.Annotation> cls) {
+    public void test(Class<@NonNull ? extends java.lang.annotation.Annotation> cls) {
     }
 
     public void test() {
