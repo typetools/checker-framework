@@ -7,6 +7,8 @@ class ArrayInitializerTest {
         Object[] ar = new Object[]{o};
 
         Object[] arr = new Object[]{new Object()};
+
+        Object[] arrr = new Object[2];
     }
 
 }
