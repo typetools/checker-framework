@@ -219,7 +219,7 @@ public class AliasingVisitor extends
         // Component types are not allowed to have the @Unique annotation.
         AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(node);
         VariableElement elt = TreeUtils.elementFromDeclaration(node);
-        if (elt.getKind().isField() && varType.hasAnnotation(Unique.class)) {
+        if (elt.getKind().isField() && varType.hasExplicitAnnotation(Unique.class)) {
             checker.report(Result.failure("unique.location.forbidden"), node);
         } else if (node.getType().getKind() == Kind.ARRAY_TYPE) {
             AnnotatedArrayType arrayType = (AnnotatedArrayType) varType;
@@ -252,9 +252,12 @@ public class AliasingVisitor extends
 
     @Override
     public Void visitNewArray(NewArrayTree node, Void p) {
-        for (ExpressionTree exp : node.getInitializers()) {
-            if (canBeLeaked(exp)) {
-                checker.report(Result.failure("unique.leaked"), exp);
+        List<? extends ExpressionTree> initializers = node.getInitializers();
+        if (initializers != null && !initializers.isEmpty()) {
+            for (ExpressionTree exp : initializers) {
+                if (canBeLeaked(exp)) {
+                    checker.report(Result.failure("unique.leaked"), exp);
+                }
             }
         }
         return super.visitNewArray(node, p);

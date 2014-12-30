@@ -102,18 +102,19 @@ public class AliasingTransfer extends CFTransfer {
                 " number of parameters for the method declaration: "
                 + methodElement.getSimpleName().toString();
 
+        AnnotatedExecutableType annotatedType = factory.getAnnotatedType(methodElement);
+        List<AnnotatedTypeMirror> paramTypes = annotatedType.getParameterTypes();
         for (int i = 0; i < args.size(); i++) {
             Node arg = args.get(i);
-            VariableElement param = params.get(i);
-            if (!factory.getAnnotatedType(param).hasAnnotation(NonLeaked.class)
-                    && !factory.getAnnotatedType(param).hasAnnotation(LeakedToResult.class)) {
+            AnnotatedTypeMirror paramType = paramTypes.get(i);
+            if (!paramType.hasAnnotation(NonLeaked.class)
+                    && !paramType.hasAnnotation(LeakedToResult.class)) {
                 store.clearValue(FlowExpressions.internalReprOf(factory, arg));
             }
         }
 
         // Now, doing the same as above for the receiver parameter
         Node receiver = n.getTarget().getReceiver();
-        AnnotatedExecutableType annotatedType = factory.getAnnotatedType(methodElement);
         AnnotatedDeclaredType receiverType = annotatedType.getReceiverType();
         if (receiverType != null && !receiverType.hasAnnotation(LeakedToResult.class)
                 && !receiverType.hasAnnotation(NonLeaked.class)) {
