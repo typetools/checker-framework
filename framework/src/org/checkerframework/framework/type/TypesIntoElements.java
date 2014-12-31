@@ -297,14 +297,17 @@ public class TypesIntoElements {
             List<Attribute.TypeCompound> res = List.nil();
 
             for (AnnotationMirror am : type.getAnnotations()) {
-                if (am instanceof Attribute.TypeCompound) {
-                    // If it is a TypeCompound it was already present in source (right?),
-                    // so there is nothing to do.
-                    // System.out.println("  found TypeComound: " + am + " pos: " + ((Attribute.TypeCompound)am).position);
-                } else {
+//TODO: I BELIEVE THIS ISN'T TRUE BECAUSE PARAMETERS MAY HAVE ANNOTATIONS THAT CAME FROM THE ELEMENT OF THE CLASS
+//WHICH PREVIOUSLY WAS WRITTEN OUT BY TYPESINTOELEMENT
+//                if (am instanceof Attribute.TypeCompound) {
+//                    // If it is a TypeCompound it was already present in source (right?),
+//                    // so there is nothing to do.
+//                    // System.out.println("  found TypeComound: " + am + " pos: " + ((Attribute.TypeCompound)am).position);
+//                } else {
+//TODO: DOES THIS LEAD TO DOUBLING UP ON THE SAME ANNOTATION IN THE ELEMENT?
                     Attribute.TypeCompound tc = TypeAnnotationUtils.createTypeCompoundFromAnnotationMirror(processingEnv, am, tapos);
                     res = res.prepend(tc);
-                }
+//                }
             }
             return res;
         }
