@@ -193,7 +193,7 @@ public class AliasingVisitor extends
         if (visitorLeafKind == Kind.NEW_CLASS ||
                 visitorLeafKind == Kind.METHOD_INVOCATION) {
             // Handling pseudo-assignments
-            if (valueType.hasExplicitAnnotation(Unique.class)) {
+            if (canBeLeaked(valueTree)) {
                 if (!varType.hasAnnotation(NonLeaked.class) &&
                         !(varType.hasAnnotation(LeakedToResult.class) &&
                         parentKind == Kind.EXPRESSION_STATEMENT)) {
