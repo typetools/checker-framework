@@ -17,6 +17,7 @@ class Intent implements Parcelable, Cloneable {
   Intent addFlags(int flags) @LeakedToResult;
   Intent setType(String type) @LeakedToResult;
   Intent setData(Uri data) @LeakedToResult;
+  Intent setComponent(ComponentName cName) @LeakedToResult;
   Intent setClass(Context arg0, Class<?> arg1) @LeakedToResult;
   Intent setAction(String action) @LeakedToResult;
   Intent putExtra(String arg0, boolean arg1) @LeakedToResult;
