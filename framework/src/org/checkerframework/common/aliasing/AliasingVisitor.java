@@ -193,7 +193,7 @@ public class AliasingVisitor extends
         if (visitorLeafKind == Kind.NEW_CLASS ||
                 visitorLeafKind == Kind.METHOD_INVOCATION) {
             // Handling pseudo-assignments
-            if (valueType.hasAnnotation(Unique.class)) {
+            if (valueType.hasExplicitAnnotation(Unique.class)) {
                 if (!varType.hasAnnotation(NonLeaked.class) &&
                         !(varType.hasAnnotation(LeakedToResult.class) &&
                         parentKind == Kind.EXPRESSION_STATEMENT)) {
@@ -273,7 +273,7 @@ public class AliasingVisitor extends
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
         boolean isMethodInvocation = exp.getKind() == Kind.METHOD_INVOCATION;
         boolean isNewClass = exp.getKind() == Kind.NEW_CLASS;
-        return type.hasAnnotation(Unique.class) && !isMethodInvocation &&
+        return type.hasExplicitAnnotation(Unique.class) && !isMethodInvocation &&
                 !isNewClass;
     }
 
