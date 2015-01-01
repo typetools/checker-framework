@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="7cm"
+   height="4cm"
+   viewBox="358 100 220 200"
+   id="svg3577"
+   version="1.1"
+   inkscape:version="0.48.5 r10040"
+   sodipodi:docname="aliasing.svg">
+  <metadata
+     id="metadata3693">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs3691" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1707"
+     inkscape:window-height="1035"
+     id="namedview3689"
+     showgrid="false"
+     inkscape:zoom="2.3166763"
+     inkscape:cx="-59.013423"
+     inkscape:cy="259.96319"
+     inkscape:window-x="9"
+     inkscape:window-y="3"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg3577" />
+  <g
+     id="g3589">
+    <rect
+       style="fill: #ffffff"
+       x="360"
+       y="120"
+       width="201"
+       height="44"
+       id="rect3591" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x="360"
+       y="120"
+       width="201"
+       height="44"
+       id="rect3593" />
+    <text
+       font-size="15.8044"
+       style="font-size:15.80440044px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       x="460.5"
+       y="146.772"
+       id="text3595">
+      <tspan
+         x="460.5"
+         y="146.772"
+         id="tspan3597">@MaybeAliased</tspan>
+    </text>
+  </g>
+  <g
+     id="g3609">
+    <rect
+       style="fill: #ffffff"
+       x="360"
+       y="200"
+       width="201"
+       height="44"
+       id="rect3611" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x="360"
+       y="200"
+       width="201"
+       height="44"
+       id="rect3613" />
+    <text
+       font-size="15.8044"
+       style="font-size:15.80440044px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       x="460.5"
+       y="226.772"
+       id="text3615">
+      <tspan
+         x="460.5"
+         y="226.772"
+         id="tspan3617">@Unique</tspan>
+    </text>
+  </g>
+  <text
+     font-size="12.8"
+     style="fill: #000000;text-anchor:start;font-family:courier new;font-style:normal;font-weight:normal"
+     x="460.5"
+     y="142"
+     id="text3619">
+    <tspan
+       x="460.5"
+       y="142"
+       id="tspan3621" />
+  </text>
+  <g
+     id="g3657">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="460.5"
+       y1="200"
+       x2="460.5"
+       y2="173.736"
+       id="line3659" />
+    <polygon
+       style="fill: #000000"
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       id="polygon3661" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       id="polygon3663" />
+  </g>
+  <text
+     font-size="12.8"
+     style="fill: #000000;text-anchor:start;font-family:courier new;font-style:normal;font-weight:normal"
+     x="460.5"
+     y="142"
+     id="text3673">
+    <tspan
+       x="460.5"
+       y="142"
+       id="tspan3675" />
+  </text>
+</svg>
