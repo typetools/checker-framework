@@ -95,6 +95,10 @@ public class AliasingTransfer extends CFTransfer {
     protected void processPostconditions(MethodInvocationNode n, CFStore store,
             ExecutableElement methodElement, Tree tree) {
         super.processPostconditions(n, store, methodElement, tree);
+        if (TreeUtils.isEnumSuper(n.getTree())) {
+            // Skipping the init() method for enums.
+            return;
+        }
         List<Node> args = n.getArguments();
         List<? extends VariableElement> params = methodElement.getParameters();
         assert (args.size() == params.size()) : "Number of arguments in " +
