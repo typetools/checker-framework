@@ -1,0 +1,19 @@
+/*This stub file will be read first*/
+
+import org.checkerframework.checker.nullness.qual.*;
+
+package java.lang;
+
+
+public final class  String {
+     public @NonNull String intern();
+     public @Nullable String substring(@NonNull int beginIndex) @NonNull;
+     String(@Nullable String arg0);
+     void getChars(@Nullable int arg0, @NonNull int arg1, @NonNull char @NonNull [] arg2, @NonNull int arg3) @NonNull;
+//Used to test stub file warnings
+     void thisMethodIsNotReal(String s);
+}
+//The rest of these are used to test stub file warnings
+public class NotARealClass{}
+package not.real;
+public class NotARealClassInNotRealPackage{}

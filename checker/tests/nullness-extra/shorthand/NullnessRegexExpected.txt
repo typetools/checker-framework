@@ -1,0 +1,3 @@
+NullnessRegexWithErrors.java:9:15: compiler.warn.proc.messager: (assignment.type.incompatible)
+NullnessRegexWithErrors.java:10:25: compiler.warn.proc.messager: (argument.type.incompatible)
+2 warnings

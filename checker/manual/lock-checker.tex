@@ -1,0 +1,460 @@
+\htmlhr
+\chapter{Lock Checker\label{lock-checker}}
+
+The Lock Checker prevents certain kinds of concurrency errors.  If the Lock
+checker issues no warnings for a given program, then the program holds the
+appropriate lock every time that it accesses a variable annotated with
+\refqualclass{checker/lock/qual}{GuardedBy}.
+
+Note:  This does \emph{not} mean that your program has \emph{no} concurrency
+errors.  (You might have forgotten to annotate that a particular variable
+should only be accessed when a lock is held.  You might release and
+re-acquire the lock, when correctness requires you to hold it throughout a
+computation.  And, there are other concurrency errors that cannot, or
+should not, be solved with locks.)  However, ensuring that your
+program obeys its locking discipline is an easy and effective way to
+eliminate a common and important class of errors.
+
+
+To run the Lock Checker, supply the
+\code{-processor org.checkerframework.checker.lock.LockChecker}
+command-line option to javac.
+
+
+\section{Lock annotations\label{lock-annotations}}
+
+\textbf{Summary of declaration annotations used by the Lock Checker.}\\
+
+\begin{tabular}{l|l|l}
+\textbf{Type annotation} & \textbf{Indicates} \\
+@GuardedBy(String lock) &
+Fields/variables only accessible after acquiring the given lock.
+\\
+\textbf{Declaration annotation} & \textbf{Indicates} \\
+@Holding(String[] locks) &
+Locks that must be held before the method is called.
+\\
+@EnsuresLockHeld(String[] expressions) &
+Locks guaranteed to be held when the method returns.
+\\
+@EnsuresLockHeldIf(String[] expr, boolean result) &
+Locks guaranteed to be held when the method returns the given result.
+\\
+@LockingFree &
+The method does not make any use of locks or synchronization.
+\\
+\end{tabular}
+
+\subsection{Type annotations for objects protected by locks\label{lock-annotations-objects}}
+
+\begin{description}
+\item[\refqualclass{checker/lock/qual}{GuardedBy}\small{(String lock)}]
+  indicates a type whose value may be accessed only when the given lock is
+  held.
+  See the \href{api/org/checkerframework/checker/lock/qual/GuardedBy.html}{GuardedBy
+    Javadoc} for an explanation of the argument and other details.  The lock
+  acquisition and the value access may be arbitrarily far in the future;
+  or, if the value is never accessed, the lock never need be held.
+\end{description}
+
+\subsection{Lock method annotations\label{lock-annotations-methods}}
+
+The Lock Checker supports several annotations that specify method behavior.
+These are declaration annotations, not type annotations: they apply to the
+method itself rather than to some particular type.
+
+\begin{description}
+\item[\refqualclass{checker/lock/qual}{EnsuresLockHeld}\small{(String[] expressions)}]
+\item[\refqualclass{checker/lock/qual}{EnsuresLockHeldIf}\small{(String[] expressions, boolean result)}]
+  indicate a method postcondition. With \code{@EnsuresLockHeld}, the given
+  expressions are known to be objects used as locks and are known to be in
+  a locked state after the method returns; this is useful for annotating a
+  method that takes a lock.
+  With \code{@EnsuresLockHeldIf}, if the annotated method returns the given
+  boolean value (true or false), the given
+  expressions are known to be objects used as locks and are known to be in
+  a locked state after the method returns; this is useful for annotating a
+  method that conditionally takes a lock.
+  See Section~\ref{ensureslockheld-examples} for examples.
+
+\item[\refqualclass{dataflow/qual}{LockingFree}]
+  indicates that the method does not use synchronization/locking,
+  directly or indirectly.  This is used to facilitate dataflow
+  analysis and is less restrictive than \refqualclass{dataflow/qual}{SideEffectFree}.
+  It is especially useful for annotating library methods, including JDK methods.
+  Since \code{@SideEffectFree} implies \code{@LockingFree}, if both
+  are applicable then you should only write \code{@SideEffectFree}.
+  
+  \textbf{It is critical not to use this annotation
+  for any method that uses synchronization/locking,
+  directly or indirectly.}  This is because even methods that are guaranteed
+  to release all locks they acquire could cause deadlocks.
+  Although the Lock Checker currently does not aid with deadlock
+  detection, this annotation must be used in anticipation that
+  the Lock Checker eventually could.
+\end{description}
+
+
+\subsection{Discussion of \<@Holding>\label{lock-checker-holding}}
+
+A programmer might choose to use the \code{@Holding} method annotation in
+two different ways:  to specify a higher-level protocol, or to summarize
+intended usage.  Both of these approaches are useful, and the Lock Checker
+supports both.
+
+\paragraph{Higher-level synchronization protocol\label{lock-checker-holding-highlevel}}
+
+  \code{@Holding} can specify a higher-level synchronization protocol that
+  is not expressible as locks over Java objects.  By requiring locks to be
+  held, you can create higher-level protocol primitives without giving up
+  the benefits of the annotations and checking of them.
+
+\paragraph{Method summary that simplifies reasoning\label{lock-checker-holding-method-summary}}
+
+  \code{@Holding} can be a method summary that simplifies reasoning.  In
+  this case, the \code{@Holding} doesn't necessarily introduce a new
+  correctness constraint; the program might be correct even if the lock
+  were acquired later in the body of the method or in a method it calls, so
+  long as the lock is acquired before accessing the data it protects.
+
+  Rather, here \code{@Holding} expresses a fact about execution:  when
+  execution reaches this point, the following locks are already held.  This
+  fact enables people and tools to reason intra- rather than
+  inter-procedurally.
+
+  In Java, it is always legal to re-acquire a lock that is already held,
+  and the re-acquisition always works.  Thus, whenever you write 
+
+\begin{Verbatim}
+  @Holding("myLock")
+  void myMethod() {
+    ...
+  }
+\end{Verbatim}
+
+\noindent
+it would be equivalent, from the point of view of which locks are held
+during the body, to write
+
+\begin{Verbatim}
+  void myMethod() {
+    synchronized (myLock) {   // no-op:  re-aquire a lock that is already held
+      ...
+    }
+  }
+\end{Verbatim}
+
+The advantages of the \<@Holding> annotation include:
+\begin{itemize}
+\item
+  The annotation documents the fact that the lock is intended to already be
+  held.
+\item
+  The Lock Checker enforces that the lock is held when the method is
+  called, rather than masking a programmer error by silently re-acquiring
+  the lock.
+\item
+  The \<synchronized> statement can deadlock if, due to a programmer error,
+  the lock is not already held.  The Lock Checker prevents this type of
+  error.
+\item
+  The annotation has no run-time overhead.  Even if the lock re-acquisition
+  succeeds, it still consumes time.
+\end{itemize}
+
+\section{Examples\label{lock-examples}}
+
+\subsection{Examples of @GuardedBy and @Holding\label{lock-examples-guardedby-and-holding}}
+
+The most common use of \code{@GuardedBy} is to annotate a field declaration
+type.  However, other uses of \code{@GuardedBy} are possible.
+
+\paragraph{Return types\label{lock-examples-guardedby-return}}
+
+A return type may be annotated with \code{@GuardedBy}:
+
+\begin{Verbatim}
+  @GuardedBy("MyClass.myLock") Object myMethod() { ... }
+
+  // reassignments without holding the lock are OK.
+  @GuardedBy("MyClass.myLock") Object x = myMethod();
+  @GuardedBy("MyClass.myLock") Object y = x;
+  x.toString(); // ILLEGAL because the lock is not held
+  synchronized(MyClass.myLock) {
+    y.toString();  // OK: the lock is held
+  }
+\end{Verbatim}
+
+\paragraph{Formal parameters\label{lock-examples-guardedby-formal-parameters}}
+
+A parameter type may be annotated with \code{@GuardedBy}, which indicates that
+the method body must acquire the lock before accessing the parameter.  A
+client may pass a non-\code{@GuardedBy} reference as an argument, since it
+is legal to access such a reference after the lock is acquired.
+
+\begin{Verbatim}
+  void helper1(@GuardedBy("MyClass.myLock") Object a) {
+    a.toString(); // ILLEGAL: the lock is not held
+    synchronized(MyClass.myLock) {
+      a.toString();  // OK: the lock is held
+    }
+  }
+  @Holding("MyClass.myLock")
+  void helper2(@GuardedBy("MyClass.myLock") Object b) {
+    b.toString(); // OK: the lock is held
+  }
+  void helper3(Object c) {
+    helper1(c); // OK: passing a subtype in place of a the @GuardedBy supertype
+    c.toString(); // OK: no lock constraints
+  }
+  void helper4(@GuardedBy("MyClass.myLock") Object d) {
+    d.toString(); // ILLEGAL: the lock is not held
+  }
+  void myMethod2(@GuardedBy("MyClass.myLock") Object e) {
+    helper1(e);  // OK to pass to another routine without holding the lock
+    e.toString(); // ILLEGAL: the lock is not held
+    synchronized (MyClass.myLock) {
+      helper2(e);
+      helper3(e);
+      helper4(e); // OK, but helper4's body still does not type-check
+    }
+  }
+\end{Verbatim}
+
+\subsection{Examples of @EnsuresLockHeld and @EnsuresLockHeldIf\label{ensureslockheld-examples}}
+
+\code{@EnsuresLockHeld} and \code{@EnsuresLockHeldIf} are primarily intended
+for annotating JDK locking methods, as in:
+
+\begin{Verbatim}
+package java.util.concurrent.locks;
+ 
+class ReentrantLock {
+ 
+    @EnsuresLockHeld("this")
+    public void lock();
+ 
+    @EnsuresLockHeldIf (expression="this", result=true)
+    public boolean tryLock();
+ 
+[...]
+}
+\end{Verbatim}
+
+They can also be used to annotate user methods, particularly for
+higher-level lock constructs such as a Monitor, as in this simplified example:
+
+\begin{Verbatim}
+public class Monitor {
+ 
+    private ReentrantLock lock; // Initialized in the constructor
+ 
+[...]
+ 
+    @EnsuresLockHeld("lock")
+    public void enter() {
+           lock.lock();
+    }
+ 
+[...]
+}
+\end{Verbatim}
+
+\subsection{Example of @LockingFree\label{lockingfree-example}}
+
+\code{@LockingFree} is useful when a method does not make any use of synchronization
+or locks but causes other side effects (hence \code{@SideEffectFree} is not appropriate).
+\code{@SideEffectFree} implies \code{@LockingFree}, therefore if both are applicable,
+you should only write \code{@SideEffectFree}.
+
+
+\begin{verbatim}
+private Object myField;
+private ReentrantLock lock; // Initialized in the constructor
+private @GuardedBy("lock") Object x; // Initialized in the constructor
+ 
+[...]
+ 
+@LockingFree
+// This method does not use locks or synchronization but cannot
+// be annotated as @SideEffectFree since it alters myField.
+void myMethod() {
+    myField = new Object();
+}
+
+@SideEffectFree
+int mySideEffectFreeMethod() {
+    return 0;
+}
+
+void myUnlockingMethod() {
+    lock.unlock();
+}
+
+void myUnannotatedEmptyMethod() {
+}
+
+void myOtherMethod() {
+    if (lock.tryLock()) {
+        x.toString(); // OK: the lock is held
+        myMethod();
+        x.toString(); // OK: the lock is still known to be held since myMethod is locking-free
+        mySideEffectFreeMethod();
+        x.toString(); // OK: the lock is still known to be held since mySideEffectFreeMethod
+                      // is side-effect-free
+        myUnlockingMethod();
+        x.toString(); // ILLEGAL: myLockingMethod is not locking-free
+    }
+    if (lock.tryLock()) {
+        x.toString(); // OK: the lock is held
+        myUnannotatedEmptyMethod();
+        x.toString(); // ILLEGAL: even though myUnannotatedEmptyMethod is empty, since it is
+                      // not annotated with @LockingFree, the Lock Checker no longer knows
+                      // the state of the lock.
+        if (lock.isHeldByCurrentThread()) {
+            x.toString(); // OK: the lock is known to be held
+        }
+    }
+}
+\end{verbatim}
+
+\section{Other lock annotations\label{other-lock-annotations}}
+
+The Checker Framework's lock annotations are similar to annotations used
+elsewhere.
+
+If your code is already annotated with a different lock
+annotation, you can reuse that effort.  The Checker Framework comes with
+cleanroom re-implementations of annotations from other tools.  It treats
+them exactly as if you had written the corresponding annotation from the
+Lock Checker, as described in Figure~\ref{fig-lock-refactoring}.
+
+
+% These lists should be kept in sync with LockAnnotatedTypeFactory.java .
+\begin{figure}
+\begin{center}
+% The ~ around the text makes things look better in Hevea (and not terrible
+% in LaTeX).
+
+\begin{tabular}{ll}
+\begin{tabular}{|l|}
+\hline
+ ~net.jcip.annotations.GuardedBy~ \\ \hline
+ ~javax.annotation.concurrent.GuardedBy~ \\ \hline
+\end{tabular}
+&
+$\Rightarrow$
+~org.checkerframework.checker.lock.qual.GuardedBy~
+\end{tabular}
+\end{center}
+%BEGIN LATEX
+\vspace{-1.5\baselineskip}
+%END LATEX
+\caption{Correspondence between other lock annotations and the
+  Checker Framework's annotations.}
+\label{fig-lock-refactoring}
+\end{figure}
+
+Alternately, the Checker Framework can process those other annotations (as
+well as its own, if they also appear in your program).  The Checker
+Framework has its own definition of the annotations on the left side of
+Figure~\ref{fig-lock-refactoring}, so that they can be used as type
+annotations.  The Checker Framework interprets them according to the right
+side of Figure~\ref{fig-lock-refactoring}.
+
+
+\subsection{Relationship to annotations in \emph{Java Concurrency in Practice}\label{jcip-annotations}}
+
+The book \href{http://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goetz2006} defines a
+\href{http://jcip.net.s3-website-us-east-1.amazonaws.com/annotations/doc/net/jcip/annotations/GuardedBy.html}{\code{@GuardedBy}} annotation that is the inspiration for ours.  The book's
+\code{@GuardedBy} serves two related but distinct purposes:
+
+\begin{itemize}
+\item
+  When applied to a field, it means that the given lock must be held when
+  accessing the field.  The lock acquisition and the field access may be
+  arbitrarily far in the future.
+\item
+  When applied to a method, it means that the given lock must be held by
+  the caller at the time that the method is called --- in other words, at
+  the time that execution passes the \code{@GuardedBy} annotation.
+\end{itemize}
+
+The Lock Checker renames the method annotation to
+\refqualclass{checker/lock/qual}{Holding}, and it generalizes the 
+\refqualclass{checker/lock/qual}{GuardedBy} annotation into a type annotation
+that can apply not just to a field but to an arbitrary type (including the
+type of a parameter, return value, local variable, generic type parameter,
+etc.).  This makes the annotations more expressive and also more amenable
+to automated checking.  It also accommodates the distinct
+meanings of the two annotations, and resolves ambiguity when \<@GuardedBy>
+is written in a location that might apply to either the method or the
+return type.
+
+(The JCIP book gives some rationales for reusing the annotation name for
+two purposes.  One rationale is
+that there are fewer annotations to learn.  Another rationale is
+that both variables and methods are ``members'' that can be ``accessed'';
+variables can be accessed by reading or writing them (putfield, getfield),
+and methods can be accessed by calling them (invokevirtual,
+invokeinterface):  in both cases, \code{@GuardedBy} creates preconditions
+for accessing so-annotated members.  This informal intuition is
+inappropriate for a tool that requires precise semantics.)
+
+% It would not work to retain the name \code{@GuardedBy} but put it on the
+% receiver; an annotation on the receiver indicates what lock must be held
+% when it is accessed in the future, not what must have already been held
+% when the method was called.
+
+
+\section{Possible extensions\label{lock-extensions}}
+
+The Lock Checker validates some uses of locks, but not all.  It would be
+possible to enrich it with additional annotations.  This would increase the
+programmer annotation burden, but would provide additional guarantees.
+
+Lock ordering:  Specify that one lock must be acquired before or after
+another, or specify a global ordering for all locks.  This would prevent
+deadlock.
+
+Not-holding:  Specify that a method must not be called if any of the listed
+locks are held.
+
+These features are supported by 
+\href{http://clang.llvm.org/docs/ThreadSafetyAnalysis.html}{Clang's
+  thread-safety analysis}.
+
+
+\section{A note on Lock Checker internals\label{lock-checker-internals}}
+
+The following type qualifiers are inferred and used internally by the Lock Checker
+and should never need to be written by the programmer.  They are presented
+here for reference on how the Lock Checker works and to help understand
+warnings produced by the Lock Checker.  You may skip this section if you
+are not seeing a warning mentioning \code{@LockHeld} or \code{@LockPossiblyHeld}.
+
+These type qualifiers are used on the types of the objects that will be used
+as locks to protect other objects.  The Lock Checker uses them to track the
+current state of locks at a given point in the code.
+
+\begin{description}
+
+\item[\refqualclass{checker/lock/qual}{LockPossiblyHeld}]
+  indicates a type that may be used as a lock to protect a field/variable
+  (i.e. an object of this type may be used as the expression in
+  a \code{@GuardedBy} annotation)
+  and the lock may or may not be currently held.  Since any
+  object can potentially be used as a lock, it in fact applies to all
+  non-primitive types.  This is the default type qualifier in the
+  hierarchy and it is the top type.
+
+\item[\refqualclass{checker/lock/qual}{LockHeld}]
+  indicates a type that may be used as a lock to protect a field/variable,
+  and is currently in a locked state on the current thread.  It is a
+  subtype of \code{@LockPossiblyHeld} and is the bottom type.
+
+\end{description}
+
+% LocalWords:  quals GuardedBy JCIP putfield getfield invokevirtual 5cm
+% LocalWords:  invokeinterface threadsafety Clang's GuardedByTop cleanroom
+%%  LocalWords:  api 5cm

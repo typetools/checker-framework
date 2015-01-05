@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Checker Framework Tutorial - Validating User Input - Command Line</title>
+
+<link href="bootstrap/css/bootstrap.css" rel="stylesheet" />
+<script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+
+<link href="css/main.css" rel="stylesheet" />
+<link rel="icon" type="image/png"	href="http://types.cs.washington.edu/checker-framework/favicon-checkerframework.png" />
+
+</head>
+
+<body>
+ <div class="top_liner"></div>
+ <div class="navbar navbar-inverse navbar-fixed-top" style="border-bottom: 1px solid #66d;">
+  <div class="navbar-inner">
+   <div class="contained">
+    <ul class="nav">
+     <li class="heading">Checker Framework:
+      </h4>
+     </li>
+     <li><a href="http://checkerframework.org/">Main Site</a></li>
+     <li><a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">Manual</a></li>
+     <li><a href="https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">Discussion List</a></li>
+     <li><a href="http://code.google.com/p/checker-framework/issues/list">Issue Tracker</a></li>
+     <li><a href="http://code.google.com/p/checker-framework/source/checkout">Source Code</a></li>
+     <li><a href="http://types.cs.washington.edu/checker-framework/eclipse/">Eclipse Plugin</a></li>
+     <li class="active"><a href="http://types.cs.washington.edu/checker-framework/tutorial/">Tutorial</a></li>
+    </ul>
+   </div>
+  </div>
+ </div>
+
+	<img src="CFLogo.png" alt="Checker Framework logo" />
+	<div class="page-header short"
+		style="border-bottom: 1px solid #EEE; border-top: none;">
+		<h1>Checker Framework Tutorial</h1>
+		<h2>
+			<small>Previous <a href="get-started-cmd.html"> Getting
+					Started </a>
+		</h2>
+	</div>
+
+	<section id="introduction">
+		<div class="page-header short" style="border-top: none;">
+			<h2>Validating User Input</h2>
+		</div>
+
+		<p>This demo shows how the Checker Framework can detect and help
+			correct missing input validation. Below is the outline of this
+			tutorial.</p>
+
+
+		<div class="well">
+			<h5>Outline</h5>
+			<ol>
+				<li><a href="#runex1"> Run the example with an invalid
+						regular expression</a></li>
+				<li><a href="#run1"> Run the Regex Checker to see how it
+						could have prevented the runtime error</a></li>
+				<li><a href="#validate"> Validate the user input</a></li>
+				<li><a href="#run2"> Run the Regex Checker to verify that
+						the error is corrected</a></li>
+				<li><a href="#runex2"> Run the example with an invalid
+						regular expression to see the warning</a></li>
+			</ol>
+		</div>
+
+		</div>
+
+		<div class="section">
+			<section id="runex1">
+				<h4>1. Run the Example</h4>
+
+				<p>
+					To begin, <b>open <a href="../src/RegexExample.java">RegexExample.java</a></b>.
+					This program is called with two arguments; a regular expression and
+					a string. The program prints the text from the string that matches
+					the first capturing group in the regular expression. <b>Run</b>
+					with a valid regular expression and a matching string such as <strong
+						class="text-success">[01]??\d-([0123]??\d)-\d{4}+
+						01-24-2013 </strong> and then run with an invalid and a matching string one
+					such as <strong class="text-success">[01]??[\d-[0123]??\d-\d{4}+ 01-24-2013 </strong>.
+				<pre>
+java RegexExample [01]??[\d-[0123]??\d-\d{4}+ 01-24-2013
+Exception in thread "main" java.util.regex.PatternSyntaxException: Unclosed character class near index 23
+[01]??[d-[0123]??d-d{4}+
+                       ^
+	at java.util.regex.Pattern.error(Pattern.java:1924)
+	at java.util.regex.Pattern.clazz(Pattern.java:2493)
+	at java.util.regex.Pattern.sequence(Pattern.java:2030)
+	at java.util.regex.Pattern.expr(Pattern.java:1964)
+	at java.util.regex.Pattern.compile(Pattern.java:1665)
+	at java.util.regex.Pattern.<init>(Pattern.java:1337)
+	at java.util.regex.Pattern.compile(Pattern.java:1022)
+	at RegexExample.main(RegexExample.java:13)
+				</pre>
+
+				<p>The user has made an error by passing in an invalid regular
+					expression; however, good programming style dictates that a user
+					should not see a stack trace.</p>
+
+			</section>
+			<section id="run1">
+
+				<h4>2. Run Regex Checker</h4>
+				<p>
+					The Regex Checker prevents, at compile-time, use of syntactically
+					invalid regular expressions and access of invalid capturing groups.
+					So, it can be used to catch an invalid regular expression. Next <b>run
+						the Regex Checker</b> to see how it could have spotted this issue at
+					compile time. The checker prints out an "incompatible types"
+					warning, because regex is not of type
+					<code>@Regex String</code>
+					which is required for strings passed to
+					<code>Pattern.compile()</code>.
+					The checker also prints out an "group.count.invalid" warning because
+					no groups are guaranteed to exist.
+				</p>
+
+				<pre>
+javacheck -processor org.checkerframework.checker.regex.RegexChecker RegexExample.java
+RegexExample.java:13: error: [argument.type.incompatible] incompatible types in argument.
+        Pattern pat = Pattern.compile(regex);
+                                      ^
+  found   : String
+  required: @Regex String
+RegexExample.java:18: error: [group.count.invalid] invalid groups parameter 1. Only 0 groups are guaranteed to exist for mat.
+                System.out.println("Group: " + mat.group(1));
+                                                         ^
+2 errors
+</pre>
+
+			</section>
+			<section id="validate">
+				<h4>3. Fix the Code</h4>
+
+				<p>
+					To fix, <b>verify the user input</b> using the
+					RegexUtil.isRegex(String, int) method. You must <b>import
+						org.checkerframework.checker.regex.RegexUtil</b>. Please see the <a
+						href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#annotating-with-regex">
+						Regex chapter</a> in the manual for a full discussion of
+					<code>RegexUtil</code>
+					class. If it is not a valid regular expression, <b>print an
+						error message</b> and do not check for matches. If it is a valid
+					regular expression, preform as before. It is not necessary to add
+					an annotation to regex because the Regex Checker adds <a
+						href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#effective-qualifier">
+						implicit qualifiers</a>. Below are all the changes that need to be
+					made to RegexExample.java to correctly handle the user input.
+				</p>
+
+				<pre>  import org.checkerframework.checker.regex.RegexUtil;
+...
+        if (!RegexUtil.isRegex(regex, 1)) {
+            System.out.println("Input is not a regular expression \"" + regex
+                    + "\": " + RegexUtil.regexException(regex).getMessage());
+            System.exit(1);
+        }
+</pre>
+			</section>
+			<section id="run2">
+				<h4>4. Run the Regex Checker</h4>
+				<pre>
+javacheck -processor org.checkerframework.checker.regex.RegexChecker RegexExample.java
+</pre>
+			</section>
+			<section id="runex2">
+				<h4>5. Run the Example</h4>
+
+				<p>
+					Run the program exactly as before to verify that the program prints
+					a user-friendly warning. The invalid regular expression and
+					matching string used before are <strong class="text-success">[01]??[\d-([0123]??\d)-\d{4}+
+						01-24-2013 </strong>.
+				</p>
+<pre>
+java -cp ".:$CHECKERFRAMEWORK/checker/dist/checker.jar" RegexExample  [01]??[\d-\([0123]??\d\)-\d{4}+ 01-24-2013
+Input is not a regular expression "[01]??[d-([0123]??d)-d{4}+": Illegal character range near index 9
+[01]??[d-([0123]??d)-d{4}+
+</pre>
+				<p>
+					For a full discussion of this checker, please see the <a
+						href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#regex-checker">
+						Regex Checker section</a> of the manual.
+				</p>
+
+			</section>
+		</div>
+
+	</section>
+
+
+	<section id="next">
+		<div class="page-header short">
+			<h2>
+				<small>Next, <a href="security-error-cmd.html"> Finding
+						a Security Error</a>, an complex example using the Tainting Checker
+				</small>
+			</h2>
+		</div>
+
+	</section>
+	<!--
+<div class="bottom_liner well">
+    <a href="#">Top</a>
+</div>
+-->
+
+</body>
+</html>
+
+<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath
+ -->
+<!--  LocalWords:  NullnessChecker plugin's hg
+ -->
