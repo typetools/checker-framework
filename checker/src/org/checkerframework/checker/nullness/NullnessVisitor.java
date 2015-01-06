@@ -29,6 +29,7 @@ import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.DoWhileLoopTree;
@@ -321,9 +322,8 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
 
     /** Case 4: Check for thrown exception nullness */
     @Override
-    public Void visitThrow(ThrowTree node, Void p) {
+    protected void checkThrownExpression(ThrowTree node) {
         checkForNullability(node.getExpression(), THROWING_NULLABLE);
-        return super.visitThrow(node, p);
     }
 
     /** Case 5: Check for synchronizing locks */
@@ -561,4 +561,12 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
         checkForNullability(node.getCondition(), CONDITION_NULLABLE);
         return super.visitConditionalExpression(node, p);
     }
+
+    @Override
+    protected void checkExceptionParameter(CatchTree node) {
+        // BasetypeVisitor forces annotations on exception parameters to be top,
+        // but because exceptions can never be null, the Nullness Checker
+        // does not require this check.
+    }
+
 }
