@@ -1,9 +1,20 @@
 package org.checkerframework.qualframework.base;
 
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
+
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.type.AnnotatedTypeFormatter;
+import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
+import org.checkerframework.javacutil.AnnotationUtils;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.tools.Diagnostic;
+import java.util.regex.Pattern;
 
 /** Adapter class for {@link Checker}, extending
  * {@link BaseTypeChecker org.checkerframework.common.basetype.BaseTypeChecker}.
@@ -69,7 +80,19 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
         QualifiedTypeFactory<Q> underlyingFactory = underlying.getTypeFactory();
         QualifiedTypeFactoryAdapter<Q> factoryAdapter = new QualifiedTypeFactoryAdapter<Q>(
                 underlyingFactory,
-                this);
+                this) {
+
+            @Override
+            protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
+                AnnotatedTypeFormatter formatter = CheckerAdapter.this.createAnnotatedTypeFormatter(
+                        checker.hasOption("printAllQualifiers"));
+
+                if (formatter == null) {
+                    formatter = super.createAnnotatedTypeFormatter();
+                }
+                return formatter;
+            }
+        };
 
         if (underlyingFactory instanceof DefaultQualifiedTypeFactory) {
             DefaultQualifiedTypeFactory<Q> defaultFactory =
@@ -80,6 +103,9 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
         return factoryAdapter;
     }
 
+    protected AnnotatedTypeFormatter createAnnotatedTypeFormatter(boolean printInvisibleQualifiers) {
+        return null;
+    }
 
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {
@@ -105,4 +131,5 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
                         underlying.getTypeFactory().getQualifierHierarchy().getTop()),
                 DefaultLocation.LOCAL_VARIABLE);
     }
+
 }

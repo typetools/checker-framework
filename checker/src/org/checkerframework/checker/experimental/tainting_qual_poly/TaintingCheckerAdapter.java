@@ -8,8 +8,9 @@ import org.checkerframework.qualframework.base.CheckerAdapter;
 import org.checkerframework.qualframework.base.TypecheckVisitorAdapter;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 import org.checkerframework.qualframework.poly.QualParams;
+import org.checkerframework.qualframework.poly.QualPolyCheckerAdapter;
 
-public class TaintingCheckerAdapter extends CheckerAdapter<QualParams<Tainting>> {
+public class TaintingCheckerAdapter extends QualPolyCheckerAdapter<QualParams<Tainting>> {
     public TaintingCheckerAdapter() {
         super(new TaintingChecker());
     }
