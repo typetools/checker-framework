@@ -1,10 +1,12 @@
 package org.checkerframework.checker.experimental.regex_qual_poly;
 
+import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
+
 import org.checkerframework.checker.experimental.regex_qual.Regex;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.javacutil.TreeUtils;
@@ -88,4 +90,23 @@ public class RegexTypecheckVisitor extends TypecheckVisitorAdapter<QualParams<Re
         }
         return super.visitMethodInvocation(node, p);
     }
+
+    @Override
+    protected void checkExceptionParameter(CatchTree node) {
+        // TODO: The standard check fails with this error:
+        /*
+javacheck -processor org.checkerframework.checker.experimental.regex_qual_poly.RegexCheckerAdapter UnionTypes.java
+UnionTypes.java:8: error: [exception.parameter.invalid] invalid type in catch argument.
+        } catch (ArrayIndexOutOfBoundsException | StringIndexOutOfBoundsException exc) {
+                                                                                  ^
+  found   : QualParams(primary=RegexTop(),{})
+  required: QualParams(primary=null,{__TOP__=null})
+1 error
+         */
+        //Need to override getExceptionParameterLowerBoundQualifier and return the correct
+        //top qualifier.  Or fix it so that QualifierParameterHierarchy.getTop() returns the top with respect to a given qualifier.
+        //See issue 387
+        //https://code.google.com/p/checker-framework/issues/detail?id=387
+    }
+
 }
