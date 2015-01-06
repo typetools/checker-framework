@@ -9,12 +9,16 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
+import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
@@ -23,7 +27,6 @@ import org.checkerframework.qualframework.base.dataflow.QualTransferAdapter;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
 import java.util.List;
 
 /**
@@ -414,7 +417,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         defaults.annotate(tree, type);
         treeAnnotator.visit(tree, type);
         typeAnnotator.visit(type, null);
-//        defaults.annotate(tree, type);
 
         if (iUseFlow) {
             CFValue as = getInferredValueFor(tree);
@@ -429,7 +431,5 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
         defaults.annotate(elt, type);
         typeAnnotator.visit(type, null);
-//        defaults.annotate(elt, type);
     }
-
 }

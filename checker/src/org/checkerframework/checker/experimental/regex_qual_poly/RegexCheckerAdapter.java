@@ -7,12 +7,13 @@ import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.qualframework.base.CheckerAdapter;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 import org.checkerframework.qualframework.poly.QualParams;
+import org.checkerframework.qualframework.poly.QualPolyCheckerAdapter;
 import org.checkerframework.qualframework.poly.QualifierParameterTypeFactory;
 
 /**
  * {@link CheckerAdapter} for the Regex-Qual-Param type system.
  */
-public class RegexCheckerAdapter extends CheckerAdapter<QualParams<Regex>> {
+public class RegexCheckerAdapter extends QualPolyCheckerAdapter<QualParams<Regex>> {
 
     public RegexCheckerAdapter() {
         super(new RegexQualPolyChecker());
