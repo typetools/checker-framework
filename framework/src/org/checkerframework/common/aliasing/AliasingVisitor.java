@@ -240,17 +240,6 @@ public class AliasingVisitor extends
     }
 
     @Override
-    public Void visitCatch(CatchTree node, Void p) {
-        // Catch clause parameters are not allowed to have the @Unique annotation.
-        VariableTree vt = node.getParameter();
-        AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(vt);
-        if (varType.hasAnnotation(Unique.class)) {
-            checker.report(Result.failure("unique.location.forbidden"), node);
-        }
-        return super.visitCatch(node, p);
-    }
-
-    @Override
     public Void visitNewArray(NewArrayTree node, Void p) {
         List<? extends ExpressionTree> initializers = node.getInitializers();
         if (initializers != null && !initializers.isEmpty()) {
