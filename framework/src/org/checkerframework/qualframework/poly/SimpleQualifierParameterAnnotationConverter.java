@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -196,8 +197,8 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         Map<String, Wildcard<Q>> result = null;
         if (name.startsWith(MULTI_ANNO_NAME_PREFIX)) {
             result = new HashMap<>();
-            AnnotationMirror[] subAnnos = AnnotationUtils.getElementValue(
-                    anno, "value", AnnotationMirror[].class, true);
+            List<AnnotationMirror> subAnnos = AnnotationUtils.getElementValueArray(
+                    anno, "value", AnnotationMirror.class, true);
             for (AnnotationMirror subAnno : subAnnos) {
                 mergeParams(result, getQualifierMap(subAnno));
             }

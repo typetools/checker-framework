@@ -206,12 +206,8 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
 
     @Override
     public String toString() {
-//        String result = "QualParams(";
-//        result += "primary=" + primary + ",";
-//        result += map.toString();
-//        result += ")";
 
-        String result = "@" + primary;
+        String result = String.valueOf(primary);
         if (map.size() > 0) {
             result += " <<";
             boolean first = true;
