@@ -174,7 +174,8 @@ public abstract class PolyQual<Q> {
 
         @Override
         public String toString() {
-            return "(" + name + " ∈ [" + lower + ".." + upper + "])";
+            return "$" + name ;//+ " ∈ [" + lower + ".." + upper + "])";
+//            return "(" + name + " ∈ [" + lower + ".." + upper + "])";
         }
     }
 
