@@ -2,9 +2,7 @@ package org.checkerframework.qualframework.poly;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -77,18 +75,18 @@ public class QualifierParameterAnnotatedTypeFormatter extends DefaultAnnotatedTy
                 if (AnnotationUtils.areSameByClass(anno, TypeMirrorConverter.Key.class)) {
                     QualParams<?> qual = converter.getQualifier(anno);
                     if (qual.size() > 0) {
-                        sb.append("<<");
+                        sb.append("«");
                         boolean first = true;
                         for (Entry<String, ? extends Wildcard<?>> entry : qual.entrySet()) {
                             if (!first) {
-                                sb.append(",");
+                                sb.append(", ");
                             } else {
                                 first = false;
                             }
                             sb.append(entry.getKey() + "=" +
-                                    (entry.getValue() != null ? "@" + entry.getValue() : null));
+                                    (entry.getValue() != null ? entry.getValue() : null));
                         }
-                        sb.append(">>");
+                        sb.append("»");
                     }
                 }
             }
