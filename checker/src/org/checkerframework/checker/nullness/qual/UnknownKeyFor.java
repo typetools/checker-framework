@@ -12,6 +12,7 @@ import org.checkerframework.framework.qual.*;
 @TypeQualifier
 @InvisibleQualifier
 @SubtypeOf({})
+@DefaultQualifierInHierarchy
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

@@ -21,6 +21,17 @@
     </ant>
   </target>
 
+  <target name="dist-nojdk"
+          description="Rebuild the framework.  Rebuild checker on top of framework without rebuilding the JDK">
+      <ant dir="framework">
+          <target name="clean"/>
+          <target name="dist"/>
+      </ant>
+      <ant dir="checker">
+          <target name="dist-nojdk"/>
+      </ant>
+  </target>
+
   <target name="build"
           description="Compile all subprojects">
     <ant dir="checker">
@@ -41,6 +52,13 @@
       <target name="all-tests-nojdk"/>
     </ant>
   </target>
+
+    <target name="tests-nojdk" depends="dist-nojdk"
+            description="Run test cases for all subprojects">
+        <ant dir="checker">
+            <target name="all-tests-nojdk"/>
+        </ant>
+    </target>
 
   <target name="javadoc"
           description="Generate javadoc for all subprojects">

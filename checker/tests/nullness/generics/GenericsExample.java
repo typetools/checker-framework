@@ -30,7 +30,7 @@ class GenericsExample {
     }
   }
 
-  class MyList2<@NonNull T> {
+  class MyList2<@NonNull T extends @NonNull Object> {
     T t;
     @Nullable T nble;
     @NonNull T nn;

@@ -7,14 +7,15 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 
 /**
  * Adapter for {@link TypeAnnotator}, extending
- * {@link org.checkerframework.framework.type.TypeAnnotator org.checkerframework.framework.type.TypeAnnotator}.
+ * {@link org.checkerframework.framework.type.typeannotator.TypeAnnotator org.checkerframework.framework.type.ImplicitsTypeAnnotator}.
  */
-class TypeAnnotatorAdapter<Q> extends org.checkerframework.framework.type.TypeAnnotator {
+class TypeAnnotatorAdapter<Q> extends ImplicitsTypeAnnotator {
     private TypeAnnotator<Q> underlying;
     private TypeMirrorConverter<Q> converter;
 
