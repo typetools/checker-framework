@@ -1,0 +1,47 @@
+This directory, "checker/bin", contains scripts to run the Checker Framework.
+
+javac - Is a shell script that runs the Checker Framework in *nix systems
+including Mac OS X.  Its invocation is equivalent to
+"java -jar checker.jar <compiler arguments>".
+This script is a drop-in replacement for the script javac provided by the
+OpenJDK.
+
+javac.bat - Is the equivalent of the javac script for Windows systems.
+
+javac_maven - Similar to the javac script, but meant for use with Maven
+pom files.  It requires a file name 'argfile' to be in the same directory
+as the pom file - this file must contain the command-line arguments
+to be passed to javac indicating the checker to be used and optional
+parameters to the Checker Framework.
+
+javac_maven.bat - Is the equivalent of the javac_maven script for Windows
+systems.
+
+
+The directory "checker/dist/" houses all jars built for the binary distribution.
+To build these jars, run "ant clean dist" from the "checker" directory.
+Afterward, the directory will contain all jars needed to run the
+Checker Framework.
+
+checker-qual.jar - Contains the annotations used by the checkers built into the
+Checker Framework
+
+checker.jar - Contains all the Checker Framework classes including the framework
+itself, all built-in checkers, and the annotations found in checker-qual.jar.
+
+javac.jar - Contains the Type Annotations Compiler
+(see http://types.cs.washington.edu/checker-framework/current/README-jsr308.html)
+
+jdk<x>.jar - Each jdk<x>.jar, where <x> is a major java version (e.g., 6, 7,
+8, or 9), contains a version of the OpenJDK annotated with Checker Framework
+annotations.  Which jdk<x>.jar version is built depends on what version of
+java is found in the "JAVA_HOME" environment variable.  You can also build
+all versions of jdk<x>.jar by running "ant all.jdks.jar".
+
+
+maven-plugin/poms - this directory contains Maven POM files for each of the
+jars that is found in the dist directory.  These POMs are used to deploy each
+jar as a Maven artifact to the
+http://types.cs.washington.edu/m2-repo/ maven repository.
+
+ 
