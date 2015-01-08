@@ -14,7 +14,6 @@ public class AliasingTest extends ParameterizedCheckerTest {
                 "aliasing",
                 "-Anomsgtext",
                 "-AprintErrorStack",
-                "-AstubWarnIfNotFound",
                 "-Astubs=tests/aliasing/stubfile.astub");
     }
 

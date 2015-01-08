@@ -356,7 +356,7 @@
         </javadoc>
         <property name="favicon.targetfile" value="favicon-checkerframework.png"/>
         <copy file="manual/logo/Checkmark/CFCheckmark_favicon.png" tofile="${api.doc}/${favicon.targetfile}" />
-        <exec executable="manual/logo/add-favicon">
+        <exec executable="manual/logo/add-favicon" failonerror="true">
             <arg value="${api.doc}"/>
             <arg value="${favicon.targetfile}"/>
         </exec>

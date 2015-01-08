@@ -932,7 +932,7 @@ etc.
 \subsection{Annotations indicate normal behavior\label{annotate-normal-behavior}}
 
 You should use annotations to specify \emph{normal} behavior.  The
-annotations indicate all the values that you \emph{want} to flow to
+annotations indicate all the values that you \emph{want} to flow to a
 reference --- not every value that might possibly flow there if your
 program has a bug.
 
@@ -967,6 +967,18 @@ the intended use of the method.  When you use the \code{@NonNull}
 annotation, the checker is able to issue compile-time warnings about
 possible run-time exceptions, which is its purpose.  Marking the parameter
 as \code{@Nullable} would suppress such warnings, which is undesirable.
+
+This paragraph explains additional subtlety regarding unchecked library
+annotations.  You should ignore paragraph the first time you read this manual.
+Library annotations are generally trusted rather than not checked.
+Therefore, it is often a good idea to write conservative library annotations
+that guarantee lack of exceptions.  For example, you could write
+\<@Nullable> on a method parameter to mean the method never throws an
+exception due to the argument being null.  If a method is allowed to take
+\<null> in some circumstances but not in others, then if you annotate it as
+\<@NonNull>, you will be guaranteed to get a warning for every client use
+that has the potential to cause an exception.
+
 
 % (The note at
 % http://google-collections.googlecode.com/svn/trunk/javadoc/com/google/common/base/Preconditions.html

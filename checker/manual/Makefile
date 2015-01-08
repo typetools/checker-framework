@@ -65,6 +65,7 @@ manual.ps: manual.dvi
 html: manual.html
 manual.html: manual.dvi
 	hevea -fix -exec xxdate.exe manual.tex
+	./add-favicon-to-manual
 # The following three lines are only necessary when using Hevea before version 2.04
 # With version 2.04 they have no effect but do no harm.
 	\mv -f manual.html manual.html-with-htoc

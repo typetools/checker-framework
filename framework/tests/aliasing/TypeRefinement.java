@@ -26,7 +26,6 @@ class TypeRefinement {
         // unique is refined to @Unique here, according to the definition.
         isUnique(unique);
 
-        //:: error: (unique.leaked)
         String notUnique = unique; //unique loses its refinement.
 
         //:: error: (argument.type.incompatible)
@@ -43,7 +42,6 @@ class TypeRefinement {
         nonLeaked(unique);
         isUnique(unique);
 
-        //:: error: (unique.leaked)
         leaked(unique);
         //:: error: (argument.type.incompatible)
         isUnique(unique);
@@ -55,7 +53,6 @@ class TypeRefinement {
         leakedToResult(unique);
         isUnique(unique);
 
-        //:: error: (unique.leaked)
         String notUnique = leakedToResult(unique);
         //:: error: (argument.type.incompatible)
         isUnique(unique);

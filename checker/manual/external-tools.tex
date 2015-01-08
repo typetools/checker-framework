@@ -54,13 +54,13 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-1.8.8/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-1.8.9/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.  Now, whenever
     you run \code{javac}, you will use the updated compiler.  If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.8
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.9
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -76,7 +76,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.8
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.9
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -95,11 +95,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.8
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.9
   alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.8\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.9\
   doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
 \end{Verbatim}
 
@@ -118,7 +118,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-1.8.8
+  javac 1.8.0-jsr308-1.8.9
 \end{Verbatim}
 
 
@@ -595,7 +595,7 @@ annotations for the Nullness Checker.
 Section~\ref{javari-inference} lists a tool that infers
 annotations for the Javari Checker, which detects mutation errors.
 
-\href{https://github.com/reprogrammer/cascade/wiki/Installation}{Cascade}~\cite{VakilianPEJ2014}
+\href{https://github.com/reprogrammer/cascade/}{Cascade}~\cite{VakilianPEJ2014}
 is an Eclipse plug-in that implements interactive type qualifier inference.
 Cascade is interactive rather than fully-automated:  it makes it easier for
 a developer to insert annotations.
@@ -603,6 +603,7 @@ Cascade starts with an unannotated program and runs a type-checker.  For each
 warning it suggests multiple fixes, the developer chooses a fix, and
 Cascade applies it.  Cascade works with any checker built on the Checker
 Framework.
+You can find installation instructions and a video tutorial at \url{https://github.com/reprogrammer/cascade}.
 
 
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle

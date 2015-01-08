@@ -193,7 +193,7 @@ public class AliasingVisitor extends
         if (visitorLeafKind == Kind.NEW_CLASS ||
                 visitorLeafKind == Kind.METHOD_INVOCATION) {
             // Handling pseudo-assignments
-            if (valueType.hasAnnotation(Unique.class)) {
+            if (canBeLeaked(valueTree)) {
                 if (!varType.hasAnnotation(NonLeaked.class) &&
                         !(varType.hasAnnotation(LeakedToResult.class) &&
                         parentKind == Kind.EXPRESSION_STATEMENT)) {
@@ -219,7 +219,7 @@ public class AliasingVisitor extends
         // Component types are not allowed to have the @Unique annotation.
         AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(node);
         VariableElement elt = TreeUtils.elementFromDeclaration(node);
-        if (elt.getKind().isField() && varType.hasAnnotation(Unique.class)) {
+        if (elt.getKind().isField() && varType.hasExplicitAnnotation(Unique.class)) {
             checker.report(Result.failure("unique.location.forbidden"), node);
         } else if (node.getType().getKind() == Kind.ARRAY_TYPE) {
             AnnotatedArrayType arrayType = (AnnotatedArrayType) varType;
@@ -240,21 +240,13 @@ public class AliasingVisitor extends
     }
 
     @Override
-    public Void visitCatch(CatchTree node, Void p) {
-        // Catch clause parameters are not allowed to have the @Unique annotation.
-        VariableTree vt = node.getParameter();
-        AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(vt);
-        if (varType.hasAnnotation(Unique.class)) {
-            checker.report(Result.failure("unique.location.forbidden"), node);
-        }
-        return super.visitCatch(node, p);
-    }
-
-    @Override
     public Void visitNewArray(NewArrayTree node, Void p) {
-        for (ExpressionTree exp : node.getInitializers()) {
-            if (canBeLeaked(exp)) {
-                checker.report(Result.failure("unique.leaked"), exp);
+        List<? extends ExpressionTree> initializers = node.getInitializers();
+        if (initializers != null && !initializers.isEmpty()) {
+            for (ExpressionTree exp : initializers) {
+                if (canBeLeaked(exp)) {
+                    checker.report(Result.failure("unique.leaked"), exp);
+                }
             }
         }
         return super.visitNewArray(node, p);
@@ -270,7 +262,7 @@ public class AliasingVisitor extends
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
         boolean isMethodInvocation = exp.getKind() == Kind.METHOD_INVOCATION;
         boolean isNewClass = exp.getKind() == Kind.NEW_CLASS;
-        return type.hasAnnotation(Unique.class) && !isMethodInvocation &&
+        return type.hasExplicitAnnotation(Unique.class) && !isMethodInvocation &&
                 !isNewClass;
     }
 

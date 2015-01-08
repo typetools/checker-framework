@@ -5,6 +5,7 @@ import org.checkerframework.checker.igj.IGJChecker;
 import org.checkerframework.checker.propkey.PropertyKeyChecker;
 import org.checkerframework.checker.signature.SignatureChecker;
 import org.checkerframework.checker.units.UnitsChecker;
+import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.subtyping.SubtypingChecker;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.eclipse.util.PluginUtil;
@@ -13,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.checker.fenum.FenumChecker;
 import org.checkerframework.checker.formatter.FormatterChecker;
@@ -76,6 +78,7 @@ public class CheckerInfo
 
                 new CheckerInfo("GUI Effect Checker", GuiEffectChecker.class),
                 new CheckerInfo("Units Checker",      UnitsChecker.class),
+                new CheckerInfo("Aliasing Checker",      AliasingChecker.class),
                 new CheckerInfo("Linear Checker",     LinearChecker.class),
 
                 new CheckerInfo("IGJ Immutability Checker",    IGJChecker.class),
