@@ -141,6 +141,10 @@ public class IGJTest extends CheckerTest {
         runTestWithDefault("Assignability.out", false, "Assignability.java");
     }
 
+    @Test public void testThrowCatch() {
+        test();
+    }
+
     @Test public void testOverrideGenericMethod() {
         test();
     }

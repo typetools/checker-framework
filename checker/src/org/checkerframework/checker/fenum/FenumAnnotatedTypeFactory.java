@@ -22,6 +22,7 @@ import com.sun.source.tree.Tree;
 
 public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+    protected AnnotationMirror FENUM_UNQUALIFIED;
     protected AnnotationMirror FENUM, BOTTOM;
 
     public FenumAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -29,6 +30,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
         FENUM = AnnotationUtils.fromClass(elements, Fenum.class);
+        FENUM_UNQUALIFIED = AnnotationUtils.fromClass(elements, FenumUnqualified.class);
 
         this.postInit();
         // flow.setDebug(System.err);

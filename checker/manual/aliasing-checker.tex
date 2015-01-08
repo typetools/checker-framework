@@ -17,7 +17,7 @@ Knowing that an expression is not aliased permits more accurate reasoning
 about how side effects modify the expression's value.
 
 To run the Aliasing Checker, supply the
-\code{-processor org.checkerframework.checker.aliasing.AliasingChecker}
+\code{-processor org.checkerframework.common.aliasing.AliasingChecker}
 command-line option to javac.
 However, a user rarely runs the Aliasing Checker directly.
 This type system is mainly intended to be used together with other type systems.
@@ -39,12 +39,12 @@ There are two possible types for an expression:
 
 \begin{description}
 
-\item[\refqualclass{checker/aliasing/qual}{MaybeAliased}]
+\item[\refqualclass{common/aliasing/qual}{MaybeAliased}]
 is the type of an expression that might have an alias.
 This is the default, so every unannotated type is
 \code{@MaybeAliased}. (This includes the type of \code{null}.)
 
-\item[\refqualclass{checker/aliasing/qual}{Unique}]
+\item[\refqualclass{common/aliasing/qual}{Unique}]
 is the type of an expression that has no aliases.
 
 The \code{@Unique} annotation is only allowed at local variables, method
@@ -60,14 +60,14 @@ the receiver parameter, \<this>):
 
 \begin{description}
 
-\item[\refqualclass{checker/aliasing/qual}{NonLeaked}]
+\item[\refqualclass{common/aliasing/qual}{NonLeaked}]
 identifies a formal parameter that is not leaked nor
 returned by the method body.
 For example, the formal parameter of the String copy constructor,
 \code{String(String s)}, is \code{@NonLeaked} because the body of the method
 only makes a copy of the parameter.
 
-\item[\refqualclass{checker/aliasing/qual}{LeakedToResult}]
+\item[\refqualclass{common/aliasing/qual}{LeakedToResult}]
 is used when the parameter may be returned, but it is not
 otherwise leaked.
 For example, the receiver parameter of \code{StringBuffer.append(StringBuffer
@@ -117,8 +117,8 @@ However, the body of the method might create an alias or leak the
 reference.  Thus, the Aliasing Checker always treats a method call as
 creating aliases for each argument unless the corresponding formal
 parameter is marked as
-@\refqualclass{checker/aliasing/qual}{NonLeaked} or
-@\refqualclass{checker/aliasing/qual}{LeakedToResult}.
+@\refqualclass{common/aliasing/qual}{NonLeaked} or
+@\refqualclass{common/aliasing/qual}{LeakedToResult}.
 
 Here is an example for a return statement:
 

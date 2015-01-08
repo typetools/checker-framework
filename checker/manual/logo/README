@@ -1,2 +1,3 @@
-The add-favicon script was copied from the plume-lib repository (see https://code.google.com/p/plume-lib/source/browse/bin/add-favicon )
-add-favicon contains comments that explain its origin and usage.
+The add-favicon script was copied from the plume-lib repository
+(see https://code.google.com/p/plume-lib/source/browse/bin/add-favicon).
+It should be updated from plume-lib periodically.
