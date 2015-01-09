@@ -174,8 +174,7 @@ public abstract class PolyQual<Q> {
 
         @Override
         public String toString() {
-            return "$" + name ;//+ " ∈ [" + lower + ".." + upper + "])";
-//            return "(" + name + " ∈ [" + lower + ".." + upper + "])";
+            return "(" + name + " ∈ [" + lower + ".." + upper + "])";
         }
     }
 
@@ -244,6 +243,18 @@ public abstract class PolyQual<Q> {
             newVars.addAll(other.vars);
             Q newGround = this.op.combine(this.ground, other.ground);
             return Combined.from(op, newVars, newGround);
+        }
+
+        public CombiningOperation<Q> getOp() {
+            return op;
+        }
+
+        public Set<QualVar<Q>> getVars() {
+            return vars;
+        }
+
+        public Q getGround() {
+            return ground;
         }
 
         @Override
