@@ -12,6 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+/**
+ * Need to make the names @Wild @Var customizable?
+ */
 public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsFormatter<Q> {
 
     // Determines if invisible qualifiers will be printed.
@@ -31,6 +34,10 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
 
     protected abstract Q getTop();
 
+    protected abstract QualParams<Q> getQualTop();
+
+    protected abstract QualParams<Q> getQualBottom();
+
     @Override
     public String format(QualParams<Q> params) {
         return format(params, true);
@@ -40,8 +47,14 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
     public String format(QualParams<Q> params, boolean printPrimary) {
         StringBuffer sb = new StringBuffer();
 
+        if (params == getQualTop()) {
+            return getTargetTypeSystemAnnotation(getTop()).toString();
+        } else if (params == getQualBottom()) {
+            return getTargetTypeSystemAnnotation(getBottom()).toString();
+        }
+
         boolean printedPrimary = false;
-        if (printPrimary) {
+        if (printPrimary && params.getPrimary() != null) {
             AnnotationParts anno = createAnnotation(params.getPrimary());
             if (shouldPrintAnnotation(anno)) {
                 printedPrimary = true;
@@ -53,7 +66,7 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
         for (Entry<String, Wildcard<Q>> entry : params.entrySet()) {
 
             AnnotationParts anno = createAnnotation(entry.getValue(), entry.getKey());
-            if (shouldPrintAnnotation(anno)) {
+            if (anno != null && shouldPrintAnnotation(anno)) {
                 if (addSpace) {
                     sb.append(" ");
                 } else {
@@ -68,7 +81,7 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
 
     public String format(PolyQual<Q> polyQual) {
         AnnotationParts anno = createAnnotation(polyQual);
-        if (shouldPrintAnnotation(anno)) {
+        if (anno != null && shouldPrintAnnotation(anno)) {
             return anno.toString();
         } else {
             return "";
@@ -78,7 +91,9 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
     // TODO: Shared code here with Wildcard
     private AnnotationParts createAnnotation(PolyQual<Q> polyQual) {
 
-        if (polyQual instanceof Combined) {
+        if (polyQual == null) {
+            return null;
+        } else if (polyQual instanceof Combined) {
             AnnotationParts anno = new AnnotationParts("Combine");
             Combined<Q> combined = (Combined<Q>) polyQual;
             StringBuilder sb = new StringBuilder();
@@ -211,9 +226,6 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
 
     /**
      * Hold fields for an annotation and generate a String.
-     * TODO: Replace with real annotation builder?
-     *  Needs processing environment to go to an actual AnnotationMirror
-     *  which we don't care about.
      */
     public static class AnnotationParts {
 

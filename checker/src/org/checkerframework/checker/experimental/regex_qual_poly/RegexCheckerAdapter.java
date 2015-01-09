@@ -10,6 +10,7 @@ import org.checkerframework.qualframework.base.CheckerAdapter;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 import org.checkerframework.qualframework.poly.QualParams;
 import org.checkerframework.qualframework.poly.QualPolyCheckerAdapter;
+import org.checkerframework.qualframework.poly.QualifierParameterHierarchy;
 import org.checkerframework.qualframework.poly.format.SurfaceSyntaxQualParamsFormatter;
 
 import java.util.Arrays;
@@ -89,6 +90,16 @@ public class RegexCheckerAdapter extends QualPolyCheckerAdapter<Regex> {
         @Override
         protected Regex getTop() {
             return Regex.TOP;
+        }
+
+        @Override
+        protected QualParams<Regex> getQualTop() {
+            return ((QualifierParameterHierarchy<Regex>)getUnderlying().getTypeFactory().getQualifierHierarchy()).getTop();
+        }
+
+        @Override
+        protected QualParams<Regex> getQualBottom() {
+            return ((QualifierParameterHierarchy<Regex>)getUnderlying().getTypeFactory().getQualifierHierarchy()).getBottom();
         }
     }
 }
