@@ -23,6 +23,8 @@ import javax.lang.model.util.Elements;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol;
+
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -1028,5 +1030,12 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         TransferResult<V, S> result = super.visitStringConversion(n, p);
         result.setResultValue(p.getValueOfSubNode(n.getOperand()));
         return result;
+    }
+
+    /**
+     * @see CFAbstractAnalysis#getTypeFactoryOfSubchecker(Class)
+     */
+    public <W extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker> W getTypeFactoryOfSubchecker(Class<U> checkerClass) {
+        return analysis.getTypeFactoryOfSubchecker(checkerClass);
     }
 }
