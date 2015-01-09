@@ -206,7 +206,6 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
 
     @Override
     public String toString() {
-
         String result = String.valueOf(primary);
         if (map.size() > 0) {
             result += " <<";
