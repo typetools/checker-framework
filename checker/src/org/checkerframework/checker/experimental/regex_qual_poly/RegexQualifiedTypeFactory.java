@@ -211,13 +211,9 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
                     Regex lRegex = getQualifierHierarchy().getBottom() == lRegexParam ?
                             new Regex.RegexVal(0) : lPrimary.getMaximum();
 
-                    if (isPolyPlusRegex(rPrimary, lRegex)) {
-                        // Poly + Regex == Poly
-                        resultQual = rPrimary;
-
-                    } else if (isPolyPlusRegex(lPrimary, rRegex)) {
-                        // Regex + Poly == Poly
-                        resultQual = lPrimary;
+                    PolyQual<Regex> polyResult = checkPoly(lPrimary, rPrimary, lRegex, rRegex);
+                    if (polyResult != null) {
+                        resultQual = polyResult;
 
                     } else if (lRegex.isRegexVal() && rRegex.isRegexVal()) {
                         // Regex(a) + Regex(b) = Regex(a + b)
@@ -261,9 +257,21 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
         };
     }
 
-    private boolean isPolyPlusRegex(PolyQual<Regex> possiblePoly, Regex other) {
-        return isPolyRegex(possiblePoly)
-                && other.isRegexVal();
+    /**
+     * Check to see if the result of the operation is polymorphic.
+     *
+     * @return the polymorphic PolyQual if the result should be polymorphic, otherwise return null.
+     */
+    private PolyQual<Regex> checkPoly(PolyQual<Regex> lPrimary, PolyQual<Regex> rPrimary, Regex lRegex, Regex rRegex) {
+        if (isPolyRegex(lPrimary) && isPolyRegex(rPrimary)) {
+            return lPrimary;
+        } else if (isPolyRegex(lPrimary) && rRegex.isRegexVal()) {
+            return lPrimary;
+        } else if (isPolyRegex(rPrimary) && lRegex.isRegexVal()) {
+            return rPrimary;
+        } else {
+            return null;
+        }
     }
 
     private boolean isPolyRegex(PolyQual<Regex> possiblePoly) {
