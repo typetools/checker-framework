@@ -17,7 +17,7 @@ public abstract class Regex {
     public static final Regex TOP = new Regex() {
         @Override
         public String toString() {
-            return "@RegexTop";
+            return "RegexTop";
         }
     };
 
@@ -25,7 +25,7 @@ public abstract class Regex {
     public static final Regex BOTTOM = new Regex() {
         @Override
         public String toString() {
-            return "@RegexBot";
+            return "RegexBot";
         }
     };
 
@@ -66,7 +66,7 @@ public abstract class Regex {
 
         @Override
         public String toString() {
-            return "@PartialRegex(\"" + partialValue + "\")";
+            return "PartialRegex(\"" + partialValue + "\")";
         }
     }
 
@@ -108,9 +108,9 @@ public abstract class Regex {
         @Override
         public String toString() {
             if (count > 0) {
-                return "@Regex(" + count + ")";
+                return "Regex(" + count + ")";
             } else {
-                return "@Regex";
+                return "Regex";
             }
 
         }
@@ -126,6 +126,6 @@ public abstract class Regex {
 
     @Override
     public String toString() {
-        return "@Regex";
+        return "Regex";
     }
 }
