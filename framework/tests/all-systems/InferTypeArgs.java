@@ -11,6 +11,7 @@ class CFAbstractAnalysis<V extends CFAbstractValue<V>> {}
 class GenericAnnotatedTypeFactory<Value extends CFAbstractValue<Value>,
                                   FlowAnalysis extends CFAbstractAnalysis<Value>> {
 
+    @SuppressWarnings("immutability:type.argument.type.incompatible")
     protected FlowAnalysis createFlowAnalysis() {
         FlowAnalysis result = invokeConstructorFor();
         return result;
