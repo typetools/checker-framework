@@ -3,7 +3,6 @@ package org.checkerframework.framework.flow.util;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
-import org.checkerframework.javacutil.ErrorReporter;
 
 import static org.checkerframework.framework.util.AnnotatedTypes.*;
 
@@ -124,10 +123,10 @@ public class LubTypeVariableAnnotator {
                     }
                 } else { //incomparable types, find the upper bound annotation of the two and take its lub
                     final AnnotationMirror lubAnno =
-                        (lubPrimary != null) ? lubPrimary : findSourceAnnotation(qualHierarchy, lub, top);
+                        (lubPrimary != null) ? lubPrimary : findEffectiveAnnotationInHierarchy(qualHierarchy, lub, top);
 
                     final AnnotationMirror subAnno =
-                        (lubPrimary != null) ? subPrimary : findSourceAnnotation(qualHierarchy, subAsLub, top);
+                        (lubPrimary != null) ? subPrimary : findEffectiveAnnotationInHierarchy(qualHierarchy, subAsLub, top);
 
                     //It is a conservative lub to place a primary annotation rather than choosing a more specific bound
                     //set that would be a supertype of both the ranges of the subtype/supertype
@@ -170,56 +169,5 @@ public class LubTypeVariableAnnotator {
         }
 
         return (AnnotatedTypeVariable) typeUpperBound;
-    }
-
-    //TODO: Reconcile this with CFAbstractValue findSourceAtm
-    private static AnnotationMirror findSourceAnnotation(final QualifierHierarchy qualifierHierarchy,
-                                                         final AnnotatedTypeMirror toSearch,
-                                                         final AnnotationMirror top) {
-        AnnotatedTypeMirror source = toSearch;
-        while( source.getAnnotationInHierarchy(top) == null ) {
-
-            switch(source.getKind()) {
-                case TYPEVAR:
-                    source = ((AnnotatedTypeVariable) source).getUpperBound();
-                    break;
-
-                case WILDCARD:
-                    source = ((AnnotatedWildcardType) source).getExtendsBound();
-                    break;
-
-                case INTERSECTION:
-                    //if there are multiple conflicting annotations, choose the lowest
-                    final AnnotationMirror glb = glbOfBounds((AnnotatedIntersectionType) source, top, qualifierHierarchy);
-
-                    if(glb == null) {
-                        ErrorReporter.errorAbort("AnnotatedIntersectionType has no annotation in hierarchy"
-                                + "on any of its supertypes!\n"
-                                + "intersectionType=" + source);
-                    }
-                    return glb;
-
-                default:
-                    ErrorReporter.errorAbort("Unexpected AnnotatedTypeMirror with no primary annotation!"
-                            + "toSearch=" + toSearch
-                            + "top="      + top
-                            + "source=" + source);
-            }
-        }
-
-        return source.getAnnotationInHierarchy(top);
-    }
-
-    private static AnnotationMirror glbOfBounds(final AnnotatedIntersectionType isect, final AnnotationMirror top,
-                                                final QualifierHierarchy qualifierHierarchy) {
-        AnnotationMirror anno = isect.getAnnotationInHierarchy(top);
-        for(final AnnotatedTypeMirror supertype : isect.directSuperTypes()) {
-            final AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(top);
-            if(superAnno != null && (anno == null || qualifierHierarchy.isSubtype(superAnno, anno))) {
-                anno = superAnno;
-            }
-        }
-
-        return anno;
     }
 }

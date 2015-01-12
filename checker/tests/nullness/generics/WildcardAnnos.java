@@ -2,6 +2,7 @@ import org.checkerframework.checker.nullness.qual.*;
 import java.util.*;
 
 class WildcardAnnos {
+  //:: error: (bound.types.incompatible)
   @Nullable List<@Nullable ? extends @NonNull Object> l1 = null;
   @Nullable List<@NonNull ? extends @Nullable Object> l2 = null;
 
@@ -10,6 +11,7 @@ class WildcardAnnos {
   // @Nullable List<? super @NonNull Object extends @Nullable Object> l3 = null;
   @Nullable List<@Nullable ? super @NonNull Object> l3 = null;
 
+    //:: error: (bound.types.incompatible)
   @Nullable List<@NonNull ? super @Nullable Object> l4 = null;
 
   @Nullable List<? super @Nullable Object> l5 = null;

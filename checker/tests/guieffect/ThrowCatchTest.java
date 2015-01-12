@@ -13,14 +13,12 @@ class ThrowsTest {
         //:: error: (throw.type.invalid)
             throw ex2;
     }
-    <@UI E extends  PolyUIException> void throwTypeVarUI2(E ex1, @UI E ex2) throws PolyUIException{
-        if(flag){
-            //:: error: (throw.type.invalid)
-            throw ex1;
-        }
+
+    <@UI E extends @UI PolyUIException> void throwTypeVarUI2(E ex1) throws PolyUIException {
         //:: error: (throw.type.invalid)
-            throw ex2;
+        throw ex1;
     }
+
     <E extends @AlwaysSafe PolyUIException> void throwTypeVarAlwaysSafe1(E ex1, @AlwaysSafe E ex2) throws PolyUIException{
         if(flag){
             throw ex1;
@@ -43,7 +41,8 @@ class ThrowsTest {
     }
 
     //Wildcards
-    void throwWildcard(List<? extends @UI PolyUIException> ui,
+    //:: error: (type.argument.type.incompatible)
+    void throwWildcard(List<? extends @UI PolyUIException> ui, //Default type of List's type parameter is below @UI so this is type.argument.incompatible
            List<? extends @AlwaysSafe PolyUIException> alwaysSafe) throws PolyUIException {
         if(flag){
             //:: error: (throw.type.invalid)
