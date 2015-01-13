@@ -197,4 +197,11 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
             type.addAnnotations(tops);
         }
     }
+
+    /**
+     * @see GenericAnnotatedTypeFactory#getTypeFactoryOfSubchecker(Class)
+     */
+    public <W extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker> W getTypeFactoryOfSubchecker(Class<U> checkerClass) {
+        return atypeFactory.getTypeFactoryOfSubchecker(checkerClass);
+    }
 }
