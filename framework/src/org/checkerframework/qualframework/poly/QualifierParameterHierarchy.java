@@ -16,14 +16,18 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
     private QualifierHierarchy<Wildcard<Q>> containmentHierarchy;
     private List<Pair<Wildcard<Q>, Wildcard<Q>>> constraintTarget = null;
 
-    public final QualParams<Q> PARAMS_BOTTOM = QualParams.<Q>getBottom();
-    public final QualParams<Q> PARAMS_TOP = QualParams.<Q>getTop();
-
+    // The bottom QualParams in the QualifierHierarchy
+    public QualParams<Q> PARAMS_BOTTOM;
+    // The top QualParams in the QualifierHierarchy
+    public QualParams<Q> PARAMS_TOP;
 
     public QualifierParameterHierarchy(QualifierHierarchy<Wildcard<Q>> containmentHierarchy,
             QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
         this.containmentHierarchy = containmentHierarchy;
         this.polyQualHierarchy = polyQualHierarchy;
+
+        setTop(polyQualHierarchy);
+        setBottom(polyQualHierarchy);
     }
 
     // We can't use constructor overloads for the following variants because
@@ -75,6 +79,13 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
 
         if (subtype == PARAMS_BOTTOM || supertype == PARAMS_TOP)
             return true;
+
+        // There is no corollary for PARAMS_BOTTOM, since the other would have to have every parameter.
+        if (subtype == PARAMS_TOP
+                && polyQualHierarchy.isSubtype(subtype.getPrimary(), supertype.getPrimary())
+                && supertype.isEmpty()) {
+            return true;
+        }
 
         if (subtype == PARAMS_TOP || supertype == PARAMS_BOTTOM ||
                 !subtype.keySet().equals(supertype.keySet())) {
@@ -182,6 +193,29 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
             newPrimary = polyQualHierarchy.greatestLowerBound(a.getPrimary(), b.getPrimary());
         }
         return new QualParams<Q>(result, newPrimary);
+    }
+
+    /*package*/ static final String PARAMS_BOTTOM_TO_STRING = "__@RegexBottom__";
+    /*package*/ static final String PARAMS_TOP_TO_STRING = "__@RegexTop__";
+
+    /**
+     * Create and set the top of the qual params hierarchy
+     */
+    private void setTop(final QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
+        PARAMS_TOP = new QualParams<Q>(polyQualHierarchy.getTop()) {
+            public String toString() {
+                return PARAMS_TOP_TO_STRING;
+            }};
+    }
+
+    /**
+     * Create and set the bottom of the qual params hierarchy
+     */
+    private void setBottom(final QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
+        PARAMS_BOTTOM = new QualParams<Q>(polyQualHierarchy.getBottom()) {
+            public String toString() {
+                return PARAMS_BOTTOM_TO_STRING;
+            }};
     }
 
     @Override

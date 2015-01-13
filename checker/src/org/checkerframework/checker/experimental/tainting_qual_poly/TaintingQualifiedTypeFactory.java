@@ -41,7 +41,7 @@ public class TaintingQualifiedTypeFactory extends QualifierParameterTypeFactory<
                 if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
                     result = SetQualifierVisitor.apply(result, new QualParams<>(new GroundQual<>(Tainting.UNTAINTED)));
                 } else if (tree.getKind() == Kind.NULL_LITERAL) {
-                    return SetQualifierVisitor.apply(result, QualParams.<Tainting>getBottom());
+                    return SetQualifierVisitor.apply(result, TaintingQualifiedTypeFactory.this.getQualifierHierarchy().getBottom());
                 }
                 return result;
             }
