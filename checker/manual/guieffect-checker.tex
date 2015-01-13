@@ -1,0 +1,331 @@
+\htmlhr
+\chapter{GUI Effect Checker\label{guieffect-checker}}
+
+One of the most prevalent GUI-related bugs is \emph{invalid UI update} or \emph{invalid thread access}:  accessing the UI directly from a
+background thread.
+
+
+% For performance reasons, most applications with a graphical user interface (GUI) use multiple
+% threads.
+
+Most GUI frameworks (including Android, AWT, Swing, and SWT) create
+a single distinguished thread --- the UI event thread
+--- that handles all GUI events and updates.
+% Every UI event (mouse click, key press,
+% etc.) is dispatched to that thread.
+To keep the interface responsive, any expensive computation should be
+offloaded to \emph{background threads} (also called \emph{worker threads}).
+If a background thread accesses a UI
+element such as a JPanel (by calling a JPanel method or reading/writing a
+field of JPanel),
+the GUI framework raises an exception that terminates the program.
+To fix the bug, the background thread should send a request to the
+UI thread to perform the access on its behalf.
+
+It is difficult for a programmer to remember which methods may be called on
+which thread(s).
+The GUI Effect Checker solves this problem.
+The programmer annotates each method to indicate whether:
+\begin{itemize}
+\item
+  It accesses no UI elements (and may run on any thread);
+  such a method is said to have the ``safe effect''.
+\item
+  It may access UI elements (and must run on the UI thread);
+  such a method is said to have the ``UI effect''.
+\end{itemize}
+
+
+%% True and interesting, but not relevant to people who are reading this
+%% section of the manual.
+% The GUI Effect Checker prevents this problem by using an \emph{effect
+% system}, also known as a type-and-effect system.
+% An \emph{effect} is a property of a \emph{computation}.  
+% A well-known example of an effect system is Java's checked exception mechanism.  When Java's
+% type system says a method may throw exceptions \code{A} or \code{B} (the method type-checks with a
+% \code{throws A, B} clause), this makes two important statements about the behavior of the method at
+% run time.  First, running the method in question may result in one of the specified exceptions being
+% thrown.  Second, if an exception is thrown by the method, then the exception must be an \code{A} or
+% \code{B}.  So an effect for a method (or any other block of code) is an upper bound on a certain
+% class of behaviors.  In general, a block of code with a given effect (upper bound on behavior) may
+% call methods with the same, or weaker effects (e.g., no throws clause), because this will not
+% violate the assumed upper bound.  Calling a method with an incompatible effect (e.g., calling a
+% \code{throws C} method) would be a compile-time error.  For reasoning about effects to be sound, the
+% effects must interact with inheritance: method overrides must have the same (or lower) upper bound
+% on behavior as the method being overridden.  For checked exceptions, this means the method override
+% cannot throw any exceptions not permitted by the parent class implementation's \code{throws} clause.
+
+The GUI Effect Checker verifies these effects and statically enforces that UI methods are only
+called from the correct thread.  A method with the safe effect is prohibited from calling a method
+with the UI effect. 
+% All UI element methods have the ``UI effect.'' 
+
+For example, the effect system can reason about when method calls must be dispatched to the UI
+thread via a message such as \<Display.syncExec>.
+\begin{alltt}
+@SafeEffect
+public void calledFromBackgroundThreads(JLabel l) \{
+    l.setText("Foo");       // Error: calling a @UIEffect method from a @SafeEffect method
+    Display.syncExec(new @UI Runnable \{
+        @UIEffect // inferred by default
+        public void run() \{
+            l.setText("Bar");  // OK: accessing JLabel from code run on the UI thread
+        \}
+    \});
+
+\}
+\end{alltt}
+
+%% True, but why tip off readers that this is complex?  They might read it
+%% and just understand it...
+% The bulk of the GUI Effect Checker's complexity comes from handling interactions between effects and
+% inheritance, and from \emph{effect polymorphism} (code that can work as either safe or UI code).
+
+The GUI Effect Checker's annotations fall into three categories:
+
+\begin{itemize}
+\item
+  effect annotations on methods (Section~\ref{guieffect-annotations}),
+\item
+ class or package annotations controlling the default effect (Section~\ref{guieffect-defaults}), and
+\item
+  \emph{effect-polymorphism}:  code that works for both the safe effect and
+  the UI effect (Section~\ref{guieffect-polymorphism}).
+\end{itemize}
+
+
+\section{GUI effect annotations\label{guieffect-annotations}}
+
+
+There are two primary GUI effect annotations:
+\begin{itemize}
+\item
+  \refqualclass{checker/guieffect/qual}{SafeEffect}
+  is a method annotation marking code that must not
+  access UI objects.
+\item
+  \refqualclass{checker/guieffect/qual}{UIEffect}
+  is a method annotation marking code that may access
+  UI objects.  Most UI object methods (e.g., methods of \<JPanel>) are
+  annotated as \code{@UIEffect}.
+\end{itemize}
+
+\code{@SafeEffect} is a sub-effect of \code{@UIEffect}, in that it is always safe to
+call a \code{@SafeEffect} method anywhere it is permitted to call a
+\code{@UIEffect} method.  We write this relationship as
+
+\centerline{\code{@SafeEffect} $\prec$ \code{@UIEffect}}
+
+
+
+\section{What the GUI Effect Checker checks\label{guieffect-checks}}
+
+The GUI Effect Checker ensures that only the UI thread accesses UI objects.
+This prevents GUI errors such
+as invalid UI update and invalid thread access.
+
+The GUI Effect Checker issues errors in the following cases:
+
+%% TODO: Is this exhaustive?  Read the code to find out.
+
+\begin{itemize}
+\item
+  A \<@UIEffect> method is invoked by a \<@SafeEffect> method.
+
+\item
+  Method declarations violate subtyping restrictions:  a supertype declares
+  a \code{@SafeEffect} method, and a subtype annotates an overriding
+  version as \code{@UIEffect}.
+
+\end{itemize}
+
+Additionally, if a method implements or overrides a method in two
+supertypes (two interfaces, or an interface and parent class), and those
+supertypes give different effects for the methods, the GUI Effect Checker
+issues a warning (not an error).
+
+
+
+% It checks this by attaching to each method in the program an effect, which is an upper bound on
+% which objects it may touch: the \code{@UIEffect} effect (and method annotation) marks code that may
+% access UI elements, and therefore must execute only on the distinguished UI event thread; the
+% \code{@SafeEffect} effect and method annotation marks code that must not directly access UI
+% elements, and is therefore safe to call from any thread.
+% 
+% Polymorphic effects are used for classes and interfaces which are used in both ways, for example the
+% \code{java.util.Runnable} interface, containing one method, which is used for tasks including
+% starting new background threads (in which case the code must have the \code{@SafeEffect}) and
+% dispatching code to run on the UI thread (in which case the code may have the \code{@UIEffect}).
+
+\section{Running the GUI Effect Checker\label{guieffect-running}}
+
+The GUI Effect Checker can be invoked by running the following command:
+\begin{Verbatim}
+  javac -processor org.checkerframework.checker.guieffect.GuiEffectChecker MyFile.java ...
+\end{Verbatim}
+
+
+\section{Annotation defaults\label{guieffect-defaults}}
+The default method annotation is \code{@SafeEffect}, since most code in most programs is not related
+to the UI\@.  This also means that typically, code that is unrelated to the UI need not be annotated
+at all.
+
+The GUI Effect Checker provides three primary ways to change the default method effect for a class
+or package:
+\begin{itemize}
+\item 
+  \refqualclass{checker/guieffect/qual}{UIType}
+  is a class annotation that makes the effect for unannotated methods in that
+class default to
+\code{@UIEffect}.  (See also \code{@UI} in Section \ref{guieffect-polymorphism-using}.)
+\item
+  \refqualclass{checker/guieffect/qual}{UIPackage}
+  is a \emph{package} annotation, that makes the effect for unannotated
+methods in that package default to \code{@UIEffect}.  It is not transitive; a package nested inside
+a package marked \code{@UIPackage} does not inherit the changed default.
+\item
+  \refqualclass{checker/guieffect/qual}{SafeType} is a class annotation that makes the effect for unannotated methods in that
+class default to \code{@SafeEffect}.  Because \code{@SafeEffect} is already the default
+effect, \code{@SafeType} is only useful for class types inside a package marked \code{@UIPackage}.
+\end{itemize}
+
+There is one other place where the default annotation is not automatically \code{@SafeEffect}:
+anonymous inner classes.  Since anonymous inner classes exist primarily for brevity, it would be
+unfortunate to spoil that brevity with extra annotations.  By default, an anonymous inner class
+method that overrides or implements a method of the parent type inherits that method's effect.
+For example, an anonymous inner class implementing an interface with method \code{@UIEffect void
+m()} need not explicitly annotate its implementation of \code{m()}; the implementation will inherit
+the parent's effect.  Methods of the anonymous inner class that are not inherited from a parent type
+follow the standard defaulting rules.
+
+\section{Polymorphic effects\label{guieffect-polymorphism}}
+Sometimes a type is reused for both UI-specific and background-thread work.  A good example is the
+\code{Runnable} interface, which is used both for creating new background threads (in which case the
+\code{run()} method must have the \code{@SafeEffect}) and for sending code to the UI thread to
+execute (in which case the \code{run()} method may have the
+\code{@UIEffect}).  But the declaration of
+\code{Runnable.run()} may have only one effect annotation in the source code.
+How do we reconcile these
+conflicting use cases?
+
+\emph{Effect-polymorphism} permits a type to be used for both UI and non-UI
+purposes.  It is similar to Java's generics in that you define, then use, the
+effect-polymorphic type.
+Recall that to \emph{define} a generic type, you write a type parameter such as
+\code{<T>} and use it in the body of the type definition; for example,
+ \code{class List<T> \ttlcb\ ...\ \ T get() \ttlcb...\ttrcb\ \ ...\ \ \ttrcb}.
+To \emph{instantiate} a generic type, you write its name along with a type
+argument; for example, \code{List<Date> myDates;}.
+
+\subsection{Defining an effect-polymorphic type\label{guieffect-polymorphism-defining}}
+
+To declare that a class is effect-polymorphic, annotate its definition with
+\refqualclass{checker/guieffect/qual}{PolyUIType}.
+To use the effect variable in the class body, annotate a method with \refqualclass{checker/guieffect/qual}{PolyUIEffect}.
+It is an error to use \code{@PolyUIEffect} in a class that is not
+effect-polymorphic.
+
+
+Consider the following example:
+
+\begin{alltt}
+@PolyUIType
+public interface Runnable \{
+    @PolyUIEffect
+    void run();
+\}
+\end{alltt}
+
+\noindent
+This declares that class \<Runnable> is parameterized over one
+generic effect, and that when \<Runnable> is instantiated, the effect
+argument will be used as the effect for the \<run> method.
+
+
+\subsection{Using an effect-polymorphic type\label{guieffect-polymorphism-using}}
+
+To instantiate an effect-polymorphic type, write one of these three type
+qualifiers before a use of the type:
+\begin{itemize}
+\item
+  \refqualclass{checker/guieffect/qual}{AlwaysSafe}
+  instantiates the type's effect to \code{@SafeEffect}.
+\item
+  \refqualclass{checker/guieffect/qual}{UI}
+  instantiates the type's effect to \code{@UIEffect}.
+  \emph{Additionally}, it changes the
+  default method effect for the class to \code{@UIEffect}.
+\item
+  \refqualclass{checker/guieffect/qual}{PolyUI} instantiates the type's
+  effect to \code{@PolyUIEffect} for the same instantiation as the current
+  (containing) class.  For example, this is the qualifier of the receiver
+  \code{this} inside a method of a \code{@PolyUIType} class, which is how
+  one method of an effect-polymorphic class may call an effect-polymorphic
+  method of the same class.
+\end{itemize}
+
+As an example:
+
+\begin{alltt}
+@AlwaysSafe Runnable s = ...;    s.run();    // s.run() is @SafeEffect
+@PolyUI Runnable p = ...;        p.run();    // p.run() is @PolyUIEffect (context-dependent)
+@UI Runnable u = ...;            u.run();    // u.run() is @UIEffect
+\end{alltt}
+
+It is an error to apply an effect instantiation qualifier to a type that is not effect-polymorphic.
+
+\subsection{Subclassing a specific instantiation of an effect-polymorphic type\label{guieffect-subclassing}}
+Sometimes you may wish to subclass a specific instantiation of an effect-polymorphic type, just as
+you may extend \code{List<String>}.
+
+To do this, simply place the effect instantiation qualifier by the name of the type you are
+defining, e.g.:
+
+\begin{alltt}
+@UI
+public class UIRunnable extends Runnable \{...\}
+@AlwaysSafe
+public class SafeRunnable extends Runnable \{...\}
+\end{alltt}
+The GUI Effect Checker will automatically apply the qualifier to all classes and interfaces the class
+being defined extends or implements.  (This means you cannot write a class that is a subtype of a
+\code{@AlwaysSafe Foo} and a \code{@UI Bar}, but this has not been a problem in our experience.)
+
+\subsection{Subtyping with polymorphic effects\label{guieffect-subtyping}}
+With three effect annotations, we must extend the static sub-effecting relationship:
+
+\centerline{\code{@SafeEffect} $\prec$ \code{@PolyUIEffect} $\prec$ \code{@UIEffect}}
+
+\noindent
+This is the correct sub-effecting relation because it is always safe to
+call a \code{@SafeEffect}
+method (whether from an effect-polymorphic method or a UI method), and a \code{@UIEffect} method
+may safely call any other method.
+% (since the instantiation of \code{@PolyUIEffect} may be at most
+% \code{@UIEffect} itself).
+
+This induces a subtyping hierarchy on type qualifiers:
+
+\centerline{\code{@AlwaysSafe} $\prec$ \code{@PolyUI} $\prec$ \code{@UI}}
+
+\noindent
+This is sound because a method instantiated according to any qualifier will always be
+safe to call in place of a method instantiated according to one of its super-qualifiers.
+This allows clients to pass ``safer'' instances of some object type to a given method.
+
+
+\section{References\label{guieffect-references}}
+
+The ECOOP 2013 paper ``JavaUI: Effects for Controlling UI Object Access''
+    includes some case
+    studies on the checker's efficacy, including descriptions of the relatively few false warnings
+    we encountered.
+    It also contains a more formal description of the effect system.
+    You can obtain the paper at: \\
+  \myurl{http://homes.cs.washington.edu/~mernst/pubs/gui-thread-ecoop2013-abstract.html}
+
+
+%  LocalWords:  SafeEffect calledFromBackgroundThreads JLabel setText AWT
+%  LocalWords:  UIEffect syncExec Runnable UIType UIPackage SafeType SWT
+%  LocalWords:  PolyUIType PolyUIEffect PolyUI UIRunnable SafeRunnable
+%  LocalWords:  JavaUI JPanel myDates

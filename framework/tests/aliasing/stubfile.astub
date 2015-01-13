@@ -1,0 +1,18 @@
+import org.checkerframework.common.aliasing.qual.*;
+package java.lang;
+class String {
+    @Unique String();
+}
+
+class StringBuffer {
+    @Unique StringBuffer();
+    StringBuffer append(@NonLeaked String s) @LeakedToResult;
+}
+
+class Exception {
+    @Unique Exception();
+}
+
+class Object {
+    @Unique Object();
+}
