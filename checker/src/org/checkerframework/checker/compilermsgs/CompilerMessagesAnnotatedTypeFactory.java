@@ -23,7 +23,7 @@ public class CompilerMessagesAnnotatedTypeFactory extends PropertyKeyAnnotatedTy
     @Override
     public TreeAnnotator createTreeAnnotator() {
         ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, PROPKEY_BOTTOM);
 
         return new ListTreeAnnotator(
                 new PropagationTreeAnnotator(this),
