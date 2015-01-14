@@ -9,6 +9,8 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
+import org.checkerframework.framework.util.AnnotationFormatter;
+import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -92,6 +94,15 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
                 }
                 return formatter;
             }
+
+            @Override
+            protected AnnotationFormatter createAnnotationFormatter() {
+                AnnotationFormatter formatter =  CheckerAdapter.this.createAnnotationFormatter();
+                if (formatter == null) {
+                    formatter = super.createAnnotationFormatter();
+                }
+                return formatter;
+            }
         };
 
         if (underlyingFactory instanceof DefaultQualifiedTypeFactory) {
@@ -104,6 +115,10 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
     }
 
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter(boolean printInvisibleQualifiers) {
+        return null;
+    }
+
+    protected AnnotationFormatter createAnnotationFormatter() {
         return null;
     }
 

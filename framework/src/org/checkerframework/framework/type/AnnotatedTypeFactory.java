@@ -34,7 +34,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
+import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -169,6 +171,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final AnnotatedTypeFormatter typeFormatter;
 
     /**
+     * Annotation formatter is used to format AnnotationMirrors. It is primarily
+     * used by SourceChecker when generating error messages.
+     */
+    private final AnnotationFormatter annotationFormatter;
+
+    /**
      * Provides utility method to substitute arguments for their type variables
      */
     protected TypeVariableSubstitutor typeVarSubstitutor;
@@ -264,6 +272,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.cacheDeclAnnos = new HashMap<Element, Set<AnnotationMirror>>();
 
         this.typeFormatter = createAnnotatedTypeFormatter();
+        this.annotationFormatter = createAnnotationFormatter();
     }
 
     /**
@@ -517,6 +526,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
         return new DefaultAnnotatedTypeFormatter(checker.hasOption("printAllQualifiers"));
+    }
+
+    protected AnnotationFormatter createAnnotationFormatter() {
+        return new DefaultAnnotationFormatter();
+    }
+
+    public AnnotationFormatter getAnnotationFormatter() {
+        return annotationFormatter;
     }
 
     /**
