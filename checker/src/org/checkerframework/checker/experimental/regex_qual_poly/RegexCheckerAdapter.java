@@ -1,16 +1,20 @@
 package org.checkerframework.checker.experimental.regex_qual_poly;
 
+
 import org.checkerframework.checker.experimental.regex_qual.Regex;
 import org.checkerframework.checker.experimental.regex_qual.Regex.PartialRegex;
 import org.checkerframework.checker.experimental.regex_qual.Regex.RegexVal;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.qualframework.base.CheckerAdapter;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 import org.checkerframework.qualframework.poly.QualParams;
 import org.checkerframework.qualframework.poly.QualPolyCheckerAdapter;
-import org.checkerframework.qualframework.poly.QualifierParameterHierarchy;
+import org.checkerframework.qualframework.poly.format.DefaultQualParamsAnnotatedTypeFormatterAdapter;
+import org.checkerframework.qualframework.poly.format.DefaultQualParamsFormatter;
+import org.checkerframework.qualframework.poly.format.SurfaceSyntaxAnnotatedTypeFormatterAdapter;
 import org.checkerframework.qualframework.poly.format.SurfaceSyntaxQualParamsFormatter;
 
 import java.util.Arrays;
@@ -37,6 +41,7 @@ public class RegexCheckerAdapter extends QualPolyCheckerAdapter<Regex> {
                 getTypeMirrorConverter().getAnnotation(
                         new QualParams<>(new GroundQual<>(Regex.BOTTOM))),
                 DefaultLocation.LOWER_BOUNDS);
+
         defaults.addAbsoluteDefault(
                 getTypeMirrorConverter().getAnnotation(
                         new QualParams<>(new GroundQual<>(Regex.TOP))),
@@ -56,7 +61,9 @@ public class RegexCheckerAdapter extends QualPolyCheckerAdapter<Regex> {
                 Arrays.asList("RegexTop", "RegexBottom", "PartialRegex"));
 
         public RegexSurfaceSyntaxQualParamsFormatter(boolean printInvisibleQualifiers) {
-            super(printInvisibleQualifiers);
+            super(printInvisibleQualifiers, Regex.TOP, Regex.BOTTOM,
+                    getUnderlying().getTypeFactory().getQualifierHierarchy().getTop(),
+                    getUnderlying().getTypeFactory().getQualifierHierarchy().getBottom());
         }
 
         @Override
@@ -80,26 +87,6 @@ public class RegexCheckerAdapter extends QualPolyCheckerAdapter<Regex> {
             } else {
                 return new AnnotationParts(regex.toString());
             }
-        }
-
-        @Override
-        protected Regex getBottom() {
-            return Regex.BOTTOM;
-        }
-
-        @Override
-        protected Regex getTop() {
-            return Regex.TOP;
-        }
-
-        @Override
-        protected QualParams<Regex> getQualTop() {
-            return ((QualifierParameterHierarchy<Regex>)getUnderlying().getTypeFactory().getQualifierHierarchy()).getTop();
-        }
-
-        @Override
-        protected QualParams<Regex> getQualBottom() {
-            return ((QualifierParameterHierarchy<Regex>)getUnderlying().getTypeFactory().getQualifierHierarchy()).getBottom();
         }
     }
 }

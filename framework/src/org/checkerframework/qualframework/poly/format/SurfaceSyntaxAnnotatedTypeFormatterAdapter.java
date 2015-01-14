@@ -16,6 +16,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * SurfaceSyntaxAnnotatedTypeFormatterAdapter is used to format {@link AnnotatedTypeMirror}s
+ * that have @Key qualifiers into a String that contains the annotations that when written would
+ * correspond to the type being formatted.
+ *
+ * Not all types can be created by writing annotations; in those cases the output from
+ * the qualifier toString is used.
+ */
 public class SurfaceSyntaxAnnotatedTypeFormatterAdapter extends DefaultAnnotatedTypeFormatter {
 
     public <T> SurfaceSyntaxAnnotatedTypeFormatterAdapter(
@@ -23,70 +31,22 @@ public class SurfaceSyntaxAnnotatedTypeFormatterAdapter extends DefaultAnnotated
             SurfaceSyntaxQualParamsFormatter<T> formatter,
             boolean printInvisibleQualifiers) {
 
-        super(new FormattingVisitor<T>(
-                    converter,
-                    new AnnotationFormatter<T>(converter, formatter),
-                    formatter,
+        super(new FormattingVisitor(new AnnotationFormatter<T>(converter, formatter),
                     printInvisibleQualifiers));
     }
 
-    protected static class FormattingVisitor<T> extends DefaultAnnotatedTypeFormatter.FormattingVisitor {
+    /**
+     * Custom annotation formatter that converts annotations to a Qualifier and then uses
+     * SurfaceSyntaxQualParamsFormatter to create a String output.
+     */
+    public static class AnnotationFormatter<Q> extends DefaultAnnotationFormatter {
 
-        private final TypeMirrorConverter<? extends QualParams<T>> converter;
-        private final SurfaceSyntaxQualParamsFormatter<T> formatter;
-
-        public FormattingVisitor(
-                TypeMirrorConverter<? extends QualParams<T>> converter,
-                org.checkerframework.framework.util.AnnotationFormatter annoFormatter,
-                SurfaceSyntaxQualParamsFormatter<T> formatter,
-                boolean defaultInvisiblesSetting) {
-
-            super(annoFormatter, defaultInvisiblesSetting);
-
-            this.converter = converter;
-            this.formatter = formatter;
-        }
-
-        @Override
-        public String visitDeclared(AnnotatedDeclaredType type, Set<AnnotatedTypeMirror> visiting) {
-            StringBuilder sb = new StringBuilder();
-            if (type.isDeclaration()) {
-                sb.append("/*DECL*/ ");
-            }
-            final Element typeElt = type.getUnderlyingType().asElement();
-            String smpl = typeElt.getSimpleName().toString();
-            if (smpl.isEmpty()) {
-                // For anonymous classes smpl is empty - toString
-                // of the element is more useful.
-                smpl = typeElt.toString();
-            }
-            sb.append(annoFormatter.formatAnnotationString(type.getAnnotations(), currentPrintInvisibleSetting));
-            sb.append(smpl);
-
-            final List<AnnotatedTypeMirror> typeArgs = type.getTypeArguments();
-            if (!typeArgs.isEmpty()) {
-                sb.append("<");
-
-                boolean isFirst = true;
-                for (AnnotatedTypeMirror typeArg : typeArgs) {
-                    if (!isFirst) sb.append(", ");
-                    sb.append(visit(typeArg, visiting));
-                    isFirst = false;
-                }
-                sb.append(">");
-            }
-            return sb.toString();
-        }
-    }
-
-    protected static class AnnotationFormatter<T> extends DefaultAnnotationFormatter {
-
-        private final TypeMirrorConverter<? extends QualParams<T>> converter;
-        private final SurfaceSyntaxQualParamsFormatter<T> formatter;
+        private final TypeMirrorConverter<? extends QualParams<Q>> converter;
+        private final SurfaceSyntaxQualParamsFormatter<Q> formatter;
 
         public AnnotationFormatter(
-                TypeMirrorConverter<? extends QualParams<T>> converter,
-                SurfaceSyntaxQualParamsFormatter<T> formatter) {
+                TypeMirrorConverter<? extends QualParams<Q>> converter,
+                SurfaceSyntaxQualParamsFormatter<Q> formatter) {
             this.converter = converter;
             this.formatter = formatter;
         }
@@ -101,8 +61,10 @@ public class SurfaceSyntaxAnnotatedTypeFormatterAdapter extends DefaultAnnotated
                 if (isInvisibleQualified(obj) && !printInvisible) {
                     continue;
                 }
+
                 int lenBefore = sb.length();
                 formatAnnotationMirror(obj, sb);
+                // Only add a space if the previous produced output.
                 if (sb.length() > lenBefore) {
                     sb.append(" ");
                 }
@@ -113,7 +75,7 @@ public class SurfaceSyntaxAnnotatedTypeFormatterAdapter extends DefaultAnnotated
         @Override
         protected void formatAnnotationMirror(AnnotationMirror am, StringBuilder sb) {
             if (AnnotationUtils.areSameByClass(am, TypeMirrorConverter.Key.class)) {
-                QualParams<T> poly = converter.getQualifier(am);
+                QualParams<Q> poly = converter.getQualifier(am);
                 sb.append(formatter.format(poly));
             } else{
                 super.formatAnnotationMirror(am, sb);

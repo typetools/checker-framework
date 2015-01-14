@@ -19,24 +19,24 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
 
     // Determines if invisible qualifiers will be printed.
     protected final boolean printInvisibleQualifiers;
+    
+    private Q bottom;
+    private Q top;
+    private QualParams<Q> qualTop;
+    private QualParams<Q> qualBottom;
 
-    public SurfaceSyntaxQualParamsFormatter(
-            boolean printInvisibleQualifiers) {
-
+    public SurfaceSyntaxQualParamsFormatter(boolean printInvisibleQualifiers,
+            Q top, Q bottom, QualParams<Q> qualTop, QualParams<Q> qualBottom) {
         this.printInvisibleQualifiers = printInvisibleQualifiers;
+        this.bottom = bottom;
+        this.top = top;
+        this.qualTop = qualTop;
+        this.qualBottom = qualBottom;
     }
 
     protected abstract boolean shouldPrintAnnotation(AnnotationParts anno);
 
     protected abstract AnnotationParts getTargetTypeSystemAnnotation(Q q);
-
-    protected abstract Q getBottom();
-
-    protected abstract Q getTop();
-
-    protected abstract QualParams<Q> getQualTop();
-
-    protected abstract QualParams<Q> getQualBottom();
 
     @Override
     public String format(QualParams<Q> params) {
@@ -47,10 +47,10 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
     public String format(QualParams<Q> params, boolean printPrimary) {
         StringBuffer sb = new StringBuffer();
 
-        if (params == getQualTop()) {
-            return getTargetTypeSystemAnnotation(getTop()).toString();
-        } else if (params == getQualBottom()) {
-            return getTargetTypeSystemAnnotation(getBottom()).toString();
+        if (params == qualTop) {
+            return getTargetTypeSystemAnnotation(top).toString();
+        } else if (params == qualBottom) {
+            return getTargetTypeSystemAnnotation(bottom).toString();
         }
 
         boolean printedPrimary = false;
@@ -88,7 +88,6 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
         }
     }
 
-    // TODO: Shared code here with Wildcard
     private AnnotationParts createAnnotation(PolyQual<Q> polyQual) {
 
         if (polyQual == null) {
@@ -102,6 +101,7 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
                 sb.append(format(var));
                 sb.append(", ");
             }
+            sb.append(combined.getGround());
             sb.append(getTargetTypeSystemAnnotation(combined.getGround()).toString());
             sb.append(")");
             anno.putQuoted(combined.getOp().toString(), sb.toString());
@@ -112,9 +112,10 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
             return anno;
 
         } else if (polyQual instanceof QualVar) {
+
             QualVar<Q> qualVar = (QualVar<Q>) polyQual;
 
-            if(qualVar.getLowerBound() != getBottom()
+            if(qualVar.getLowerBound() != bottom
                     || qualVar.getUpperBound() != qualVar.getUpperBound()) {
 
                 ErrorReporter.errorAbort("Did not expect a poly qual with non-trivial bounds:" + polyQual);
@@ -124,6 +125,7 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
             return anno;
 
         } else {
+
             ErrorReporter.errorAbort("Unknown PolyQual Subclass:" + polyQual.getClass());
             return null;
         }
@@ -138,6 +140,7 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
         AnnotationParts result;
         if (wildcard.getLowerBound() instanceof QualVar
                 || wildcard.getUpperBound() instanceof QualVar) {
+            // Qualifier variables (or bounded wildcards)
 
             org.checkerframework.qualframework.poly.qual.Wildcard wildcardType;
             String argName;
@@ -145,10 +148,10 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
             if (wildcard.getLowerBound() == wildcard.getUpperBound()) {
                 wildcardType = org.checkerframework.qualframework.poly.qual.Wildcard.NONE;
                 argName = ((QualVar<Q>)wildcard.getLowerBound()).getName();
-            } else if (wildcard.getLowerBound() == getBottom()) {
+            } else if (wildcard.getLowerBound() == bottom) {
                 wildcardType = org.checkerframework.qualframework.poly.qual.Wildcard.EXTENDS;
                 argName = ((QualVar<Q>)wildcard.getUpperBound()).getName();
-            } else if (wildcard.getUpperBound() == getTop()) {
+            } else if (wildcard.getUpperBound() == top) {
                 wildcardType = org.checkerframework.qualframework.poly.qual.Wildcard.SUPER;
                 argName = ((QualVar<Q>)wildcard.getLowerBound()).getName();
             } else {
@@ -168,14 +171,12 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
 
         } else if (wildcard.getLowerBound() instanceof GroundQual
                 || wildcard.getUpperBound() instanceof GroundQual) {
-
-            org.checkerframework.qualframework.poly.qual.Wildcard wildcardType;
-            Q groundQual;
+            // Ground quals, bounded wildcard, unbounded wildcard
 
             if (wildcard.getLowerBound() instanceof GroundQual &&
-                    ((GroundQual) wildcard.getLowerBound()).getQualifier() == getBottom()
+                    ((GroundQual) wildcard.getLowerBound()).getQualifier() == bottom
                     && wildcard.getUpperBound() instanceof GroundQual &&
-                    ((GroundQual) wildcard.getUpperBound()).getQualifier()== getTop()) {
+                    ((GroundQual) wildcard.getUpperBound()).getQualifier()== top) {
 
                 AnnotationParts anno = new AnnotationParts("Wild");
                 anno.putQuoted("param", paramName);
@@ -183,15 +184,17 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
 
             } else {
 
+                org.checkerframework.qualframework.poly.qual.Wildcard wildcardType;
+                Q groundQual;
                 if (wildcard.getLowerBound() == wildcard.getUpperBound()) {
                     wildcardType = org.checkerframework.qualframework.poly.qual.Wildcard.NONE;
                     groundQual = ((GroundQual<Q>) wildcard.getLowerBound()).getQualifier();
                 } else if (wildcard.getLowerBound() instanceof GroundQual &&
-                        ((GroundQual) wildcard.getLowerBound()).getQualifier() == getBottom()) {
+                        ((GroundQual) wildcard.getLowerBound()).getQualifier() == bottom) {
                     wildcardType = org.checkerframework.qualframework.poly.qual.Wildcard.EXTENDS;
                     groundQual = ((GroundQual<Q>) wildcard.getUpperBound()).getQualifier();
                 } else if (wildcard.getUpperBound() instanceof GroundQual &&
-                        ((GroundQual) wildcard.getUpperBound()).getQualifier() == getTop()) {
+                        ((GroundQual) wildcard.getUpperBound()).getQualifier() == top) {
                     wildcardType = org.checkerframework.qualframework.poly.qual.Wildcard.SUPER;
                     groundQual = ((GroundQual<Q>) wildcard.getLowerBound()).getQualifier();
                 } else {
@@ -207,9 +210,19 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
                 }
                 result = anno;
             }
+
         } else  {
-           // TODO: Combine PolyQuals
-           result = null;
+            // Both of these are combine PolyQuals.
+            if (wildcard.getUpperBound() == wildcard.getLowerBound()) {
+                result = createAnnotation(wildcard.getUpperBound());
+            } else {
+                AnnotationParts upper = createAnnotation(wildcard.getUpperBound());
+                AnnotationParts lower = createAnnotation(wildcard.getLowerBound());
+                AnnotationParts anno = new AnnotationParts("Range");
+                anno.putQuoted("lower", lower.toString());
+                anno.putQuoted("upper", upper.toString());
+                result = anno;
+            }
         }
 
         return result;
@@ -219,13 +232,8 @@ public abstract class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsF
         return wildcardType.getDeclaringClass().getSimpleName() + "." + wildcardType;
     }
 
-    public String format(Q qual) {
-        ErrorReporter.errorAbort("Unexpected call to format: " + qual);
-        return null; // Dead code
-    }
-
     /**
-     * Hold fields for an annotation and generate a String.
+     * Object to generate an annotation String from an Annotation name and a map of values.
      */
     public static class AnnotationParts {
 
