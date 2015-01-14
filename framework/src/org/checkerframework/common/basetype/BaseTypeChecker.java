@@ -7,8 +7,11 @@ import org.checkerframework.checker.igj.qual.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -21,6 +24,8 @@ import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ErrorReporter;
+
+import javax.lang.model.element.AnnotationMirror;
 
 /**
  * An abstract {@link SourceChecker} that provides a simple {@link
@@ -90,13 +95,13 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     /**
      * Returns the appropriate visitor that type-checks the compilation unit
      * according to the type system rules.
-     *
+     * <p/>
      * This implementation uses the checker naming convention to create the
      * appropriate visitor.  If no visitor is found, it returns an instance of
      * {@link BaseTypeVisitor}.  It reflectively invokes the constructor that
      * accepts this checker and the compilation unit tree (in that order)
      * as arguments.
-     *
+     * <p/>
      * Subclasses have to override this method to create the appropriate
      * visitor if they do not follow the checker naming convention.
      *
@@ -109,11 +114,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
         while (checkerClass != BaseTypeChecker.class) {
             final String classToLoad =
-                checkerClass.getName().replace("Checker", "Visitor")
-                                      .replace("Subchecker", "Visitor");
+                    checkerClass.getName().replace("Checker", "Visitor")
+                            .replace("Subchecker", "Visitor");
             BaseTypeVisitor<?> result = invokeConstructorFor(classToLoad,
-                    new Class<?>[] { BaseTypeChecker.class },
-                    new Object[] { this });
+                    new Class<?>[]{BaseTypeChecker.class},
+                    new Object[]{this});
             if (result != null)
                 return result;
             checkerClass = checkerClass.getSuperclass();
@@ -168,12 +173,12 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * arguments. Returns {@code null} if the class cannot be found, or the
      * constructor does not exist or cannot be invoked on the given arguments.
      *
-     * @param <T> the type to which the constructor belongs
-     * @param name the name of the class to which the constructor belongs
+     * @param <T>        the type to which the constructor belongs
+     * @param name       the name of the class to which the constructor belongs
      * @param paramTypes the types of the constructor's parameters
-     * @param args the arguments on which to invoke the constructor
+     * @param args       the arguments on which to invoke the constructor
      * @return the result of the constructor invocation on {@code args}, or
-     *         null if the constructor does not exist or could not be invoked
+     * null if the constructor does not exist or could not be invoked
      */
     @SuppressWarnings("unchecked")
     public static <T> T invokeConstructorFor(String name,
@@ -213,8 +218,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                         "; Underlying cause: " + msg, t);
             } else {
                 ErrorReporter.errorAbort("Unexpected " + t.getClass().getSimpleName() + " for " +
-                        "class " + name +
-                        " when invoking the constructor; parameter types: " + Arrays.toString(paramTypes),
+                                "class " + name +
+                                " when invoking the constructor; parameter types: " + Arrays.toString(paramTypes),
                         // + " and args: " + Arrays.toString(args),
                         t);
             }
@@ -235,7 +240,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     @Override
     public BaseTypeVisitor<?> getVisitor() {
-        return (BaseTypeVisitor<?>)super.getVisitor();
+        return (BaseTypeVisitor<?>) super.getVisitor();
     }
 
     @Override
@@ -246,5 +251,20 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     @Override
     public AnnotationProvider getAnnotationProvider() {
         return getTypeFactory();
+    }
+
+    @Override
+    protected Object processArg(Object arg) {
+        if (arg instanceof Collection) {
+            List<Object> newList = new LinkedList<>();
+            for (Object o : ((Collection)arg)) {
+                newList.add(processArg(o));
+            }
+            return newList;
+        } else if (arg instanceof AnnotationMirror) {
+            return getTypeFactory().getAnnotationFormatter().formatAnnotationMirror((AnnotationMirror)arg);
+        } else {
+            return super.processArg(arg);
+        }
     }
 }

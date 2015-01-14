@@ -196,6 +196,9 @@ import com.sun.tools.javac.util.Log;
     // org.checkerframework.framework.type.AnnotatedTypeMirror.toString()
     "printAllQualifiers",
 
+    // Print qualifier parameters using annotations instead of the <<Q>> format.
+    "printQualifierParametersAsAnnotations",
+
     // Output detailed message in simple-to-parse format, useful
     // for tools parsing Checker Framework output.
     // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
@@ -954,8 +957,8 @@ public abstract class SourceChecker
                 if (args[i] == null)
                     continue;
 
-                // look whether we can expand the arguments, too.
-                args[i] = messages.getProperty(args[i].toString(), args[i].toString());
+                // Try to process the arguments
+                args[i] = processArg(args[i]);
             }
         }
 
@@ -1046,6 +1049,16 @@ public abstract class SourceChecker
         else
             ErrorReporter.errorAbort("invalid position source: "
                     + source.getClass().getName());
+    }
+
+    /**
+     * Process an argument to an error message before it is passed to String.format.
+     * @param arg the argument
+     * @return the result after processing
+     */
+    protected Object processArg(Object arg) {
+        // Check to see if the argument itself is a property to be expanded
+        return messages.getProperty(arg.toString(), arg.toString());
     }
 
     /**

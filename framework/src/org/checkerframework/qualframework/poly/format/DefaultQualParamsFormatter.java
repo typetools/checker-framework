@@ -12,6 +12,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
+/**
+ * DefaultQualParamsFormatter formats a {@link QualParams} into the double chevron
+ * {@code &lt;&lt; Q &gt;&ht} output format.
+ */
 public class DefaultQualParamsFormatter<Q> implements QualParamsFormatter<Q> {
 
     // A list of qualifier to not be printed.
@@ -27,10 +31,12 @@ public class DefaultQualParamsFormatter<Q> implements QualParamsFormatter<Q> {
         this.printInvisibleQualifiers = printInvisibleQualifiers;
     }
 
+    @Override
     public String format(QualParams<Q> params) {
         return format(params, true);
     }
 
+    @Override
     public String format(QualParams<Q> params, boolean printPrimary) {
         StringBuffer sb = new StringBuffer();
 
@@ -55,6 +61,7 @@ public class DefaultQualParamsFormatter<Q> implements QualParamsFormatter<Q> {
         return sb.toString();
     }
 
+    @Override
     public String format(PolyQual<Q> polyQual) {
         if (polyQual instanceof Combined) {
             Combined<Q> combined = (Combined<Q>) polyQual;
@@ -78,7 +85,7 @@ public class DefaultQualParamsFormatter<Q> implements QualParamsFormatter<Q> {
             String lower = format(qualVar.getLowerBound());
             String upper = format(qualVar.getUpperBound());
 
-            // The bounds have been supressed, so don't create range.
+            // The bounds have been suppressed, so don't create an output range.
             if (lower.length() == 0 && upper.length() == 0) {
                 return qualVar.getName();
             } else {
@@ -113,7 +120,7 @@ public class DefaultQualParamsFormatter<Q> implements QualParamsFormatter<Q> {
 
             return "";
         } else {
-            return qual.toString();
+            return "@" + qual.toString();
         }
     }
 }
