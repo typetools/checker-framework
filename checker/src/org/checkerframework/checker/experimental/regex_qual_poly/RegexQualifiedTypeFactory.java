@@ -83,7 +83,7 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
                 QualifiedTypeMirror<QualParams<Regex>> result = super.visitLiteral(tree, type);
 
                 if (tree.getKind() == Kind.NULL_LITERAL) {
-                    return SetQualifierVisitor.apply(result, QualParams.<Regex>getBottom());
+                    return SetQualifierVisitor.apply(result, RegexQualifiedTypeFactory.this.getQualifierHierarchy().getBottom());
                 }
 
                 String regexStr = null;
@@ -145,8 +145,8 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
                         getContext().getProcessingEnvironment())) {
 
                     ExpressionTree arg0 = tree.getArguments().get(0);
-                    if (getQualifiedType(arg0).getQualifier() == QualParams.<Regex>getBottom()) {
-                        result = SetQualifierVisitor.apply(result, QualParams.<Regex>getBottom());
+                    if (getQualifiedType(arg0).getQualifier() == RegexQualifiedTypeFactory.this.getQualifierHierarchy().getBottom()) {
+                        result = SetQualifierVisitor.apply(result, RegexQualifiedTypeFactory.this.getQualifierHierarchy().getBottom());
                     } else {
                         Regex qual = getQualifiedType(arg0).getQualifier().getPrimary().getMaximum();
                         QualParams<Regex> clone = result.getQualifier().clone();
