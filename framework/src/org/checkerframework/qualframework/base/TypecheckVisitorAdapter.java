@@ -60,7 +60,7 @@ public class TypecheckVisitorAdapter<Q> extends BaseTypeVisitor<GenericAnnotated
         Q found = context.getTypeFactory()
                 .getQualifiedType((node.getParameter())).getQualifier();
 
-        if (!found.equals(required)) {
+        if (!context.getTypeFactory().getQualifierHierarchy().isSubtype(required, found)) {
             checker.report(
                     Result.failure("exception.parameter.invalid", found, required),
                     node.getParameter());
@@ -70,7 +70,7 @@ public class TypecheckVisitorAdapter<Q> extends BaseTypeVisitor<GenericAnnotated
             QualifiedUnionType<Q> aut = (QualifiedUnionType<Q>) exceptionParam;
             for (QualifiedTypeMirror<Q> alterntive : aut.getAlternatives()) {
                 Q foundAltern = alterntive.getQualifier();
-                if (!required.equals(foundAltern)) {
+                if (!context.getTypeFactory().getQualifierHierarchy().isSubtype(required, foundAltern)){
                     checker.report(Result.failure("exception.parameter.invalid",
                             foundAltern, required), node.getParameter());
                 }
