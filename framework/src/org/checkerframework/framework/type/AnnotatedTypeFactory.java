@@ -2455,21 +2455,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * org.checkerframework.framework.type.AnnotatedTypeFactory.fromTypeTree(Tree)
      */
     public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar) {
-        WildcardType wc = types.getWildcardType(typeVar.getUnderlyingType(), null);
+        WildcardType wc = types.getWildcardType(typeVar.getUnderlyingType().getUpperBound(), null);
         AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
         wctype.setExtendsBound(typeVar.getUpperBound().deepCopy());
+        wctype.setSuperBound(typeVar.getLowerBound().deepCopy());
         wctype.addAnnotations(typeVar.getAnnotations());
         wctype.setTypeArgHack();
         return wctype;
     }
-
-    public AnnotatedWildcardType getWildcardBoundedBy(AnnotatedTypeMirror upper) {
-        WildcardType wc = types.getWildcardType(upper.getUnderlyingType(), null);
-        AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
-        wctype.setExtendsBound(upper);
-        return wctype;
-    }
-
 
     public Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(MemberReferenceTree tree) {
         return getFnInterfaceFromTree((Tree)tree);
