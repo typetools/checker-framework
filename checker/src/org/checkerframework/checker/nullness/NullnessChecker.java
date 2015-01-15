@@ -15,9 +15,8 @@ public class NullnessChecker extends AggregateChecker {
 
     @Override
     protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
-        Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>();
+        Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>(1);
         checkers.add(AbstractNullnessFbcChecker.class);
-        checkers.add(KeyForSubchecker.class);
         return checkers;
     }
 

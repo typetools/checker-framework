@@ -14,14 +14,13 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -77,6 +76,49 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
             final AnnotatedTypeMirror type, final Tree p) {
         checker.report(Result.failure(errorType, type.getAnnotations(),
                         type.toString()), p);
+        isValid = false;
+    }
+
+    /**
+     * Most errors reported by this class are of the form type.invalid.  This method reports
+     * when the bounds of a wildcard or type variable don't make sense.  Bounds make sense
+     * when the effective annotations on the upper bound are supertypes of those on the lower
+     * bounds for all hierarchies.  To ensure that this subtlety is not lost on users,
+     * we report "bound.type.incompatible" and print the bounds along with the invalid type
+     * rather than a "type.invalid".
+     */
+    protected void reportInvalidBounds(final AnnotatedTypeMirror type, final Tree tree) {
+        final String label;
+        final AnnotatedTypeMirror upperBound;
+        final AnnotatedTypeMirror lowerBound;
+
+        switch (type.getKind()) {
+            case TYPEVAR:
+                label = "type parameter";
+                upperBound = ((AnnotatedTypeVariable) type).getUpperBound();
+                lowerBound = ((AnnotatedTypeVariable) type).getUpperBound();
+                break;
+
+            case WILDCARD:
+                label = "wildcard";
+                upperBound = ((AnnotatedWildcardType) type).getExtendsBound();
+                lowerBound = ((AnnotatedWildcardType) type).getSuperBound();
+                break;
+
+            default:
+                ErrorReporter.errorAbort(
+                        "Type is not bounded. \n"
+                      + "type=" + type + "\n"
+                      + "tree=" + tree);
+                label = null; //dead code
+                upperBound = null;
+                lowerBound = null;
+        }
+
+        checker.report(Result.failure("bound.type.incompatible", label,
+                       type.toString(),upperBound.toString(true), lowerBound.toString(true)),
+                tree
+        );
         isValid = false;
     }
 
@@ -296,6 +338,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
+        // TODO why is this not needed?
+        // visitedNodes.put(type, null);
+
+        if (type.isDeclaration() && !areBoundsValid(type.getUpperBound(), type.getLowerBound())) {
+            reportInvalidBounds(type, tree);
+        }
 
         // Keep in sync with visitWildcard
         Set<AnnotationMirror> onVar = type.getAnnotations();
@@ -310,14 +358,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
             {
                 // Check whether multiple qualifiers from the same hierarchy
                 // appear.
-                Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
-                for (AnnotationMirror aOnVar : onVar) {
-                    AnnotationMirror top = atypeFactory.getQualifierHierarchy().getTopAnnotation(aOnVar);
-                    if (seenTops.contains(top)) {
-                        this.reportError(type, tree);
-                    }
-                    seenTops.add(top);
-                }
+                checkConflicitingPrimaryAnnos(type, tree);
             }
 
             // TODO: because of the way AnnotatedTypeMirror fixes up the bounds,
@@ -338,18 +379,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
                 upper.replaceAnnotations(onVar);
             }*/
 
-            if (type.getLowerBoundField() != null) {
-                AnnotatedTypeMirror lower = type.getLowerBoundField();
-                for (AnnotationMirror aOnVar : onVar) {
-                    if (lower.isAnnotatedInHierarchy(aOnVar) &&
-                            !atypeFactory.getQualifierHierarchy().isSubtype(
-                                    lower.getAnnotationInHierarchy(aOnVar),
-                                    aOnVar)) {
-                        this.reportError(type, tree);
-                    }
-                }
-                lower.replaceAnnotations(onVar);
-            }
+
         }
 
         return super.visitTypeVariable(type, tree);
@@ -359,6 +389,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
     public Void visitWildcard(AnnotatedWildcardType type, Tree tree) {
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
+        }
+        // TODO why is this not neede?
+        // visitedNodes.put(type, null);
+
+        if (!areBoundsValid(type.getExtendsBound(), type.getSuperBound())) {
+            reportInvalidBounds(type, tree);
         }
 
         // Keep in sync with visitTypeVariable
@@ -374,14 +410,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
             {
                 // Check whether multiple qualifiers from the same hierarchy
                 // appear.
-                Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
-                for (AnnotationMirror aOnVar : onVar) {
-                    AnnotationMirror top = atypeFactory.getQualifierHierarchy().getTopAnnotation(aOnVar);
-                    if (seenTops.contains(top)) {
-                        this.reportError(type, tree);
-                    }
-                    seenTops.add(top);
-                }
+                checkConflicitingPrimaryAnnos(type, tree);
             }
 
             /* TODO: see note with visitTypeVariable
@@ -413,5 +442,55 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
 
         }
         return super.visitWildcard(type, tree);
+    }
+
+    @Override
+    public Void visitNull(final AnnotatedNullType type, final Tree tree) {
+        checkConflicitingPrimaryAnnos(type, tree);
+
+        return super.visitNull(type, tree);
+    }
+
+    /**
+     * @return true if the effective annotations on the upperBound are above those on the lowerBound
+     */
+    public boolean areBoundsValid(final AnnotatedTypeMirror upperBound, final AnnotatedTypeMirror lowerBound) {
+            final QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+            final Set<AnnotationMirror> upperBoundAnnos =
+                    AnnotatedTypes.findEffectiveAnnotations(qualifierHierarchy, upperBound);
+            final Set<AnnotationMirror> lowerBoundAnnos =
+                    AnnotatedTypes.findEffectiveAnnotations(qualifierHierarchy, lowerBound);
+
+        if (upperBoundAnnos.size() == lowerBoundAnnos.size()) {
+            return qualifierHierarchy.isSubtype(lowerBoundAnnos, upperBoundAnnos);
+
+        } //else
+          //  When upperBoundAnnos.size() != lowerBoundAnnos.size() one of the two bound types will
+          //  be reported as invalid.  Therefore, we do not do any other comparisons nor do we report
+          //  a bound.type.incompatible
+
+        return true;
+    }
+
+    /**
+     * Determines if there are multiple qualifiers from a single hierarchy in type's
+     * primary annotations.  If so, report an error
+     * @param type the type to check
+     * @param tree tree on which an error is reported
+     * @return true if an error was reported
+     */
+    public boolean checkConflicitingPrimaryAnnos(final AnnotatedTypeMirror type, final Tree tree ) {
+        boolean error = false;
+        Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror aOnVar : type.getAnnotations()) {
+            AnnotationMirror top = atypeFactory.getQualifierHierarchy().getTopAnnotation(aOnVar);
+            if (seenTops.contains(top)) {
+                this.reportError(type, tree);
+                error = true;
+            }
+            seenTops.add(top);
+        }
+
+        return error;
     }
 }

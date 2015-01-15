@@ -8,45 +8,33 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 
 import org.checkerframework.checker.fenum.qual.Fenum;
+import org.checkerframework.checker.fenum.qual.FenumBottom;
 import org.checkerframework.checker.fenum.qual.FenumTop;
 import org.checkerframework.checker.fenum.qual.FenumUnqualified;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.Bottom;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 
-import com.sun.source.tree.Tree;
-
 public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected AnnotationMirror FENUM_UNQUALIFIED;
-    protected AnnotationMirror FENUM, BOTTOM;
+    protected AnnotationMirror FENUM, FENUM_BOTTOM;
 
     public FenumAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
+        FENUM_BOTTOM = AnnotationUtils.fromClass(elements, FenumBottom.class);
         FENUM = AnnotationUtils.fromClass(elements, Fenum.class);
         FENUM_UNQUALIFIED = AnnotationUtils.fromClass(elements, FenumUnqualified.class);
 
         this.postInit();
         // flow.setDebug(System.err);
-
-        // Reuse the framework Bottom annotation and make it the default for the
-        // null literal.
-        typeAnnotator.addTypeName(java.lang.Void.class, BOTTOM);
+        defaults.addAbsoluteDefault(FENUM_BOTTOM, DefaultLocation.LOWER_BOUNDS);
     }
-
-    @Override
-    public TreeAnnotator createTreeAnnotator() {
-        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
-        return new ListTreeAnnotator(new PropagationTreeAnnotator(this), implicitsTreeAnnotator);
-    }
-
 
     /** Copied from SubtypingChecker.
      * Instead of returning an empty set if no "quals" option is given,
@@ -75,7 +63,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         qualSet.add(FenumTop.class);
         qualSet.add(Fenum.class);
         qualSet.add(FenumUnqualified.class);
-        qualSet.add(Bottom.class);
+        qualSet.add(FenumBottom.class);
 
         // Also call super. This way a subclass can use the
         // @TypeQualifiers annotation again.
@@ -101,7 +89,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * us to set a dedicated bottom qualifier.
          */
         public FenumQualifierHierarchy(MultiGraphFactory factory) {
-            super(factory, BOTTOM);
+            super(factory, FENUM_BOTTOM);
         }
 
         @Override

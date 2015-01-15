@@ -3,12 +3,6 @@ package org.checkerframework.qualframework.base;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.util.AbstractTypeVisitor8;
-
 import org.checkerframework.qualframework.util.ExtendedArrayType;
 import org.checkerframework.qualframework.util.ExtendedDeclaredType;
 import org.checkerframework.qualframework.util.ExtendedErrorType;
@@ -47,8 +41,8 @@ import org.checkerframework.qualframework.util.QualifierContext;
  * the type, and uses the top qualifier if there are no annotations.
  */
 public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror<Q>, Void> {
-    private AnnotationConverter<Q> annotationConverter;
-    private Q defaultQual;
+    private final AnnotationConverter<Q> annotationConverter;
+    private final Q defaultQual;
 
     private TypeAnnotatorAdapter<Q> adapter;
     protected QualifierContext<Q> qualContext;

@@ -14,6 +14,12 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -64,7 +70,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
 
         // The null literal is interned -> make Void interned also.
-        typeAnnotator.addTypeName(java.lang.Void.class, INTERNED);
+        addTypeNameImplicit(java.lang.Void.class, INTERNED);
     }
 
     @Override
@@ -77,7 +83,10 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
-        return new InterningTypeAnnotator(this);
+        return new ListTypeAnnotator(
+                new InterningTypeAnnotator(this),
+                super.createTypeAnnotator()
+        );
     }
 
     @Override

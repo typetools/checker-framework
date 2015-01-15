@@ -10,10 +10,15 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.tools.Diagnostic.Kind;
 
 import org.checkerframework.checker.propkey.qual.PropertyKey;
+import org.checkerframework.checker.propkey.qual.PropertyKeyBottom;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.Bottom;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -32,7 +37,7 @@ import com.sun.source.tree.Tree;
 public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private final Set<String> lookupKeys;
-    protected AnnotationMirror BOTTOM;
+    protected AnnotationMirror PROPKEY_BOTTOM;
 
     public PropertyKeyAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -40,16 +45,16 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         // Reuse the framework Bottom annotation and make it the default for the
         // null literal.
-        BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
+        PROPKEY_BOTTOM = AnnotationUtils.fromClass(elements, PropertyKeyBottom.class);
 
         this.postInit();
-        this.typeAnnotator.addTypeName(java.lang.Void.class, BOTTOM);
+        this.defaults.addAbsoluteDefault(PROPKEY_BOTTOM, DefaultLocation.LOWER_BOUNDS);
     }
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
         ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, PROPKEY_BOTTOM);
 
         return new ListTreeAnnotator(
                 new PropagationTreeAnnotator(this),
@@ -225,6 +230,6 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public GraphQualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new GraphQualifierHierarchy(factory, AnnotationUtils.fromClass(elements, Bottom.class));
+        return new GraphQualifierHierarchy(factory, PROPKEY_BOTTOM);
     }
 }

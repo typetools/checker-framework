@@ -1,16 +1,15 @@
-package org.checkerframework.framework.type;
+package org.checkerframework.framework.type.treeannotator;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.SimpleTreeVisitor;
 import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.Pair;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -27,15 +26,15 @@ import java.util.regex.Pattern;
  *
  * <p>
  *
- * {@link org.checkerframework.framework.type.ImplicitsTreeAnnotator} does not traverse trees deeply by default.
+ * {@link ImplicitsTreeAnnotator} does not traverse trees deeply by default.
  *
  * This class takes care of three of the attributes of {@link org.checkerframework.framework.qual.ImplicitFor};
- * the others are handled in {@link org.checkerframework.framework.type.TypeAnnotator}.
+ * the others are handled in {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}.
  * TODO: we currently don't check that any attribute is set, that is, a qualifier
  * could be annotated as @ImplicitFor(), which might be misleading.
  *
- * @see org.checkerframework.framework.type.TypeAnnotator
- * @see org.checkerframework.framework.type.TreeAnnotator
+ * @see org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator
+ * @see TreeAnnotator
  */
 public class ImplicitsTreeAnnotator extends TreeAnnotator {
 
@@ -53,7 +52,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     protected final QualifierHierarchy qualHierarchy;
 
     /**
-     * Creates a {@link org.checkerframework.framework.type.TypeAnnotator} from the given checker, using that checker's
+     * Creates a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator} from the given checker, using that checker's
      * {@link org.checkerframework.framework.qual.TypeQualifiers} annotation to determine the annotations that are
      * in the type hierarchy.
      */
@@ -75,7 +74,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
             if (implicit == null)
                 continue;
 
-            AnnotationMirror theQual = AnnotationUtils.fromClass(atypeFactory.elements, qual);
+            AnnotationMirror theQual = AnnotationUtils.fromClass(atypeFactory.getElementUtils(), qual);
             for (Class<? extends Tree> treeClass : implicit.treeClasses()) {
                 addTreeClass(treeClass, theQual);
             }

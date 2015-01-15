@@ -104,13 +104,18 @@ class KFIterator<E extends @Nullable Object> {
     void entrySet() {
         KFMap<String, Object> emap = new KFHashMap<String, Object>();
         Set<KFMap.Entry<@KeyFor("emap") String, Object>> es = emap.entrySet();
+
+        //KeyFor has to be explicit on the component to Entry sets because
+        //   a) it's not clear which map the Entry set may have come from
+        //   b) and there is no guarantee the map is still accessible
+        //:: error: (assignment.type.incompatible)
         Set<KFMap.Entry<String, Object>> es2 = emap.entrySet();
     }
 
     public static <K,V> void mapToString(KFMap<K,V> m) {
-        Set<KFMap.Entry<K, V>> eset = m.entrySet();
+        Set<KFMap.Entry<@KeyFor("m") K, V>> eset = m.entrySet();
 
-        for (KFMap.Entry<K, V> entry : m.entrySet()) {}
+        for (KFMap.Entry<@KeyFor("m") K, V> entry : m.entrySet()) {}
     }
 
     void testWF(KFMap<String, Object> m) {

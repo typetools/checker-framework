@@ -4,7 +4,7 @@ import java.util.Map;
 
 class MapLoop {
     void test1(Map<String, String> map) {
-        for (Map.Entry<String, String> entry : map.entrySet()) {
+        for (Map.Entry<@KeyFor("map") String, String> entry : map.entrySet()) {
         }
     }
     void test2(Map<String, String> map) {

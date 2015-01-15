@@ -6,6 +6,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
@@ -29,4 +31,5 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @Target(ElementType.TYPE_USE)
 @TypeQualifier
 @SubtypeOf({MaybeAliased.class})
+@DefaultFor(DefaultLocation.LOWER_BOUNDS)
 public @interface Unique {}

@@ -22,6 +22,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.Pair;
@@ -119,7 +121,9 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
                 underlyingHierarchy,
                 getCheckerAdapter().getTypeMirrorConverter(),
                 getCheckerAdapter(),
-                getQualifierHierarchyAdapter());
+                getQualifierHierarchyAdapter(),
+                checker.hasOption("ignoreRawTypeArguments"),
+                checker.hasOption("invariantArrays"));
 
         // TODO: Move this check (and others like it) into the adapter
         // constructor.
@@ -136,7 +140,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
      * TreeAnnotator.
      */
     @Override
-    protected org.checkerframework.framework.type.TreeAnnotator createTreeAnnotator() {
+    protected org.checkerframework.framework.type.treeannotator.TreeAnnotator createTreeAnnotator() {
         if (!(underlying instanceof DefaultQualifiedTypeFactory)) {
             // In theory, the result of this branch should never be used.  Only
             // DefaultQTFs have a way to access the annotation-based logic
@@ -161,7 +165,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
      * TypeAnnotator.
      */
     @Override
-    protected org.checkerframework.framework.type.TypeAnnotator createTypeAnnotator() {
+    protected org.checkerframework.framework.type.typeannotator.TypeAnnotator createTypeAnnotator() {
         if (!(underlying instanceof DefaultQualifiedTypeFactory)) {
             // In theory, the result of this branch should never be used.  Only
             // DefaultQTFs have a way to access the annotation-based logic
@@ -234,18 +238,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     QualifiedTypeMirror<Q> superGetAnnotatedTypeFromTypeTree(Tree tree) {
         AnnotatedTypeMirror atm = super.getAnnotatedTypeFromTypeTree(tree);
         return getCheckerAdapter().getTypeMirrorConverter().getQualifiedType(atm);
-    }
-
-
-    @Override
-    public AnnotatedWildcardType getWildcardBoundedBy(AnnotatedTypeMirror upper) {
-        // The superclass implementation of this method doesn't run the
-        // TypeAnnotator, which means annotations won't get converted to
-        // qualifier @Keys.  This causes problems later on, so we run the
-        // TypeAnnotator manually here.
-        AnnotatedWildcardType result = super.getWildcardBoundedBy(upper);
-        typeAnnotator.scanAndReduce(result, null, null);
-        return result;
     }
 
     @Override

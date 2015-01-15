@@ -1,35 +1,25 @@
-package org.checkerframework.framework.type;
+package org.checkerframework.framework.type.treeannotator;
 
-import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 
-import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.TypeQualifiers;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.Pair;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
-import com.sun.source.util.SimpleTreeVisitor;
 
 
 /**
@@ -37,19 +27,19 @@ import com.sun.source.util.SimpleTreeVisitor;
  * type is a function of an input type, e.g. the result of a binary operation
  * is a LUB of the type of expressions in the binary operation.
  *
- * {@link PropagationTreeAnnotator} is generally ran first by {@link org.checkerframework.framework.type.ListTreeAnnotator}
+ * {@link PropagationTreeAnnotator} is generally ran first by {@link ListTreeAnnotator}
  * since the trees it handles are not usually targets of @implicit for.
  *
  * {@link PropagationTreeAnnotator} does not traverse trees deeply by default.
  *
- * @see org.checkerframework.framework.type.TreeAnnotator
+ * @see TreeAnnotator
  */
 public class PropagationTreeAnnotator extends TreeAnnotator {
 
     private final QualifierHierarchy qualHierarchy;
 
     /**
-     * Creates a {@link TypeAnnotator} from the given checker, using that checker's
+     * Creates a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator} from the given checker, using that checker's
      * {@link TypeQualifiers} annotation to determine the annotations that are
      * in the type hierarchy.
      */
