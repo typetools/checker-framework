@@ -17,10 +17,10 @@ class Wellformed {
 
     class Gen2a<@Nullable T> {}
 
-    //:: error: (bound.types.incompatible)
+    //:: error: (bound.type.incompatible)
     class Gen2b<@Nullable T extends Object> {}
 
-    //:: error: (bound.types.incompatible)
+    //:: error: (bound.type.incompatible)
     class Gen2c<@Nullable T extends @NonNull Object> {}
 
     class Gen3a<T> {

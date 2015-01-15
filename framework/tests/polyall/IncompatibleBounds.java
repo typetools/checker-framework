@@ -7,7 +7,7 @@ import org.checkerframework.framework.qual.DefaultQualifiers;
 import polyall.quals.*;
 /**
  * This test is solely to ensure that if bounds in type parameters and wildcards are
- * invalid then they are reported as such using a "bound.types.incompatible" error.
+ * invalid then they are reported as such using a "bound.type.incompatible" error.
  *
  * Polyall has been a catch all for a variety of cases because it has a useful type hierarchy.
  * That is the same reason this test is placed here.
@@ -37,23 +37,23 @@ public class IncompatibleBounds {
     }
 
     //invalid combinations
-    //:: error: (bound.types.incompatible)
+    //:: error: (bound.type.incompatible)
     class BottomToTop<@H1Top U extends @H1Bot Object> {}
-    //:: error: (bound.types.incompatible)
+    //:: error: (bound.type.incompatible)
     class H1S1ToTop<@H1Top UU extends @H1S1 Object> {}
-    //:: error: (bound.types.incompatible)
+    //:: error: (bound.type.incompatible)
     class BottomToH1S1<@H1S1 UUU extends @H1Bot Object> {}
-    //:: error: (bound.types.incompatible)
+    //:: error: (bound.type.incompatible)
     class H1S2ToH1S1<@H1S1 UUUU extends @H1S2 Object> {}
 
     class InvalidContext {
-        //:: error: (bound.types.incompatible)
+        //:: error: (bound.type.incompatible)
         BottomToTop<@H1Top ? extends @H1Bot Object> bottomToTop;
-        //:: error: (bound.types.incompatible)
+        //:: error: (bound.type.incompatible)
         H1S1ToTop<@H1Top ? extends @H1S1 Object> h1S1ToTop;
-        //:: error: (bound.types.incompatible)
+        //:: error: (bound.type.incompatible)
         BottomToH1S1<@H1S1 ? extends @H1Bot Object> bottomToH1S1;
-        //:: error: (bound.types.incompatible)
+        //:: error: (bound.type.incompatible)
         H1S2ToH1S1<@H1S1 ? extends @H1S2 Object> h1S2ToH1S1;
     }
 }
