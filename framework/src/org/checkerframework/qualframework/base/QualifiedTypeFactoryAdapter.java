@@ -240,18 +240,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         return getCheckerAdapter().getTypeMirrorConverter().getQualifiedType(atm);
     }
 
-
-    @Override
-    public AnnotatedWildcardType getWildcardBoundedBy(AnnotatedTypeMirror upper) {
-        // The superclass implementation of this method doesn't run the
-        // TypeAnnotator, which means annotations won't get converted to
-        // qualifier @Keys.  This causes problems later on, so we run the
-        // TypeAnnotator manually here.
-        AnnotatedWildcardType result = super.getWildcardBoundedBy(upper);
-        typeAnnotator.scanAndReduce(result, null, null);
-        return result;
-    }
-
     @Override
     public void postDirectSuperTypes(AnnotatedTypeMirror subtype, List<? extends AnnotatedTypeMirror> supertypes) {
         TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
