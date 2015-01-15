@@ -118,8 +118,18 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
     }
 
     @Override
+    public Boolean visitTypevar_Typevar(AnnotatedTypeVariable subtype, AnnotatedTypeVariable supertype, VisitHistory visited) {
+        return visitTypevarSupertype(subtype, supertype, visited);
+    }
+
+    @Override
     public Boolean visitWildcard_Declared(AnnotatedWildcardType subtype, AnnotatedDeclaredType supertype, VisitHistory visited) {
        return arePrimaryAnnotationsEqual(subtype.getExtendsBound(), supertype);
+    }
+
+    @Override
+    public Boolean visitWildcard_Typevar(AnnotatedWildcardType subtype, AnnotatedTypeVariable supertype, VisitHistory visited) {
+        return visitTypevarSupertype(subtype, supertype, visited);
     }
 
     public Boolean visitWildcardSupertype(AnnotatedTypeMirror subtype, AnnotatedWildcardType supertype, VisitHistory visited) {
@@ -142,7 +152,7 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
             return true;
         }
 
-        return typeHierarchy.isSubtype(subtype, superExtendsBound, visited);
+        return this.visit(subtype, superExtendsBound, visited);
     }
 
     public Boolean visitTypevarSupertype(AnnotatedTypeMirror subtype, AnnotatedTypeVariable supertype, VisitHistory visited) {
@@ -155,7 +165,7 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
             return true;
         }
 
-        return typeHierarchy.isSubtype(subtype, superBound, visited);
+        return this.visit(subtype, superBound, visited);
     }
 
     private boolean checkOrAdd(final AnnotatedTypeMirror subtype,final AnnotatedTypeMirror supertype,
