@@ -20,6 +20,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -83,16 +84,39 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
      * when the bounds of a wildcard or type variable don't make sense.  Bounds make sense
      * when the effective annotations on the upper bound are supertypes of those on the lower
      * bounds for all hierarchies.  To ensure that this subtlety is not lost on users,
-     * we report "bound.types.incompatible" and print the bounds along with the invalid type
+     * we report "bound.type.incompatible" and print the bounds along with the invalid type
      * rather than a "type.invalid".
      */
-    protected void reportInvalidBounds(
-            final AnnotatedTypeMirror type,
-            final AnnotatedTypeMirror upperBound,
-            final AnnotatedTypeMirror lowerBound,
-            final Tree tree) {
-        checker.report(Result.failure("bound.types.incompatible", type.toString(),
-                        upperBound.toString(true), lowerBound.toString(true)),
+    protected void reportInvalidBounds(final AnnotatedTypeMirror type, final Tree tree) {
+        final String label;
+        final AnnotatedTypeMirror upperBound;
+        final AnnotatedTypeMirror lowerBound;
+
+        switch (type.getKind()) {
+            case TYPEVAR:
+                label = "type parameter";
+                upperBound = ((AnnotatedTypeVariable) type).getUpperBound();
+                lowerBound = ((AnnotatedTypeVariable) type).getUpperBound();
+                break;
+
+            case WILDCARD:
+                label = "wildcard";
+                upperBound = ((AnnotatedWildcardType) type).getExtendsBound();
+                lowerBound = ((AnnotatedWildcardType) type).getSuperBound();
+                break;
+
+            default:
+                ErrorReporter.errorAbort(
+                        "Type is not bounded. \n"
+                      + "type=" + type + "\n"
+                      + "tree=" + tree);
+                label = null; //dead code
+                upperBound = null;
+                lowerBound = null;
+        }
+
+        checker.report(Result.failure("bound.type.incompatible", label,
+                       type.toString(),upperBound.toString(true), lowerBound.toString(true)),
                 tree
         );
         isValid = false;
@@ -318,7 +342,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
         // visitedNodes.put(type, null);
 
         if (type.isDeclaration() && !areBoundsValid(type.getUpperBound(), type.getLowerBound())) {
-            reportInvalidBounds(type, type.getUpperBound(), type.getLowerBound(), tree);
+            reportInvalidBounds(type, tree);
         }
 
         // Keep in sync with visitWildcard
@@ -370,7 +394,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
         // visitedNodes.put(type, null);
 
         if (!areBoundsValid(type.getExtendsBound(), type.getSuperBound())) {
-            reportInvalidBounds(type, type.getExtendsBound(), type.getSuperBound(), tree);
+            reportInvalidBounds(type, tree);
         }
 
         // Keep in sync with visitTypeVariable
@@ -437,13 +461,13 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
             final Set<AnnotationMirror> lowerBoundAnnos =
                     AnnotatedTypes.findEffectiveAnnotations(qualifierHierarchy, lowerBound);
 
-        //This type will already be flagged as erroneous.  Also, invalid types may contain
-        //multiple annotations in the same hierarchy which will cause a runtime exception in the
-        //is subtype call below.
         if (upperBoundAnnos.size() == lowerBoundAnnos.size()) {
             return qualifierHierarchy.isSubtype(lowerBoundAnnos, upperBoundAnnos);
 
-        } //else this type will be flagged (or actually the bound will) as invalid and a type.invalid will be reported
+        } //else
+          //  When upperBoundAnnos.size() != lowerBoundAnnos.size() one of the two bound types will
+          //  be reported as invalid.  Therefore, we do not do any other comparisons nor do we report
+          //  a bound.type.incompatible
 
         return true;
     }
