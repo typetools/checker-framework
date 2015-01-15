@@ -95,10 +95,11 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             return getQualifierHierarchy().getBottom();
 
         } else if (objectQual == getQualifierHierarchy().getBottom()) {
-            // TODO: Its possible that we could use the objectQual here as long as the object qual
-            // did not depend on any type variables, but I don't have an example to produce / test this.
+            // objectQual (the receiver) is bottom. Right now just return the existing qualifier.
+            // If objectQual is not an @Var, then nothing should have been substituted anyway.
+            // If objectQual is an @Var, then what ground qualifier should be used?
 
-            return getQualifierHierarchy().getBottom();
+            return memberQual;
         }
 
         return memberQual.substituteAll(objectQual);
