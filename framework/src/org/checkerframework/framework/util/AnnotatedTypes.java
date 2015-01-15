@@ -769,15 +769,19 @@ public class AnnotatedTypes {
         Map<TypeVariable, AnnotatedTypeMirror> typeArguments;
         typeArguments = inferTypeArgsUsingArgs(processingEnv, atypeFactory, expr, preType, returnType, typeArgumentsFromAssignment);
 
-        if (typeArguments.size() != preType.getTypeVariables().size()) {
-            // We still haven't found all type arguments - use wildcard dummies.
-            for (AnnotatedTypeVariable atv : preType.getTypeVariables()) {
-                if (!typeArguments.containsKey(atv)) {
-                    AnnotatedTypeMirror dummy = atypeFactory.getUninferredWildcardType(atv);
-                    typeArguments.put(atv.getUnderlyingType(), dummy);
+        for (AnnotatedTypeVariable atv : preType.getTypeVariables()) {
+            final AnnotatedTypeMirror inferredType = typeArguments.get(atv.getUnderlyingType());
+            //if we failed to infer a type or inferred a null literal
+            if (inferredType == null || inferredType.getKind() == TypeKind.NULL) {
+                AnnotatedTypeMirror dummy = atypeFactory.getUninferredWildcardType(atv);
+                typeArguments.put(atv.getUnderlyingType(), dummy);
+
+                if (inferredType != null) { //then it has a typekind of NULL
+                    dummy.addAnnotations(inferredType.getAnnotations());
                 }
             }
         }
+
         return typeArguments;
     }
 
@@ -1864,16 +1868,16 @@ public class AnnotatedTypes {
                     final AnnotationMirror glb = glbOfBoundsInHierarchy((AnnotatedIntersectionType) source, top, qualifierHierarchy);
 
                     if(glb == null) {
-                        ErrorReporter.errorAbort("AnnotatedIntersectionType has no annotation in hierarchy"
+                        ErrorReporter.errorAbort("AnnotatedIntersectionType has no annotation in hierarchy "
                                 + "on any of its supertypes!\n"
                                 + "intersectionType=" + source);
                     }
                     return glb;
 
                 default:
-                    ErrorReporter.errorAbort("Unexpected AnnotatedTypeMirror with no primary annotation!"
-                            + "toSearch=" + toSearch
-                            + "top="      + top
+                    ErrorReporter.errorAbort("Unexpected AnnotatedTypeMirror with no primary annotation!\n"
+                            + "toSearch=" + toSearch + "\n"
+                            + "top="      + top      + "\n"
                             + "source=" + source);
             }
         }
@@ -1885,7 +1889,8 @@ public class AnnotatedTypes {
      * When comparing types against the bounds of a type variable, we may encounter other
      * type variables, wildcards, and intersections in those bounds.  This method traverses
      * the bounds until it finds a concrete type from which it can pull an annotation.
-     * @return The AnnotationMirror that represents the type of toSearch in the hierarchy of top
+     * This occurs for every hierarchy in QualifierHierarchy
+     * @return The set of effective annotation mirrors in all hierarchies
      */
     public static Set<AnnotationMirror> findEffectiveAnnotations(final QualifierHierarchy qualifierHierarchy,
                                                                  final AnnotatedTypeMirror toSearch) {
