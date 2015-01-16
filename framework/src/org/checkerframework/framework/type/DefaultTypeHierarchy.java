@@ -372,7 +372,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             return belowExtendsBound && aboveSuperBound;
 
         } else { //TODO: IF WE NEED TO COMPARE A WILDCARD TO A CAPTURE OF A WILDCARD WE FAIL IN ARE_EQUAL -> DO CAPTURE CONVERSION
-            return areEqual(inside, outside);
+            return areEqualInHierarchy(inside, outside, currentTop);
         }
     }
 
@@ -382,7 +382,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     @Override
     public Boolean visitArray_Array(AnnotatedArrayType subtype, AnnotatedArrayType supertype, VisitHistory visited) {
         return isPrimarySubtype(subtype, supertype)
-               && (invariantArrayComponents ? areEqual(subtype.getComponentType(), supertype.getComponentType())
+               && (invariantArrayComponents ? areEqualInHierarchy(subtype.getComponentType(), supertype.getComponentType(), currentTop)
                 : isSubtype(subtype.getComponentType(), supertype.getComponentType(), visited));
     }
 
@@ -649,7 +649,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
         //TODO: DOCUMENT
         if( AnnotatedTypes.areCorrespondingTypeVariables(checker.getProcessingEnvironment().getElementUtils(), subtype, supertype) ) {
-            if( areEqual(subtype, supertype) ) {
+            if( areEqualInHierarchy(subtype, supertype, currentTop) ) {
                 return true;
             }
         }
