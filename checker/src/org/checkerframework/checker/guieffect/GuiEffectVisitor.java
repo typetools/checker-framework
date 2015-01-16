@@ -1,5 +1,7 @@
 package org.checkerframework.checker.guieffect;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.Stack;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -17,8 +19,10 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
+import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -74,6 +78,11 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         return true;
     }
 
+    @Override
+    protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
+        return Collections.singleton(AnnotationUtils.fromClass(elements,
+                AlwaysSafe.class));
+    }
     @Override
     public boolean isValidUse(AnnotatedTypeMirror.AnnotatedDeclaredType declarationType,
                  AnnotatedTypeMirror.AnnotatedDeclaredType useType, Tree tree) {

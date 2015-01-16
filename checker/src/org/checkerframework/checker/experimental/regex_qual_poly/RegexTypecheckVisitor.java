@@ -1,10 +1,12 @@
 package org.checkerframework.checker.experimental.regex_qual_poly;
 
+import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
+
 import org.checkerframework.checker.experimental.regex_qual.Regex;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.javacutil.TreeUtils;

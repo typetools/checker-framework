@@ -9,6 +9,8 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.qualframework.base.DefaultQualifiedTypeFactory;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.QualifierMapVisitor;
 import org.checkerframework.qualframework.base.SetQualifierVisitor;
@@ -87,12 +89,19 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
      * roughly corresponds to AnnotatedTypes.asMemberOf.
      */
     private QualParams<Q> qualifierAsMemberOf(QualParams<Q> memberQual, QualParams<Q> objectQual) {
-        if (memberQual == null || memberQual == QualParams.<Q>getBottom()
-                || memberQual == QualParams.<Q>getTop())
+
+        if (memberQual == getQualifierHierarchy().getBottom()) {
+            // Substituting in the object qualifier would not change the bottom qualifier.
+            return getQualifierHierarchy().getBottom();
+
+        } else if (objectQual == getQualifierHierarchy().getBottom()) {
+            // objectQual (the receiver) is bottom. Right now just return the existing qualifier.
+            // If objectQual is not an @Var, then nothing should have been substituted anyway.
+            // If objectQual is an @Var, then what ground qualifier should be used?
+
             return memberQual;
-        if (objectQual == null || objectQual == QualParams.<Q>getBottom()
-                || objectQual == QualParams.<Q>getTop())
-            return memberQual;
+        }
+
         return memberQual.substituteAll(objectQual);
     }
 
@@ -112,7 +121,26 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             QualifiedTypeMirror<QualParams<Q>> memberType,
             QualifiedTypeMirror<QualParams<Q>> receiverType,
             Element memberElement) {
-        return AS_MEMBER_OF_VISITOR.visit(memberType, receiverType.getQualifier());
+
+        final QualParams<Q> effectiveReceiverQualifier;
+        switch(receiverType.getKind()) {
+            case WILDCARD:
+                effectiveReceiverQualifier = ((QualifiedWildcardType<QualParams<Q>>) receiverType).getExtendsBound().getQualifier();
+                break;
+            case TYPEVAR:
+                if (((QualifiedTypeVariable<QualParams<Q>>) receiverType).isPrimaryQualifierValid()) {
+                    effectiveReceiverQualifier = receiverType.getQualifier();
+                } else {
+                    effectiveReceiverQualifier = this.getQualifiedTypeParameterBounds(
+                            ((QualifiedTypeVariable<QualParams<Q>>) receiverType).getDeclaration().getUnderlyingType()).
+                            getUpperBound().getQualifier();
+                }
+                break;
+            default:
+                effectiveReceiverQualifier = receiverType.getQualifier();
+        }
+
+        return AS_MEMBER_OF_VISITOR.visit(memberType, effectiveReceiverQualifier);
     }
 
     /** Visitor to apply substitution at every location within a {@link
@@ -204,12 +232,23 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
 
         List<QualifiedTypeMirror<QualParams<Q>>> result = new ArrayList<>();
         for (QualifiedTypeMirror<QualParams<Q>> supertype : supertypes) {
+            QualParams<Q> superQuals;
+            if (subQuals == getQualifierHierarchy().getBottom()) {
+                // If subclass qualifier is bottom, use bottom for the superclass qualifier.
 
-            QualParams<Q> superQuals = supertype.getQualifier().substituteAll(subQuals);
-            // substituteAll performs substitutions on the primary, but when viewing the superclass we want to
-            // use the exact primary qualifier of the subclass.
-            // This was needed to get the Ternary.java test to work.
-            superQuals.setPrimary(subQuals.getPrimary());
+                // Substituting in bottom is undefined -- If there are any superclass qualifier parameters,
+                // what should be the arguments to those parameters? Because of invariant subtyping, there
+                // are no arguments where the resulting qualifier would still be bottom.
+
+                superQuals = subQuals;
+            } else {
+                superQuals = supertype.getQualifier().substituteAll(subQuals);
+                // substituteAll performs substitutions on the primary, but when viewing the superclass we want to
+                // use the exact primary qualifier of the subclass.
+                // This was needed to get the Ternary.java test to work.
+                superQuals.setPrimary(subQuals.getPrimary());
+            }
+
             result.add(SetQualifierVisitor.apply(supertype, superQuals));
 
         }

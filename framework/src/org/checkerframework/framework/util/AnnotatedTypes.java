@@ -769,15 +769,19 @@ public class AnnotatedTypes {
         Map<TypeVariable, AnnotatedTypeMirror> typeArguments;
         typeArguments = inferTypeArgsUsingArgs(processingEnv, atypeFactory, expr, preType, returnType, typeArgumentsFromAssignment);
 
-        if (typeArguments.size() != preType.getTypeVariables().size()) {
-            // We still haven't found all type arguments - use wildcard dummies.
-            for (AnnotatedTypeVariable atv : preType.getTypeVariables()) {
-                if (!typeArguments.containsKey(atv)) {
-                    AnnotatedTypeMirror dummy = atypeFactory.getUninferredWildcardType(atv);
-                    typeArguments.put(atv.getUnderlyingType(), dummy);
+        for (AnnotatedTypeVariable atv : preType.getTypeVariables()) {
+            final AnnotatedTypeMirror inferredType = typeArguments.get(atv.getUnderlyingType());
+            //if we failed to infer a type or inferred a null literal
+            if (inferredType == null || inferredType.getKind() == TypeKind.NULL) {
+                AnnotatedTypeMirror dummy = atypeFactory.getUninferredWildcardType(atv);
+                typeArguments.put(atv.getUnderlyingType(), dummy);
+
+                if (inferredType != null) { //then it has a typekind of NULL
+                    dummy.addAnnotations(inferredType.getAnnotations());
                 }
             }
         }
+
         return typeArguments;
     }
 
@@ -1835,5 +1839,113 @@ public class AnnotatedTypes {
         }
 
         return false;
+    }
+
+    /**
+     * When comparing types against the bounds of a type variable, we may encounter other
+     * type variables, wildcards, and intersections in those bounds.  This method traverses
+     * the bounds until it finds a concrete type from which it can pull an annotation.
+     * @param top The top of the hierarchy for which you are searching.
+     * @return The AnnotationMirror that represents the type of toSearch in the hierarchy of top
+     */
+    public static AnnotationMirror findEffectiveAnnotationInHierarchy(final QualifierHierarchy qualifierHierarchy,
+                                                                      final AnnotatedTypeMirror toSearch,
+                                                                      final AnnotationMirror top) {
+        AnnotatedTypeMirror source = toSearch;
+        while( source.getAnnotationInHierarchy(top) == null ) {
+
+            switch(source.getKind()) {
+                case TYPEVAR:
+                    source = ((AnnotatedTypeVariable) source).getUpperBound();
+                    break;
+
+                case WILDCARD:
+                    source = ((AnnotatedWildcardType) source).getExtendsBound();
+                    break;
+
+                case INTERSECTION:
+                    //if there are multiple conflicting annotations, choose the lowest
+                    final AnnotationMirror glb = glbOfBoundsInHierarchy((AnnotatedIntersectionType) source, top, qualifierHierarchy);
+
+                    if(glb == null) {
+                        ErrorReporter.errorAbort("AnnotatedIntersectionType has no annotation in hierarchy "
+                                + "on any of its supertypes!\n"
+                                + "intersectionType=" + source);
+                    }
+                    return glb;
+
+                default:
+                    ErrorReporter.errorAbort("Unexpected AnnotatedTypeMirror with no primary annotation!\n"
+                            + "toSearch=" + toSearch + "\n"
+                            + "top="      + top      + "\n"
+                            + "source=" + source);
+            }
+        }
+
+        return source.getAnnotationInHierarchy(top);
+    }
+
+    /**
+     * When comparing types against the bounds of a type variable, we may encounter other
+     * type variables, wildcards, and intersections in those bounds.  This method traverses
+     * the bounds until it finds a concrete type from which it can pull an annotation.
+     * This occurs for every hierarchy in QualifierHierarchy
+     * @return The set of effective annotation mirrors in all hierarchies
+     */
+    public static Set<AnnotationMirror> findEffectiveAnnotations(final QualifierHierarchy qualifierHierarchy,
+                                                                 final AnnotatedTypeMirror toSearch) {
+        AnnotatedTypeMirror source = toSearch;
+        TypeKind kind = source.getKind();
+        while( kind == TypeKind.TYPEVAR
+            || kind == TypeKind.WILDCARD
+            || kind == TypeKind.INTERSECTION ) {
+
+            switch(source.getKind()) {
+                case TYPEVAR:
+                    source = ((AnnotatedTypeVariable) source).getUpperBound();
+                    break;
+
+                case WILDCARD:
+                    source = ((AnnotatedWildcardType) source).getExtendsBound();
+                    break;
+
+                case INTERSECTION:
+                    //if there are multiple conflicting annotations, choose the lowest
+                    final Set<AnnotationMirror> glb = glbOfBounds((AnnotatedIntersectionType) source, qualifierHierarchy);
+                    return glb;
+
+                default:
+                    ErrorReporter.errorAbort("Unexpected AnnotatedTypeMirror with no primary annotation!"
+                            + "toSearch=" + toSearch
+                            + "source=" + source);
+            }
+
+            kind = source.getKind();
+        }
+
+        return source.getAnnotations();
+    }
+
+    private static AnnotationMirror glbOfBoundsInHierarchy(final AnnotatedIntersectionType isect, final AnnotationMirror top,
+                                                           final QualifierHierarchy qualifierHierarchy) {
+        AnnotationMirror anno = isect.getAnnotationInHierarchy(top);
+        for(final AnnotatedTypeMirror supertype : isect.directSuperTypes()) {
+            final AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(top);
+            if(superAnno != null && (anno == null || qualifierHierarchy.isSubtype(superAnno, anno))) {
+                anno = superAnno;
+            }
+        }
+
+        return anno;
+    }
+
+    private static Set<AnnotationMirror> glbOfBounds(final AnnotatedIntersectionType isect,
+                                                     final QualifierHierarchy qualifierHierarchy) {
+        Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+        for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
+            result.add(glbOfBoundsInHierarchy(isect, top, qualifierHierarchy));
+        }
+
+        return result;
     }
 }

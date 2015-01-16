@@ -1,5 +1,10 @@
 package org.checkerframework.checker.fenum;
 
+import java.util.Collections;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
@@ -56,6 +61,11 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
             AnnotatedExecutableType constructor, Tree src) {
         // Ignore the default annotation on the constructor
         return true;
+    }
+
+    @Override
+    protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
+        return Collections.singleton(atypeFactory.FENUM_UNQUALIFIED);
     }
 
     // TODO: should we require a match between switch expression and cases?

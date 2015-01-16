@@ -1,5 +1,7 @@
 package org.checkerframework.qualframework.poly;
 
+import org.checkerframework.javacutil.ErrorReporter;
+
 import java.util.*;
 
 /** A map of qualifier parameters.  A <code>QualParams</code> object maps
@@ -39,29 +41,6 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
         this.primary = primary;
     }
 
-    // More rawtype nonsense like in BaseQual.BaseLimit.  Once again, this is
-    // safe because there are no values of type Q in TOP or BOTTOM.
-    //
-    // TODO: we may be able to get rid of BOTTOM and TOP entirely by building a
-    // bottom/top QualParams<Q> from the declared qualifier parameters of the
-    // particular class
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private static final QualParams BOTTOM = new QualParams("__BOTTOM__", (Wildcard)null, null);
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private static final QualParams TOP = new QualParams("__TOP__", (Wildcard)null, null);
-
-    @SuppressWarnings("unchecked")
-    public static <Q> QualParams<Q> getBottom() {
-        return BOTTOM;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <Q> QualParams<Q> getTop() {
-        return TOP;
-    }
-
-
     /** Apply capture conversion to each value in this map.
      */
     /*
@@ -90,10 +69,14 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
      *
      */
     public QualParams<Q> substituteAll(Map<String, Wildcard<Q>> substs) {
-        if (this == QualParams.<Q>getTop() || this == QualParams.<Q>getBottom()) {
-            return this;
-        } else if (substs == QualParams.<Q>getBottom() || substs == QualParams.<Q>getTop()) {
-            return (QualParams<Q>)substs;
+        // Substitution with a bottom qual params is undefined.
+        // This used to occur in PostAsMemberOf and PostDirectSupertypes but those now
+        // handle __@RegexBottom__ themselves.
+        if (QualifierParameterHierarchy.PARAMS_BOTTOM_TO_STRING.equals(toString())
+                || QualifierParameterHierarchy.PARAMS_BOTTOM_TO_STRING.equals(substs.toString())) {
+
+            ErrorReporter.errorAbort(QualifierParameterHierarchy.PARAMS_BOTTOM_TO_STRING +
+                    " should never be a parameter to substitute.");
         }
 
         Map<String, Wildcard<Q>> newMap = new HashMap<>();

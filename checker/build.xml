@@ -354,8 +354,12 @@
             <taglet name="org.checkerframework.javacutil.dist.ManualTaglet"
                     path="${build}:${javacutil.loc}/${build}:${javacutil.lib}"/>
         </javadoc>
-        <copy file="manual/logo/Checkmark/CFCheckmark_favicon.png" tofile="${api.doc}/favicon-checkerframework.png" />
-        <!-- TODO: patch the favicon into the generated HTML here -->
+        <property name="favicon.targetfile" value="favicon-checkerframework.png"/>
+        <copy file="manual/logo/Checkmark/CFCheckmark_favicon.png" tofile="${api.doc}/${favicon.targetfile}" />
+        <exec executable="manual/logo/add-favicon" failonerror="true">
+            <arg value="${api.doc}"/>
+            <arg value="${favicon.targetfile}"/>
+        </exec>
     </target>
 
     <target name="javadoc.jar" depends="javadoc" description="Create jar of all javadoc documentation">
@@ -940,7 +944,7 @@
             description="Run the compiler message keys checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.checker.compilermsgs.CompilerMessagesChecker"/>
-            <param name="checker-args" value="-AprintErrorStack -AsuppressWarnings=purity -Apropfiles=${framework.loc}/src/org/checkerframework/framework/source/messages.properties:./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/javari/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffect/messages.properties"/>
+            <param name="checker-args" value="-Awarns -AprintErrorStack -AsuppressWarnings=purity -Apropfiles=${framework.loc}/src/org/checkerframework/framework/source/messages.properties:./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/javari/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffect/messages.properties"/>
         </antcall>
     </target>
 
@@ -948,7 +952,7 @@
             description="Run the Purity Checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.framework.util.PurityChecker"/>
-            <param name="checker-args" value="-AprintErrorStack"/>
+            <param name="checker-args" value="-Awarns -AprintErrorStack"/>
         </antcall>
     </target>
 

@@ -71,7 +71,7 @@
     <attribute name="file2"/>
     <attribute name="ignore-matching-lines"/>
     <sequential>
-      <exec executable="diff" resultproperty="diff-result">
+      <exec executable="diff" resultproperty="diff-result" failonerror="true">
         <arg value="-q"/>
         <arg line="-I '@{ignore-matching-lines}'"/>
         <!-- ignore lint results -->

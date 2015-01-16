@@ -87,7 +87,7 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
                 QualifiedTypeMirror<QualParams<Regex>> result = super.visitLiteral(tree, type);
 
                 if (tree.getKind() == Kind.NULL_LITERAL) {
-                    return SetQualifierVisitor.apply(result, QualParams.<Regex>getBottom());
+                    return SetQualifierVisitor.apply(result, RegexQualifiedTypeFactory.this.getQualifierHierarchy().getBottom());
                 }
 
                 String regexStr = null;
@@ -120,9 +120,7 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
             public QualifiedTypeMirror<QualParams<Regex>> visitCompoundAssignment(CompoundAssignmentTree tree,
                     ExtendedTypeMirror type) {
 
-                if (TreeUtils.isStringConcatenation(tree)
-                        || (tree instanceof CompoundAssignmentTree
-                        && TreeUtils.isStringCompoundConcatenation(tree))) {
+                if (TreeUtils.isStringConcatenation(tree) || TreeUtils.isStringCompoundConcatenation(tree)) {
 
                     QualParams<Regex> lRegex = getEffectiveQualifier(getQualifiedType(tree.getExpression()));
                     QualParams<Regex> rRegex = getEffectiveQualifier(getQualifiedType(tree.getVariable()));
@@ -149,8 +147,8 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
                         getContext().getProcessingEnvironment())) {
 
                     ExpressionTree arg0 = tree.getArguments().get(0);
-                    if (getEffectiveQualifier(getQualifiedType(arg0)) == QualParams.<Regex>getBottom()) {
-                        result = SetQualifierVisitor.apply(result, QualParams.<Regex>getBottom());
+                    if (getEffectiveQualifier(getQualifiedType(arg0)) == RegexQualifiedTypeFactory.this.getQualifierHierarchy().getBottom()) {
+                        result = SetQualifierVisitor.apply(result, RegexQualifiedTypeFactory.this.getQualifierHierarchy().getBottom());
                     } else {
                         Regex qual = getEffectiveQualifier(getQualifiedType(arg0)).getPrimary().getMaximum();
                         QualParams<Regex> clone = result.getQualifier().clone();
@@ -190,7 +188,6 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
              * @param tree A BinaryTree or a CompoundAssignmentTree
              * @param lRegexParam The qualifier of the left hand side of the expression
              * @param rRegexParam The qualifier of the right hand side of the expression
-             * @param result The current QualifiedTypeMirror result
              * @return result if operation is not a string concatenation or compound assignment. Otherwise
              *          a copy of result with the new qualifier applied is returned.
              */

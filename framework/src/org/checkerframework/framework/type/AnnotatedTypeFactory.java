@@ -440,13 +440,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return qualHierarchy;
     }
 
-    /*
-     * @see BaseTypeChecker#getTypeFactoryOfPreviousChecker(int)
-     */
-    public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> T getTypeFactoryOfPreviousChecker(int index) {
-        return checker.getTypeFactoryOfPreviousChecker(index);
-    }
-
     /**
      * Creates the type subtyping checker using the current type qualifier
      * hierarchy.
@@ -1269,34 +1262,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Determine whether the given expression is either "this" or an outer
-     * "C.this".
-     *
-     * TODO: Should this also handle "super"?
-     *
-     * @param tree
-     * @return
-     */
-    private final boolean isExplicitThisDereference(ExpressionTree tree) {
-        if (tree.getKind() == Tree.Kind.IDENTIFIER
-                && ((IdentifierTree)tree).getName().contentEquals("this")) {
-            // Explicit this reference "this"
-            return true;
-        }
-
-        if (tree.getKind() != Tree.Kind.MEMBER_SELECT) {
-            return false;
-        }
-
-        MemberSelectTree memSelTree = (MemberSelectTree) tree;
-        if (memSelTree.getIdentifier().contentEquals("this")) {
-            // Outer this reference "C.this"
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Does this expression have (the innermost or an outer) "this" as receiver?
      * Note that the receiver can be either explicit or implicit.
      *
@@ -1343,7 +1308,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return false;
         }
 
-        return isExplicitThisDereference(recv);
+        return TreeUtils.isExplicitThisDereference(recv);
     }
 
     /**
@@ -2507,21 +2472,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * org.checkerframework.framework.type.AnnotatedTypeFactory.fromTypeTree(Tree)
      */
     public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar) {
-        WildcardType wc = types.getWildcardType(typeVar.getUnderlyingType(), null);
+        WildcardType wc = types.getWildcardType(typeVar.getUnderlyingType().getUpperBound(), null);
         AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
         wctype.setExtendsBound(typeVar.getUpperBound().deepCopy());
+        wctype.setSuperBound(typeVar.getLowerBound().deepCopy());
         wctype.addAnnotations(typeVar.getAnnotations());
         wctype.setTypeArgHack();
         return wctype;
     }
-
-    public AnnotatedWildcardType getWildcardBoundedBy(AnnotatedTypeMirror upper) {
-        WildcardType wc = types.getWildcardType(upper.getUnderlyingType(), null);
-        AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
-        wctype.setExtendsBound(upper);
-        return wctype;
-    }
-
 
     public Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(MemberReferenceTree tree) {
         return getFnInterfaceFromTree((Tree)tree);
