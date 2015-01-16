@@ -10,6 +10,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.CFContext;
+import org.checkerframework.framework.util.OptionConfiguration;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -251,7 +252,7 @@ import com.sun.tools.javac.util.Log;
 
 })
 public abstract class SourceChecker
-    extends AbstractTypeProcessor implements ErrorHandler, CFContext {
+    extends AbstractTypeProcessor implements ErrorHandler, CFContext, OptionConfiguration {
 
     // TODO A checker should export itself through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
@@ -392,6 +393,11 @@ public abstract class SourceChecker
 
     @Override
     public SourceChecker getChecker() {
+        return this;
+    }
+
+    @Override
+    public OptionConfiguration getOptionConfiguration() {
         return this;
     }
 
