@@ -3,15 +3,33 @@ package org.checkerframework.qualframework.poly.format;
 import org.checkerframework.qualframework.poly.PolyQual;
 import org.checkerframework.qualframework.poly.QualParams;
 
+import java.util.Set;
+
 /**
- * Create a String representation of a {@link QualParams} or {@link PolyQual}.
+ * QualParamsFormatter is a QualFormatter with extra methods to format QualParams.
  */
-public interface QualParamsFormatter<Q> {
+public interface QualParamsFormatter<Q> extends QualFormatter<QualParams<Q>> {
 
-    String format(QualParams<Q> params);
+    /**
+     * Format a PolyQual into a string.
+     *
+     * @param polyQual the PolyQual
+     * @param printInvisible if true, invisible qualifiers will be printed
+     * @return the String representation of q, or null if q was invisible
+     *      and print invisible was false
+     */
+    String format(PolyQual<Q> polyQual, boolean printInvisible);
 
-    String format(QualParams<Q> params, boolean includePrimaryQualifier);
-
-    String format(PolyQual<Q> polyQual);
+    /**
+     * Format a QualParams into a string, but optionally skip the primary
+     * qualifier.
+     *
+     * @param polyQual the PolyQual
+     * @param printPrimary if true, include the primary qualifier in the output
+     * @param printInvisible if true, invisible qualifiers will be printed
+     * @return the String representation of q, or null if q was invisible
+     *      and print invisible was false
+     */
+    String format(QualParams<Q> polyQual, boolean printPrimary, boolean printInvisible);
 
 }

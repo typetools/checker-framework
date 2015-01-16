@@ -16,4 +16,5 @@ public interface BaseContext {
     Types getTypeUtils();
     Trees getTreeUtils();
     AnnotationProvider getAnnotationProvider();
+    OptionConfiguration getOptionConfiguration();
 }
