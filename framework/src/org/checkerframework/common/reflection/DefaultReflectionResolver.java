@@ -19,6 +19,7 @@ import javax.lang.model.util.ElementFilter;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.MethodVal;
+import org.checkerframework.common.reflection.qual.UnknownMethod;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -98,12 +99,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
     @Override
     public boolean shouldResolveReflection(MethodInvocationTree tree) {
-        // EDITED 1-2-14 by plvines
-        // to include the && condition
         if ((TreeUtils.isMethodInvocation(tree, invoke, processingEnv) || TreeUtils
-                .isMethodInvocation(tree, newInstance, processingEnv))
-                && (provider.getAnnotationMirror(
-                        TreeUtils.getReceiverTree(tree), MethodVal.class) != null)) {
+                .isMethodInvocation(tree, newInstance, processingEnv))) {
             return true;
         }
         // Called method is neither Method.invoke nor Constructor.newInstance
@@ -121,6 +118,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         if (TreeUtils.isMethodInvocation(tree, newInstance, processingEnv)) {
             return resolveConstructorCall(factory, tree, origResult);
         } else {
+        /*
             AnnotationMirror estimate = provider.getAnnotationMirror(
                     TreeUtils.getReceiverTree(tree), MethodVal.class);
 
@@ -131,6 +129,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             if (INIT.equals(listMethodNames.get(0))) {
                 return resolveConstructorCall(factory, tree, origResult);
             }
+        */
             return resolveMethodCall(factory, tree, origResult);
         }
     }
@@ -295,7 +294,6 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             MethodInvocationTree tree, AnnotatedTypeFactory reflectionFactory) {
         assert shouldResolveReflection(tree);
         JCMethodInvocation methodInvocation = (JCMethodInvocation) tree;
-        List<MethodInvocationTree> methods = new ArrayList<>();
 
         Context context = ((JavacProcessingEnvironment) processingEnv)
                 .getContext();
@@ -304,8 +302,19 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         JavacScope scope = (JavacScope) trees.getScope(path);
         Env<AttrContext> env = scope.getEnv();
 
+        List<MethodInvocationTree> methods = new ArrayList<>();
+
+        boolean unknown = (provider.getAnnotationMirror(TreeUtils.getReceiverTree(tree),
+                UnknownMethod.class) != null);
+
         AnnotationMirror estimate = provider.getAnnotationMirror(
                 TreeUtils.getReceiverTree(tree), MethodVal.class);
+
+        if (estimate == null) {
+            debugReflection("MethodVal is unknown for: " + tree);
+            debugReflection("UnknownMethod annotation: " + unknown);
+            return methods;
+        }
 
         debugReflection("MethodVal type system annotations: " + estimate);
 
@@ -373,8 +382,19 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         JavacScope scope = (JavacScope) trees.getScope(path);
         Env<AttrContext> env = scope.getEnv();
 
+        List<JCNewClass> constructors = new ArrayList<>();
+
+        boolean unknown = (provider.getAnnotationMirror(TreeUtils.getReceiverTree(tree),
+                UnknownMethod.class) != null);
+
         AnnotationMirror estimate = provider.getAnnotationMirror(
                 TreeUtils.getReceiverTree(tree), MethodVal.class);
+
+        if (estimate == null) {
+            debugReflection("MethodVal is unknown for: " + tree);
+            debugReflection("UnknownMethod annotation: " + unknown);
+            return constructors;
+        }
 
         debugReflection("MethodVal type system annotations: " + estimate);
 
@@ -383,7 +403,6 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         List<Integer> listParamLenghts = AnnotationUtils.getElementValueArray(
                 estimate, "params", Integer.class, true);
 
-        List<JCNewClass> constructors = new ArrayList<>();
         assert listClassNames.size() == listParamLenghts.size();
         for (int i = 0; i < listClassNames.size(); ++i) {
             String className = listClassNames.get(i);
