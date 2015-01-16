@@ -554,54 +554,29 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private List<String> getClassNames(ExpressionTree classReceiver,
                 boolean mustBeExact) {
             // *** HANDLE CLASS NAME ***
-            List<String> classNames = new ArrayList<>();
-            // TODO
-            // EDITED 1-2-14 by plvines
-            // TODO resolved by adding InternalUtils.typeOf(...)? Seems to work.
-            // Calling from object.getClass()
-            if (classReceiver.getKind() == Tree.Kind.METHOD_INVOCATION) {
-                // EDITED 1-3-14 by plvines
-                // Implicit "this" in the call to getClass()
-                if (TreeUtils.getReceiverTree(classReceiver) == null) {
-                    classNames.add(visitorState.getClassTree().toString());
-                } else {
-                    if (mustBeExact) {
-                        classNames.add("Upper Bound: "
-                                + classReceiver.toString());
-                    } else {
-                        classNames.add(InternalUtils.typeOf(
-                                TreeUtils.getReceiverTree(classReceiver))
-                                .toString());
-                    }
-                }
-                // classNames.add("Unhandled GetClass()");
-            }
-            // Calling from a Class object
-            // TODO BOUND
-            else if (classReceiver.getKind() == Tree.Kind.IDENTIFIER ||classReceiver.getKind()== Tree.Kind.MEMBER_SELECT) {
-                AnnotationMirror annotation = annotationProvider
-                        .getAnnotationMirror(classReceiver, ClassVal.class);
-                if (annotation != null) {
-                    classNames = AnnotationUtils.getElementValueArray(
-                            annotation, "value", String.class, true);
-                } else {
-                    // Could be ClassBound instead of ClassVal
-                    annotation = annotationProvider.getAnnotationMirror(
-                            classReceiver, ClassBound.class);
-                    if (annotation != null) {
-                        if (mustBeExact) {
-                            classNames.add("Upper Bound: "
-                                    + classReceiver.toString());
-                        } else {
-                            classNames = AnnotationUtils.getElementValueArray(
-                                    annotation, "value", String.class, true);
-                        }
-                    } else {
-                        classNames.add("Unannotated Class: "
-                                + classReceiver.toString());
-                    }
-                }
-            }
+			List<String> classNames = new ArrayList<>();
+			AnnotationMirror annotation = annotationProvider
+					.getAnnotationMirror(classReceiver, ClassVal.class);
+			if (annotation != null) {
+				classNames = AnnotationUtils.getElementValueArray(annotation,
+						"value", String.class, true);
+			} else {
+				// Could be ClassBound instead of ClassVal
+				annotation = annotationProvider.getAnnotationMirror(
+						classReceiver, ClassBound.class);
+				if (annotation != null) {
+					if (mustBeExact) {
+						classNames.add("Upper Bound: "
+								+ classReceiver.toString());
+					} else {
+						classNames = AnnotationUtils.getElementValueArray(
+								annotation, "value", String.class, true);
+					}
+				} else {
+					classNames.add("Unannotated Class: "
+							+ classReceiver.toString());
+				}
+			}
             return classNames;
         }
 
