@@ -63,6 +63,11 @@ public class QualifierDefaults {
 
     private final DefaultSet absoluteDefaults = new DefaultSet();
 
+    /** Mapping from an Element to the source Tree of the declaration. */
+    private static final int CACHE_SIZE = 300;
+    protected static final Map<Element, BoundType> elementToBoundType  = AnnotatedTypeFactory.createLRUCache(CACHE_SIZE);
+
+
     /** Defaults that apply for a certain Element.
      * On the one hand this is used for caching (an earlier name for the field was
      * "qualifierCache". It can also be used by type systems to set defaults for
@@ -758,6 +763,11 @@ public class QualifierDefaults {
      */
     private static BoundType getTypeVarBoundType(final TypeParameterElement typeParamElem,
                                                  final AnnotatedTypeFactory typeFactory) {
+        final BoundType prev = elementToBoundType.get(typeParamElem);
+        if (prev != null) {
+            return prev;
+        }
+
         TreePath declaredTypeVarEle = typeFactory.getTreeUtils().getPath(typeParamElem);
         Tree typeParamDecl = declaredTypeVarEle == null ? null : declaredTypeVarEle.getLeaf();
 
@@ -785,6 +795,7 @@ public class QualifierDefaults {
             }
         }
 
+        elementToBoundType.put(typeParamElem, boundType);
         return boundType;
     }
 

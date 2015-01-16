@@ -2124,7 +2124,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param size  size of the cache
      * @return  a new cache with the provided size
      */
-    protected static <K, V> Map<K, V> createLRUCache(final int size) {
+    public static <K, V> Map<K, V> createLRUCache(final int size) {
         return new LinkedHashMap<K, V>() {
 
             private static final long serialVersionUID = 5261489276168775084L;
