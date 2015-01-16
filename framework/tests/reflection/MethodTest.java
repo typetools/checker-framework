@@ -143,6 +143,15 @@ public class MethodTest {
         } catch (Exception ignore) {
         }
     }
+    public void pass11b() {
+        try {
+            Class<?> c = getClass();
+            Method m = c
+                    .getMethod("convertSibling2ToSibling1", new Class[] { Integer.class });
+            @Sibling1 Object o = m.invoke(null, sibling2);
+        } catch (Exception ignore) {
+        }
+    }
 
     // Test .class on inner class
     public void pass12() {
