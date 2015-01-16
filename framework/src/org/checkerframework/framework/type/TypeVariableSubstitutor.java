@@ -25,8 +25,9 @@ public class TypeVariableSubstitutor {
      * @param typeMirror
      * @return A copy of typeMirror with its type variables substituted
      */
-    public AnnotatedTypeMirror subtitute(final Map<TypeVariable, AnnotatedTypeMirror> typeParamToArg,
-                                         final AnnotatedTypeMirror typeMirror) {
+    public AnnotatedTypeMirror substitute(final Map<TypeVariable, AnnotatedTypeMirror> typeParamToArg,
+            final AnnotatedTypeMirror typeMirror) {
+
         return new Visitor(typeParamToArg).visit(typeMirror);
     }
 

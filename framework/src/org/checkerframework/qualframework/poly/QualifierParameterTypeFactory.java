@@ -1,28 +1,28 @@
 package org.checkerframework.qualframework.poly;
 
-import java.util.*;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
-
 import com.sun.source.tree.Tree.Kind;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.DefaultQualifiedTypeFactory;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
-import org.checkerframework.qualframework.base.QualifierMapVisitor;
-import org.checkerframework.qualframework.base.SetQualifierVisitor;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
+import org.checkerframework.qualframework.base.QualifierHierarchy;
+import org.checkerframework.qualframework.base.QualifierMapVisitor;
+import org.checkerframework.qualframework.base.SetQualifierVisitor;
 import org.checkerframework.qualframework.util.QualifierContext;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /** Type factory with qualifier polymorphism support.  This type factory
  * extends an underlying qualifier system with qualifier variables, combined
@@ -220,69 +220,6 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
 
         return result;
     }
-
-    /** Combine two wildcards into one when substituting a qualified type into
-     * a qualified type variable use (for example, substituting {@code
-     * [T := C<<Q=TAINTED>>]} into the use {@code T + <<Q=UNTAINTED>>}).
-     */
-    protected abstract Wildcard<Q> combineForSubstitution(Wildcard<Q> a, Wildcard<Q> b);
-    protected abstract PolyQual<Q> combineForSubstitution(PolyQual<Q> a, PolyQual<Q> b);
-
-    @Override
-    public QualifiedTypeMirror<QualParams<Q>> postTypeVarSubstitution(QualifiedParameterDeclaration<QualParams<Q>> varDecl,
-            QualifiedTypeVariable<QualParams<Q>> varUse, QualifiedTypeMirror<QualParams<Q>> value) {
-        if (value.getKind() == TypeKind.WILDCARD) {
-            // Ideally we would never get a wildcard type as `value`, but
-            // sometimes it happens due to checker framework misbehavior.
-            // There are no top-level qualifiers on a wildcard type, so instead
-            // we apply the combining to both the upper and lower bounds of the
-            // wildcard.
-            QualifiedWildcardType<QualParams<Q>> wild = (QualifiedWildcardType<QualParams<Q>>)value;
-            QualifiedTypeMirror<QualParams<Q>> extendsBound = wild.getExtendsBound();
-            QualifiedTypeMirror<QualParams<Q>> superBound = wild.getSuperBound();
-
-            if (extendsBound != null) {
-                extendsBound = postTypeVarSubstitution(varDecl, varUse, extendsBound);
-            }
-
-            if (superBound != null) {
-                superBound = postTypeVarSubstitution(varDecl, varUse, superBound);
-            }
-
-            return new QualifiedWildcardType<QualParams<Q>>(
-                    wild.getUnderlyingType(), extendsBound, superBound);
-        }
-
-        // If the underlying type is not primary qualified
-        // then we should not use the type variables primary qualifier.
-        if (!varUse.isPrimaryQualifierValid()) {
-            return value;
-        }
-
-        QualParams<Q> useParams = varUse.getQualifier();
-        QualParams<Q> valueParams = value.getQualifier();
-
-        HashMap<String, Wildcard<Q>> newParams = new HashMap<>(useParams);
-        for (String name : valueParams.keySet()) {
-            Wildcard<Q> newValue = valueParams.get(name);
-
-            Wildcard<Q> oldValue = newParams.get(name);
-            if (oldValue != null) {
-                newValue = combineForSubstitution(oldValue, newValue);
-            }
-
-            newParams.put(name, newValue);
-        }
-
-        PolyQual<Q> primary;
-        if (useParams.getPrimary() != null && valueParams.getPrimary() != null) {
-            primary = combineForSubstitution(useParams.getPrimary(), valueParams.getPrimary());
-        } else {
-            throw new RuntimeException("Expected both QualParams to have a primary qualifier");
-        }
-        return SetQualifierVisitor.apply(value, new QualParams<>(newParams, primary));
-    }
-
 
     @Override
     public List<QualifiedTypeMirror<QualParams<Q>>> postDirectSuperTypes(

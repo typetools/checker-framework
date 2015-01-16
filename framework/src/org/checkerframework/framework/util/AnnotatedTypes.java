@@ -474,7 +474,7 @@ public class AnnotatedTypes {
         for (int i = 0; i < from.size(); ++i) {
             mappings.put(from.get(i).getUnderlyingType(), to.get(i));
         }
-        return atypeFactory.getTypeVarSubstitutor().subtitute(mappings, t);
+        return atypeFactory.getTypeVarSubstitutor().substitute(mappings, t);
     }
 
     /**

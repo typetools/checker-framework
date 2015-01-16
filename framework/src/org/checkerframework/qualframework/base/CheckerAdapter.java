@@ -1,7 +1,27 @@
 package org.checkerframework.qualframework.base;
 
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
+
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.type.AnnotatedTypeFormatter;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
+import org.checkerframework.framework.util.AnnotationFormatter;
+import org.checkerframework.framework.util.DefaultAnnotationFormatter;
+import org.checkerframework.framework.util.OptionConfiguration;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.qualframework.poly.format.QualifiedTypeFormatter;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.tools.Diagnostic;
+import java.util.Collection;
+import java.util.regex.Pattern;
 
 /** Adapter class for {@link Checker}, extending
  * {@link BaseTypeChecker org.checkerframework.common.basetype.BaseTypeChecker}.
@@ -65,9 +85,24 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
      * {@link QualifiedTypeFactory}. */
     private QualifiedTypeFactoryAdapter<Q> createTypeFactory() {
         QualifiedTypeFactory<Q> underlyingFactory = underlying.getTypeFactory();
+
+        final QualAnnotationFormatterAdapter formatterAdapter =
+                new QualAnnotationFormatterAdapter(underlying.createQualifiedTypeFormatter());
+
         QualifiedTypeFactoryAdapter<Q> factoryAdapter = new QualifiedTypeFactoryAdapter<Q>(
                 underlyingFactory,
-                this);
+                this) {
+
+            @Override
+            protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
+                return formatterAdapter;
+            }
+
+            @Override
+            protected AnnotationFormatter createAnnotationFormatter() {
+                return formatterAdapter;
+            }
+        };
 
         if (underlyingFactory instanceof DefaultQualifiedTypeFactory) {
             DefaultQualifiedTypeFactory<Q> defaultFactory =
@@ -78,6 +113,48 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
         return factoryAdapter;
     }
 
+    /**
+     * Adapter to convert an AnnotatedTypeFormatter to a QualifiedTypeFormatter.
+     */
+    protected class QualAnnotationFormatterAdapter implements AnnotatedTypeFormatter, AnnotationFormatter {
+
+        private final QualifiedTypeFormatter<Q> qualifiedTypeFormatter;
+
+        public QualAnnotationFormatterAdapter(QualifiedTypeFormatter<Q> qualifiedTypeFormatter) {
+            this.qualifiedTypeFormatter = qualifiedTypeFormatter;
+        }
+
+        @Override
+        public String format(AnnotatedTypeMirror type) {
+            return qualifiedTypeFormatter.format(getTypeMirrorConverter().getQualifiedType(type));
+        }
+
+        @Override
+        public String format(AnnotatedTypeMirror type, boolean printInvisibles) {
+            return qualifiedTypeFormatter.format(getTypeMirrorConverter().getQualifiedType(type), printInvisibles);
+        }
+
+        @Override
+        public String formatAnnotationString(Collection<? extends AnnotationMirror> annos, boolean printInvisible) {
+            StringBuilder sb = new StringBuilder();
+            for (AnnotationMirror anno : annos) {
+                String result = qualifiedTypeFormatter.getQualFormatter().format(
+                        getTypeMirrorConverter().getQualifier(anno), printInvisible);
+
+                if (result != null) {
+                    sb.append(result);
+                    sb.append(" ");
+                }
+            }
+            return sb.toString();
+        }
+
+        @Override
+        public String formatAnnotationMirror(AnnotationMirror anno) {
+            return qualifiedTypeFormatter.getQualFormatter().format(getTypeMirrorConverter().getQualifier(anno));
+
+        }
+    }
 
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {
@@ -91,5 +168,16 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
 
     public Checker<Q> getUnderlying() {
         return underlying;
+    }
+
+    public void setupDefaults(QualifierDefaults defaults) {
+        defaults.addAbsoluteDefault(
+                getTypeMirrorConverter().getAnnotation(
+                        underlying.getTypeFactory().getQualifierHierarchy().getBottom()),
+                DefaultLocation.IMPLICIT_LOWER_BOUNDS);
+        defaults.addAbsoluteDefault(
+                getTypeMirrorConverter().getAnnotation(
+                        underlying.getTypeFactory().getQualifierHierarchy().getTop()),
+                DefaultLocation.LOCAL_VARIABLE);
     }
 }

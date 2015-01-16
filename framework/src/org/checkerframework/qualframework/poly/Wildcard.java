@@ -111,7 +111,7 @@ public class Wildcard<Q> {
         } else if (lower.equals(upper)) {
             return lower.toString();
         } else {
-            return "(? ∈ [" + lower + ".." + upper + "])";
+            return "? ∈ [" + lower + ".." + upper + "]";
         }
     }
 }

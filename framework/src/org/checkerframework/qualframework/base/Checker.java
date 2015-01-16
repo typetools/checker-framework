@@ -5,8 +5,15 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import com.sun.source.util.Trees;
+import org.checkerframework.framework.util.OptionConfiguration;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.qualframework.poly.format.DefaultQualFormatter;
+import org.checkerframework.qualframework.poly.format.DefaultQualifiedTypeFormatter;
+import org.checkerframework.qualframework.poly.format.QualifiedTypeFormatter;
 import org.checkerframework.qualframework.util.QualifierContext;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /** Main entry point for a pluggable type system.  Each type system must
  * provide an implementation of this abstract class that produces an
@@ -15,6 +22,7 @@ import org.checkerframework.qualframework.util.QualifierContext;
 public abstract class Checker<Q> implements QualifierContext<Q> {
     private QualifiedTypeFactory<Q> typeFactory;
     private CheckerAdapter<Q> adapter;
+    private QualifiedTypeFormatter<Q> typeFormatter;
 
     void setAdapter(CheckerAdapter<Q> adapter) {
         this.adapter = adapter;
@@ -64,6 +72,11 @@ public abstract class Checker<Q> implements QualifierContext<Q> {
         return getCheckerAdapter().getTreeUtils();
     }
 
+    @Override
+    public OptionConfiguration getOptionConfiguration() {
+        return getCheckerAdapter();
+    }
+
     /**
      * Constructs the {@link QualifiedTypeFactory} for use by this {@link
      * Checker}. 
@@ -80,6 +93,28 @@ public abstract class Checker<Q> implements QualifierContext<Q> {
         }
         return this.typeFactory;
     }
+
+    /**
+     * Create a QualifiedTypeFormatter to format QualifiedTypeMirrors into strings.
+     *
+     * @return the QualifiedTypeFormatter
+     */
+    public QualifiedTypeFormatter<Q> createQualifiedTypeFormatter() {
+        return new DefaultQualifiedTypeFormatter<>(
+                new DefaultQualFormatter<Q>(getInvisibleQualifiers()),
+                getContext().getCheckerAdapter().getTypeMirrorConverter(),
+                getContext().getOptionConfiguration().hasOption("printAllQualifiers")
+        );
+    }
+
+    /**
+     * Return a list of qualifiers that should not be printed unless printAllQualifiers is enabled.
+     * @return
+     */
+    protected Set<?> getInvisibleQualifiers() {
+        return new HashSet<>();
+    }
+
 
     // TODO: support for checker-defined visitor
 }

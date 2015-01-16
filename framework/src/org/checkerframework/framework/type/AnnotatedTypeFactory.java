@@ -34,7 +34,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
+import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -169,9 +171,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final AnnotatedTypeFormatter typeFormatter;
 
     /**
+     * Annotation formatter is used to format AnnotationMirrors. It is primarily
+     * used by SourceChecker when generating error messages.
+     */
+    private final AnnotationFormatter annotationFormatter;
+
+    /**
      * Provides utility method to substitute arguments for their type variables
      */
-    protected final TypeVariableSubstitutor typeVarSubstitutor;
+    protected TypeVariableSubstitutor typeVarSubstitutor;
 
     /** To cache the supported type qualifiers. */
     private final Set<Class<? extends Annotation>> supportedQuals;
@@ -264,7 +272,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.cacheDeclAnnos = new HashMap<Element, Set<AnnotationMirror>>();
 
         this.typeFormatter = createAnnotatedTypeFormatter();
-        this.typeVarSubstitutor = createTypeVariableSubstitutor();
+        this.annotationFormatter = createAnnotationFormatter();
     }
 
     /**
@@ -279,6 +287,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ErrorReporter.errorAbort("AnnotatedTypeFactory with null qualifier hierarchy not supported.");
         }
         this.typeHierarchy = createTypeHierarchy();
+        this.typeVarSubstitutor = createTypeVariableSubstitutor();
 
         // TODO: is this the best location for declaring this alias?
         addAliasedDeclAnnotation(org.jmlspecs.annotation.Pure.class,
@@ -510,6 +519,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
         return new DefaultAnnotatedTypeFormatter(checker.hasOption("printAllQualifiers"));
+    }
+
+    protected AnnotationFormatter createAnnotationFormatter() {
+        return new DefaultAnnotationFormatter();
+    }
+
+    public AnnotationFormatter getAnnotationFormatter() {
+        return annotationFormatter;
     }
 
     /**
@@ -1018,8 +1035,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         for (AnnotatedTypeMirror atm : tvars) {
             AnnotatedTypeVariable atv = (AnnotatedTypeVariable)atm;
-            AnnotatedTypeMirror upper = typeVarSubstitutor.subtitute(mapping, atv.getUpperBound());
-            AnnotatedTypeMirror lower = typeVarSubstitutor.subtitute(mapping, atv.getLowerBound());
+            AnnotatedTypeMirror upper = typeVarSubstitutor.substitute(mapping, atv.getUpperBound());
+            AnnotatedTypeMirror lower = typeVarSubstitutor.substitute(mapping, atv.getLowerBound());
             res.add(new AnnotatedTypeParameterBounds(upper, lower));
         }
         return res;
@@ -1464,7 +1481,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 }
                 typeargs.add(typeVarMapping.get(tv.getUnderlyingType()));
             }
-            methodType = (AnnotatedExecutableType) typeVarSubstitutor.subtitute(typeVarMapping, methodType);
+            methodType = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeVarMapping, methodType);
         }
 
         return Pair.of(methodType, typeargs);
@@ -1512,7 +1529,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             for (AnnotatedTypeVariable tv : con.getTypeVariables()) {
                 typeargs.add(typeVarMapping.get(tv.getUnderlyingType()));
             }
-            con = (AnnotatedExecutableType) typeVarSubstitutor.subtitute(typeVarMapping,con);
+            con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeVarMapping, con);
         }
 
         return Pair.of(con, typeargs);
