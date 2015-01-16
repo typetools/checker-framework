@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Checker Framework Tutorial - Getting Started - Command Line</title>
+
+<link href="bootstrap/css/bootstrap.css" rel="stylesheet" />
+<script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+
+<link href="css/main.css" rel="stylesheet" />
+<link rel="icon" type="image/png" href="http://types.cs.washington.edu/checker-framework/favicon-checkerframework.png" />
+
+</head>
+
+<body>
+
+	 <div class="top_liner"></div>
+ <div class="navbar navbar-inverse navbar-fixed-top" style="border-bottom: 1px solid #66d;">
+  <div class="navbar-inner">
+   <div class="contained">
+    <ul class="nav">
+     <li class="heading">Checker Framework:
+      </h4>
+     </li>
+     <li><a href="http://checkerframework.org/">Main Site</a></li>
+     <li><a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">Manual</a></li>
+     <li><a href="https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">Discussion List</a></li>
+     <li><a href="http://code.google.com/p/checker-framework/issues/list">Issue Tracker</a></li>
+     <li><a href="http://code.google.com/p/checker-framework/source/checkout">Source Code</a></li>
+     <li><a href="http://types.cs.washington.edu/checker-framework/eclipse/">Eclipse Plugin</a></li>
+     <li class="active"><a href="http://types.cs.washington.edu/checker-framework/tutorial/">Tutorial</a></li>
+    </ul>
+   </div>
+  </div>
+ </div>
+
+	<img src="CFLogo.png" alt="Checker Framework logo" />
+	<div class="page-header short"
+		style="border-bottom: 1px solid #EEE; border-top: none;">
+		<h1>Checker Framework Tutorial</h1>
+
+	</div>
+
+	<section id="gettingstarteed">
+		<div class="page-header short" style="border-top: none;">
+			<h2>Getting Started</h2>
+
+		</div>
+
+		<p>This page walks you through a simple example to show how to use
+			a checker using the command line tools. It shows how the Nullness
+			checker can be used to prevent null pointer exceptions.</p>
+
+		<div class="section">
+			<h4>Outline</h4>
+			<div class="well">
+
+				<ol>
+					<li><a href="#open">Manually spot the null pointer
+							exception</a></li>
+					<li><a href="#run1">Run the Nullness Checker to see how it
+							can catch this error</a></li>
+					<li><a href="#error">Correct the error</a></li>
+					<li><a href="#run2">Run the Nullness Checker to verify
+							that there are no more errors</a></li>
+				</ol>
+			</div>
+			<section id="open">
+				<h4>1. Spot the null pointer exception</h4>
+
+				Begin by <b>opening <a href="../src/NullnessExample.java">NullnessExample.java</a></b>.
+				(If you have not already, download <a href="../sourcefiles.zip">the
+					source files</a></small> for the tutorial.) It is a simple Java program with an
+				obvious null pointer exception.
+				</p>
+
+				<pre>
+public class NullnessExample {
+    public static void main(String[] args) {
+        Object myObject = null;
+        System.out.println(myObject.toString());
+    }
+}
+</pre>
+			</section>
+
+			<section id="run1">
+
+				<h4>2. Run the Nullness Checker</h4>
+
+
+				<p>
+					To <b>run the Nullness Checker</b>, simply pass -processor with
+					org.checkerframework.checker.nullness.NullnessChecker. Note:
+					<code>javacheck</code>
+					should be an alias to the Checker Framework compiler. See the <a
+						href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#installation">
+						manual</a> for an explanation.
+				</p>
+
+				<pre>
+javacheck -processor org.checkerframework.checker.nullness.NullnessChecker NullnessExample.java
+</pre>
+
+				<p>The following error will be produced.</p>
+
+				<pre>
+NullnessExample.java:9: error: [dereference.of.nullable] dereference of possibly-null reference myObject
+        System.out.println(myObject.toString());
+                           ^
+1 error
+</pre>
+			</section>
+
+			<section id="error">
+				<h4>3. Correct the error</h4>
+
+				<p>
+					<b>Change <code>myObject</code></b> to some non-null value
+				</p>
+
+				<pre>
+public class NullnessExample {
+    public static void main(String[] args) {
+        Object myObject = <b>new Object()</b>;
+        System.out.println(myObject.toString());
+    }
+}
+</pre>
+			</section>
+
+			<section id="run2">
+				<h4>4. Re-run the Nullness Checker</h4>
+
+				<p>No errors should be produced.</p>
+
+				<pre>
+javacheck -processor org.checkerframework.checker.nullness.NullnessChecker NullnessExample.java
+</pre>
+			</section>
+
+			<p>This was a very simple example to show how to use the Checker
+				Framework in Eclipse. The next example is a little more complex.</p>
+
+		</div>
+	</section>
+
+	<section id="installation">
+		<div class="page-header short">
+			<h2>
+				<small>Next, try <a href="user-input-cmd.html">
+						Validating User Input</a>, an example using the Regex Checker.
+				</small>
+			</h2>
+		</div>
+
+	</section>
+	<!--
+<div class="bottom_liner well">
+    <a href="#">Top</a>
+</div>
+-->
+
+</body>
+</html>
+
+<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath
+ -->
+<!--  LocalWords:  NullnessChecker plugin's hg
+ -->
