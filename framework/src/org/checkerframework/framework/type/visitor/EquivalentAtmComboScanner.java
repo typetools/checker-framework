@@ -179,22 +179,30 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM> extends Abst
 
     protected class Visited {
 
-        private final Map<Integer, RETURN_TYPE> visits = new HashMap<>();
-
-        private int hash(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
-            return 503 * (type1.hashCode() + type2.hashCode());
-        }
+        private final Map<AnnotatedTypeMirror, Map<AnnotatedTypeMirror, RETURN_TYPE>> visits = new IdentityHashMap<>();
 
         public boolean contains(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
-            return visits.containsKey(hash(type1, type2));
+            Map<AnnotatedTypeMirror, RETURN_TYPE> recordFor1 = visits.get(type1);
+            return recordFor1 != null && recordFor1.containsKey(type2);
         }
 
         public RETURN_TYPE getResult(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
-            return visits.get(hash(type1, type2));
+            Map<AnnotatedTypeMirror, RETURN_TYPE> recordFor1 = visits.get(type1);
+            if (recordFor1 == null) {
+                return null;
+            }
+
+            return recordFor1.get(type2);
         }
 
         public void add(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2, final RETURN_TYPE ret) {
-            visits.put(hash(type1, type2), ret);
+            Map<AnnotatedTypeMirror, RETURN_TYPE> recordFor1 = visits.get(type1);
+            if (recordFor1 == null) {
+                recordFor1 = new IdentityHashMap<AnnotatedTypeMirror, RETURN_TYPE>();
+                visits.put(type1, recordFor1);
+            }
+
+            recordFor1.put(type2, ret);
         }
     }
 }

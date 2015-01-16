@@ -298,10 +298,11 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         visited.add(type1, type2);
 
         //TODO: Remove this code when capture conversion is implemented
-        if (InternalUtils.isCaptured(type1.getUnderlyingType()) && !boundsMatch(type1, type2) ||
-            InternalUtils.isCaptured(type2.getUnderlyingType()) && !boundsMatch(type1, type2)) {
-            return subtypeAndCompare(type1.getUpperBound(), type2.getUpperBound(), visited)
-                && subtypeAndCompare(type1.getLowerBound(), type2.getLowerBound(), visited);
+        if (InternalUtils.isCaptured(type1.getUnderlyingType()) || InternalUtils.isCaptured(type2.getUnderlyingType())) {
+            if (!boundsMatch(type1, type2)) {
+                return subtypeAndCompare(type1.getUpperBound(), type2.getUpperBound(), visited)
+                        && subtypeAndCompare(type1.getLowerBound(), type2.getLowerBound(), visited);
+            }
         }
 
         visited.add(type1, type2);

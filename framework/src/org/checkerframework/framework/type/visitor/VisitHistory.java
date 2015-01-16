@@ -25,7 +25,7 @@ import java.util.Set;
  *    E.g.
  *      AnnotatedWildcardType wc = ...
  *      wc.getEffectiveSuperBound().equals(wc.getEffectiveSuperBound())
- *      //the above line will return false if the super bound is a wildcard
+ *      //tae above line will return false if the super bound is a wildcard
  *      //because two wildcards are .equals only if they are also referentially (==) equal
  *      //and each call to getEffectiveSuperBound returns a copy of the original bound
  *
