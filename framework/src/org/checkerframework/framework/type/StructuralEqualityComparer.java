@@ -3,13 +3,16 @@ package org.checkerframework.framework.type;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.type.visitor.AtmComboVisitor;
 import org.checkerframework.framework.type.visitor.VisitHistory;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Types;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -203,7 +206,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     public Boolean visitDeclared_Declared(final AnnotatedDeclaredType type1, final AnnotatedDeclaredType type2,
                                           final VisitHistory visited) {
-        if(visited.contains(type1,type2)) {
+        if(visited.contains(type1, type2)) {
             return true;
         }
 
@@ -292,12 +295,76 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         if(visited.contains(type1, type2)) {
             return true;
         }
+        visited.add(type1, type2);
+
+        //TODO: Remove this code when capture conversion is implemented
+        if (InternalUtils.isCaptured(type1.getUnderlyingType()) && !boundsMatch(type1, type2) ||
+            InternalUtils.isCaptured(type2.getUnderlyingType()) && !boundsMatch(type1, type2)) {
+            return subtypeAndCompare(type1.getUpperBound(), type2.getUpperBound(), visited)
+                && subtypeAndCompare(type1.getLowerBound(), type2.getLowerBound(), visited);
+        }
 
         visited.add(type1, type2);
         return areEqual(type1.getUpperBound(), type2.getUpperBound(), visited)
             && areEqual(type1.getLowerBound(), type2.getLowerBound(), visited);
     }
 
+    /**
+     * A temporary solution until we handle CaptureConversion, subtypeAndCompare handles cases
+     * in which we encounter a captured type being compared against a non-captured type.  The
+     * captured type may have type arguments that are subtypes of the other type it is being
+     * compared to.  In these cases, we will convert the bounds via this method to the other
+     * type and then continue on with the equality comparison.  If neither of the type args
+     * can be converted to the other than we just compare the effective annotations on the
+     * two types for equality.
+     */
+    boolean subtypeAndCompare(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2,
+                               final VisitHistory visited) {
+        final Types types = type1.atypeFactory.types;
+        final AnnotatedTypeMirror t1;
+        final AnnotatedTypeMirror t2;
+
+        if (types.isSubtype(type2.getUnderlyingType(), type1.getUnderlyingType())) {
+            t1 = type1;
+            t2 = AnnotatedTypes.asSuper(types, type1.atypeFactory, type2, type1);
+
+        } else if (types.isSubtype(type1.getUnderlyingType(), type2.getUnderlyingType())) {
+            t1 = AnnotatedTypes.asSuper(types, type1.atypeFactory, type1, type2);
+            t2 = type2;
+
+        } else {
+            t1 = null;
+            t2 = null;
+
+        }
+
+        if (t1 == null || t2 == null) {
+            final QualifierHierarchy qualifierHierarchy = type1.atypeFactory.getQualifierHierarchy();
+            if (currentTop == null) {
+                return AnnotationUtils.areSame(
+                        AnnotatedTypes.findEffectiveAnnotations(qualifierHierarchy, type1),
+                        AnnotatedTypes.findEffectiveAnnotations(qualifierHierarchy, type2)
+                );
+
+            } else {
+                return AnnotationUtils.areSame(
+                        AnnotatedTypes.findEffectiveAnnotationInHierarchy(qualifierHierarchy, type1, currentTop),
+                        AnnotatedTypes.findEffectiveAnnotationInHierarchy(qualifierHierarchy, type2, currentTop)
+                );
+
+            }
+        }
+
+        return areEqual(t1, t2, visited);
+    }
+
+    /**
+     * @return true if the underlying types of the bounds for type1 and type2 are equal
+     */
+    public boolean boundsMatch(final AnnotatedTypeVariable type1, final AnnotatedTypeVariable type2) {
+        return type1.getUpperBound().getUnderlyingType().equals(type2.getUpperBound().getUnderlyingType())
+            && type1.getLowerBound().getUnderlyingType().equals(type2.getLowerBound().getUnderlyingType());
+    }
     /**
      * TODO: IDENTIFY TESTS THAT LEAD TO RECURSIVE BOUNDED WILDCARDS, PERHAPS THE RIGHT THING IS TO
      * TODO: MOVE THE CODE THAT IDENTIFIES REFERENCES TO THE SAME WILDCARD TYPE HERE.

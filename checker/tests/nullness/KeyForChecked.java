@@ -104,7 +104,11 @@ class KFIterator<E extends @Nullable Object> {
     void entrySet() {
         KFMap<String, Object> emap = new KFHashMap<String, Object>();
         Set<KFMap.Entry<@KeyFor("emap") String, Object>> es = emap.entrySet();
-        // TODO: Should issue error (assignment.type.incompatible) but doesn't right now. With Jonathan's changes, it does.
+
+        //KeyFor has to be explicit on the component to Entry sets because
+        //   a) it's not clear which map the Entry set may have come from
+        //   b) and there is no guarantee the map is still accessible
+        //:: error: (assignment.type.incompatible)
         Set<KFMap.Entry<String, Object>> es2 = emap.entrySet();
     }
 

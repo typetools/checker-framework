@@ -335,6 +335,11 @@ class SupertypeFinder {
 
             @Override
             public Void visitDeclared(AnnotatedDeclaredType type, Map<TypeParameterElement, AnnotatedTypeMirror> mapping) {
+            if (visitedNodes.containsKey(type)) {
+                    return visitedNodes.get(type);
+                }
+                visitedNodes.put(type, null);
+
                 List<AnnotatedTypeMirror> args = new ArrayList<AnnotatedTypeMirror>();
                 for (AnnotatedTypeMirror arg : type.getTypeArguments()) {
                     Element elem = types.asElement(arg.getUnderlyingType());
@@ -346,7 +351,7 @@ class SupertypeFinder {
                         args.add(other);
                     } else {
                         args.add(arg);
-                        visit(arg, mapping);
+                        scan(arg, mapping);
                     }
                 }
                 type.setTypeArguments(args);
@@ -366,7 +371,7 @@ class SupertypeFinder {
                     other.replaceAnnotations(comptype.annotations);
                     type.setComponentType(other);
                 } else {
-                    visit(type.getComponentType(), mapping);
+                    scan(type.getComponentType(), mapping);
                 }
 
                 return null;

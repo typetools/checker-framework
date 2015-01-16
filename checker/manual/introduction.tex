@@ -49,8 +49,10 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{i18n-checker}{Internationalization Checker} to
   ensure that code is properly internationalized (see
   \chapterpageref{i18n-checker})
-  %% Not interesting enough to go at the beginning of the introduction:
-  % a checker for compiler message keys as used in the Checker Framework.
+% The Compiler Message Key Checker is neither here nor in the advanced
+% type system features chapter because it is really meant for
+% Checker Framework developers and as sample code, and is not meant
+% for Checker Framework users at large.  
 \item
   \ahrefloc{signature-checker}{Signature String Checker} to ensure that the
   string representation of a type is properly used, for example in
@@ -67,6 +69,9 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{constant-value-checker}{Constant Value Checker} to determine
   whether an expression's value can be known at compile time
   (see \chapterpageref{constant-value-checker})
+\item
+  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
+  expressions have aliases (see \chapterpageref{aliasing-checker})
 \item
   \ahrefloc{linear-checker}{Linear Checker} to control aliasing and prevent
   re-use (see \chapterpageref{linear-checker})
@@ -927,7 +932,7 @@ etc.
 \subsection{Annotations indicate normal behavior\label{annotate-normal-behavior}}
 
 You should use annotations to specify \emph{normal} behavior.  The
-annotations indicate all the values that you \emph{want} to flow to
+annotations indicate all the values that you \emph{want} to flow to a
 reference --- not every value that might possibly flow there if your
 program has a bug.
 
@@ -962,6 +967,18 @@ the intended use of the method.  When you use the \code{@NonNull}
 annotation, the checker is able to issue compile-time warnings about
 possible run-time exceptions, which is its purpose.  Marking the parameter
 as \code{@Nullable} would suppress such warnings, which is undesirable.
+
+This paragraph explains additional subtlety regarding unchecked library
+annotations.  You should ignore paragraph the first time you read this manual.
+Library annotations are generally trusted rather than not checked.
+Therefore, it is often a good idea to write conservative library annotations
+that guarantee lack of exceptions.  For example, you could write
+\<@Nullable> on a method parameter to mean the method never throws an
+exception due to the argument being null.  If a method is allowed to take
+\<null> in some circumstances but not in others, then if you annotate it as
+\<@NonNull>, you will be guaranteed to get a warning for every client use
+that has the potential to cause an exception.
+
 
 % (The note at
 % http://google-collections.googlecode.com/svn/trunk/javadoc/com/google/common/base/Preconditions.html

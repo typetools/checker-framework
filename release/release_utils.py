@@ -429,15 +429,17 @@ def strip(repo):
     out, err = process.communicate()
     process.wait()
 
-    match = re.match("\d+ files updated, \d+ files merged, \d+ files removed, \d+ files unresolved", out)
-    if match is None:
-        match = re.match("abort: empty revision set", err)
+    if out:
+        match = re.search("\d+ files updated, \d+ files merged, \d+ files removed, \d+ files unresolved", out)
         if match is None:
-            raise Exception("Could not recognize strip output: (%s, %s, %s)" % (process.returncode, out, err))
+            match = re.search("empty revision set", err)
+            if match is None:
+                raise Exception("Could not recognize strip output: (%s, %s, %s)"
+                        % (process.returncode, out, err))
+            else:
+                print err
         else:
-            print err
-    else:
-        print out
+            print out
     print ""
 
 def revert(repo):

@@ -319,15 +319,20 @@ CLIMB-to-top.
 Here is the rationale for CLIMB-to-top:
 
 \begin{itemize}
-
 \item
 Casts and local variables (including resource variables in the
-try-with-resources construct, variables in for statements, etc.)
+try-with-resources construct, variables in for statements, exception parameters etc.)
 should be defaulted to top because they are the locations to
 which type refinement (Section~\ref{type-refinement}) is applied.  If they
 start as the top type, then the Checker Framework chooses the best (most
 general) possible type for them.  As a result, a programmer rarely writes
 an explicit annotation on any of those locations.
+
+Catch arguments, known as exception parameters in the Java Language Specification,
+should be defaulted to top for most checkers; otherwise, an error will be issued.  This is because
+exceptions of arbitrary qualified types can be thrown and the Checker Framework
+does not provide runtime checks.
+
 
 \item
 Instanceof types are defaulted to top for a similar reason:  so that
@@ -379,6 +384,8 @@ public @interface Nullable { }
 
 \noindent
 Note that \<DefaultLocation.LOCAL\_VARIABLE> includes casts and instanceof.
+ As mentioned above, the exception parameters are always non-null, so
+\<DefaultLocation.EXCEPTION\_PARAMETER> is excluded from the above list.
 
 A type system designer does not have to use the CLIMB-to-top rule.  In
 addition, a user may choose a different rule for defaults using the
@@ -648,13 +655,16 @@ Type systems that support a run-time test are:
 \end{itemize}
 
 
-Type systems that do not support a run-time test, but could do so with some
+Type systems that do not currently support a run-time test, but could do so with some
 additional implementation work, are
 
 \begin{itemize}
 \item
   \ahrefloc{interning-checker}{Interning Checker} for errors in equality
   testing and interning (see \chapterpageref{interning-checker})
+\item
+  \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
+  (see \chapterpageref{lock-checker})
 \item
   \ahrefloc{propkey-checker}{Property File Checker} to ensure that valid
   keys are used for property files and resource bundles (see
@@ -663,10 +673,17 @@ additional implementation work, are
   \ahrefloc{i18n-checker}{Internationalization Checker} to
   ensure that code is properly internationalized (see
   \chapterpageref{i18n-checker})
+% The Compiler Message Key Checker is neither here nor in the introduction
+% chapter because it is really meant for Checker Framework developers and
+% as sample code, and is not meant for Checker Framework users at large.  
 \item
   \ahrefloc{signature-checker}{Signature String Checker} to ensure that the
   string representation of a type is properly used, for example in
   \<Class.forName> (see \chapterpageref{signature-checker}).
+\item
+  \ahrefloc{constant-value-checker}{Constant Value Checker} to determine
+  whether an expression's value can be known at compile time
+  (see \chapterpageref{constant-value-checker})
 \end{itemize}
 
 
@@ -677,9 +694,6 @@ Type systems that cannot support a run-time test are:
   \ahrefloc{initialization-checker}{Initialization Checker} to ensure all
   fields are set in the constructor (see
   \chapterpageref{initialization-checker})
-\item
-  \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
-  (see \chapterpageref{lock-checker})
 \item
   \ahrefloc{fenum-checker}{Fake Enum Checker} to allow type-safe fake enum
   patterns (see \chapterpageref{fenum-checker})
@@ -695,9 +709,8 @@ Type systems that cannot support a run-time test are:
   performed on correct units of measurement
   (see \chapterpageref{units-checker})
 \item
-  \ahrefloc{constant-value-checker}{Constant Value Checker} to determine
-  whether an expression's value can be known at compile time
-  (see \chapterpageref{constant-value-checker})
+  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
+  expressions have aliases (see \chapterpageref{aliasing-checker})
 \item
   \ahrefloc{linear-checker}{Linear Checker} to control aliasing and prevent
   re-use (see \chapterpageref{linear-checker})
@@ -970,7 +983,7 @@ could happen at run time, whether assertions are enabled or disabled.
 
 If you supply the \<-AassumeAssertionsAreEnabled> command-line option, then
 the Checker Framework assumes assertions are enabled.  If you supply the
-\<-AassumeAssertionsAreEnabled> command-line option, then the Checker
+\<-AassumeAssertionsAreDisabled> command-line option, then the Checker
 Framework assumes assertions are disabled.  You may not supply both
 command-line options.
 

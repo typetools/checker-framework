@@ -359,7 +359,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      */
     protected boolean isContainedBy(final AnnotatedTypeMirror inside, final AnnotatedTypeMirror outside,
                                     VisitHistory visited, boolean canBeCovariant) {
-
         if(canBeCovariant && isSubtype(inside, outside, visited)) {
             return true;
         }

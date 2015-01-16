@@ -15,6 +15,7 @@ import org.checkerframework.checker.regex.RegexChecker;
 import org.checkerframework.checker.signature.SignatureChecker;
 import org.checkerframework.checker.tainting.TaintingChecker;
 import org.checkerframework.checker.units.UnitsChecker;
+import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.subtyping.SubtypingChecker;
 import org.checkerframework.common.value.ValueChecker;
 
@@ -110,6 +111,14 @@ public class CheckerActions
         public UnitAction()
         {
             super(UnitsChecker.class.getCanonicalName());
+        }
+    }
+
+    public static class AliasingAction extends RunCheckerAction
+    {
+        public AliasingAction()
+        {
+            super(AliasingChecker.class.getCanonicalName());
         }
     }
 

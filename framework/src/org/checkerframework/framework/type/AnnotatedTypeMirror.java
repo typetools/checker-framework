@@ -180,7 +180,7 @@ public abstract class AnnotatedTypeMirror {
 
     @Pure
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return hashcodeVisitor.visit(this);
     }
 

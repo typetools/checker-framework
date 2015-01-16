@@ -526,6 +526,12 @@ miss a step if you only read the paragraph asking you to say 'yes'.
             manuals to a temporary file.  Please review these changes for errors.  You can edit them
             in the build repository and they will be committed by the release_push.py script.<br /><br />
 
+            <mark>Please verify that the lists of checkers in these Checker Framework chapter sections
+            are up to date:
+            <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#introduction">Introduction</a>,
+            <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#type-refinement-runtime-tests">Run-time tests and type refinement</a>
+            </mark><br /><br />
+
             It's a good idea to build the manual on your local machine's enlistment and verify
             that the PDF does not have lines that are longer than the page width (some lines
             go beyond the right margin - this is acceptable), except for lines containing command lines
@@ -580,6 +586,10 @@ miss a step if you only read the paragraph asking you to say 'yes'.
                 to do an actual release.  If you just want to test the script, leave &quot;release&quot;
                 off and the script will run but not update anything.
             </div>
+            
+            <mark>If you get an obscure error about permissions, try running the release_push script several timse
+            in a row. This will sometimes update the repository permissions such that the script can proceed
+            further each time.</mark>
 
         </td>
     </tr>
@@ -704,9 +714,9 @@ miss a step if you only read the paragraph asking you to say 'yes'.
             This is also an irreversible step.  Once you have released these artifacts they will be forever
             available to the Java community through the Central repository.  Follow the prompts.
             The Maven artifacts (such as checker-qual.jar) are still needed, but the Maven plug-in
-            is no longer maintained. Before releasing the staged artifacts, make sure that the
+            is no longer maintained. <mark>Before releasing the staged artifacts, make sure that the
             Checker Framework maven plug-in directory (and only that directory) is removed from
-            the staged artifacts before releasing them. Later we will fix this so that this directory
+            the staged artifacts before releasing them.</mark> Later we will fix this so that this directory
             is not included in the first place.
         </td>
     </tr>

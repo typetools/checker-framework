@@ -34,6 +34,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -87,6 +88,7 @@ import javax.tools.Diagnostic.Kind;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -104,6 +106,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -1526,9 +1529,164 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return null;
     }
 
+    /**
+     * Checks the type of the exception parameter
+     * Subclasses should override checkExceptionParameter(CatchTree node)
+     * rather than this method to change the behavior of this check.
+     * @param node
+     * @param p
+     * @return
+     */
+    @Override
+    public Void visitCatch(CatchTree node, Void p) {
+        checkExceptionParameter(node);
+        return super.visitCatch(node, p);
+    }
+
+    /**
+     * Checks the type of a thrown exception. Subclasses should override
+     * checkThrownExpression(ThrowTree node) rather than this method to change
+     * the behavior of this check.
+     *
+     * @param node
+     * @param p
+     * @return
+     */
+    @Override
+    public Void visitThrow(ThrowTree node, Void p) {
+        checkThrownExpression(node);
+        return super.visitThrow(node, p);
+    }
+
     // **********************************************************************
     // Helper methods to provide a single overriding point
     // **********************************************************************
+
+    /**
+     * Issue error if the exception parameter is not a super type of the
+     * annotation specified by getExceptionParameterLowerBoundAnnotations(), which is top
+     * by default (Subclasses may override this method to change the behavior of
+     * this check. Subclasses wishing to enforce that exception parameter be
+     * annotated with other annotations can just override
+     * getExceptionParameterLowerBoundAnnotations())
+     *
+     * @param node
+     *            CatchTree to check
+     */
+    protected void checkExceptionParameter(CatchTree node) {
+
+        Set<? extends AnnotationMirror> requiredAnnotations = getExceptionParameterLowerBoundAnnotations();
+        AnnotatedTypeMirror exPar = atypeFactory.getAnnotatedType(node
+                .getParameter());
+
+        for (AnnotationMirror required : requiredAnnotations) {
+            AnnotationMirror found = exPar.getAnnotationInHierarchy(required);
+            assert found != null;
+            if (!atypeFactory.getQualifierHierarchy()
+                    .isSubtype(required, found)) {
+                checker.report(Result.failure("exception.parameter.invalid",
+                        found, required), node.getParameter());
+            }
+
+            if (exPar.getKind() == TypeKind.UNION) {
+                AnnotatedUnionType aut = (AnnotatedUnionType) exPar;
+                for (AnnotatedTypeMirror alterntive : aut.getAlternatives()) {
+                    AnnotationMirror foundAltern = alterntive
+                            .getAnnotationInHierarchy(required);
+                    if (!atypeFactory.getQualifierHierarchy().isSubtype(
+                            required, foundAltern)) {
+                        checker.report(Result.failure(
+                                "exception.parameter.invalid", foundAltern,
+                                required), node.getParameter());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns a set of AnnotationMirrors that is a lower bound for exception
+     * parameters.
+     *
+     * Note: by default this method is called by getThrowUpperBoundAnnotations(), so that
+     * this annotation is enforced.
+     *
+     * (Default is top)
+     *
+     * @return Set of annotation mirrors, one per hierarchy, that from a lower
+     *         bound of annotations that can be written on an exception
+     *         parameter
+     */
+    protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
+        return atypeFactory.getQualifierHierarchy().getTopAnnotations();
+    }
+
+    /**
+     * Checks the type of the thrown expression.
+     *
+     * By default, this method checks that the thrown expression is a subtype of top.
+     *
+     * getExceptionParameterLowerBound
+     * Issue error if the thrown expression is not a sub type of the
+     * the annotation given by getThrowUpperBoundAnnotations(), the same as getExceptionParameterLowerBound
+     * by default.
+     *
+     * (Subclasses may override this method to change the behavior of this check.
+     * Subclasses wishing to enforce that the thrown expression be a subtype of a type besides
+     * getExceptionParameterLowerBound, should override getThrowUpperBoundAnnotations().  )
+     *
+     * @param node ThrowTree to check
+     */
+    protected void checkThrownExpression(ThrowTree node) {
+        AnnotatedTypeMirror throwType = atypeFactory.getAnnotatedType(node
+                .getExpression());
+        Set<? extends AnnotationMirror> required = getThrowUpperBoundAnnotations();
+        switch (throwType.getKind()) {
+        case NULL:
+        case DECLARED:
+            Set<AnnotationMirror> found = throwType.getAnnotations();
+            if (!atypeFactory.getQualifierHierarchy()
+                    .isSubtype(found, required)) {
+                checker.report(
+                        Result.failure("throw.type.invalid", found, required),
+                        node.getExpression());
+            }
+            break;
+        case TYPEVAR:
+        case WILDCARD:
+            //TODO: this code might change after the type var changes.
+            Set<AnnotationMirror> foundEffective = throwType.getEffectiveAnnotations();
+            if (!atypeFactory.getQualifierHierarchy()
+                    .isSubtype(foundEffective, required)) {
+                checker.report(
+                        Result.failure("throw.type.invalid", foundEffective, required),
+                        node.getExpression());
+            }
+            break;
+        default:
+            ErrorReporter.errorAbort("Unexpected throw expression type: "
+                    + throwType.getKind());
+            break;
+
+        }
+    }
+
+    /**
+     * Returns a set of AnnotationMirrors that is a upper bound for thrown
+     * exceptions.
+     *
+     * Note: by default this method is returns by getExceptionParameterLowerBoundAnnotations(), so that
+     * this annotation is enforced.
+     *
+     * (Default is top)
+     *
+     * @return Set of annotation mirrors, one per hierarchy, that form an upper
+     *         bound of thrown expressions.
+     */
+    protected Set<? extends AnnotationMirror> getThrowUpperBoundAnnotations(){
+        return getExceptionParameterLowerBoundAnnotations();
+    }
+
 
     /**
      * Checks the validity of an assignment (or pseudo-assignment) from a value
