@@ -216,7 +216,7 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
                 } else {
                     first = false;
                 }
-                result += entry.getKey() + "=" + (entry.getValue() != null ? "@" + entry.getValue() : null);
+                result += entry.getKey() + "=" + entry.getValue();
             }
             result += ">>";
         }
