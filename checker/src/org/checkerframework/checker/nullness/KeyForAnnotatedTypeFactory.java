@@ -367,7 +367,7 @@ public class KeyForAnnotatedTypeFactory extends
                       final AnnotatedTypeMirror subTypeArg   = subtypeTypeArgs.get(i);
 
                       if(subtypeIsRaw || supertypeIsRaw) {
-                          rawnessComparer.isValid(subtype, supertype, visited);
+                          rawnessComparer.isValidInHierarchy(subtype, supertype, currentTop, visited);
                       } else {
                           if (!isContainedBy(subTypeArg, superTypeArg, visited, isCovariant(i, covariantArgIndexes))) {
                               return false;
