@@ -96,7 +96,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     // Final note: all annotation comparisons are done via isPrimarySubtype, isBottom, and isAnnoSubtype
     // in order to ensure that we first get the annotations in the hierarchy of currentTop before
     // passing annotations to qualifierHierarchy.
-    private AnnotationMirror currentTop;
+    protected AnnotationMirror currentTop;
 
     public DefaultTypeHierarchy(final BaseTypeChecker checker, final QualifierHierarchy qualifierHierarchy,
                          boolean ignoreRawTypes, boolean invariantArrayComponents) {
@@ -478,7 +478,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                                    boolean subtypeRaw, boolean supertypeRaw, VisitHistory visited) {
 
         if(subtypeRaw || supertypeRaw) {
-            if ( !rawnessComparer.isValid(subTypeArg, superTypeArg, visited)
+            if ( !rawnessComparer.isValidInHierarchy(subTypeArg, superTypeArg, currentTop, visited)
               && !isContainedBy(subTypeArg, superTypeArg, visited, this.covariantTypeArgs )) {
                 return false;
             }
