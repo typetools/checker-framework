@@ -7,6 +7,7 @@ import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 
@@ -18,6 +19,7 @@ import javax.lang.model.type.TypeVariable;
  */
 public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, VisitHistory> {
     private DefaultTypeHierarchy typeHierarchy;
+    private AnnotationMirror currentTop;
 
     public DefaultRawnessComparer(final DefaultTypeHierarchy typeHierarchy) {
         this.typeHierarchy = typeHierarchy;
@@ -36,8 +38,22 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
         return AtmCombo.accept(subtype, supertype, visited, this);
     }
 
+
+    public boolean isValidInHierarchy(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype, AnnotationMirror top, VisitHistory visited) {
+        this.currentTop = top;
+        boolean result = AtmCombo.accept(subtype, supertype, visited, this);
+        this.currentTop = null;
+        return result;
+    }
+
     //TODO: GENERAL CASE IF THE OTHERS HAVEN"T OCCURED SUCH AS DECLARED_DECLARED
     protected boolean arePrimaryAnnotationsEqual(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype) {
+        if (currentTop != null) {
+            return AnnotationUtils.areSame(
+                    subtype.getAnnotationInHierarchy(currentTop),
+                    supertype.getAnnotationInHierarchy(currentTop));
+        } //else
+
         return AnnotationUtils.areSame(subtype.getAnnotations(), supertype.getAnnotations());
     }
 
@@ -81,7 +97,11 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
             return true;
         }
 
-        return typeHierarchy.isSubtype(subtypeUpper, supertypeUpper);
+        if (currentTop == null) {
+            return typeHierarchy.isSubtype(subtypeUpper, supertypeUpper);
+        }
+
+        return typeHierarchy.isSubtype(subtypeUpper, supertypeUpper, currentTop);
     }
 
     @Override

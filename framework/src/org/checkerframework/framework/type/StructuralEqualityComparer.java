@@ -33,7 +33,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     //TODO: THE PROBLEM IS THIS CLASS SHOULD FAIL WHEN INCOMPARABLE TYPES ARE COMPARED BUT
     //TODO: TO CURRENTLY SUPPORT THE BUGGY inferTypeArgs WE FALL BACK TO the RawnessComparer
     //TODO: WHICH IS CLOSE TO THE OLD TypeHierarchy behavior
-    private AbstractAtmComboVisitor<Boolean, VisitHistory> fallback;
+    private DefaultRawnessComparer fallback;
 
 
     //explain this one
@@ -43,7 +43,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         this(null);
     }
 
-    public StructuralEqualityComparer(final AbstractAtmComboVisitor<Boolean, VisitHistory> fallback) {
+    public StructuralEqualityComparer(final DefaultRawnessComparer fallback) {
         this.fallback = fallback;
     }
 
@@ -52,7 +52,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         //TODO: REMOVE THIS OVERRIDE WHEN inferTypeArgs NO LONGER GENERATES INCOMPARABLE TYPES
         //TODO: THe rawness comparer is close to the old implementation of TypeHierarchy
         if(fallback != null) {
-            return fallback.visit(type1, type2, visitHistory);
+            return fallback.isValidInHierarchy(type1, type2, currentTop, visitHistory);
         }
 
         return super.defaultAction(type1, type2, visitHistory);
