@@ -26,5 +26,15 @@ class ArrayInit {
         int @ArrayLen(3) [] ints = new int[]{2,2,2};
         byte @StringVal("d%")[] bytes = new byte[]{100,'%'};
         char @StringVal("-A%")[] chars = new char[]{45,'A','%'};
+        int @ArrayLen(3) [] ints2 = {2,2,2};
+        //:: error: (assignment.type.incompatible)
+        int @ArrayLen(0) [] ints3 = null;
+    }
+    public void vargsTest(){
+    	vargs((Object[])null);
+    	vargs((int[]) null);
+    }
+    public void vargs( Object @ArrayLen(0)... ints){
+    	
     }
 }
