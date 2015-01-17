@@ -639,8 +639,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
 
         private void handleArrayCast(TypeCastTree tree, AnnotatedTypeMirror type) {
         	if(tree.getExpression().getKind() == Kind.NULL_LITERAL){
-        		AnnotationMirror anno = createAnnotation(ArrayLen.class, Collections.singleton(0));
-        		type.replaceAnnotation(anno);
+        		type.replaceAnnotation(BOTTOMVAL);
         	}
 			
 		}
