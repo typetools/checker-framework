@@ -4,12 +4,18 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 
 import com.sun.source.tree.Tree;
+
 import javax.lang.model.element.AnnotationMirror;
+
 import org.checkerframework.framework.source.Result;
+
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TypeCastTree;
+
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -55,6 +61,13 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         }
          
         return super.visitAnnotation(tree, p);
+    }
+    @Override
+    public Void visitTypeCast(TypeCastTree node, Void p) {
+    	if(node.getExpression().getKind() == Kind.NULL_LITERAL){
+    		return null;
+    	}
+    	return super.visitTypeCast(node, p);
     }
 
 }
