@@ -67,7 +67,19 @@ public class MethodTest {
         } catch (Exception ignore) {
         }
     }
-
+    public void pass4b(@ReflectBottom MethodTest this) {
+        String str = "setA";
+        @Sibling1 int val1 = sibling1;
+        @Sibling1 Integer val2 = val1;
+        try {
+        	//
+            Class<?> c = Class.forName("MethodTest$SuperClass");
+            Method m = c.getMethod(str, int.class);
+            m.invoke(this, val1);
+            m.invoke(this, val2);
+        } catch (Exception ignore) {
+        }
+    }
     // Test resolution of methods declared in super class
     public void pass5(@ReflectBottom MethodTest this) {
         try {
@@ -191,7 +203,9 @@ public class MethodTest {
         } catch (Exception ignore) {
         }
     }
-
+public void test(){
+	
+}
     public void fail1() {
         try {
             Class<?> c = MethodTest.class;

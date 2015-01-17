@@ -340,17 +340,23 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * with their value
          */
         @Override
-        public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
-            ExpressionTree etree = tree.getExpression();
-            Element e = InternalUtils.symbol(etree);
-            if (e != null) {
-                String name = getClassname(e);
-                AnnotationMirror newQual = createClassVal(Arrays.asList(name));
-                type.replaceAnnotation(newQual);;
-                return null;
-            }
-            return super.visitMemberSelect(tree, type);
-        }
+		public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
+			ExpressionTree etree = tree.getExpression();
+			Element e = InternalUtils.symbol(etree);
+			String name = null;
+			if (e != null) {
+				name = getClassname(e);
+			} else if (etree.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+				PrimitiveTypeTree primTree = (PrimitiveTypeTree) etree;
+				name = primTree.getPrimitiveTypeKind().name().toString();
+			}
+			if (name != null) {
+				AnnotationMirror newQual = createClassVal(Arrays.asList(name));
+				type.replaceAnnotation(newQual);
+				return null;
+			}
+			return super.visitMemberSelect(tree, type);
+		}
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
