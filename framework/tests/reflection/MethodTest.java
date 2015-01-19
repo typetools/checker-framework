@@ -29,6 +29,15 @@ public class MethodTest {
         } catch (Exception ignore) {
         }
     }
+    
+    public void pass1b(@ReflectBottom MethodTest this ) {
+        try {
+            Class<?> c = Class.forName("MethodTest$SuperClass");
+            Method m = c.getMethod("getA", (Class[]) null);
+            @Sibling1 Object a = m.invoke(this, (@ReflectBottom Object[]) null);
+        } catch (Exception ignore) {
+        }
+    }
 
     public void pass2(@ReflectBottom MethodTest this) {
         String str = "get" + "A";
