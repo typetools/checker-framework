@@ -1,0 +1,314 @@
+\htmlhr
+\chapter{Aliasing Checker\label{aliasing-checker}}
+
+The Aliasing Checker identifies expressions that definitely have no
+aliases.
+
+Two expressions are aliased when they have the same non-primitive value;
+that is, they are references to the identical Java object
+in the heap. Another way of saying this is that two expressions,
+$\mathit{exprA}$ and $\mathit{exprB}$, are aliases of each other when
+$\mathit{exprA} \<==> \mathit{exprB}$ at the same program point.
+
+Assigning to a variable or field typically creates an alias.  For example,
+after the statement \<a = b;>, the variables \<a> and \<b> are aliased.
+
+Knowing that an expression is not aliased permits more accurate reasoning
+about how side effects modify the expression's value.
+
+To run the Aliasing Checker, supply the
+\code{-processor org.checkerframework.common.aliasing.AliasingChecker}
+command-line option to javac.
+However, a user rarely runs the Aliasing Checker directly.
+This type system is mainly intended to be used together with other type systems.
+For example, the SPARTA information flow type-checker
+(Section~\ref{sparta-checker}) uses the Aliasing Checker to improve its
+type refinement --- if an expression has no aliases, a more refined type
+can often be inferred, otherwise the type-checker makes conservative
+assumptions.
+
+\section{Aliasing annotations\label{aliasing-annotations}}
+
+\begin{figure}
+\includeimage{aliasing}{2cm}
+\caption{Type hierarchy for the Aliasing type system.}
+\label{fig-aliasing-hierarchy}
+\end{figure}
+
+There are two possible types for an expression:
+
+\begin{description}
+
+\item[\refqualclass{common/aliasing/qual}{MaybeAliased}]
+is the type of an expression that might have an alias.
+This is the default, so every unannotated type is
+\code{@MaybeAliased}. (This includes the type of \code{null}.)
+
+\item[\refqualclass{common/aliasing/qual}{Unique}]
+is the type of an expression that has no aliases.
+
+The \code{@Unique} annotation is only allowed at local variables, method
+parameters, constructor results, and method returns.
+A constructor's result should be annotated with \code{@Unique} only if the
+constructor's body does not creates an alias to the constructed object.
+
+\end{description}
+
+There are also two annotations, which are currently trusted instead of verified,
+that can be used on formal parameters (including
+the receiver parameter, \<this>):
+
+\begin{description}
+
+\item[\refqualclass{common/aliasing/qual}{NonLeaked}]
+identifies a formal parameter that is not leaked nor
+returned by the method body.
+For example, the formal parameter of the String copy constructor,
+\code{String(String s)}, is \code{@NonLeaked} because the body of the method
+only makes a copy of the parameter.
+
+\item[\refqualclass{common/aliasing/qual}{LeakedToResult}]
+is used when the parameter may be returned, but it is not
+otherwise leaked.
+For example, the receiver parameter of \code{StringBuffer.append(StringBuffer
+this, String s)} is
+\code{@LeakedToResult}, because the method returns the updated receiver.
+
+\end{description}
+
+\section{Leaking contexts\label{aliasing-leaking-contexts}}
+This section lists the expressions that create aliases.  These are also
+called ``leaking contexts''.
+
+\begin{description}
+\item[Assignments]
+After an assignment, the left-hand side and the right-hand side are
+typically aliased.  (The only counterexample is when the right-hand side is
+a fresh expression; see Section~\ref{aliasing-refinement}.)
+
+\begin{Verbatim}
+  @Unique Object u = ...;
+  Object o = u;                    // (not.unique) type-checking error!
+\end{Verbatim}
+
+If this example type-checked, then \<u> and \<o> would be aliased.
+For this example to type-check, either the \<@Unique> annotation on the
+type of \<u>, or the \<o = u;> assignment, must be removed.
+
+\item[Method calls and returns (pseudo-assignments)]
+Passing an argument to a method is a ``pseudo-assignment'' because it effectively
+assigns the argument to the formal parameter.  Return statements are also
+pseudo-assignments.
+As with assignments, the left-hand side and right-hand side of
+pseudo-assignments are typically aliased.
+
+Here is an example for argument-passing:
+
+\begin{Verbatim}
+  void foo(Object o) { ... }
+
+  @Unique Object u = ...;
+  foo(u);   // type-checking error, because foo may create an alias of the passed argument
+\end{Verbatim}
+
+Passing a non-aliased
+reference to a method does not necessarily create an alias.
+However, the body of the method might create an alias or leak the
+reference.  Thus, the Aliasing Checker always treats a method call as
+creating aliases for each argument unless the corresponding formal
+parameter is marked as
+@\refqualclass{common/aliasing/qual}{NonLeaked} or
+@\refqualclass{common/aliasing/qual}{LeakedToResult}.
+
+Here is an example for a return statement:
+
+\begin{Verbatim}
+Object id(@Unique Object p) {
+    return p;     // (not.unique) type-checking error!
+}
+\end{Verbatim}
+
+If this code type-checked, then it would be possible for clients to write
+code like this:
+
+\begin{Verbatim}
+@Unique Object u = ...;
+Object o = id(u);
+\end{Verbatim}
+
+\noindent
+after which there is an alias to \<u> even though it is declared as \<@Unique>.
+
+However, it is permitted to write
+
+\begin{Verbatim}
+Object id(@LeakedToResult Object p) {
+    return p;
+}
+\end{Verbatim}
+
+\noindent
+after which the following code type-checks:
+
+\begin{Verbatim}
+@Unique Object u = ...;
+id(u);                   // method call result is not used
+Object o1 = ...;
+Object o2 = id(o1);      // argument is not @Unique
+\end{Verbatim}
+
+
+
+\item[Throws]
+A thrown exception can be captured by a catch block, which creates an
+alias of the thrown exception.
+
+\begin{Verbatim}
+void foo() {
+    @Unique Exception uex = new Exception();
+    try {
+        throw uex;    // (not.unique) type-checking error!
+    } catch (Exception ex) {
+        // uex and ex refer to the same object here.
+    }
+}
+\end{Verbatim}
+
+\item[Array initializers]
+
+Array initializers assign the elements in the initializers to corresponding
+indexes in the array, therefore expressions in an array initializer are leaked.
+
+\begin{Verbatim}
+void foo() {
+    @Unique Object o = new Object();
+    Object[] ar = new Object[] { o };  // (not.unique) type-checking error!
+    // The expressions o and ar[0] are now aliased.
+}
+\end{Verbatim}
+
+%Remember to add enhanced for statement if support to type variables is added.
+
+\end{description}
+
+
+\section{Restrictions on where \<@Unique> may be written\label{aliasing-unique-restrictions}}
+
+The \<@Unique> qualifier may not be written on locations such as fields,
+array elements, and type parameters.
+
+As an example of why \<@Unique> may not be written on a field's type,
+consider the following code:
+
+\begin{Verbatim}
+class MyClass {
+    @Unique Object field;
+    void foo() {
+        MyClass myClass2 = this;
+        // this.field is now an alias of myClass2.field
+    }
+}
+\end{Verbatim}
+
+That code must not type-check, because \<field> is declared as \<@Unique>
+but has an alias.  The Aliasing Checker solves the problem by forbidding
+the \<@Unique> qualifier on subcomponents of a structure, such as fields.
+Other solutions might be possible; they would be more complicated but would
+permit more code to type-check.
+
+\<@Unique> may not be written on a type parameter for similar reasons.
+The assignment
+
+\begin{Verbatim}
+List<@Unique Object> l1 = ...;
+List<@Unique Object> l2 = l1;
+\end{Verbatim}
+
+\noindent
+must be forbidden because it would alias \<l1.get(0)> with \<l2.get(0)>
+even though both have type \<@Unique>.  The Aliasing Checker forbids this
+code by rejecting the type \code{List<@Unique Object>}.
+
+
+\section{Aliasing type refinement\label{aliasing-refinement}}
+
+Type refinement enables a type checker to treat an expression as a subtype
+of its declared type.  For example, even if you declare a local variable as
+\<@MaybeAliased> (or don't write anything, since \<@MaybeAliased> is the
+default), sometimes the Aliasing Checker can determine that it is actually
+\<@Unique>.
+% This prevents the type checker from issuing false positive warnings.
+For more details, see Section~\ref{type-refinement}.
+
+The Aliasing Checker treats type refinement in the usual way,
+except that at (pseudo-)assignments
+the right-hand-side (RHS) may lose its type refinement, before the
+left-hand-side (LHS) is type-refined.
+The RHS always loses its type refinement (it is widened to
+\code{@MaybeAliased}, and its declared type must have been
+\code{@MaybeAliased}) except in the following cases:
+
+\begin{itemize}
+\item
+The RHS is a fresh expression --- an expression that returns a different value
+each time it is evaluated. In practice, this is only method/constructor calls
+with \code{@Unique} return type. A variable/field is not fresh because it can
+return the same value when evaluated twice.
+\item
+The LHS is a \code{@NonLeaked} formal parameter and the RHS is an argument in a
+method call or constructor invocation.
+\item
+The LHS is a \code{@LeakedToResult} formal parameter, the RHS is an argument in
+a method call or constructor invocation, and the method's return value is
+discarded --- that is, the method call or constructor invocation is written
+syntactically as a statement rather than as a part of a larger expression or
+statement.
+\end{itemize}
+%(Notice that the last two rules above are restricted to pseudo-assignments.)
+
+A consequence of the above rules is that most method calls are treated conservatively.
+If a variable with declared type \code{@MaybeAliased} has been refined
+to \code{@Unique} and is used as an argument of a method call, it usually loses its
+\code{@Unique} refined type.
+
+
+Figure~\ref{fig-aliasing-refinement-example} gives an example of the Aliasing Checker's
+type refinement rules.
+
+\begin{figure}
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+// Annotations on the StringBuffer class, used in the examples below.
+// class StringBuffer {
+//  @Unique StringBuffer();
+//  StringBuffer append(@LeakedToResult StringBuffer this, @NonLeaked String s);
+// }
+
+void foo() {
+    StringBuffer sb = new StringBuffer();    // sb is refined to @Unique.
+
+    StringBuffer sb2 = sb;                   // sb loses its refinement.
+    // Both sb and sb2 have aliases and because of that have type @MaybeAliased.
+}
+
+void bar() {
+    StringBuffer sb = new StringBuffer();     // sb is refined to @Unique.
+
+    sb.append("someString");
+    // sb stays @Unique, as no aliases are created.
+
+    StringBuffer sb2 = sb.append("someString");
+    // sb is leaked and becomes @MaybeAliased.
+
+    // Both sb and sb2 have aliases and because of that have type @MaybeAliased.
+}
+
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+\caption{Example of Aliasing Checker's type refinement rules.}
+\label{fig-aliasing-refinement-example}
+\end{figure}

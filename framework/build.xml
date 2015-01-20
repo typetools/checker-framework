@@ -1,0 +1,611 @@
+<!--
+  This is an Ant build file for compiling the Checker Framework.
+-->
+<project name="framework" default="dist" basedir=".">
+
+    <description>
+        Builds the Checker Framework "framework" project.
+    </description>
+
+    <property file="build.${os.name}.properties"/>
+    <property file="build.properties"/>
+    <property file="${basedir}/../build-common.properties"/>
+
+    <import file="${basedir}/../build-common.xml"/>
+
+    <property name="run.tests.should.fork" value="true"/>
+    <property name="halt.on.test.failure" value="true"/>
+
+
+    <!-- Dependendencies on other projects (such as dataflow)
+         mirrors javadoc dependencies. If changing project
+         dependencies, change the Javadoc dependencies to keep
+         them in sync (and vice versa). -->
+    <target name="prep" depends="prep-all"
+            description="Create required directories">
+        <mkdir dir="${build}"/>
+        <mkdir dir="${tests.build}"/>
+        <mkdir dir="${tests.build}/testclasses"/>
+        <mkdir dir="${api.doc}" />
+
+        <available property="stubparser.project"
+                   file="${stubparser.loc}/build.xml"/>
+        <antcall target="-prep-stubparser-compile"/>
+
+        <available property="javacutil.project"
+                   file="${javacutil.loc}/build.xml"/>
+        <antcall target="-prep-javacutil-compile"/>
+
+        <available property="dataflow.project"
+                   file="${dataflow.loc}/build.xml"/>
+        <antcall target="-prep-dataflow-compile"/>
+    </target>
+
+    <target name="-prep-stubparser-compile" if="stubparser.project"
+            description="Compile stubparser project">
+        <ant dir="${stubparser.loc}">
+            <target name="dist"/>
+        </ant>
+    </target>
+
+    <target name="-prep-javacutil-compile" if="javacutil.project"
+            description="Compile javacutil utilities project">
+        <ant dir="${javacutil.loc}">
+            <target name="dist"/>
+        </ant>
+    </target>
+
+    <target name="-prep-dataflow-compile" if="dataflow.project"
+            description="Compile dataflow utilities project">
+        <ant dir="${dataflow.loc}">
+            <target name="dist"/>
+        </ant>
+    </target>
+
+
+    <target name="clean" description="Remove generated files">
+        <ant dir="${javacutil.loc}">
+            <target name="clean"/>
+        </ant>
+
+        <ant dir="${dataflow.loc}">
+            <target name="clean"/>
+        </ant>
+
+        <ant dir="${stubparser.loc}">
+            <target name="clean"/>
+        </ant>
+
+        <delete dir="${build}"/>
+        <delete dir="${api.doc}"/>
+        <delete dir="${temp.dir}"/>
+        <delete dir="dist" />
+
+        <delete file="${framework.lib}"/>
+    </target>
+
+    <target name="clean-nojar" description="Remove generated class files, but not the .jar files">
+        <delete dir="${build}"/>
+    </target>
+
+
+    <target name="build.check.uptodate"
+            description="Set properties: filesets and build.uptodate">
+        <fileset id="src.files" dir="${src}">
+            <include name="**/*.java"/>
+            <exclude name=""/>
+        </fileset>
+
+        <fileset id="src.astub.files" dir="${src}" includes="**/*.properties,**/*.astub"/>
+
+        <!-- I can't figure out how to combine filesets (or even selectors)
+             to get just one *.uptodate property, so do them individually
+             and then combine with <condition>. -->
+            <!-- Probably should depend on a file rather than a directory. -->
+        <uptodate property="src.files.uptodate" targetfile="${build}">
+          <srcfiles refid="src.files"/>
+          <mapper type="glob" from="*.java" to="${build}/*.class"/>
+        </uptodate>
+
+        <uptodate property="src.astub.files.uptodate" targetfile="${build}">
+          <srcfiles refid="src.astub.files"/>
+        </uptodate>
+
+        <uptodate property="stubparser.lib.uptodate" targetfile="${build}" srcfile="${stubparser.lib}"/>
+        <uptodate property="javacutil.lib.uptodate" targetfile="${build}" srcfile="${javacutil.lib}"/>
+        <uptodate property="dataflow.lib.uptodate" targetfile="${build}" srcfile="${dataflow.lib}"/>
+
+        <condition property="build.uptodate">
+          <and>
+            <isset property="src.files.uptodate"/>
+            <isset property="src.astub.files.uptodate"/>
+            <isset property="stubparser.lib.uptodate"/>
+            <isset property="javacutil.lib.uptodate"/>
+            <isset property="dataflow.lib.uptodate"/>
+          </and>
+        </condition>
+
+        <!--
+        <echo message="src.files.uptodate: ${src.files.uptodate}"/>
+        <echo message="src.astub.files.uptodate: ${src.astub.files.uptodate}"/>
+        <echo message="stubparser.lib.uptodate: ${stubparser.lib.uptodate}"/>
+        <echo message="javacutil.lib.uptodate: ${javacutil.lib.uptodate}"/>
+        <echo message="dataflow.lib.uptodate: ${dataflow.lib.uptodate}"/>
+        <echo message="build.uptodate: ${build.uptodate}"/>
+        -->
+    </target>
+
+    <target name="build" depends="prep,build.check.uptodate"
+            unless="build.uptodate"
+            description="Compile files.  Does not update any jars">
+
+        <copy todir="${build}" preservelastmodified="true">
+            <fileset refid="src.astub.files"/>
+        </copy>
+
+        <pathconvert pathsep=" " property="src.files.spaceseparated">
+            <path>
+                <fileset dir="${src}">
+                    <include name="**/*.java"/>
+                </fileset>
+            </path>
+        </pathconvert>
+
+        <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-framework.txt"/>
+        <java fork="true"
+              failonerror="true"
+              classpath="${javac.lib}:${stubparser.lib}:${javacutil.lib}:${dataflow.lib}:${junit.lib}"
+              classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <arg value="-g"/>
+            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
+            <arg value="-source"/>
+            <arg value="7"/>
+            <arg value="-target"/>
+            <arg value="7"/>
+            <!-- To not get a warning about bootstrap classpath -->
+            <arg value="-Xlint:-options"/>
+            <arg line="-sourcepath ${src}"/>
+            <arg line="-d ${build}"/>
+            <arg line="@${tmpdir}/srcfiles-framework.txt"/>
+            <arg line="-version"/>
+            <arg line="-XDTA:noannotationsincomments"/>
+            <arg line="-Xlint"/>
+            <arg line="-Werror"/>
+        </java>
+        <delete file="${tmpdir}/srcfiles-framework.txt"/>
+
+        <!--
+        Touch doesn't work on a directory, so can't do:
+           <touch file="${build}"/>
+        Instead, create and remove a file, which modifies the directory.
+        -->
+        <touch file="${build}/.timestamp"/>
+        <delete file="${build}/.timestamp"/>
+    </target>
+
+    <!-- TODO: add a type-checking target that doesn't use
+         -XDTA:noannotations in comments. -->
+
+    <target name="javadoc" depends="prep,prep-ManualTaglet,build.check.uptodate" description="Create Javadoc documentation">
+
+        <ant dir="${javacutil.loc}">
+            <target name="javadoc"/>
+        </ant>
+
+        <!-- This relative path is wrong; running "ant -find" from a
+        subdirectory fails. -->
+        <!-- Dependendencies on other projects (such as dataflow)
+             mirrors javadoc dependencies. If changing project
+             dependencies, change the Javadoc dependencies to keep
+             them in sync (and vice versa). -->
+        <javadoc sourcepath="${src}:${checker.loc}/${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}" destdir="${api.doc}"
+                 failonerror="true"
+                 executable="${javadoc.bin}"
+                 classpath="${build}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${javac.lib}:${javadoc.lib}:${junit.lib}"
+                 excludepackagenames="org.checkerframework.framework.stub"
+                 bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
+            <package name="org.checkerframework.javacutil.*"/>
+            <package name="org.checkerframework.dataflow.*"/>
+            <package name="org.checkerframework.stubparser.*"/>
+            <package name="org.checkerframework.framework.*"/>
+            <package name="org.checkerframework.qualframework.*"/>
+            <package name="org.checkerframework.common.*"/>
+            <package name="org.checkerframework.checker.*"/>
+
+            <link href="http://docs.oracle.com/javase/8/docs/api/"/>
+            <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
+            <taglet name="org.checkerframework.javacutil.dist.ManualTaglet"
+                    path="${javacutil.loc}/${build}"/>
+        </javadoc>
+    </target>
+
+    <!-- This creates framework.jar -->
+    <target name="jar" depends="build"
+            description="Create framework.jar file">
+        <delete dir="${build.reports}"/>
+
+        <unjar src="${stubparser.lib}" dest="${build}" />
+        <unjar src="${javacutil.lib}" dest="${build}" />
+        <unjar src="${dataflow.lib}" dest="${build}" />
+
+        <mkdir dir="dist" />
+
+        <jar destfile="${framework.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/">
+            <manifest>
+                <attribute name="Main-Class" value="org.checkerframework.framework.util.CheckerMain"/>
+            </manifest>
+        </jar>
+    </target>
+
+
+    <!-- Testing -->
+
+    <target name="build-tests" depends="prep" description="Compile tests">
+        <pathconvert pathsep=" " property="framework.src.tests">
+            <path>
+                <fileset dir="${tests}">
+                    <include name="src/tests/**/*.java"/>
+                    <include name="test-lubglb/**/*.java"/>
+                    <include name="test-polyall/**/*.java"/>
+                </fileset>
+            </path>
+        </pathconvert>
+
+        <java fork="true"
+              failonerror="true"
+              classpath="${javac.lib}:${junit.lib}:${build}:${javacutil.lib}:${dataflow.lib}"
+              classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <arg value="-g"/>
+            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
+            <arg value="-source"/>
+            <arg value="7"/>
+            <arg value="-target"/>
+            <arg value="7"/>
+            <!-- To not get a warning about bootstrap classpath -->
+            <arg value="-Xlint:-options"/>
+            <arg line="-sourcepath ${tests}"/>
+            <arg line="-d ${tests.build}"/>
+            <arg line="${framework.src.tests}"/>
+        </java>
+    </target>
+
+    <!-- TODO: DUPLICATED FOR ALL_TESTS -->
+    <!-- Per the <test> element, output goes to ${build.reports} -->
+    <target name="-run-tests" description="Generalized test runner">
+
+        <mkdir dir="${build.reports}"/>
+        <junit fork="${run.tests.should.fork}"
+               dir="${basedir}"
+               printsummary="false"
+               haltonfailure="${halt.on.test.failure}">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg line="-ea"/>
+            <jvmarg line="-Dorg.checkerframework.common.reflection.debug=false"/>
+
+            <classpath>
+                <pathelement path="${build}"/>
+                <pathelement path="${javac.lib}"/>
+                <pathelement path="${framework.lib}"/>
+                <pathelement path="${tests.build}"/>
+                <pathelement path="${junit.lib}"/>
+            </classpath>
+
+            <formatter type="xml"/>
+            <formatter type="brief" usefile="false"/>
+
+            <test name="${param}" todir="${build.reports}"/>
+        </junit>
+    </target>
+
+    <target name="all-tests" depends="jar, all-tests-nojar"
+            description="Run tests for all checkers"/>
+
+    <target name="all-tests-nojar" depends="build-tests"
+            description="Run tests for all checkers, WITHOUT building anything">
+
+      <!-- Copied from -run-tests target -->
+      <mkdir dir="${build.reports}"/>
+
+      <junit fork="${run.tests.should.fork}"
+             dir="${basedir}"
+             printsummary="false"
+             haltonfailure="${halt.on.test.failure}">
+          <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+          <jvmarg line="-ea"/>
+
+          <classpath>
+              <pathelement path="${build}"/>
+              <pathelement path="${javac.lib}"/>
+              <pathelement path="${framework.lib}"/>
+              <pathelement path="${tests.build}"/>
+              <pathelement path="${junit.lib}"/>
+          </classpath>
+
+          <formatter type="xml"/>
+          <formatter type="brief" usefile="false"/>
+
+          <batchtest todir="${build.reports}">
+              <fileset dir="${tests}/${src}">
+                  <include name="**/*Test.java"/>
+                  <exclude name="**/AllTests.java"/>
+
+                  <!-- Framework classes -->
+                  <exclude name="**/CheckerTest.java"/>
+                  <exclude name="**/ParameterizedCheckerTest.java"/>
+              </fileset>
+          </batchtest>
+      </junit>
+    </target>
+
+    <target name="aliasing-tests" depends="jar,build-tests"
+            description="Run tests for the Aliasing checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.AliasingTest"/>
+        </antcall>
+    </target>
+
+    <target name="annotation-builder-tests" depends="jar,build-tests"
+            description="Run tests for the Checker Framework">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.AnnotationBuilderTest"/>
+        </antcall>
+    </target>
+
+    <target name="flow-tests" depends="jar,build-tests"
+            description="Run tests for the flow inference">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.FlowTest"/>
+        </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.Flow2Test"/>
+        </antcall>
+    </target>
+
+    <target name="framework-tests" depends="jar,build-tests"
+            description="Run tests for the Checker Framework">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.FrameworkTest"/>
+        </antcall>
+    </target>
+
+    <target name="defaulting-upper-bound-tests" depends="jar,build-tests"
+            description="Run tests for the Checker Framework">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.DefaultingUpperBoundTest"/>
+        </antcall>
+    </target>
+
+    <target name="defaulting-lower-bound-tests" depends="jar,build-tests"
+            description="Run tests for the Checker Framework">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.DefaultingLowerBoundTest"/>
+        </antcall>
+    </target>
+
+
+    <target name="lubglb-tests" depends="jar,build-tests"
+            description="Run tests for the Lubglb Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.LubGlbTest"/>
+        </antcall>
+    </target>
+
+    <target name="polyall-tests" depends="jar,build-tests"
+            description="Run tests for the Polyall Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.PolyAllTest"/>
+        </antcall>
+    </target>
+
+    <target name="reflection-tests" depends="jar,build-tests"
+            description="Run tests for reflection resolution">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.ReflectionTest"/>
+        </antcall>
+    </target>
+
+
+    <target name="report-tests" depends="jar,build-tests"
+            description="Run tests for the Report Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.ReportModifiersTest"/>
+        </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.ReportTest"/>
+        </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.ReportTreeKindsTest"/>
+        </antcall>
+    </target>
+
+    <target name="subtyping-tests" depends="jar,build-tests"
+            description="Run tests for the Checker Framework">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.SubtypingEncryptedTest"/>
+        </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.SubtypingSuperSubTest"/>
+        </antcall>
+    </target>
+
+    <target name="value-tests" depends="jar,build-tests"
+            description="Run tests for constant value propagation">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.ValueTest"/>
+        </antcall>
+    </target>
+
+    <target name="jtreg-tests" depends="-def-jtreg,jar"
+            description="Run jtreg tests">
+        <jtreg-tool name="all" tests="."/>
+    </target>
+
+    <target name="-def-check">
+        <macrodef name="check">
+            <attribute name="name"/>
+            <attribute name="property"/>
+            <attribute name="marker"/>
+            <sequential>
+                <fail message="Cannot locate @{name}: please set @{property} to its location">
+                    <condition>
+                        <not>
+                            <isset property="@{property}"/>
+                        </not>
+                    </condition>
+                </fail>
+
+                <fail message="@{name} is not installed in ${@{property}}">
+                    <condition>
+                        <not>
+                            <available file="${@{property}}/@{marker}"/>
+                        </not>
+                    </condition>
+                </fail>
+            </sequential>
+        </macrodef>
+    </target>
+
+    <target name="-check-jtreg.home" depends="-def-check">
+        <check name="jtreg" property="jtreg.home" marker="lib/jtreg.jar"/>
+    </target>
+
+    <target name="-def-jtreg" unless="jtreg.defined" depends="-check-jtreg.home">
+        <taskdef name="jtreg" classname="com.sun.javatest.regtest.Main$$Ant">
+            <classpath>
+                <pathelement location="${jtreg.home}/lib/jtreg.jar"/>
+                <pathelement location="${jtreg.home}/lib/javatest.jar"/>
+            </classpath>
+        </taskdef>
+
+        <macrodef name="jtreg-tool">
+            <attribute name="name"/>
+            <attribute name="tests"/>
+            <!-- <attribute name="jdk" default="${java.home}"/> -->
+            <!-- TODO samevm true does not work. Investigate. -->
+            <attribute name="samevm" default="false"/>
+            <attribute name="verbose" default="summary"/>
+            <attribute name="options" default=""/>
+            <attribute name="keywords" default="-keywords:!ignore"/>
+            <attribute name="jpda.jvmargs" default=""/>
+
+            <sequential>
+                <property name="coverage.options" value=""/>    <!-- default -->
+                <property name="coverage.classpath" value=""/>  <!-- default -->
+                <property name="checkers.classpath" value="${javac.lib}:${javap.lib}:${framework.lib}"/>
+                <jtreg
+                    dir="jtreg"
+                    workDir="${build.jtreg.dir}/@{name}/work"
+                    reportDir="${build.jtreg.dir}/@{name}/report"
+                    samevm="@{samevm}" verbose="@{verbose}"
+                    failonerror="false" resultproperty="jtreg.@{name}.result"
+                    javacoptions="-g"
+                    vmoptions="${coverage.options} -Xbootclasspath/p:${coverage.classpath}:${build}:${checkers.classpath} @{jpda.jvmargs}">
+                    <arg line="@{keywords}"/>
+                    <arg line="@{options}"/>
+                    <arg line="@{tests}"/>
+                </jtreg>
+
+                <!-- the next two properties are for convenience, when only
+                     a single instance of jtreg will be invoked. -->
+                <condition property="jtreg.passed">
+                    <equals arg1="${jtreg.@{name}.result}" arg2="0"/>
+                </condition>
+                <property name="jtreg.report" value="${build.jtreg.dir}/@{name}/report"/>
+            </sequential>
+        </macrodef>
+        <property name="jtreg.defined" value="true"/>
+    </target>
+
+    <!-- Type-check the checker implementations -->
+
+    <!-- TODO: it looks like this target only compiles the
+         code in "checkers/src". It should also compile the source
+         for the other projects. Can we do this here or do we need
+         to duplicate the targets in the other build files? -->
+
+    <!-- depends on jar, needs classfile of the checker itself -->
+    <target name="-run-checker" depends="jar"
+            description="Run a checker on the Checker Framework">
+        <pathconvert pathsep=" " property="src.files">
+            <path>
+                <fileset dir="${src}">
+                    <include name="**/*.java"/>
+                    <exclude name=""/>
+                </fileset>
+            </path>
+        </pathconvert>
+
+        <echo message="${src.files}" file="${tmpdir}/srcfiles-framework.txt"/>
+        <java fork="true"
+              failonerror="true"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}"
+              classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <arg value="-g"/>
+            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
+            <arg value="-source"/>
+            <arg value="7"/>
+            <arg value="-target"/>
+            <arg value="7"/>
+            <!-- To not get a warning about bootstrap classpath -->
+            <arg value="-Xlint:-options"/>
+            <arg line="-sourcepath ${src}:${checker-jdk}"/>
+            <arg line="-d ${build}"/>
+            <arg line="@${tmpdir}/srcfiles-framework.txt"/>
+            <arg line="-version"/>
+            <arg line="-proc:only"/>
+            <arg line="-processor ${checker-name}"/>
+            <arg line="${checker-args}"/>
+        </java>
+        <delete file="${tmpdir}/srcfiles-framework.txt"/>
+    </target>
+
+
+    <!--
+      Binary release of the Checker Framework; it includes javac.
+     -->
+
+    <target name="-prep-dist"
+            description="Ensure that the necessary jar files exist">
+        <available property="javac.exist" file="${javac.lib}" />
+
+        <fail unless="javac.exist" message="Could not find javac.jar: ${javac.lib}" />
+    </target>
+
+    <target name="dist" depends="-prep-dist,jar"
+            description="Build framework.jar">
+
+        <!-- No need to copy javac.jar for the framework.
+        <copy tofile="dist/javac.jar" file="${javac.lib}"
+              overwrite="true" failonerror="true" />
+        -->
+    </target>
+
+
+    <!-- These depend on checker project being built already. -->
+
+    <target name="check-compilermsgs"
+            description="Run the compiler message keys checker on the Framework">
+        <antcall target="-run-checker">
+            <param name="checker-name" value="org.checkerframework.checker.compilermsgs.CompilerMessagesChecker"/>
+            <param name="checker-args" value="-Awarns -Apropfiles=./src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/common/value/messages.properties"/>
+        </antcall>
+    </target>
+
+    <target name="check-purity"
+            description="Run the Purity Checker on the Framework">
+        <antcall target="-run-checker">
+            <param name="checker-name" value="org.checkerframework.framework.util.PurityChecker"/>
+            <param name="checker-args" value="-Awarns -AprintErrorStack"/>
+        </antcall>
+    </target>
+
+
+    <!-- For debugging -->
+    <target name="showvars" depends="prep">
+        <echo>[java.home] ${java.home}</echo>
+    </target>
+
+</project>
