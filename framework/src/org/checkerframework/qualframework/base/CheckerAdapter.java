@@ -9,19 +9,12 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
 import org.checkerframework.framework.util.AnnotationFormatter;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
-import org.checkerframework.framework.util.OptionConfiguration;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.qualframework.poly.format.QualifiedTypeFormatter;
+import org.checkerframework.qualframework.base.format.QualifiedTypeFormatter;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.tools.Diagnostic;
 import java.util.Collection;
-import java.util.regex.Pattern;
 
 /** Adapter class for {@link Checker}, extending
  * {@link BaseTypeChecker org.checkerframework.common.basetype.BaseTypeChecker}.

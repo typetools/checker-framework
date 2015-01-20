@@ -161,13 +161,13 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      /**
      * Returns the appropriate visitor that type-checks the compilation unit
      * according to the type system rules.
-     * <p/>
+     * <p>
      * This implementation uses the checker naming convention to create the
      * appropriate visitor.  If no visitor is found, it returns an instance of
      * {@link BaseTypeVisitor}.  It reflectively invokes the constructor that
      * accepts this checker and the compilation unit tree (in that order)
      * as arguments.
-     * <p/>
+     * <p>
      * Subclasses have to override this method to create the appropriate
      * visitor if they do not follow the checker naming convention.
      *
