@@ -14,8 +14,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * DefaultQualParamsFormatter formats a {@link QualParams} into the double chevron
- * &lt;&lt; Q &gt;&ht output format.
+ * Formats a {@link QualParams} into the double chevron &lt;&lt; Q &gt;&ht output format.
  */
 public class PrettyQualParamsFormatter<Q> implements QualParamsFormatter<Q> {
 
@@ -109,7 +108,7 @@ public class PrettyQualParamsFormatter<Q> implements QualParamsFormatter<Q> {
             sb.append(combined.getOp());
             sb.append("(");
 
-            boolean first = false;
+            boolean first = true;
             for (String formattedVar : formattedVars) {
                 if (first) {
                     first = false;

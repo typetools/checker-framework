@@ -1,6 +1,7 @@
-package org.checkerframework.qualframework.poly.format;
+package org.checkerframework.qualframework.base.format;
 
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
+import org.checkerframework.qualframework.base.format.QualFormatter;
 
 /**
  * Interface to format a QualifiedTypeMirrors or an individual qualifier.

@@ -46,14 +46,14 @@ public class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsFormatter<
         // Special exception for the top and bottom of the hierarchy.
         if (params == config.getQualTop()) {
             AnnotationParts anno = config.getTargetTypeSystemAnnotation(config.getTop());
-            if (anno != null && config.shouldPrintAnnotation(printInvisible, anno)) {
+            if (config.shouldPrintAnnotation(anno, printInvisible)) {
                 return anno.toString();
             } else {
                 return null;
             }
         } else if (params == config.getQualBottom()) {
             AnnotationParts anno = config.getTargetTypeSystemAnnotation(config.getBottom());
-            if (anno != null && config.shouldPrintAnnotation(printInvisible, anno)) {
+            if (config.shouldPrintAnnotation(anno, printInvisible)) {
                 return anno.toString();
             } else {
                 return null;
@@ -63,9 +63,13 @@ public class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsFormatter<
         // Primary
         boolean printedPrimary = false;
         if (printPrimary && params.getPrimary() != null) {
-            AnnotationParts anno = createAnnotation(params.getPrimary(), printInvisible);
-            if (anno != null && config.shouldPrintAnnotation(printInvisible, anno)) {
-                printedPrimary = true;
+            List<AnnotationParts> annos = createAnnotations(params.getPrimary(), printInvisible);
+            for (AnnotationParts anno : annos) {
+                if (printedPrimary) {
+                    sb.append(" ");
+                } else {
+                    printedPrimary = true;
+                }
                 sb.append(anno.toString());
             }
         }
@@ -73,8 +77,8 @@ public class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsFormatter<
         // Qualifier Parameters
         boolean addSpace = printedPrimary;
         for (Entry<String, Wildcard<Q>> entry : params.entrySet()) {
-            AnnotationParts anno = createAnnotation(entry.getValue(), entry.getKey(), printInvisible);
-            if (anno != null && config.shouldPrintAnnotation(printInvisible, anno)) {
+            List<AnnotationParts> annos = createAnnotations(entry.getValue(), entry.getKey(), printInvisible);
+            for (AnnotationParts anno : annos) {
                 if (addSpace) {
                     sb.append(" ");
                 } else {
@@ -93,65 +97,114 @@ public class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsFormatter<
 
     @Override
     public String format(PolyQual<Q> polyQual, boolean printInvisible) {
-        AnnotationParts anno = createAnnotation(polyQual, printInvisible);
-        if (anno != null && config.shouldPrintAnnotation(printInvisible, anno)) {
-            return anno.toString();
+        StringBuffer sb = new StringBuffer();
+        List<AnnotationParts> annos = createAnnotations(polyQual, printInvisible);
+        boolean first = false;
+        for (AnnotationParts anno : annos) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(" ");
+            }
+            sb.append(anno);
+        }
+
+        if (sb.length() > 0) {
+            return sb.toString();
         } else {
             return null;
         }
     }
 
-    private String formatQual(Q qual, boolean printInvisible) {
-        AnnotationParts anno = config.getTargetTypeSystemAnnotation(qual);
-        if (anno != null && config.shouldPrintAnnotation(printInvisible, anno)) {
-            return anno.toString();
-        } else {
-            return null;
+    /**
+     * Transform a wildcard into a List of AnnotationParts.
+     *
+     * This method uses {@link #createAnnotations(org.checkerframework.qualframework.poly.PolyQual, boolean)} to create
+     * the annotation parts for each bounds.
+     *
+     * @param wildcard the Wildcard
+     * @param paramName the name of the qualifier parameter the wildcard was a value for
+     * @param printInvisible flag to enable printing invisible qualifiers
+     * @return a List of AnnotationParts that correspond wildcard
+     */
+    private List<AnnotationParts> createAnnotations(Wildcard<Q> wildcard, String paramName, boolean printInvisible) {
+        if (wildcard.isEmpty()) {
+            ErrorReporter.errorAbort("Unable to convert wildcard: " + wildcard);
         }
+
+        List<AnnotationParts> results = new ArrayList<>();
+
+        List<AnnotationParts> upper = createAnnotations(wildcard.getUpperBound(), printInvisible);
+        Map<AnnotationParts, org.checkerframework.qualframework.poly.qual.Wildcard> bounds =
+                new HashMap<>();
+
+        for (AnnotationParts part: upper) {
+            part.putQuoted("param", paramName);
+            bounds.put(part, org.checkerframework.qualframework.poly.qual.Wildcard.EXTENDS);
+        }
+        results.addAll(upper);
+
+        List<AnnotationParts> lower = createAnnotations(wildcard.getLowerBound(), printInvisible);
+        for (AnnotationParts part: lower) {
+            part.putQuoted("param", paramName);
+            // If we have both an Upper and Lower entry for the annotation, we can omit the wildcard
+            if (upper.contains(part)) {
+                bounds.remove(part);
+            } else {
+                bounds.put(part, org.checkerframework.qualframework.poly.qual.Wildcard.SUPER);
+                results.add(part);
+            }
+        }
+
+        List<AnnotationParts> filteredResults = new ArrayList<>();
+        for (AnnotationParts anno : results) {
+            if (bounds.containsKey(anno)) {
+                anno.put("wildcard", createWildcardString(bounds.get(anno)));
+            }
+
+            if (config.shouldPrintAnnotation(anno, printInvisible)) {
+                filteredResults.add(anno);
+            }
+        }
+
+        return filteredResults;
     }
 
-    private AnnotationParts createAnnotation(PolyQual<Q> polyQual, boolean printInvisible) {
+    /**
+     * Create a List of AnnotationParts that correspond to a polyQual.
+     *
+     * Instances of Combined may result in multiple AnnotationsParts because Combined PolyQuals are created
+     * when multiple annotations are present on a type.
+     *
+     * @param polyQual the PolyQual
+     * @param printInvisible flag to enable printing invisible qualifiers
+     * @return a List of AnnotationParts corresponding to PolyQual
+     */
+    private List<AnnotationParts> createAnnotations(PolyQual<Q> polyQual, boolean printInvisible) {
+
+        List<AnnotationParts> result = new ArrayList<>();
 
         if (polyQual == null) {
-            return null;
+            return result;
 
         } else if (polyQual instanceof Combined) {
-            AnnotationParts anno = new AnnotationParts("Combine");
+
             Combined<Q> combined = (Combined<Q>) polyQual;
-            // See if any of the vars should be printed
-            List<String> formattedVars = new ArrayList<>();
             for (QualVar<Q> var : combined.getVars()) {
-                String formatted = format(var, printInvisible);
-                if (formatted != null) {
-                    formattedVars.add(formatted);
-                }
-            }
-            String formatted = formatQual(combined.getGround(), printInvisible);
-            if (formatted != null) {
-                formattedVars.add(formatted);
-            }
-            if (formattedVars.size() == 0) {
-                return null;
+                List<AnnotationParts> anno = createAnnotations(var, printInvisible);
+                result.addAll(anno);
             }
 
-            StringBuilder sb = new StringBuilder();
-            sb.append("(");
-            boolean first = true;
-            for (String formattedVar :formattedVars) {
-                if (first) {
-                    first = false;
-                } else {
-                    sb.append(", ");
-                }
-                sb.append(formattedVar);
+            AnnotationParts anno = config.getTargetTypeSystemAnnotation(combined.getGround());
+            if (anno != null) {
+                result.add(anno);
             }
-            sb.append(")");
-            anno.putQuoted(combined.getOp().toString(), sb.toString());
-            return anno;
 
         } else if (polyQual instanceof GroundQual) {
             AnnotationParts anno = config.getTargetTypeSystemAnnotation(((GroundQual<Q>) polyQual).getQualifier());
-            return anno;
+            if (anno != null) {
+                result.add(anno);
+            }
 
         } else if (polyQual instanceof QualVar) {
 
@@ -167,118 +220,32 @@ public class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsFormatter<
             if (lower != null || upper != null) {
                 lower = lower == null? "" : lower;
                 upper = upper == null? "" : upper;
-                anno.putQuoted("range", qualVar.getName() + " ∈ [" + lower + ".." + upper + "]");
+                anno.putQuoted("range", " ∈ [" + lower + ".." + upper + "]");
             }
+            result.add(anno);
 
-            return anno;
         } else {
 
             ErrorReporter.errorAbort("Unknown PolyQual Subclass: " + polyQual.getClass());
-            return null; // Dead code
+            return result; // Dead code
         }
+
+        List<AnnotationParts> filteredResults = new ArrayList<>();
+        for (AnnotationParts anno : result) {
+            if (config.shouldPrintAnnotation(anno, printInvisible)) {
+                filteredResults.add(anno);
+            }
+        }
+        return filteredResults;
     }
 
-    private AnnotationParts createAnnotation(Wildcard<Q> wildcard, String paramName, boolean printInvisible) {
-
-        if (wildcard.isEmpty()) {
-            ErrorReporter.errorAbort("Unable to convert wildcard: " + wildcard);
+    private String formatQual(Q qual, boolean printInvisible) {
+        AnnotationParts anno = config.getTargetTypeSystemAnnotation(qual);
+        if (anno != null && config.shouldPrintAnnotation(anno, printInvisible)) {
+            return anno.toString();
+        } else {
+            return null;
         }
-
-        AnnotationParts result;
-        if (wildcard.getLowerBound() instanceof QualVar
-                || wildcard.getUpperBound() instanceof QualVar) {
-            // Qualifier variables (or bounded wildcards)
-
-            org.checkerframework.qualframework.poly.qual.Wildcard wildcardType;
-            String argName;
-
-            if (wildcard.getLowerBound() == wildcard.getUpperBound()) {
-                wildcardType = org.checkerframework.qualframework.poly.qual.Wildcard.NONE;
-                argName = ((QualVar<Q>)wildcard.getLowerBound()).getName();
-            } else if (wildcard.getLowerBound() == config.getBottom()) {
-                wildcardType = org.checkerframework.qualframework.poly.qual.Wildcard.EXTENDS;
-                argName = ((QualVar<Q>)wildcard.getUpperBound()).getName();
-            } else if (wildcard.getUpperBound() == config.getTop()) {
-                wildcardType = org.checkerframework.qualframework.poly.qual.Wildcard.SUPER;
-                argName = ((QualVar<Q>)wildcard.getLowerBound()).getName();
-            } else {
-                ErrorReporter.errorAbort("Unable to create string representation of typevar: " + wildcard);
-                wildcardType = null; // Dead code
-                argName = null; // Dead code
-            }
-
-            AnnotationParts anno = new AnnotationParts("Var");
-            anno.putQuoted("param", paramName);
-            anno.putQuoted("arg", argName);
-            if (wildcardType != org.checkerframework.qualframework.poly.qual.Wildcard.NONE) {
-                anno.put("wildcard", createWildcardString(wildcardType));
-            }
-
-            result = anno;
-
-        } else if (wildcard.getLowerBound() instanceof GroundQual
-                || wildcard.getUpperBound() instanceof GroundQual) {
-            // Ground quals, bounded wildcard, unbounded wildcard
-
-            if (wildcard.getLowerBound() instanceof GroundQual &&
-                    ((GroundQual) wildcard.getLowerBound()).getQualifier() == config.getBottom()
-                    && wildcard.getUpperBound() instanceof GroundQual &&
-                    ((GroundQual) wildcard.getUpperBound()).getQualifier()== config.getTop()) {
-
-                AnnotationParts anno = new AnnotationParts("Wild");
-                anno.putQuoted("param", paramName);
-                result = anno;
-
-            } else {
-
-                Q groundQual;
-                org.checkerframework.qualframework.poly.qual.Wildcard wildcardType;
-                if (wildcard.getLowerBound() == wildcard.getUpperBound()) {
-
-                    wildcardType = org.checkerframework.qualframework.poly.qual.Wildcard.NONE;
-                    groundQual = ((GroundQual<Q>) wildcard.getLowerBound()).getQualifier();
-
-                } else if (wildcard.getLowerBound() instanceof GroundQual
-                       && ((GroundQual) wildcard.getLowerBound()).getQualifier() == config.getBottom()) {
-
-                    wildcardType = org.checkerframework.qualframework.poly.qual.Wildcard.EXTENDS;
-                    groundQual = ((GroundQual<Q>) wildcard.getUpperBound()).getQualifier();
-
-                } else if (wildcard.getUpperBound() instanceof GroundQual
-                       && ((GroundQual) wildcard.getUpperBound()).getQualifier() == config.getTop()) {
-
-                    wildcardType = org.checkerframework.qualframework.poly.qual.Wildcard.SUPER;
-                    groundQual = ((GroundQual<Q>) wildcard.getLowerBound()).getQualifier();
-
-                } else {
-                    ErrorReporter.errorAbort("Unable to create string representation of: " + wildcard);
-                    wildcardType = null; // Dead code
-                    groundQual = null; // Dead code
-                }
-
-                AnnotationParts anno = config.getTargetTypeSystemAnnotation(groundQual);
-                anno.putQuoted("param", paramName);
-                if (wildcardType != org.checkerframework.qualframework.poly.qual.Wildcard.NONE) {
-                    anno.put("wildcard", createWildcardString(wildcardType));
-                }
-                result = anno;
-            }
-
-        } else  {
-            // Both of these are Combine PolyQuals.
-            if (wildcard.getUpperBound() == wildcard.getLowerBound()) {
-                result = createAnnotation(wildcard.getUpperBound(), printInvisible);
-            } else {
-                AnnotationParts upper = createAnnotation(wildcard.getUpperBound(), printInvisible);
-                AnnotationParts lower = createAnnotation(wildcard.getLowerBound(), printInvisible);
-                AnnotationParts anno = new AnnotationParts("Wild");
-                anno.putQuoted("lower", lower.toString());
-                anno.putQuoted("upper", upper.toString());
-                result = anno;
-            }
-        }
-
-        return result;
     }
 
     /**
@@ -314,6 +281,26 @@ public class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsFormatter<
 
         public String getName() {
             return name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            AnnotationParts that = (AnnotationParts) o;
+
+            if (!fields.equals(that.fields)) return false;
+            if (!name.equals(that.name)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = name.hashCode();
+            result = 31 * result + fields.hashCode();
+            return result;
         }
 
         @Override

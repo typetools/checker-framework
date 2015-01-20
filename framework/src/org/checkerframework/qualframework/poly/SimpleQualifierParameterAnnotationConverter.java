@@ -42,6 +42,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
 
     protected final String MULTI_ANNO_NAME_PREFIX;
     protected final CombiningOperation<Q> lubOp;
+    protected final CombiningOperation<Q> glbOp;
     protected final Q BOTTOM;
     protected final Q TOP;
     protected final Q DEFAULT_QUAL;
@@ -72,7 +73,9 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
      * @param bottom The bottom qualifier in the system
      * @param defaultQual The qualifier to use if no annotations result in a qualifier.
      */
-    public SimpleQualifierParameterAnnotationConverter(CombiningOperation<Q> lubOp,
+    public SimpleQualifierParameterAnnotationConverter(
+            CombiningOperation<Q> lubOp,
+            CombiningOperation<Q> glbOp,
             String multiAnnoNamePrefix,
             Set<String> supportedAnnotationNames,
             Set<String> specialCaseAnnotations,
@@ -98,6 +101,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
             this.specialCaseAnnotations = specialCaseAnnotations;
         }
         this.lubOp = lubOp;
+        this.glbOp = glbOp;
         this.classAnno = classAnno;
         this.methodAnno = methodAnno;
         this.polyAnno = polyAnno;
@@ -184,7 +188,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
 
             Wildcard<Q> oldWild = params.get(name);
             Wildcard<Q> newWild = newParams.get(name);
-            Wildcard<Q> combinedWild = oldWild.combineWith(newWild, lubOp, lubOp);
+            Wildcard<Q> combinedWild = oldWild.combineWith(newWild, lubOp, glbOp);
 
             //System.err.printf("COMBINE[%s]: %s + %s = %s\n", name, oldWild, newWild, combinedWild);
             params.put(name, combinedWild);
