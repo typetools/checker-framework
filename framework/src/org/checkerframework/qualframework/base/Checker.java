@@ -7,9 +7,9 @@ import javax.lang.model.util.Types;
 import com.sun.source.util.Trees;
 import org.checkerframework.framework.util.OptionConfiguration;
 import org.checkerframework.javacutil.AnnotationProvider;
-import org.checkerframework.qualframework.poly.format.DefaultQualFormatter;
-import org.checkerframework.qualframework.poly.format.DefaultQualifiedTypeFormatter;
-import org.checkerframework.qualframework.poly.format.QualifiedTypeFormatter;
+import org.checkerframework.qualframework.base.format.DefaultQualFormatter;
+import org.checkerframework.qualframework.base.format.DefaultQualifiedTypeFormatter;
+import org.checkerframework.qualframework.base.format.QualifiedTypeFormatter;
 import org.checkerframework.qualframework.util.QualifierContext;
 
 import java.util.HashSet;
