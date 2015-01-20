@@ -1,18 +1,8 @@
 package org.checkerframework.checker.experimental.tainting_qual_poly;
 
-import org.checkerframework.checker.experimental.regex_qual.Regex;
-import org.checkerframework.checker.experimental.regex_qual.Regex.PartialRegex;
-import org.checkerframework.checker.experimental.regex_qual.Regex.RegexVal;
-import org.checkerframework.qualframework.base.Checker;
-
-import org.checkerframework.qualframework.poly.QualParams;
 import org.checkerframework.qualframework.poly.QualifierParameterChecker;
 import org.checkerframework.qualframework.poly.format.SurfaceSyntaxFormatterConfiguration;
 import org.checkerframework.qualframework.poly.format.SurfaceSyntaxQualParamsFormatter.AnnotationParts;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 public class TaintingChecker extends QualifierParameterChecker<Tainting> {
 
@@ -36,7 +26,7 @@ public class TaintingChecker extends QualifierParameterChecker<Tainting> {
         }
 
         @Override
-        protected boolean shouldPrintAnnotation(boolean printInvisibleQualifiers, AnnotationParts anno) {
+        protected boolean shouldPrintAnnotation(AnnotationParts anno, boolean printInvisibleQualifiers) {
             return printInvisibleQualifiers;
         }
 
