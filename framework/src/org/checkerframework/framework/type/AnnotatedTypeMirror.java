@@ -1520,6 +1520,9 @@ public abstract class AnnotatedTypeMirror {
          * @return the lower bound field.
          */
         public AnnotatedTypeMirror getLowerBoundField() {
+            if (lowerBound != null) {
+                fixupBoundAnnotations();
+            }
             return lowerBound;
         }
 
@@ -1618,6 +1621,9 @@ public abstract class AnnotatedTypeMirror {
          * @return the upper bound field.
          */
         public AnnotatedTypeMirror getUpperBoundField() {
+            if (upperBound != null) {
+                fixupBoundAnnotations();
+            }
             return upperBound;
         }
 
@@ -1893,6 +1899,9 @@ public abstract class AnnotatedTypeMirror {
         }
 
         public AnnotatedTypeMirror getSuperBoundField() {
+            if (superBound != null) {
+                fixupBoundAnnotations();
+            }
             return superBound;
         }
 
@@ -1921,6 +1930,9 @@ public abstract class AnnotatedTypeMirror {
         }
 
         public AnnotatedTypeMirror getExtendsBoundField() {
+            if (extendsBound != null) {
+                fixupBoundAnnotations();
+            }
             return extendsBound;
         }
 
