@@ -53,17 +53,11 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         this.formattingVisitor = visitor;
     }
 
-    /**
-     * @inherit
-     */
     public String format(final AnnotatedTypeMirror type) {
         formattingVisitor.resetPrintInvisibles();
         return formattingVisitor.visit(type);
     }
 
-    /**
-     * @inherit
-     */
     public String format(final AnnotatedTypeMirror type, final boolean printInvisibles) {
         formattingVisitor.setCurrentPrintInvisibleSetting(printInvisibles);
         return formattingVisitor.visit(type);

@@ -69,9 +69,6 @@ public class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
         return enclosingClass.getTypeParameters().indexOf(element);
     }
 
-    /**
-     * @inherit
-     */
     @Override
     protected TargetType[] validTargets() {
         return new TargetType[]{ TargetType.CLASS_EXTENDS };

@@ -41,17 +41,11 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
         varSymbol = (Symbol.VarSymbol) element;
     }
 
-    /**
-     * @inherit
-     */
     @Override
     protected TargetType[] annotatedTargets() {
         return new TargetType[]{ LOCAL_VARIABLE, RESOURCE_VARIABLE, EXCEPTION_PARAMETER, FIELD };
     }
 
-    /**
-     * @inherit
-     */
     @Override
     protected TargetType[] validTargets() {
         return new TargetType []{

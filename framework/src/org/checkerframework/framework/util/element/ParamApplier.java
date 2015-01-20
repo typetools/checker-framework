@@ -136,9 +136,6 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
         return enclosingMethod.getRawTypeAttributes();
     }
 
-    /**
-     * @inherit
-     */
     @Override
     protected Map<TargetClass, List<TypeCompound>> sift(Iterable<Attribute.TypeCompound> typeCompounds) {
         //this will sift out the annotations that do not have the right position index
