@@ -24,9 +24,11 @@ import java.util.*;
  * Currently, to use TypeVisualizer just insert an if statement somewhere that targets
  * the type you would like to print:
  * e.g.
+ * {@code
  *     if (type.getKind() == TypeKind.EXECUTABLE && type.toString().contains("methodToPrint")) {
  *         TypeVisualizer.drawToPng("/Users/jburke/Documents/tmp/method.png", type);
  *     }
+ * }
  *
  * Be sure to remove such statements before check-in.
  */

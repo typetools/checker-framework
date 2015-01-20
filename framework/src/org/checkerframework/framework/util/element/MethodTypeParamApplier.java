@@ -67,9 +67,6 @@ public class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
         return enclosingMethod.getTypeParameters().indexOf(element);
     }
 
-    /**
-     * @inherit
-     */
     @Override
     protected TargetType[] validTargets() {
         return new TargetType[]{

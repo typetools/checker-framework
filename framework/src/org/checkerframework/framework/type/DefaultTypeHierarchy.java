@@ -124,7 +124,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     }
 
     /**
-     * Returns true if subtype <: supertype
+     * Returns true if subtype {@literal <:} supertype
      * @param subtype expected subtype
      * @param supertype expected supertype
      * @return true if subtype is actually a subtype of supertype
@@ -141,7 +141,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     }
 
     /**
-     * Returns true if subtype <: supertype
+     * Returns true if subtype {@literal <:} supertype
      * @param subtype expected subtype
      * @param supertype expected supertype
      * @param top the hierarchy for which we want to make a comparison
@@ -193,7 +193,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     }
 
     /**
-     * Returns true if subtype <: supertype. The only difference between this and isSubtype(subtype, supertype) is
+     * Returns true if subtype {@literal <:} supertype. The only difference between this and isSubtype(subtype, supertype) is
      * that this method passes a pre-existing visited
      * @param subtype expected subtype
      * @param supertype expected supertype
@@ -206,7 +206,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
     /**
      * Compare the primary annotations of subtype and supertype.   Neither type can be missing annotations.
-     * @return true if the primary annotation on subtype <: primary annotation on supertype for the current top.
+     * @return true if the primary annotation on subtype {@literal <:} primary annotation on supertype for the current top.
      */
     protected boolean isPrimarySubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
         return isPrimarySubtype(subtype, supertype, false);
@@ -215,7 +215,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     /**
      * Compare the primary annotations of subtype and supertype.
      * @param annosCanBeEmtpy Indicates that annotations may be missing from the typemirror.
-     * @return true if the primary annotation on subtype <: primary annotation on supertype for the current top or
+     * @return true if the primary annotation on subtype {@literal <:} primary annotation on supertype for the current top or
      * both annotations are null.  False is returned if one annotation is null and the other is not.
      */
     protected boolean isPrimarySubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype,
@@ -232,7 +232,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * @param subtypeAnno annotation we expect to be a subtype
      * @param supertypeAnno annotation we expect to be a supertype of subtype
      * @param annosCanBeEmtpy Indicates that annotations may be missing from the typemirror.
-     * @return true if subtype <: supertype or both annotations are null.
+     * @return true if subtype {@literal <:} supertype or both annotations are null.
      *         False is returned if one annotation is null and the other is not.
      */
     protected boolean isAnnoSubtype(AnnotationMirror subtypeAnno, AnnotationMirror supertypeAnno,
@@ -470,8 +470,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
     /**
      * Compare typeArgs is called on a single pair of type args that should share a relationship
-     * subTypeArg <= superTypeArg (subtypeArg is contained by superTypeArg).  However, if either
-     * type is raw then either (subTypeArg <= superTypeArg) or the rawnessComparer.isValid(superTypeArg, subTypeArg, visited)
+     * subTypeArg {@literal <:} superTypeArg (subtypeArg is contained by superTypeArg).  However, if either
+     * type is raw then either (subTypeArg {@literal <:} superTypeArg) or the rawnessComparer.isValid(superTypeArg, subTypeArg, visited)
      * @return
      */
     protected boolean compareTypeArgs(AnnotatedTypeMirror subTypeArg, AnnotatedTypeMirror superTypeArg,

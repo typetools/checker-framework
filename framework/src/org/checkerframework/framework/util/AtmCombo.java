@@ -202,7 +202,7 @@ public enum AtmCombo {
 
     /**
      * @return the AtmCombo corresponding to the given ATM pair of the given ATMKinds.
-     * e.g. (AtmKind.NULL, AtmKind.EXECUTABLE) => AtmCombo.NULL_EXECUTABLE
+     * e.g. {@literal (AtmKind.NULL, AtmKind.EXECUTABLE) => AtmCombo.NULL_EXECUTABLE}
      */
     public static AtmCombo valueOf(final AtmKind type1, final AtmKind type2) {
         return comboMap[type1.ordinal()][type2.ordinal()];
@@ -210,7 +210,7 @@ public enum AtmCombo {
 
     /**
      * @return the AtmCombo corresponding to the pair of the classes for the given AnnotatedTypeMirrors.
-     * e.g. (AnnotatedPrimitiveType, AnnotatedDeclaredType) => AtmCombo.PRIMITIVE_DECLARED
+     * e.g. {@literal (AnnotatedPrimitiveType, AnnotatedDeclaredType) => AtmCombo.PRIMITIVE_DECLARED}
      */
     public static AtmCombo valueOf(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
         return valueOf( AtmKind.valueOf( type1 ), AtmKind.valueOf( type2 )  );

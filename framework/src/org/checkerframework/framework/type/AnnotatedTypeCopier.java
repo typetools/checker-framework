@@ -9,7 +9,7 @@ import java.util.*;
  * AnnotatedTypeCopier is a visitor that deep copies an AnnotatedTypeMirror exactly, including any lazily initialized
  * fields.  That is, if a field has already been initialized, it will be initialized in the copied type.
  *
- * When making copies, a map of encountered references -> copied types is maintained.  This ensures that, if a
+ * When making copies, a map of encountered {@literal references -> copied} types is maintained.  This ensures that, if a
  * reference appears in multiple locations in the original type, a corresponding copy of the original type
  * appears in the same locations in the output copy.  This ensures that the recursive loops in the input type
  * are preserved in its output copy (see makeOrReturnCopy)
