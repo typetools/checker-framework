@@ -81,9 +81,6 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         return methodSymbol.getRawTypeAttributes();
     }
 
-    /**
-     * @inherit
-     */
     @Override
     protected boolean isAccepted() {
         return MethodApplier.accepts(type, element);
