@@ -4,7 +4,6 @@ import org.checkerframework.checker.experimental.regex_qual.Regex;
 import org.checkerframework.checker.experimental.regex_qual.Regex.PartialRegex;
 import org.checkerframework.checker.experimental.regex_qual.Regex.RegexVal;
 import org.checkerframework.qualframework.base.Checker;
-import org.checkerframework.qualframework.poly.QualParams;
 import org.checkerframework.qualframework.poly.QualifierParameterChecker;
 import org.checkerframework.qualframework.poly.format.SurfaceSyntaxFormatterConfiguration;
 import org.checkerframework.qualframework.poly.format.SurfaceSyntaxQualParamsFormatter.AnnotationParts;
@@ -39,7 +38,7 @@ public class RegexQualPolyChecker extends QualifierParameterChecker<Regex> {
     private class RegexSurfaceSyntaxConfiguration extends SurfaceSyntaxFormatterConfiguration<Regex> {
 
         private final Set<String> SUPPRESS_NAMES = new HashSet<>(
-                Arrays.asList("RegexTop", "RegexBottom", "PartialRegex"));
+                Arrays.asList("RegexTop", "RegexBot", "PartialRegex"));
 
         public RegexSurfaceSyntaxConfiguration() {
             super(Regex.TOP, Regex.BOTTOM,
@@ -48,7 +47,7 @@ public class RegexQualPolyChecker extends QualifierParameterChecker<Regex> {
         }
 
         @Override
-        protected boolean shouldPrintAnnotation(boolean printInvisibleQualifiers, AnnotationParts anno) {
+        protected boolean shouldPrintAnnotation(AnnotationParts anno, boolean printInvisibleQualifiers) {
             return printInvisibleQualifiers || !(SUPPRESS_NAMES.contains(anno.getName()));
         }
 

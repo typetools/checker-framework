@@ -105,9 +105,6 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
         return subclassSymbol.getRawTypeAttributes();
     }
 
-    /**
-     * @inherit
-     */
     @Override
     protected void handleTargeted(List<Attribute.TypeCompound> targeted) {
         ElementAnnotationUtil.annotateViaTypeAnnoPosition(type, targeted);
