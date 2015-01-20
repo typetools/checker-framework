@@ -126,7 +126,7 @@ public abstract class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, A
     }
 
     @Override
-    public final R visitWildcard(AnnotatedWildcardType type, AnnotatedTypeMirror p) {
+    public R visitWildcard(AnnotatedWildcardType type, AnnotatedTypeMirror p) {
         assert p instanceof AnnotatedWildcardType : p;
         AnnotatedWildcardType w = (AnnotatedWildcardType) p;
         if (visitedNodes.containsKey(type)) {

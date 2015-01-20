@@ -1,9 +1,12 @@
 package org.checkerframework.framework.type.visitor;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.javacutil.ErrorReporter;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 
 /**
  * Replaces or adds all the annotations in the parameter with the annotations
@@ -69,5 +72,46 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
             ErrorReporter.errorAbort("From == to");
         }
         new AnnotatedTypeMerger(top).visit(from, to);
+    }
+
+    @Override
+    public Void visitTypeVariable(AnnotatedTypeVariable from, AnnotatedTypeMirror to) {
+        resolvePrimaries(from, to);
+        return super.visitTypeVariable(from, to);
+    }
+
+    @Override
+    public Void visitWildcard(AnnotatedWildcardType from, AnnotatedTypeMirror to) {
+        resolvePrimaries(from, to);
+        return super.visitWildcard(from, to);
+    }
+
+    /**
+     * For type variables and wildcards, the absence of a primary annotations has an implied meaning
+     * on substitution.  Therefore, in these cases we remove the primary annotation and rely on
+     * the fact that the bounds are also merged into the type to.
+     * @param from a type variable or wildcard
+     * @param to
+     */
+    public void resolvePrimaries(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
+        if (from.getKind() == TypeKind.WILDCARD || from.getKind() == TypeKind.TYPEVAR) {
+            if (top != null) {
+                if (from.getAnnotationInHierarchy(top) == null) {
+                    to.removeAnnotationInHierarchy(top);
+                }
+            } else {
+                for (final AnnotationMirror toPrimaryAnno : to.getAnnotations()) {
+                    if (from.getAnnotationInHierarchy(toPrimaryAnno) == null) {
+                        to.removeAnnotation(toPrimaryAnno);
+                    }
+                }
+            }
+        } else {
+            ErrorReporter.errorAbort(
+                    "ResolvePrimaries' from argument should be a type variable OR wildcard\n"
+                  + "from=" + from.toString(true) + "\n"
+                  + "to="   + to.toString(true)
+            );
+        }
     }
 }
