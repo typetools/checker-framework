@@ -12,7 +12,7 @@ public class AnnotatedTypeReplacer {
     /**
      * Return a copy of type after making the specified replacements.
      * @param type The type that will be copied with replaced components.
-     * @param replacementMap A mapping of referenceToReplace -> referenceOfReplacement
+     * @param replacementMap A mapping of {@literal referenceToReplace -> referenceOfReplacement}
      * @return A duplicate of type in which every reference that was a key in replacementMap
      * has been replaced by its corresponding value
      */
@@ -23,7 +23,7 @@ public class AnnotatedTypeReplacer {
     }
 
     /**
-     * AnnotatedTypeCopier maintains a mapping of typeVisited -> copyOfTypeVisited
+     * AnnotatedTypeCopier maintains a mapping of {@literal typeVisited -> copyOfTypeVisited}
      * When a reference, typeVisited, is encountered again, it will use the recorded reference,
      * copyOfTypeVisited, instead of generating a new copy of typeVisited.  Visitor pre-populates
      * this mapping so that references are replaced not by their copies but by those in the

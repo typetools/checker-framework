@@ -47,9 +47,6 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
         this.declaredType = (AnnotatedDeclaredType) type;
     }
 
-    /**
-     * @inherit
-     */
     @Override
     protected TargetType[] validTargets() {
         return new TargetType[]{
@@ -60,9 +57,6 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
         };
     }
 
-    /**
-     * @inherit
-     */
     @Override
     protected TargetType[] annotatedTargets() {
         return new TargetType[]{ CLASS_EXTENDS };

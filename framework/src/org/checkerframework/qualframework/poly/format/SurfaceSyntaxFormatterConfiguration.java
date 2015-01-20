@@ -28,11 +28,11 @@ public abstract class SurfaceSyntaxFormatterConfiguration<Q> {
     /**
      * Determine if the annotation should be printed
      *
-     * @param printInvisibleQualifiers if printingInvisibleQualifiers is enabled
      * @param anno the AnnotationParts representation of the annotatino
+     * @param printInvisibleQualifiers if printingInvisibleQualifiers is enabled
      * @return true if the annotation should be printed
      */
-    protected abstract boolean shouldPrintAnnotation(boolean printInvisibleQualifiers, AnnotationParts anno);
+    protected abstract boolean shouldPrintAnnotation(AnnotationParts anno, boolean printInvisibleQualifiers);
 
     /**
      * Return an AnnotationParts object that represents the equivalent

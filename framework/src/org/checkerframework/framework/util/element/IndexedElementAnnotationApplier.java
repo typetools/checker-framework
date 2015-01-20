@@ -36,9 +36,6 @@ abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotation
     public abstract int getTypeCompoundIndex(final Attribute.TypeCompound anno);
 
 
-    /**
-     * @inherit
-     */
     @Override
     protected Map<TargetClass, List<Attribute.TypeCompound>> sift(Iterable<Attribute.TypeCompound> typeCompounds) {
         final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToAnnos = super.sift(typeCompounds);

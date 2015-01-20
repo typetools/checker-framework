@@ -36,9 +36,11 @@ public class RegexAnnotationConverter extends SimpleQualifierParameterAnnotation
 
     public RegexAnnotationConverter() {
         super(new CombiningOperation.Lub<>(new RegexQualifierHierarchy()),
+                new CombiningOperation.Glb<>(new RegexQualifierHierarchy()),
                 MultiRegex.class.getPackage().getName() + ".Multi",
                 new HashSet<>(Arrays.asList(org.checkerframework.checker.experimental.regex_qual_poly.qual.Regex.class.getName())),
-                new HashSet<>(Arrays.asList(org.checkerframework.checker.regex.qual.Regex.class.getName(),
+                new HashSet<>(Arrays.asList(
+                        org.checkerframework.checker.regex.qual.Regex.class.getName(),
                         org.checkerframework.checker.regex.qual.PolyRegex.class.getName())),
                 ClassRegexParam.class,
                 MethodRegexParam.class,

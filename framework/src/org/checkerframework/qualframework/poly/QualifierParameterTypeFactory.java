@@ -122,6 +122,11 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             QualifiedTypeMirror<QualParams<Q>> receiverType,
             Element memberElement) {
 
+        // Don't run postAsMemberOf when viewing members from inside a class.
+        if (receiverType.getUnderlyingType().isDeclaration()) {
+            return memberType;
+        }
+
         final QualParams<Q> effectiveReceiverQualifier;
         switch(receiverType.getKind()) {
             case WILDCARD:

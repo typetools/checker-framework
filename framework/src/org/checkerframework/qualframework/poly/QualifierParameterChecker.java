@@ -2,8 +2,8 @@ package org.checkerframework.qualframework.poly;
 
 import org.checkerframework.qualframework.base.Checker;
 import org.checkerframework.qualframework.poly.format.PrettyQualifiedTypeFormatter;
-import org.checkerframework.qualframework.poly.format.DefaultQualifiedTypeFormatter;
-import org.checkerframework.qualframework.poly.format.QualifiedTypeFormatter;
+import org.checkerframework.qualframework.base.format.DefaultQualifiedTypeFormatter;
+import org.checkerframework.qualframework.base.format.QualifiedTypeFormatter;
 import org.checkerframework.qualframework.poly.format.SurfaceSyntaxFormatterConfiguration;
 import org.checkerframework.qualframework.poly.format.SurfaceSyntaxQualParamsFormatter;
 
@@ -33,7 +33,6 @@ public abstract class QualifierParameterChecker<Q> extends Checker<QualParams<Q>
                 getInvisibleQualifiers(),
                 getContext().getOptionConfiguration().hasOption("printAllQualifiers")
         );
-
     }
 
     /**
