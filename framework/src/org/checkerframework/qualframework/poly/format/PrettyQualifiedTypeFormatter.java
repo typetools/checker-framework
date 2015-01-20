@@ -7,6 +7,7 @@ import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.qualframework.base.TypeMirrorConverter;
+import org.checkerframework.qualframework.base.format.DefaultQualifiedTypeFormatter;
 import org.checkerframework.qualframework.poly.PolyQual;
 import org.checkerframework.qualframework.poly.QualParams;
 

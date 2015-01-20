@@ -1,12 +1,11 @@
 package org.checkerframework.qualframework.poly.format;
 
+import org.checkerframework.qualframework.base.format.QualFormatter;
 import org.checkerframework.qualframework.poly.PolyQual;
 import org.checkerframework.qualframework.poly.QualParams;
 
-import java.util.Set;
-
 /**
- * QualParamsFormatter is a QualFormatter with extra methods to format QualParams.
+ * A QualFormatter with extra methods to format QualParams.
  */
 public interface QualParamsFormatter<Q> extends QualFormatter<QualParams<Q>> {
 

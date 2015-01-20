@@ -101,13 +101,17 @@ public class DefaultInferredTypesApplier {
          * For TypeVariables it is important that we both compare the primary annotation and bounds.
          * Dataflow will default local variables that are also type variables as follows:
          *
-         *   <T> void method(){  @TOP T t; }
+         *   {@code
+         *       <T> void method(){  @TOP T t; }
+         *   }
          *
          * The type @TOP T is equivalent to a type  T[ extends @TOP Object super @TOP Void ]
          * For the following method:
          *
-         *   <@BOTTOM T extends @TOP Object> void method(T in_t) {
-         *      T t = in_t;
+         *   {@code
+         *       <@BOTTOM T extends @TOP Object> void method(T in_t) {
+         *          T t = in_t;
+         *       }
          *   }
          *
          * The type of in_t is the declared type of T and it is below @TOP t, so t should be refined to the
