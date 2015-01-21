@@ -839,6 +839,10 @@ public class AnnotatedTypes {
                 }
                 matchTypeVars(((AnnotatedArrayType)lhs).getComponentType(), ((AnnotatedArrayType)rhs).getComponentType(), accum, false);
                 break;
+
+            case INTERSECTION:
+                break;
+
             case VOID:
                 // Nothing to do.
                 break;
