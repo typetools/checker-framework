@@ -644,7 +644,22 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             } else if(!subtypeHasAnno && !supertypeHasAnno && areEqualInHierarchy(subtype, supertype, currentTop)) {
                 // two unannotated uses of the same type parameter are of the same type
                 return true;
+
+            } else if (subtype.getUpperBound().getKind() == TypeKind.INTERSECTION) {
+                //This case happens when a type has an intersection bound.  e.g.,
+                // T extends A & B
+                //
+                // And one use of the type has an annotation and the other does not. e.g.,
+                // @X T xt = ...;  T t = ..;
+                // xt = t;
+                //
+                //we do not want to implement visitIntersection_Typevar because that would make it ok
+                //to call is subtype on an intersection and typevar which shouldn't happen
+                //instead we perform the subtyping here
+                return visitIntersectionSubtype((AnnotatedIntersectionType) subtype.getUpperBound(),
+                                                supertype.getLowerBound(), visited);
             }
+
         }
 
         //TODO: DOCUMENT
