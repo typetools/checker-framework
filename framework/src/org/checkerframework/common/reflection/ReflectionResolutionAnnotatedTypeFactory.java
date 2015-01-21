@@ -116,7 +116,8 @@ public class ReflectionResolutionAnnotatedTypeFactory extends
                 return atm.getAnnotation(target);
             }
         }
-        return null;
+        //The annotation must be support by whatever ATF is extending the this factory
+        return super.getAnnotationMirror(tree, target);
     }
 
     @Override
