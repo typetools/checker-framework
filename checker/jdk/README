@@ -1,0 +1,29 @@
+This directory contains annotated versions of the JDK.
+
+(Annotated versions of non-JDK libraries appear in stub files, such as
+checker-framework/checker/src/org/checkerframework/checker/nullness/astubs/gnu-getopt.astub .)
+
+See chapter "Annotating libraries" in the Checker Framework Manual for
+information on using these classes.
+
+Some generated .jar files are checked into the repository, because
+generating them requires external dependencies (the Annotation File
+Utilities) and because it prevents bugs related to different people using
+different versions of the JDK.
+
+If you need stub files for additional library classes -- in the JDK or another
+library -- those can be generated using the StubGenerator tool along with some
+manual annotating.  The "Annotating libraries" chapter of the manual describes
+this process as well.
+
+If you do create new stub files please share them with us via email at
+checker-framework-dev@googlegroups.com.  Thanks!
+
+Our policy is to only add fully-annotated classes to the JDK, to avoid
+confusion that could result from some methods in a class being correctly
+annotated and other methods not being annotated.  So, it is best if you can
+provide a fully-annotated class (this requires examining all the methods in
+the class).  Otherwise, provide what you can, but the annotations won't be
+added to the Checker Framework distribution until someone else gets a
+chance to examine all the other methods.
+
