@@ -70,8 +70,9 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             // We have initializers, either with or without an array type.
 
             for (ExpressionTree init: tree.getInitializers()) {
-                AnnotatedTypeMirror iniType = atypeFactory.getAnnotatedType(init);
-                Collection<AnnotationMirror> annos = iniType.getAnnotations();
+                AnnotatedTypeMirror initType = atypeFactory.getAnnotatedType(init);
+                // initType might be a typeVariable, so use effectiveAnnotations.
+                Collection<AnnotationMirror> annos = initType.getEffectiveAnnotations();
 
                 prev = (prev == null) ? annos : qualHierarchy.leastUpperBounds(prev, annos);
             }
