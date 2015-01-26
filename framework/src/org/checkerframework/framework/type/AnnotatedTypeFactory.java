@@ -2350,12 +2350,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 Set<AnnotationMirror> superAnnos = getDeclAnnotations(superElt);
 
                 for (AnnotationMirror annotation : superAnnos) {
-                    AnnotationMirror inheritedAnnotation = getDeclAnnotation(
-                            annotation.getAnnotationType().asElement(),
-                            InheritedAnnotation.class);
-
-                    if (inheritedAnnotation != null ||
-                            AnnotationUtils.containsSameIgnoringValues(
+                    List<? extends AnnotationMirror> annotationsOnAnnotation;
+                    try {
+                        annotationsOnAnnotation = annotation
+                                .getAnnotationType().asElement()
+                                .getAnnotationMirrors();
+                    } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
+                        // Fix for Issue 348: If a CompletionFailure occurs,
+                        // issue a warning.
+                        checker.message(Kind.WARNING, annotation
+                                .getAnnotationType().asElement(),
+                                "annotation.not.completed", ElementUtils
+                                        .getVerboseName(elt), annotation);
+                        continue;
+                    }
+                    if (AnnotationUtils.containsSameByClass(
+                            annotationsOnAnnotation, InheritedAnnotation.class)
+                            || AnnotationUtils.containsSameIgnoringValues(
                                     inheritedAnnotations, annotation)) {
                         results.add(annotation);
                     }
