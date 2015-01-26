@@ -294,14 +294,15 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     }
 
     @Override
-    public Set<String> getDeclaredParameters(Element elt, ExtendedTypeMirror type) {
+    public Set<String> getDeclaredParameters(Element elt, Set<AnnotationMirror> declAnnotations, ExtendedTypeMirror type) {
         Set<String> result = new HashSet<>();
         try {
-            for (Annotation a : elt.getAnnotationsByType(methodAnno)) {
-                result.add((String) methodAnno.cast(a).getClass().getMethod("value").invoke(a));
-            }
-            for (Annotation a : elt.getAnnotationsByType(classAnno)) {
-                result.add((String) classAnno.cast(a).getClass().getMethod("value").invoke(a));
+            for (AnnotationMirror anno: declAnnotations) {
+                if (AnnotationUtils.areSameByClass(anno, methodAnno)
+                    || AnnotationUtils.areSameByClass(anno, classAnno)) {
+
+                    result.add(AnnotationUtils.getElementValue(anno, "value", String.class, false));
+                }
             }
         } catch (Exception e) {
             ErrorReporter.errorAbort("AnnotationConverter not configured correctly. Error looking up 'value' field.");
