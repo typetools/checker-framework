@@ -48,16 +48,19 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
         QualParams<Q> result = super.getQualifier(type);
 
         // Find the names of all parameters that are valid on this type.
-        Set<String> names = null;
-
+        Set<String> names;
         switch (type.getKind()) {
             case DECLARED:
-                names = getAnnotationConverter().getDeclaredParameters(((ExtendedDeclaredType)type).asElement(),
-                        qualContext.getTypeFactory().getDecoratedElement(((ExtendedDeclaredType) type).asElement()));
+                Element declElt = ((ExtendedDeclaredType)type).asElement();
+                names = getAnnotationConverter().getDeclaredParameters(declElt,
+                        qualContext.getTypeFactory().getDeclAnnotations(declElt),
+                        qualContext.getTypeFactory().getDecoratedElement(declElt));
                 break;
             case EXECUTABLE:
-                names = getAnnotationConverter().getDeclaredParameters(((ExtendedExecutableType)type).asElement(),
-                        qualContext.getTypeFactory().getDecoratedElement(((ExtendedDeclaredType) type).asElement()));
+                Element executableElt = ((ExtendedExecutableType)type).asElement();
+                names = getAnnotationConverter().getDeclaredParameters(executableElt,
+                        qualContext.getTypeFactory().getDeclAnnotations(executableElt),
+                        qualContext.getTypeFactory().getDecoratedElement(executableElt));
                 break;
             case VOID:
             case PACKAGE:

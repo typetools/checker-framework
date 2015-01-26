@@ -15,11 +15,13 @@ import org.checkerframework.qualframework.util.QualifierContext;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror.WrappedAnnotatedTypeVariable;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 
 /** Default implementation of {@link QualifiedTypeFactory}.  Most type systems
  * should extend this class (or a subclass) instead of implementing {@link
@@ -277,5 +279,10 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     @Override
     public TypeVariableSubstitutor<Q> createTypeVariableSubstitutor() {
         return new TypeVariableSubstitutor<>();
+    }
+
+    @Override
+    public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
+        return adapter.getDeclAnnotations(elt);
     }
 }
