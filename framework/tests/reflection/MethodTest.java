@@ -308,6 +308,41 @@ public void test(){
         }
     }
 
+    public void bug(@ReflectBottom MethodTest this) {
+        String str = "setA";
+        @Sibling1 int val1 = sibling1;
+        @Sibling1 Object[] args = new Object[]{val1};
+        try {
+        	//
+            Class<?> c = Class.forName("MethodTest$SuperClass");
+            
+            Method m = c.getMethod(str, int.class);
+            // This error is a bug.
+            // See DefaultReflectionResolver.resolveMethodCall(...)
+            // for details.
+            //:: error: (argument.type.incompatible)
+            m.invoke(this, args);
+        } catch (Exception ignore) {
+        }
+    }
+    public void bug2(@ReflectBottom MethodTest this) {
+        String str = "setAB";
+        @Sibling1 int val1 = sibling1;
+        @Sibling2 int val2 = sibling2;
+
+        Object[] args = new Object[]{val1, val2};
+        try {
+        	//
+            Class<?> c = Class.forName("MethodTest$SuperClass");
+            Method m = c.getMethod(str, int.class, int.class);
+            // This error is a bug.
+            // See DefaultReflectionResolver.resolveMethodCall(...)
+            // for details.
+            //:: error: (argument.type.incompatible)
+            m.invoke(this, args);
+        } catch (Exception ignore) {
+        }
+    }
     public static @Sibling1 int convertSibling2ToSibling1(@Sibling2 int a) {
         return (@Sibling1 int) 1;
     }
