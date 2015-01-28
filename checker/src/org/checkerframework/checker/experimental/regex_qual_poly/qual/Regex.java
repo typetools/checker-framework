@@ -27,8 +27,14 @@ public @interface Regex {
      * Defaults to 0.
      */
     int value() default 0;
-    // The name of the parameter to set in the annotated reference.
+
+    /**
+     * The name of the qualifier parameter to set.
+     */
     String param() default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
-    // Specify a wildcard with a bound.
+
+    /**
+     * Specify that this use is a wildcard with a bound.
+     */
     Wildcard wildcard() default Wildcard.NONE;
 }

@@ -34,8 +34,13 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Repeatable(MultiTainted.class)
 public @interface Tainted {
-    // The name of the parameter to set in the annotated reference.
+    /**
+     * The name of the parameter to set.
+     */
     String param() default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
-    // Specify a wildcard with a bound.
+
+    /**
+     * Specify that this use is a wildcard with a bound.
+     */
     Wildcard wildcard() default Wildcard.NONE;
 }
