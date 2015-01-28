@@ -17,5 +17,8 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Repeatable(MultiMethodRegexParam.class)
 public @interface MethodRegexParam {
+    /**
+     * The name of the qualifier parameter to declare.
+     */
     String value() default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
 }
