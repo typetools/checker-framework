@@ -1577,6 +1577,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // Look at what Attr and Resolve are doing and rework this whole method.
             }
             break;
+
+        case ARRAY:
+            // This new class is in the initializer of an array.
+            // The array being created can't have a generic component type,
+            // so nothing to be done.
+            break;
         case TYPEVAR:
             // TODO: this should NOT be necessary.
             // org.checkerframework.dataflow.cfg.node.MethodAccessNode.MethodAccessNode(ExpressionTree, Node)
