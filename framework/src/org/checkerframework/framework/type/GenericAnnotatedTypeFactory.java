@@ -920,4 +920,11 @@ public abstract class GenericAnnotatedTypeFactory<
     public void setUseFlow(boolean useFlow) {
         this.useFlow = useFlow;
     }
+
+    /**
+     * @see BaseTypeChecker#getTypeFactoryOfSubchecker(Class)
+     */
+    public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker> T getTypeFactoryOfSubchecker(Class<U> checkerClass) {
+        return checker.getTypeFactoryOfSubchecker(checkerClass);
+    }
 }

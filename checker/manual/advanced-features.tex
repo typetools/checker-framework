@@ -319,15 +319,20 @@ CLIMB-to-top.
 Here is the rationale for CLIMB-to-top:
 
 \begin{itemize}
-
 \item
 Casts and local variables (including resource variables in the
-try-with-resources construct, variables in for statements, etc.)
+try-with-resources construct, variables in for statements, exception parameters etc.)
 should be defaulted to top because they are the locations to
 which type refinement (Section~\ref{type-refinement}) is applied.  If they
 start as the top type, then the Checker Framework chooses the best (most
 general) possible type for them.  As a result, a programmer rarely writes
 an explicit annotation on any of those locations.
+
+Catch arguments, known as exception parameters in the Java Language Specification,
+should be defaulted to top for most checkers; otherwise, an error will be issued.  This is because
+exceptions of arbitrary qualified types can be thrown and the Checker Framework
+does not provide runtime checks.
+
 
 \item
 Instanceof types are defaulted to top for a similar reason:  so that
@@ -379,6 +384,8 @@ public @interface Nullable { }
 
 \noindent
 Note that \<DefaultLocation.LOCAL\_VARIABLE> includes casts and instanceof.
+ As mentioned above, the exception parameters are always non-null, so
+\<DefaultLocation.EXCEPTION\_PARAMETER> is excluded from the above list.
 
 A type system designer does not have to use the CLIMB-to-top rule.  In
 addition, a user may choose a different rule for defaults using the
@@ -976,7 +983,7 @@ could happen at run time, whether assertions are enabled or disabled.
 
 If you supply the \<-AassumeAssertionsAreEnabled> command-line option, then
 the Checker Framework assumes assertions are enabled.  If you supply the
-\<-AassumeAssertionsAreEnabled> command-line option, then the Checker
+\<-AassumeAssertionsAreDisabled> command-line option, then the Checker
 Framework assumes assertions are disabled.  You may not supply both
 command-line options.
 
