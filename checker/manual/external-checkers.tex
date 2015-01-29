@@ -1,0 +1,116 @@
+\htmlhr
+\chapter{Third-party checkers\label{third-party-checkers}\label{external-checkers}}
+
+The Checker Framework has been used to build other checkers that are not
+distributed together with the framework.  This chapter mentions just a few
+of them.  They are listed in chonological order; older ones appear first
+and newer ones appear last.
+
+They are externally-maintained, so if you have problems or questions, you
+should contact their maintainers rather than the Checker Framework
+maintainers.
+
+If you want a reference to your checker included in this chapter,
+send us a link and a short description.
+
+
+% Note to maintainers:
+% Sections are added to this chapter in chronological order.
+
+
+\input{typestate-checker}
+
+
+\section{Units and dimensions checker\label{units-and-dimensions-checker}}
+
+A checker for units and dimensions is available at
+\url{http://www.lexspoon.org/expannots/}.
+
+Unlike the Units Checker that is distributed with the Checker Framework
+(see Section~\ref{units-checker}), this checker includes dynamic checks and
+permits annotation arguments that are Java expressions.  This added
+flexibility, however, requires that you use a special version both of the
+Checker Framework and of the javac compiler.
+
+
+\section{Thread locality checker\label{loci-thread-locality-checker}}
+
+Loci, a checker for thread locality, is available at
+\url{http://www.it.uu.se/research/upmarc/loci/}.
+Developer resources are available at the project page
+\url{http://java.net/projects/loci/}.
+
+% A paper was publishd in ECOOP 2009, release 0.1 was made in March 2011,
+% but as of October 2013 the manual is still listed as "forthcoming".
+
+
+% In a mail from Amanj Mahmud <amanjpro@gmail.com> on 28.03.2011:
+
+% The plugin name: 
+% ``Loci: A Pluggable Type Checker for Expressing Thread Locality in
+% Java''
+
+% Project homepage: http://www.it.uu.se/research/upmarc/loci
+
+% Project's developer's page: http://java.net/projects/loci
+
+
+\section{Safety-Critical Java checker\label{safety-critical-java-checker}}
+
+A checker for Safety-Critical Java (SCJ, JSR 302) is available at
+\url{http://sss.cs.purdue.edu/projects/oscj/checker/checker.html}.
+Developer resources are available at the project page
+\url{http://code.google.com/p/scj-jsr302/}.
+
+
+% In a mail from Aleš Plšek <aplsek@gmail.com> on 29.03.2011:
+
+% Name: SCJ Checker
+% WWW: http://sss.cs.purdue.edu/projects/oscj/checker/checker.html
+% Source-Code Repository: http://code.google.com/p/scj-jsr302/
+
+% Description: The SCJ Checker implements verification of a set of
+% annotations defined by the Safety-Critical Java standard (JSR-302).
+% The checker mainly focuses on proving memory safety of Java programs
+% that use a region-based memory management.
+
+% Publications: Static checking of safety critical Java annotations:
+% http://portal.acm.org/citation.cfm?doid=1850771.1850792
+
+
+\section{Generic Universe Types checker\label{gut-checker}}
+
+A checker for Generic Universe Types, a lightweight ownership type
+system, is available from
+\url{https://ece.uwaterloo.ca/~wdietl/ownership/}.
+
+
+\section{EnerJ checker\label{enerj-checker}}
+
+A checker for EnerJ, an extension to Java that exposes hardware faults
+in a safe, principled manner to save energy with only
+slight sacrifices to the quality of service, is available from
+\url{http://sampa.cs.washington.edu/research/approximation/enerj.html}.
+
+
+\section{CheckLT taint checker\label{checklt-checker}}
+
+CheckLT uses taint tracking to detect illegal information flows, such as
+unsanitized data that could result in a SQL injection attack.
+CheckLT is available from \url{http://checklt.github.io/}.
+
+
+\section{SPARTA information flow type-checker for Android\label{sparta-checker}}
+
+SPARTA is a security toolset aimed at preventing malware from appearing in
+an app store.  SPARTA provides an information-flow type-checker that is
+customized to Android but can also be applied to other domains.
+The SPARTA toolset is available from
+\url{http://types.cs.washington.edu/sparta/}.
+The paper 
+\href{http://homes.cs.washington.edu/~mernst/pubs/infoflow-ccs2014.pdf}{``Collaborative
+    verification of information flow for a high-assurance app store''}
+  appeared in CCS 2014.
+
+
+% LocalWords:  SCJ EnerJ CheckLT unsanitized JavaUI
