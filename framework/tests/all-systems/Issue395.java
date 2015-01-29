@@ -3,8 +3,7 @@
 
 import java.util.*;
 
-@SuppressWarnings("javari")
-@SuppressWarnings("oigj")
+@SuppressWarnings({"javari", "oigj"})
 class Test {
 
     Object[] testMethod() {
