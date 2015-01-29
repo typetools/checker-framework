@@ -340,17 +340,23 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * with their value
          */
         @Override
-        public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
-            ExpressionTree etree = tree.getExpression();
-            Element e = InternalUtils.symbol(etree);
-            if (e != null) {
-                String name = getClassname(e);
-                AnnotationMirror newQual = createClassVal(Arrays.asList(name));
-                type.replaceAnnotation(newQual);;
-                return null;
-            }
-            return super.visitMemberSelect(tree, type);
-        }
+		public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
+			ExpressionTree etree = tree.getExpression();
+			Element e = InternalUtils.symbol(etree);
+			String name = null;
+			if (e != null) {
+				name = getClassname(e);
+			} else if (etree.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+				PrimitiveTypeTree primTree = (PrimitiveTypeTree) etree;
+				name = primTree.getPrimitiveTypeKind().name().toString();
+			}
+			if (name != null) {
+				AnnotationMirror newQual = createClassVal(Arrays.asList(name));
+				type.replaceAnnotation(newQual);
+				return null;
+			}
+			return super.visitMemberSelect(tree, type);
+		}
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
@@ -388,22 +394,28 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             } else if (TreeUtils.isMethodInvocation(tree, getClass,
                     processingEnv)) {
-                if (TreeUtils.getReceiverTree(tree) != null) {
+            	  Type clType;
+                  if (TreeUtils.getReceiverTree(tree) != null) {
 
-                    Type clType = (Type) InternalUtils.typeOf(TreeUtils
-                            .getReceiverTree(tree));
-                    String className = getClassname(clType);
-                    AnnotationMirror newQual = createClassBound(Arrays
-                            .asList(className));
-                    type.replaceAnnotation(newQual);
-                }
-                return null;
+                      clType = (Type) InternalUtils.typeOf(TreeUtils
+                              .getReceiverTree(tree));
+                  } else { // receiver is null, so it is implicitly "this"
+                      ClassTree classTree = TreeUtils
+                              .enclosingClass(getPath(tree));
+                      clType = (Type) InternalUtils.typeOf(classTree);
+                  }
+                  String className = getClassname(clType);
+                  AnnotationMirror newQual = createClassBound(Arrays
+                          .asList(className));
+                  type.replaceAnnotation(newQual);
+                  return null;
             }
             return super.visitMethodInvocation(tree, type);
         }
 
         /**
          * Return String representation of class name.
+         * This will not return the correct name for anonymous classes.
          */
         private String getClassname(Type classType) {
             StringBuilder className = new StringBuilder(TypesUtils.getQualifiedName((DeclaredType) classType).toString());

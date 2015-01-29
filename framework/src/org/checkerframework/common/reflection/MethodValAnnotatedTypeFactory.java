@@ -3,6 +3,7 @@ package org.checkerframework.common.reflection;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,6 +19,7 @@ import org.checkerframework.common.reflection.qual.MethodVal;
 import org.checkerframework.common.reflection.qual.MethodValBottom;
 import org.checkerframework.common.reflection.qual.UnknownMethod;
 import org.checkerframework.common.value.qual.ArrayLen;
+import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -29,7 +31,6 @@ import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 import com.sun.source.tree.LiteralTree;
@@ -63,6 +64,8 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             "java.lang.Class", "getConstructor", 1, processingEnv);
 
     private final AnnotationProvider annotationProvider;
+    
+    private static final int UNKNOWN_PARAM_LENGTH = -1;
 
     /**
      * Constructor. Initializes all the AnnotationMirror and Executable Element
@@ -435,81 +438,42 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        private List<Integer> getMethodParamsLen(MethodInvocationTree tree,
-                List<? extends ExpressionTree> args) {
-            // *** HANDLE PARAMETERS LIST ***
-            // If they use "null" as the array or there was no array
-            List<Integer> params = new ArrayList<>();
-            ExpressionTree paramsListArg = null;
-
-            // EDITED 1-15-2014 by plvines
-            // Added supporting lists of classes (getMethod("method",
-            // String.class, Object.class)) and restructured this whole block to
-            // be more understandable (I think).
-
-            // No params arg or null literal
-            if (args.size() == 1
-                    || args.get(1).getKind() == Tree.Kind.NULL_LITERAL) {
-                params.add(0);
-            }
-
-            // Two args, second is a single Class or an array
-            else if (args.size() == 2) {
-                paramsListArg = tree.getArguments().get(1);
-
-                AnnotationMirror annotation = annotationProvider
-                        .getAnnotationMirror(paramsListArg, ArrayLen.class);
-                if (annotation != null) {
-                    params = AnnotationUtils.getElementValueArray(annotation,
-                            "value", Integer.class, true);
-                }
-
-                // If the parameters list was not an array or null, let's
-                // try for a single class object or a list of them
-                // TODO BOUND
-                else {
-                    annotation = annotationProvider.getAnnotationMirror(
-                            paramsListArg, ClassVal.class);
-                    if (annotation != null) {
-                        params.add(1);
-                    } else {
-                        // Was not a class, error
-                        //System.out.println("HERE");
-                        params.add(-1);
-                    }
-                }
-            }
-
-            // more than 2 args, so a list of class objects as params
-            else if (args.size() > 2) {
-                // Check that all the arguments are Class objects
-                boolean allAreClasses = true;
-                // TODO BOUND
-                for (int i = 1; i < args.size() && allAreClasses; i++) {
-                    if (annotationProvider.getAnnotationMirror(args.get(i),
-                            ClassVal.class) == null) {
-                        allAreClasses = false;
-                        break;
-                    }
-                }
-
-                if (allAreClasses) {
-                    params.add(args.size() - 1);
-                } else {
-                    // were not all classes, error
-                   // System.out.println("HERE2");
-                    params.add(-1);
-                }
-            }
-
-            // If current annotation system doesn't handle it, we
-            // wind up here
-            else {
-              //  System.out.println("HERE3");
-                params.add(-1);
-            }
-            return params;
-        }
+		private List<Integer> getMethodParamsLen(MethodInvocationTree tree,
+				List<? extends ExpressionTree> args) {
+			assert args.size() > 0 : "getMethod must have at least one parameter";
+			// Number of parameters in the created method object
+			int numParams = args.size() - 1;
+			if (numParams == 1) {
+				ExpressionTree argument = tree.getArguments().get(1);
+				AnnotatedTypeMirror atm = atypeFactory
+						.getAnnotatedType(argument);
+				switch (atm.getKind()) {
+				case ARRAY:
+					AnnotationMirror annotation = annotationProvider
+							.getAnnotationMirror(argument, ArrayLen.class);
+					if (annotation != null) {
+						return AnnotationUtils.getElementValueArray(annotation,
+								"value", Integer.class, true);
+					} else if (annotationProvider.getAnnotationMirror(argument,
+							BottomVal.class) != null) {
+						// happens in this case: (Class[]) null
+						return Collections.singletonList(0);
+					}
+					// the argument is an array with unknown array length
+					return Collections.singletonList(UNKNOWN_PARAM_LENGTH);
+				case NULL:
+					// null is treated as the empty list of parameters, so size
+					// is 0
+					return Collections.singletonList(0);
+				default:
+					// The argument is not an array or null,
+					// so it must be a class.
+					return Collections.singletonList(1);
+				}
+			}
+			return Collections.singletonList(numParams);
+		}
+		
 
         private List<Integer> getConstructorParamsLen(
                 MethodInvocationTree tree, List<? extends ExpressionTree> args) {
@@ -554,54 +518,29 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private List<String> getClassNames(ExpressionTree classReceiver,
                 boolean mustBeExact) {
             // *** HANDLE CLASS NAME ***
-            List<String> classNames = new ArrayList<>();
-            // TODO
-            // EDITED 1-2-14 by plvines
-            // TODO resolved by adding InternalUtils.typeOf(...)? Seems to work.
-            // Calling from object.getClass()
-            if (classReceiver.getKind() == Tree.Kind.METHOD_INVOCATION) {
-                // EDITED 1-3-14 by plvines
-                // Implicit "this" in the call to getClass()
-                if (TreeUtils.getReceiverTree(classReceiver) == null) {
-                    classNames.add(visitorState.getClassTree().toString());
-                } else {
-                    if (mustBeExact) {
-                        classNames.add("Upper Bound: "
-                                + classReceiver.toString());
-                    } else {
-                        classNames.add(InternalUtils.typeOf(
-                                TreeUtils.getReceiverTree(classReceiver))
-                                .toString());
-                    }
-                }
-                // classNames.add("Unhandled GetClass()");
-            }
-            // Calling from a Class object
-            // TODO BOUND
-            else if (classReceiver.getKind() == Tree.Kind.IDENTIFIER ||classReceiver.getKind()== Tree.Kind.MEMBER_SELECT) {
-                AnnotationMirror annotation = annotationProvider
-                        .getAnnotationMirror(classReceiver, ClassVal.class);
-                if (annotation != null) {
-                    classNames = AnnotationUtils.getElementValueArray(
-                            annotation, "value", String.class, true);
-                } else {
-                    // Could be ClassBound instead of ClassVal
-                    annotation = annotationProvider.getAnnotationMirror(
-                            classReceiver, ClassBound.class);
-                    if (annotation != null) {
-                        if (mustBeExact) {
-                            classNames.add("Upper Bound: "
-                                    + classReceiver.toString());
-                        } else {
-                            classNames = AnnotationUtils.getElementValueArray(
-                                    annotation, "value", String.class, true);
-                        }
-                    } else {
-                        classNames.add("Unannotated Class: "
-                                + classReceiver.toString());
-                    }
-                }
-            }
+			List<String> classNames = new ArrayList<>();
+			AnnotationMirror annotation = annotationProvider
+					.getAnnotationMirror(classReceiver, ClassVal.class);
+			if (annotation != null) {
+				classNames = AnnotationUtils.getElementValueArray(annotation,
+						"value", String.class, true);
+			} else {
+				// Could be ClassBound instead of ClassVal
+				annotation = annotationProvider.getAnnotationMirror(
+						classReceiver, ClassBound.class);
+				if (annotation != null) {
+					if (mustBeExact) {
+						classNames.add("Upper Bound: "
+								+ classReceiver.toString());
+					} else {
+						classNames = AnnotationUtils.getElementValueArray(
+								annotation, "value", String.class, true);
+					}
+				} else {
+					classNames.add("Unannotated Class: "
+							+ classReceiver.toString());
+				}
+			}
             return classNames;
         }
 
