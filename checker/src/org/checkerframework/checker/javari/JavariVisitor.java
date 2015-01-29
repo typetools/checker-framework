@@ -1,8 +1,13 @@
 package org.checkerframework.checker.javari;
 
 
+import java.util.Collections;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
+import org.checkerframework.checker.javari.qual.Mutable;
 import org.checkerframework.checker.javari.qual.Assignable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -14,6 +19,7 @@ import org.checkerframework.javacutil.TreeUtils;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 
 
@@ -88,6 +94,20 @@ public class JavariVisitor extends BaseTypeVisitor<JavariAnnotatedTypeFactory> {
                 checker.report(Result.failure("ro.element"), varTree);
         }
 
+    }
+
+    @Override
+    protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
+        // f exception parameters are forced to be @ReadOnly, then unannotated
+        // code might not type check. For example:
+        /*
+         * catch( @ReadOnly Exception e) {
+         *     Exception e2 = e;  // incompatible types, expected @Mutable
+         *     throw new RuntimeException("message'", e) // incompatible types, expected @Mutable
+         * }
+         */
+        //This is sound because an throw exception must be @Mutable
+        return Collections.singleton(atypeFactory.MUTABLE);
     }
 
     /**

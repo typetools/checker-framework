@@ -22,6 +22,7 @@ import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -513,9 +514,17 @@ public class QualifierDefaults {
                     break;
                 }
                 case EXCEPTION_PARAMETER: {
-                    if (scope.getKind() == ElementKind.EXCEPTION_PARAMETER &&
-                            t == type) {
+                    if (scope.getKind() == ElementKind.EXCEPTION_PARAMETER
+                            && t == type) {
                         doApply(t, qual);
+                        if (t.getKind() == TypeKind.UNION) {
+                            AnnotatedUnionType aut = (AnnotatedUnionType) t;
+                            //Also apply the default to the alternative types
+                            for (AnnotatedDeclaredType anno : aut
+                                    .getAlternatives()) {
+                                doApply(anno, qual);
+                            }
+                        }
                     }
                     break;
                 }
