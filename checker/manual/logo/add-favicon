@@ -6,6 +6,8 @@
 # add-favicon <directory> <favicon.png>
 # The arguments should be paths relative to the current working directory.
 
+# Once this has been run, running it another time has no effect.
+
 # Originally from http://stackoverflow.com/questions/13112123/creating-javadoc-html-pages-that-use-a-favicon
 # The original version had several limitations:
 #  * If a directory does not contaion any .html files, it creates a file named "*.html".
@@ -23,9 +25,8 @@ patchIt () {
       # This creates tmpfile, with the same permissions as $f.
       # The next command will overwrite it but preserve the permissions.
       # Hat tip to http://superuser.com/questions/170226/standard-way-to-duplicate-a-files-permissions for this trick.
-      cp $f $tmpfile
-      sed -e " s%<head>\$%<head><link rel=\"icon\" href=\"$2\" type=\"image/png\"/>%" 
-	  $f > $tmpfile
+      \cp -p $f $tmpfile
+      sed -e " s%<head>\$%<head><link rel=\"icon\" href=\"$2\" type=\"image/png\"/>%" $f > $tmpfile
       mv -f $tmpfile $f
     fi;
   done ;
