@@ -17,4 +17,13 @@
             <url>http://types.cs.washington.edu/dev/m2-repo</url>
         </repository>
     </distributionManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>javacutil</artifactId>
+            <version><!-- checker-framework-version -->1.8.9<!-- /checker-framework-version --></version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
 </project>
