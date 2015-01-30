@@ -307,7 +307,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             	debugReflection("Spoofed tree's arguments did not match declaration"+resolvedTree.toString());
             	//Calling methodFromUse on these sorts of trees will cause an assertion to fail
             	//in QualifierPolymorphism.PolyCollector.visitArray(...)
-//            	continue;
+            	continue;
             }
             Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> resolvedResult = factory
                     .constructorFromUse(resolvedTree);
