@@ -1576,6 +1576,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // Look at what Attr and Resolve are doing and rework this whole method.
             }
             break;
+
+        case ARRAY:
+            // This new class is in the initializer of an array.
+            // The array being created can't have a generic component type,
+            // so nothing to be done.
+            break;
         case TYPEVAR:
             // TODO: this should NOT be necessary.
             // org.checkerframework.dataflow.cfg.node.MethodAccessNode.MethodAccessNode(ExpressionTree, Node)
@@ -2349,12 +2355,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 Set<AnnotationMirror> superAnnos = getDeclAnnotations(superElt);
 
                 for (AnnotationMirror annotation : superAnnos) {
-                    AnnotationMirror inheritedAnnotation = getDeclAnnotation(
-                            annotation.getAnnotationType().asElement(),
-                            InheritedAnnotation.class);
-
-                    if (inheritedAnnotation != null ||
-                            AnnotationUtils.containsSameIgnoringValues(
+                    List<? extends AnnotationMirror> annotationsOnAnnotation;
+                    try {
+                        annotationsOnAnnotation = annotation
+                                .getAnnotationType().asElement()
+                                .getAnnotationMirrors();
+                    } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
+                        // Fix for Issue 348: If a CompletionFailure occurs,
+                        // issue a warning.
+                        checker.message(Kind.WARNING, annotation
+                                .getAnnotationType().asElement(),
+                                "annotation.not.completed", ElementUtils
+                                        .getVerboseName(elt), annotation);
+                        continue;
+                    }
+                    if (AnnotationUtils.containsSameByClass(
+                            annotationsOnAnnotation, InheritedAnnotation.class)
+                            || AnnotationUtils.containsSameIgnoringValues(
                                     inheritedAnnotations, annotation)) {
                         results.add(annotation);
                     }
