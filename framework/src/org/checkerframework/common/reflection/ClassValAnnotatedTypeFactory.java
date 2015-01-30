@@ -394,21 +394,21 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             } else if (TreeUtils.isMethodInvocation(tree, getClass,
                     processingEnv)) {
-            	  Type clType;
-                  if (TreeUtils.getReceiverTree(tree) != null) {
+                Type clType;
+                if (TreeUtils.getReceiverTree(tree) != null) {
 
-                      clType = (Type) InternalUtils.typeOf(TreeUtils
-                              .getReceiverTree(tree));
-                  } else { // receiver is null, so it is implicitly "this"
-                      ClassTree classTree = TreeUtils
-                              .enclosingClass(getPath(tree));
-                      clType = (Type) InternalUtils.typeOf(classTree);
-                  }
-                  String className = getClassname(clType);
-                  AnnotationMirror newQual = createClassBound(Arrays
-                          .asList(className));
-                  type.replaceAnnotation(newQual);
-                  return null;
+                    clType = (Type) InternalUtils.typeOf(TreeUtils
+                            .getReceiverTree(tree));
+                } else { // receiver is null, so it is implicitly "this"
+                    ClassTree classTree = TreeUtils
+                            .enclosingClass(getPath(tree));
+                    clType = (Type) InternalUtils.typeOf(classTree);
+                }
+                String className = getClassname(clType);
+                AnnotationMirror newQual = createClassBound(Arrays
+                        .asList(className));
+                type.replaceAnnotation(newQual);
+                return null;
             }
             return super.visitMethodInvocation(tree, type);
         }
