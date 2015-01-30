@@ -93,8 +93,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      *            Flag to enable debugging of the reflection resolution process
      */
     public DefaultReflectionResolver(BaseTypeChecker checker,
-            AnnotationProvider provider,
-            boolean debug) {
+            AnnotationProvider provider, boolean debug) {
         this.checker = checker;
         this.provider = provider;
         this.processingEnv = checker.getProcessingEnvironment();
@@ -128,18 +127,18 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         if (TreeUtils.isMethodInvocation(tree, newInstance, processingEnv)) {
             return resolveConstructorCall(factory, tree, origResult);
         } else {
-        /*
-            AnnotationMirror estimate = provider.getAnnotationMirror(
-                    TreeUtils.getReceiverTree(tree), MethodVal.class);
+            /*
+                AnnotationMirror estimate = provider.getAnnotationMirror(
+                        TreeUtils.getReceiverTree(tree), MethodVal.class);
 
-            List<String> listMethodNames = AnnotationUtils
-                    .getElementValueArray(estimate, "methodName", String.class,
-                            true);
+                List<String> listMethodNames = AnnotationUtils
+                        .getElementValueArray(estimate, "methodName", String.class,
+                                true);
 
-            if (INIT.equals(listMethodNames.get(0))) {
-                return resolveConstructorCall(factory, tree, origResult);
-            }
-        */
+                if (INIT.equals(listMethodNames.get(0))) {
+                    return resolveConstructorCall(factory, tree, origResult);
+                }
+            */
             return resolveMethodCall(factory, tree, origResult);
         }
     }
@@ -175,12 +174,13 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         // and parameter types
         for (MethodInvocationTree resolvedTree : possibleMethods) {
             debugReflection("Resolved method invocation: " + resolvedTree);
-            //type.getKind() == actualType.getKind()
-            if(!checkMethodAgruments(resolvedTree)){
-            	debugReflection("Spoofed tree's arguments did not match declaration"+resolvedTree.toString());
-            	//Calling methodFromUse on these sorts of trees will cause an assertion to fail
-            	//in QualifierPolymorphism.PolyCollector.visitArray(...)
-            	continue;
+            if (!checkMethodAgruments(resolvedTree)) {
+                debugReflection("Spoofed tree's arguments did not match declaration"
+                        + resolvedTree.toString());
+                // Calling methodFromUse on these sorts of trees will cause an
+                // assertion to fail
+                // in QualifierPolymorphism.PolyCollector.visitArray(...)
+                continue;
             }
             Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> resolvedResult = factory
                     .methodFromUse(resolvedTree);
@@ -206,9 +206,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 paramsGlb = glb(paramsGlb, mirror.getAnnotations(), factory);
             }
         }
-        
+
         if (returnLub == null) {
-        	//None of the spoofed tree's arguments matched the declared method
+            // None of the spoofed tree's arguments matched the declared method
             return origResult;
         }
 
@@ -237,42 +237,41 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         return origResult;
     }
 
-	private boolean checkMethodAgruments(MethodInvocationTree resolvedTree) {
-		// type.getKind() == actualType.getKind()
-		ExecutableElement methodDecl = TreeUtils.elementFromUse(resolvedTree);
-		return checkAgruments(methodDecl.getParameters(),
-				resolvedTree.getArguments());
-	}
+    private boolean checkMethodAgruments(MethodInvocationTree resolvedTree) {
+        // type.getKind() == actualType.getKind()
+        ExecutableElement methodDecl = TreeUtils.elementFromUse(resolvedTree);
+        return checkAgruments(methodDecl.getParameters(),
+                resolvedTree.getArguments());
+    }
 
-	private boolean checkAgruments(List<? extends VariableElement> parameters,
-			List<? extends ExpressionTree> arguments) {
-		if (parameters.size() != arguments.size()) {
-			return false;
-		}
+    private boolean checkNewClassArguments(NewClassTree resolvedTree) {
+        ExecutableElement methodDecl = TreeUtils.elementFromUse(resolvedTree);
+        return checkAgruments(methodDecl.getParameters(),
+                resolvedTree.getArguments());
 
-		for (int i = 0; i < parameters.size(); i++) {
-			VariableElement param = parameters.get(i);
-			ExpressionTree arg = arguments.get(i);
-			TypeMirror argType = InternalUtils.typeOf(arg);
-			TypeMirror paramType = param.asType();
-			if (argType.getKind() == TypeKind.ARRAY
-					&& paramType.getKind() != argType.getKind()) {
-				return false;
-			}
-		}
+    }
 
-		return true;
-	}
+    private boolean checkAgruments(List<? extends VariableElement> parameters,
+            List<? extends ExpressionTree> arguments) {
+        if (parameters.size() != arguments.size()) {
+            return false;
+        }
 
-	private boolean checkNewClassArguments(NewClassTree resolvedTree) {
-		ExecutableElement methodDecl = TreeUtils.elementFromUse(resolvedTree);
-		return checkAgruments(methodDecl.getParameters(),
-				resolvedTree.getArguments());
+        for (int i = 0; i < parameters.size(); i++) {
+            VariableElement param = parameters.get(i);
+            ExpressionTree arg = arguments.get(i);
+            TypeMirror argType = InternalUtils.typeOf(arg);
+            TypeMirror paramType = param.asType();
+            if (argType.getKind() == TypeKind.ARRAY
+                    && paramType.getKind() != argType.getKind()) {
+                return false;
+            }
+        }
 
-	}
+        return true;
+    }
 
-
-	/**
+    /**
      * Resolves a call to {@link Constructor#newInstance(Object...)}.
      * 
      * @param factory
@@ -303,11 +302,13 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         // parameter types
         for (JCNewClass resolvedTree : possibleConstructors) {
             debugReflection("Resolved constructor invocation: " + resolvedTree);
-            if(!checkNewClassArguments(resolvedTree)){
-            	debugReflection("Spoofed tree's arguments did not match declaration"+resolvedTree.toString());
-            	//Calling methodFromUse on these sorts of trees will cause an assertion to fail
-            	//in QualifierPolymorphism.PolyCollector.visitArray(...)
-            	continue;
+            if (!checkNewClassArguments(resolvedTree)) {
+                debugReflection("Spoofed tree's arguments did not match declaration"
+                        + resolvedTree.toString());
+                // Calling methodFromUse on these sorts of trees will cause an
+                // assertion to fail
+                // in QualifierPolymorphism.PolyCollector.visitArray(...)
+                continue;
             }
             Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> resolvedResult = factory
                     .constructorFromUse(resolvedTree);
@@ -323,7 +324,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             }
         }
         if (returnLub == null) {
-        	//None of the spoofed tree's arguments matched the declared method
+            // None of the spoofed tree's arguments matched the declared method
             return origResult;
         }
         /*
@@ -370,8 +371,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
         List<MethodInvocationTree> methods = new ArrayList<>();
 
-        boolean unknown = (provider.getAnnotationMirror(TreeUtils.getReceiverTree(tree),
-                UnknownMethod.class) != null);
+        boolean unknown = (provider.getAnnotationMirror(
+                TreeUtils.getReceiverTree(tree), UnknownMethod.class) != null);
 
         AnnotationMirror estimate = provider.getAnnotationMirror(
                 TreeUtils.getReceiverTree(tree), MethodVal.class);
@@ -408,9 +409,11 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             for (Symbol symbol : getMethodSymbolsfor(className, methodName,
                     paramLength, env)) {
                 if ((symbol.flags() & Flags.PUBLIC) > 0) {
-                    debugReflection("Resolved public method: " + symbol.owner + "." + symbol);
+                    debugReflection("Resolved public method: " + symbol.owner
+                            + "." + symbol);
                 } else {
-                    debugReflection("Resolved non-public method: " + symbol.owner + "." + symbol);
+                    debugReflection("Resolved non-public method: "
+                            + symbol.owner + "." + symbol);
                 }
 
                 JCExpression method = make.Select(receiver, symbol);
@@ -428,33 +431,34 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         return methods;
     }
 
-	private com.sun.tools.javac.util.List<JCExpression> getCorrectedArgs(
-			Symbol symbol, com.sun.tools.javac.util.List<JCExpression> args) {
-		if (symbol.getKind() == ElementKind.METHOD) {
-			MethodSymbol method = ((MethodSymbol) symbol);
-			// neg means too many arg,
-			// pos means to few args
-			int diff = method.getParameters().size() - args.size();
-			if (diff > 0) {
-				// means too few args
-				int origArgSize = args.size();
-				for (int i = 0; i < diff; i++) {
-					args = args.append(args.get(i % origArgSize));
-				}
-			} else if( diff < 0){
-				// means too many args
-				com.sun.tools.javac.util.List<JCExpression> tmp = com.sun.tools.javac.util.List.nil();
-				for (int i = 0; i < method.getParameters().size() ; i++) {
-					tmp = tmp.append(args.get(i));
-				}
-				args = tmp;
-			}
+    private com.sun.tools.javac.util.List<JCExpression> getCorrectedArgs(
+            Symbol symbol, com.sun.tools.javac.util.List<JCExpression> args) {
+        if (symbol.getKind() == ElementKind.METHOD) {
+            MethodSymbol method = ((MethodSymbol) symbol);
+            // neg means too many arg,
+            // pos means to few args
+            int diff = method.getParameters().size() - args.size();
+            if (diff > 0) {
+                // means too few args
+                int origArgSize = args.size();
+                for (int i = 0; i < diff; i++) {
+                    args = args.append(args.get(i % origArgSize));
+                }
+            } else if (diff < 0) {
+                // means too many args
+                com.sun.tools.javac.util.List<JCExpression> tmp = com.sun.tools.javac.util.List
+                        .nil();
+                for (int i = 0; i < method.getParameters().size(); i++) {
+                    tmp = tmp.append(args.get(i));
+                }
+                args = tmp;
+            }
 
-		}
-		return args;
-	}
+        }
+        return args;
+    }
 
-	/**
+    /**
      * Resolves a reflective constructor call and returns all possible
      * corresponding constructor calls.
      * 
@@ -477,8 +481,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
         List<JCNewClass> constructors = new ArrayList<>();
 
-        boolean unknown = (provider.getAnnotationMirror(TreeUtils.getReceiverTree(tree),
-                UnknownMethod.class) != null);
+        boolean unknown = (provider.getAnnotationMirror(
+                TreeUtils.getReceiverTree(tree), UnknownMethod.class) != null);
 
         AnnotationMirror estimate = provider.getAnnotationMirror(
                 TreeUtils.getReceiverTree(tree), MethodVal.class);
@@ -563,7 +567,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 classSym = (ClassSymbol) t.tsym;
             }
             if (result.size() == 0)
-                debugReflection("Unable to resolve method: " + className + "@" + methodName);
+                debugReflection("Unable to resolve method: " + className + "@"
+                        + methodName);
         } catch (SecurityException | NoSuchMethodException
                 | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
@@ -636,8 +641,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         if (set1 == null || set1.size() == 0) {
             return set2;
         } else {
-            return factory.getQualifierHierarchy().leastUpperBounds(set1,
-                    set2);
+            return factory.getQualifierHierarchy().leastUpperBounds(set1, set2);
         }
     }
 
@@ -669,7 +673,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     private void debugReflection(String msg) {
         if (debug) {
             checker.message(javax.tools.Diagnostic.Kind.NOTE,
-                        MSG_PREFEX_REFLECTION + msg);
+                    MSG_PREFEX_REFLECTION + msg);
         }
     }
 }
