@@ -618,12 +618,12 @@
     </target>
 
     <target name="nullness-tests"
-            depends="jar,build-tests,nullness-base-tests,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-extra-tests"
+            depends="jar,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-extra-tests"
             description="Run tests for the Nullness Checker">
     </target>
 
     <target name="nullness-tests-nojdk"
-            depends="jar,build-tests,nullness-base-tests,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-extra-tests-nojdk"
+            depends="jar,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-extra-tests-nojdk"
             description="Run tests for the Nullness Checker, WITHOUT updating jdkX.jar">
     </target>
 
@@ -638,6 +638,20 @@
             description="Run uninit tests for the Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessRawnessTest"/>
+        </antcall>
+    </target>
+
+    <target name="nullness-base-tests-with-asserts" depends="jar,build-tests"
+            description="Run base tests for the Nullness Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessFbcTestWithAsserts"/>
+        </antcall>
+    </target>
+
+    <target name="nullness-uninit-tests-with-asserts" depends="jar,build-tests"
+            description="Run uninit tests for the Nullness Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessRawnessTestWithAsserts"/>
         </antcall>
     </target>
 

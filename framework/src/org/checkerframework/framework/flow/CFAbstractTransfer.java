@@ -57,6 +57,7 @@ import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
+import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -561,6 +562,27 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         V valueFromStore = store.getValue(n);
         V valueFromFactory = getValueFromFactory(n.getTree(), n);
         V value = moreSpecificValue(valueFromFactory, valueFromStore);
+        return new RegularTransferResult<>(finishValue(value, store), store);
+    }
+
+    public TransferResult<V, S> visitThisLiteral(ThisLiteralNode n, TransferInput<V, S> in) {
+        S store = in.getRegularStore();
+        V valueFromStore = store.getValue(n);
+
+        V valueFromFactory = null;
+        V value = null;
+        Tree tree = n.getTree();
+        if (tree != null && TreeUtils.canHaveTypeAnnotation(tree)) {
+            valueFromFactory = getValueFromFactory(tree, n);
+        }
+
+        if (valueFromFactory == null) {
+            value = valueFromStore;
+        }
+        else {
+            value = moreSpecificValue(valueFromFactory, valueFromStore);
+        }
+
         return new RegularTransferResult<>(finishValue(value, store), store);
     }
 
