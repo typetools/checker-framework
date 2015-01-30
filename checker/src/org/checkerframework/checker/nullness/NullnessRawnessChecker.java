@@ -17,7 +17,6 @@ public class NullnessRawnessChecker extends AggregateChecker {
     protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
         Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>();
         checkers.add(AbstractNullnessRawnessChecker.class);
-        checkers.add(KeyForSubchecker.class);
         return checkers;
     }
 

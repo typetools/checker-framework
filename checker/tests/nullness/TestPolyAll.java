@@ -1,4 +1,5 @@
 import org.checkerframework.framework.qual.PolyAll;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -9,9 +10,8 @@ class TestPolyAll {
    void test1() { identity(null); }
    void test2() { identity((@Nullable String) null); }
 
-   public static @PolyAll String[] typeArray(@PolyAll Object[] seq) {
-    @SuppressWarnings("nullness") // ignore array initialization here. 
-    @PolyAll String[] retval = new @Nullable String[seq.length];
+   public static @PolyNull String[] typeArray(@PolyNull Object[] seq) {
+    @PolyNull String[] retval = new @PolyNull String[seq.length];
     for (int i = 0 ; i < seq.length ; i++) {
       if (seq[i] == null) {
         retval[i] = null;
