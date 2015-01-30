@@ -297,27 +297,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
             // Only store information about final fields (where the receiver is
             // also fixed) if concurrent semantics are enabled.
-            boolean isMonotonic = false;
-            if (!sequentialSemantics) { // only compute if necessary
-                AnnotatedTypeFactory atypeFactory = this.analysis.atypeFactory;
-                List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
-                        atypeFactory.getAnnotationWithMetaAnnotation(
-                                fieldAcc.getField(),
-                                MonotonicQualifier.class);
-                for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
-                    AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
-                    Name annotation = AnnotationUtils.getElementValueClassName(
-                            monotonicAnnotation, "value", false);
-                    AnnotationMirror target = AnnotationUtils.fromName(
-                            atypeFactory.getElementUtils(), annotation);
-                    AnnotationMirror valueAM = value.getType().getAnnotationInHierarchy(target);
-                    // Make sure the 'target' annotation is present.
-                    if (valueAM != null && AnnotationUtils.areSame(valueAM, target)) {
-                        isMonotonic = true;
-                        break;
-                    }
-                }
-            }
+            boolean isMonotonic = isMonotonicUpdate(fieldAcc, value);
             if (sequentialSemantics || isMonotonic || fieldAcc.isUnmodifiableByOtherCode()) {
                 V oldValue = fieldValues.get(fieldAcc);
                 V newValue = value.mostSpecific(oldValue, null);
@@ -366,6 +346,35 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         else {
             // No other types of expressions need to be stored.
         }
+    }
+
+    /**
+     * @return true if fieldAcc is an update of a monotonic qualifier to its target qualifier.
+     * (e.g. @MonotonicNonNull to @NonNull)
+     */
+    private boolean isMonotonicUpdate(FieldAccess fieldAcc, V value) {
+        boolean isMonotonic = false;
+        if (!sequentialSemantics) { // only compute if necessary
+            AnnotatedTypeFactory atypeFactory = this.analysis.atypeFactory;
+            List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
+                    atypeFactory.getAnnotationWithMetaAnnotation(
+                            fieldAcc.getField(),
+                            MonotonicQualifier.class);
+            for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
+                AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
+                Name annotation = AnnotationUtils.getElementValueClassName(
+                        monotonicAnnotation, "value", false);
+                AnnotationMirror target = AnnotationUtils.fromName(
+                        atypeFactory.getElementUtils(), annotation);
+                AnnotationMirror valueAM = value.getType().getAnnotationInHierarchy(target);
+                // Make sure the 'target' annotation is present.
+                if (valueAM != null && AnnotationUtils.areSame(valueAM, target)) {
+                    isMonotonic = true;
+                    break;
+                }
+            }
+        }
+        return isMonotonic;
     }
 
     public void insertValueToLocalVariableByName(String identifier, AnnotationMirror a) {
@@ -553,7 +562,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         if (!fieldAccess.containsUnknown() && val != null) {
             // Only store information about final fields (where the receiver is
             // also fixed) if concurrent semantics are enabled.
-            if (sequentialSemantics || fieldAccess.isUnmodifiableByOtherCode()) {
+            boolean isMonotonic = isMonotonicUpdate(fieldAccess, val);
+            if (sequentialSemantics || isMonotonic || fieldAccess.isUnmodifiableByOtherCode()) {
                 fieldValues.put(fieldAccess, val);
             }
         }
@@ -575,7 +585,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         if (!arrayAccess.containsUnknown() && val != null) {
             // Only store information about final fields (where the receiver is
             // also fixed) if concurrent semantics are enabled.
-            if (sequentialSemantics || arrayAccess.isUnmodifiableByOtherCode()) {
+            if (sequentialSemantics) {
                 arrayValues.put(arrayAccess, val);
             }
         }

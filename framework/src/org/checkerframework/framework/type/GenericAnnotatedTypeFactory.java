@@ -502,9 +502,9 @@ public abstract class GenericAnnotatedTypeFactory<
             returnStatementStores = new IdentityHashMap<>();
             flowResult = new AnalysisResult<>();
         }
-        // no need to scan interfaces or enums
-        if (classTree.getKind() == Kind.INTERFACE
-                || classTree.getKind() == Kind.ANNOTATION_TYPE) {
+
+        // no need to scan annotations
+        if (classTree.getKind() == Kind.ANNOTATION_TYPE) {
             // Mark finished so that default annotations will be applied.
             scannedClasses.put(classTree, ScanState.FINISHED);
             return;
@@ -539,6 +539,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     switch (m.getKind()) {
                     case METHOD:
                         MethodTree mt = (MethodTree) m;
+
                         // Skip abstract and native methods because they have no body.
                         ModifiersTree modifiers = mt.getModifiers();
                         if (modifiers != null) {
@@ -547,6 +548,10 @@ public abstract class GenericAnnotatedTypeFactory<
                                 flags.contains(Modifier.NATIVE)) {
                                 break;
                             }
+                        }
+                        // Abstract methods in an interface have a null body but do not have an ABSTRACT flag.
+                        if (mt.getBody() == null) {
+                            break;
                         }
 
                         // Wait with scanning the method until all other members
