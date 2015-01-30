@@ -7,7 +7,7 @@ import java.util.*;
 class Test {
 
     Object[] testMethod() {
-        return new Object[] { new ArrayList<String>() };
+        return new Object[] { new ArrayList<>() };
     }
 
 }
