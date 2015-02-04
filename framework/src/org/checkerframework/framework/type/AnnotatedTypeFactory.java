@@ -2472,9 +2472,28 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * org.checkerframework.framework.type.AnnotatedTypeFactory.fromTypeTree(Tree)
      */
     public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar) {
-        WildcardType wc = types.getWildcardType(typeVar.getUnderlyingType().getUpperBound(), null);
+        final boolean intersectionType;
+        final TypeMirror boundType;
+        if (typeVar.getUpperBound().getKind() == TypeKind.INTERSECTION) {
+            boundType =
+                    typeVar.getUpperBound()
+                           .directSuperTypes()
+                           .get(0)
+                           .getUnderlyingType();
+            intersectionType = true;
+        } else {
+            boundType = typeVar.getUnderlyingType().getUpperBound();
+            intersectionType = false;
+        }
+
+        WildcardType wc = types.getWildcardType(boundType, null);
         AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
-        wctype.setExtendsBound(typeVar.getUpperBound().deepCopy());
+        if (!intersectionType) {
+            wctype.setExtendsBound(typeVar.getUpperBound().deepCopy());
+        } else {
+            //TODO: This probably doesn't work if the type has a type argument
+            wctype.getExtendsBound().addAnnotations(typeVar.getUpperBound().getAnnotations());
+        }
         wctype.setSuperBound(typeVar.getLowerBound().deepCopy());
         wctype.addAnnotations(typeVar.getAnnotations());
         wctype.setTypeArgHack();
