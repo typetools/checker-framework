@@ -168,8 +168,10 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
         Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> result = super.methodFromUse(tree,
                 methodElt, receiverType);
 
+        Element elt = result.first.getUnderlyingType().asElement();
         Set<String> qualParams = getAnnotationConverter().getDeclaredParameters(
-                result.first.getUnderlyingType().asElement(), getDecoratedElement(result.first.getUnderlyingType().asElement()));
+                elt, getDeclAnnotations(elt), getDecoratedElement(elt));
+
         if (qualParams.isEmpty()) {
             // This check is not just a performance optimization - it saves us
             // from crashing in one obscure corner case.  An `enum`

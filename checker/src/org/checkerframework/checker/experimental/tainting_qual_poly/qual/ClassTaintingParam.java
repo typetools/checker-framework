@@ -25,5 +25,8 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Repeatable(MultiClassTaintingParam.class)
 public @interface ClassTaintingParam {
+    /**
+     * The name of the qualifier parameter to declare.
+     */
     String value() default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
 }

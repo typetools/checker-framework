@@ -15,6 +15,8 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Repeatable(MultiWild.class)
 public @interface Wild {
-    // The name of the parameter to set.
+    /**
+     * The name of the qualifier parameter to set.
+     */
     String param();
 }
