@@ -9,6 +9,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.TypesUtils;
 
 
 import javax.lang.model.element.AnnotationMirror;
@@ -412,10 +413,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     public Boolean visitDeclared_Declared(AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype, VisitHistory visited) {
         AnnotatedDeclaredType subtypeAsSuper = castedAsSuper(subtype, supertype);
         if( subtypeAsSuper == null ) {
-            return false; //MINE: previous and worked better
-            //subtypeAsSuper = subtype;
-            //TODO: THE OLD FRAMEWORK DID THIS, anonymous inner class instantiations of interfaces lead
-            //TODO: TO COMPARING OBJECT WITH THE INTERFACE, FIX THIS in BASETYPEVISITOR CHECK CONSTRUCTOR INVOCATION
+            //TODO: The old framework did the following.  I am still doing this to cover the case where we don't
+            //TODO: convert object to Strings in compound assignment  str += obj;
+            if (TypesUtils.isDeclaredOfName(supertype.getUnderlyingType(), "java.lang.String")) {
+                return isPrimarySubtype(subtype, supertype);
+            }
+            return false;
         }
 
         if( !isPrimarySubtype(subtypeAsSuper, supertype) ) {
@@ -790,9 +793,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * @return subtype as an instance of supertype
      */
     @SuppressWarnings("unchecked")
-    private <T extends AnnotatedTypeMirror> T castedAsSuper(final AnnotatedTypeMirror subtype, final T supertype ) {
-        final Types types = checker.getProcessingEnvironment().getTypeUtils();
-        final Elements elements = checker.getProcessingEnvironment().getElementUtils();
+    public static <T extends AnnotatedTypeMirror> T castedAsSuper(final AnnotatedTypeMirror subtype, final T supertype ) {
+        final Types types = subtype.atypeFactory.getProcessingEnv().getTypeUtils();
+        final Elements elements = subtype.atypeFactory.getProcessingEnv().getElementUtils();
 
         //the best example exercising this code is the test: all-systems/Annotations.java
         //asSuper will return null when casting an instance of an annotation interface to
