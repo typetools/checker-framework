@@ -96,7 +96,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
             case TYPEVAR:
                 label = "type parameter";
                 upperBound = ((AnnotatedTypeVariable) type).getUpperBound();
-                lowerBound = ((AnnotatedTypeVariable) type).getUpperBound();
+                lowerBound = ((AnnotatedTypeVariable) type).getLowerBound();
                 break;
 
             case WILDCARD:
