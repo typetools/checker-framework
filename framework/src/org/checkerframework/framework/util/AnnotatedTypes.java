@@ -1278,7 +1278,21 @@ public class AnnotatedTypes {
                     compTypes.add(((AnnotatedArrayType)atype).getComponentType());
                 }
             }
-            addAnnotationsImpl(elements, atypeFactory, aat.getComponentType(), visited, compTypes);
+
+            if(aat.getComponentType().getKind() == TypeKind.TYPEVAR) {
+                //TODO: TERRIBLE HACK UNTIL WE FIX LUB
+                final AnnotatedTypeVariable lubAtv = (AnnotatedTypeVariable) aat.getComponentType();
+                final List<AnnotatedTypeVariable> subtypesAsTvs =
+                        LubTypeVariableAnnotator.getSubtypesAsTypevars(lubAtv, compTypes);
+
+                if (subtypesAsTvs != null) {
+                    LubTypeVariableAnnotator.annotateTypeVarAsLub(lubAtv, subtypesAsTvs, atypeFactory);
+                } else {
+                    addAnnotationsImpl(elements, atypeFactory, aat.getComponentType(), visited, compTypes);
+                }
+            } else {
+                addAnnotationsImpl(elements, atypeFactory, aat.getComponentType(), visited, compTypes);
+            }
         }
         if (alub != origalub && shouldAnnoOrig) {
             // These two are not the same if origalub is a wildcard or type variable.
