@@ -120,11 +120,11 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
 
 \begin{itemize}
 \item
-  In the Nullness type system,
+  In the Nullness type system (see \chapterpageref{nullness-checker}),
   \<enum> values, string literals, and method receivers are always non-null.
 \item
-  In the Interning type system, string literals
-  and \<enum> values are always interned.
+  In the Interning type system (see \chapterpageref{interning-checker}),
+  string literals and \<enum> values are always interned.
 \end{itemize}
 
   If the type has an implicit qualifier, then it is an error to write an
