@@ -53,7 +53,8 @@ class ConstructorTest {
             Class<?> c = ConstructorTest.class;
             Constructor init = c
                     .getConstructor(new Class<?>[] { Integer.class });
-            //:: error: (argument.type.incompatible)
+            //The error should be//:: error: (argument.type.incompatible)s
+            //:: error: (assignment.type.incompatible)
             @Sibling1 Object o = init.newInstance(new Object[] { sibling2 });
         } catch (Exception ignore) {
         }

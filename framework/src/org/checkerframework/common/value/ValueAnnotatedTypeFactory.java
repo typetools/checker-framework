@@ -1,5 +1,6 @@
 package org.checkerframework.common.value;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -71,6 +72,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
@@ -217,6 +219,10 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
            return UNKNOWNVAL;
         }
     }
+    public AnnotationMirror createAnnotation(Class<? extends Annotation> name, Set<?> values) {
+    	return createAnnotation(name.getCanonicalName(), values);
+    }
+
 
     @Override protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
         return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
@@ -629,11 +635,20 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 AnnotatedTypeMirror type) {
             if (isClassCovered(type)) {
                 handleCast(tree.getExpression(), getClass(type, tree.getType()), type);
+            } else if(type.getKind() == TypeKind.ARRAY){
+            	handleArrayCast(tree, type);
             }
             return super.visitTypeCast(tree, type);
         }
 
-        @Override public Void visitAssignment(AssignmentTree tree,
+        private void handleArrayCast(TypeCastTree tree, AnnotatedTypeMirror type) {
+        	if(tree.getExpression().getKind() == Kind.NULL_LITERAL){
+        		type.replaceAnnotation(BOTTOMVAL);
+        	}
+			
+		}
+
+		@Override public Void visitAssignment(AssignmentTree tree,
                 AnnotatedTypeMirror type) {
             super.visitAssignment(tree, type);
             return null;
