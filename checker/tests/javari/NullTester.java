@@ -21,6 +21,7 @@ public class NullTester {
 
         // ok
         a = null;
+
         a = identity(null);
 
     }

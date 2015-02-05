@@ -552,12 +552,13 @@ public class QualifierPolymorphism {
             if (((com.sun.tools.javac.code.Type.WildcardType) typeSuper.getUnderlyingType()).isUnbound()) {
                 return Collections.emptyMap();
             }
-            assert typeSuper.getKind() == actualType.getKind() ||
-                    // TODO: actualType might be the capture of a wildcard;
-                    // better/different check?
-                    actualType.getKind() == TypeKind.TYPEVAR :
-                "PolyCollector: mismatched type kinds: " + actualType + " (" + actualType.getKind() +
-                ") and " + typeSuper + " (" + typeSuper.getKind() + ")";
+
+            if (actualType.getKind() != TypeKind.WILDCARD && actualType.getKind() != TypeKind.TYPEVAR) {
+                //currently because the default action of inferTypeArgs is to use a wildcard when we fail
+                //to infer a type, the actualType might not be a wildcard
+                return Collections.emptyMap();
+            }
+
             AnnotatedWildcardType wcType = (AnnotatedWildcardType)typeSuper;
 
             if (visited.contains(actualType.getUnderlyingType())) {

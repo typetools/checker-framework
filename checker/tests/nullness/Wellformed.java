@@ -13,13 +13,14 @@ class Wellformed {
         <@NonNull @Nullable T> void m2(T p){}
     }
     //:: error: (type.invalid)
-    class Gen1c<@NonNull @Nullable T> {}
+    class Gen1c<@NonNull @Nullable TTT> {}
 
-    // Annotations on type variables override implicit and explicit
-    // annotations on the bounds.
-    // TODO: do we really like this?
     class Gen2a<@Nullable T> {}
+
+    //:: error: (bound.type.incompatible)
     class Gen2b<@Nullable T extends Object> {}
+
+    //:: error: (bound.type.incompatible)
     class Gen2c<@Nullable T extends @NonNull Object> {}
 
     class Gen3a<T> {

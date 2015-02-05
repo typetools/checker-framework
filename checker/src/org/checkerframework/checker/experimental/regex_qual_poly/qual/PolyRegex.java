@@ -12,5 +12,8 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Repeatable(MultiPolyRegex.class)
 public @interface PolyRegex {
+    /**
+     * The name of the qualifier parameter to set.
+     */
     String param() default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
 }

@@ -48,13 +48,14 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TreeAnnotator;
-import org.checkerframework.framework.type.TypeAnnotator;
-import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.framework.util.QualifierDefaults;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -187,12 +188,12 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
     @Override
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
         if(propTreeCache.containsKey(tree)){
-            return AnnotatedTypes.deepCopy(propTreeCache.get(tree));
+            return propTreeCache.get(tree).deepCopy();
         }
         AnnotatedTypeMirror anno = super.getAnnotatedType(tree);
         if(tree instanceof JCBinary ||
                 tree instanceof JCUnary){
-            propTreeCache.put(tree, AnnotatedTypes.deepCopy(anno));
+            propTreeCache.put(tree, anno.deepCopy());
         }
         return anno;
     }
@@ -234,7 +235,10 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
-        return new ValueTypeAnnotator(this);
+        return new ListTypeAnnotator(
+                new ValueTypeAnnotator(this),
+                super.createTypeAnnotator()
+        );
     }
 
     private class ValueTypeAnnotator extends TypeAnnotator {

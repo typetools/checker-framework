@@ -17,5 +17,8 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Repeatable(MultiClassRegexParam.class)
 public @interface ClassRegexParam {
+    /**
+     * The name of the qualifier parameter to declare.
+     */
     String value() default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
 }

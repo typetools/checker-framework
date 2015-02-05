@@ -26,10 +26,7 @@ public class KeyFors {
 
         @KeyFor("map") String key = keys.get(0);
         @NonNull String value = map.get(key);
-        // TODO when using the local variable the access works
-        // when using the call directly, we get an assignment.type.incompatible.
-        // Why?
-        // TODO: value = map.get(keys.get(0));
+        value = map.get(keys.get(0));
     }
 
     public void withIndirectReference() {
@@ -54,7 +51,6 @@ public class KeyFors {
     static HashMap<Integer,Object> call_hashmap = new HashMap<Integer,Object>();
 
     public void testForLoop(HashMap<String, String> lastMap) {
-        // TODO: support Flow for KeyFor
         Collection<@KeyFor("lastMap") String> sorted = sortedKeySet(lastMap);
         for (@KeyFor("lastMap") String key : sorted) {
             @NonNull String al = lastMap.get(key);
@@ -110,23 +106,19 @@ public class KeyFors {
       annotated with @KeyFor. A "@KeyForAfter" annotation to
       support this in a general way might be overkill.
       Similarly, for calls to "remove" we need to invalidate all (?)
-      KeyFor annotations.
+      KeyFor annotations.*/
 
     void keyForFlow() {
         Map<String, String> leaders = new LinkedHashMap<String, String>();
         Set<@KeyFor("leaders") String> varsUsedPreviously = new LinkedHashSet<@KeyFor("leaders") String>();
         String varName = "hello";
         leaders.put(varName, "goodbye");
-        // TODO: add @KeyFor("leaders") to varName after put
         @KeyFor("leaders") String kf = varName;
     }
 
-    /// TODO: enable
     public static void mapPut(String start) {
-	Map<String, Integer> n2e = new HashMap<>();
-	n2e.put(start, new Integer(0));
-	@KeyFor("n2e") String start2 = start;
+    Map<String, Integer> n2e = new HashMap<>();
+    n2e.put(start, new Integer(0));
+    @KeyFor("n2e") String start2 = start;
     }
-
-  */
 }

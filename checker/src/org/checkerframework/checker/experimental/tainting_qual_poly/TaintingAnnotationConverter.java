@@ -21,6 +21,7 @@ public class TaintingAnnotationConverter extends SimpleQualifierParameterAnnotat
 
     public TaintingAnnotationConverter() {
         super(new CombiningOperation.Lub<>(new TaintingQualifierHierarchy()),
+                new CombiningOperation.Glb<>(new TaintingQualifierHierarchy()),
                 MultiTainted.class.getPackage().getName() + ".Multi",
                 new HashSet<>(Arrays.asList(Tainted.class.getName(), Untainted.class.getName())),
                 null,
