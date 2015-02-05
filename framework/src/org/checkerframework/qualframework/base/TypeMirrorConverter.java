@@ -202,8 +202,7 @@ public class TypeMirrorConverter<Q> {
         }
         AnnotatedTypeMirror atm;
         if (qtm.getUnderlyingType() instanceof WrappedAnnotatedTypeMirror) {
-            atm = AnnotatedTypes.deepCopy(
-                    ((WrappedAnnotatedTypeMirror)qtm.getUnderlyingType()).unwrap());
+            atm = ((WrappedAnnotatedTypeMirror)qtm.getUnderlyingType()).unwrap().deepCopy();
         } else {
             atm = AnnotatedTypeMirror.createType(
                 qtm.getUnderlyingType().getOriginalType(), getTypeFactory(),
@@ -246,7 +245,7 @@ public class TypeMirrorConverter<Q> {
      */
     private SimpleQualifiedTypeVisitor<Q, Void, AnnotatedTypeMirror> APPLY_COMPONENT_QUALIFIERS_VISITOR =
         new SimpleQualifiedTypeVisitor<Q, Void, AnnotatedTypeMirror>() {
-            private HashMap<AnnotatedTypeVariable, Void> seenATVs = new HashMap<>();
+            private IdentityHashMap<AnnotatedTypeMirror, Void> seenATVs = new IdentityHashMap<>();
 
             public Void visitArray(QualifiedArrayType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedArrayType atm = (AnnotatedArrayType)rawAtm;

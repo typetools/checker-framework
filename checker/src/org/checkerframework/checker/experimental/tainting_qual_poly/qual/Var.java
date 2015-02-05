@@ -41,10 +41,18 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Repeatable(MultiVar.class)
 public @interface Var {
-    // Specify which parameter this @Var is a use for.
+    /**
+     * Which parameter this @Var is a use of.
+     */
     String arg()  default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
-    // The name of the parameter to set.
+
+    /**
+     * The name of the parameter to set.
+     */
     String param() default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
-    // Specify a wildcard with a bound.
+
+    /**
+     * Specify that this use is a wildcard with a bound.
+     */
     Wildcard wildcard() default Wildcard.NONE;
 }

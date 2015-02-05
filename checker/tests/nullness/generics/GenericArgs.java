@@ -15,7 +15,7 @@ public class GenericArgs {
         strings.add("foo");
     }
 
-    static class X<T extends @NonNull Object> {
+    static class X<@NonNull T extends @NonNull Object> {
         T value() {
             //:: error: (return.type.incompatible)
             return null;
@@ -27,7 +27,7 @@ public class GenericArgs {
         Object o = new X<Object>().value();
     }
 
-    static <Z extends @NonNull Object> void test3(Z z) {
+    static <@NonNull Z extends @NonNull Object> void test3(Z z) {
 
     }
 
@@ -39,7 +39,7 @@ public class GenericArgs {
     }
 
     static class GenericConstructor {
-        <T extends @NonNull Object> GenericConstructor(T t) {
+        <@NonNull T extends @NonNull Object> GenericConstructor(T t) {
 
         }
     }
@@ -50,7 +50,7 @@ public class GenericArgs {
     }
 
     void testRecursiveDeclarations() {
-        class MyComparator<T extends @NonNull Comparable<T>>
+        class MyComparator<@NonNull T extends @NonNull Comparable<T>>
         implements Comparator<T @NonNull []> {
             @Pure public int compare(T[] a, T[] b) { return 0; }
         }

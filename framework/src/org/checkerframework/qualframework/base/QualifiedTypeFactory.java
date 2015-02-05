@@ -1,30 +1,24 @@
 package org.checkerframework.qualframework.base;
 
-import java.util.List;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-
 import com.sun.source.util.TreePath;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.javacutil.Pair;
-
-import org.checkerframework.qualframework.base.QualifiedTypeMirror;
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
 import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
 import org.checkerframework.qualframework.base.dataflow.QualValue;
 import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Used to compute the qualified type of a {@link Tree} or {@link Element}.
@@ -109,12 +103,6 @@ public interface QualifiedTypeFactory<Q> {
     Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> constructorFromUse(NewClassTree tree);
 
     /**
-     * Hook for customizing type variable substitution behavior.
-     */
-    QualifiedTypeMirror<Q> postTypeVarSubstitution(QualifiedParameterDeclaration<Q> varDecl, QualifiedTypeVariable<Q> varUse,
-            QualifiedTypeMirror<Q> value);
-
-    /**
      * Create the {@link Analysis} to configure dataflow.
      *
      * @param fieldValues The initial field values
@@ -152,4 +140,11 @@ public interface QualifiedTypeFactory<Q> {
      * @return The {@link ExtendedTypeMirror}
      */
     ExtendedTypeMirror getDecoratedElement(Element element);
+
+    /**
+     * @return a TypeVariableSubstitutor
+     */
+    TypeVariableSubstitutor<Q> createTypeVariableSubstitutor();
+
+    Set<AnnotationMirror> getDeclAnnotations(Element elt);
 }

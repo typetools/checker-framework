@@ -10,6 +10,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.CFContext;
+import org.checkerframework.framework.util.OptionConfiguration;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -196,6 +197,9 @@ import com.sun.tools.javac.util.Log;
     // org.checkerframework.framework.type.AnnotatedTypeMirror.toString()
     "printAllQualifiers",
 
+    // Print qualifier parameters using annotations instead of the <<Q>> format.
+    "printQualifierParametersAsAnnotations",
+
     // Output detailed message in simple-to-parse format, useful
     // for tools parsing Checker Framework output.
     // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
@@ -248,7 +252,7 @@ import com.sun.tools.javac.util.Log;
 
 })
 public abstract class SourceChecker
-    extends AbstractTypeProcessor implements ErrorHandler, CFContext {
+    extends AbstractTypeProcessor implements ErrorHandler, CFContext, OptionConfiguration {
 
     // TODO A checker should export itself through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
@@ -379,6 +383,11 @@ public abstract class SourceChecker
 
     @Override
     public SourceChecker getChecker() {
+        return this;
+    }
+
+    @Override
+    public OptionConfiguration getOptionConfiguration() {
         return this;
     }
 
@@ -635,6 +644,11 @@ public abstract class SourceChecker
     }
 
     private void logCheckerError(CheckerError ce) {
+        if( ce.getMessage() == null ) {
+            final String stackTrace = formatStackTrace(ce.getStackTrace());
+            ErrorReporter.errorAbort("Null error message while logging Checker error.\nStack Trace:\n" + stackTrace);
+        }
+
         StringBuilder msg = new StringBuilder(ce.getMessage());
         if ((processingEnv == null ||
                 processingEnv.getOptions() == null ||
@@ -925,8 +939,8 @@ public abstract class SourceChecker
                 if (args[i] == null)
                     continue;
 
-                // look whether we can expand the arguments, too.
-                args[i] = messages.getProperty(args[i].toString(), args[i].toString());
+                // Try to process the arguments
+                args[i] = processArg(args[i]);
             }
         }
 
@@ -1017,6 +1031,16 @@ public abstract class SourceChecker
         else
             ErrorReporter.errorAbort("invalid position source: "
                     + source.getClass().getName());
+    }
+
+    /**
+     * Process an argument to an error message before it is passed to String.format.
+     * @param arg the argument
+     * @return the result after processing
+     */
+    protected Object processArg(Object arg) {
+        // Check to see if the argument itself is a property to be expanded
+        return messages.getProperty(arg.toString(), arg.toString());
     }
 
     /**

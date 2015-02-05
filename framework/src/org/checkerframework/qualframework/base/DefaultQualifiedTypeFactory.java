@@ -1,22 +1,12 @@
 package org.checkerframework.qualframework.base;
 
-import java.util.*;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-
 import com.sun.source.util.TreePath;
 import org.checkerframework.javacutil.Pair;
-
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
 import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
 import org.checkerframework.qualframework.base.dataflow.QualValue;
 import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
@@ -24,6 +14,14 @@ import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 import org.checkerframework.qualframework.util.QualifierContext;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror.WrappedAnnotatedTypeVariable;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Set;
 
 /** Default implementation of {@link QualifiedTypeFactory}.  Most type systems
  * should extend this class (or a subclass) instead of implementing {@link
@@ -251,12 +249,6 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     }
 
     @Override
-    public QualifiedTypeMirror<Q> postTypeVarSubstitution(QualifiedParameterDeclaration<Q> varDecl,
-            QualifiedTypeVariable<Q> varUse, QualifiedTypeMirror<Q> value) {
-        return adapter.superPostTypeVarSubstitution(varDecl, varUse, value);
-    }
-
-    @Override
     public QualAnalysis<Q> createFlowAnalysis(List<Pair<VariableElement, QualValue<Q>>> fieldValues) {
         return new QualAnalysis<Q>(this.getContext());
     }
@@ -282,5 +274,15 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     @Override
     public ExtendedTypeMirror getDecoratedElement(Element element) {
         return WrappedAnnotatedTypeMirror.wrap(adapter.fromElement(element));
+    }
+
+    @Override
+    public TypeVariableSubstitutor<Q> createTypeVariableSubstitutor() {
+        return new TypeVariableSubstitutor<>();
+    }
+
+    @Override
+    public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
+        return adapter.getDeclAnnotations(elt);
     }
 }
