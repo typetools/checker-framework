@@ -1,6 +1,9 @@
 
 interface DefaultMethods {
 
+    // Test that abstract methods are still ignored.
+    void abstractMethod();
+
     default String method(String s) {
         return s.toString();
     }

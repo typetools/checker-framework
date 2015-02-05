@@ -14,6 +14,7 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+import tests.reflection.qual.PolyReflection;
 import tests.reflection.qual.ReflectBottom;
 import tests.reflection.qual.Sibling1;
 import tests.reflection.qual.Sibling2;
@@ -27,7 +28,7 @@ import tests.reflection.qual.Top;
  *
  * @author rjust, smillst
  */
-@TypeQualifiers({ Top.class, Sibling1.class, Sibling2.class, ReflectBottom.class })
+@TypeQualifiers({ Top.class, Sibling1.class, Sibling2.class, ReflectBottom.class, PolyReflection.class })
 public final class ReflectionTestAnnotatedTypeFactory extends
         ReflectionResolutionAnnotatedTypeFactory {
     public ReflectionTestAnnotatedTypeFactory(BaseTypeChecker checker) {

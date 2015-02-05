@@ -616,12 +616,12 @@
     </target>
 
     <target name="nullness-tests"
-            depends="jar,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-extra-tests"
+            depends="jar,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-extra-tests"
             description="Run tests for the Nullness Checker">
     </target>
 
     <target name="nullness-tests-nojdk"
-            depends="jar,jdk.jar.exists,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-extra-tests-nojdk"
+            depends="jar,jdk.jar.exists,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-extra-tests-nojdk"
             description="Run tests for the Nullness Checker, WITHOUT updating jdkX.jar">
     </target>
 
@@ -681,6 +681,13 @@
             description="Run skipdefs tests for the Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessSkipDefsTest"/>
+        </antcall>
+    </target>
+
+    <target name="nullness-concurrent-tests" depends="jar,build-tests"
+            description="Run concurrent semantics tests for the Nullness Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessConcurrentTest"/>
         </antcall>
     </target>
 
