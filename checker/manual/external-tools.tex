@@ -54,13 +54,13 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-1.8.9/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-1.8.10/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.  Now, whenever
     you run \code{javac}, you will use the updated compiler.  If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.9
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.10
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -76,7 +76,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.9
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.10
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -95,11 +95,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.9
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.10
   alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.9\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.10\
   doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
 \end{Verbatim}
 
@@ -118,7 +118,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-1.8.9
+  javac 1.8.0-jsr308-1.8.10
 \end{Verbatim}
 
 
@@ -327,7 +327,6 @@ section or add it if necessary.
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
-          <verbose>true</verbose>
           <fork>true</fork>
           <executable>(absolute path to checker framework installation)/checker/bin/javac_maven</executable>
         </configuration>
@@ -392,7 +391,7 @@ the resulting file.
 % http://jira.codehaus.org/browse/GRADLE-342
 % http://docs.codehaus.org/display/GRADLE/Gradle+0.8+Breaking+Changes
 
-If you fork the compilation task, \href{http://www.gradle.org/}{Gradle}
+If you fork the compilation task, \href{http://gradle.org/}{Gradle}
 lets you specify the executable to compile java programs.
 
 To specify the appropriate executable, set
