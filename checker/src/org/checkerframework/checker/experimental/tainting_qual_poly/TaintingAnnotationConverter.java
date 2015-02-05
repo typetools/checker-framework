@@ -10,7 +10,9 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.Var;
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.Wild;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.qualframework.poly.CombiningOperation;
+import org.checkerframework.qualframework.poly.AnnotationConverterConfiguration;
+import org.checkerframework.qualframework.poly.CombiningOperation.Glb;
+import org.checkerframework.qualframework.poly.CombiningOperation.Lub;
 import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -20,8 +22,9 @@ import java.util.HashSet;
 public class TaintingAnnotationConverter extends SimpleQualifierParameterAnnotationConverter<Tainting> {
 
     public TaintingAnnotationConverter() {
-        super(new CombiningOperation.Lub<>(new TaintingQualifierHierarchy()),
-                new CombiningOperation.Glb<>(new TaintingQualifierHierarchy()),
+        super(new AnnotationConverterConfiguration<>(
+                new Lub<>(new TaintingQualifierHierarchy()),
+                new Lub<>(new TaintingQualifierHierarchy()),
                 MultiTainted.class.getPackage().getName() + ".Multi",
                 new HashSet<>(Arrays.asList(Tainted.class.getName(), Untainted.class.getName())),
                 null,
@@ -32,10 +35,12 @@ public class TaintingAnnotationConverter extends SimpleQualifierParameterAnnotat
                 Wild.class,
                 Tainting.TAINTED,
                 Tainting.UNTAINTED,
-                Tainting.TAINTED
-        );
+                Tainting.TAINTED));
     }
 
+    /**
+     * Convert @Tainted and @Untainted annotations into a Tainting enum
+     */
     @Override
     public Tainting getQualifier(AnnotationMirror anno) {
         String name = AnnotationUtils.annotationName(anno);
