@@ -3,8 +3,8 @@
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
 abstract class Test {
-    abstract void takeOne(@PolyTainting Integer i);
-    abstract void takeSame(@PolyTainting Integer i, @PolyTainting Integer j);
+    abstract void takeOne(@PolyTainted Integer i);
+    abstract void takeSame(@PolyTainted Integer i, @PolyTainted Integer j);
     abstract @Wild Integer makeInt();
 
     void test() {

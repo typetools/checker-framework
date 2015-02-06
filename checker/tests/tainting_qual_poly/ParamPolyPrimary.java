@@ -3,8 +3,8 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
 
 // Polymorphic qualifiers, for primary annotations
 abstract class Test {
-    abstract void test(@PolyTainting Integer i, @PolyTainting Integer j);
-    abstract @PolyTainting Integer id(@PolyTainting Integer i);
+    abstract void test(@PolyTainted Integer i, @PolyTainted Integer j);
+    abstract @PolyTainted Integer id(@PolyTainted Integer i);
 
     abstract @Tainted Integer makeTainted();
     abstract @Untainted Integer makeUntainted();
