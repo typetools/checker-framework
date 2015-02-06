@@ -3,7 +3,7 @@
 class Test {
     void b() {
         try {
-            System.err.println("Hello World");
+
         } catch (LinkageError | AssertionError e) {
             throw e;
         }
