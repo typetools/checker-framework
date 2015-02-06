@@ -1661,6 +1661,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         node.getExpression());
             }
             break;
+        case UNION:
+            AnnotatedUnionType unionType = (AnnotatedUnionType) throwType;
+            Set<AnnotationMirror> foundPrimary = unionType.getAnnotations();
+            if (!atypeFactory.getQualifierHierarchy().isSubtype(foundPrimary,
+                    required)) {
+                checker.report(Result.failure("throw.type.invalid",
+                        foundPrimary, required), node.getExpression());
+            }
+            for (AnnotatedTypeMirror altern : unionType.getAlternatives()) {
+                if (!atypeFactory.getQualifierHierarchy().isSubtype(
+                        altern.getAnnotations(), required)) {
+                    checker.report(
+                            Result.failure("throw.type.invalid",
+                                    altern.getAnnotations(), required),
+                            node.getExpression());
+                }
+            }
+            break;
         default:
             ErrorReporter.errorAbort("Unexpected throw expression type: "
                     + throwType.getKind());
