@@ -3,7 +3,7 @@ package org.checkerframework.checker.experimental.tainting_qual_poly;
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.ClassTaintingParam;
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.MethodTaintingParam;
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.MultiTainted;
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.PolyTainting;
+import org.checkerframework.checker.experimental.tainting_qual_poly.qual.PolyTainted;
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.Tainted;
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.Untainted;
 import org.checkerframework.checker.experimental.tainting_qual_poly.qual.Var;
@@ -11,7 +11,6 @@ import org.checkerframework.checker.experimental.tainting_qual_poly.qual.Wild;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.qualframework.poly.AnnotationConverterConfiguration;
-import org.checkerframework.qualframework.poly.CombiningOperation.Glb;
 import org.checkerframework.qualframework.poly.CombiningOperation.Lub;
 import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 
@@ -30,7 +29,7 @@ public class TaintingAnnotationConverter extends SimpleQualifierParameterAnnotat
                 null,
                 ClassTaintingParam.class,
                 MethodTaintingParam.class,
-                PolyTainting.class,
+                PolyTainted.class,
                 Var.class,
                 Wild.class,
                 Tainting.TAINTED,
