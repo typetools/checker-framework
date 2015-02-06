@@ -1,0 +1,264 @@
+\htmlhr
+\chapter{Units Checker\label{units-checker}}
+
+For many applications, it is important to use the correct units of
+measurement for primitive types.  For example, NASA's Mars Climate Orbiter
+(cost: \$327 million) was lost because of a discrepancy between use
+of the metric unit Newtons and the imperial measure Pound-force.
+
+The \emph{Units Checker} ensures consistent usage of units.
+For example, consider the following code:
+
+\begin{alltt}
+@m int meters = 5 * UnitsTools.m;
+@s int secs = 2 * UnitsTools.s;
+@mPERs int speed = meters / secs;
+\end{alltt}
+
+Due to the annotations \<@m> and \<@s>, the variables \code{meters} and \code{secs} are guaranteed to contain
+only values with meters and seconds as units of measurement.
+Utility class \code{UnitsTools} provides constants with which
+unqualified integer are multiplied to get values of the corresponding unit.
+The assignment of an unqualified value to \code{meters}, as in
+\code{meters = 99}, will be flagged as an error by the Units Checker.
+
+The division \code{meters/secs} takes the types of the two operands
+into account and determines that the result is of type
+meters per second, signified by the \code{@mPERs} qualifier.
+We provide an extensible framework to define the result of operations
+on units.
+
+
+\section{Units annotations\label{units-annotations}}
+
+The checker currently supports two varieties of units annotations:
+kind annotations (\code{@Length}, \code{@Mass}, \dots) and
+the SI units (\code{@m}, \code{@kg}, \dots).
+
+
+Kind annotations can be used to declare what the expected unit of
+measurement is, without fixing the particular unit used.
+For example, one could write a method taking a \code{@Length} value,
+without specifying whether it will take meters or kilometers.
+The following kind annotations are defined:
+
+\begin{description}
+\item[\refqualclass{checker/units/qual}{Area}]
+
+\item[\refqualclass{checker/units/qual}{Current}]
+
+\item[\refqualclass{checker/units/qual}{Length}]
+
+\item[\refqualclass{checker/units/qual}{Luminance}]
+
+\item[\refqualclass{checker/units/qual}{Mass}]
+
+\item[\refqualclass{checker/units/qual}{Speed}]
+
+\item[\refqualclass{checker/units/qual}{Substance}]
+
+\item[\refqualclass{checker/units/qual}{Temperature}]
+
+\item[\refqualclass{checker/units/qual}{Time}]
+\end{description}
+
+% \medskip
+
+
+For each kind of unit, the corresponding SI unit of
+measurement is defined:
+
+\begin{enumerate}
+\item For \code{@Area}:
+  the derived units
+  square millimeters \refqualclass{checker/units/qual}{mm2},
+  square meters \refqualclass{checker/units/qual}{m2}, and
+  square kilometers \refqualclass{checker/units/qual}{km2}
+
+\item For \code{@Current}:
+  Ampere \refqualclass{checker/units/qual}{A}
+
+\item For \code{@Length}:
+  Meters \refqualclass{checker/units/qual}{m}
+  and the derived units
+  millimeters \refqualclass{checker/units/qual}{mm} and
+  kilometers \refqualclass{checker/units/qual}{km}
+
+\item For \code{@Luminance}:
+  Candela \refqualclass{checker/units/qual}{cd}
+
+\item For \code{@Mass}:
+  kilograms \refqualclass{checker/units/qual}{kg}
+  and the derived unit
+  grams \refqualclass{checker/units/qual}{g}
+
+\item For \code{@Speed}:
+  meters per second \refqualclass{checker/units/qual}{mPERs} and
+  kilometers per hour \refqualclass{checker/units/qual}{kmPERh}
+
+\item For \code{@Substance}:
+  Mole \refqualclass{checker/units/qual}{mol}
+
+\item For \code{@Temperature}:
+  Kelvin \refqualclass{checker/units/qual}{K}
+  and the derived unit
+  Celsius \refqualclass{checker/units/qual}{C}
+
+\item For \code{@Time}:
+  seconds \refqualclass{checker/units/qual}{s}
+  and the derived units
+  minutes \refqualclass{checker/units/qual}{min} and
+  hours \refqualclass{checker/units/qual}{h}
+\end{enumerate}
+
+
+You may specify SI unit prefixes, using enumeration \code{\refclass{checker/units/qual}{Prefix}}.
+The basic SI units
+(\code{@s}, \code{@m}, \code{@g}, \code{@A}, \code{@K},
+ \code{@mol}, \code{@cd})
+take an optional \code{Prefix} enum as argument.
+For example, to use nanoseconds as unit, you could use
+\code{@s(Prefix.nano)} as a unit type.
+You can sometimes use a different annotation instead of a prefix;
+for example, \<@mm> is equivalent to \<@m(Prefix.milli)>.
+
+Class \code{UnitsTools} contains a constant for each SI unit.
+To create a value of the particular unit, multiply an unqualified
+value with one of these constants.
+By using static imports, this allows very natural notation; for
+example, after statically importing \code{UnitsTools.m},
+the expression \code{5 * m} represents five meters.
+As all these unit constants are public, static, and final with value
+one, the compiler will optimize away these multiplications.
+
+
+\section{Extending the Units Checker\label{extending-units}}
+
+You can create new kind annotations and unit annotations that are specific
+to the particular needs of your project.  An easy way to do this is by
+copying and adapting an existing annotation.  (In addition, search for all
+uses of the annotation's name throughout the Units Checker implementation,
+to find other code to adapt; read on for details.)
+
+Here is an example of a new unit annotation.
+
+\begin{alltt}
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@TypeQualifier
+@SubtypeOf( \ttlcb{} Time.class \ttrcb{} )
+@UnitsMultiple(quantity=s.class, prefix=Prefix.nano)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+public @interface ns \ttlcb{}\ttrcb{}
+\end{alltt}
+
+The \code{@SubtypeOf} meta-annotation specifies that this annotation
+introduces an additional unit of time.
+The \code{@UnitsMultiple} meta-annotation specifies that this annotation
+should be a nano multiple of the basic unit \code{@s}:  \code{@ns} and
+\code{@s(Prefix.nano)}
+behave equivalently and interchangeably.
+Most annotation definitions do not have a \<@UnitsMultiple> meta-annotation.
+
+
+To take full advantage of the additional unit qualifier, you need to
+do two additional steps.
+(1)~Provide constants that convert from unqualified types to types that use
+the new unit.  
+See class \code{UnitsTools} for examples (you will need to suppress a
+checker warning in just those few locations).
+(2)~Put the new unit in relation to existing units.
+Provide an
+implementation of the \code{UnitsRelations} interface as a
+meta-annotation to one of the units.
+
+See demonstration \code{examples/units-extension/} for an example
+extension that defines Hertz (hz) as scalar per second, and defines an
+implementation of \code{UnitsRelations} to enforce it.
+
+
+
+\section{What the Units Checker checks\label{units-checks}}
+
+The Units Checker ensures that unrelated types are not mixed. 
+
+All types with a particular unit annotation are
+disjoint from all unannotated types, from all types with a different unit
+annotation, and from all types with the same unit annotation but a
+different prefix.
+
+Subtyping between the units and the unit kinds is taken into account,
+as is the \code{@UnitsMultiple} meta-annotation.
+
+Multiplying a scalar with a unit type results in the same unit type.
+
+The division of a unit type by the same unit type
+results in the unqualified type.
+
+Multiplying or dividing different unit types, for which no unit
+relation is known to the system, will result in a \code{MixedUnits}
+type, which is separate from all other units.
+If you encounter a \code{MixedUnits} annotation in an error message,
+ensure that your operations are performed on correct units or refine
+your \code{UnitsRelations} implementation.
+
+The Units Checker does \emph{not} change units based on multiplication; for
+example, if variable \<mass> has the type \<@kg double>, then \<mass *
+1000> has that same type rather than the type \<@g double>.  (The Units
+Checker has no way of knowing whether you intended a conversion, or you
+were computing the mass of 1000 items.  You need to make all conversions
+explicit in your code, and it's good style to minimize the number of
+conversions.)
+
+
+\section{Running the Units Checker\label{units-running}}
+
+The Units Checker can be invoked by running the following commands.
+
+\begin{itemize}
+\item
+If your code uses only the SI units that are provided by the
+framework, simply invoke the checker:
+
+\begin{Verbatim}
+  javac -processor org.checkerframework.checker.units.UnitsChecker MyFile.java ...
+\end{Verbatim}
+
+\item 
+If you define your own units, provide the name of the annotations using the
+\code{-Aunits} option:
+
+\begin{alltt}
+  javac -processor org.checkerframework.checker.units.UnitsChecker \ttbs
+        \textit{-Aunits=myproject.qual.MyUnit,myproject.qual.MyOtherUnit} MyFile.java ...
+\end{alltt}
+\end{itemize}
+
+
+
+\section{Suppressing warnings\label{units-suppressing}}
+
+One example of when you need to suppress warnings is when you
+initialize a variable with a unit type by a literal value.
+To remove this warning message, it is best to introduce a
+constant that represents the unit and to
+add a \code{@SuppressWarnings}
+annotation to that constant.
+For examples, see class \code{UnitsTools}.
+
+
+\section{References\label{units-references}}
+
+\begin{itemize}
+\item The GNU Units tool provides a comprehensive list of units:\\
+  \url{http://www.gnu.org/software/units/}
+
+\item The F\# units of measurement system inspired some of our syntax:\\
+  \url{http://en.wikibooks.org/wiki/F_Sharp_Programming/Units_of_Measure}
+
+\end{itemize}
+
+% LocalWords:  UnitsTools toMeter toSecond mPERs Candela cd kmPERh mol nano ns
+% LocalWords:  milli RetentionPolicy TypeQualifier SubtypeOf UnitsMultiple hz
+% LocalWords:  UnitsRelations Aunits MyFile mm2 m2 km2 enum ElementType
+%  LocalWords:  MixedUnits java
