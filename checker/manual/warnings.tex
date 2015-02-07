@@ -1,78 +1,18 @@
 \htmlhr
-\chapter{Handling warnings and legacy code\label{warnings-and-legacy}}
+\chapter{Suppressing warnings\label{suppressing-warnings}}
 
-Section~\ref{get-started-with-legacy-code} describes a methodology for
-applying annotations to legacy code.  This chapter tells you what to do if,
-for some reason, you cannot change your code in such a way as to eliminate
-a checker warning.
-
-Also recall that you can convert checker errors into warnings via the
-\code{-Awarns} command-line option; see Section~\ref{checker-options}.
-
-
-\section{Checking partially-annotated programs:  handling unannotated code\label{unannotated-code}}
-
-Sometimes, you wish to type-check only part of your program.
-You might focus on the most mission-critical or error-prone part of your
-code.  When you start to use a checker, you may not wish to annotate
-your entire program right away.
-% Not having source code is *not* a reason.
-You may not have
-enough knowledge to annotate poorly-documented libraries that your program uses.
-
-If annotated code uses unannotated code, then the checker may issue
-warnings.  For example, the Nullness Checker (Chapter~\ref{nullness-checker}) will
-warn whenever an unannotated method result is used in a non-null context:
-
-\begin{Verbatim}
-  @NonNull myvar = unannotated_method();   // WARNING: unannotated_method may return null
-\end{Verbatim}
-
-If the call \emph{can} return null, you should fix the bug in your program by
-removing the \refqualclass{checker/nullness/qual}{NonNull} annotation in your own program.
-
-If the library call \emph{never} returns null,
-there are several ways to eliminate the compiler warnings.
-\begin{enumerate}
-\item Annotate \code{unannotated\_method} in full.  This approach provides
-  the strongest guarantees, but may require you to annotate additional
-  methods that \code{unannotated\_method} calls.  See
-  Chapter~\ref{annotating-libraries} for a discussion of how to annotate
-  libraries for which you have no source code.
-\item Annotate only the signature of \code{unannotated\_method}, and
-  suppress warnings in its body.  Two ways to suppress the warnings are via a
-  \code{@SuppressWarnings} annotation or by not running the checker on that
-  file (see Section~\ref{suppressing-warnings}).
-\item Suppress all warnings related to uses of \code{unannotated\_method}
-  via the \code{skipUses} processor option
-  (see Section~\ref{askipuses}).
-  Since this can suppress more warnings than you may expect,
-  it is usually better to annotate at least the method's signature.  If you
-  choose the boundary between the annotated and unannotated code wisely,
-  then you only have to annotate the signatures of a limited number of
-  classes/methods
-  (e.g., the public interface to a library or package).
-
-\end{enumerate}
-
-Chapter~\ref{annotating-libraries} discusses adding annotations to
-signatures when you do not have source code available.
-Section~\ref{suppressing-warnings} discusses suppressing warnings.
-
-
-If you annotate a third-party library, please share it with us so that we
-can distribute the annotations with the Checker Framework; see
-Section~\ref{reporting-bugs}.
-
-
-\section{Suppressing warnings\label{suppressing-warnings}}
+%% This feels redundant.
+% The Checker Framework is sound:  whenever your code contains an error, the
+% Checker Framework will warn you about the error.  The Checker Framework is
+% conservative:  it may issue warnings when your code is safe and never
+% misbehaves at run time.
 
 You may wish to suppress checker warnings because of unannotated libraries
 or un-annotated portions of your own code, because of application
 invariants that are beyond the capabilities of the type system, because of
 checker limitations, because you are interested in only some of the
 guarantees provided by a checker, or for other reasons.
-In many cases, suppressing a warning is similar to writing a cast in a Java
+Suppressing a warning is similar to writing a cast in a Java
 program:  the programmer knows more about the type than the type system does
 and uses the warning suppression or cast to convey that information to the
 type system.
@@ -116,7 +56,7 @@ We now explain these mechanisms in turn.
 
 % See the @SuppressWarningsKey annotation and the getSuppressWarningsKey method.
 
-\subsection{\code{@SuppressWarnings} annotation\label{suppresswarnings-annotation}}
+\section{\code{@SuppressWarnings} annotation\label{suppresswarnings-annotation}}
 
 You can suppress specific errors and warnings by use of the
 \code{@SuppressWarnings("\emph{checkername}")} annotation, for example
@@ -171,9 +111,9 @@ Additionally, the \code{-AshowSuppressWarningKeys} command-line option
 can be used to show all applicable suppression keys.
 
 
-\subsubsection{Good practices when suppressing warnings\label{suppresswarnings-best-practices}}
+\subsection{Good practices when suppressing warnings\label{suppresswarnings-best-practices}}
 
-\paragraph{Suppress warnings in the smallest possible scope\label{suppresswarnings-best-practices-smallest-scope}}
+\subsubsection{Suppress warnings in the smallest possible scope\label{suppresswarnings-best-practices-smallest-scope}}
 
 If a particular expression causes a
 false positive warning, you should extract that expression into a local variable
@@ -187,14 +127,14 @@ entire method body.
 % annotation on the class declaration or on the package's
 % \code{package-info.java} file.
 
-\paragraph{Justify why the warning is a false positive\label{suppresswarnings-best-practices-justification}}
+\subsubsection{Justify why the warning is a false positive\label{suppresswarnings-best-practices-justification}}
 
-An \<@SuppressWarnings> annotation asserts that the code is actually
+A \<@SuppressWarnings> annotation asserts that the code is actually
 correct, even though the type system is unable to prove that the code is
 correct.
 
 Whenever you write a \<@SuppressWarnings> annotation, you should also
-write, typically on the same line or on the previous line, a code comment
+write, typically on the same line or on the preceding line, a code comment
 explaining why the code is actually correct.  In some cases you might also
 justify why the code cannot be rewritten in a simpler way that would be
 amenable to type-checking.
@@ -203,7 +143,7 @@ This documentation will help you and others to understand the reason for
 the \<@SuppressWarnings> annotation.  It will also help if you decide to
 audit your code to verify all the warning suppressions.
 
-\paragraph{Use a specific argument to \code{@SuppressWarnings}\label{suppresswarnings-best-practices-specific-argument}}
+\subsubsection{Use a specific argument to \code{@SuppressWarnings}\label{suppresswarnings-best-practices-specific-argument}}
 
 \label{compiler-message-keys}
 
@@ -241,7 +181,7 @@ key, you can re-run the checker, passing the the \code{-Anomsgtext}
 command-line option (Section~\ref{debugging-options}).
 
 
-\subsection{\code{@AssumeAssertion} string in an \<assert> message\label{assumeassertion}}
+\section{\code{@AssumeAssertion} string in an \<assert> message\label{assumeassertion}}
 
 \begin{sloppypar}
 You can suppress a warning by \<assert>ing that some property is true, and
@@ -261,26 +201,31 @@ the Nullness Checker assumes that \<x> is non-null from the \<assert>
 statement forward, and so the expression \<x.f> cannot throw a null pointer
 exception.
 
-The assert expression must be an expression that would affect flow-sensitive
+The \<assert> expression must be an expression that would affect flow-sensitive
 type qualifier refinement (Section~\ref{type-refinement}), if the
 expression appeared in a conditional test.  Each type system has its own
-rules about what type refinement it performs, if any.
+rules about what type refinement it performs.
 
 The warning key is exactly as in the \<@SuppressWarnings> annotation
 (Section~\ref{suppresswarnings-annotation}).  The same good practices apply
-as for a \<@SuppressWarnings> annotations, such as writing a comment
-justifying why the assumption is safe.
+as for \<@SuppressWarnings> annotations, such as writing a comment
+justifying why the assumption is safe
+(Section~\ref{suppresswarnings-best-practices}).
 
-If the string \<@AssumeAssertion(\emph{warningkey})> does not appear in the
-assertion message, then the Checker Framework treats the assertion as
-being used for defensive programming.  That is, the programmer believes
-that the assertion might fail at run time, so the Checker Framework should
-not make any inference, which would not be justified.
+%% Redundant.
+% If the string \<@AssumeAssertion(\emph{warningkey})> does not appear in the
+% assertion message, then the Checker Framework treats the assertion as
+% being used for defensive programming.  That is, the programmer believes
+% that the assertion might fail at run time, so the Checker Framework should
+% not make any inference, which would not be justified.
 
-A downside of putting the string in the assertion message is that if the
-assertion ever fails, then a user might see the string and be confused.
-But the string should only be used if the programmer has reasoned that the
-assertion can never fail.
+%% Users should never see assertions anyway -- they are for programmers.
+% A downside of putting the string in the assertion message is that if the
+% assertion ever fails, then a user might see the string and be confused.
+% This should never be a problem, since
+% the programmer should write the string should only if the programmer has
+% reasoned that the
+% assertion can never fail.
 
 % (Another way of stating the Nullness Checker's use of assertions is as an
 % additional caveat to the guarantees provided by a checker
@@ -289,7 +234,105 @@ assertion can never fail.
 % enabled, and it does not guarantee that all of your assertions succeed.)
 
 
-\subsection{\code{-AsuppressWarnings} command-line option\label{suppresswarnings-command-line}}
+\subsection{Suppressing warnings and defensive programming\label{defensive-programming}}
+
+This section explains the distinction between two different uses for
+assertions (and for related methods like JUnit's \<Assert.assertNotNull>).
+
+Assertions are commonly used for two distinct purposes:  documenting how
+the program works and debugging the program when it does not work
+correctly.  By default, the Checker Framework assumes that each assertion
+is used for debugging:  the assertion might fail at run time, and the programmer
+wishes to be informed at compile time about such run-time errors.  On the
+other hand, if you write the \<@AssumeAssertion> string in the \<assert>
+message, then the Checker Framework assumes that you have used some other
+technique to verify that the assertion can never fail at run time, so the
+checker assumes the assertion passes and does not issue a warning.
+
+Distinguishing the purpose of each assertion is important for precise
+type-checking.  
+% In particular, the Checker Framework would miss many errors
+% if it assumed that every assertion succeeds at run time.
+Suppose that a
+programmer encounters a failing test, adds an assertion to aid debugging, and fixes the
+test.  The programmer leaves the assertion in the program if the programmer
+is worried that the program might fail in a similar way in the future.  
+% The assertion indicates the potential for failure at this point in the code.
+The Checker Framework should not assume that the assertion succeeds ---
+doing so would defeat the very purpose of the Checker Framework, which is
+to detect errors at compile time and prevent them from occurring at run
+time.
+
+On the other hand, assertions sometimes document facts that a programmer
+has independently verified to be true, and the Checker Framework can
+leverage these assertions in order to avoid issuing false positive
+warnings.  The progammer marks such assertions with the \<@AssumeAssertion>
+string in the \<assert> message.  Only do so if you are sure
+that the assertion always succeeds at run time.
+
+
+% In each case, the assertion or method indicates an application invariant --- a
+% fact that should always be true.  There are two distinct reasons a
+% programmer may have written the invariant, depending on whether the
+% programmer is 100\% sure that the application invariant holds.
+% 
+% \begin{enumerate}
+% \item
+%   A programmer might write it as \textbf{defensive programming}.  This causes
+%   the program to throw an exception, which is useful for debugging because
+%   it gives an earlier run-time indication of the error.
+%   A programmer would use an assertion in this way if the programmer is not
+%   100\% sure that the application invariant holds.
+% 
+%   % , or even to document what the program
+%   % is intended to do.
+% 
+% \item
+%   A programmer might write it to \textbf{suppress} false positive
+%   \textbf{warning messages} from a checker.  A programmer would use an
+%   assertion this way if the programmer is 100\% sure that the application
+%   invariant holds, and the reference can never be null at run time.
+% 
+% \end{enumerate}
+
+
+Sometimes methods such as
+\refmethod{checker/nullness}{NullnessUtils}{castNonNull}{-T-} are used
+instead of assertions.  Just as for assertions, you can treat them as
+debugging aids or as documentation.
+If you know that a particular codebase uses
+a nullness-checking method not for defensive programming but to indicate
+facts that are guaranteed to be true (that is, these assertions will never
+fail at run time), then you can suppress
+warnings related to it.
+Annotate its definition just as
+\refmethod{checker/nullness}{NullnessUtils}{castNonNull}{-T-} is annotated (see the
+source code for the Checker Framework).
+% TODO:
+% For an assert statement, XXXXX.
+Also, be sure to document the intention in the method's Javadoc, so that
+programmers do not
+accidentally misuse it for defensive programming.
+
+
+If you are annotating a codebase that already contains precondition checks,
+such as:
+
+\begin{Verbatim}
+  public String get(String key, String def) {
+    checkNotNull(key, "key"); //NOI18N
+    ...
+  }
+\end{Verbatim}
+
+\noindent
+then you should mark the appropriate parameter as \<@NonNull> (which is the
+default).  This will prevent the checker from issuing a warning about the
+\<checkNotNull> call.
+
+
+
+\section{\code{-AsuppressWarnings} command-line option\label{suppresswarnings-command-line}}
 
 Supplying the \<-AsuppressWarnings> command-line option is equivalent to
 writing a \<@SuppressWarnings> annotation on every class that the compiler
@@ -301,7 +344,7 @@ When possible, it is better to write a \<@SuppressWarnings> annotation with a
 smaller scope, rather than using the \<-AsuppressWarnings> command-line option.
 
 
-\subsection{\code{-AskipUses} and \code{-AonlyUses} command-line options\label{askipuses}}
+\section{\code{-AskipUses} and \code{-AonlyUses} command-line options\label{askipuses}}
 
 You can suppress all errors and warnings at all \emph{uses} of a given
 class, or suppress all errors and warnings except those at uses of a given
@@ -348,7 +391,7 @@ refined in the future.  Oftentimes \code{-AskipUses} is more useful.
 % field access is the right-hand side.  I'm going to punt on this for now.
 
 
-\subsection{\code{-AskipDefs} and \code{-AonlyDefs} command-line options\label{askipdefs}}
+\section{\code{-AskipDefs} and \code{-AonlyDefs} command-line options\label{askipdefs}}
 
 You can suppress all errors and warnings in the \emph{definition} of a given
 class, or suppress all errors and warnings except those in the definition
@@ -389,7 +432,7 @@ most important parts, you can incrementally check more classes until you
 are type-checking the whole thing.
 
 
-\subsection{\code{-Alint} command-line option\label{alint}}
+\section{\code{-Alint} command-line option\label{alint}}
 
 \label{lint-options}
 
@@ -454,22 +497,90 @@ options are silently ignored.  In particular, this means that \<-Alint=all
 \code{-Alint=-all,cast:redundant}.
 
 
-\subsection{No \code{-processor} command-line option\label{no-processor}}
+\section{No \code{-processor} command-line option\label{no-processor}}
 
 You can also compile parts of your code without use of the
 \code{-processor} switch to \code{javac}.  No checking is done during
 such compilations.
 
-\subsection{Checker-specific mechanisms\label{checker-specific-suppression}}
+\section{Checker-specific mechanisms\label{checker-specific-suppression}}
 
 Finally, some checkers have special rules.  For example, the Nullness
-checker (Chapter~\ref{nullness-checker}) uses \code{assert} statements that contain
-null checks, and the special \<castNonNull> method, to suppress warnings
+checker (Chapter~\ref{nullness-checker}) uses
+the special \<castNonNull> method to suppress warnings
 (Section~\ref{suppressing-warnings-with-assertions}).
 This manual also explains special mechanisms for
 suppressing warnings issued by the Fenum Checker
 (Section~\ref{fenum-suppressing}) and the Units Checker
 (Section~\ref{units-suppressing}).
+
+
+
+\htmlhr
+\chapter{Handling legacy code\label{legacy-code}}
+
+Section~\ref{get-started-with-legacy-code} describes a methodology for
+applying annotations to legacy code.  This chapter tells you what to do if,
+for some reason, you cannot change your code in such a way as to eliminate
+a checker warning.
+
+Also recall that you can convert checker errors into warnings via the
+\code{-Awarns} command-line option; see Section~\ref{checker-options}.
+
+
+\section{Checking partially-annotated programs:  handling unannotated code\label{unannotated-code}}
+
+Sometimes, you wish to type-check only part of your program.
+You might focus on the most mission-critical or error-prone part of your
+code.  When you start to use a checker, you may not wish to annotate
+your entire program right away.
+% Not having source code is *not* a reason.
+You may not have
+enough knowledge to annotate poorly-documented libraries that your program uses.
+
+If annotated code uses unannotated code, then the checker may issue
+warnings.  For example, the Nullness Checker (Chapter~\ref{nullness-checker}) will
+warn whenever an unannotated method result is used in a non-null context:
+
+\begin{Verbatim}
+  @NonNull myvar = unannotated_method();   // WARNING: unannotated_method may return null
+\end{Verbatim}
+
+If the call \emph{can} return null, you should fix the bug in your program by
+removing the \refqualclass{checker/nullness/qual}{NonNull} annotation in your own program.
+
+If the library call \emph{never} returns null,
+there are several ways to eliminate the compiler warnings.
+\begin{enumerate}
+\item Annotate \code{unannotated\_method} in full.  This approach provides
+  the strongest guarantees, but may require you to annotate additional
+  methods that \code{unannotated\_method} calls.  See
+  Chapter~\ref{annotating-libraries} for a discussion of how to annotate
+  libraries for which you have no source code.
+\item Annotate only the signature of \code{unannotated\_method}, and
+  suppress warnings in its body.  Two ways to suppress the warnings are via a
+  \code{@SuppressWarnings} annotation or by not running the checker on that
+  file (see Section~\ref{suppressing-warnings}).
+\item Suppress all warnings related to uses of \code{unannotated\_method}
+  via the \code{skipUses} processor option
+  (see Section~\ref{askipuses}).
+  Since this can suppress more warnings than you may expect,
+  it is usually better to annotate at least the method's signature.  If you
+  choose the boundary between the annotated and unannotated code wisely,
+  then you only have to annotate the signatures of a limited number of
+  classes/methods
+  (e.g., the public interface to a library or package).
+
+\end{enumerate}
+
+Chapter~\ref{annotating-libraries} discusses adding annotations to
+signatures when you do not have source code available.
+Section~\ref{suppressing-warnings} discusses suppressing warnings.
+
+
+If you annotate a third-party library, please share it with us so that we
+can distribute the annotations with the Checker Framework; see
+Section~\ref{reporting-bugs}.
 
 
 \section{Backward compatibility with earlier versions of Java\label{backward-compatibility}}
