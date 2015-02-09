@@ -347,6 +347,17 @@ public class AnnotatedTypes {
      * according to {@link AnnotatedTypeFactory#postAsMemberOf(
      * AnnotatedTypeMirror, AnnotatedTypeMirror, Element)}.
      *
+     * Note that this method does not currently return (top level) captured types
+     * for type parameters, parameters, and return types. Instead, the original
+     * wildcard is returned, or sometimes inferring type arguments will create
+     * a wildcard type which is returned. The bounds of an inferred wildcard
+     * may itself have captures.
+     *
+     * To prevent unsoundness, the rest of the checker framework must expect
+     * wildcard in places where captures should appear (like type arguments).
+     * This should just involve the bounds of the wildcard where the bounds
+     * of the capture would have been used.
+     *
      * @param t    a type
      * @param elem  an element
      */
