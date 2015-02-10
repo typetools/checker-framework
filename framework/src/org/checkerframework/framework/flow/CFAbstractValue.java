@@ -21,6 +21,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -191,11 +192,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
 
         final TypeKind resultKind = result.getKind();
         if( resultKind == TypeKind.TYPEVAR ) {
-            return mostSpecificTypeVariable(
-                        typeFactory.getProcessingEnv().getTypeUtils(),
-                        typeFactory.getTypeHierarchy(),
-                        typeFactory.getQualifierHierarchy(),
-                        a, b, backup, (AnnotatedTypeVariable) result);
+            return mostSpecificTypeVariable(typeFactory, a, b, backup, (AnnotatedTypeVariable) result);
 
         } else {
             final QualifierHierarchy qualHierarchy = typeFactory.getQualifierHierarchy();
@@ -300,12 +297,18 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      * @return True if the result was annotated in all hierarchy, false if the result could not be
      *         annotated in one or more annotation hierarchies
      */
-    public static boolean mostSpecificTypeVariable(final Types types,
-                                                   final TypeHierarchy typeHierarchy,
-                                                   final QualifierHierarchy qualifierHierarchy,
+    public static boolean mostSpecificTypeVariable(final AnnotatedTypeFactory typeFactory,
                                                    final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2,
                                                    final AnnotatedTypeMirror backup,
                                                    final AnnotatedTypeVariable result) {
+        final Types types = typeFactory.getProcessingEnv().getTypeUtils();
+        final TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
+        final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
+
+        final AnnotatedTypeVariable declaredType =
+           (AnnotatedTypeVariable) typeFactory.getAnnotatedType(result.getUnderlyingType().asElement());
+        AnnotatedTypeMerger.merge(declaredType, result);
+
         boolean annotated = true;
         for(final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
             if(typeHierarchy.isSubtype(type1, type2, top)) {
