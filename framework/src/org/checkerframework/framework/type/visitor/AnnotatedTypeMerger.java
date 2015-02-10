@@ -22,6 +22,20 @@ import javax.lang.model.type.TypeKind;
  */
 public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
 
+    public static void merge(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
+        if (from == to) {
+            ErrorReporter.errorAbort("From == to");
+        }
+        new AnnotatedTypeMerger().visit(from, to);
+    }
+
+    public static void merge(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to, final AnnotationMirror top) {
+        if (from == to) {
+            ErrorReporter.errorAbort("From == to");
+        }
+        new AnnotatedTypeMerger(top).visit(from, to);
+    }
+
     //if top != null we replace only the annotations in the hierarchy of top
     private final AnnotationMirror top;
 
@@ -58,20 +72,6 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
                 two.replaceAnnotation(one.getAnnotationInHierarchy(top));
             }
         }
-    }
-
-    public static void merge(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
-        if (from == to) {
-            ErrorReporter.errorAbort("From == to");
-        }
-        new AnnotatedTypeMerger().visit(from, to);
-    }
-
-    public static void merge(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to, final AnnotationMirror top) {
-        if (from == to) {
-            ErrorReporter.errorAbort("From == to");
-        }
-        new AnnotatedTypeMerger(top).visit(from, to);
     }
 
     @Override
