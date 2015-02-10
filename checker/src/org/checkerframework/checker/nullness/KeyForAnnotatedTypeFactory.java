@@ -18,6 +18,9 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import com.sun.source.tree.*;
+import com.sun.source.tree.Tree.Kind;
+import org.checkerframework.checker.nullness.KeyForPropagator.PropagationDirection;
 import org.checkerframework.checker.nullness.qual.Covariant;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
@@ -46,6 +49,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 
@@ -61,13 +68,6 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 
 @TypeQualifiers({ KeyFor.class, UnknownKeyFor.class, KeyForBottom.class})
@@ -75,6 +75,8 @@ public class KeyForAnnotatedTypeFactory extends
     GenericAnnotatedTypeFactory<CFValue, CFStore, KeyForTransfer, KeyForAnalysis> {
 
     protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR;
+
+    private final KeyForPropagator keyForPropagator;
 
     protected final Class<? extends Annotation> checkerKeyForClass = org.checkerframework.checker.nullness.qual.KeyFor.class;
 
@@ -93,6 +95,7 @@ public class KeyForAnnotatedTypeFactory extends
 
         KEYFOR = AnnotationUtils.fromClass(elements, KeyFor.class);
         UNKNOWNKEYFOR = AnnotationUtils.fromClass(elements, UnknownKeyFor.class);
+        keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
         this.postInit();
 
@@ -146,6 +149,32 @@ public class KeyForAnnotatedTypeFactory extends
   }
   */
 
+    /**
+     *
+     * @param tree
+     * @return
+     */
+  @Override
+  public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(NewClassTree tree) {
+      Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> result = super.constructorFromUse(tree);
+      final AnnotatedTypeMirror returnType = result.first.getReturnType();
+
+      Pair<Tree, AnnotatedTypeMirror> context = getVisitorState().getAssignmentContext();
+
+      if (returnType.getKind() == TypeKind.DECLARED && context != null && context.first != null) {
+          if (context.first.getKind() == Kind.VARIABLE) {
+              final AnnotatedTypeMirror variableType = getAnnotatedType(context.first);
+              //the only time I can think of where this would not be true is when lhs is a primitive
+              //and the return type is a Boxed primitive
+              if (variableType.getKind() == TypeKind.DECLARED) {
+                  keyForPropagator.propagate((AnnotatedDeclaredType) returnType, (AnnotatedDeclaredType) variableType, PropagationDirection.TO_SUBTYPE, this);
+              }
+          }
+      }
+
+      return result;
+  }
+
   // TODO: doc
   @Override
   public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree call) {
@@ -182,6 +211,7 @@ public class KeyForAnnotatedTypeFactory extends
 
     return Pair.of(method, mfuPair.second);
   }
+
 
  /* TODO: doc
   * This pattern and the logic how to use it is copied from NullnessFlow.
@@ -299,6 +329,14 @@ public class KeyForAnnotatedTypeFactory extends
       return new KeyForTypeHierarchy(checker, getQualifierHierarchy(),
                                      checker.hasOption("ignoreRawTypeArguments"),
                                      checker.hasOption("invariantArrays"));
+  }
+
+  protected TreeAnnotator createTreeAnnotator() {
+      return new ListTreeAnnotator(
+             new PropagationTreeAnnotator(this),
+             new ImplicitsTreeAnnotator(this) ,
+             new KeyForPropagationTreeAnnotator(this, keyForPropagator)
+      );
   }
 
   protected class KeyForTypeHierarchy extends DefaultTypeHierarchy {
