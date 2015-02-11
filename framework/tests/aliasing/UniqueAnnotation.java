@@ -1,4 +1,5 @@
 import org.checkerframework.common.aliasing.qual.*;
+
 class UniqueAnnoTest {
 
     //@Unique constructor
@@ -30,9 +31,9 @@ class UniqueAnnoTest {
     }
 
     void leaked(UniqueAnnoTest a) {}
-    void notLeaked(/*>>>@NonLeaked UniqueAnnoTest this*/, @NonLeaked UniqueAnnoTest a) {}
+    void notLeaked(@NonLeaked UniqueAnnoTest this, @NonLeaked UniqueAnnoTest a) {}
 
-    UniqueAnnoTest leakedToResult(/*>>>@LeakedToResult UniqueAnnoTest this*/,
+    UniqueAnnoTest leakedToResult(@LeakedToResult UniqueAnnoTest this,
             @LeakedToResult UniqueAnnoTest a) {
         return a;
     }
