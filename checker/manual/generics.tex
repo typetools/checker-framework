@@ -1,15 +1,46 @@
+% qualifier parameter syntax
+%BEGIN LATEX
+% This definition for LaTeX is a bit gross.  The MnSymbol package defines
+% \llangle and \rrangle but also changes other things.  unicode-math gives
+% \lAngle, but I have not tried it.
+\newcommand{\qp}[1]{\ensuremath{\langle\!\!\langle}#1\ensuremath{\rangle\!\!\rangle}}
+%END LATEX
+%HEVEA \newcommand{\qp}[1]{\@print@u{X27EA}#1\@print@u{X27EB}}
+
 \htmlhr
 \chapter{Generics and polymorphism\label{polymorphism}}
 
 This chapter describes support for Java generics (also known as
-``parametric polymorphism'').
-The chapter also describes polymorphism over type qualifiers.
+``parametric polymorphism'') and polymorphism over type qualifiers.
+
+The Checker Framework currently supports two schemes for polymorphism over
+type qualifiers.
+
+Section~\ref{qualifier-polymorphism} describes the
+original scheme, which uses method-based annotations that are meta-annotated
+with \refclass{framework/qual}{PolymorphicQualifier}.
+
+Section~\ref{qualifier-parameters} describes the qualifier parameters
+scheme, in which qualifier parameters are specified for classes and methods
+similarly to Java generics.  
+The qualifier
+parameter scheme is more powerful than the original approach, but is
+currently (as of February 2015)
+experimental and incurs a
+%% Note: The 50% performance penalty was measured by
+%% comparing the classic regex checker vs the qualifier parameter
+%% checker on daikon, chuckwa, and solr.
+50\% performance penalty.
+Currently, % February 2015
+only the Tainting Checker
+(Chapter~\ref{tainting-checker}) and the Regex Checker
+(Chapter~\ref{regex-checker}) support qualifier parameters.
 
 
 \section{Generics (parametric polymorphism or type polymorphism)\label{generics}}
 
 The Checker Framework fully supports
-type-qualified Java generic types (also known in the research literature as ``parametric
+type-qualified Java generic types and methods (also known in the research literature as ``parametric
 polymorphism'').
 When instantiating a generic type,
 clients supply the qualifier along with the type argument, as in
@@ -313,7 +344,11 @@ This uses Java's existing syntax for specifying a method call's type arguments.
 
 \section{Qualifier polymorphism\label{qualifier-polymorphism}}
 
-The Checker Framework also supports type \emph{qualifier} polymorphism for
+This section describes the original Checker Framework scheme for qualifier
+polymorphism.  Section~\ref{qualifier-parameters} describes an alternative
+scheme that uses qualifier parameters.
+
+The Checker Framework supports type \emph{qualifier} polymorphism for
 methods, which permits a single method to have multiple different qualified
 type signatures.  This is similar to Java's generics, but is used in
 situations where you cannot use Java generics.  If you can use generics,
@@ -608,9 +643,541 @@ had used \<elt.equals(a[i])> instead of \<elt == a[i]>.
 % \<@Nullable>.
 
 
+\section{Qualifier parameters\label{qualifier-parameters}}
+
+This section describes qualifier parameters which is the new, more-powerful
+qualifier polymorphism scheme.  As of February 2015, only the
+Tainting Checker (Chapter~\ref{tainting-checker}) and the Regex Checker
+(Chapter~\ref{regex-checker}) support qualifier parameters.
+Other checkers with
+qualifier polymorphism support use the original qualifier polymorphism scheme
+(Section~\ref{qualifier-polymorphism}).
+
+Qualifier parameters provide a way for you to re-use the same code with
+different type qualifiers in a type-safe manner.
+
+Qualifier parameters are very similar to Java generics, so if you understand the
+benefits of generics and how to use them, you will find qualifier
+parameters natural.  Both mechanisms are
+used on classes and methods where different instances of the class have different
+types.  Without generics or qualifier parameters, the types of the members would have
+to be overly general, which would cause information loss, compiler
+warnings, the need for casts, and potentially run-time errors.
+Generics parameterize a class or method with
+a \emph{type}, so that a client can specialize the definition with a type
+as in \code{List<Integer>} or \code{List<String>}.  By contrast, qualifier parameters
+enable a client to specialize the definition with just a \emph{qualifier}
+as in
+\code{MyClass\qp{@Regex}} or \code{MyClass\qp{@NonNull}}.
+
+
+\subsection{Motivation for qualifier parameters\label{qualifier-parameters-motivation}}
+
+As an example of a problem that qualifier parameters solve, consider
+the \<Holder> class below.  In some uses of \<Holder>, the \<item> field
+holds a \code{@Tainted String} value, and in other uses of \<Holder>, the \<item>
+field holds an \code{@Untainted String} value.  The only declaration of \<item>
+that is consistent with all uses is \code{@Tainted String}, which is a supertype
+of \<@Untainted String>.  When an \code{@Untainted String} value is put in a \code{Holder},
+a cast is required when the value is later retrieved.
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+    class Holder {
+        @Tainted String item;   // overly-general declaration, leads to casts
+    }
+
+    // taintedHolder can hold both @Tainted and @Untainted values
+    Holder taintedHolder = new Holder();
+    taintedHolder.item = getTaintedValue();
+    @Tainted String taintedString = taintedHolder.item;  // OK; type-checks with the Tainting Checker.
+
+    // The programmer intends untaintedHolder to hold only @Untainted values
+    Holder untaintedHolder = new Holder();
+    untaintedHolder.item = getUntaintedValue();
+    @Untainted String untaintedString = untaintedHolder.item;  // safe code, but Tainting Checker compile-time error.
+    // A cast makes the assignment type-check, but casts are unsound and error-prone.
+    String untaintedString = (@Untainted untaintedString) untaintedHolder.item;
+    taintedHolder.item = getTaintedValue(); // An error that we would like the type sysetm to catch
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+Qualifier parameters allow sound type-checking of this
+code without the use of casts.
+
+
+\subsection{Overview of qualifier parameters\label{qualifier-parameters-overview}}
+
+These following examples add qualifier parameters to
+\code{Holder} from Section~\ref{qualifier-parameters-motivation} to allow
+sound type-checking.
+
+For clarity, this section displays qualifier parameters using an idealized
+syntax using double angle brackets, \code{\qp{...}}.
+Note that this is not the actual
+syntax you will use in source code, which is described in
+Section~\ref{qualifier-parameters-syntax}.
+
+In the qualifier parameter system, a class can declared to have one or more
+qualifier parameters. For example, a qualifier parameter can be added to the
+\code{Holder} class:
+
+\begin{alltt}
+    class Holder \qp{Q} \{
+
+    \}
+\end{alltt}
+
+\noindent
+This declares that \code{Holder} takes one qualifier parameter, named
+\code{Q}.
+
+\code{Q} can be referenced inside the \code{Holder} class. In the
+following, \code{item} will have the same qualifier that \code{Holder} is
+instantiated with:
+
+\begin{alltt}
+    class Holder \qp{Q} \{
+        @Q String item;
+    \}
+\end{alltt}
+
+References and instantiations of \code{Holder} specify a qualifier
+argument for its parameter \code{Q}.
+
+\begin{alltt}
+    Holder\qp{Q=@Tainted} taintedHolder;
+    Holder\qp{Q=@Untainted} untaintedHolder;
+\end{alltt}
+
+Qualifier parameters permit instantiating a class with the appropriate type
+qualifier rather than relying on an overly-general declaration.  Therefore,
+the following code type-checks without casts:
+
+\begin{alltt}
+    Holder\qp{Q=@Tainted} taintedHolder = new Holder\qp{Q=@Tainted}();
+    @Tainted String s = holder.item;
+
+    Holder\qp{Q=@Untainted} untaintedHolder = new Holder\qp{Q=@Untainted}();
+    @Untainted String s = holder.item;
+\end{alltt}
+
+Like generics, two classes with different
+qualifier parameters have no subtyping relationship:
+
+\begin{alltt}
+    taintedHolder = untaintedHolder;     // Error: not a subtype
+    untaintedHolder = taintedHolder;     // Error: not a subtype
+    Holder\qp{Q=@Tainted} taintedHolder2;
+    taintedHolder = taintedHolder2;      // OK:  the qualifier argument is the same for both
+\end{alltt}
+
+
+
+\subsection{Qualifier parameter wildcards\label{qualifier-parameters-wildcards}}
+
+As with Java generics, wildcard extends and super bounds may
+be used. Wildcards create a subtyping relationship between classes with
+qualifier parameters. See the Java tutorial at
+\url{http://docs.oracle.com/javase/tutorial/java/generics/subtyping.html}
+for more information on subtyping relationships with wildcards.
+
+\begin{alltt}
+    Holder\qp{Q=@Tainted} holder;
+    Holder\qp{Q=? extends @Tainted} holderExtends;
+    Holder\qp{Q=? super @Tainted} holderSuper;
+
+    holder = holderExtends;    // Error: not a subtype
+    holderExtends = holder;    // OK
+
+    holder = holderSuper;    // Error: not a subtype
+    holderSuper = holder;    // OK
+\end{alltt}
+
+For soundness, when a class is parameterized with a
+wildcard, members of a qualified class that use the parameter as their type
+have restrictions on their use, just as in Java.
+In particular, a member of a qualified class with an extends-bounded wildcard
+may only be set to \code{null}. A member of a qualified class with a
+super-bounded wildcard will always have the top type when accessed.
+
+\begin{alltt}
+    Holder\qp{Q=? extends @Untainted} holderExtends;
+    @Untainted String s1 = holderExtends.item;  // OK
+    holderExtends.item = getTaintedString();    // Error: only null can be assigned to item
+
+    Holder\qp{Q=? super @Untainted} holderSuper;
+    @Untainted String s2 = holderSuper.item;    // Error: item has the top type
+    holderSuper.item = getUntaintedString();    // OK
+\end{alltt}
+
+\subsection{Syntax of qualifier parameters\label{qualifier-parameters-syntax}}
+
+The examples in
+Sections~\ref{qualifier-parameters-overview}--\ref{qualifier-parameters-wildcards}
+used double angle brackets, \code{\qp{...}}, for qualifier
+parameter declarations and qualifier arguments.
+In real source code, qualifier parameter declarations and uses, and qualifier
+arguments, are specified via Java annotations.
+
+\begin{itemize}
+\item
+To declare a qualifier parameter, use \<@Class\emph{Typesystem}Param> or
+\<@Method\emph{Typesystem}Param> and give a name for the parameter, as in
+\<@ClassTaintingParam("main")>.
+\item
+To use a qualifier parameter, write \<@Var> and indicate the parameter
+being used, as in \<@Var(arg="main")>.
+\item
+To supply a qualifier argument,
+write the argument annotation (e.g., \<@Tainted>),
+but supply a \<param> argument, as in \<@Tainted("main")> which means that
+\<@Tainted> is the argument to the parameter named \<main>.
+\end{itemize}
+
+These annotations are summarized in 
+Figure~\ref{fig-qualifier-parameter-syntax}
+and are more fully explained below.
+
+Each type system that supports qualifier parameters has its own copy of
+these annotations. The functionality of the annotations is the same, but since
+a java file might be annotated with annotations for multiple type systems, i.e.
+have annotaions for both the Regex and the Tainting checker, there must be a
+different copy of each annotation so that the Checker Framework can determine
+the checker that an annotaiton belongs to.
+
+\begin{figure}
+\begin{smaller}
+%BEGIN LATEX
+\setlength{\tabcolsep}{.5\tabcolsep}
+\begin{smaller}
+\begin{smaller}
+%END LATEX
+\begin{tabular}{|l|c|c|c|c|} \hline
+                        & Generic Equivalent & Idealized Syntax
+                        & Actual Syntax \\ \hline
+
+  Declare a class parameter
+  &
+  \code{class Holder<T> \{\} }
+  &
+  \code{class Holder\qp{Q} \{\} }
+  &
+  \code{@ClassTaintingParam("Q") class Holder \{\}}
+  \\ \hline
+
+  Declare a method parameter
+  &
+  \code{<T> void do() \{\} }
+  &
+  \code{\qp{V} void do() \{\} }
+  &
+  \code{@MethodTaintingParam("V") void do() \{\}}
+  \\ \hline
+
+  Instantiate (supply an argument)
+  &
+  \code{Holder<String>}
+  &
+  \code{Holder\qp{Q=@Tainted}}
+  &
+  \code{@Tainted(param="Q") Holder}
+  \\ \hline
+
+  Use a parameter
+  &
+  \code{<T> void do(T t) \{\} }
+  &
+  \code{\qp{V} void do(@V Object o) \{\} }
+  &
+  \code{@MethodTaintingParam("V") void do(@Var(arg="V") Object o) \{\}}
+  \\ \hline
+
+  Use a parameter as an argument
+  &
+  \code{<T> void do(List<T> t) \{\} }
+  &
+  \code{\qp{V} void do(Holder\qp{Q=@V} h) \{\} }
+  &
+  \code{@MethodTaintingParam("V") void do(@Var(arg="V" param="Q") Holder o) \{\}}
+  \\ \hline
+
+  Instantiate without constraints
+  &
+  \code{Holder<?>}
+  &
+  \code{Holder\qp{Q=?}}
+  &
+  \code{@Wild(param="Q") Holder}
+  \\ \hline
+
+  Instantiate with upper bound
+  &
+  \code{Holder<?\ extends Object>}
+  &
+  \code{Holder\qp{Q=?\ extends @Tainted}}
+  &
+  \code{@Tainted(param="Q", wildcard=Wildcard.EXTENDS) Holder}
+  \\ \hline
+
+  Instantiate with lower bound
+  &
+  \code{Holder<?\ super Object>}
+  &
+  \code{Holder\qp{Q=?\ super @Tainted}}
+  &
+  \code{@Tainted(param="Q", wildcard=Wildcard.SUPER) Holder}
+  \\ \hline
+
+\end{tabular}
+%BEGIN LATEX
+\end{smaller}
+\end{smaller}
+%END LATEX
+\end{smaller}
+\caption{Comparison of the syntax of Java generics, the idealized syntax
+  used in
+  Sections~\ref{qualifier-parameters-overview}--\ref{qualifier-parameters-wildcards},
+  and the actual syntax used in Java source code.
+}
+\label{fig-qualifier-parameter-syntax}
+\end{figure}
+
+
+\begin{description}
+\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{ClassTaintingParam}]
+Declares a qualifier parameter for a class.
+
+\begin{alltt}
+
+  // Equivalent to
+  class Holder \qp{Q} \{
+
+  \}
+
+  // Declare a parameter "main"
+  @ClassTaintingParam("main")
+  class Holder \{
+
+  \}
+
+  // The parameter "main" can now be set
+  @Tainted(param="main") Holder h;
+
+\end{alltt}
+
+\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{MethodTaintingParam}]
+Declares a qualifier parameter for a method.
+
+Qualifier arguments to a method are never specified explicitly; they are
+inferred by the Checker Framework based on the parameters passed to the method
+invocation. Unlike Java generics, there is no way to explicitly specify
+method qualifier parameters on an invocation.
+
+\begin{alltt}
+
+  class Util \{
+
+    // Declare a method parameter.
+    @MethodTaintingParam("meth")
+    public static @Var("meth") String id(@Var("meth") String in) \{
+        return in;
+    \}
+  \}
+
+  // Qualifier arguments are inferred.
+  @Untainted String untainted = Util.id(getUntaintedString());
+
+\end{alltt}
+
+\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{Var}] Declares a use
+of a qualifier parameter. The \code{arg} field
+specifies which qualifier parameter in the surrounding scope the type should
+get its value from. For example:
+
+\begin{alltt}
+
+  // Equivalent to
+  class Holder \qp{Q} \{
+    @Q String item;
+  \}
+
+  // Declare a parameter
+  @ClassTaintingParam ("main")
+  class Holder \{
+    // item will have the qualifier that Holder is instantiated with
+    @Var(arg="main") String item;
+  \}
+
+  @Tainted(param="main") Holder h1 = new @Tainted(param="main") Holder();
+  @Tainted String value1 = h1.item;
+
+  @Untainted(param="main") Holder h2 = new @Untainted(param="main") Holder();
+  @Untainted String value1 = h2.item;
+
+\end{alltt}
+
+The \code{"param"} field specifies that the value of the
+qualifier parameter specified by \code{"arg"} should be used as the parameter
+to another qualifier type. For example:
+
+\begin{alltt}
+
+  // Equivalent to
+  class Holder \qp{Q} \{
+    @Q String item;
+    Holder\qp{Q=@Q} nestedHolder;
+  \}
+
+  @ClassTaintingParam ("main")
+  class Holder \{
+    // item will have the qualifier that Holder is instantiated with
+    @Var(arg="main") String item;
+
+    // nestedHolder will be instantiated with the same qualifier as the
+    // enclosing "main" parameter
+    @Var(arg="main", param="main") Holder nestedHolder;
+  \}
+
+  @Tainted(param="main") Holder h1 = new @Tainted(param="main") Holder();
+  @Tainted(param="main") Holder nestedHolder = h1;
+  @Tainted String value1 = h1.nestedHolder.item;
+
+  @Untainted(param="main") Holder h2 = new @Untainted(param="main") Holder();
+  @Untainted(param="main") Holder nestedHolder2 = h2;
+  @Untainted String value1 = h2.nestedHolder.item;
+
+\end{alltt}
+
+\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{Tainted}]
+When the \code{param} field is not set, this annotation behaves as described in
+Chapter~\ref{tainting-checker} and indicates that the value is tainted.
+For example:
+
+\begin{alltt}
+  // The value should be considered tainted
+  @Tainted String tainted  = getTaintedString();
+\end{alltt}
+
+When the \code{param} param field is set, the annotation indicates that the
+value of the \code{@Tainted} qualifier should be used as the qualifier
+argument to the class that it annotates. For example:
+
+\begin{alltt}
+
+  // Equivalent to Holder\qp{@Tainted} holder
+
+  // This declares a Holder object, whose Tainting qualifier parameter is set to @Tainted.
+  // Holder must have been declared to have a Tainting qualifier parameter
+  // by using the @ClassTaintingParam annotation.
+  @Tainted(param="main") Holder holder;
+\end{alltt}
+
+The \code{wildcard} field can be set to a
+\refclass{qualframework/poly/qual}{Wildcard} value. This allows qualifier
+parameters to act like wildcards.
+
+\begin{alltt}
+
+  // Equivalent to Holder\qp{? extends @Untainted}
+
+  // Instantiate Holder with a wildcard parameter.
+  @Untainted(param="main", wildcard=Wildcard.EXTENDS) Holder extends;
+
+  // OK because of the extends bound
+  extendsHolder = new @Untainted(param="main") Holder();
+  // Error: the new Holder is not a subtype of extendsHolder
+  extendsHolder = new @Untainted(param="main") Holder();
+
+\end{alltt}
+
+\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{Untainted}]
+\code{@Untainted} behaves the same as \code{@Tainted} but for untainted values.
+
+\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{Wild}] Declares
+that a class has an unknown qualifier parameter. This is useful in cases
+where the qualifier parameter in the class is not used or is used in very
+limited ways.
+
+\begin{alltt}
+
+  // Equivalent to
+  Holder\qp{?} h1 = new Holder\qp{@Untainted}();
+
+  @Wild(param="main") Holder h1 = new @Untainted(param="main") Holder;
+
+  // Error: item is not guaranteed to be an @Untainted value.
+  @Untainted String s1 = h1.item;
+
+\end{alltt}
+
+\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{PolyTainted}]
+Enables method qualifier polymorphism. When the field \code{param} is not set,
+\code{@PolyTainted} behaves as described
+Section~\ref{qualifier-polymorphism}. For example:
+
+\begin{alltt}
+
+  class Util \{
+    static @PolyTainted String id(@PolyTainted String in) \{
+        return in;
+    \}
+  \}
+
+  @Untainted String s = Util.id(getUntaintedString());  // OK
+\end{alltt}
+
+The field \code{param} can be used to specify that the inferred qualifier
+parameter should be used as an argument to another parameterized type. In
+this mode \code{@PolyTainted} is a shorthand for a combination of
+\code{@MethodTaintingParam} and \code{@Var}. For example:
+
+\begin{alltt}
+
+  class Util \{
+    static @PolyTainted(param="main") Holder id(@PolyTainted(param="main") Holder in) \{
+        return in;
+    \}
+  \}
+
+  // Equivalent to this code
+  @MethodTaintingParam("meth")
+  public static @Var(arg="meth", param="main") Holder id(@Var(arg="meth", param="main) Holder in) \{
+      return in;
+  \}
+
+\end{alltt}
+\end{description}
+
+
+\subsection{Primary qualifiers\label{primary-qualifiers}}
+
+
+Type system specific annotations, like \code{@Tainted} or \code{@Regex}, have
+dual uses in the qualifier parameter system. When their \code{"param"} field
+is set, they are used as a argument to a qualifier parameter.
+
+When their \code{"param"} field
+is not set, they apply directly to a type and not to any qualifier
+parameters of the type. We call the qualifier that applies directly to a
+type the primary qualifier. For example an \code{@Tainted String}
+is a String with a tainted value and its primary qualifier is \code{@Tainted}.
+
+\code{@Var} can also be used to set primary qualifiers by omitting the
+\code{"param"} field on the annotation.
+
+
 % LocalWords:  nullable MyList nble nn Nullness DefaultQualifier MyClass quals
 % LocalWords:  DefaultLocation subtype's ImmutableList ListIterator nullness
 % LocalWords:  PolymorphicQualifier PolyNull java lub invariantly supertype's
-%  LocalWords:  MyList1 MyList2 MyList4 MyList3 MyClass2 toUpperCase elt
-%  LocalWords:  PolyAll arrays' Xlint rawtypes AignoreRawTypeArguments
-%  LocalWords:  call's
+% LocalWords:  MyList1 MyList2 MyList4 MyList3 MyClass2 toUpperCase elt
+% LocalWords:  PolyAll arrays' Xlint rawtypes AignoreRawTypeArguments s1
+% LocalWords:  call's Regex taintedHolder untaintedHolder taintedHolder2
+% LocalWords:  wildcards holderExtends holderSuper getTaintedString s2
+% LocalWords:  getUntaintedString Typesystem Param ClassTaintingParam h1
+% LocalWords:  arg param MethodTaintingParam Util meth value1 h2
+% LocalWords:  nestedHolder nestedHolder2 extendsHolder PolyTainted
