@@ -1763,6 +1763,29 @@ mailing list archives at
 \url{http://mail.openjdk.java.net/mailman/listinfo/compiler-dev}).
 
 
+\section{Integrating a checker with the Checker Framework\label{integrating-a-checker}}
+
+% First version of how to integrate a new checker into the release.
+% TODO: what steps are missing?
+
+To integrate a new checker with the Checker Framework release, perform
+the following:
+
+\begin{itemize}
+
+\item Add a \code{XXX-tests} build target and ensure all tests pass.
+
+\item Make sure \code{all-tests} tests the new checker.
+
+\item Extend the \code{check-compilermsgs} target to include the
+compiler messages property file of the new checker in
+the \code{checker-args} list.
+
+\item Make sure \code{check-compilermsgs} and \code{check-purity} run
+without warnings or errors.
+
+\end{itemize}
+
 
 % LocalWords:  plugin javac's SourceChecker AbstractProcessor getMessages quals
 % LocalWords:  getSourceVisitor SourceVisitor getFactory AnnotatedTypeFactory
