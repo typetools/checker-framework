@@ -361,8 +361,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
                 BaseTypeChecker instance = subcheckerClass.newInstance();
                 instance.subcheckers = Collections.unmodifiableList(new ArrayList<BaseTypeChecker>()); // Prevent the new checker from storing non-immediate subcheckers
                 immediateSubcheckers.add(instance);
-                alreadyInitializedSubcheckerMap.put(subcheckerClass, instance);
                 instance.immediateSubcheckers = instance.instantiateSubcheckers(alreadyInitializedSubcheckerMap);
+                alreadyInitializedSubcheckerMap.put(subcheckerClass, instance);
             } catch (Exception e) {
                 ErrorReporter.errorAbort("Could not create an instance of " + subcheckerClass);
             }
@@ -404,24 +404,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     @Override
     public void typeProcess(TypeElement element, TreePath tree) {
         for (BaseTypeChecker checker : getSubcheckers()) {
-            checker.errsOnLastExit = this.errsOnLastExit;
             checker.typeProcess(element, tree);
-            this.errsOnLastExit = checker.errsOnLastExit;
         }
-
         super.typeProcess(element, tree);
-
-        if (!getSubcheckers().isEmpty()) {
-            Context context = ((JavacProcessingEnvironment)processingEnv).getContext();
-            Log log = Log.instance(context);
-            if (log.nerrors > this.errsOnLastExit) {
-                // If there is a Java error, do not perform any
-                // of the component type checks, but come back
-                // for the next compilation unit.
-                this.errsOnLastExit = log.nerrors;
-            }
-        }
-        // Do not add code past this point - the error handling must come last.
     }
 
     @Override
