@@ -33,14 +33,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.AnnotationFormatter;
-import org.checkerframework.framework.util.CFContext;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
+import org.checkerframework.framework.util.*;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -1484,7 +1478,50 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             methodType = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeVarMapping, methodType);
         }
 
+        if (tree.getKind() == Tree.Kind.METHOD_INVOCATION
+         && TreeUtils.isGetClassInvocation((MethodInvocationTree) tree, processingEnv)) {
+            adaptGetClassReturnTypeToReceiver(methodType, receiverType);
+        }
+
         return Pair.of(methodType, typeargs);
+    }
+
+    /**
+     * Java special cases the return type of getClass.  Though the method has a return type of Class<?>,
+     * the compiler special cases this return type and changes the bound of the type argument to the
+     * erasure of the receiver type.  e.g.,
+     *
+     * x.getClass() has the type Class< ? extends erasure_of_x >
+     * someInteger.getClass() has the type Class< ? extends Integer >
+     *
+     * @param getClassType This must be a type representing a call to Object.getClass otherwise
+     *                     a runtime exception will be thrown
+     * @param receiverType The receiver type of the method invocation (not the declared receiver type)
+     */
+    protected static void adaptGetClassReturnTypeToReceiver(final AnnotatedExecutableType getClassType,
+                                                            final AnnotatedTypeMirror receiverType) {
+        final AnnotatedTypeMirror newBound = receiverType.getErased();
+
+        final AnnotatedTypeMirror returnType = getClassType.getReturnType();
+        if ( returnType == null || !(returnType.getKind() == TypeKind.DECLARED)
+          || ((AnnotatedDeclaredType) returnType).getTypeArguments().size() != 1 ) {
+            ErrorReporter.errorAbort(
+                    "Unexpected type passed to AnnotatedTypes.adaptGetClassReturnTypeToReceiver\n"
+                            + "getClassType=" + getClassType + "\n"
+                            + "receiverType=" + receiverType);
+        }
+
+        final AnnotatedDeclaredType returnAdt = (AnnotatedDeclaredType) getClassType.getReturnType();
+        final List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
+
+        //usually, the only locations that will add annotations to the return type are getClass in stub files
+        //defaults and propagation tree annotator.  Since getClass is final they cannot come from source code.
+        //Also, since the newBound is an erased type we have no type arguments.  So, we just copy the annotations
+        //from the bound of the declared type to the new bound.
+        final AnnotatedWildcardType classWildcardArg = (AnnotatedWildcardType) typeArgs.get(0);
+        newBound.replaceAnnotations(classWildcardArg.getExtendsBound().getAnnotations());
+
+        classWildcardArg.setExtendsBound(newBound);
     }
 
     /**
@@ -2223,7 +2260,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 }
                 // We couldn't handle the stubPath -> error message.
                 checker.message(Kind.NOTE,
-                        "Did not find stub file or files within directory: " + stubPath);
+                        "Did not find stub file or files within directory: " + stubPath + " " + new File(stubPath).getAbsolutePath());
             }
             for (StubResource resource : stubs) {
                 InputStream stubStream;
