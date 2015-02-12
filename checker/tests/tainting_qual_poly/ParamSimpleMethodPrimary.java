@@ -1,5 +1,5 @@
 // Simple test for qualifier parameters on methods.
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
+import org.checkerframework.checker.tainting.qual.*;
 
 // Test method qual params with primary variable
 abstract class Test {

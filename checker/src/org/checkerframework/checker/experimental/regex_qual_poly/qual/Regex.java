@@ -1,7 +1,7 @@
 package org.checkerframework.checker.experimental.regex_qual_poly.qual;
 
 import com.sun.source.tree.Tree;
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.Tainted;
+import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 import org.checkerframework.qualframework.poly.qual.Wildcard;
