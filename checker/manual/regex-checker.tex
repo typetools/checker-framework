@@ -1,0 +1,225 @@
+\htmlhr
+\chapter{Regex Checker for regular expression syntax\label{regex-checker}}
+
+The Regex Checker prevents, at compile-time, use of syntactically invalid
+regular expressions and access of invalid capturing groups.
+
+A regular expression, or regex, is a pattern for matching certain strings
+of text.  In Java, a programmer writes a regular expression as a string.
+At run time, the string is ``compiled'' into an efficient internal form
+(\sunjavadoc{java/util/regex/Pattern.html}{Pattern}) that is used for
+text-matching. Regular expression in Java also have capturing groups, which
+are delimited by parentheses and allow for extraction from text.
+
+The syntax of regular expressions is complex, so it is easy to make a
+mistake.  It is also easy to accidentally use a regex feature from another
+language that is not supported by Java (see section ``Comparison to Perl
+5'' in the \sunjavadoc{java/util/regex/Pattern.html}{Pattern} Javadoc).
+Ordinarily, the programmer does not learn of these errors until run time.
+The Regex Checker warns about these problems at compile time.
+
+For further details, including case studies, see a paper about the Regex
+Checker~\cite{SpishakDE2012}.
+
+To run the Regex Checker, supply the
+\code{-processor org.checkerframework.checker.regex.RegexChecker}
+command-line option to javac.
+
+
+\section{Regex annotations\label{regex-annotations}}
+
+These qualifiers make up the Regex type system:
+
+\begin{description}
+
+\item[\refqualclass{checker/regex/qual}{Regex}]
+  indicates valid regular expression \code{String}s. This qualifier takes
+  an optional parameter of at the least the number of capturing groups in
+  the regular expression. If not provided, the parameter defaults to 0.
+
+\item[\refqualclass{checker/regex/qual}{PolyRegex}]
+  indicates qualifier polymorphism. For a description of
+  \refqualclass{checker/regex/qual}{PolyRegex},
+  see Section~\ref{qualifier-polymorphism}.
+
+\end{description}
+
+The subtyping hierarchy of the Regex Checker's qualifiers is shown in
+Figure~\ref{fig-regex-hierarchy}.
+
+\begin{figure}
+\includeimage{regex}{9cm}
+\caption{The subtyping relationship of the Regex Checker's qualifiers.
+  Because the parameter to a \<@Regex> qualifier is at least the number of
+  capturing groups in a regular expression, a \<@Regex> qualifier with more
+  capturing groups is a subtype of a \<@Regex> qualifier with fewer capturing
+  groups. Qualifiers in gray are used internally by the type
+  system but should never be written by a programmer.}
+\label{fig-regex-hierarchy}
+\end{figure}
+
+\section{Annotating your code with \code{@Regex}\label{annotating-with-regex}}
+
+
+\subsection{Implicit qualifiers\label{regex-implicit-qualifiers}}
+
+As described in Section~\ref{effective-qualifier}, the Regex Checker adds
+implicit qualifiers, reducing the number of annotations that must appear
+in your code. The checker implicitly adds the \code{Regex} qualifier with
+the parameter set to the correct number of capturing groups to
+any \code{String} literal that is a valid regex. The Regex Checker allows
+the \code{null} literal to be assigned to any type qualified with the
+\code{Regex} qualifier.
+
+
+\subsection{Capturing groups\label{regex-capturing-groups}}
+
+The Regex Checker validates that a legal capturing group number is passed
+to \sunjavadoc{java/util/regex/Matcher.html}{Matcher}'s
+\sunjavadoc{java/util/regex/Matcher.html\#group(int)}{group},
+\sunjavadoc{java/util/regex/Matcher.html\#start(int)}{start} and
+\sunjavadoc{java/util/regex/Matcher.html\#end(int)}{end} methods. To do this,
+the type of \<Matcher> must be qualified with a \<@Regex> annotation
+with the number of capturing groups in the regular expression. This is
+handled implicitly by the Regex Checker for local variables (see
+Section~\ref{type-refinement}), but you may need to add \<@Regex> annotations
+with a capturing group count to \<Pattern> and \<Matcher> fields and
+parameters.
+
+
+\subsection{Concatenation of partial regular expressions\label{regex-partial-regex}}
+
+\begin{figure}
+\begin{Verbatim}
+public @Regex String parenthesize(@Regex String regex) {
+    return "(" + regex + ")"; // Even though the parentheses are not @Regex Strings,
+                              // the whole expression is a @Regex String
+}
+\end{Verbatim}
+\caption{An example of the Regex Checker's support for concatenation
+of non-regular-expression Strings to produce valid regular expression Strings.}
+\label{fig-regex-partial}
+\end{figure}
+
+In general, concatenating a non-regular-expression String with any other
+string yields a non-regular-expression String.  The Regex Checker can
+sometimes determine that concatenation of non-regular-expression Strings
+will produce valid regular expression Strings. For an example see
+Figure~\ref{fig-regex-partial}.
+
+
+\subsection{Testing whether a string is a regular expression\label{regexutil-methods}}
+
+Sometimes, the Regex Checker cannot infer whether a particular expression
+is a regular expression --- and sometimes your code cannot either!  In
+these cases, you can use the \<isRegex> method to perform such a test, and
+other helper methods to provide useful error messages.  A
+common use is for user-provided regular expressions (such as ones passed
+on the command-line).
+Figure~\ref{fig-regex-util-example} gives an
+example of the intended use of the \code{RegexUtil} methods.
+
+\begin{description}
+
+\item[\refmethod{checker/regex}{RegexUtil}{isRegex}{-java.lang.String-}]
+  returns \<true> if its argument is a valid regular expression.
+
+\item[\refmethod{checker/regex}{RegexUtil}{regexError}{-java.lang.String-}]
+  returns a \<String> error message if its argument is not a valid regular
+  expression, or \<null> if its argument is a valid regular expression.
+
+\item[\refmethod{checker/regex}{RegexUtil}{regexException}{-java.lang.String-}]
+  returns the
+  \sunjavadoc{java/util/regex/PatternSyntaxException.html}{Pattern\-Syntax\-Exception}
+  that \sunjavadoc{java/util/regex/Pattern.html\#compile(java.lang.String)}{Pattern.compile(String)}
+  throws when compiling an invalid regular expression.  It returns \<null>
+  if its argument is a valid regular expression.
+
+\end{description}
+
+An additional version of each of these methods is also provided that takes
+an additional group count parameter. The
+\refmethod{checker/regex}{RegexUtil}{isRegex}{-java.lang.String-int-} method
+verifies that the argument has at least the given number of groups. The
+\refmethod{checker/regex}{RegexUtil}{regexError}{-java.lang.String-int-} and
+\refmethod{checker/regex}{RegexUtil}{regexException}{-java.lang.String-int-}
+methods return a \<String> error message and \<Pattern\-Syntax\-Exception>,
+respectively, detailing why the given String is not a syntactically valid
+regular expression with at least the given number of capturing groups.
+
+\begin{sloppypar}
+If you detect that a \<String> is not a valid regular expression but would like
+to report the error higher up the call stack (potentially where you can
+provide a more detailed error message) you can throw a
+\refclass{checker/regex}{RegexUtil.CheckedPatternSyntaxException}. This exception is
+functionally the same as a
+\sunjavadoc{java/util/regex/PatternSyntaxException.html}{Pattern\-Syntax\-Exception}
+except it is checked to guarantee that the error will be handled up the
+call stack.  For more details, see the Javadoc for
+\refclass{checker/regex}{RegexUtil.CheckedPatternSyntaxException}.
+\end{sloppypar}
+
+A potential disadvantage of using the \<RegexUtil> class is that your code becomes
+dependent on the Checker Framework at run time as well as at compile time.
+You can avoid this by adding the Checker Framework to your project, or by
+copying the \<RegexUtil> class into
+your own code.
+
+\begin{figure}
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+String regex = getRegexFromUser();
+if (! RegexUtil.isRegex(regex)) {
+   throw new RuntimeException("Error parsing regex " + regex, RegexUtil.regexException(regex));
+}
+Pattern p = Pattern.compile(regex);
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+\caption{Example use of \code{RegexUtil} methods.}
+\label{fig-regex-util-example}
+\end{figure}
+
+\subsection{Qualifier Parameters\label{regex-qual-params}}
+The Regex Checker supports qualifier parameters.
+See section \ref{qualifier-parameters} for more details on qualifier parameters.
+
+The qualifier parameter system currently (as of February 2015) incurs a 50\%
+performance penalty. If this is unacceptable you can run the original Regex
+Checker by passing \code{-processor org.checkerframework.checker.regex.classic.RegexClassicChecker}
+as a command-line option to javac.
+
+
+
+\subsection{Suppressing warnings\label{regex-suppressing-warnings}}
+
+If you are positive that a particular string that is being used as a
+regular expression is syntactically valid, but the Regex Checker cannot
+conclude this and issues a warning about possible use of an invalid regular
+expression, then you can use the
+\refmethod{checker/regex}{RegexUtil}{asRegex}{-java.lang.String-} method to suppress the
+warning.
+
+You can think of this method 
+as a cast:  it returns its argument unchanged, but with the type
+\code{@Regex String} if it is a valid regular expression.  It throws an
+Error if its argument is not a valid regular expression, but you should
+only use it when you are sure it will not throw an error.
+
+There is an additional \refmethod{checker/regex}{RegexUtil}{asRegex}{-java.lang.String-int-}
+method that takes a capturing group parameter. This method works the same as
+described above, but returns a \code{@Regex String} with the parameter on the
+annotation set to the value of the capturing group parameter passed to the method.
+
+The use case shown in Figure~\ref{fig-regex-util-example} should support most cases
+so the \<asRegex> method should be used rarely.
+
+
+
+
+% LocalWords:  Regex regex quals PolyRegex isRegex RegexUtil regexError asRegex
+% LocalWords:  regexException PatternSyntaxException 9cm Matcher java 9cm
+%  LocalWords:  CheckedPatternSyntaxException
