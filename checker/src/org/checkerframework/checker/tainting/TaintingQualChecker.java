@@ -1,10 +1,10 @@
-package org.checkerframework.checker.experimental.tainting_qual_poly;
+package org.checkerframework.checker.tainting;
 
 import org.checkerframework.qualframework.poly.QualifierParameterChecker;
 import org.checkerframework.qualframework.poly.format.SurfaceSyntaxFormatterConfiguration;
 import org.checkerframework.qualframework.poly.format.SurfaceSyntaxQualParamsFormatter.AnnotationParts;
 
-public class TaintingChecker extends QualifierParameterChecker<Tainting> {
+public class TaintingQualChecker extends QualifierParameterChecker<Tainting> {
 
     @Override
     protected TaintingQualifiedTypeFactory createTypeFactory() {
@@ -21,8 +21,8 @@ public class TaintingChecker extends QualifierParameterChecker<Tainting> {
 
         public TaintingSurfaceSyntaxConfiguration() {
             super(Tainting.TAINTED, Tainting.UNTAINTED,
-                    TaintingChecker.this.getContext().getTypeFactory().getQualifierHierarchy().getTop(),
-                    TaintingChecker.this.getContext().getTypeFactory().getQualifierHierarchy().getBottom());
+                    TaintingQualChecker.this.getContext().getTypeFactory().getQualifierHierarchy().getTop(),
+                    TaintingQualChecker.this.getContext().getTypeFactory().getQualifierHierarchy().getBottom());
         }
 
         @Override

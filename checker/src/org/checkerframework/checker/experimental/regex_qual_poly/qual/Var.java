@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 /**
  * Var is a qualifier parameter use.
  *
- * @see org.checkerframework.checker.experimental.tainting_qual_poly.qual.Var
+ * @see org.checkerframework.checker.tainting.qual.Var
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

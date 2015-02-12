@@ -1,4 +1,4 @@
-package org.checkerframework.checker.experimental.tainting_qual_poly.qual;
+package org.checkerframework.checker.tainting.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

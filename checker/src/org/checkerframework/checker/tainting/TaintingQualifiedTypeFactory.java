@@ -1,9 +1,8 @@
-package org.checkerframework.checker.experimental.tainting_qual_poly;
+package org.checkerframework.checker.tainting;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import org.checkerframework.checker.experimental.regex_qual.Regex;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.SetQualifierVisitor;

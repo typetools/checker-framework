@@ -1,13 +1,13 @@
-package org.checkerframework.checker.experimental.tainting_qual_poly;
+package org.checkerframework.checker.tainting;
 
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.ClassTaintingParam;
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.MethodTaintingParam;
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.MultiTainted;
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.PolyTainted;
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.Tainted;
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.Untainted;
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.Var;
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.Wild;
+import org.checkerframework.checker.tainting.qual.ClassTaintingParam;
+import org.checkerframework.checker.tainting.qual.MethodTaintingParam;
+import org.checkerframework.checker.tainting.qual.MultiTainted;
+import org.checkerframework.checker.tainting.qual.PolyTainted;
+import org.checkerframework.checker.tainting.qual.Tainted;
+import org.checkerframework.checker.tainting.qual.Untainted;
+import org.checkerframework.checker.tainting.qual.Var;
+import org.checkerframework.checker.tainting.qual.Wild;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.qualframework.poly.AnnotationConverterConfiguration;
