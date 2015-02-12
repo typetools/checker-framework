@@ -1,4 +1,4 @@
-package org.checkerframework.checker.experimental.regex_qual_poly;
+package org.checkerframework.checker.regex;
 
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ExpressionTree;

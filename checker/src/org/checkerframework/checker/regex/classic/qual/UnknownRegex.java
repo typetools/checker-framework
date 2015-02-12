@@ -1,4 +1,4 @@
-package org.checkerframework.checker.regex.qual;
+package org.checkerframework.checker.regex.classic.qual;
 
 import java.lang.annotation.Target;
 

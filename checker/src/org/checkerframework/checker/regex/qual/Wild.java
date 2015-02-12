@@ -1,4 +1,4 @@
-package org.checkerframework.checker.experimental.regex_qual_poly.qual;
+package org.checkerframework.checker.regex.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;

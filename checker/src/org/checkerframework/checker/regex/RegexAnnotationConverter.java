@@ -1,17 +1,16 @@
-package org.checkerframework.checker.experimental.regex_qual_poly;
+package org.checkerframework.checker.regex;
 
 import org.checkerframework.checker.experimental.regex_qual.Regex;
 import org.checkerframework.checker.experimental.regex_qual.RegexQualifierHierarchy;
-import org.checkerframework.checker.experimental.regex_qual_poly.qual.ClassRegexParam;
-import org.checkerframework.checker.experimental.regex_qual_poly.qual.MethodRegexParam;
-import org.checkerframework.checker.experimental.regex_qual_poly.qual.MultiRegex;
-import org.checkerframework.checker.experimental.regex_qual_poly.qual.PolyRegex;
-import org.checkerframework.checker.experimental.regex_qual_poly.qual.Var;
-import org.checkerframework.checker.experimental.regex_qual_poly.qual.Wild;
+import org.checkerframework.checker.regex.qual.ClassRegexParam;
+import org.checkerframework.checker.regex.qual.MethodRegexParam;
+import org.checkerframework.checker.regex.qual.MultiRegex;
+import org.checkerframework.checker.regex.qual.PolyRegex;
+import org.checkerframework.checker.regex.qual.Var;
+import org.checkerframework.checker.regex.qual.Wild;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.qualframework.poly.AnnotationConverterConfiguration;
-import org.checkerframework.qualframework.poly.CombiningOperation.Glb;
 import org.checkerframework.qualframework.poly.CombiningOperation.Lub;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 import org.checkerframework.qualframework.poly.PolyQual.QualVar;
@@ -35,8 +34,8 @@ public class RegexAnnotationConverter extends SimpleQualifierParameterAnnotation
         super(new AnnotationConverterConfiguration<>(new Lub<>(new RegexQualifierHierarchy()),
                 new Lub<>(new RegexQualifierHierarchy()),
                 MultiRegex.class.getPackage().getName() + ".Multi",
-                new HashSet<>(Arrays.asList(org.checkerframework.checker.experimental.regex_qual_poly.qual.Regex.class.getName())),
-                new HashSet<>(Arrays.asList(org.checkerframework.checker.regex.qual.Regex.class.getName(), org.checkerframework.checker.regex.qual.PolyRegex.class.getName())),
+                new HashSet<>(Arrays.asList(org.checkerframework.checker.regex.qual.Regex.class.getName())),
+                null,
                 ClassRegexParam.class,
                 MethodRegexParam.class,
                 PolyRegex.class,
@@ -53,7 +52,7 @@ public class RegexAnnotationConverter extends SimpleQualifierParameterAnnotation
     @Override
     public Regex getQualifier(AnnotationMirror anno) {
         if (AnnotationUtils.annotationName(anno).equals(
-                org.checkerframework.checker.experimental.regex_qual_poly.qual.Regex.class.getName())) {
+                org.checkerframework.checker.regex.qual.Regex.class.getName())) {
 
             Integer value = AnnotationUtils.getElementValue(anno, "value", Integer.class, true);
             return new Regex.RegexVal(value);
