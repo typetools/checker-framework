@@ -1,6 +1,6 @@
 package org.checkerframework.checker.experimental.regex_qual_poly.qual;
 
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.MethodTaintingParam;
+import org.checkerframework.checker.tainting.qual.MethodTaintingParam;
 import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 
 import java.lang.annotation.ElementType;

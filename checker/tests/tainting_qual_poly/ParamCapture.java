@@ -1,6 +1,6 @@
 // @skip-tests  qualifier polymorphism system doesn't do capture conversion yet
 // Test that capture conversion occurs.
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
+import org.checkerframework.checker.tainting.qual.*;
 
 abstract class Test {
     abstract void takeOne(@PolyTainted Integer i);

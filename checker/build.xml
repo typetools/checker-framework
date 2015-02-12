@@ -720,17 +720,17 @@
         </antcall>
     </target>
 
+    <target name="regex_classic-tests" depends="jar,build-tests"
+            description="Run tests for the Regex Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.RegexClassicTest"/>
+        </antcall>
+    </target>
+
     <target name="regex_qual-tests" depends="jar,build-tests"
             description="Run tests for the qualifier API Regex Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.RegexQualTest"/>
-        </antcall>
-    </target>
-
-    <target name="regex_qual_poly-tests" depends="jar,build-tests"
-            description="Run tests for the qualifier polymorphism Regex Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.RegexQualPolyTest"/>
         </antcall>
     </target>
 
@@ -748,17 +748,17 @@
         </antcall>
     </target>
 
+    <target name="tainting_classic-tests" depends="jar,build-tests"
+            description="Run tests for the classic Tainting Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.TaintingClassicTest"/>
+        </antcall>
+    </target>
+
     <target name="tainting_qual-tests" depends="jar,build-tests"
             description="Run tests for the qualifier API Tainting Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.TaintingQualTest"/>
-        </antcall>
-    </target>
-
-    <target name="tainting_qual_poly-tests" depends="jar,build-tests"
-            description="Run tests for the qualifier polymorphism Tainting Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.TaintingQualPolyTest"/>
         </antcall>
     </target>
 

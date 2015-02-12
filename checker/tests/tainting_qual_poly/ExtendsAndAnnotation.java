@@ -1,6 +1,6 @@
 // Test case for issue 278: https://code.google.com/p/checker-framework/issues/detail?id=278
 
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
+import org.checkerframework.checker.tainting.qual.*;
 
 @ClassTaintingParam("Main")
 class A {
