@@ -299,7 +299,9 @@ public class TypeVisualizer {
                     lines.add(connect(type, typeVars.get(i)) + " " + makeMethodTypeArgLabel(i, typeVarName));
                 }
 
-                lines.add(connect(type, type.getReceiverType()) + " " + makeLabel("receiver"));
+                if (type.getReceiverType() != null) {
+                    lines.add(connect(type, type.getReceiverType()) + " " + makeLabel("receiver"));
+                }
 
                 final List<? extends VariableElement> paramElems = methodElem.getParameters();
                 final List<AnnotatedTypeMirror> params = type.getParameterTypes();
@@ -395,7 +397,10 @@ public class TypeVisualizer {
 
             @Override
             public Void visit(AnnotatedTypeMirror type) {
-                type.accept(this, null);
+                if (type != null) {
+                    type.accept(this, null);
+                }
+
                 return null;
             }
 
@@ -511,7 +516,8 @@ public class TypeVisualizer {
             public String getAnnoStr(final AnnotatedTypeMirror atm) {
                 List<String> annoNames = new ArrayList<>();
                 for(final AnnotationMirror anno : atm.getAnnotations()) {
-                    annoNames.add(annoFormatter.formatAnnotationMirror(anno));
+                    //TODO: More comprehensive escaping
+                    annoNames.add(annoFormatter.formatAnnotationMirror(anno).replace("\"", "\\"));
                 }
                 return PluginUtil.join(" ", annoNames);
             }
