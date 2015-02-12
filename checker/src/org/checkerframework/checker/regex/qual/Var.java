@@ -1,4 +1,4 @@
-package org.checkerframework.checker.experimental.regex_qual_poly.qual;
+package org.checkerframework.checker.regex.qual;
 
 import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 import org.checkerframework.qualframework.poly.qual.Wildcard;

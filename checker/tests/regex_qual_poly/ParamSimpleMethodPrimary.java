@@ -1,5 +1,6 @@
 // Simple test for qualifier parameters on methods.
-import org.checkerframework.checker.experimental.regex_qual_poly.qual.*;
+import org.checkerframework.checker.regex.qual.*;
+import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 // Test method qual params with primary variable
 abstract class Test {

@@ -7,13 +7,12 @@ import java.util.regex.PatternSyntaxException;
 
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.EnsuresQualifiersIf;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.regex.qual.*;
+import org.checkerframework.dataflow.qual.*;
 */
 
 // This class should be kept in sync with plume.RegexUtil .
@@ -155,8 +154,7 @@ public class RegexUtil {
    */
   /*@Pure*/
   @EnsuresQualifiersIf({
-          @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class),
-          @EnsuresQualifierIf(result=true, expression="#1", qualifier=org.checkerframework.checker.experimental.regex_qual_poly.qual.Regex.class)})
+          @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)})
   public static boolean isRegex(String s) {
     return isRegex(s, 0);
   }
@@ -195,8 +193,7 @@ public class RegexUtil {
   */
   /*@Pure*/
   @EnsuresQualifiersIf({
-          @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class),
-          @EnsuresQualifierIf(result=true, expression="#1", qualifier=org.checkerframework.checker.experimental.regex_qual_poly.qual.Regex.class)})
+          @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)})
   public static boolean isRegex(final char c) {
     return isRegex(Character.toString(c));
   }
@@ -293,7 +290,6 @@ public class RegexUtil {
   /*@SideEffectFree*/
   // The return type annotation is a conservative bound.
   public static /*@Regex*/
-  /*@org.checkerframework.checker.experimental.regex_qual_poly.qual.Regex*/
   String asRegex(String s) {
     return asRegex(s, 0);
   }
@@ -315,7 +311,6 @@ public class RegexUtil {
   // The return type annotation is irrelevant; it is special-cased by
   // RegexAnnotatedTypeFactory.
   public static /*@Regex*/
-  /*@org.checkerframework.checker.experimental.regex_qual_poly.qual.Regex*/
   String asRegex(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);

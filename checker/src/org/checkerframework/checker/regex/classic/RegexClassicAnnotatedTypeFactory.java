@@ -1,4 +1,4 @@
-package org.checkerframework.checker.regex;
+package org.checkerframework.checker.regex.classic;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -9,10 +9,11 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
-import org.checkerframework.checker.regex.qual.PartialRegex;
-import org.checkerframework.checker.regex.qual.PolyRegex;
+import org.checkerframework.checker.regex.RegexUtil;
+import org.checkerframework.checker.regex.classic.qual.PartialRegex;
+import org.checkerframework.checker.regex.classic.qual.PolyRegex;
 import org.checkerframework.checker.regex.qual.Regex;
-import org.checkerframework.checker.regex.qual.RegexBottom;
+import org.checkerframework.checker.regex.classic.qual.RegexBottom;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -78,7 +79,7 @@ import com.sun.source.tree.Tree;
  * Also, adds {@link PolyRegex} to the type of String/char concatenation of
  * a Regex and a PolyRegex or two PolyRegexs.
  */
-public class RegexAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<CFValue, CFStore, RegexTransfer, RegexAnalysis> {
+public class RegexClassicAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<CFValue, CFStore, RegexTransfer, RegexAnalysis> {
 
     /**
      * The Pattern.compile method.
@@ -106,21 +107,26 @@ public class RegexAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<CFVal
             "plume.RegexUtil",
             "daikon.util.RegexUtil" };
 
-    protected final AnnotationMirror REGEX, REGEXBOTTOM, PARTIALREGEX;
+    protected final AnnotationMirror REGEX, REGEXBOTTOM, PARTIALREGEX, POLYREGEX;
     protected final ExecutableElement regexValueElement;
 
     // TODO use? private TypeMirror[] legalReferenceTypes;
 
-    public RegexAnnotatedTypeFactory(BaseTypeChecker checker) {
+    public RegexClassicAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
         patternCompile = TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, processingEnv);
-        partialRegexValue = TreeUtils.getMethod("org.checkerframework.checker.regex.qual.PartialRegex", "value", 0, processingEnv);
+        partialRegexValue = TreeUtils.getMethod("org.checkerframework.checker.regex.classic.qual.PartialRegex", "value", 0, processingEnv);
 
         REGEX = AnnotationUtils.fromClass(elements, Regex.class);
         REGEXBOTTOM = AnnotationUtils.fromClass(elements, RegexBottom.class);
         PARTIALREGEX = AnnotationUtils.fromClass(elements, PartialRegex.class);
+        POLYREGEX = AnnotationUtils.fromClass(elements, PolyRegex.class);
+
         regexValueElement = TreeUtils.getMethod("org.checkerframework.checker.regex.qual.Regex", "value", 0, processingEnv);
+
+        addAliasedAnnotation(org.checkerframework.checker.regex.qual.PolyRegex.class, POLYREGEX);
+
 
         /*
         legalReferenceTypes = new TypeMirror[] {
@@ -153,7 +159,9 @@ public class RegexAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<CFVal
     /*package-scope*/ AnnotationMirror createRegexAnnotation(int groupCount) {
         AnnotationBuilder builder =
             new AnnotationBuilder(processingEnv, Regex.class);
-        builder.setValue("value", groupCount);
+        if (groupCount > 0) {
+            builder.setValue("value", groupCount);
+        }
         return builder.build();
     }
 

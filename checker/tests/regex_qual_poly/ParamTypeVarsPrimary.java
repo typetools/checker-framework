@@ -1,5 +1,6 @@
 // Test qualifier parameter + type parameter combining.
-import org.checkerframework.checker.experimental.regex_qual_poly.qual.*;
+import org.checkerframework.checker.regex.qual.*;
+import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 // Type variables and post-as-member-of
 @ClassRegexParam("Main")

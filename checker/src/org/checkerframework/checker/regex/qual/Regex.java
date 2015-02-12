@@ -1,34 +1,46 @@
 package org.checkerframework.checker.regex.qual;
 
-import java.lang.annotation.Documented;
+import com.sun.source.tree.Tree;
+import org.checkerframework.checker.regex.classic.qual.UnknownRegex;
+import org.checkerframework.checker.tainting.qual.Tainted;
+import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeQualifier;
+import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
+import org.checkerframework.qualframework.poly.qual.Wildcard;
+
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
-
 /**
- * For char, char[], {@link Character} and subtypes of {@link CharSequence}
- * indicates a valid regular expression and holds the number of groups in
- * the regular expression.
- * <p>
- * For {@link java.util.regex.Pattern Pattern} and subtypes of
- * {@link java.util.regex.MatchResult MatchResult} indicates the number of regular
- * expression groups.
+ * Regex is the annotation to specify the regex qualifier.
  *
- * @checker_framework.manual #regex-checker Regex Checker
+ * @see Tainted
  */
-@TypeQualifier
-@SubtypeOf(UnknownRegex.class)
-@Documented
+//@ImplicitFor(trees = { Tree.Kind.NULL_LITERAL })
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Repeatable(MultiRegex.class)
+// Needed for classic checker
+@TypeQualifier
+@SubtypeOf(UnknownRegex.class)
 public @interface Regex {
     /**
      * The number of groups in the regular expression.
      * Defaults to 0.
      */
     int value() default 0;
+
+    /**
+     * The name of the qualifier parameter to set.
+     */
+    String param() default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
+
+    /**
+     * Specify that this use is a wildcard with a bound.
+     */
+    Wildcard wildcard() default Wildcard.NONE;
 }

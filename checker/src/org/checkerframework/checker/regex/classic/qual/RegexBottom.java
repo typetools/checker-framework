@@ -1,7 +1,8 @@
-package org.checkerframework.checker.regex.qual;
+package org.checkerframework.checker.regex.classic.qual;
 
 import java.lang.annotation.Target;
 
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.framework.qual.*;
 
 import com.sun.source.tree.Tree;

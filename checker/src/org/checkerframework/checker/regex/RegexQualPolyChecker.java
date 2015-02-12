@@ -1,4 +1,4 @@
-package org.checkerframework.checker.experimental.regex_qual_poly;
+package org.checkerframework.checker.regex;
 
 import org.checkerframework.checker.experimental.regex_qual.Regex;
 import org.checkerframework.checker.experimental.regex_qual.Regex.PartialRegex;
