@@ -1,4 +1,4 @@
-package org.checkerframework.checker.regex;
+package org.checkerframework.checker.regex.classic;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ public class RegexAnalysis extends
         CFAbstractAnalysis<CFValue, CFStore, RegexTransfer> {
 
     public RegexAnalysis(BaseTypeChecker checker,
-            RegexAnnotatedTypeFactory factory,
+            RegexClassicAnnotatedTypeFactory factory,
             List<Pair<VariableElement, CFValue>> fieldValues) {
         super(checker, factory, fieldValues);
     }

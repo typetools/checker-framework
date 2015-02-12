@@ -1,21 +1,39 @@
 package org.checkerframework.checker.regex;
 
-import org.checkerframework.checker.regex.qual.PartialRegex;
-import org.checkerframework.checker.regex.qual.PolyRegex;
-import org.checkerframework.checker.regex.qual.Regex;
-import org.checkerframework.checker.regex.qual.RegexBottom;
-import org.checkerframework.checker.regex.qual.UnknownRegex;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.PolyAll;
-import org.checkerframework.framework.qual.TypeQualifiers;
+
+import org.checkerframework.checker.experimental.regex_qual.Regex;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
+import org.checkerframework.qualframework.base.CheckerAdapter;
+import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
+import org.checkerframework.qualframework.poly.QualParams;
 
 /**
- * A type-checker plug-in for the {@link Regex} qualifier that finds
- * syntactically invalid regular expressions.
- *
- * @checker_framework.manual #regex-checker Regex Checker
+ * {@link CheckerAdapter} for the Regex-Qual-Param type system.
  */
-@TypeQualifiers({ Regex.class, PartialRegex.class, RegexBottom.class,
-    UnknownRegex.class, PolyRegex.class, PolyAll.class })
-public class RegexChecker extends BaseTypeChecker {
+public class RegexChecker extends CheckerAdapter<QualParams<Regex>> {
+
+    public RegexChecker() {
+        super(new RegexQualPolyChecker());
+    }
+
+    @Override
+    protected BaseTypeVisitor<?> createSourceVisitor() {
+        return new RegexTypecheckVisitor(this);
+    }
+
+    @Override
+    public void setupDefaults(QualifierDefaults defaults) {
+        defaults.addAbsoluteDefault(
+                getTypeMirrorConverter().getAnnotation(
+                        new QualParams<>(new GroundQual<>(Regex.BOTTOM))),
+                DefaultLocation.LOWER_BOUNDS);
+
+        defaults.addAbsoluteDefault(
+                getTypeMirrorConverter().getAnnotation(
+                        new QualParams<>(new GroundQual<>(Regex.TOP))),
+                DefaultLocation.LOCAL_VARIABLE);
+    }
+
 }

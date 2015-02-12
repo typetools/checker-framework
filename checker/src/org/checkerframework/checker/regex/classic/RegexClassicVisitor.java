@@ -1,4 +1,4 @@
-package org.checkerframework.checker.regex;
+package org.checkerframework.checker.regex.classic;
 
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -35,9 +35,9 @@ import com.sun.source.tree.Tree.Kind;
  * and {@code MatchResult.group} to ensure that a valid group number is passed.</li>
  * </ol>
  *
- * @see RegexChecker
+ * @see RegexClassicChecker
  */
-public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
+public class RegexClassicVisitor extends BaseTypeVisitor<RegexClassicAnnotatedTypeFactory> {
 
     private final ExecutableElement matchResultEnd;
     private final ExecutableElement matchResultGroup;
@@ -45,7 +45,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
     private final ExecutableElement patternCompile;
     private final VariableElement patternLiteral;
 
-    public RegexVisitor(BaseTypeChecker checker) {
+    public RegexClassicVisitor(BaseTypeChecker checker) {
         super(checker);
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.matchResultEnd = TreeUtils.getMethod("java.util.regex.MatchResult", "end", 1, env);
