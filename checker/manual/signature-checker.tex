@@ -1,0 +1,131 @@
+\htmlhr
+\chapter{Signature Checker for string representations of types\label{signature-checker}}
+
+The Signature String Checker, or Signature Checker for short, verifies that
+string representations of types and signatures are used correctly.
+
+Java defines multiple different string representations for types (see
+Section~\ref{signature-annotations}), and it is easy to
+misuse them or to miss bugs during testing.  Using the wrong string format
+leads to a run-time exception or an incorrect result.  This is a particular
+problem for fully qualified and binary names, which are nearly the same ---
+they differ only for nested classes and arrays.
+
+
+\section{Signature annotations\label{signature-annotations}}
+
+Java defines four main formats for the string representation of a type.
+There is an annotation for each of these representations.
+Figure~\ref{fig-signature-hierarchy} shows how they are related.
+
+\begin{figure}
+\includeimage{signature-types}{7.5cm}
+\caption{Partial type hierarchy for the Signature type system, showing
+  string representations of a Java type.  Programmers only need to write
+  the boldfaced qualifiers, in the second row; qualifiers below those are
+  included to improve the internal handling of String literals.}
+\label{fig-signature-hierarchy}
+\end{figure}
+
+\begin{description}
+
+\item[\refqualclass{checker/signature/qual}{FullyQualifiedName}]
+  A \emph{fully qualified name} (\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-6.html#jls-6.7}{JLS \S
+    6.7}), such as
+  \<package.Outer.Inner>, is used in Java code and in messages to
+  the user.
+
+\item[\refqualclass{checker/signature/qual}{BinaryName}]
+  A \emph{binary name} (\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1}{JLS \S 13.1}), such as
+  \<package.Outer\$Inner>, is
+  the representation of a type in its own \<.class> file.
+
+\item[\refqualclass{checker/signature/qual}{FieldDescriptor}]
+  A \emph{field descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2}{JVMS \S 4.3.2}), such as
+  \<Lpackage/Outer\$Inner;>, is used in a \<.class> file's constant pool,
+  for example to refer to other types; it abbreviates primitives and
+  arrays, and uses internal form (\href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.2.1}{JVMS \S 4.2}) for class names.
+
+\item[\refqualclass{checker/signature/qual}{ClassGetName}]
+\begin{sloppypar}
+  The type representation used by the
+  \href{http://types.cs.washington.edu/checker-framework/jdk-api/jdk/java/lang/Class.html#getName()}{\<Class.getName()>}, \<Class.forName(String)>,
+  and \<Class.forName(String, boolean, ClassLoader)> methods.  This format
+  is:  for any non-array type, the binary name; and for any array type, a
+  format like the \href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2}{FieldDescriptor field descriptor}, but using
+  ``\<.>''~where the field descriptor uses ``\</>''.
+\end{sloppypar}
+
+\item[\refqualclass{checker/signature/qual}{SourceName}]
+  A source name is a string that is a valid fully qualified name \emph{and}
+  a valid binary name.  A programmer should never or rarely use this --- you should
+  know how you intend to use a given variable.  The checker infers it for
+  literal strings such as \<"package.MyClass"> that are valid in both
+  formats, and you might occasionally see it in an error message.
+  Likewise, you might see other types such as \<SourceNameForNonArray>,
+  \<BinaryNameForNonArray>, and \<FieldDescriptorForArray>, but you
+  generally should not use them either.
+
+\end{description}
+
+Java also defines other string formats for a type: simple
+names (JLS \S 6.2), qualified names (JLS \S 6.2), and canonical
+names (JLS \S 6.7).  The Signature Checker does not include annotations
+for these.
+
+Here are examples of the supported formats:
+
+\begin{center}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\multicolumn{1}{|c|}{fully-qualified name} & \multicolumn{1}{c|}{binary name} & \multicolumn{1}{c|}{Class.getName} & \multicolumn{1}{c|}{field descriptor} \\ \hline
+int &                   int &                    int &                     I \\
+int[][] &               int[][] &                [[I &                     [[I \\
+MyClass &               MyClass &                MyClass &                 LMyClass; \\
+MyClass[] &             MyClass[] &              [LMyClass; &              [LMyClass; \\
+java.lang.Integer &     java.lang.Integer &      java.lang.Integer &       Ljava/lang/Integer; \\
+java.lang.Integer[] &   java.lang.Integer[] &    [Ljava.lang.Integer; &    [Ljava/lang/Integer; \\
+package.Outer.Inner &   package.Outer\$Inner &   package.Outer\$Inner &   Lpackage/Outer\$Inner; \\
+package.Outer.Inner[] & package.Outer\$Inner[] & [Lpackage.Outer\$Inner; & [Lpackage/Outer\$Inner; \\
+\hline
+\end{tabular}
+\end{center}
+
+Java defines one format for the string representation of a method signature:
+
+\begin{description}
+
+\item[\refqualclass{checker/signature/qual}{MethodDescriptor}]
+  A \emph{method descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.3}{JVMS \S
+    4.3.3}) identifies a method's signature (its parameter and return
+  types), just as a field descriptor identifies a 
+  type.   The method descriptor for the method
+\begin{Verbatim}
+    Object mymethod(int i, double d, Thread t)
+\end{Verbatim}
+\noindent is
+\begin{Verbatim}
+    (IDLjava/lang/Thread;)Ljava/lang/Object;
+\end{Verbatim}
+
+\end{description}
+
+
+\section{What the Signature Checker checks\label{signature-checks}}
+
+Certain methods in the JDK, such as \<Class.forName>, are annotated
+indicating the type they require.  The Signature Checker ensures that
+clients call them with the proper arguments.  The Signature Checker does
+not reason about string operations such as concatenation, substring,
+parsing, etc.
+
+To run the Signature Checker, supply the
+\code{-processor org.checkerframework.checker.signature.SignatureChecker}
+command-line option to javac.
+
+
+% LocalWords:  Regex regex quals FullyQualifiedName BinaryName FieldDescriptor
+% LocalWords:  Lpackage SourceName MyClass MethodDescriptor forName substring
+%  LocalWords:  5cm jls getName ClassGetName ClassLoader LMyClass Ljava
+%  LocalWords:  SourceNameForNonArray BinaryNameForNonArray
+%  LocalWords:  FieldDescriptorForArray

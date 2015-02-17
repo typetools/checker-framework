@@ -1,0 +1,12 @@
+checker/bin/**
+checker/dist/**
+checker/manual/manual.html
+checker/manual/manual.pdf
+checker/manual/*.svg
+checker/examples/IGJExample.java
+checker/examples/InterningExample.java
+checker/examples/InterningExampleWithWarnings.java
+checker/examples/JavariExample.java
+checker/examples/NullnessExample.java
+checker/examples/NullnessExampleWithWarnings.java
+checker/examples/NullnessReleaseTests.java
