@@ -514,79 +514,25 @@ Add this .jar file to your build path.
 An error like this
 
 \begin{Verbatim}
-Unsupported major.minor version 51.0
+Unsupported major.minor version 52.0
 \end{Verbatim}
 
-means that you have compiled some files into the Java 7 format (version
-51.0), but you are trying to run them with Java 6.
-Likewise, ``Unsupported major.minor version 52.0''
 means that you have compiled some files into the Java 8 format (version
 52.0), but you are trying to run them with Java 7 or earlier.
-Run \<java -version> to
-determine the version of Java you are using and use a newer version,
-and/or use the \<-target>
-command-line option to \<javac> to specify the version of the class files
-that are created, such as \<javac -source 7 -target 7 ...>.
+Likewise, ``Unsupported major.minor version 51.0''
+means that you have compiled some files into the Java 7 format (version
+51.0), but you are trying to run them with Java 6 or earlier.
+Here are ways to solve the problem:
 
-
-
-%% Commented out because these are not very helpful in terms of helping
-%% a reader understand whether he/she is encountering the specific problem,
-%% and because the issue tracker is a better way to find out about current
-%% known problems.
-%
-% \subsection{Known problems in the framework\label{known-problems}}
-% 
-% \begin{itemize}
-% 
-% \item
-%   The framework may not parse annotations from skeleton files if the
-%   skeleton files are older than the classfiles.  Running \code{ant
-%     touch-jdk} solves this problem, by applying the 
-%   \code{touch} program to each distributed skeleton file.
-% 
-% % Mahmood will address.  -MDE 3/19/2009
-% \item The framework is missing a check for type argument subtyping in
-%   method invocations if the type arguments are inferred.
-% 
-% % Mahmood will address.  -MDE 3/19/2009
-% \item The checks for enclosed types are not yet fully tested.
-% 
-% \end{itemize}
-% 
-% \subsection{Known problems in the Nullness Checker}
-% 
-% \begin{itemize}
-% \item
-%   The Nullness Checker is often able to determine that a call to
-%   \code{Map.get()} will not return null.  This enables the checker to avoid
-%   issuing false positive warnings, in circumstances like the following.
-% 
-% \begin{Verbatim}
-%     @NonNull String value;
-%     if (myMap.containsKey(key)) {
-%       value = myMap.get(key);
-%     }
-%     for (String keyInMap : myMap.keySet()) {
-%         value = myMap.get(keyInMap);
-%     }
-% \end{Verbatim}
-% 
-%   The Nullness Checker can sometimes fail to issue a warning if the map is
-%   modified or re-assigned between the check of \code{containsKey} and the
-%   call to \code{get}.
-% 
-% % This description really needs an example of a case where the checker
-% % fails.  Right now, it is impossible for a reader to tell what the problem
-% % is or whether a particular piece of code triggers it.
-% % Do we have a test case?
-% 
-% 
-% % The solution is to merge flow with the Map.get heuristics.
-% % And to do forward instead of backward analysis.
-% 
-% 
-% \end{itemize}
+\begin{itemize}
+\item
+Use a newer JVM (run \<java -version> to
+determine the version you are using)
+\item
+Use the Checker Framework to type-check your code, then afterword produce a
+classfile that targets an earlier JVM by supplying arguments such as
+\<javac -source 7 -target 7 ...>.
+\end{itemize}
 
 
 \section{How to report problems (bug reporting)\label{reporting-bugs}}
