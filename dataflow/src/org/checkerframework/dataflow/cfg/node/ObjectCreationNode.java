@@ -50,7 +50,7 @@ public class ObjectCreationNode extends Node {
     }
 
     @Override
-    public Tree getTree() {
+    public NewClassTree getTree() {
         return tree;
     }
 

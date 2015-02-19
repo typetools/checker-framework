@@ -253,21 +253,15 @@ public class NullnessTransfer extends
 
                 AnnotatedTypeMirror type = keyForTypeFactory.getAnnotatedType(methodArgs.get(0));
 
-                if (type != null) {
-                    AnnotationMirror am1  = type.getAnnotation(KeyFor.class);
+                if (type != null && keyForTypeFactory.keyForValuesSubtypeCheck(am, type, tree, n)) {
+                    makeNonNull(result, n);
 
-                    if (am1 != null) {
-                        if (keyForTypeFactory.keyForValuesSubtypeCheck(am, am1, tree, n)) {
-                            makeNonNull(result, n);
-
-                            NullnessValue oldResultValue = result.getResultValue();
-                            NullnessValue refinedResultValue = analysis.createSingleAnnotationValue(
-                                    NONNULL, oldResultValue.getType().getUnderlyingType());
-                            NullnessValue newResultValue = refinedResultValue.mostSpecific(
-                                    oldResultValue, null);
-                            result.setResultValue(newResultValue);
-                        }
-                    }
+                    NullnessValue oldResultValue = result.getResultValue();
+                    NullnessValue refinedResultValue = analysis.createSingleAnnotationValue(
+                            NONNULL, oldResultValue.getType().getUnderlyingType());
+                    NullnessValue newResultValue = refinedResultValue.mostSpecific(
+                            oldResultValue, null);
+                    result.setResultValue(newResultValue);
                 }
             }
         }
