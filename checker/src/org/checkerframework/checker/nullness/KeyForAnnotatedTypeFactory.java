@@ -33,6 +33,7 @@ import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.flow.CFStore;
@@ -53,6 +54,7 @@ import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 
@@ -77,6 +79,7 @@ public class KeyForAnnotatedTypeFactory extends
     protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR;
 
     private final KeyForPropagator keyForPropagator;
+    private final KeyForCanonicalizer keyForCanonicalizer = new KeyForCanonicalizer();
 
     protected final Class<? extends Annotation> checkerKeyForClass = org.checkerframework.checker.nullness.qual.KeyFor.class;
 
@@ -468,7 +471,7 @@ public class KeyForAnnotatedTypeFactory extends
       CFAbstractStore<?, ?> store = null;
       boolean unknownReceiver = false;
 
-      if (flowExprContext.receiver.containsUnknown()) {
+      if (flowExprContext.receiver == null || flowExprContext.receiver.containsUnknown()) {
           // If the receiver is unknown, we will try local variables
 
           store = getStoreBefore(t);
@@ -551,37 +554,14 @@ public class KeyForAnnotatedTypeFactory extends
       }
   }
 
-  // Build new varType and valueType with canonicalized expressions in the values
-  private void keyForCanonicalizeValuesForMethodInvocationNode(AnnotatedTypeMirror varType,
-          AnnotatedTypeMirror valueType,
-          Tree t,
-          TreePath path,
-          MethodInvocationNode node) {
-
-      Pair<ArrayList<String>, ArrayList<String>> valuesPair = keyForCanonicalizeValuesForMethodInvocationNode(
-              varType.getAnnotation(KeyFor.class),
-              valueType.getAnnotation(KeyFor.class),
-              t, path, node, true
-              );
-
-      ArrayList<String> var = valuesPair.first;
-      ArrayList<String> val = valuesPair.second;
-
-      if (var != null) {
-          varType.replaceAnnotation(createKeyForAnnotationMirrorWithValue(var));
-      }
-
-      if (val != null) {
-          valueType.replaceAnnotation(createKeyForAnnotationMirrorWithValue(val));
-      }
-  }
-
   /* Deal with the special case where parameters were specified as
      variable names. This is a problem because those variable names are
      ambiguous and could refer to different variables at the call sites.
      Issue a warning to the user if the variable name is a plain identifier
      (with no preceding this. or classname.) */
-  private void keyForIssueWarningIfArgumentValuesContainVariableName(List<Receiver> arguments, Tree t, Name methodName, MethodInvocationNode node) {
+  private void keyForIssueWarningIfArgumentValuesContainVariableName(List<Receiver> arguments, Tree t, Name methodName, Node node) {
+
+      assert(node instanceof MethodInvocationNode || node instanceof ObjectCreationNode);
 
       ArrayList<String> formalParamNames = null;
       boolean formalParamNamesAreValid = true;
@@ -600,7 +580,10 @@ public class KeyForAnnotatedTypeFactory extends
                           if (identifierMatcher.matches()) {
                               if (formalParamNames == null) { // Lazy initialization
                                   formalParamNames = new ArrayList<String>();
-                                  ExecutableElement el = TreeUtils.elementFromUse(node.getTree());
+                                  ExecutableElement el =
+                                      node instanceof MethodInvocationNode ?
+                                      TreeUtils.elementFromUse(((MethodInvocationNode)node).getTree()) :
+                                      TreeUtils.elementFromUse(((ObjectCreationNode)node).getTree());
                                   List<? extends VariableElement> varels = el.getParameters();
                                   for(VariableElement varel : varels) {
                                       String formalParamName = varel.getSimpleName().toString();
@@ -639,12 +622,13 @@ public class KeyForAnnotatedTypeFactory extends
       }
   }
 
-  private Pair<ArrayList<String>, ArrayList<String>> keyForCanonicalizeValuesForMethodInvocationNode(AnnotationMirror varType,
-          AnnotationMirror valueType,
+  private void keyForCanonicalizeValuesForMethodCall(AnnotatedTypeMirror varType,
+          AnnotatedTypeMirror valueType,
           Tree t,
           TreePath path,
-          MethodInvocationNode node,
-          boolean returnNullIfUnchanged) {
+          Node node) {
+
+      assert(node instanceof MethodInvocationNode || node instanceof ObjectCreationNode);
 
       /* The following code is best explained by example. Suppose we have the following:
 
@@ -679,93 +663,114 @@ public class KeyForAnnotatedTypeFactory extends
       // the context of the call site (Graph.addEdge(myStr, myGraph)) so that the
       // formal parameters theStr and theGraph will be replaced with the actual
       // parameters myStr and myGraph. The call to
-      // canonicalizeKeyForValues(varType, flowExprContextVarType, path, t);
+      // keyForCanonicalizer.canonicalize(varType,flowExprContextVarType,path,t);
       // will then be able to transform "#2.adjList" into "myGraph.adjList"
       // since myGraph is the second actual parameter in the call.
 
-      FlowExpressionContext flowExprContextVarType = FlowExpressionParseUtil.buildFlowExprContextForUse(node, getContext()),
-              flowExprContextValueType = null;
+      if (varType != null) {
+          FlowExpressionContext flowExprContextVarType =
+              node instanceof MethodInvocationNode ?
+              FlowExpressionParseUtil.buildFlowExprContextForUse((MethodInvocationNode) node, getContext()) :
+              FlowExpressionParseUtil.buildFlowExprContextForUse((ObjectCreationNode) node, path, getContext());
 
-      // Building the context for the valueType is more subtle. That's because
-      // at the call site of Graph.addEdge(myStr, myGraph), we no longer have
-      // any notion of what parameter #1 refers to. That information is found
-      // at the declaration of the enclosing method.
+          keyForCanonicalizer.canonicalize(varType,flowExprContextVarType,path,t);
+      }
 
-      MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+      if (valueType != null) {
+          FlowExpressionContext flowExprContextValueType = null;
 
-      if (enclosingMethod != null) {
+          // Building the context for the valueType is more subtle. That's because
+          // at the call site of Graph.addEdge(myStr, myGraph), we no longer have
+          // any notion of what parameter #1 refers to. That information is found
+          // at the declaration of the enclosing method.
 
-          // An important piece of information when creating the Flow Context
-          // is the receiver. If the enclosing method is static, we need the
-          // receiver to be the class name (e.g. Graph). Otherwise we need
-          // the receiver to be the instance of the class (e.g. someGraph,
-          // if the call were someGraph.myMethod(...)
+          MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
 
-          // To be able to generate the receiver, we need the enclosing class.
+          if (enclosingMethod != null) {
 
-          ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+              // An important piece of information when creating the Flow Context
+              // is the receiver. If the enclosing method is static, we need the
+              // receiver to be the class name (e.g. Graph). Otherwise we need
+              // the receiver to be the instance of the class (e.g. someGraph,
+              // if the call were someGraph.myMethod(...)
 
-          Node receiver = null;
-          if (enclosingMethod.getModifiers().getFlags().contains(Modifier.STATIC)) {
-              receiver = new ClassNameNode(enclosingClass);
+              // To be able to generate the receiver, we need the enclosing class.
+
+              ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+
+              Node receiver = null;
+              if (enclosingMethod.getModifiers().getFlags().contains(Modifier.STATIC)) {
+                  receiver = new ClassNameNode(enclosingClass);
+              }
+              else {
+                  receiver = new ImplicitThisLiteralNode(InternalUtils.typeOf(enclosingClass));
+              }
+
+              Receiver internalReceiver = FlowExpressions.internalReprOf(this, receiver);
+
+              // Now we need to translate the method parameters. #1.adjList needs to
+              // become myGraph.adjList. We do not do that translation here, as that
+              // is handled by the call to keyForCanonicalizer.canonicalize(valueType, ...) below.
+              // However, we indicate that the actual parameters are [myGraph, myStr]
+              // so that keyForCanonicalizer.canonicalize can translate #1 to myGraph.
+
+              List<Receiver> internalArguments = new ArrayList<>();
+
+              // Note that we are not handling varargs as we assume that parameter numbers such as "#2" cannot refer to a vararg expanded argument.
+
+              for (VariableTree vt : enclosingMethod.getParameters()) {
+                  internalArguments.add(FlowExpressions.internalReprOf(this,
+                          new LocalVariableNode(vt, receiver)));
+              }
+
+              // Create the Flow Expression context in terms of the receiver and parameters.
+
+              flowExprContextValueType = new FlowExpressionContext(internalReceiver, internalArguments, getContext());
+
+              keyForIssueWarningIfArgumentValuesContainVariableName(flowExprContextValueType.arguments, t, enclosingMethod.getName(), node);
           }
           else {
-              receiver = new ImplicitThisLiteralNode(InternalUtils.typeOf(enclosingClass));
+
+              // If there is no enclosing method, then we are probably dealing with a field initializer.
+              // In that case, we do not need to worry about transforming parameter numbers such as #1
+              // since they are meaningless in this context. Create the usual Flow Expression context
+              // as the context of the call site.
+
+              flowExprContextValueType =
+                  node instanceof MethodInvocationNode ?
+                  FlowExpressionParseUtil.buildFlowExprContextForUse((MethodInvocationNode) node, getContext()) :
+                  FlowExpressionParseUtil.buildFlowExprContextForUse((ObjectCreationNode) node, path, getContext());
           }
 
-          Receiver internalReceiver = FlowExpressions.internalReprOf(this, receiver);
-
-          // Now we need to translate the method parameters. #1.adjList needs to
-          // become myGraph.adjList. We do not do that translation here, as that
-          // is handled by the call to canonicalizeKeyForValues(valueType, ...) below.
-          // However, we indicate that the actual parameters are [myGraph, myStr]
-          // so that canonicalizeKeyForValues can translate #1 to myGraph.
-
-          List<Receiver> internalArguments = new ArrayList<>();
-
-          // Note that we are not handling varargs as we assume that parameter numbers such as "#2" cannot refer to a vararg expanded argument.
-
-          for (VariableTree vt : enclosingMethod.getParameters()) {
-              internalArguments.add(FlowExpressions.internalReprOf(this,
-                      new LocalVariableNode(vt, receiver)));
-          }
-
-          // Create the Flow Expression context in terms of the receiver and parameters.
-
-          flowExprContextValueType = new FlowExpressionContext(internalReceiver, internalArguments, getContext());
-
-          keyForIssueWarningIfArgumentValuesContainVariableName(flowExprContextValueType.arguments, t, enclosingMethod.getName(), node);
+          keyForCanonicalizer.canonicalize(valueType,flowExprContextValueType,path,t);
       }
-      else {
-
-          // If there is no enclosing method, then we are probably dealing with a field initializer.
-          // In that case, we do not need to worry about transforming parameter numbers such as #1
-          // since they are meaningless in this context. Create the usual Flow Expression context
-          // as the context of the call site.
-
-          flowExprContextValueType = FlowExpressionParseUtil.buildFlowExprContextForUse(node, getContext());
-      }
-
-      // If they are local variable names, they are already canonicalized. So we only need to canonicalize
-      // the names of static and instance fields.
-
-      ArrayList<String> var = canonicalizeKeyForValues(varType, flowExprContextVarType, path, t, returnNullIfUnchanged);
-      ArrayList<String> val = canonicalizeKeyForValues(valueType, flowExprContextValueType, path, t, returnNullIfUnchanged);
-
-      return Pair.of(var, val);
   }
 
-  public boolean keyForValuesSubtypeCheck(AnnotationMirror varType,
-          AnnotationMirror valueType,
+  /*
+   * Verifies only that the primary @KeyFor annotation on the RHS is a subtype of the primary @KeyFor annotation on the LHS.
+   * Useful for determining if the RHS is a @KeyFor for at least the maps in the LHS.
+   * For a full subtype check, please refer to KeyForQualifierHierarchy.isSubType. If changing the subtyping logic here,
+   * be sure to also change it there.
+   */
+  public boolean keyForValuesSubtypeCheck(AnnotationMirror varType, // Notice that the varType is an AM while the valueType is an ATM
+          AnnotatedTypeMirror valueType,
           Tree t,
           MethodInvocationNode node
           ) {
       TreePath path = getPath(t);
 
-      Pair<ArrayList<String>, ArrayList<String>> valuesPair = keyForCanonicalizeValuesForMethodInvocationNode(varType, valueType, t, path, node, false);
+      FlowExpressionContext flowExprContextVarType =
+          FlowExpressionParseUtil.buildFlowExprContextForUse(node, getContext());
 
-      ArrayList<String> var = valuesPair.first;
-      ArrayList<String> val = valuesPair.second;
+      ArrayList<String> var = canonicalizeKeyForValues(varType, flowExprContextVarType, path, t, false);
+
+      keyForCanonicalizeValuesForMethodCall(null, valueType, t, path, node);
+
+      AnnotationMirror keyForAnnotationMirrorValueType = valueType.getAnnotation(KeyFor.class);
+
+      List<String> val = keyForAnnotationMirrorValueType == null ?
+              null :
+              AnnotationUtils.getElementValueArray(keyForAnnotationMirrorValueType, "value", String.class, false);
 
       if (var == null && val == null) {
           return true;
@@ -785,20 +790,69 @@ public class KeyForAnnotatedTypeFactory extends
       Node node = getNodeForTree(t);
 
       if (node != null) {
-          if (node instanceof MethodInvocationNode) {
-              keyForCanonicalizeValuesForMethodInvocationNode(varType, valueType, t, path, (MethodInvocationNode) node);
+          if (node instanceof MethodInvocationNode ||
+              node instanceof ObjectCreationNode) {
+              keyForCanonicalizeValuesForMethodCall(varType, valueType, t, path, node);
           }
           else {
               Receiver r = FlowExpressions.internalReprOf(this, node);
 
-              FlowExpressionContext flowExprContext = new FlowExpressionContext(r, null, getContext());
+              List<Receiver> internalArguments = null;
 
-              canonicalizeKeyForValues(varType, flowExprContext, path, t);
-              canonicalizeKeyForValues(valueType, flowExprContext, path, t);
+              MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+
+              if (enclosingMethod != null) {
+                  ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+
+                  Node receiver = null;
+                  if (enclosingMethod.getModifiers().getFlags().contains(Modifier.STATIC)) {
+                      receiver = new ClassNameNode(enclosingClass);
+                  }
+                  else {
+                      receiver = new ImplicitThisLiteralNode(InternalUtils.typeOf(enclosingClass));
+                  }
+
+                  internalArguments = new ArrayList<>();
+
+                  // Note that we are not handling varargs as we assume that parameter numbers such as "#2" cannot refer to a vararg expanded argument.
+
+                  for (VariableTree vt : enclosingMethod.getParameters()) {
+                      internalArguments.add(FlowExpressions.internalReprOf(this,
+                              new LocalVariableNode(vt, receiver)));
+                  }
+              }
+
+              FlowExpressionContext flowExprContext = new FlowExpressionContext(r, internalArguments, getContext());
+
+              keyForCanonicalizer.canonicalize(varType,flowExprContext,path,t);
+              keyForCanonicalizer.canonicalize(valueType,flowExprContext,path,t);
           }
       }
-  }  
-  
+  }
+
+  class KeyForCanonicalizer extends AnnotatedTypeScanner<Void, Void> {
+    private FlowExpressionContext context = null;
+    private TreePath path = null;
+    private Tree leaf = null;
+
+    // An instance of KeyForCanonicalizer can be reused because canonicalize calls reset().
+    protected  void canonicalize(final AnnotatedTypeMirror type, final FlowExpressionContext context,
+                                 final TreePath path, final Tree leaf) {
+        reset();
+
+        this.context = context;
+        this.path = path;
+        this.leaf = leaf;
+        this.scan(type, null);
+    }
+
+    @Override
+    protected Void scan(AnnotatedTypeMirror type, Void v) {
+      canonicalizeKeyForValues(type, context, path, leaf);
+      return super.scan(type, null);
+    }
+  }
+
   @Override
   public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
       return new KeyForQualifierHierarchy(factory);
@@ -828,8 +882,12 @@ public class KeyForAnnotatedTypeFactory extends
                       "; all polymorphic qualifiers: " + polyQualifiers  + "; this: " + this);
               return null;
           }
-      }      
-      
+      }
+
+      /*
+       * Note that KeyForAnnotatedTypeFactory.keyForValuesSubtypeCheck does a similar subtype check
+       * for a specific scenario. If changing the subtyping logic here, be sure to also change it there.
+       */
       @Override
       public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
           if (AnnotationUtils.areSameIgnoringValues(lhs, KEYFOR) &&
