@@ -1,6 +1,5 @@
 // Test case for Issue 328:
 // https://code.google.com/p/checker-framework/issues/detail?id=328
-// @skip-tests
 
 import java.util.Map;
 
@@ -15,8 +14,8 @@ class Test {
       @NonNull Object i = b.get(kb); // OK
     }
     if (a.containsKey(ka) && b.containsKey(kb)) {
-      @NonNull Object i = a.get(ka); // ERROR, but should work
-      @NonNull Object j = b.get(kb); // ERROR, but should work
+      @NonNull Object i = a.get(ka); // OK
+      @NonNull Object j = b.get(kb); // OK
     }
   }
 }
