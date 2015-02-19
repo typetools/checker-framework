@@ -1,3 +1,4 @@
+// @skip-test
 import org.checkerframework.checker.nullness.qual.*;
 
 import java.util.*;
