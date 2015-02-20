@@ -29,6 +29,7 @@ public class ReflectionTest extends ParameterizedCheckerTest {
     protected void test(File testFile) {
         final List<String> optionsWithStub = new ArrayList<>(checkerOptions);
         optionsWithStub.add("-Astubs=" + getFullPath(testFile, "reflection.astub"));
+        optionsWithStub.add("-AresolveReflection");
         test(checkerName, optionsWithStub, testFile);
     }
 
