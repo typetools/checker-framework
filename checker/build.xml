@@ -1267,7 +1267,9 @@
             description="Ensure that the necessary jar files exist">
         <available property="javac.exist" file="${javac.lib}" />
 
+<!--
         <fail unless="javac.exist" message="Could not find javac.jar: ${javac.lib}" />
+-->
     </target>
 
     <target name="all.jdks.jar" description="Build jdkX.jar using JAVA_X_HOME (with X in 7, 8, and 9)">
@@ -1334,8 +1336,13 @@
 
         <mkdir dir="dist" />
 
+        <!--
         <copy tofile="dist/javac.jar" file="${javac.lib}"
               overwrite="true" failonerror="true" />
+        -->
+        <jar destfile="dist/javac.jar">
+            <zipgroupfileset dir="${jsr308.langtools.dist}/lib/" includes="*.jar" />
+        </jar>
 
         <copy file="jdk/jdk7.jar" tofile="dist/jdk7.jar" overwrite="true" failonerror="false" />
         <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar" overwrite="true" failonerror="false" />

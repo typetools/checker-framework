@@ -663,7 +663,9 @@
             description="Ensure that the necessary jar files exist">
         <available property="javac.exist" file="${javac.lib}" />
 
+<!--
         <fail unless="javac.exist" message="Could not find javac.jar: ${javac.lib}" />
+-->
     </target>
 
     <target name="dist" depends="-prep-dist,jar"
