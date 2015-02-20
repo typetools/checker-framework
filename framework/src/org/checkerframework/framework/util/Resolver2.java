@@ -44,12 +44,12 @@ public class Resolver2 {
         try {
             fi = Resolve.class.getDeclaredMethod(
                     "findIdent",
-                    Env.class, Name.class, int.class);
+                    Env.class, Name.class, KindSelector.class);
             fi.setAccessible(true);
 
             fiip = Resolve.class.getDeclaredMethod(
                     "findIdentInPackage",
-                    Env.class, TypeSymbol.class, Name.class, int.class);
+                    Env.class, TypeSymbol.class, Name.class, KindSelector.class);
             fiip.setAccessible(true);
 
             fmt = Resolve.class.getDeclaredMethod(
@@ -62,7 +62,7 @@ public class Resolver2 {
 
             fiit = Resolve.class.getDeclaredMethod(
                     "findIdentInType",
-                    Env.class, Type.class, Name.class, int.class);
+                    Env.class, Type.class, Name.class, KindSelector.class);
             fiit.setAccessible(true);
         } catch (Exception e) {
             ErrorReporter.errorAbort("Compiler 'Resolve' class doesn't contain required 'findXXX' method", e);
@@ -98,7 +98,7 @@ public class Resolver2 {
             // Simple variable
             return wrapInvocation(
                     FIND_IDENT,
-                    env, names.fromString(reference), Kinds.VAR);
+                    env, names.fromString(reference), Kinds.KindSelector.VAR);
         } else {
             int lastDot = reference.lastIndexOf('.');
             String expr = reference.substring(0, lastDot);
@@ -109,7 +109,7 @@ public class Resolver2 {
 
             return wrapInvocation(
                     FIND_IDENT_IN_TYPE,
-                    env, site.asType(), ident, VAR);
+                    env, site.asType(), ident, Kinds.KindSelector.VAR);
         }
 
     }
@@ -119,21 +119,21 @@ public class Resolver2 {
             // Simple variable
             return wrapInvocation(
                     FIND_IDENT,
-                    env, names.fromString(reference), Kinds.TYP | Kinds.PCK);
+                    env, names.fromString(reference), Kinds.KindSelector.of(Kinds.KindSelector.TYP, Kinds.KindSelector.PCK));
         } else {
             int lastDot = reference.lastIndexOf(".");
             String expr = reference.substring(0, lastDot);
             String idnt = reference.substring(lastDot + 1);
 
             Symbol site = (Symbol)findType(expr, env);
-            if (site.kind == ERR)
+            if (site.kind == Kind.ERR)
                 return site;
             Name name = names.fromString(idnt);
-            if (site.kind == PCK) {
+            if (site.kind == Kind.PCK) {
                 env.toplevel.packge = (PackageSymbol)site;
                 return wrapInvocation(
                         FIND_IDENT_IN_PACKAGE,
-                        env, site, name, TYP | PCK);
+                        env, site, name, Kinds.KindSelector.of(Kinds.KindSelector.TYP, Kinds.KindSelector.PCK));
             } else {
                 env.enclClass.sym = (ClassSymbol)site;
                 return wrapInvocation(

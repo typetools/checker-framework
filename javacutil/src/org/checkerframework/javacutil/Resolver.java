@@ -1,7 +1,5 @@
 package org.checkerframework.javacutil;
 
-import static com.sun.tools.javac.code.Kinds.VAR;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -16,6 +14,8 @@ import javax.lang.model.type.TypeMirror;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacScope;
+import com.sun.tools.javac.code.Kinds;
+import com.sun.tools.javac.code.Kinds.KindSelector;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
@@ -64,12 +64,12 @@ public class Resolver {
 
             FIND_IDENT_IN_TYPE = Resolve.class.getDeclaredMethod(
                     "findIdentInType", Env.class, Type.class, Name.class,
-                    int.class);
+                    KindSelector.class);
             FIND_IDENT_IN_TYPE.setAccessible(true);
 
             FIND_IDENT_IN_PACKAGE = Resolve.class.getDeclaredMethod(
                     "findIdentInPackage", Env.class, TypeSymbol.class, Name.class,
-                    int.class);
+                    KindSelector.class);
             FIND_IDENT_IN_PACKAGE.setAccessible(true);
 
             FIND_TYPE = Resolve.class.getDeclaredMethod(
@@ -106,7 +106,7 @@ public class Resolver {
             JavacScope scope = (JavacScope) trees.getScope(path);
             Env<AttrContext> env = scope.getEnv();
             Element res = wrapInvocation(FIND_IDENT_IN_TYPE, env, type,
-                    names.fromString(name), VAR);
+                    names.fromString(name), Kinds.KindSelector.VAR);
             if (res.getKind() == ElementKind.FIELD) {
                 return (VariableElement) res;
             } else {
