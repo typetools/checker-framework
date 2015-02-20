@@ -867,9 +867,7 @@ public abstract class ClassLoader {
     private boolean checkName(String name) {
         if ((name == null) || (name.length() == 0))
             return true;
-        if ((name.indexOf('/') != -1)
-            || (!VM.allowArraySyntax() && (name.charAt(0) == '[')))
-            return false;
+        // stub
         return true;
     }
 
