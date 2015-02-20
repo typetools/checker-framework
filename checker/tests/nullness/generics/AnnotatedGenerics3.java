@@ -2,41 +2,41 @@ import org.checkerframework.checker.nullness.qual.*;
 
 class AnnotatedGenerics3 {
     class Cell<T extends @Nullable Object> {
-	T f;
+        T f;
 
-	Cell(T i) {
-	    f = i;
-	}
+        Cell(T i) {
+            f = i;
+        }
 
-	void setNull(Cell<@Nullable T> p) {
-	    p.f = null;
-	}
+        void setNull(Cell<@Nullable T> p) {
+            p.f = null;
+        }
 
-	void indirect(Cell<T> p) {
-	    //:: error: (argument.type.incompatible)
-	    setNull(p);
-	}
+        void indirect(Cell<T> p) {
+            //:: error: (argument.type.incompatible)
+            setNull(p);
+        }
 
-	void setField(@Nullable T p) {
-	    //:: error: (assignment.type.incompatible)
-	    this.f = p;
-	}
+        void setField(@Nullable T p) {
+            //:: error: (assignment.type.incompatible)
+            this.f = p;
+        }
     }
 
     void run() {
-	Cell<@NonNull Object> c = new Cell<@NonNull Object>(new Object());
-	//:: error: (argument.type.incompatible)
-	c.setNull(c);
-	c.f.hashCode();
+        Cell<@NonNull Object> c = new Cell<@NonNull Object>(new Object());
+        //:: error: (argument.type.incompatible)
+        c.setNull(c);
+        c.f.hashCode();
 
-	c.indirect(c);
-	c.f.hashCode();
+        c.indirect(c);
+        c.f.hashCode();
 
-	c.setField(null);
-	c.f.hashCode();
+        c.setField(null);
+        c.f.hashCode();
     }
 
     public static void main(String[] args) {
-	new AnnotatedGenerics3().run();
+        new AnnotatedGenerics3().run();
     }
 }
