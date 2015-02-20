@@ -14,6 +14,9 @@ import tests.compound.qual.ACCTop;
 @TypeQualifiers({ ACCTop.class, ACCBottom.class })
 public class AnotherCompoundChecker extends BaseTypeChecker {
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+        // Make sure that options can be accessed by sub-checkers to determine
+        // which subcheckers to run.
+        String option = super.getOption("nomsgtext");
         LinkedHashSet<Class<? extends BaseTypeChecker>> subcheckers = new LinkedHashSet<>();
         subcheckers.add(AliasingChecker.class);
         subcheckers.add(ValueChecker.class);
