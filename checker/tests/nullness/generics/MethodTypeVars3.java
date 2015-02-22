@@ -1,9 +1,9 @@
 import org.checkerframework.checker.nullness.qual.*;
 import java.util.*;
 
-class MethodTypeVars3 {
+class  MethodTypeVars3 {
     public static
-    <@KeyFor("preds") T extends Object> Map<T,List<T>> dominators(Map<T,List<T>> preds) {
+    <@KeyFor("preds") T extends @KeyFor("preds") Object> Map<T,List<T>> dominators(Map<T,List<T>> preds) {
         List<T> nodes = new ArrayList<T>(preds.keySet());
 
         // Compute roots & non-roots, for convenience
