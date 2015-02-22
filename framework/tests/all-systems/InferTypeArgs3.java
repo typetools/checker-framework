@@ -1,7 +1,8 @@
-import java.util.*;
 
+@SuppressWarnings("oigj") //this comes from the Immutability post annotator which adds bottom to Object types
+                          //including upper bounds
 class Test {
     void test() {
-        Arrays.asList(new Integer(1), "");
+        java.util.Arrays.asList(new Integer(1), "");
     }
 }
