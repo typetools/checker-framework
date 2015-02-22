@@ -6,6 +6,7 @@ import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.*;
 import java.util.*;
 import java.util.Map.Entry;
@@ -26,9 +27,13 @@ public class BoundsInitializer {
      * @param typeVar The type variable whose lower bound is being initialized
      */
     public static void initializeLowerBound(final AnnotatedTypeVariable typeVar) {
+        final Set<AnnotationMirror> annos = saveAnnotations(typeVar);
+
         InitializerVisitor visitor = new InitializerVisitor(new TypeVariableStructure(null, typeVar));
         visitor.initializeLowerBound(typeVar);
         visitor.resolveTypeVarReferences(typeVar);
+
+        restoreAnnotations(typeVar, annos);
     }
 
     /**
@@ -37,9 +42,42 @@ public class BoundsInitializer {
      * @param typeVar The type variable whose upper bound is being initialized
      */
     public static void initializeUpperBound(final AnnotatedTypeVariable typeVar) {
+        final Set<AnnotationMirror> annos = saveAnnotations(typeVar);
+
         InitializerVisitor visitor = new InitializerVisitor(new TypeVariableStructure(null, typeVar));
         visitor.initializeUpperBound(typeVar);
         visitor.resolveTypeVarReferences(typeVar);
+
+        restoreAnnotations(typeVar, annos);
+    }
+
+    /**
+     * If we are initializing a type variable with a primary annotation than we should first initialize it
+     * as if it were a declaration (i.e. as if it had no primary annotations) and then apply the primary
+     * annotations.  We do this so that when we make copies of the original type to represent recursive references
+     * the recursive references don't have the primary annotation.
+     *
+     * e.g.   given the declaration <E extends List<E>>
+     *        if we do not do this, the NonNull on the use @NonNull E
+     *        would be copied to the primary annotation on E in the bound List<E>
+     *        i.e. the use would be <@NonNull E extends @NonNull List<@NonNull E>>
+     *             rather than      <@NonNull E extends @NonNull List<E>>
+     *
+     */
+    private static Set<AnnotationMirror> saveAnnotations(final AnnotatedTypeMirror type) {
+        if (!type.annotations.isEmpty()) {
+            final Set<AnnotationMirror> annos = new HashSet<>(type.getAnnotations());
+            type.clearAnnotations();
+            return annos;
+        }
+
+        return null;
+    }
+
+    private static void restoreAnnotations(final AnnotatedTypeMirror type, final Set<AnnotationMirror> annos) {
+        if (annos != null) {
+            type.addAnnotations(annos);
+        }
     }
 
     /**
@@ -48,9 +86,13 @@ public class BoundsInitializer {
      * @param wildcard The wildcard whose lower bound is being initialized
      */
     public static void initializeSuperBound( final AnnotatedWildcardType wildcard ) {
+        final Set<AnnotationMirror> annos = saveAnnotations(wildcard);
+
         InitializerVisitor visitor = new InitializerVisitor(new WildcardStructure());
         visitor.initializeSuperBound(wildcard);
         visitor.resolveTypeVarReferences(wildcard);
+
+        restoreAnnotations(wildcard, annos);
     }
 
 
@@ -60,9 +102,12 @@ public class BoundsInitializer {
      * @param wildcard The wildcard whose extends bound is being initialized
      */
     public static void initializeExtendsBound( final AnnotatedWildcardType wildcard ) {
+        final Set<AnnotationMirror> annos = saveAnnotations(wildcard);
+
         InitializerVisitor visitor = new InitializerVisitor(new WildcardStructure());
         visitor.initializeExtendsBound(wildcard);
         visitor.resolveTypeVarReferences(wildcard);
+        restoreAnnotations(wildcard, annos);
     }
 
     //==================================================================================================================
@@ -644,6 +689,7 @@ public class BoundsInitializer {
         }
     }
 
+    //BoundPathNode's are a step in a "type path" that are used to
     private static abstract class BoundPathNode {
         enum Kind {
             Extends,
