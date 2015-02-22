@@ -102,7 +102,7 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param checker the checker to which this factory belongs
      */
     public JavariAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(checker);
+        super(checker, false);
 
         this.READONLY = AnnotationUtils.fromClass(elements, ReadOnly.class);
         this.THISMUTABLE = AnnotationUtils.fromClass(elements, ThisMutable.class);
