@@ -6,13 +6,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TypesUtils;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.*;
 import javax.lang.model.util.Types;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedType;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -151,7 +147,7 @@ public class GlbUtil {
         final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
         final Types types = typeFactory.getProcessingEnv().getTypeUtils();
 
-        typeMirrors.sort(new Comparator<AnnotatedTypeMirror>() {
+        Collections.sort(typeMirrors, new Comparator<AnnotatedTypeMirror>() {
             @Override
             public int compare(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
                 final TypeMirror underlyingType1 = type1.getUnderlyingType();
