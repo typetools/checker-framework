@@ -258,7 +258,7 @@ public class QualifierDefaults {
 
         if (elt != null) {
             boolean useFlow = (atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>)
-                           && (((GenericAnnotatedTypeFactory) atypeFactory).getUseFlow());
+                           && (((GenericAnnotatedTypeFactory<?,?,?,?>) atypeFactory).getUseFlow());
 
             applyToTypeVar = useFlow
                           && elt.getKind() == ElementKind.LOCAL_VARIABLE
@@ -424,8 +424,13 @@ public class QualifierDefaults {
 
         public void apply(Default def) {
             this.location = def.location;
+
+            boolean useFlow = !(atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>)
+                    || (((GenericAnnotatedTypeFactory<?,?,?,?>) atypeFactory).getUseFlow());
+            if (useFlow || this.location != DefaultLocation.LOCAL_VARIABLE) {
                 impl.visit(type, def.anno);
             }
+        }
 
         /**
          * Returns true if the given qualifier should be applied to the given type.  Currently we do not
