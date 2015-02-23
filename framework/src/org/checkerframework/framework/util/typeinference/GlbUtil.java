@@ -81,12 +81,14 @@ public class GlbUtil {
             final Set<AnnotationMirror> typeAnnoHierarchies = tmEntry.getValue();
             final AnnotatedTypeMirror type = tmEntry.getKey();
 
-
+            //TODO: GLB TYPE VARS
             for (AnnotationMirror top : typeAnnoHierarchies) {
                 final AnnotationMirror typeAnno = type.getEffectiveAnnotationInHierarchy(top);
                 final AnnotationMirror currentAnno = glbPrimaries.get(top);
                 if (typeAnno != null && currentAnno != null) {
                     glbPrimaries.put(top, qualifierHierarchy.greatestLowerBound(currentAnno, typeAnno));
+                } else if (typeAnno != null) {
+                    glbPrimaries.put(top, typeAnno);
                 }
             }
         }
@@ -95,9 +97,17 @@ public class GlbUtil {
 
         final Set<AnnotationMirror> values = new HashSet<>(glbPrimaries.values());
         for (AnnotatedTypeMirror type : typeMirrors.keySet()) {
-            final AnnotatedTypeMirror copy = type.deepCopy();
-            copy.replaceAnnotations(values);
-            glbTypes.add(type);
+            if (type.getKind() != TypeKind.TYPEVAR
+             || !qualifierHierarchy.isSubtype(type.getEffectiveAnnotations(), values)) {
+                final AnnotatedTypeMirror copy = type.deepCopy();
+                copy.replaceAnnotations(values);
+                glbTypes.add(copy);
+            } else {
+                //if the annotations came from the upper bound of this typevar
+                //we do NOT want to place them as primary annotations (and destroy the
+                //type vars lower bound)
+               glbTypes.add(type);
+            }
         }
 
         final TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
@@ -107,8 +117,11 @@ public class GlbUtil {
         //type resulting from adding a primary, if so, use that instead
         AnnotatedTypeMirror glbType = glbTypes.get(0);
         int index = 1;
-        while (glbType.getKind() != TypeKind.NULL && index < glbTypes.size()) {
-            glbType = glbTypes.get(index);
+        while (index < glbTypes.size()) {
+            //avoid using null if possible, since constraints form the lower bound will often have NULL types
+            if (glbType.getKind() != TypeKind.NULL) {
+                glbType = glbTypes.get(index);
+            }
             index += 1;
         }
 
@@ -120,7 +133,7 @@ public class GlbUtil {
         }
 
         if (incomparable) {
-            return createBottom(typeFactory, glbType.getAnnotations());
+            return createBottom(typeFactory, glbType.getEffectiveAnnotations());
         }
 
         return glbType;
