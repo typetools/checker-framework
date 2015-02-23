@@ -424,8 +424,8 @@ public class QualifierDefaults {
 
         public void apply(Default def) {
             this.location = def.location;
-            impl.visit(type, def.anno);
-        }
+                impl.visit(type, def.anno);
+            }
 
         /**
          * Returns true if the given qualifier should be applied to the given type.  Currently we do not
