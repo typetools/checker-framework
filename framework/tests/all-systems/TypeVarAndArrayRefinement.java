@@ -3,7 +3,7 @@
 class TypeVarAndArrayRefinement {
 
 
-    @SuppressWarnings("javari"
+    @SuppressWarnings("javari")
     private <T extends Enum<T>> T getEnumValue(Class<T> enumType, String name) {
         T[] constants = enumType.getEnumConstants();
         if (constants == null)
