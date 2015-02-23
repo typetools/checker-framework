@@ -205,7 +205,6 @@ Set the \code{jsr308javac} property:
     <javac fork="yes" executable="${checkerframework}/checker/bin/${cfJavac}" >
       <!-- JSR-308-related compiler arguments -->
       <compilerarg value="-version"/>
-      <!-- optional, so .class files work with older JVMs: <compilerarg line="-source 6 -target 6"/> -->
       <compilerarg value="-implicit:class"/>
     </javac>
   </presetdef>
@@ -257,10 +256,6 @@ the Checker Framework compiler that is distributed with the Checker Framework.
 
 The \code{-version} compiler argument is just for debugging; you may omit
 it.
-
-The \code{-source 6 -target 6} compiler argument is optional, if you use Java 6 in
-ordinary compilation when not performing pluggable type-checking (see
-Section~\refwithpage{annotations-in-java7-class-files}).
 
 The \code{-implicit:class} compiler argument causes annotation processing
 to be performed on implicitly compiled files.  (An implicitly compiled file
