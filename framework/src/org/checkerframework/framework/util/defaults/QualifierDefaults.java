@@ -424,12 +424,7 @@ public class QualifierDefaults {
 
         public void apply(Default def) {
             this.location = def.location;
-
-            boolean useFlow = !(atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>)
-                    || (((GenericAnnotatedTypeFactory<?,?,?,?>) atypeFactory).getUseFlow());
-            if (useFlow || this.location != DefaultLocation.LOCAL_VARIABLE) {
-                impl.visit(type, def.anno);
-            }
+            impl.visit(type, def.anno);
         }
 
         /**
