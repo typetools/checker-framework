@@ -217,9 +217,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         //take the glb of all subtype constraints
         //If Ti appears as a type argument in any Uk, then Ti is inferred to be a type variable X whose upper bound is the parameterized type given by glb(U1[Ti=X], ..., Uk[Ti=X]) and whose lower bound is the null type.
 
-        afArgumentConstraints.clear();
-        reduceAfConstraints(typeFactory, afArgumentConstraints, substitutedAssignmentConstraints, targets);
-        final Set<TUConstraint> tuAssignmentConstraints = afToTuConstraints(afArgumentConstraints, targets);
+        final Set<AFConstraint> reducedConstraints = new LinkedHashSet<>();
+        reduceAfConstraints(typeFactory, reducedConstraints, substitutedAssignmentConstraints, targets);
+        final Set<TUConstraint> tuAssignmentConstraints = afToTuConstraints(reducedConstraints, targets);
         addConstraintsBetweenTargets(tuAssignmentConstraints, targets, true, typeFactory);
         return constraintMapBuilder.build(targets, tuAssignmentConstraints, typeFactory);
     }
@@ -334,38 +334,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
 
         return result;
-    }
-
-    private Map<TypeVariable, InferredValue> mergeArgsAndInitialAssignment(Map<TypeVariable, InferredValue> solutionFromArguments,
-                                                                           Map<TypeVariable, InferredValue> inferredFromInitialAssignmentEqualities,
-                                                                           AnnotatedTypeFactory typeFactory) {
-
-        if (inferredFromInitialAssignmentEqualities == null) {
-            return solutionFromArguments;
-        } //else
-
-        final TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
-        Map<TypeVariable, InferredValue> mergedSolution = new LinkedHashMap<>(solutionFromArguments.size() + inferredFromInitialAssignmentEqualities.size());
-        mergedSolution.putAll(inferredFromInitialAssignmentEqualities);
-
-        for (final TypeVariable target : solutionFromArguments.keySet()) {
-            final InferredType argInferred = (InferredType) solutionFromArguments.get(target);
-            final InferredValue assignmentInferred = inferredFromInitialAssignmentEqualities.get(target);
-
-            if (assignmentInferred != null && assignmentInferred instanceof InferredType) {
-                final AnnotatedTypeMirror assignmentType = ((InferredType) assignmentInferred).type;
-                final AnnotatedTypeMirror argumentInferred = argInferred.type;
-
-                if (typeHierarchy.isSubtype(argumentInferred, assignmentType)) {
-                    mergedSolution.put(target, new InferredType(assignmentType));
-                }
-            } else {
-                mergedSolution.put(target, argInferred);
-
-            }
-        }
-
-        return mergedSolution;
     }
 
     private void handleUninferredTypeVariables(AnnotatedTypeFactory typeFactory, AnnotatedExecutableType methodType,

@@ -39,6 +39,7 @@ public class SubtypesSolver {
             }
 
             Map<AnnotationMirror, Set<AnnotationMirror>> primaries = subtypes.primaries;
+            //TODO: ADD GLB PROPAGATION
             if (subtypes.types.size() == 1) {
                 final Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> entry = subtypes.types.entrySet().iterator().next();
                 AnnotatedTypeMirror supertype = entry.getKey().deepCopy();
@@ -59,6 +60,7 @@ public class SubtypesSolver {
                 }
 
                 inferenceResult.put(target, new InferredType(supertype));
+
             }  else {
 
                 final AnnotatedTypeMirror glbType = GlbUtil.glbAll(subtypes.types, typeFactory);
