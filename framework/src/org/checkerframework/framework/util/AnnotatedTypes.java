@@ -15,6 +15,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 
+import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -688,371 +689,10 @@ public class AnnotatedTypes {
             }
             return typeArguments;
         } else {
-            Map<TypeVariable, AnnotatedTypeMirror> typeArguments =
-                    inferTypeArguments(processingEnv, atypeFactory, expr, elt, preType);
+            final DefaultTypeArgumentInference inference = new DefaultTypeArgumentInference();
+            Map<TypeVariable, AnnotatedTypeMirror> typeArguments = inference.inferTypeArgs(atypeFactory, expr, elt, preType);
             return typeArguments;
         }
-    }
-
-
-    /**
-     * Infer the method or constructor invocation type arguments based on the return type
-     * context and the passed arguments.
-     * No type arguments are given in the tree and they need to be inferred.
-     *
-     * See <a href="http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7">JLS7 15.12.2.7</a>
-     * and <a href="http://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html">JLS8 18</a>.
-     *
-     * Eventually, we will need a better inference implementation, maybe based
-     * on com.sun.tools.javac.comp.Infer.
-     *
-     * @param processingEnv the processing environment
-     * @param atypeFactory the annotated type factory
-     * @param expr the method or constructor invocation tree; the passed argument
-     *   has to be a subtype of MethodInvocationTree or NewClassTree.
-     * @param elt the element corresponding to the tree.
-     * @param preType the (partially annotated) type corresponding to the tree -
-     *   the result of AnnotatedTypes.asMemberOf with the receiver and elt.
-     *
-     * @return the mapping of the type variables to type arguments for
-     *   this method or constructor invocation.
-     */
-    private static Map<TypeVariable, AnnotatedTypeMirror>
-    inferTypeArguments(final ProcessingEnvironment processingEnv,
-                       final AnnotatedTypeFactory atypeFactory,
-                       final ExpressionTree expr,
-                       final ExecutableElement elt,
-                       final AnnotatedExecutableType preType) {
-        final Types types = processingEnv.getTypeUtils();
-
-        // Assignment context
-        final AnnotatedTypeMirror assigned =
-                assignedTo(types, atypeFactory, atypeFactory.getPath(expr));
-
-        final AnnotatedTypeMirror returnType = preType.getReturnType();
-
-        final AnnotatedTypeMirror returnTypeAsAssigned;
-        if (assigned != null) {
-            if (assigned.getKind() == TypeKind.TYPEVAR) {
-                if (assigned.getAnnotations().isEmpty()) {
-                    returnTypeAsAssigned = returnType;
-                } else {
-                    // TODO do we need to use partial annotations?
-                    // E.g. in @NonNull T only ignore nullness
-                    returnTypeAsAssigned = null;
-                }
-            } else {
-                returnTypeAsAssigned = asSuper(types, atypeFactory, returnType, assigned);
-            }
-        } else {
-            returnTypeAsAssigned = null;
-        }
-
-        Map<TypeVariable, AnnotatedTypeMirror> typeArgumentsFromAssignment;
-        if (returnTypeAsAssigned != null) {
-            typeArgumentsFromAssignment = matchTypeVars(assigned, returnTypeAsAssigned);
-        } else {
-            if (assigned != null &&
-                    returnType.getKind() == TypeKind.TYPEVAR &&
-                    preType.getTypeVariables().contains(returnType)) {
-                // Find the defaulted return type: this is the type from the
-                // Tree, with defaults applied.
-                final AnnotatedTypeMirror basicReturnType = atypeFactory.type(expr);
-                atypeFactory.annotateImplicit(expr, basicReturnType);
-
-                AnnotatedTypeMirror ret = assigned.deepCopy();
-                if (basicReturnType.getKind() == TypeKind.TYPEVAR
-                 && ret.getKind() == TypeKind.TYPEVAR) {
-                    ret.clearAnnotations();
-                    final AnnotatedTypeVariable retTv = (AnnotatedTypeVariable) ret;
-                    final AnnotatedTypeVariable basicReturnTv = (AnnotatedTypeVariable) basicReturnType;
-                    retTv.getUpperBound().replaceAnnotations(basicReturnTv.getUpperBound().getAnnotations());
-                    retTv.getLowerBound().replaceAnnotations(basicReturnTv.getLowerBound().getAnnotations());
-                }
-
-                ret.replaceAnnotations(basicReturnType.getAnnotations());
-                typeArgumentsFromAssignment = Collections.singletonMap(((AnnotatedTypeVariable) returnType).getUnderlyingType(), ret);
-            } else {
-                typeArgumentsFromAssignment = Collections.emptyMap();
-            }
-        }
-
-        Map<TypeVariable, AnnotatedTypeMirror> typeArguments;
-        typeArguments = inferTypeArgsUsingArgs(processingEnv, atypeFactory, expr, preType, returnType, typeArgumentsFromAssignment);
-
-        for (AnnotatedTypeVariable atv : preType.getTypeVariables()) {
-            final AnnotatedTypeMirror inferredType = typeArguments.get(atv.getUnderlyingType());
-            //if we failed to infer a type or inferred a null literal
-            if (inferredType == null || inferredType.getKind() == TypeKind.NULL) {
-                AnnotatedTypeMirror dummy = atypeFactory.getUninferredWildcardType(atv);
-                typeArguments.put(atv.getUnderlyingType(), dummy);
-
-                if (inferredType != null) { //then it has a typekind of NULL
-                    dummy.addAnnotations(inferredType.getAnnotations());
-                }
-            }
-        }
-
-        return typeArguments;
-    }
-
-    private static Map<TypeVariable, AnnotatedTypeMirror> matchTypeVars(
-            AnnotatedTypeMirror lhs,
-            AnnotatedTypeMirror rhs) {
-        Map<TypeVariable, AnnotatedTypeMirror> result = new HashMap<>();
-        matchTypeVars(lhs, rhs, result, true);
-        return result;
-    }
-
-    private static void matchTypeVars(
-            AnnotatedTypeMirror lhs,
-            AnnotatedTypeMirror rhs,
-            Map<TypeVariable, AnnotatedTypeMirror> accum,
-            boolean toplevel) {
-        if (rhs.getKind().isPrimitive()) {
-            // TODO: handle boxing?
-            return;
-        }
-
-        switch (rhs.getKind()) {
-            case TYPEVAR:
-                TypeVariable key = ((AnnotatedTypeVariable) rhs).getUnderlyingType();
-
-                if (toplevel && lhs.getKind() == TypeKind.WILDCARD) {
-                    accum.put(key, ((AnnotatedWildcardType)lhs).getExtendsBound().deepCopy());
-                } else {
-                    accum.put(key, lhs);
-                }
-                break;
-            case WILDCARD:
-                break;
-            case DECLARED:
-                if (lhs.getKind() == TypeKind.TYPEVAR) {
-                    // type variables don't help
-                    break;
-                }
-                AnnotatedDeclaredType rhsDT = (AnnotatedDeclaredType) rhs;
-                // assert lhs.getKind() == TypeKind.DECLARED : "Mismatch! lhs: " + lhs + " rhs: " + rhs;
-                if (lhs.getKind() == TypeKind.DECLARED) {
-                    AnnotatedDeclaredType lhsDT = (AnnotatedDeclaredType) lhs;
-                    // assert rhsDT.getTypeArguments().size() == lhsDT.getTypeArguments().size() : "rhs: " + rhsDT + " lhs: " + lhsDT;
-                    if (rhsDT.getTypeArguments().size() == lhsDT.getTypeArguments().size()) {
-                        for (int i = 0; i < rhsDT.getTypeArguments().size(); ++i) {
-                            matchTypeVars(lhsDT.getTypeArguments().get(i), rhsDT.getTypeArguments().get(i), accum, false);
-                        }
-                    }
-                }
-                break;
-            case ARRAY:
-                if (lhs.getKind() != TypeKind.ARRAY) {
-                    // TODO: is some matching possible?
-                    break;
-                }
-                matchTypeVars(((AnnotatedArrayType)lhs).getComponentType(), ((AnnotatedArrayType)rhs).getComponentType(), accum, false);
-                break;
-
-            case INTERSECTION:
-                break;
-
-            case VOID:
-                // Nothing to do.
-                break;
-            default:
-                ErrorReporter.errorAbort("AnnotatedTypes.matchTypeVars: unexpected rhs: " + rhs + " lhs: " + lhs);
-        }
-    }
-
-    /**
-     * Infer the type argument for a single type variable.
-     *
-     * @param returnType the return type
-     * @param typeArgumentsFromAssignment
-     * @param expr the method or constructor invocation tree; the passed argument
-     *   has to be a subtype of MethodInvocationTree or NewClassTree.
-     * @return the type argument
-     */
-    private static Map<TypeVariable, AnnotatedTypeMirror> inferTypeArgsUsingArgs(
-            final ProcessingEnvironment processingEnv,
-            final AnnotatedTypeFactory atypeFactory,
-            final ExpressionTree expr,
-            final AnnotatedExecutableType preType,
-            final AnnotatedTypeMirror returnType,
-            final Map<TypeVariable, AnnotatedTypeMirror> typeArgumentsFromAssignment) {
-        final Types types = processingEnv.getTypeUtils();
-
-        final List<? extends ExpressionTree> argumentExprs =
-                expr.getKind() == Tree.Kind.METHOD_INVOCATION ?
-                        ((MethodInvocationTree) expr).getArguments() :
-                        (expr.getKind() == Tree.Kind.NEW_CLASS ?
-                                ((NewClassTree) expr).getArguments() :
-                                null);
-
-        if (expr instanceof MemberReferenceTree) {
-            // TODO: Need to use the functional interface's method
-            return null;
-        }
-
-        if (argumentExprs == null) {
-            ErrorReporter.errorAbort("AnnotatedTypes.inferTypeArguments: couldn't determine arguments from tree: " + expr);
-            return null;
-        }
-
-        final List<AnnotatedTypeMirror> requiredParams = expandVarArgs(atypeFactory, preType, argumentExprs);
-        final List<AnnotatedTypeMirror> passedArgs = new ArrayList<>();
-        for (Tree argExp : argumentExprs) {
-            passedArgs.add(atypeFactory.getAnnotatedType(argExp));
-        }
-
-        Map<TypeVariable, AnnotatedTypeMirror> typeArgumentsFromArguments = new HashMap<>(typeArgumentsFromAssignment);
-
-        for (int i = 0; i < requiredParams.size(); ++i) {
-            AnnotatedTypeMirror requiredParam = requiredParams.get(i);
-            AnnotatedTypeMirror passedArg = passedArgs.get(i);
-            AnnotatedTypeMirror argumentAsParamType = asSuper(types, atypeFactory, passedArg, requiredParam);
-
-            Map<TypeVariable, AnnotatedTypeMirror> typeArgsFromArgument;
-            if (requiredParam.getKind() == TypeKind.TYPEVAR) {
-                typeArgsFromArgument = matchTypeVars(passedArg, requiredParam);
-
-                AnnotatedTypeMirror pre = typeArgsFromArgument.get(((AnnotatedTypeVariable) requiredParam).getUnderlyingType());
-                if (pre != null) {
-                    for (AnnotationMirror am : requiredParam.getAnnotations()) {
-                        pre.replaceAnnotation(atypeFactory.getQualifierHierarchy().getBottomAnnotation(am));
-                    }
-                    typeArgsFromArgument.put(((AnnotatedTypeVariable) requiredParam).getUnderlyingType(), pre);
-                }
-            } else if (argumentAsParamType == null) {
-                typeArgsFromArgument = matchTypeVars(passedArg, requiredParam);
-            } else {
-                typeArgsFromArgument = matchTypeVars(argumentAsParamType, requiredParam);
-            }
-            typeArgumentsFromArguments = mergeTypeArgs(atypeFactory, typeArgumentsFromArguments, typeArgsFromArgument);
-        }
-        return typeArgumentsFromArguments;
-    }
-
-    // TODO: this method needs some more thought and cleanup.
-    private static Map<TypeVariable, AnnotatedTypeMirror> mergeTypeArgs(
-            final AnnotatedTypeFactory atypeFactory,
-            final Map<TypeVariable, AnnotatedTypeMirror> accum,
-            final Map<TypeVariable, AnnotatedTypeMirror> add) {
-
-        for (Map.Entry<TypeVariable, AnnotatedTypeMirror> entry : add.entrySet()) {
-            if (accum.isEmpty()) {
-                accum.put(entry.getKey(), entry.getValue());
-
-            } else if (accum.containsKey(entry.getKey())) {
-                AnnotatedTypeMirror prev = accum.get(entry.getKey());
-                AnnotatedTypeMirror toadd = entry.getValue();
-                AnnotatedTypeMirror merged;
-                if (prev.getKind() == TypeKind.WILDCARD) {
-                    if (toadd.getKind() != TypeKind.WILDCARD) {
-                        merged = toadd;
-                    } else {
-                        merged = prev;
-                    }
-                } else if (prev.getKind() == TypeKind.TYPEVAR &&
-                        toadd.getKind() != TypeKind.TYPEVAR) {
-                    merged = toadd;
-                } else if (prev.getKind() == TypeKind.TYPEVAR &&
-                        toadd.getKind() == TypeKind.TYPEVAR) {
-                    // noop
-                    merged = toadd;
-                } else {
-                    merged = prev;
-                    merged.replaceAnnotations(atypeFactory.getQualifierHierarchy()
-                            .leastUpperBounds(merged.getAnnotations(), entry.getValue().getAnnotations()));
-                }
-                accum.put(entry.getKey(), merged);
-            } else {
-                //TODO: Solely to stop the concurrent modification exception until Werner gets a chance to look at this
-                Map<TypeVariable, AnnotatedTypeMirror> copy = new HashMap<>();
-                copy.putAll(accum);
-
-                // TODO tests break without this :-(
-                // What does this do??
-                for (Map.Entry<TypeVariable, AnnotatedTypeMirror> accumentry : copy.entrySet()) {
-                    if (accumentry.getKey() == entry.getKey()) {
-                        // GLB
-                        // System.out.println("222What should be done with: " + accumentry.getKey() + " and: " + entry.getKey());
-                    } else {
-                        accum.put(entry.getKey(), entry.getValue());
-                    }
-                }
-            }
-        }
-        return accum;
-    }
-
-    /**
-     * Returns the annotated type that the leaf of path is assigned to, if it
-     * is within an assignment context.
-     * Returns the annotated type that the method invocation at the leaf
-     * is assigned to.
-     *
-     * @param path
-     * @return type that it path leaf is assigned to
-     */
-    private static AnnotatedTypeMirror assignedTo(Types types, AnnotatedTypeFactory atypeFactory, TreePath path) {
-        Tree assignmentContext = TreeUtils.getAssignmentContext(path);
-        if (assignmentContext == null) {
-            return null;
-        } else if (assignmentContext instanceof AssignmentTree) {
-            ExpressionTree variable = ((AssignmentTree)assignmentContext).getVariable();
-            return atypeFactory.getAnnotatedType(variable);
-        } else if (assignmentContext instanceof CompoundAssignmentTree) {
-            ExpressionTree variable =
-                    ((CompoundAssignmentTree)assignmentContext).getVariable();
-            return atypeFactory.getAnnotatedType(variable);
-        } else if (assignmentContext instanceof MethodInvocationTree) {
-            MethodInvocationTree methodInvocation = (MethodInvocationTree)assignmentContext;
-            // TODO move to getAssignmentContext
-            if (methodInvocation.getMethodSelect() instanceof MemberSelectTree
-                    && ((MemberSelectTree)methodInvocation.getMethodSelect()).getExpression() == path.getLeaf())
-                return null;
-            ExecutableElement methodElt = TreeUtils.elementFromUse(methodInvocation);
-            AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(methodInvocation);
-            AnnotatedExecutableType method = asMemberOf(types, atypeFactory, receiver, methodElt);
-            int treeIndex = -1;
-            for (int i = 0; i < method.getParameterTypes().size(); ++i) {
-                if (TreeUtils.skipParens(methodInvocation.getArguments().get(i)) == path.getLeaf()) {
-                    treeIndex = i;
-                    break;
-                }
-            }
-            if (treeIndex == -1) return null;
-            return method.getParameterTypes().get(treeIndex);
-        } else if (assignmentContext instanceof NewArrayTree) {
-            // FIXME: This may cause infinite loop
-            AnnotatedTypeMirror type =
-                    atypeFactory.getAnnotatedType((NewArrayTree)assignmentContext);
-            type = AnnotatedTypes.innerMostType(type);
-            return type;
-        } else if (assignmentContext instanceof NewClassTree) {
-            // This need to be basically like MethodTree
-            NewClassTree newClassTree = (NewClassTree) assignmentContext;
-            ExecutableElement constructorElt = InternalUtils.constructor(newClassTree);
-            AnnotatedTypeMirror receiver = atypeFactory.getAnnotatedType(newClassTree.getIdentifier());
-            AnnotatedExecutableType constructor =
-                    asMemberOf(types, atypeFactory, receiver, constructorElt);
-            int treeIndex = -1;
-            for (int i = 0; i < constructor.getParameterTypes().size(); ++i) {
-                if (TreeUtils.skipParens(newClassTree.getArguments().get(i)) == path.getLeaf()) {
-                    treeIndex = i;
-                    break;
-                }
-            }
-            if (treeIndex == -1) return null;
-            return constructor.getParameterTypes().get(treeIndex);
-        } else if (assignmentContext instanceof ReturnTree) {
-            MethodTree method = TreeUtils.enclosingMethod(path);
-            return (atypeFactory.getAnnotatedType(method)).getReturnType();
-        } else if (assignmentContext instanceof VariableTree) {
-            return atypeFactory.getAnnotatedType(assignmentContext);
-        }
-
-        ErrorReporter.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
-        return null; // dead code
     }
 
     // TODO: compare to leastUpperBound method that is in comments further
@@ -1202,10 +842,27 @@ public class AnnotatedTypes {
 
         // get rid of wildcards and type variables
         if (alub.getKind() == TypeKind.WILDCARD) {
+            //TODO: Wildcard handling of LUB doesn't make much sense, as a stop gap for unannotated
+            //TODO: LOWER/UPPER bounds we'll glb the annotations and add them to the lower bound
+            //TODO: this will not handle component annotations if we have compound types as the
+            //TODO: lower bound
+            Set<? extends AnnotationMirror> glb = glbAll(atypeFactory.getQualifierHierarchy(), types);
+            ((AnnotatedWildcardType)alub).getSuperBound().replaceAnnotations(glb);
+
+
             alub = ((AnnotatedWildcardType)alub).getExtendsBound();
+
+
+
             // TODO using the getEffective versions copies objects, losing side-effects.
         }
         while (alub.getKind() == TypeKind.TYPEVAR) {
+            //TODO: TYPEVAR handling of LUB doesn't make much sense, as a stop gap for unannotated
+            //TODO: LOWER/UPPER bounds we'll glb the annotations and add them to the lower bound
+            //TODO: this will not handle component annotations if we have compound types as the
+            //TODO: lower bound (which for type variables would only happen on a capture)
+            Set<? extends AnnotationMirror> glb = glbAll(atypeFactory.getQualifierHierarchy(), types);
+            ((AnnotatedTypeVariable)alub).getLowerBound().replaceAnnotations(glb);
             alub = ((AnnotatedTypeVariable)alub).getUpperBound();
         }
 
@@ -1953,6 +1610,40 @@ public class AnnotatedTypes {
         }
 
         return source.getAnnotations();
+    }
+
+    /**
+     * @return The greatest lower bound of the primary annotations on the input types
+     */
+    private static Set<? extends AnnotationMirror> glbAll(final QualifierHierarchy qualifierHierarchy,
+                                                          final Collection<AnnotatedTypeMirror> types) {
+        final Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+        Map<AnnotationMirror, AnnotationMirror> intermediate = AnnotationUtils.createAnnotationMap();
+
+        if (types.size() == 0) {
+            return result;
+        }
+
+        final Set<? extends AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
+
+        for (AnnotatedTypeMirror type : types) {
+            for(AnnotationMirror top : tops) {
+                final AnnotationMirror newAnno = type.getAnnotationInHierarchy(top);
+                final AnnotationMirror prevGlb = intermediate.get(top);
+                if (newAnno == null) {
+                    continue;
+                } //else
+                if (prevGlb == null) {
+                    intermediate.put(top, newAnno);
+                } else {
+                    intermediate.put(top, qualifierHierarchy.greatestLowerBound(newAnno, prevGlb));
+                }
+            }
+        }
+
+        result.addAll(intermediate.values());
+
+        return result;
     }
 
     private static AnnotationMirror glbOfBoundsInHierarchy(final AnnotatedIntersectionType isect, final AnnotationMirror top,
