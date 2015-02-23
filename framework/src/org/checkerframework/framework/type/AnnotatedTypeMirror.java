@@ -1531,7 +1531,7 @@ public abstract class AnnotatedTypeMirror {
          */
         public AnnotatedTypeMirror getLowerBound() {
             if (lowerBound == null) { // lazy init
-                BoundsInitializer.initializeLowerBound(this);
+                BoundsInitializer.initializeBounds(this);
             }
             fixupBoundAnnotations();
             return lowerBound;
@@ -1637,7 +1637,7 @@ public abstract class AnnotatedTypeMirror {
          */
         public AnnotatedTypeMirror getUpperBound() {
             if (upperBound == null) { // lazy init
-                BoundsInitializer.initializeUpperBound(this);
+                BoundsInitializer.initializeBounds(this);
             }
             fixupBoundAnnotations();
             return upperBound;
