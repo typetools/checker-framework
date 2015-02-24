@@ -8,11 +8,14 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.framework.util.PluginUtil;
+import org.checkerframework.framework.util.TypeArgumentMapper;
 import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -517,6 +520,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     }
 
     @Override
+    public Boolean visitTypevar_Intersection(AnnotatedTypeVariable subtype, AnnotatedIntersectionType supertype, VisitHistory visited) {
+        //this can happen when checking type param bounds
+        return visitIntersectionSupertype(subtype, supertype,  visited);
+    }
+
+    @Override
     public Boolean visitDeclared_Typevar(AnnotatedDeclaredType subtype, AnnotatedTypeVariable supertype, VisitHistory visited) {
         return visitTypevarSupertype(subtype, supertype, visited);
     }
@@ -814,6 +823,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
         final AnnotatedTypeMirror asSuperType = AnnotatedTypes.asSuper( types, subtype.atypeFactory, subtype, supertype);
 
+        fixUpRawTypes(subtype, asSuperType, supertype, types);
+
         //if we have a type for enum MyEnum {...}
         //When the supertype is the declaration of java.lang.Enum<E>, MyEnum values become
         //Enum<MyEnum>.  Where really, we would like an Enum<E> with the annotations from Enum<MyEnum>
@@ -836,5 +847,60 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             }
         }
         return (T) AnnotatedTypes.asSuper( types, subtype.atypeFactory, subtype, supertype);
+    }
+
+    /**
+     * Some times we create type arguments for types that were raw.  When we do an asSuper we lose these
+     * arguments.  If in the converted type (i.e. the subtype as super) is missing type arguments AND
+     * those type arguments should come from the original subtype's type arguments then we copy the
+     * original type arguments to the converted type.
+     * e.g.
+     * We have a type W, that "wasRaw" ArrayList<? extends Object>
+     * When W is converted to type A, List, using asSuper it no longer has its type argument.
+     * But since the type argument to List should be the same as that to ArrayList we copy over
+     * the type argument of W to A.
+     * A becomes List<? extends Object>
+     *
+     * @param originalSubtype The subtype before being converted by asSuper
+     * @param asSuperType he subtype after being converted by asSuper
+     * @param supertype The supertype for which asSuperType should have the same underlying type
+     * @param types The types utility
+     */
+    private static void fixUpRawTypes(final AnnotatedTypeMirror originalSubtype, final AnnotatedTypeMirror asSuperType,
+                                      final AnnotatedTypeMirror supertype, final Types types) {
+        if (asSuperType != null && asSuperType.getKind() == TypeKind.DECLARED && originalSubtype.getKind() == TypeKind.DECLARED) {
+            final AnnotatedDeclaredType declaredAsSuper = (AnnotatedDeclaredType) asSuperType;
+            final AnnotatedDeclaredType declaredSubtype = (AnnotatedDeclaredType) originalSubtype;
+
+            if (declaredAsSuper.wasRaw() && declaredAsSuper.getTypeArguments().isEmpty()
+                    && !declaredSubtype.getTypeArguments().isEmpty()) {
+
+                Set<Pair<Integer, Integer>> typeArgMap =
+                        TypeArgumentMapper.mapTypeArgumentIndices(
+                                (TypeElement) declaredSubtype.getUnderlyingType().asElement(),
+                                (TypeElement) declaredAsSuper.getUnderlyingType().asElement(), types);
+
+                if (typeArgMap.size() == declaredSubtype.getTypeArguments().size()) {
+
+                    List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<AnnotatedTypeMirror>();
+
+                    List<Pair<Integer, Integer>> orderedByDestination = new ArrayList<>(typeArgMap);
+                    Collections.sort(orderedByDestination, new Comparator<Pair<Integer, Integer>>() {
+                        @Override
+                        public int compare(Pair<Integer, Integer> o1, Pair<Integer, Integer> o2) {
+                            return o1.second - o2.second;
+                        }
+                    });
+
+                    final List<? extends AnnotatedTypeMirror> subTypeArgs = declaredSubtype.getTypeArguments();
+                    if (typeArgMap.size() == ((AnnotatedDeclaredType) supertype).getTypeArguments().size()) {
+                        for (Pair<Integer, Integer> mapping : orderedByDestination) {
+                            newTypeArgs.add(subTypeArgs.get(mapping.first).deepCopy());
+                        }
+                    }
+                    declaredAsSuper.setTypeArguments(newTypeArgs);
+                }
+            }
+        }
     }
 }
