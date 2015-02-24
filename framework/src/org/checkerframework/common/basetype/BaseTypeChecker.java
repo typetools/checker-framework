@@ -19,6 +19,7 @@ import java.util.Set;
 
 import javax.lang.model.element.TypeElement;
 
+import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.SourceChecker;
@@ -144,13 +145,31 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
       * are created when overriding this method.
       *
       * This method is protected so it can be overridden, but it is only intended to be called internally by the BaseTypeChecker.
-      * Please override this method but do not call it from classes other than BaseTypeChecker.
+      * Please override this method but do not call it from classes other than BaseTypeChecker. Subclasses that override
+      * this method should call super and added dependencies so that checkers required for reflection resolution are included
+      * if reflection resolution is requested.
       *
       * The BaseTypeChecker will not modify the list returned by this method.
       */
      protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+        if (shouldResolveReflection()) {
+            return new LinkedHashSet<Class<? extends BaseTypeChecker>>(
+                    Collections.singleton(MethodValChecker.class));
+        }
          return new LinkedHashSet<Class<? extends BaseTypeChecker>>();
      }
+
+    /**
+     * Returns whether or not reflection should be resolved
+     * @return
+     */
+    public boolean shouldResolveReflection() {
+        // Because this method is indirectly called by getSubcheckers and
+        // this.getOptions or this.hasOption
+        // also call getSubcheckers, super.getOptions is called here.
+        return super.getOptions().containsKey("resolveReflection");
+
+    }
 
      /**
      * Returns the appropriate visitor that type-checks the compilation unit
