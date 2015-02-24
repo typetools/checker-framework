@@ -12,23 +12,23 @@ public class Constructors {
     static @GuardedBy("unlocked") Object staticGuardedByNonStatic = new Object();
     static @GuardedBy("unlockedStatic") Object staticGuardedByStatic = new Object();
 
-    Object initializedObject1 = unlocked;
-    Object initializedObject2 = guardedThis;
-    Object initializedObject3 = guardedOther;
-    Object initializedObject4 = staticGuardedByNonStatic;
+    Object initializedObject1 = unlocked.toString();
+    Object initializedObject2 = guardedThis.toString();
+    Object initializedObject3 = guardedOther.toString();
+    Object initializedObject4 = staticGuardedByNonStatic.toString();
     //:: error: (contracts.precondition.not.satisfied.field)
-    Object initializedObject5 = nonstaticGuardedByStatic;
+    Object initializedObject5 = nonstaticGuardedByStatic.toString();
     //:: error: (contracts.precondition.not.satisfied.field)
-    Object initializedObject6 = staticGuardedByStatic;
+    Object initializedObject6 = staticGuardedByStatic.toString();
 
     Constructors() {
-        unlocked = "m";
-        guardedThis = "m";
-        guardedOther = "m";
-        staticGuardedByNonStatic = "m";
+        unlocked.toString();
+        guardedThis.toString();
+        guardedOther.toString();
+        staticGuardedByNonStatic.toString();
         //:: error: (contracts.precondition.not.satisfied.field)
-        nonstaticGuardedByStatic = "m";
+        nonstaticGuardedByStatic.toString();
         //:: error: (contracts.precondition.not.satisfied.field)
-        staticGuardedByStatic = "m";
+        staticGuardedByStatic.toString();
     }
 }
