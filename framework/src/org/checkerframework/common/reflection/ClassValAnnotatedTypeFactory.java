@@ -3,6 +3,8 @@ package org.checkerframework.common.reflection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -10,8 +12,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
-
-import com.sun.source.tree.*;
+import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -19,148 +20,94 @@ import org.checkerframework.common.reflection.qual.ClassBound;
 import org.checkerframework.common.reflection.qual.ClassVal;
 import org.checkerframework.common.reflection.qual.ClassValBottom;
 import org.checkerframework.common.reflection.qual.UnknownClass;
+import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.StringVal;
-import org.checkerframework.framework.flow.CFAbstractAnalysis;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFTransfer;
-import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.TypeQualifiers;
-import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.ListTreeAnnotator;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.ArrayType;
+import com.sun.tools.javac.code.Type.IntersectionClassType;
+import com.sun.tools.javac.code.Type.TypeVar;
+import com.sun.tools.javac.code.Type.UnionClassType;
+import com.sun.tools.javac.code.Type.WildcardType;
 
-/**
- * AnnotatedTypeFactory for the Class Value type system. This factory requires
- * an {@link AnnotationProvider} that provides {@link StringVal} annotations.
- *
- * @author plvines
- * @author rjust
- *
- */
 @TypeQualifiers({ UnknownClass.class, ClassVal.class, ClassBound.class,
         ClassValBottom.class })
 public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    private final AnnotationMirror CLASSVAL = AnnotationUtils.fromClass(
-            elements, ClassVal.class);
-    private final AnnotationMirror CLASSBOUND = AnnotationUtils.fromClass(
-            elements, ClassBound.class);
-    private final AnnotationMirror CLASSVAL_BOTTOM = AnnotationUtils.fromClass(
-            elements, ClassValBottom.class);
-    private final AnnotationMirror UNKNOWN_CLASS = AnnotationUtils.fromClass(
-            elements, UnknownClass.class);
+    /**Methods with the form: @ClassVal("name") Class method(String name){...}*/
+    private final ExecutableElement[] forName = {
+            TreeUtils.getMethod("java.lang.Class", "forName", 1, processingEnv),
+            TreeUtils.getMethod("java.lang.ClassLoader", "loadClass", 1,
+                    processingEnv) };
 
-    // variable for comparing a MethodInvocationTree against to determine if it
-    // is pertinent to this
-    private final ExecutableElement forName = TreeUtils.getMethod(
-            "java.lang.Class", "forName", 1, processingEnv);
-    private final ExecutableElement loadClass = TreeUtils.getMethod(
-            "java.lang.ClassLoader", "loadClass", 1, processingEnv);
-    private final ExecutableElement getClass = TreeUtils.getMethod(
-            "java.lang.Object", "getClass", 0, processingEnv);
+    /**Methods the form: @ClassBound("ReceiverType") Class method(ReceiverType this){...}*/
+    private final ExecutableElement[] getClass = {TreeUtils.getMethod(
+            "java.lang.Object", "getClass", 0, processingEnv)};
 
-    private final AnnotationProvider annotationProvider;
+    protected final AnnotationMirror CLASSVAL_TOP = AnnotationUtils
+            .fromClass(elements, UnknownClass.class);
 
-    /**
-     * Constructor. Initializes all the AnnotationMirror and Executable Element
-     * variables, sets the default annotation.
-     *
-     * @param checker
-     *            The checker used with this AnnotatedTypeFactory
-     * @param annotationProvider
-     *            The AnnotationProvider providing the necessary StringVal
-     *            annotations.
-     *
-     */
-    public ClassValAnnotatedTypeFactory(BaseTypeChecker checker,
-            AnnotationProvider annotationProvider) {
+
+    public ClassValAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        this.annotationProvider = annotationProvider;
-        // TODO This hack is error prone as it is not obvious whether and how
-        // postInit has to be used in sub classes!
         if (this.getClass().equals(ClassValAnnotatedTypeFactory.class)) {
             this.postInit();
         }
-        this.defaults.addAbsoluteDefault(
-                AnnotationUtils.fromClass(elements, UnknownClass.class),
-                DefaultLocation.ALL);
     }
 
-    @Override
-    public CFTransfer createFlowTransferFunction(
-            CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
-        // The super implementation uses the name of the checker
-        // to reflectively create a transfer with the checker name followed
-        // by Transfer. Since this factory is intended to be used with
-        // any checker, explicitly create the default CFTransfer
-        return new CFTransfer(analysis);
-    }
-
-    @Override
-    protected TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                super.createTreeAnnotator(),
-                new ClassValTreeAnnotator(this)
-        );
-    }
-
-    @Override
-    public QualifierHierarchy createQualifierHierarchy() {
-        MultiGraphQualifierHierarchy.MultiGraphFactory factory = createQualifierHierarchyFactory();
-        factory.addQualifier(CLASSVAL_BOTTOM);
-        factory.addQualifier(CLASSVAL);
-        factory.addQualifier(CLASSBOUND);
-        factory.addQualifier(UNKNOWN_CLASS);
-        factory.addSubtype(CLASSVAL, UNKNOWN_CLASS);
-        factory.addSubtype(CLASSVAL_BOTTOM, CLASSVAL);
-
-        factory.addSubtype(CLASSBOUND, UNKNOWN_CLASS);
-        factory.addSubtype(CLASSVAL_BOTTOM, CLASSBOUND);
-
-        return new ClassValQualifierHierarchy(factory, CLASSVAL_BOTTOM);
-    }
-
-    /**
-     * Constructs a ClassVal annotation by adding all the elements in values to
-     * a new ClassVal annotation and returning it
-     *
-     * @param values
-     *            The list of values to add to the new ClassVal annotation
-     *
-     * @return A new ClassVal annotation with values as its value
-     */
     private AnnotationMirror createClassVal(List<String> values) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
                 ClassVal.class.getCanonicalName());
         builder.setValue("value", values);
-
         return builder.build();
     }
 
-    /**
-     * Constructs a ClassBound annotation by adding all the elements in values
-     * to a new ClassBound annotation and returning it
-     *
-     * @param values
-     *            The list of values to add to the new ClassBound annotation
-     *
-     * @return A new ClassBound annotation with values as its value
-     */
     private AnnotationMirror createClassBound(List<String> values) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
                 ClassBound.class.getCanonicalName());
         builder.setValue("value", values);
-
         return builder.build();
+    }
+
+    /**
+     * Returns the list of classnames form @ClassBound or @ClassVal if anno is
+     * not @ClassBound or @ClassVal, then returns an empty list
+     *
+     * @param anno any AnnotationMirror
+     * @return List of classnames in anno
+     */
+    public static List<String> getClassNames(AnnotationMirror anno) {
+        if (AnnotationUtils.areSameByClass(anno, ClassBound.class)
+                || AnnotationUtils.areSameByClass(anno, ClassVal.class)) {
+            return AnnotationUtils.getElementValueArray(anno, "value",
+                    String.class, true);
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new ClassValQualifierHierarchy(factory);
     }
 
     /**
@@ -169,16 +116,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected class ClassValQualifierHierarchy extends
             MultiGraphQualifierHierarchy {
 
-        /**
-         * @param factory
-         *            MultiGraphFactory to use to construct this
-         * @param bottom
-         *            The bottom annotation in the constructed hierarchy
-         */
-        protected ClassValQualifierHierarchy(
-                MultiGraphQualifierHierarchy.MultiGraphFactory factory,
-                AnnotationMirror bottom) {
-            super(factory, bottom);
+        public ClassValQualifierHierarchy(MultiGraphFactory f) {
+            super(f);
         }
 
         /*
@@ -196,51 +135,20 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return a2;
             } else if (isSubtype(a2, a1)) {
                 return a1;
-            } else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
-                List<String> a1Values = AnnotationUtils.getElementValueArray(
-                        a1, "value", String.class, true);
-                List<String> a2Values = AnnotationUtils.getElementValueArray(
-                        a2, "value", String.class, true);
-                ArrayList<String> newValues = new ArrayList<String>();
+            } else  {
+                List<String> a1ClassNames = getClassNames(a1);
+                List<String> a2ClassNames = getClassNames(a2);
+                Set<String> lubClassNames = new TreeSet<String>();
+                lubClassNames.addAll(a1ClassNames);
+                lubClassNames.addAll(a2ClassNames);
 
-                for (String s : a1Values) {
-                    if (!newValues.contains(s)) {
-                        newValues.add(s);
-                    }
+                //If either annotation is a ClassBound, the lub must also be a class bound.
+                if (AnnotationUtils.areSameByClass(a1, ClassBound.class) ||
+                        AnnotationUtils.areSameByClass(a2, ClassBound.class)) {
+                    return createClassBound(new ArrayList<>(lubClassNames));
+                } else {
+                    return createClassVal(new ArrayList<>(lubClassNames));
                 }
-                for (String s : a2Values) {
-                    if (!newValues.contains(s)) {
-                        newValues.add(s);
-                    }
-                }
-
-                AnnotationMirror result = createClassVal(newValues);
-
-                return result;
-            } else if (AnnotationUtils.areSameIgnoringValues(a1, CLASSBOUND)
-                    && AnnotationUtils.areSameIgnoringValues(a2, CLASSVAL)) {
-                List<String> a1Values = AnnotationUtils.getElementValueArray(
-                        a1, "value", String.class, true);
-                List<String> a2Values = AnnotationUtils.getElementValueArray(
-                        a2, "value", String.class, true);
-                ArrayList<String> newValues = new ArrayList<String>();
-
-                for (String s : a1Values) {
-                    if (!newValues.contains(s)) {
-                        newValues.add(s);
-                    }
-                }
-                for (String s : a2Values) {
-                    if (!newValues.contains(s)) {
-                        newValues.add(s);
-                    }
-                }
-
-                AnnotationMirror result = createClassBound(newValues);
-
-                return result;
-            } else {
-                return a1;
             }
         }
 
@@ -250,84 +158,44 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * a subtype of lhs iff lhs contains at least every element of rhs
          */
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            // Are they both ClassVal?
-            if (AnnotationUtils.areSameIgnoringValues(lhs, CLASSVAL)
-                    && AnnotationUtils.areSameIgnoringValues(rhs, CLASSVAL)) {
-                // Are their values the same, then?
-                if (AnnotationUtils.areSame(rhs, lhs)) {
-                    lhs = CLASSVAL;
-                    rhs = CLASSVAL;
-
-                    // return super.isSubtype(rhs, lhs) || true;
-                    return true;
-                } else {
-                    List<String> lhsValues = AnnotationUtils
-                            .getElementValueArray(lhs, "value", String.class,
-                                    true);
-                    List<String> rhsValues = AnnotationUtils
-                            .getElementValueArray(rhs, "value", String.class,
-                                    true);
-
-                    return lhsValues.containsAll(rhsValues);
-                }
-            } else if (AnnotationUtils.areSameIgnoringValues(lhs, CLASSBOUND)
-                    && AnnotationUtils.areSameIgnoringValues(rhs, CLASSVAL)) {
-                // Are their values the same, then?
-                if (AnnotationUtils.areSame(rhs, lhs)) {
-                    return true;
-                } else {
-                    List<String> lhsValues = AnnotationUtils
-                            .getElementValueArray(lhs, "value", String.class,
-                                    true);
-                    List<String> rhsValues = AnnotationUtils
-                            .getElementValueArray(rhs, "value", String.class,
-                                    true);
-
-                    return lhsValues.containsAll(rhsValues);
-                }
+        public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
+            if (AnnotationUtils.areSame(sub, sup)
+                    || AnnotationUtils.areSameByClass(sup, UnknownClass.class)
+                    || AnnotationUtils
+                            .areSameByClass(sub, ClassValBottom.class)) {
+                return true;
+            }
+            if (AnnotationUtils.areSameByClass(sub, UnknownClass.class)
+                    || AnnotationUtils
+                            .areSameByClass(sup, ClassValBottom.class)) {
+                return false;
+            }
+            if (AnnotationUtils.areSameByClass(sup, ClassVal.class)
+                    && AnnotationUtils.areSameByClass(sub, ClassBound.class)) {
+                return false;
             }
 
-            else if (AnnotationUtils.areSameIgnoringValues(lhs, CLASSBOUND)
-                    && AnnotationUtils.areSameIgnoringValues(rhs, CLASSBOUND)) {
-                // Are their values the same, then?
-                if (AnnotationUtils.areSame(rhs, lhs)) {
-                    return true;
-                } else {
-                    List<String> lhsValues = AnnotationUtils
-                            .getElementValueArray(lhs, "value", String.class,
-                                    true);
-                    List<String> rhsValues = AnnotationUtils
-                            .getElementValueArray(rhs, "value", String.class,
-                                    true);
+            //if super: ClassVal && sub is ClassVal
+            //if super: ClassBound && (sub is ClassBound or ClassVal)
 
-                    return lhsValues.containsAll(rhsValues);
-                }
-            }
+            List<String> supValues = getClassNames(sup);
+            List<String> subValues = getClassNames(sub);
 
-            // Needed to allow ClassVal to be recognized in the supertype map
-            if (AnnotationUtils.areSameIgnoringValues(lhs, CLASSVAL)) {
-                lhs = CLASSVAL;
-            }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, CLASSVAL)) {
-                rhs = CLASSVAL;
-            }
-
-            // Needed to allow ClassVal to be recognized in the supertype map
-            if (AnnotationUtils.areSameIgnoringValues(lhs, CLASSBOUND)) {
-                lhs = CLASSBOUND;
-            }
-            if (AnnotationUtils.areSameIgnoringValues(rhs, CLASSBOUND)) {
-                rhs = CLASSBOUND;
-            }
-
-            return super.isSubtype(rhs, lhs);
+            return supValues.containsAll(subValues);
         }
     }
 
+    @Override
+    protected TreeAnnotator createTreeAnnotator() {
+        return new ListTreeAnnotator(new ClassValTreeAnnotator(this),
+                super.createTreeAnnotator());
+    }
+
     /**
-     * TreeAnnotator with the visitMemberSelect and visitMethodInvocation
-     * methods overridden
+     * Implements these type inference rules:
+     * C.class:             @ClassVal(fully qualified name of C)
+     * Class.forName(name): @ClassVal("name")
+     * exp.getClass():      @ClassBound(fully qualified classname of exp)
      */
     protected class ClassValTreeAnnotator extends TreeAnnotator {
 
@@ -335,68 +203,40 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(factory);
         }
 
-        /*
-         * Handles instances of TYPE.class to create a new ClassVal annotation
-         * with their value
-         */
         @Override
-        public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
-            ExpressionTree etree = tree.getExpression();
-            Element e = InternalUtils.symbol(etree);
-            String name = null;
-            if (e != null) {
-                name = getClassname(e);
-            } else if (etree.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
-                PrimitiveTypeTree primTree = (PrimitiveTypeTree) etree;
-                name = primTree.getPrimitiveTypeKind().name().toString();
+        public Void visitMemberSelect(MemberSelectTree tree,
+                AnnotatedTypeMirror type) {
+            if (tree.getIdentifier().toString().equals("class")) {
+                // Create annotations for Class literals
+                // C.class: @ClassVal(fully qualified name of C)
+                ExpressionTree etree = tree.getExpression();
+                Type classType = (Type) InternalUtils.typeOf(etree);
+                String name = getClassname(classType);
+                if (name != null) {
+                    AnnotationMirror newQual = createClassVal(Arrays
+                            .asList(name));
+                    type.replaceAnnotation(newQual);
+                }
             }
-            if (name != null) {
-                AnnotationMirror newQual = createClassVal(Arrays.asList(name));
-                type.replaceAnnotation(newQual);
-                return null;
-            }
-            return super.visitMemberSelect(tree, type);
+            return null;
         }
 
-        @Override
-        public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            type.replaceAnnotation(UNKNOWN_CLASS);
-            return super.visitLiteral(tree, type);
-        }
-
-        /*
-         * Handles instances of Class.forName() by attempting to get the
-         * StringVal annotation of the argument and then use that as the value
-         * for the ClassVal annotation
-         */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree,
                 AnnotatedTypeMirror type) {
 
-            if (TreeUtils.isMethodInvocation(tree, forName, processingEnv)
-                    || TreeUtils.isMethodInvocation(tree, loadClass,
-                            processingEnv)) {
-
-                // forName or loadClass will only ever have 1 argument so get
-                // just it
+            if (isForNameMethodInovaction(tree)) {
+                //Class.forName(name): @ClassVal("name")
                 ExpressionTree arg = tree.getArguments().get(0);
-
-                AnnotationMirror annotation = annotationProvider
-                        .getAnnotationMirror(arg, StringVal.class);
-                if (annotation != null) {
-                    List<String> argValues = AnnotationUtils
-                            .getElementValueArray(annotation, "value",
-                                    String.class, true);
-                    AnnotationMirror newQual = createClassVal(argValues);
+                List<String> classNames = getStringValues(arg);
+                if (classNames != null) {
+                    AnnotationMirror newQual = createClassVal(classNames);
                     type.replaceAnnotation(newQual);
-
-                    return null;
                 }
-            } else if (TreeUtils.isMethodInvocation(tree, getClass,
-                    processingEnv)) {
+            } else if (isGetClassMethodInovaction(tree)) {
+                // exp.getClass(): @ClassBound(fully qualified class name of exp)
                 Type clType;
                 if (TreeUtils.getReceiverTree(tree) != null) {
-
                     clType = (Type) InternalUtils.typeOf(TreeUtils
                             .getReceiverTree(tree));
                 } else { // receiver is null, so it is implicitly "this"
@@ -408,37 +248,109 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror newQual = createClassBound(Arrays
                         .asList(className));
                 type.replaceAnnotation(newQual);
+            }
+            return null;
+        }
+
+        private boolean isForNameMethodInovaction(MethodInvocationTree tree) {
+            for(ExecutableElement method: forName ){
+                if(TreeUtils.isMethodInvocation(tree, method, processingEnv)){
+                    return true;
+                }
+            }
+           return false;
+        }
+        private boolean isGetClassMethodInovaction(MethodInvocationTree tree) {
+            for(ExecutableElement method: getClass ){
+                if(TreeUtils.isMethodInvocation(tree, method, processingEnv)){
+                    return true;
+                }
+            }
+           return false;
+        }
+
+        private List<String> getStringValues(ExpressionTree arg) {
+            ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
+            AnnotationMirror annotation = valueATF.getAnnotationMirror(arg,StringVal.class);
+            if(annotation == null){
                 return null;
             }
-            return super.visitMethodInvocation(tree, type);
+            return AnnotationUtils.getElementValueArray(annotation, "value",
+                    String.class, true);
         }
 
         /**
-         * Return String representation of class name.
-         * This will not return the correct name for anonymous classes.
+         * Return String representation of class name. This will not return the
+         * correct name for anonymous classes.
          */
         private String getClassname(Type classType) {
-            StringBuilder className = new StringBuilder(TypesUtils.getQualifiedName((DeclaredType) classType).toString());
-            if (classType.getEnclosingType() != null) {
-                while (classType.getEnclosingType().getKind() != TypeKind.NONE) {
-                    classType = classType.getEnclosingType();
-                    int last = className.lastIndexOf(".");
-                    if (last > -1)
-                        className.replace(last, last + 1, "$");
+            switch(classType.getKind())
+            {
+                case  ARRAY:
+                    String array = "";
+                while(classType.getKind() == TypeKind.ARRAY){
+                    classType = ((ArrayType) classType).getComponentType();
+                    array+="[]";
                 }
+                return getClassname(classType)+array;
+            case DECLARED:
+                StringBuilder className = new StringBuilder(TypesUtils
+                        .getQualifiedName((DeclaredType) classType).toString());
+                if (classType.getEnclosingType() != null) {
+                    while (classType.getEnclosingType().getKind() != TypeKind.NONE) {
+                        classType = classType.getEnclosingType();
+                        int last = className.lastIndexOf(".");
+                        if (last > -1)
+                            className.replace(last, last + 1, "$");
+                    }
+                }
+                return className.toString();
+            case INTERSECTION:
+                // This could be more precise
+                return "java.lang.Object";
+            case NULL:
+                return "java.lang.Object";
+            case UNION:
+                classType = ((UnionClassType) classType).getLub();
+                return getClassname(classType);
+            case TYPEVAR:
+            case WILDCARD:
+                classType = classType.getUpperBound();
+                return getClassname(classType);
+            case INT:
+                return int.class.getCanonicalName();
+            case LONG:
+                return long.class.getCanonicalName();
+            case SHORT:
+                return short.class.getCanonicalName();
+            case BYTE:
+                return byte.class.getCanonicalName();
+            case CHAR:
+                return char.class.getCanonicalName();
+            case DOUBLE:
+                return double.class.getCanonicalName();
+            case FLOAT:
+                return float.class.getCanonicalName();
+            case BOOLEAN:
+                return boolean.class.getCanonicalName();
+            default:
+                checker.errorAbort("ClassValAnnotatedTypeFactory.getClassname: did not expect " +classType.getKind());
+                return "java.lang.Object";
             }
-            return className.toString();
+
         }
 
         private String getClassname(Element classType) {
-            StringBuilder className = new StringBuilder(ElementUtils.getQualifiedClassName(classType));
+            StringBuilder className = new StringBuilder(
+                    ElementUtils.getQualifiedClassName(classType));
             if (classType.getEnclosingElement() != null) {
-                while (classType.getEnclosingElement().getKind() == ElementKind.CLASS  ) {
+                while (classType.getEnclosingElement().getKind() == ElementKind.CLASS) {
                     classType = classType.getEnclosingElement();
                     int last = className.lastIndexOf(".");
                     if (last > -1)
                         className.replace(last, last + 1, "$");
-                    if (classType == null) break;
+                    if (classType == null)
+                        break;
                 }
             }
             return className.toString();
