@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * The top of the guarded-by qualifier hierarchy.
  * <p>
  *
- * @checker_framework_manual #lock-checker Lock Checker
+ * @checker_framework.manual #lock-checker Lock Checker
  */
 @TypeQualifier
 @SubtypeOf({})
