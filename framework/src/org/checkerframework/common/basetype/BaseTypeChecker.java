@@ -20,7 +20,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -364,25 +363,17 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
             try {
                 BaseTypeChecker instance = subcheckerClass.newInstance();
+                instance.setProcessingEnvironment(this.processingEnv);
                 instance.subcheckers = Collections.unmodifiableList(new ArrayList<BaseTypeChecker>()); // Prevent the new checker from storing non-immediate subcheckers
                 immediateSubcheckers.add(instance);
-                alreadyInitializedSubcheckerMap.put(subcheckerClass, instance);
                 instance.immediateSubcheckers = instance.instantiateSubcheckers(alreadyInitializedSubcheckerMap);
+                alreadyInitializedSubcheckerMap.put(subcheckerClass, instance);
             } catch (Exception e) {
                 ErrorReporter.errorAbort("Could not create an instance of " + subcheckerClass);
             }
         }
 
         return Collections.unmodifiableList(immediateSubcheckers);
-    }
-
-    @Override
-    protected void setProcessingEnvironment(ProcessingEnvironment env) {
-        for (BaseTypeChecker checker : getSubcheckers()) {
-            checker.setProcessingEnvironment(env);
-        }
-
-        super.setProcessingEnvironment(env);
     }
 
     /*
@@ -408,25 +399,33 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     // AbstractTypeProcessor delegation
     @Override
     public void typeProcess(TypeElement element, TreePath tree) {
+
+        // If Java has issued errors, don't run any checkers on this compilation unit.
+        // If a sub checker issued errors, run the next checker on this compilation unit.
+
+        // Log.nerrors counts the number of Java and checker errors have been issued.
+        // super.typeProcess does not typeProcess if log.nerrors > errorsOnLastExit
+
+        // In order to run the next checker on this compilation unit even if the previous
+        // issued errors, the next checker's errsOnLastExit needs to include all errors
+        // issued by previous checkers.
+
+        // To prevent any checkers from running if a Java error was issued for this compilation unit,
+        // errsOnLastExit should not include any Java errors.
+        Context context = ((JavacProcessingEnvironment)processingEnv).getContext();
+        Log log = Log.instance(context);
+        int nerrorsOfAllPreviousCheckers = 0;
         for (BaseTypeChecker checker : getSubcheckers()) {
-            checker.errsOnLastExit = this.errsOnLastExit;
+            checker.errsOnLastExit += nerrorsOfAllPreviousCheckers;
+            int errorsBeforeTypeChecking = log.nerrors;
+
             checker.typeProcess(element, tree);
-            this.errsOnLastExit = checker.errsOnLastExit;
-        }
 
+            int errorsAfterTypeChecking = log.nerrors;
+            nerrorsOfAllPreviousCheckers += errorsAfterTypeChecking - errorsBeforeTypeChecking;
+        }
+        this.errsOnLastExit += nerrorsOfAllPreviousCheckers;
         super.typeProcess(element, tree);
-
-        if (!getSubcheckers().isEmpty()) {
-            Context context = ((JavacProcessingEnvironment)processingEnv).getContext();
-            Log log = Log.instance(context);
-            if (log.nerrors > this.errsOnLastExit) {
-                // If there is a Java error, do not perform any
-                // of the component type checks, but come back
-                // for the next compilation unit.
-                this.errsOnLastExit = log.nerrors;
-            }
-        }
-        // Do not add code past this point - the error handling must come last.
     }
 
     @Override
