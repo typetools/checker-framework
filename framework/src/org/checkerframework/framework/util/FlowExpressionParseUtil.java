@@ -26,6 +26,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.PureMethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
@@ -216,6 +217,12 @@ public class FlowExpressionParseUtil {
         } else if (identifierMatcher.matches() && allowIdentifier) {
             Resolver resolver = new Resolver(env);
             try {
+                // local variable
+                VariableElement varElem = resolver.findLocalVariable(s, path);
+                if (varElem != null) {
+                    return new LocalVariable(varElem);
+                }
+
                 // field access
                 TypeMirror receiverType = context.receiver.getType();
                 boolean originalReceiver = true;

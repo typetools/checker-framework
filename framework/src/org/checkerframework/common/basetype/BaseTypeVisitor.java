@@ -10,6 +10,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
@@ -889,8 +890,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected void checkPreconditions(Tree tree,
             Element invokedElement, boolean methodCall, Set<Pair<String, String>> additionalPreconditions) {
-        Set<Pair<String, String>> preconditions = contractsUtils
-                .getPreconditions(invokedElement);
+        Set<Pair<String, String>> preconditions = //new HashSet<>();
+                contractsUtils.getPreconditions(invokedElement);
 
         if (additionalPreconditions != null) {
             preconditions.addAll(additionalPreconditions);
@@ -934,6 +935,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
                     Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory,
                             receiver);
+
+                    flowExprContext = new FlowExpressionContext(
+                            internalReceiver, null, checker.getContext());
+                }
+                else if (nodeNode instanceof ArrayAccessNode) {
+                    // Adapted from FlowExpressionParseUtil.buildFlowExprContextForUse
+
+                    Receiver internalReceiver = FlowExpressions.internalReprOfArrayAccess(atypeFactory,
+                        (ArrayAccessNode) nodeNode);
 
                     flowExprContext = new FlowExpressionContext(
                             internalReceiver, null, checker.getContext());
@@ -1663,6 +1673,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         node.getExpression());
             }
             break;
+        case UNION:
+            AnnotatedUnionType unionType = (AnnotatedUnionType) throwType;
+            Set<AnnotationMirror> foundPrimary = unionType.getAnnotations();
+            if (!atypeFactory.getQualifierHierarchy().isSubtype(foundPrimary,
+                    required)) {
+                checker.report(Result.failure("throw.type.invalid",
+                        foundPrimary, required), node.getExpression());
+            }
+            for (AnnotatedTypeMirror altern : unionType.getAlternatives()) {
+                if (!atypeFactory.getQualifierHierarchy().isSubtype(
+                        altern.getAnnotations(), required)) {
+                    checker.report(
+                            Result.failure("throw.type.invalid",
+                                    altern.getAnnotations(), required),
+                            node.getExpression());
+                }
+            }
+            break;
         default:
             ErrorReporter.errorAbort("Unexpected throw expression type: "
                     + throwType.getKind());
@@ -1732,13 +1760,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param valueExp the AST node for the value
      * @param errorKey the error message to use if the check fails (must be a
      *        compiler message key, see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
-     * @param isLocalVariableAssignement
+     * @param isLocalVariableAssignment
      *            Are we dealing with an assignment and is the lhs a local
      *            variable?
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
             ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey,
-            boolean isLocalVariableAssignement) {
+            boolean isLocalVariableAssignment) {
         if (shouldSkipUses(valueExp))
             return;
         if (varType.getKind() == TypeKind.ARRAY
@@ -1755,7 +1783,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExp);
         assert valueType != null : "null type for expression: " + valueExp;
         commonAssignmentCheck(varType, valueType, valueExp, errorKey,
-                isLocalVariableAssignement);
+                isLocalVariableAssignment);
     }
 
     /**
@@ -1768,13 +1796,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param valueTree the location to use when reporting the error message
      * @param errorKey the error message to use if the check fails (must be a
      *        compiler message key, see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
-     * @param isLocalVariableAssignement
+     * @param isLocalVariableAssignment
      *            Are we dealing with an assignment and is the lhs a local
      *            variable?
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey,
-            boolean isLocalVariableAssignement) {
+            boolean isLocalVariableAssignment) {
 
         String valueTypeString = valueType.toString();
         String varTypeString = varType.toString();
@@ -2821,11 +2849,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     protected void checkAccess(IdentifierTree node, Void p) {
+        // Do not add functionality to this method body.
+        // Add it in the method called below instead.
+        checkAccess(node, p, true);
+    }
+
+    protected void checkAccess(IdentifierTree node, Void p, boolean doCheckPreconditions) {
         MemberSelectTree memberSel = enclosingMemberSelect();
         ExpressionTree tree;
         Element elem;
 
-        checkPreconditions(node, TreeUtils.elementFromUse(node), false);
+        if (doCheckPreconditions) {
+            checkPreconditions(node, TreeUtils.elementFromUse(node), false);
+        }
 
         if (memberSel == null) {
             tree = node;
@@ -2840,7 +2876,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(tree);
 
-        checkPreconditions(tree, elem, false);
+        if (doCheckPreconditions) {
+            checkPreconditions(tree, elem, false);
+        }
 
         if (!isAccessAllowed(elem, receiver, tree)) {
             checker.report(Result.failure("unallowed.access", elem, receiver), node);

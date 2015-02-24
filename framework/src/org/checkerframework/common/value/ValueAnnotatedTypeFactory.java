@@ -47,6 +47,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
@@ -245,6 +246,11 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
 
         public ValueTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
+        }
+        @Override
+        public Void visitTypeVariable(AnnotatedTypeVariable type, Void p) {
+            type.getLowerBound().replaceAnnotation(BOTTOMVAL);
+            return super.visitTypeVariable(type, p);
         }
 
         @Override

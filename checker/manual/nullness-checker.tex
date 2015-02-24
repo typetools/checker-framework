@@ -504,8 +504,8 @@ Section~\ref{suppressing-warnings}).  An example use is
     @Nullable Object getObject(...) { ... }
 
     void myMethod() {
-      // The programmer knows that this particular call never returns null,
-      // perhaps based on the arguments or the state of other objects.
+      // The programmer knows that this particular call to getObject never returns
+      // null, perhaps based on the arguments or the state of other objects.
       @SuppressWarnings("nullness")
       @NonNull Object o2 = getObject(...);
 \end{Verbatim}
@@ -532,68 +532,34 @@ suppress warnings; see below.
 Occasionally, it is inconvenient or
 verbose to use the \<@SuppressWarnings> annotation.  For example, Java does
 not permit annotations such as \<@SuppressWarnings> to appear on statements.
-In such cases, you may be able to use the \<@AssumeAssertion> string in
+In such cases, you can use the \<@AssumeAssertion> string in
 an \<assert> message (see Section~\ref{assumeassertion}).
 
-For situations when all of these approaches are inconvenient,
-the Nullness Checker provides an additional way to suppress warnings:
-via the \<castNonNull> method.  This is
-appropriate when the Nullness Checker issues a warning, but the programmer
-knows for sure that the warning is a false positive, because the value
-cannot ever be null at run time.
+If you need to suppress a warning within an expression, then
+sometimes writing an assertion is not convenient.  In such a case,
+you can suppress warnings by writing a call to the
+\refmethod{checker/nullness}{NullnessUtils}{castNonNull}{-T-} method.
+The rest of this section discusses the \<castNonNull> method.
 
-\begin{enumerate}
-\item
-  Use an assertion.  If the string ``\<@AssumeAssertion(nullness)>''
-  appears in the message, then the Nullness Checker treats the
-  assertion as suppressing a warning and assumes that the assertion always
-  succeeds.  For example, the checker assumes that no null pointer
-  exception can occur in code such as
-\begin{Verbatim}
-  assert x != null : "@AssumeAssertion(nullness)";
-  ... x.f ...
-\end{Verbatim}
-
-  If the string ``\<@AssumeAssertion(nullness)>'' does not appear in the
-  assertion message, then the Nullness Checker treats the assertion as being
-  used for defensive programming, and it warns if the method might throw a
-  nullness-related exception.
-
-  A downside of putting the string in the assertion message is that if the
-  assertion ever fails, then a user might see the string and be confused.
-  But the string should only be used if the programmer has reasoned that
-  the assertion can never fail.
-
-% (Another way of stating the Nullness Checker's use of assertions is as an
-% additional caveat to the guarantees provided by a checker
-% (Section~\ref{checker-guarantees}).  The Nullness Checker prevents null
-% pointer errors in your code under the assumption that assertions are
-% enabled, and it does not guarantee that all of your assertions succeed.)
-
-
-\item
-  Use the \refmethod{checker/nullness}{NullnessUtils}{castNonNull}{-T-} method.
-
-The Nullness
- Checker considers both the return value, and also the argument, to
- be non-null after the method call.  Therefore, the
- \<castNonNull> method can be used either as a cast expression or
- as a statement.  The Nullness Checker issues no warnings in any of
-the following code:
+The Nullness Checker considers both the return value, and also the
+argument, to be non-null after the \<castNonNull> method call.
+The Nullness Checker issues no warnings in any of the following
+code:
 
 \begin{Verbatim}
-  // one way to use castNonNull as a cast:
+  // One way to use castNonNull as a cast:
   @NonNull String s = castNonNull(possiblyNull1);
 
-  // another way to use castNonNull as a cast:
+  // Another way to use castNonNull as a cast:
   castNonNull(possiblyNull2).toString();
 
-  // one way to use castNonNull as a statement:
+  // It is possible, but not recommmended, to use castNonNull as a statement
+  // (it would be better to write an assert statement and @AssumeAssertion instead):
   castNonNull(possiblyNull3);
   possiblyNull3.toString();
 \end{Verbatim}
 
-  The method also throws \<AssertionError> if Java assertions are enabled and
+  The \<castNonNull> method throws \<AssertionError> if Java assertions are enabled and
   the argument is \<null>.  However, it is not intended for general defensive
   programming; see Section~\ref{defensive-programming}.
 
@@ -606,131 +572,17 @@ the following code:
   defensive programming.  See Section~\ref{defensive-programming} for an
   explanation of the distinction.
 
-%% AssertParametersNonNull was removed. Use EnsuresNonNull instead.
-%% \item
-%%   Use the \refqualclass{checker/nullness/qual}{AssertParametersNonNull}
-%%   annotation.  It is used on \<castNonNull>, and may be used on other
-%%   methods with the same semantics; it should probably never be used in any
-%%   other situation.
-
-\end{enumerate}
-
-
-\subsection{Suppressing warnings on nullness-checking routines and defensive programming\label{defensive-programming}}
-
-%% Work this in
-% As explained in Section~\ref{annotate-normal-behavior}, annotations should
-% indicate normal behavior that will not cause an exception.
-%
-% TODO: discuss how to write your own, and why the default doesn't have
-% assert or checking methods suppress warnings.
-
-
-One way to suppress warnings in the Nullness Checker is to use
-method \code{castNonNull}.
-(Section~\ref{suppressing-warnings-with-assertions} gives other techniques.)
-
-This section explains why the Nullness Checker introduces a new method
-rather than re-using the \<assert> statement (as in
-\<assert x != null>) or an existing method such as:
-
-\begin{Verbatim}
-  org.junit.Assert.assertNotNull(Object)
-  com.google.common.base.Preconditions.checkNotNull(Object)
-\end{Verbatim}
-
-In each case, the assertion or method indicates an application invariant --- a
-fact that should always be true.  There are two distinct reasons a
-programmer may have written the invariant, depending on whether the
-programmer is 100\% sure that the application invariant holds.
-
-\begin{enumerate}
-\item
-  A programmer might write it as \textbf{defensive programming}.  This causes
-  the program to throw an exception, which is useful for debugging because
-  it gives an earlier run-time indication of the error.
-  A programmer would use an assertion in this way if the programmer is not
-  100\% sure that the application invariant holds.
-
-  % , or even to document what the program
-  % is intended to do.
-
-\item
-  A programmer might write it to \textbf{suppress} false positive
-  \textbf{warning messages} from a checker.  A programmer would use an
-  assertion this way if the programmer is 100\% sure that the application
-  invariant holds, and the reference can never be null at run time.
-
-\end{enumerate}
-
-With assertions and existing methods like JUnit's \<assertNotNull>, there
-is no way of knowing the programmer's intent in using the method.
-Different programmers or codebases may use them in different ways.
-Guessing wrong would make the Nullness Checker less useful, because it
-would either miss real errors or issue warnings where there is no real
-error.  Also, different checking tools issue different false warnings that
-need to be suppressed, so warning suppression needs to be customized for
-each tool rather than inferred from general-purpose code.
-
-
-As an example of using assertions for defensive programming, some style
-guides suggest using assertions or method calls to indicate nullness.  A
-programmer might write
-
-\begin{Verbatim}
-    String s = ...
-    assert s != null;    // or:  assertNotNull(s);   or: checkNotNull(s);
-    ... Double.valueOf(s) ...
-\end{Verbatim}
-
-A programming error might cause \<s> to be null, in which case the code
-would throw an exception at run time.
-If the assertion caused the Nullness Checker to assume that \<s> is not
-\<null>, then the Nullness Checker would issue no warning for this code.
-That would be undesirable, because the whole purpose of the Nullness
-Checker is to give a compile-time warning about possible run-time
-exceptions.  Furthermore, if the programmer uses assertions for defensive
-programming systematically throughout the codebase, then many useful
-Nullness Checker warnings would be suppressed.
-
-
-Because it is important to distinguish between the two uses of assertions
-(defensive programming vs.~suppressing warnings), the Checker Framework
-introduces the \refmethod{checker/nullness}{NullnessUtils}{castNonNull}{-T-} method.
-Unlike existing assertions and
-methods, \<castNonNull> is intended only to suppress false warnings that are
-issued by the Nullness Checker, not for defensive programming.
-
-If you know that a particular codebase uses
-% the \<assert> statement or
-a nullness-checking method not for defensive programming but to indicate
-facts that are guaranteed to be true (that is, these assertions will never
-fail at run time), then you can cause the Nullness Checker to suppress
-warnings related to them, just as it does for \<castNonNull>.
-Annotate its definition just as
-\refmethod{checker/nullness}{NullnessUtils}{castNonNull}{-T-} is annotated (see the
-source code for the Checker Framework).
-% TODO:
-% For an assert statement, XXXXX.
-Also, be sure to document the intention in the method's Javadoc, so that
-programmers do not
-accidentally misuse it for defensive programming.
-
-
-If you are annotating a codebase that already contains precondition checks,
-such as:
-
-\begin{Verbatim}
-  public String get(String key, String def) {
-    checkNotNull(key, "key"); //NOI18N
-    ...
-  }
-\end{Verbatim}
-
-\noindent
-then you should mark the appropriate parameter as \<@NonNull> (which is the
-default).  This will prevent the checker from issuing a warning about the
-\<checkNotNull> call.
+The Nullness Checker introduces a new method, rather than re-using an
+existing method such as \<org.junit.Assert.assertNotNull(Object)> or
+\<com.google.common.base.Preconditions.checkNotNull(Object)>.  Those
+methods are comonly used for defensive programming, so it is impossible to
+know the programmer's intent when writing them.  Therefore, it is important to
+have a method call that is used only for warning suppression.  See
+Section~\ref{defensive-programming} for a discussion of
+the distinction between warning suppression and defensive programming.
+% Also, different checking tools issue different false warnings that
+% need to be suppressed, so warning suppression needs to be customized for
+% each tool.
 
 
 \section{Examples\label{nullness-example}}
@@ -887,7 +739,7 @@ Here are some other tips:
     Nullness Checker cannot figure it out, then you can tell it by writing
     an assertion (see Section~\ref{suppressing-warnings}):
 \begin{Verbatim}
-assert var != null : "@SuppressWarnings(nullness)";
+assert var != null : "@AssumeAssertion(nullness)";
 \end{Verbatim}
 \item
     To indicate that a routine returns the same value every time it is
@@ -928,6 +780,7 @@ Nullness Checker, as described in Figure~\ref{fig-nullness-refactoring}.
 \begin{tabular}{ll}
 \begin{tabular}{|l|}
 \hline
+ ~android.annotation.NonNull~ \\ \hline
  ~android.support.annotation.NonNull~ \\ \hline
  ~com.sun.istack.internal.NotNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.NonNull~ \\ \hline
@@ -946,6 +799,7 @@ $\Rightarrow$
 \\
 \begin{tabular}{|l|l|}
 \hline
+ ~android.annotation.Nullable~ \\ \hline
  ~android.support.annotation.Nullable~ \\ \hline
  ~com.sun.istack.internal.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.Nullable~ \\ \hline

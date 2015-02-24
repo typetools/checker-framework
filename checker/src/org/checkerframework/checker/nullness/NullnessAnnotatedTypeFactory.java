@@ -123,6 +123,7 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(org.jetbrains.annotations.NotNull.class, NONNULL);
         addAliasedAnnotation(org.netbeans.api.annotations.common.NonNull.class, NONNULL);
         addAliasedAnnotation(org.jmlspecs.annotation.NonNull.class, NONNULL);
+        addAliasedAnnotation(android.annotation.NonNull.class, NONNULL);
         addAliasedAnnotation(android.support.annotation.NonNull.class, NONNULL);
 
         // Aliases for @Nullable:
@@ -138,6 +139,7 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(org.netbeans.api.annotations.common.NullAllowed.class, NULLABLE);
         addAliasedAnnotation(org.netbeans.api.annotations.common.NullUnknown.class, NULLABLE);
         addAliasedAnnotation(org.jmlspecs.annotation.Nullable.class, NULLABLE);
+        addAliasedAnnotation(android.annotation.Nullable.class, NULLABLE);
         addAliasedAnnotation(android.support.annotation.Nullable.class, NULLABLE);
 
         // Add compatibility annotations:

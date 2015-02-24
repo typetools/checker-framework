@@ -406,6 +406,13 @@
         </antcall>
     </target>
 
+    <target name="compound-checker-tests" depends="jar,build-tests"
+            description="Run tests for compound checker design pattern">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.CompoundCheckerTest"/>
+        </antcall>
+    </target>
+
 
     <target name="report-tests" depends="jar,build-tests"
             description="Run tests for the Report Checker">

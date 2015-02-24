@@ -602,7 +602,7 @@ public class TypeAnnotationUtils {
     }
 
     public static Type unannotatedType(final Type in) {
-    	return call8or9(
+        return call8or9(
                 new Call8or9<Type>() {
                     @Override
                     public Type call8() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {

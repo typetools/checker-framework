@@ -1056,8 +1056,9 @@ You may optionally omit a leading ``\<this.>'', just as in Java.  Thus,
 One unusual feature is that the method call is allowed to have side
 effects.  If a specification is going to be checked at run time via
 assertions, then the specification must not use methods with side
-effects.  But, our checking is at compile time, so we allow it.
-Also, the current implementation will never able to prove such
+effects.  But, the Checker Framework works at compile time, so it allows
+side effects.
+The current implementation will never able to prove such
 a contract, but it is able to use the information (when checking
 the method body with preconditions, or when checking the callers
 code with postconditions).  This can be useful to annotate trusted
@@ -1073,7 +1074,7 @@ methods precisely (e.g., \<java.io.BufferedReader.ready()>).
 % simpler than defining specification fields or ghost fields
 %% TODO: we may eventually have an @SpecField annotation
 
-(A side note:  The formal parameter syntax \<\#1> may seem less convenient
+(A side note:  The formal parameter syntax \<\#1> is less natural in source code
 than writing the formal parameter name.  This syntax is necessary because
 in the \<.class> file, no parameter name information is available.  Running
 the compiler without a checker should create legal annotations in the
