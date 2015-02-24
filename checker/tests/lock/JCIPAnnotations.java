@@ -1,3 +1,5 @@
+// @skip-test JCIP annotations are irrelevant to the current GuardedBy by-value case study.
+// TODO: Address this before the next release at the end of Feb. 2015.
 import net.jcip.annotations.*;
 import org.checkerframework.dataflow.qual.*;
 

@@ -3,14 +3,13 @@ package org.checkerframework.checker.lock;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.dataflow.qual.LockingFree;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.*;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.util.DependentTypes;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
@@ -41,7 +40,7 @@ public class LockAnnotatedTypeFactory
     extends GenericAnnotatedTypeFactory<CFValue, LockStore, LockTransfer, LockAnalysis> {
 
     /** Annotation constants */
-    protected final AnnotationMirror LOCKHELD, LOCKPOSSIBLYHELD, SIDEEFFECTFREE;
+    protected final AnnotationMirror LOCKHELD, LOCKPOSSIBLYHELD, SIDEEFFECTFREE, GUARDEDBY;
 
     // Cache for the lock annotations
     protected final Set<Class<? extends Annotation>> lockAnnos;
@@ -52,6 +51,7 @@ public class LockAnnotatedTypeFactory
         LOCKHELD = AnnotationUtils.fromClass(elements, LockHeld.class);
         LOCKPOSSIBLYHELD = AnnotationUtils.fromClass(elements, LockPossiblyHeld.class);
         SIDEEFFECTFREE = AnnotationUtils.fromClass(elements, SideEffectFree.class);
+        GUARDEDBY = AnnotationUtils.fromClass(elements, GuardedBy.class);
 
         Set<Class<? extends Annotation>> tempLockAnnos = new HashSet<>();
         tempLockAnnos.add(LockHeld.class);
@@ -118,10 +118,32 @@ public class LockAnnotatedTypeFactory
         return lockAnnos;
     }
 
-    class LockQualifierHierarchy extends GraphQualifierHierarchy {
+    class LockQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         public LockQualifierHierarchy(MultiGraphFactory f) {
-            super(f, LOCKHELD);
+            super(f);
+        }
+
+        @Override
+        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+
+            boolean lhsIsGuardedBy = AnnotationUtils.areSameIgnoringValues(lhs, GUARDEDBY);
+            boolean rhsIsGuardedBy = AnnotationUtils.areSameIgnoringValues(rhs, GUARDEDBY);
+
+            if (lhsIsGuardedBy && rhsIsGuardedBy) {
+                // Two @GuardedBy annotations are considered subtypes of each other if and only if their values match exactly.
+
+                List<String> lhsValues =
+                    AnnotationUtils.getElementValueArray(lhs, "value", String.class, true);
+                List<String> rhsValues =
+                    AnnotationUtils.getElementValueArray(rhs, "value", String.class, true);
+
+                return rhsValues.containsAll(lhsValues) && lhsValues.containsAll(rhsValues);
+            }
+
+            // Remove values from @GuardedBy annotations for further subtype checking.
+
+            return super.isSubtype(rhsIsGuardedBy ? GUARDEDBY : rhs, lhsIsGuardedBy ? GUARDEDBY : lhs);
         }
     }
 }

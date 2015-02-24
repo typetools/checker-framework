@@ -391,6 +391,25 @@ public class AnnotationUtils {
         return valMap;
     }
 
+
+    /**
+     * Verify whether the attribute with the name {@code name} exists in
+     * the annotation {@code anno}.
+     *
+     * @param anno the annotation to examine
+     * @param name the name of the attribute
+     * @return whether the attribute exists in anno
+     */
+    public static <T> boolean hasElementValue(AnnotationMirror anno, CharSequence name) {
+        Map<? extends ExecutableElement, ? extends AnnotationValue> valmap = anno.getElementValues();
+        for (ExecutableElement elem : valmap.keySet()) {
+            if (elem.getSimpleName().contentEquals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Get the attribute with the name {@code name} of the annotation
      * {@code anno}. The result is expected to have type {@code expectedType}.
