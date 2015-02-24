@@ -1,4 +1,4 @@
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
+import org.checkerframework.checker.tainting.qual.*;
 import org.checkerframework.qualframework.poly.qual.*;
 
 // Test wildcards with method qualifier parameters.

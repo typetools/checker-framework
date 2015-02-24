@@ -14,7 +14,8 @@ public class PolyAllTest extends ParameterizedCheckerTest {
         super(testFile,
                 polyall.PolyAllChecker.class,
                 "polyall",
-                "-Anomsgtext");
+                "-Anomsgtext",
+                "-Astubs=tests/polyall/polyall.astub");
     }
 
     @Parameters

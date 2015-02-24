@@ -12,12 +12,15 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.qualframework.base.AnnotationConverter;
 import org.checkerframework.qualframework.base.DefaultQualifiedTypeFactory;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.SetQualifierVisitor;
 import org.checkerframework.qualframework.base.TreeAnnotator;
 import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
 import org.checkerframework.qualframework.base.dataflow.QualTransfer;
 import org.checkerframework.qualframework.base.dataflow.QualValue;
+import org.checkerframework.qualframework.poly.QualParams;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 import org.checkerframework.qualframework.util.QualifierContext;
 
@@ -114,8 +117,8 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
                     ExtendedTypeMirror type) {
 
                 QualifiedTypeMirror<Regex> result = super.visitCompoundAssignment(tree, type);
-                Regex lRegex = getQualifiedType(tree.getExpression()).getQualifier();
-                Regex rRegex = getQualifiedType(tree.getVariable()).getQualifier();
+                Regex lRegex = getEffectiveQualifier(getQualifiedType(tree.getExpression()));
+                Regex rRegex = getEffectiveQualifier(getQualifiedType(tree.getVariable()));
 
                 return handleBinaryOperation(tree, lRegex, rRegex, result);
             }
@@ -133,12 +136,12 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
                         getContext().getProcessingEnvironment())) {
 
                     ExpressionTree arg0 = tree.getArguments().get(0);
-                    Regex qual = getQualifiedType(arg0).getQualifier();
+                    Regex qual = getEffectiveQualifier(getQualifiedType(arg0));
                     result = SetQualifierVisitor.apply(result, qual);
                 } else if (TreeUtils.isMethodInvocation(tree, patternMatcher,
                         getContext().getProcessingEnvironment())) {
 
-                    Regex qual = getReceiverType(tree).getQualifier();
+                    Regex qual = getEffectiveQualifier(getReceiverType(tree));
                     result = SetQualifierVisitor.apply(result, qual);
                 }
                 return result;
@@ -152,8 +155,8 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
             public QualifiedTypeMirror<Regex> visitBinary(BinaryTree tree, ExtendedTypeMirror type) {
 
                 QualifiedTypeMirror<Regex> result = super.visitBinary(tree, type);
-                Regex lRegex = getQualifiedType(tree.getLeftOperand()).getQualifier();
-                Regex rRegex = getQualifiedType(tree.getRightOperand()).getQualifier();
+                Regex lRegex = getEffectiveQualifier(getQualifiedType(tree.getLeftOperand()));
+                Regex rRegex = getEffectiveQualifier(getQualifiedType(tree.getRightOperand()));
 
                 return handleBinaryOperation(tree, lRegex, rRegex, result);
             }
@@ -242,5 +245,19 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
                 return new RegexQualifiedTransfer(this);
             }
         };
+    }
+
+    public Regex getEffectiveQualifier(QualifiedTypeMirror<Regex> mirror) {
+        switch (mirror.getKind()) {
+            case TYPEVAR:
+                return this.getQualifiedTypeParameterBounds(
+                        ((QualifiedTypeVariable<Regex>) mirror).
+                                getDeclaration().getUnderlyingType()).getUpperBound().getQualifier();
+            case WILDCARD:
+                return ((QualifiedWildcardType<Regex>)mirror).getExtendsBound().getQualifier();
+
+            default:
+                return mirror.getQualifier();
+        }
     }
 }

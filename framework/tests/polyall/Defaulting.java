@@ -23,6 +23,9 @@ class Defaulting {
         @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.UPPER_BOUNDS}),
         @DefaultQualifier(value=H1S2.class, locations={DefaultLocation.OTHERWISE})
     })
+    //Type of x is <@H1S2 X extends @H1S1 Object>, these annotations are siblings
+    //and should not be in the same bound
+    //:: error: (bound.type.incompatible)
     class TestUpperBound<X extends Object> {
         void m(X p) {
             @H1S1 Object l1 = p;

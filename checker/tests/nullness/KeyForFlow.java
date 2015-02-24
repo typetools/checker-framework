@@ -155,4 +155,15 @@ public class KeyForFlow extends HashMap<String, Object> {
     coll_local.add(k2);
   }
 
+  /*public void testAddToListInsteadOfMap(List<@KeyFor("#4") String> la, String b, @KeyFor("#4") String c, Map<String, String> a) {
+    // Disabled error (assignment.type.incompatible)
+    List<String> ls1 = la;
+    List<@KeyFor("#4") String> ls2 = la;
+    ls1.add(b);
+    // Disabled error (argument.type.incompatible)
+    la.add(b);
+    ls2.add(c);
+    la.add(c);
+    @NonNull String astr = a.get(ls2.get(0));
+  }*/
 }

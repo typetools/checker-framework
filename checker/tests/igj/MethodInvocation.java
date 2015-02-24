@@ -166,9 +166,9 @@ public class MethodInvocation {
         (true ? immutable : new @Mutable MethodInvocation()).assignsFieldsMethod();  // should emit error
     }
 
-
-    public static <A, B> java.util.Map<A, B> forMap(
-            java.util.Map<? super A, ? extends B> map, final B defaultValue) {
+    //Bound for B is explicit in order to use the correct defaulting rules
+    public static <A, B extends Object> java.util.Map<A, B> forMap(
+            java.util.Map<? super A, ? extends B> map, final B defaultValue) { // should emit type.argument.type.incompatible
         return forMap(map, null);
     }
 

@@ -2,6 +2,7 @@ package org.checkerframework.qualframework.poly;
 
 import java.util.*;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import com.sun.source.tree.*;
 
@@ -66,8 +67,9 @@ public class QualifierParameterTreeAnnotator<Q> extends TreeAnnotator<QualParams
 
         QualifiedDeclaredType<QualParams<Q>> declType = (QualifiedDeclaredType<QualParams<Q>>)type;
 
+        Element elt = declType.getUnderlyingType().asElement();
         Set<String> validParams = factory.getAnnotationConverter().getDeclaredParameters(
-                declType.getUnderlyingType().asElement(), factory.getDecoratedElement(declType.getUnderlyingType().asElement()));
+                elt, factory.getDeclAnnotations(elt), factory.getDecoratedElement(elt));
 
         if (validParams.equals(type.getQualifier().keySet())) {
             return type;

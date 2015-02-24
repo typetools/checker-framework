@@ -3,16 +3,14 @@ package org.checkerframework.qualframework.base;
 import com.sun.source.tree.*;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.PropagationTreeAnnotator;
-import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 
 /**
  * Adapter for {@link TreeAnnotator}, extending
- * {@link org.checkerframework.framework.type.TreeAnnotator org.checkerframework.framework.type.TreeAnnotator}.
+ * {@link org.checkerframework.framework.type.treeannotator.TreeAnnotator org.checkerframework.framework.type.treeannotator.TreeAnnotator}.
  */
 class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     private final QualifiedTypeFactoryAdapter<Q> factoryAdapter;
@@ -20,8 +18,8 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     private TypeMirrorConverter<Q> converter;
 
     public TreeAnnotatorAdapter(TreeAnnotator<Q> underlying,
-            TypeMirrorConverter<Q> converter,
-            QualifiedTypeFactoryAdapter<Q> factoryAdapter) {
+                                TypeMirrorConverter<Q> converter,
+                                QualifiedTypeFactoryAdapter<Q> factoryAdapter) {
         super(factoryAdapter);
         this.factoryAdapter = factoryAdapter;
         this.underlying = underlying;
@@ -41,7 +39,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitAnnotation(AnnotationTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitAnnotation(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -56,7 +54,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitArrayAccess(ArrayAccessTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitArrayAccess(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -71,7 +69,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitArrayType(ArrayTypeTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitArrayType(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -86,7 +84,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitAssert(AssertTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitAssert(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -101,7 +99,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitAssignment(AssignmentTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitAssignment(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -116,7 +114,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitBinary(BinaryTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm =((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitBinary(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -131,7 +129,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitBlock(BlockTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitBlock(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -146,7 +144,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitBreak(BreakTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitBreak(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -161,7 +159,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitCase(CaseTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitCase(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -176,7 +174,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitCatch(CatchTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitCatch(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -191,7 +189,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitClass(ClassTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitClass(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -206,7 +204,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitCompilationUnit(CompilationUnitTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitCompilationUnit(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -221,7 +219,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitCompoundAssignment(CompoundAssignmentTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitCompoundAssignment(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -236,7 +234,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitConditionalExpression(ConditionalExpressionTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitConditionalExpression(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -251,7 +249,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitContinue(ContinueTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitContinue(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -266,7 +264,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitDoWhileLoop(DoWhileLoopTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitDoWhileLoop(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -281,7 +279,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitEmptyStatement(EmptyStatementTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitEmptyStatement(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -296,7 +294,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitEnhancedForLoop(EnhancedForLoopTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitEnhancedForLoop(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -311,7 +309,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitErroneous(ErroneousTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitErroneous(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -326,7 +324,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitExpressionStatement(ExpressionStatementTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitExpressionStatement(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -341,7 +339,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitForLoop(ForLoopTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitForLoop(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -356,7 +354,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitIdentifier(IdentifierTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitIdentifier(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -371,7 +369,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitIf(IfTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitIf(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -386,7 +384,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitImport(ImportTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitImport(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -401,7 +399,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitInstanceOf(InstanceOfTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitInstanceOf(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -416,7 +414,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitLabeledStatement(LabeledStatementTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitLabeledStatement(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -431,7 +429,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitLiteral(LiteralTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitLiteral(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -446,7 +444,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitMemberSelect(MemberSelectTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitMemberSelect(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -461,7 +459,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitMethod(MethodTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitMethod(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -476,7 +474,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitMethodInvocation(MethodInvocationTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitMethodInvocation(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -491,7 +489,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitModifiers(ModifiersTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitModifiers(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -506,7 +504,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitNewArray(NewArrayTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitNewArray(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -521,7 +519,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitNewClass(NewClassTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitNewClass(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -536,7 +534,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitOther(Tree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitOther(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -551,7 +549,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitParameterizedType(ParameterizedTypeTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitParameterizedType(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -566,7 +564,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitParenthesized(ParenthesizedTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitParenthesized(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -581,7 +579,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitPrimitiveType(PrimitiveTypeTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitPrimitiveType(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -596,7 +594,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitReturn(ReturnTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitReturn(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -611,7 +609,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitSwitch(SwitchTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitSwitch(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -626,7 +624,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitSynchronized(SynchronizedTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitSynchronized(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -641,7 +639,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitThrow(ThrowTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitThrow(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -656,7 +654,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitTry(TryTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitTry(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -671,7 +669,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitTypeCast(TypeCastTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitTypeCast(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -686,7 +684,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitTypeParameter(TypeParameterTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitTypeParameter(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -701,7 +699,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitUnary(UnaryTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitUnary(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -716,7 +714,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitUnionType(UnionTypeTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitUnionType(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -731,7 +729,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitVariable(VariableTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitVariable(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -746,7 +744,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitWhileLoop(WhileLoopTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitWhileLoop(node, atm);
         return converter.getQualifiedType(atm);
     }
@@ -761,7 +759,7 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
     }
 
     QualifiedTypeMirror<Q> superVisitWildcard(WildcardTree node, ExtendedTypeMirror type) {
-        AnnotatedTypeMirror atm = AnnotatedTypes.deepCopy(((WrappedAnnotatedTypeMirror)type).unwrap());
+        AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap().deepCopy();
         super.visitWildcard(node, atm);
         return converter.getQualifiedType(atm);
     }

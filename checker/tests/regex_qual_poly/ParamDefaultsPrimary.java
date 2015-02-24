@@ -1,5 +1,6 @@
 // Test parameter defaulting rules.
-import org.checkerframework.checker.experimental.regex_qual_poly.qual.*;
+import org.checkerframework.checker.regex.qual.*;
+import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 
 abstract class Test {

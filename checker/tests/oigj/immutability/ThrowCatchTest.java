@@ -13,13 +13,9 @@ class ThrowsTest {
         //:: error: (throw.type.invalid)
             throw ex2;
     }
-    <@ReadOnly E extends  Exception> void throwTypeVarReadOnly2(E ex1, @ReadOnly E ex2) throws Exception{
-        if(flag){
-            //:: error: (throw.type.invalid)
-            throw ex1;
-        }
+    <@ReadOnly E extends @ReadOnly Exception> void throwTypeVarReadOnly2(E ex1) throws Exception{
         //:: error: (throw.type.invalid)
-            throw ex2;
+        throw ex1;
     }
     <E extends @Mutable Exception> void throwTypeVarMutable1(E ex1, @Mutable E ex2) throws Exception{
         if(flag){
@@ -41,13 +37,9 @@ class ThrowsTest {
         //:: error: (throw.type.invalid)
             throw ex2;
     }
-    <@Immutable E extends  Exception> void throwTypeVarImmutable2(E ex1, @Immutable E ex2) throws Exception{
-        if(flag){
-            //:: error: (throw.type.invalid)
-            throw ex1;
-        }
+    <@Immutable E extends @Immutable Exception> void throwTypeVarImmutable2(E ex1) throws Exception{
         //:: error: (throw.type.invalid)
-            throw ex2;
+        throw ex1;
     }
     <@Mutable E extends @ReadOnly Exception> void throwTypeVarMixed(E ex1, @Immutable E ex2) throws Exception{
         if(flag){

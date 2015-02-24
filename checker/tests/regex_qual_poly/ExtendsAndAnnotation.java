@@ -1,6 +1,7 @@
 // Test case for issue 278: https://code.google.com/p/checker-framework/issues/detail?id=278
 
-import org.checkerframework.checker.experimental.regex_qual_poly.qual.*;
+import org.checkerframework.checker.regex.qual.*;
+import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 @ClassRegexParam("Main")
 class A {

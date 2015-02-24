@@ -7,8 +7,8 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.ListTreeAnnotator;
-import org.checkerframework.framework.type.TreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 
 import tests.compound.qual.CCBottom;
 import tests.compound.qual.CCTop;

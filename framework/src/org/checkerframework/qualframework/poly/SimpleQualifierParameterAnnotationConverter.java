@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,7 +41,8 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     protected static final String WILDCARD_NAME = "wildcard";
 
     protected final String MULTI_ANNO_NAME_PREFIX;
-    protected final CombiningOperation<Q> lubOp;
+    protected final CombiningOperation<Q> lowerOp;
+    protected final CombiningOperation<Q> upperOp;
     protected final Q BOTTOM;
     protected final Q TOP;
     protected final Q DEFAULT_QUAL;
@@ -55,56 +57,32 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     private final Set<String> specialCaseAnnotations;
 
     /**
-     * Construct a SimpleQualifierParameterAnnotationConverter. specialCaseAnnotations is the only
-     * parameter that is allowed to be null.
-     *
-     * @param lubOp The operation to perform when combining annotations
-     * @param multiAnnoNamePrefix The package and class name prefix for repeatable annotations
-     * @param supportedAnnotationNames A list of supported annotations specific to the type system
-     * @param specialCaseAnnotations A list of annotations to be processed solely by the specialCaseProcess method
-     * @param classAnno The annotation for class parameter declaration
-     * @param methodAnno The annotation for method parameter declaration
-     * @param polyAnno The poly annotation for the type system
-     * @param varAnno The polymorphic qualifier use variable
-     * @param wildAnno The annotation for specifying a wildcard
-     * @param top The top qualifier in the system
-     * @param bottom The bottom qualifier in the system
-     * @param defaultQual The qualifier to use if no annotations result in a qualifier.
+     * Construct a SimpleQualifierParameterAnnotationConverter.
      */
-    public SimpleQualifierParameterAnnotationConverter(CombiningOperation<Q> lubOp,
-            String multiAnnoNamePrefix,
-            Set<String> supportedAnnotationNames,
-            Set<String> specialCaseAnnotations,
-            Class<? extends Annotation> classAnno,
-            Class<? extends Annotation> methodAnno,
-            Class<? extends Annotation> polyAnno,
-            Class<? extends Annotation> varAnno,
-            Class<? extends Annotation> wildAnno,
-            Q top,
-            Q bottom,
-            Q defaultQual) {
+    public SimpleQualifierParameterAnnotationConverter(AnnotationConverterConfiguration<Q> config) {
 
-        this.MULTI_ANNO_NAME_PREFIX = multiAnnoNamePrefix;
-        if (supportedAnnotationNames == null ||
-                supportedAnnotationNames.isEmpty()) {
+        this.MULTI_ANNO_NAME_PREFIX = config.getMultiAnnoNamePrefix();
+        if (config.getSupportedAnnotationNames() == null ||
+                config.getSupportedAnnotationNames().isEmpty()) {
             ErrorReporter.errorAbort("supportedAnnotationNames must be a list of type system qualifiers.");
         }
-        this.supportedAnnotationNames = supportedAnnotationNames;
+        this.supportedAnnotationNames = config.getSupportedAnnotationNames();
 
-        if (specialCaseAnnotations == null) {
+        if (config.getSpecialCaseAnnotations() == null) {
             this.specialCaseAnnotations = new HashSet<>();
         } else {
-            this.specialCaseAnnotations = specialCaseAnnotations;
+            this.specialCaseAnnotations = config.getSpecialCaseAnnotations();
         }
-        this.lubOp = lubOp;
-        this.classAnno = classAnno;
-        this.methodAnno = methodAnno;
-        this.polyAnno = polyAnno;
-        this.varAnno = varAnno;
-        this.wildAnno = wildAnno;
-        this.TOP = top;
-        this.BOTTOM = bottom;
-        this.DEFAULT_QUAL = defaultQual;
+        this.lowerOp = config.getLowerOp();
+        this.upperOp = config.getUpperOp();
+        this.classAnno = config.getClassAnno();
+        this.methodAnno = config.getMethodAnno();
+        this.polyAnno = config.getPolyAnno();
+        this.varAnno = config.getVarAnno();
+        this.wildAnno = config.getWildAnno();
+        this.TOP = config.getTop();
+        this.BOTTOM = config.getBottom();
+        this.DEFAULT_QUAL = config.getDefaultQual();
     }
 
     /**
@@ -151,7 +129,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
             mergeParams(params, qualMap);
 
             if (primary != null && newPrimary != null) {
-                primary = primary.combineWith(newPrimary, lubOp);
+                primary = primary.combineWith(newPrimary, lowerOp);
             } else {
                 primary = newPrimary;
             }
@@ -183,7 +161,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
 
             Wildcard<Q> oldWild = params.get(name);
             Wildcard<Q> newWild = newParams.get(name);
-            Wildcard<Q> combinedWild = oldWild.combineWith(newWild, lubOp, lubOp);
+            Wildcard<Q> combinedWild = oldWild.combineWith(newWild, lowerOp, upperOp);
 
             //System.err.printf("COMBINE[%s]: %s + %s = %s\n", name, oldWild, newWild, combinedWild);
             params.put(name, combinedWild);
@@ -196,8 +174,8 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
         Map<String, Wildcard<Q>> result = null;
         if (name.startsWith(MULTI_ANNO_NAME_PREFIX)) {
             result = new HashMap<>();
-            AnnotationMirror[] subAnnos = AnnotationUtils.getElementValue(
-                    anno, "value", AnnotationMirror[].class, true);
+            List<AnnotationMirror> subAnnos = AnnotationUtils.getElementValueArray(
+                    anno, "value", AnnotationMirror.class, true);
             for (AnnotationMirror subAnno : subAnnos) {
                 mergeParams(result, getQualifierMap(subAnno));
             }
@@ -289,14 +267,16 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     }
 
     @Override
-    public Set<String> getDeclaredParameters(Element elt, ExtendedTypeMirror type) {
+    public Set<String> getDeclaredParameters(Element elt, Set<AnnotationMirror> declAnnotations, ExtendedTypeMirror type) {
         Set<String> result = new HashSet<>();
         try {
-            for (Annotation a : elt.getAnnotationsByType(methodAnno)) {
-                result.add((String) methodAnno.cast(a).getClass().getMethod("value").invoke(a));
-            }
-            for (Annotation a : elt.getAnnotationsByType(classAnno)) {
-                result.add((String) classAnno.cast(a).getClass().getMethod("value").invoke(a));
+            for (AnnotationMirror anno: declAnnotations) {
+                if (AnnotationUtils.areSameByClass(anno, methodAnno)
+                    || AnnotationUtils.areSameByClass(anno, classAnno)) {
+
+                    result.add(AnnotationUtils.getElementValue(anno, "value",
+                            String.class, true));
+                }
             }
         } catch (Exception e) {
             ErrorReporter.errorAbort("AnnotationConverter not configured correctly. Error looking up 'value' field.");

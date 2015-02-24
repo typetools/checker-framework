@@ -1,5 +1,5 @@
 
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
+import org.checkerframework.checker.tainting.qual.*;
 
 /** Resolution of outer classes must take substitution of generic types
  * into account.
