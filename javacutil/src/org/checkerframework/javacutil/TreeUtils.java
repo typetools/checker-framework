@@ -712,6 +712,24 @@ public final class TreeUtils {
     }
 
     /**
+     * Determine whether <code>tree</code> is a class literal, such
+     * as
+     *
+     * <pre>
+     *   <em>Object</em> . <em>class</em>
+     * </pre>
+     * 
+     * @param tree
+     * @return true iff if tree is a class literal
+     */
+    public static boolean isClassLiteral(Tree tree) {
+        if (tree.getKind() != Tree.Kind.MEMBER_SELECT) {
+            return false;
+        }
+        return "class".equals(((MemberSelectTree) tree).getIdentifier().toString());
+    }
+
+    /**
      * Determine whether <code>tree</code> is a field access expressions, such
      * as
      *

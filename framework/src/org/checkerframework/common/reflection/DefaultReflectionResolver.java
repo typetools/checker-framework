@@ -165,8 +165,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
             // Glb receiver types (actual method receiver is passed as first
             // argument to invoke(Object, Object[]))
-            // Checker for static methods whose receiver is null
+            // Check for static methods whose receiver is null
             if (resolvedResult.first.getReceiverType() == null) {
+                // If the method is static the first argument to Method.invoke isn't used,
+                // so assume top.
                 receiverGlb = glb(receiverGlb, factory.getQualifierHierarchy()
                         .getTopAnnotations(), factory);
             } else {

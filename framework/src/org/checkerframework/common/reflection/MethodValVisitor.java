@@ -1,5 +1,6 @@
 package org.checkerframework.common.reflection;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -45,8 +46,16 @@ class MethodNameValidator extends BaseTypeValidator {
     public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
         AnnotationMirror methodVal = type.getAnnotation(MethodVal.class);
         if (methodVal != null) {
+            List<String> classNames = AnnotationUtils.getElementValueArray(methodVal,
+                    "className", String.class, true);
+            List<Integer> params = AnnotationUtils.getElementValueArray(methodVal,
+                    "params", Integer.class, true);
             List<String> methodNames = AnnotationUtils.getElementValueArray(
                     methodVal, "methodName", String.class, true);
+            if( !( params.size() == methodNames.size() && params.size() == classNames.size())){
+                checker.report(Result.failure("invalid.methodval", methodVal), tree);
+            }
+
             for (String methodName : methodNames) {
                 if (!legalMethodName(methodName)) {
                     checker.report(
