@@ -9,7 +9,7 @@ import org.checkerframework.common.reflection.qual.MethodValBottom;
 import org.checkerframework.common.reflection.qual.UnknownMethod;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.TypeQualifiers;
-/**
+/*
  *
  * Annotation semantics:
  * @MethodVal(String[] classnames, String[] methodnames, int[] params): Estimate of method or constructor signature
@@ -21,7 +21,7 @@ import org.checkerframework.framework.qual.TypeQualifiers;
  * Top: @UnknownMethodVal
  * Bottom: @MethodValBottom
  *
- * @MethodVal(classname=CA, methodname=MA, params=PA) <:@MethodVal(classname=CB, methodname=MB, params=PB)
+ * @MethodVal(classname=CA, methodname=MA, params=PA) is a subtype of @MethodVal(classname=CB, methodname=MB, params=PB)
  * (CA, MA, and PA are ordered lists of equal size and CB, MB, and PB are ordered lists of equal size)
  * for all indexes i to CA, there exists an index, j to CB, where CA[i] = CB[j], MA[i] = MA[j], and PA[i] = PB[j]
  *
@@ -33,12 +33,16 @@ import org.checkerframework.framework.qual.TypeQualifiers;
  *    contains all possible method signatures. (Cartesian product of all values.)
  *
  * exp.getConstructor(parameterClasses): @MethodVal(classname= exact classname of exp (found using ClassValChecker)
- *                                                         methodname= "<init>"
+ *                                                         methodname= "&lt;init&gt;"
  *                                                         params= arrray length of paramterClasses (found using ValueChecker))
  *    If more than one value is found for class name, method name, or number of paramters, the @MethodVal annotation
  *    contains all possible method signatures. (Cartesian product of all values.)
  *
  * (Uses the Value Checker and ClassVal Checker)
+ */
+
+/**
+ * @checker_framework.manual #methodval-checker MethodVal Checker
  */
 @TypeQualifiers({MethodVal.class, MethodValBottom.class, UnknownMethod.class})
 public class MethodValChecker extends BaseTypeChecker {
