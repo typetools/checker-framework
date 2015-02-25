@@ -78,7 +78,6 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 "className", String.class, true);
         List<Integer> params = AnnotationUtils.getElementValueArray(anno,
                 "params", Integer.class, true);
-        assert params.size() == methodNames.size() && params.size() == classNames.size();
         for (int i = 0; i < methodNames.size(); i++) {
             list.add(new MethodSignature(classNames.get(i),
                     methodNames.get(i),
@@ -167,7 +166,6 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1,
                 AnnotationMirror a2) {
-            // CLASSVAL HANDLING
             if (!AnnotationUtils.areSameIgnoringValues(getTopAnnotation(a1),
                     getTopAnnotation(a2))) {
                 return null;
@@ -184,9 +182,8 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 AnnotationMirror result = createMethodVal(lubSigs);
                 return result;
-            } else {
-                return a1;
-            }
+            } 
+            return null;
         }
 
         @Override
