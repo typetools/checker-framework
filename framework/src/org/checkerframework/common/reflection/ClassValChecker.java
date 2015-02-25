@@ -24,11 +24,11 @@ import org.checkerframework.framework.qual.TypeQualifiers;
 *
 * Annotation semantics:
 * @ClassVal(String[] classnames): an expression with this type is a Class object
-*   representing a class in the list of fully qualified class names. The strings
-*   in this annotation must be a legal class name, but the class may not be on the class path.
+*   representing a class in the list of fully qualified class names. Each string in this annotation 
+*   must be a legal class name, but its class need not be on the class path.
 * @ClassBound(String[] classnames): an expression with this type is a Class object
-*   representing a class or a subclass of a class in the list of fully qualified class names. The strings
-*   in this annotation must be a legal class name, but the class may not be on the class path.
+*   representing a class or a subclass of a class in the list of fully qualified class names. Each string 
+*   in this annotation must be a legal class name, but its class need not be on the class path
 * @UnknownClassVal: no estimate of possible names, default qualifier
 * @ClassValBottom: qualifier given to the null literal.
 *

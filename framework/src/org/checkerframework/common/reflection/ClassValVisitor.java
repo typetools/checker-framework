@@ -1,8 +1,10 @@
 package org.checkerframework.common.reflection;
 
-import static org.checkerframework.common.reflection.ClassValAnnotatedTypeFactory.getClassNames;
+import static org.checkerframework.common.reflection.ClassValAnnotatedTypeFactory.getClassNamesFromAnnotation;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
 
@@ -39,13 +41,18 @@ class ClassNameValidator extends BaseTypeValidator{
         super(checker, visitor, atypeFactory);
     }
 
+    /**
+     * Reports an "illegal.classname" error if the type contains a classVal
+     * annotation with classNames that cannot possibly be valid class
+     * annotations.
+     */
     @Override
     public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
         AnnotationMirror classVal = type.getAnnotation(ClassVal.class);
         classVal = classVal == null ? type.getAnnotation(ClassBound.class)
                 : classVal;
         if (classVal != null) {
-            List<String> classNames = getClassNames(classVal);
+            List<String> classNames = getClassNamesFromAnnotation(classVal);
             for (String className : classNames) {
                 if (!isLegalClassName(className)) {
                     checker.report(
@@ -57,64 +64,46 @@ class ClassNameValidator extends BaseTypeValidator{
     }
 
     /**
-     * A string is a legal fully qualified class name if it has the following form:
+     * A string is a legal binary name if it has the following form:
      * ((Java identifier)\.)*(Java identifier)([])*
+     * https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1
      * @param className String to check
      * @return true if className is a legal class name
      */
     private boolean isLegalClassName(String className) {
-        char[] classNameChars = className.toCharArray();
-        ClassNamePart last = ClassNamePart.SEPERATOR;
-        for (char c : classNameChars) {
-            switch (last) {
-            case ID_PART:
-            case ID_START:
-                switch (c) {
-                case '.':
-                    last = ClassNamePart.SEPERATOR;
-                    break;
-                case '[':
-                    last = ClassNamePart.OPEN_BRACKET;
-                    break;
-                default:
-                    if (!Character.isJavaIdentifierPart(c)) {
-                        return false;
-                    }
-                    last = ClassNamePart.ID_PART;
-                    break;
-                }
-                break;
-            case SEPERATOR:
-                if (!Character.isJavaIdentifierStart(c)) {
-                    return false;
-                }
-                last = ClassNamePart.ID_START;
-                break;
-            case CLOSE_BRACKET:
-                if (c == '[') {
-                    last = ClassNamePart.OPEN_BRACKET;
-                    break;
-                }
-                return false;
-            case OPEN_BRACKET:
-                if (c == ']') {
-                    last = ClassNamePart.CLOSE_BRACKET;
-                    break;
-                }
-                // only legal char after [ is ]
+        String regex = "([^\\.\\[\\]](\\.[^\\.\\[\\]])*)*(\\[\\])*";
+        Pattern p = Pattern.compile(regex);
+        Matcher m = p.matcher(className);
+        if (!m.matches()) {
+            return false;
+        }
+        className = m.group(1);
+        String[] identifiers = className.split(".");
+        for (String identifier : identifiers) {
+            if (!isJavaIdentifier(identifier)) {
                 return false;
             }
         }
-        if (last == ClassNamePart.CLOSE_BRACKET
-                || last == ClassNamePart.ID_PART
-                || last == ClassNamePart.ID_START) {
-            return true;
-        }
-        return false;
+        return true;
     }
 
-    enum ClassNamePart {
-        SEPERATOR, ID_START, ID_PART, OPEN_BRACKET, CLOSE_BRACKET;
-    };
+    /**
+     * Whether the given string is a Java Identifier. (This method returns true
+     * if the Identifier is a keyword, boolean literal, null literal.
+     */
+    private boolean isJavaIdentifier(String identifier) {
+        char[] identifierChars = identifier.toCharArray();
+        if (!(identifierChars.length > 0 && (Character
+                .isJavaIdentifierStart(identifierChars[0])))) {
+            return false;
+        }
+        for (int i = 1; i < identifierChars.length; i++) {
+            if (!Character.isJavaIdentifierPart(identifierChars[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
 }
