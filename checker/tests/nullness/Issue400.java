@@ -1,0 +1,16 @@
+import java.util.Collection;
+import java.util.ArrayList;
+import java.lang.String;
+
+final class YYPair<T,V> {
+	T first;
+	V second;
+};
+
+public class YY {
+    public Collection<YYPair<String, String>> getX() {
+        final Collection<YYPair<String, String>> out = new ArrayList<YYPair<String, String>>();
+	out.add(new YYPair<String, String>());
+        return out;
+    }
+}
