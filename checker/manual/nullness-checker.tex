@@ -575,7 +575,7 @@ code:
 The Nullness Checker introduces a new method, rather than re-using an
 existing method such as \<org.junit.Assert.assertNotNull(Object)> or
 \<com.google.common.base.Preconditions.checkNotNull(Object)>.  Those
-methods are comonly used for defensive programming, so it is impossible to
+methods are commonly used for defensive programming, so it is impossible to
 know the programmer's intent when writing them.  Therefore, it is important to
 have a method call that is used only for warning suppression.  See
 Section~\ref{defensive-programming} for a discussion of
@@ -1009,6 +1009,31 @@ tool like the Checker Framework.)
 %    This means that the value may be null.  To avoid a NullPointerException,
 %    every client should check nullness before dereferencing the value.
 %    In the Checker Framework, this corresponds to @Nullable.
+
+
+\subsection{Relationship to \tt{Optional<T>}\label{nullness-vs-optional}}
+
+Many null pointer exceptions occur because the programmer forgets to check
+whether a reference is null before dereferencing it.  Java 8's
+\sunjavadoc{java/util/Optional.html}{\code{Optional<T>}}
+class provides a partial solution:  you cannot
+dereference the contained value without calling the \<get> method.
+
+However, the use of \code{Optional} for this purpose is unsatisfactory.
+First, it adds syntactic complexity, making your code longer and harder to
+read.  (The \code{Optional} class provides some operations, such as \<map>
+and \<orElse>, that you would otherwise have to write; without these its
+code bloat would be even worse.)  Second, there is no guarantee that the
+programmer remembers to call \<isPresent> before calling \<get>.  Thus, use
+of \code{Optional} doesn't solve the underlying problem --- it merely
+converts a \code{NullPointerException} into a
+\code{NoSuchElementException} exception, and in either case your code
+crashes.
+
+The Nullness Checker does not suffer these limitations.  It works with
+existing code and types, it ensures that you check for null wherever
+necessary, and it infers when the check for null is not necessary based on
+previous statements in the method.
 
 
 \section{Initialization Checker\label{initialization-checker}}
@@ -2183,15 +2208,16 @@ developers are working to correct this bug.
 % LocalWords:  Nullability typeargs nulltest EnsuresNonNullIf listFiles faq
 % LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings rB
 % LocalWords:  FindBugs's getObject RequiresNonNull EnsuresNonNull KeyFor
-% LocalWords:  nonnull EnsuresNonNull ReadOnly arg
+% LocalWords:  nonnull EnsuresNonNull ReadOnly arg 5cm orElse isPresent
 % LocalWords:  keySet getField keyfor param TypeName containsValue indexOf nraA
 % LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
 % LocalWords:  typeofthis nraB nrbB rO nroO nroB 5cm IGJ containsKey enum
 % LocalWords:  JUnit's 5in field1 field2 superclasses Foo C1 C2 2in 75in PolyRaw
 %  LocalWords:  NullnessChecker redundantNullComparison 5cm instanceof 5in
 %  LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
-%  LocalWords:  UnderInitialization getComponentType 2in
+%  LocalWords:  UnderInitialization getComponentType 2in AsuppressWarnings
 %  LocalWords:  isEmpty AssumeAssertion cleanroom vararg OtherClass 75in
 %  LocalWords:  NullnessRawnessChecker mymap mykey KeyType ValueType 5cm
 %  LocalWords:  dereferenced dereference Dereferencing initializers 5in
-%  LocalWords:  initHelper helperMethod
+%  LocalWords:  initHelper helperMethod NoSuchElementException 4cm 5in 2in
+%%  LocalWords:  75in
