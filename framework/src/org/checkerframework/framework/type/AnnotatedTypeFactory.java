@@ -14,6 +14,10 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.reflection.DefaultReflectionResolver;
+import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
+import org.checkerframework.common.reflection.MethodValChecker;
+import org.checkerframework.common.reflection.ReflectionResolver;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.FromByteCode;
 import org.checkerframework.framework.qual.FromStubFile;
@@ -216,6 +220,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final AnnotationMirror fromByteCode;
 
     /**
+     * Object that is used to resolve reflective method calls, if reflection
+     * resolution is turned on.
+     */
+    protected ReflectionResolver reflectionResolver;
+
+    /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
      * instance and syntax tree root. (These parameters are required so that
      * the factory may conduct the appropriate annotation-gathering analyses on
@@ -274,8 +284,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         addInheritedAnnotation(AnnotationUtils.fromClass(elements,
                 org.checkerframework.dataflow.qual.LockingFree.class));
 
+        initilizeReflectionResolution();
+
         if (this.getClass().equals(AnnotatedTypeFactory.class)) {
             this.buildIndexTypes();
+        }
+    }
+
+    protected void initilizeReflectionResolution() {
+        if (checker.shouldResolveReflection()) {
+            boolean debug = "debug".equals(checker.getOption("resolveReflection"));
+
+            MethodValChecker methodValChecker = checker
+                    .getSubchecker(MethodValChecker.class);
+            assert methodValChecker != null : "AnnotatedTypeFactory: reflection resolution was requested, but MethodValChecker isn't a subchecker.";
+            MethodValAnnotatedTypeFactory methodValATF = (MethodValAnnotatedTypeFactory) methodValChecker
+                    .getAnnotationProvider();
+
+            reflectionResolver = new DefaultReflectionResolver(checker,
+                    methodValATF, debug);
         }
     }
 
@@ -1415,7 +1442,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
         ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
         AnnotatedTypeMirror receiverType = getReceiverType(tree);
-        return methodFromUse(tree, methodElt, receiverType);
+
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =  methodFromUse(tree, methodElt, receiverType);
+        if (checker.shouldResolveReflection() && reflectionResolver.isReflectiveMethodInvocation(tree)) {
+            mfuPair = reflectionResolver.resolveReflectiveCall(this, tree, mfuPair);
+        }
+        return mfuPair;
     }
 
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(ExpressionTree tree,
