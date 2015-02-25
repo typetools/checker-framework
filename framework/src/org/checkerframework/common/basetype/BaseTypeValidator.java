@@ -86,10 +86,13 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
 
     @Override
     public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
-        if (checker.shouldSkipUses(type.getUnderlyingType().asElement()))
-            return super.visitDeclared(type, tree);
+        if (visitedNodes.containsKey(type)) {
+            return visitedNodes.get(type);
+        }
 
-        {
+        final boolean skipChecks = checker.shouldSkipUses(type.getUnderlyingType().asElement());
+
+        if (!skipChecks) {
             // Ensure that type use is a subtype of the element type
             // isValidUse determines the erasure of the types.
             AnnotatedDeclaredType elemType = (AnnotatedDeclaredType) atypeFactory
@@ -100,10 +103,6 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
             }
         }
 
-        // System.out.println("Type: " + type);
-        // System.out.println("Tree: " + tree);
-        // System.out.println("Tree kind: " + tree.getKind());
-
         /*
          * Try to reconstruct the ParameterizedTypeTree from the given tree.
          * TODO: there has to be a nicer way to do this...
@@ -113,6 +112,11 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
         type = p.second;
 
         if (typeargtree != null) {
+            //We put this here because we don't want to put it in visitedNodes before calling
+            //super (in the else branch) because that would cause the super implementation
+            //to detect that we've already visited type and to immediately return
+            visitedNodes.put(type, null);
+
             // We have a ParameterizedTypeTree -> visit it.
 
             visitParameterizedType(type, typeargtree);
@@ -139,7 +143,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
                 // daikon/Debug.java; message: size mismatch for type arguments:
                 // @NonNull Object and Class<?>
                 // but I didn't manage to reduce it to a test case.
-                assert tatypes.size() <= numTypeArgs : "size mismatch for type arguments: " +
+                assert tatypes.size() <= numTypeArgs || skipChecks : "size mismatch for type arguments: " +
                         type + " and " + typeargtree;
 
                 for (int i = 0; i < tatypes.size(); ++i) {
@@ -147,15 +151,16 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
                 }
             }
 
-            return null;
-
             // Don't call the super version, because it creates a mismatch
             // between
             // the first and second parameters.
             // return super.visitDeclared(type, tree);
+        } else {
+            return super.visitDeclared(type, tree);
+
         }
 
-        return super.visitDeclared(type, tree);
+        return null;
     }
 
     private Pair<ParameterizedTypeTree, AnnotatedDeclaredType> extractParameterizedTypeTree(
