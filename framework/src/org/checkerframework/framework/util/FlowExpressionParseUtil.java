@@ -25,6 +25,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.PureMethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
@@ -41,12 +42,10 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type.ClassType;
 
@@ -116,8 +115,8 @@ public class FlowExpressionParseUtil {
             FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
         return parse(s, context, path, false);
-    }    
-    
+    }
+
     private static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
             FlowExpressionContext context, TreePath path, boolean recursiveCall)
             throws FlowExpressionParseException {
@@ -125,7 +124,7 @@ public class FlowExpressionParseUtil {
                 true, recursiveCall);
         return result;
     }
-    
+
     /**
      * Private implementation of {@link #parse} with a choice of which classes
      * of expressions should be parsed.
@@ -209,6 +208,12 @@ public class FlowExpressionParseUtil {
         } else if (identifierMatcher.matches() && allowIdentifier) {
             Resolver resolver = new Resolver(env);
             try {
+                // local variable
+                VariableElement varElem = resolver.findLocalVariable(s, path);
+                if (varElem != null) {
+                    return new LocalVariable(varElem);
+                }
+
                 // field access
                 TypeMirror receiverType = context.receiver.getType();
                 VariableElement fieldElem = null;

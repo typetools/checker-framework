@@ -40,6 +40,7 @@ public class Resolver {
     private final Log log;
 
     private final Method FIND_METHOD;
+    private final Method FIND_VAR;
     private final Method FIND_IDENT_IN_TYPE;
     private final Method FIND_IDENT_IN_PACKAGE;
     private final Method FIND_TYPE;
@@ -56,6 +57,10 @@ public class Resolver {
                     Env.class, Type.class, Name.class, List.class, List.class,
                     boolean.class, boolean.class, boolean.class);
             FIND_METHOD.setAccessible(true);
+
+            FIND_VAR = Resolve.class.getDeclaredMethod("findVar",
+                    Env.class, Name.class);
+            FIND_VAR.setAccessible(true);
 
             FIND_IDENT_IN_TYPE = Resolve.class.getDeclaredMethod(
                     "findIdentInType", Env.class, Type.class, Name.class,
@@ -106,6 +111,34 @@ public class Resolver {
                 return (VariableElement) res;
             } else {
                 // Most likely didn't find the field and the Element is a SymbolNotFoundError
+                return null;
+            }
+        } finally {
+            log.popDiagnosticHandler(discardDiagnosticHandler);
+        }
+    }
+
+    /**
+     * Finds the local variable with name {@code name} in the given scope.
+     *
+     * @param name
+     *            The name of the local variable.
+     * @param path
+     *            The tree path to the local scope.
+     * @return The element for the local variable.
+     */
+    public VariableElement findLocalVariable(String name, TreePath path) {
+        Log.DiagnosticHandler discardDiagnosticHandler =
+            new Log.DiscardDiagnosticHandler(log);
+        try {
+            JavacScope scope = (JavacScope) trees.getScope(path);
+            Env<AttrContext> env = scope.getEnv();
+            Element res = wrapInvocation(FIND_VAR, env,
+                    names.fromString(name));
+            if (res.getKind() == ElementKind.LOCAL_VARIABLE) {
+                return (VariableElement) res;
+            } else {
+                // Most likely didn't find the variable and the Element is a SymbolNotFoundError
                 return null;
             }
         } finally {
