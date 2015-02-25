@@ -11,7 +11,7 @@ import org.checkerframework.common.reflection.qual.UnknownClass;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.TypeQualifiers;
 
-/**
+/*
 * The ClassVal Checker provides a sound estimate of the fully qualified class name
 * of Class objects.
 *
@@ -47,6 +47,9 @@ import org.checkerframework.framework.qual.TypeQualifiers;
 *
 * (Uses the Value Checker)
 */
+/**
+ * @checker_framework.manual #classval-checker ClassVal Checker
+ */
 
 @TypeQualifiers({ UnknownClass.class, ClassVal.class, ClassBound.class,
         ClassValBottom.class })
