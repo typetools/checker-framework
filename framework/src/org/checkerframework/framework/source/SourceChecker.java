@@ -173,6 +173,11 @@ import com.sun.tools.javac.util.Log;
     // org.checkerframework.framework.flow.CFAbstractTransfer.sequentialSemantics
     "concurrentSemantics",
 
+    // Whether to resolve reflective method invocations
+    // resolveReflection=debug cause debugging information
+    // to be output.
+    "resolveReflection",
+
 
     ///
     /// Stub libraries

@@ -1,22 +1,44 @@
 package org.checkerframework.common.value;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.common.value.qual.ArrayLen;
+import org.checkerframework.common.value.qual.BoolVal;
+import org.checkerframework.common.value.qual.BottomVal;
+import org.checkerframework.common.value.qual.DoubleVal;
+import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.common.value.qual.UnknownVal;
 
 import com.sun.source.tree.Tree;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.ElementFilter;
 
+import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeInfo;
 
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.Pair;
 
 /**
  * @author plvines
@@ -41,27 +63,42 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
      * which treats the value as @UnknownVal in this case.
      */
     @Override
-    public Void visitAnnotation(AnnotationTree tree, Void p){
-        
-        AnnotationMirror newAnno = AnnotationUtils.fromName(elements, "org.checkerframework.common.value.qual." + ((IdentifierTree)tree.getAnnotationType()).getName().toString());
+    public Void visitAnnotation(AnnotationTree node, Void p) {
+        List<? extends ExpressionTree> args = node.getArguments();
 
-        if (newAnno != null){
-            for (AnnotationMirror anno : atypeFactory.constantAnnotations){
-                if (AnnotationUtils.areSameIgnoringValues(newAnno, anno)){
-                    if (tree.getArguments().size() > 0 && tree.getArguments().get(0).getKind() == Tree.Kind.ASSIGNMENT && ((AssignmentTree)tree.getArguments().get(0)).getExpression().getKind() == Tree.Kind.NEW_ARRAY){
-                        int numArgs = ((NewArrayTree)((AssignmentTree)tree.getArguments().get(0)).getExpression()).getInitializers().size();
-                        
-                        if (numArgs > ValueAnnotatedTypeFactory.MAX_VALUES){
-                            checker.report(Result.warning("too.many.values.given", ValueAnnotatedTypeFactory.MAX_VALUES), this.getCurrentPath().getLeaf());
-                            return null;
-                        }
-                    }
+        if (args.isEmpty()) {
+            // Nothing to do if there are no annotation arguments.
+            return super.visitAnnotation(node, p);
+        }
+
+        Element element = TreeInfo.symbol((JCTree) node.getAnnotationType());
+        if (!(element.toString().equals(ArrayLen.class.getName())
+                || element.toString().equals(BoolVal.class.getName())
+                || element.toString().equals(DoubleVal.class.getName())
+                || element.toString().equals(IntVal.class.getName()) || element
+                .toString().equals(StringVal.class.getName()))) {
+            return super.visitAnnotation(node, p);
+        }
+
+        if (node.getArguments().size() > 0
+                && node.getArguments().get(0).getKind() == Kind.ASSIGNMENT) {
+            AssignmentTree argument = (AssignmentTree) node.getArguments().get(
+                    0);
+            if (argument.getExpression().getKind() == Tree.Kind.NEW_ARRAY) {
+                int numArgs = ((NewArrayTree) argument.getExpression())
+                        .getInitializers().size();
+
+                if (numArgs > ValueAnnotatedTypeFactory.MAX_VALUES) {
+                    checker.report(Result.warning("too.many.values.given",
+                            ValueAnnotatedTypeFactory.MAX_VALUES), node);
+                    return null;
                 }
             }
+
         }
-         
-        return super.visitAnnotation(tree, p);
+        return super.visitAnnotation(node, p);
     }
+
     @Override
     public Void visitTypeCast(TypeCastTree node, Void p) {
     	if(node.getExpression().getKind() == Kind.NULL_LITERAL){
