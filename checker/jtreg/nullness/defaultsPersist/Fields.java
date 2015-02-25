@@ -72,21 +72,37 @@ public class Fields {
     }
 
     @TADescriptions({
+        //in front of the java.util.List
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = FIELD),
         @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = FIELD),
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor", type = FIELD),
+
+        //in front of Object             //TODO: NEXT ANNO CHANGE TO NULLABLE WHEN WE GET JDK WORKING WITH THIS
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = FIELD, genericLocation = {3, 0, 2, 0}),
         @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = FIELD, genericLocation = {3, 0, 2, 0}),
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor", type = FIELD, genericLocation = {3, 0, 2, 0}),
+
+        //in front of the wildcard (?)
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = FIELD, genericLocation = {3, 0}),
+        @TADescription(annotation = "org/checkerframework/checker/initialization/qual/FBCBottom", type = FIELD, genericLocation = {3, 0}),
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom", type = FIELD, genericLocation = {3, 0}),
     })
     public String wildcards1() {
         return "java.util.List<? extends Object> f = new java.util.ArrayList<>();";
     }
 
     @TADescriptions({
+        //in front of the first java.util.List
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = FIELD),
         @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = FIELD),
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor", type = FIELD),
+
+        //in front of the wildcard (?)
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = FIELD, genericLocation = {3, 0}),
+        @TADescription(annotation = "org/checkerframework/checker/initialization/qual/FBCBottom", type = FIELD, genericLocation = {3, 0}),
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom", type = FIELD, genericLocation = {3, 0}),
+
+        //in front of the second java.util.List
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = FIELD, genericLocation = {3, 0, 2, 0}),
         @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = FIELD, genericLocation = {3, 0, 2, 0}),
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor", type = FIELD, genericLocation = {3, 0, 2, 0}),
