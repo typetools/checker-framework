@@ -463,7 +463,7 @@ fix the problem by instead using a definition of \<@NonNull> that is a type
 annotation, such as the Checker Framework's annotations; often this only
 requires changing an \<import> statement.
 Alternately, if you wish to continue using the legacy annotations in
-declaration locations, see Section~\ref{running-on-a-java7-jvm}.
+declaration locations, see Section~\ref{declaration-annotations-for-java7}.
 
 
 \item
@@ -481,7 +481,7 @@ constant.  In particular, the type annotations shipped with the Checker
 Framework reference 
 \sunjavadoc{java/lang/annotation/ElementType.html\#TYPE\_USE}{ElementType.TYPE\_USE}.  You can use the Checker
 Framework, but still compile and run your code in a Java 6 or 7 JVM, by
-following the instructions in Section~\ref{running-on-a-java7-jvm}.
+following the instructions in Section~\ref{backward-compatibility}.
 
 If you ignore the error and run your code in a Java 6 or 7 JVM, then you will get a run-time error:
 
