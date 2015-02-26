@@ -2839,13 +2839,29 @@ public abstract class AnnotatedTypeMirror {
                 }
                 adt.setTypeArguments(newtas);
                 supertypes.add(adt);
+            } else if (implementsAnnotation(elem)) {
+                TypeMirror annotationType = TypesUtils.getAnnotationClassType(types, atypeFactory.getElementUtils());
+                AnnotatedDeclaredType annoType = (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(annotationType, false);
+                annoType.addAnnotations(type.getAnnotations());
+                supertypes.add(annoType);
             }
+
             if (type.wasRaw()) {
                 for (AnnotatedDeclaredType adt : supertypes) {
                     adt.setWasRaw();
                 }
             }
             return supertypes;
+        }
+
+        private boolean implementsAnnotation(final TypeElement typeElement) {
+             for (TypeMirror iface : typeElement.getInterfaces()) {
+                if (TypesUtils.isDeclaredOfName(iface, "java.lang.annotation.Annotation")) {
+                    return true;
+                }
+             }
+
+            return false;
         }
 
         /**
