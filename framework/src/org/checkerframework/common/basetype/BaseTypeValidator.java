@@ -108,57 +108,58 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
          * TODO: there has to be a nicer way to do this...
          */
         Pair<ParameterizedTypeTree, AnnotatedDeclaredType> p = extractParameterizedTypeTree(tree, type);
-        ParameterizedTypeTree typeargtree = p.first;
+        ParameterizedTypeTree typeArgTree = p.first;
         type = p.second;
 
-        if (typeargtree != null) {
-            //We put this here because we don't want to put it in visitedNodes before calling
-            //super (in the else branch) because that would cause the super implementation
-            //to detect that we've already visited type and to immediately return
-            visitedNodes.put(type, null);
-
-            // We have a ParameterizedTypeTree -> visit it.
-
-            visitParameterizedType(type, typeargtree);
-
-            /*
-             * Instead of calling super with the unchanged "tree", adapt the
-             * second argument to be the corresponding type argument tree. This
-             * ensures that the first and second parameter to this method always
-             * correspond. visitDeclared is the only method that had this
-             * problem.
-             */
-            List<? extends AnnotatedTypeMirror> tatypes = type.getTypeArguments();
-
-            if (tatypes == null)
-                return null;
-
-            // May be zero for a "diamond" (inferred type args in constructor
-            // invocation).
-            int numTypeArgs = typeargtree.getTypeArguments().size();
-            if (numTypeArgs != 0) {
-                // TODO: this should be an equality, but in
-                // http://buffalo.cs.washington.edu:8080/job/jdk6-daikon-typecheck/2061/console
-                // it failed with:
-                // daikon/Debug.java; message: size mismatch for type arguments:
-                // @NonNull Object and Class<?>
-                // but I didn't manage to reduce it to a test case.
-                assert tatypes.size() <= numTypeArgs || skipChecks : "size mismatch for type arguments: " +
-                        type + " and " + typeargtree;
-
-                for (int i = 0; i < tatypes.size(); ++i) {
-                    scan(tatypes.get(i), typeargtree.getTypeArguments().get(i));
-                }
-            }
-
-            // Don't call the super version, because it creates a mismatch
-            // between
-            // the first and second parameters.
-            // return super.visitDeclared(type, tree);
-        } else {
+        if (typeArgTree == null) {
             return super.visitDeclared(type, tree);
+        } //else
 
+
+        //We put this here because we don't want to put it in visitedNodes before calling
+        //super (in the else branch) because that would cause the super implementation
+        //to detect that we've already visited type and to immediately return
+        visitedNodes.put(type, null);
+
+        // We have a ParameterizedTypeTree -> visit it.
+
+        visitParameterizedType(type, typeArgTree);
+
+        /*
+         * Instead of calling super with the unchanged "tree", adapt the
+         * second argument to be the corresponding type argument tree. This
+         * ensures that the first and second parameter to this method always
+         * correspond. visitDeclared is the only method that had this
+         * problem.
+         */
+        List<? extends AnnotatedTypeMirror> tatypes = type.getTypeArguments();
+
+        if (tatypes == null)
+            return null;
+
+        // May be zero for a "diamond" (inferred type args in constructor
+        // invocation).
+        int numTypeArgs = typeArgTree.getTypeArguments().size();
+        if (numTypeArgs != 0) {
+            // TODO: this should be an equality, but in
+            // http://buffalo.cs.washington.edu:8080/job/jdk6-daikon-typecheck/2061/console
+            // it failed with:
+            // daikon/Debug.java; message: size mismatch for type arguments:
+            // @NonNull Object and Class<?>
+            // but I didn't manage to reduce it to a test case.
+            assert tatypes.size() <= numTypeArgs || skipChecks : "size mismatch for type arguments: " +
+                    type + " and " + typeArgTree;
+
+            for (int i = 0; i < tatypes.size(); ++i) {
+                scan(tatypes.get(i), typeArgTree.getTypeArguments().get(i));
+            }
         }
+
+        // Don't call the super version, because it creates a mismatch
+        // between
+        // the first and second parameters.
+        // return super.visitDeclared(type, tree);
+
 
         return null;
     }
