@@ -2,7 +2,7 @@
 # Make will silently continue if that file does not exist.
 -include Makefile.user
 
-PDFFILES = fenum.pdf igj.pdf initialization.pdf interning.pdf javari.pdf nullness.pdf nullness-and-rawness.pdf rawness.pdf regex.pdf signature-types.pdf aliasing.pdf formatter-hierarchy.pdf formatter-categories.pdf value-subtyping.pdf
+PDFFILES = $(patsubst %.svg,%.pdf,$(wildcard *.svg))
 
 all: ${PDFFILES} clean-obsolete-files svg-copy
 
