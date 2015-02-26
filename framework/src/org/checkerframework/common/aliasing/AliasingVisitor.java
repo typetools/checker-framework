@@ -2,6 +2,11 @@ package org.checkerframework.common.aliasing;
 
 import java.util.List;
 
+
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
+
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
@@ -164,7 +169,7 @@ public class AliasingVisitor extends
     // this isn't called for pseudo-assignments.
     @Override
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp,
-            String errorKey) {
+            /*@CompilerMessageKey*/ String errorKey) {
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
         if (isInUniqueConstructor(valueExp) && TreeUtils.
                 isExplicitThisDereference(valueExp)) {
@@ -179,7 +184,7 @@ public class AliasingVisitor extends
 
     @Override
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, String errorKey,
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey,
             boolean isLocalVariableAssignement) {
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey,
                 isLocalVariableAssignement);

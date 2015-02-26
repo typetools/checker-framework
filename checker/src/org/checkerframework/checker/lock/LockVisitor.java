@@ -137,7 +137,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp,
-            String errorKey) {
+            /*@CompilerMessageKey*/ String errorKey) {
         // If the RHS is known for sure to be a primitive type, skip the check.
         // Dereferences of primitives require the appropriate locks to be held,
         // but it does not require the annotations in the types involved in the
