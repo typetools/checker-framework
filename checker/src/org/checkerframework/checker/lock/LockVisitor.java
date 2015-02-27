@@ -4,8 +4,6 @@ package org.checkerframework.checker.lock;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 */
 
-import org.checkerframework.checker.lock.qual.GuardedBy;
-import org.checkerframework.checker.lock.qual.GuardedByTop;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -25,7 +23,6 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -41,16 +38,9 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-import com.sun.source.tree.ArrayAccessTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.tree.JCTree;
 
 /**
  * The LockVisitor enforces the subtyping rules of LockHeld and LockPossiblyHeld
@@ -71,14 +61,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     private final Class<? extends Annotation> javaxGuardedByClass = javax.annotation.concurrent.GuardedBy.class;
     private final Class<? extends Annotation> jcipGuardedByClass = net.jcip.annotations.GuardedBy.class;
 
-    /** Annotation constants */
-    protected final AnnotationMirror GUARDEDBY, GUARDEDBYTOP;
-
     public LockVisitor(BaseTypeChecker checker) {
         super(checker);
-
-        GUARDEDBYTOP = AnnotationUtils.fromClass(elements, GuardedByTop.class);
-        GUARDEDBY = AnnotationUtils.fromClass(elements, GuardedBy.class);
 
         checkForAnnotatedJdk();
     }
@@ -92,115 +76,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     @Override
-    protected void checkAccess(IdentifierTree node, Void p) {
-        // This method is called by visitIdentifier (and only visitIdentifier).
-
-        // Unless the identifier is a primitive or syntactic sugar for another expression, do not check preconditions.
-        // Preconditions in the Lock Checker for reference types must not be
-        // checked by visitIdentifier, since we want only dereferences of variables
-        // to have their Preconditions enforced, but not every instance of the variable
-        // (due to by-value instead of by-variable semantics for the Lock Checker).
-        // The exception to this will be visitSynchronized, but that will be handled separately.
-        // See the Lock Checker manual chapter definitions of dereferencing a value/variable
-        // for more information.
-
-        Node nodeNode = atypeFactory.getNodeForTree(node);
-
-        // TODO: A check such as the following should determine whether the identifier
-        // evaluates to a primitive type even when it looks like a reference type (e.g.
-        // unboxing of a boxed type).
-        // (nodeNode != null && nodeNode.getInSource() == false)
-        // This doesn't work as expected, however, because the correct inSource information
-        // is stored in ControlFlowGraph.convertedTreeLookup, whereas at this point
-        // only ControlFlowGraph.treeLookup is available (via atypeFactory.getNodeForTree).
-        // The precise point in the code where this information is lost (i.e. a reference
-        // to convertedTreeLookup is not copied to the analysis result) is in the following
-        // two lines in GenericAnnotatedTypeFactory.analyze :
-
-        // analyses.getFirst().performAnalysis(cfg);
-        // AnalysisResult<Value, Store> result = analyses.getFirst().getResult();
-
-        // convertedTreeLookup is available in cfg, but a reference to it is not copied
-        // over in getResult(). This should be fixed in a future release. At the present
-        // time, such a change would unduly introduce risk to the release.
-
-        // As a temporary workaround, boxed types are conservatively always treated
-        // as if they are being converted to a primitive, even when they are being used
-        // as a reference (since we can't tell which one is the case). This will conservatively
-        // result in more errors visible to the user.
-
-        boolean doCheckPreconditions = (nodeNode != null && TypesUtils.isBoxedPrimitive(nodeNode.getType())) ||
-            (node instanceof JCTree && TypesUtils.isPrimitive(((JCTree) node).type));
-
-        super.checkAccess(node, p, doCheckPreconditions);
-    }
-
-    @Override
-    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp,
-            /*@CompilerMessageKey*/ String errorKey) {
-        // If the RHS is known for sure to be a primitive type, skip the check.
-        // Dereferences of primitives require the appropriate locks to be held,
-        // but it does not require the annotations in the types involved in the
-        // operation to match.
-        // For example, given:
-        // @GuardedBy("foo") int a;
-        // @GuardedBy("bar") int b;
-        // @GuardedBy({}) int c;
-        // The expressions a = b, a = c, and a = b + c are legal from a
-        // type-checking perspective, whereas none of them would be legal
-        // if a, b and c were not primitives.
-
-        if (!(valueExp instanceof JCTree && ((JCTree) valueExp).type.getKind().isPrimitive())) {
-            super.commonAssignmentCheck(varTree, valueExp, errorKey);
-        }
-    }
-
-    @Override
-    protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
-        Set<? extends AnnotationMirror> tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
-        Set<AnnotationMirror> annotationSet = AnnotationUtils.createAnnotationSet();
-        for (AnnotationMirror anno : tops) {
-            if (anno.equals(GUARDEDBYTOP)) {
-                annotationSet.add(GUARDEDBY);
-            }
-            else {
-                annotationSet.add(anno);
-            }
-        }
-        return annotationSet;
-    }
-
-    private Set<Pair<String, String>> getPreconditions(AnnotatedTypeMirror atm) {
-        return getPreconditions(atm.getAnnotations());
-    }
-
-    // Given a set of AnnotationMirrors, returns the list of lock expression preconditions
-    // specified in all the @GuardedBy annotations in the set.
-    // Returns an empty set if no such expressions are found.
-    private Set<Pair<String, String>> getPreconditions(Set<AnnotationMirror> amList) {
-        Set<Pair<String, String>> preconditions = new HashSet<>();
-
-        if (amList != null) {
-            for (AnnotationMirror annotationMirror : amList) {
-
-                if (AnnotationUtils.areSameByClass( annotationMirror, checkerGuardedByClass) ||
-                    AnnotationUtils.areSameByClass( annotationMirror, javaxGuardedByClass) ||
-                    AnnotationUtils.areSameByClass( annotationMirror, jcipGuardedByClass)) {
-                    if (AnnotationUtils.hasElementValue(annotationMirror, "value")) {
-                        List<String> guardedByValue = AnnotationUtils.getElementValueArray(annotationMirror, "value", String.class, false);
-
-                        for(String lockExpression : guardedByValue) {
-                            preconditions.add(Pair.of(lockExpression, checkerLockHeldClass.toString().substring(10 /* "interface " */)));
-                        }
-                    }
-                }
-            }
-        }
-
-        return preconditions;
-    }
-
-    @Override
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey,
             boolean isLocalVariableAssignement) {
@@ -210,84 +85,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             return;
         }
 
-        Kind valueTreeKind = valueTree.getKind();
-
-        switch(valueTreeKind) {
-            case NEW_CLASS:
-            case NEW_ARRAY:
-                // Avoid issuing warnings when: @GuardedBy("this") Object guardedThis = new Object();
-                // TODO: This is too broad and should be fixed to work the way it will work in the hacks repo.
-                return;
-            case INT_LITERAL:
-            case LONG_LITERAL:
-            case FLOAT_LITERAL:
-            case DOUBLE_LITERAL:
-            case BOOLEAN_LITERAL:
-            case CHAR_LITERAL:
-            case STRING_LITERAL:
-            case NULL_LITERAL:
-                // Avoid issuing warnings when: guardedThis = "m";
-                // TODO: This is too broad and should be fixed to work the way it will work in the hacks repo.
-                return;
-            default:
-        }
-
-        // Assigning a value with a @GuardedBy annotation to a variable with a @GuardedByTop annotation is always
-        // legal. However as a precaution we verify that the locks specified in the @GuardedBy annotation are held,
-        // since this is our last chance to check anything before the @GuardedBy information is lost in the
-        // assignment to the variable annotated with @GuardedByTop. See the Lock Checker manual chapter discussion
-        // on the @GuardedByTop annotation for more details.
-        if (AnnotationUtils.areSameIgnoringValues(varType.getAnnotationInHierarchy(GUARDEDBYTOP), GUARDEDBYTOP)) {
-            if (AnnotationUtils.areSameIgnoringValues(valueType.getAnnotationInHierarchy(GUARDEDBYTOP), GUARDEDBY)) {
-                ExpressionTree tree = (ExpressionTree) valueTree;
-
-                checkPreconditions(tree,
-                        TreeUtils.elementFromUse(tree),
-                        tree.getKind() == Tree.Kind.METHOD_INVOCATION,
-                        getPreconditions(valueType));
-            }
-        }
-
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, isLocalVariableAssignement);
-    }
-
-    @Override
-    protected void checkMethodInvocability(AnnotatedExecutableType method,
-            MethodInvocationTree node) {
-        // Neither the GuardedBy nor the LockHeld hierarchies need to be checked for method invocability.
-        // The Lock Checker defines whether a method invocation is legal based on what locks are held
-        // rather than the subtyping relationship between the receiver expression and the receiver declaration.
-
-        // Whether the refined type of the receiver is @LockPossiblyHeld / @LockHeld is irrelevant since
-        // the Lock Checker only needs to check that the appropriate locks are held if the receiver has
-        // a @GuardedBy annotation.
-
-        // If the refined type of the receiver is @GuardedBy (and not @GuardedByTop or @GuardedByBottom),
-        // then it is important to verify that the expressions in the @GuardedBy annotation are held.
-        // This is done in the call to checkPreconditions in BaseTypeVisitor.visitMethodInvocation
-    }
-
-    @Override
-    public Void visitMemberSelect(MemberSelectTree node, Void p) {
-        // Just check the precondition on the expression of the member select tree.
-        // It doesn't matter if the identifier is a method or field.
-        // Here, we are checking that the lock must be held on the
-        // expression.
-
-        // Keep in mind, the expression itself may or may not be a
-        // method call. Simple examples of expression.identifier :
-        // myObject.field
-        // myMethod().field
-        // myObject.method()
-        // myMethod().method()
-
-        // by-value semantics require preconditions to be checked
-        // on all value dereferences, including dereferences of method
-        // return values.
-
-        checkAccessOfExpression(node);
-
-        return super.visitMemberSelect(node, p);
     }
 
     private void reportFailure(/*@CompilerMessageKey*/ String messageKey,
@@ -497,35 +295,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         super.checkPreconditions(tree, invokedElement, methodCall, additionalPreconditions);
     }
 
-    // We check the access of the expression of an ArrayAccessTree or
-    // a MemberSelectTree, both of which happen to implement ExpressionTree.
-    // The 'Expression' in checkAccessOfExpression is not the same as that in
-    // 'Expression'Tree - the naming is a coincidence.
-    protected void checkAccessOfExpression(ExpressionTree tree) {
-        Kind treeKind = tree.getKind();
-        assert(treeKind == Kind.ARRAY_ACCESS ||
-               treeKind == Kind.MEMBER_SELECT);
-
-        ExpressionTree expr = treeKind == Kind.ARRAY_ACCESS ?
-            ((ArrayAccessTree) tree).getExpression() :
-            ((MemberSelectTree) tree).getExpression();
-
-        Element invokedElement = TreeUtils.elementFromUse(expr);
-
-        AnnotatedTypeMirror receiverAtm = atypeFactory.getReceiverType(tree);
-
-        if (expr != null && invokedElement != null && receiverAtm != null) {
-            checkPreconditions(expr, invokedElement, expr.getKind() == Tree.Kind.METHOD_INVOCATION, getPreconditions(receiverAtm));
-        }
-    }
-
-    @Override
-    public Void visitArrayAccess(ArrayAccessTree node, Void p) {
-        checkAccessOfExpression(node);
-
-        return super.visitArrayAccess(node, p);
-    }
-
     /**
      * Whether to skip a contract check based on whether the @GuardedBy
      * expression {@code expr} is valid for the tree {@code tree}
@@ -589,14 +358,4 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         return false;
     }
-
-    @Override
-    public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType, Tree tree) {
-        declarationType.replaceAnnotation(GUARDEDBY);
-        useType.replaceAnnotation(GUARDEDBY);
-
-        return super.isValidUse(declarationType, useType, tree);
-    }
-
 }
