@@ -2761,6 +2761,14 @@ public abstract class AnnotatedTypeMirror {
                 // final Element elem = type.getElement() == null ? typeElement : type.getElement();
             }
 
+            if (typeElement.getKind() == ElementKind.ANNOTATION_TYPE) {
+                Element jlaElement = atypeFactory.elements.getTypeElement(Annotation.class.getCanonicalName());
+
+                AnnotatedDeclaredType jlaAnnotation = (AnnotatedDeclaredType) atypeFactory.fromElement(jlaElement);
+                jlaAnnotation.addAnnotations(type.getAnnotations());
+                supertypes.add(jlaAnnotation);
+            }
+
             for (AnnotatedDeclaredType dt : supertypes) {
                 replacer.visit(dt, mapping);
             }
