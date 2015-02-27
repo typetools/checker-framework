@@ -1,0 +1,117 @@
+<!--
+  This is a configuration file for use by Ant when building the 
+  Checker Framework.
+  This file is shared between all subprojects.
+-->
+<project name="imports">
+
+    <!--
+      Properties that are likely to need adaptation by developers should
+      instead go into build-common.properties.
+    -->
+
+    <property name="src" value="src"/>
+    <property name="build" value="build"/>
+    <property name="build.reports" value="${build}/reports"/>
+    <property name="build.jtreg.dir" value="${build}/jtreg"/>
+
+    <property name="tests" value="tests"/>
+    <property name="tests.build" value="${tests}/build"/>
+
+    <property name="api.doc" value="api"/>
+
+    <property environment="env"/>
+    <tstamp>
+        <format property="timestamp" pattern="yy-MM-dd-hh-mm-ss-SS" />
+    </tstamp>
+    <!-- Prevent printing a literal ${env.BUILD_NUMBER} if it's not in env-->
+    <property name="env.EXECUTOR_NUMBER" value="" />
+
+    <property name="tmpdir"
+        value="${java.io.tmpdir}/${user.name}/${timestamp}${env.EXECUTOR_NUMBER}/${ant.project.name}" />
+
+    <property name="compiler.version.goal.jsr308"
+              value="javac 1.8.0-jsr308-${build.version}"/>
+
+    <property name="compiler.version.goal.java8"
+              value="javac 1.8.0"/>
+
+    <property name="compiler.version.goal.java9"
+              value="javac 1.9.0"/>
+
+    <target name="prep-all"
+            description="Perform preparation useful for all projects">
+        <java fork="true"
+              outputproperty="compiler.version"
+              classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <arg line="-version"/>
+        </java>
+
+        <condition property="compiler.exists.jsr308">
+            <equals
+                arg1="${compiler.version}"
+                arg2="${compiler.version.goal.jsr308}"/>
+        </condition>
+
+        <condition property="compiler.exists.java8">
+            <contains
+                string="${compiler.version}"
+                substring="${compiler.version.goal.java8}"/>
+        </condition>
+
+        <condition property="compiler.exists.java9">
+            <contains
+                string="${compiler.version}"
+                substring="${compiler.version.goal.java9}"/>
+        </condition>
+
+	<condition property="compiler.exists">
+            <or>
+                <istrue value="${compiler.exists.jsr308}"/>
+                <istrue value="${compiler.exists.java8}"/>
+                <istrue value="${compiler.exists.java9}"/>
+            </or>
+        </condition>
+
+        <fail unless="compiler.exists"
+            message="
+Needed version '${compiler.version.goal.jsr308}' of the JSR 308 compiler,
+but found version '${compiler.version}' on your classpath.
+${line.separator}
+${line.separator}Check that the 'javac.lib' property
+in 'build-common.properties'
+points to version ${build.version} of the 'javac.jar' library."/>
+
+    </target>
+
+
+    <target name="prep-ManualTaglet" depends="prep">
+        <java fork="true"
+              failonerror="true"
+              classpath="${javac.lib}:${javadoc.lib}"
+              classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
+            <arg value="-g"/>
+            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
+            <arg value="-source"/>
+            <arg value="7"/>
+            <arg value="-target"/>
+            <arg value="7"/>
+            <!-- To not get a warning about bootstrap classpath -->
+            <arg value="-Xlint:-options"/>
+            <arg line="-d ${build}"/>
+            <arg line="${javacutil.loc}/src/org/checkerframework/javacutil/dist/ManualTaglet.java"/>
+            <arg line="-version"/>
+        </java>
+    </target>
+
+
+    <target name="tags" depends="prep" description="Create Emacs TAGS table">
+        <exec executable="/bin/sh" failonerror="true">
+            <arg value="-c"/>
+            <arg value="etags `find . \( -name jdk \) -prune -o -name '*.java' -print | sort-directory-order`"/>
+        </exec>
+    </target>
+
+</project>
