@@ -12,7 +12,6 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTag;
@@ -328,14 +327,4 @@ public final class TypesUtils {
         JavacTypes t = (JavacTypes) types;
         return t.getArrayType(componentType);
     }
-
-    /**
-     * @return a type mirror for java.lang.annotation.Annotation
-     */
-    public static DeclaredType getAnnotationClassType(Types types, Elements elements) {
-        return (DeclaredType) typeFromClass(types, elements, java.lang.annotation.Annotation.class);
-    }
-
-    private static String annotationClassName = java.lang.annotation.Annotation.class.getCanonicalName();
-
 }
