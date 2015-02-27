@@ -888,7 +888,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected void checkPreconditions(Tree tree,
             Element invokedElement, boolean methodCall, Set<Pair<String, String>> additionalPreconditions) {
-        Set<Pair<String, String>> preconditions = //new HashSet<>();
+        Set<Pair<String, String>> preconditions =
                 contractsUtils.getPreconditions(invokedElement);
 
         if (additionalPreconditions != null) {
