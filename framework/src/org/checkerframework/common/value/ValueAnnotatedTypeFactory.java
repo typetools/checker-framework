@@ -203,8 +203,6 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
      * Issues a checker warning and return UNKNOWNVAL if values.size &gt;
      * MAX_VALUES
      *
-     * @param name
-     * @param values
      * @return annotation given by name with values=values, or UNKNOWNVAL
      */
     public AnnotationMirror createAnnotation(String name, Set<?> values) {

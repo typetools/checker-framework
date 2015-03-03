@@ -103,8 +103,6 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
      * Processes an element by calling e.accept(this, p); this method
      * may be overridden by subclasses.
      *
-     * @param types
-     * @param p
      * @return a visitor-specified result
      */
     protected R scan(Iterable<? extends AnnotatedTypeMirror> types, P p) {
