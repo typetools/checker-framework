@@ -17,7 +17,7 @@ public abstract class QualifiedParameterTypeVariableSubstitutor<Q> extends TypeV
 
     /** Combine two wildcards into one when substituting a qualified type into
      * a qualified type variable use (for example, substituting {@code
-     * [T := C<<Q=TAINTED>>]} into the use {@code T + <<Q=UNTAINTED>>}).
+     * [T := C《Q=TAINTED》]} into the use {@code T + 《Q=UNTAINTED》}).
      */
     protected abstract Wildcard<Q> combineForSubstitution(Wildcard<Q> a, Wildcard<Q> b);
     protected abstract PolyQual<Q> combineForSubstitution(PolyQual<Q> a, PolyQual<Q> b);
