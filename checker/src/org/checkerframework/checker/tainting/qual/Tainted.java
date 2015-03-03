@@ -20,12 +20,12 @@ import java.lang.annotation.*;
  *  }
  *
  *  is equivalent to:
- *  class A<<aParam>> {
+ *  class A《aParam》 {
  *
  *  }
  *  class B {
- *    A<<aParam={@literal @}Tainted>> a;
- *    A<<aParam=? extends {@literal @}Tainted>> b;
+ *    A《aParam={@literal @}Tainted》 a;
+ *    A《aParam=? extends {@literal @}Tainted》 b;
  *  }
  * }
  * </pre>
