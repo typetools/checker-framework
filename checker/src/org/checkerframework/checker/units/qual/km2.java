@@ -6,6 +6,8 @@ import org.checkerframework.framework.qual.*;
 
 /**
  * Square kilometer.
+ *
+ * @checker_framework.manual #units-checker Units Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
