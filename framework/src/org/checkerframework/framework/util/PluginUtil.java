@@ -68,7 +68,6 @@ public class PluginUtil {
      * absolute filepath
      * @param destination The fofn file we are writing.  This file will contain newline separated list of absolute file paths
      * @param files The files to write to the destination file
-     * @throws IOException
      */
     public static void writeFofn(final File destination, final List<File> files) throws IOException {
         final BufferedWriter bw = new BufferedWriter(new FileWriter(destination));
@@ -90,7 +89,6 @@ public class PluginUtil {
      * absolute filepath
      * @param destination The fofn file we are writing.  This file will contain newline separated list of absolute file paths
      * @param files The files to write to the destination file
-     * @throws IOException
      */
     public static void writeFofn(final File destination, final File ... files) throws IOException {
         writeFofn(destination, Arrays.asList(files));

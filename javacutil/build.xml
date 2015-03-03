@@ -120,7 +120,8 @@
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${api.doc}"
-                 failonerror="true"
+                 additionalParam="-Xdoclint:all,-missing"
+                 failonerror="true" failonwarning="true"
                  executable="${javadoc.bin}"
                  classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">

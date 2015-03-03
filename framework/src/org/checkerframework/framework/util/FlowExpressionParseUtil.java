@@ -109,7 +109,6 @@ public class FlowExpressionParseUtil {
      *            information about any receiver and arguments
      * @param path
      *            The current tree path.
-     * @throws FlowExpressionParseException
      */
     public static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
             FlowExpressionContext context, TreePath path)

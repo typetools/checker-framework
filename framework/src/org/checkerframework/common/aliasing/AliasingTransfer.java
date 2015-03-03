@@ -47,7 +47,6 @@ import com.sun.source.tree.Tree.Kind;
  * 3.The LHS is a {@literal @}LeakedToResult formal parameter, the RHS is an
  * argument in a method call or constructor invocation, and the method's return
  * value is discarded.
- * <p>
  */
 
 public class AliasingTransfer extends CFTransfer {
