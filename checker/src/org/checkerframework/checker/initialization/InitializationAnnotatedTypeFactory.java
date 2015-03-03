@@ -682,10 +682,6 @@ public abstract class InitializationAnnotatedTypeFactory<
          * Will return false if either qualifier is not an initialization annotation.
          * Subclasses should override isSubtype and call this method for
          * initialization qualifiers.
-         *
-         * @param rhs
-         * @param lhs
-         * @return
          */
         public boolean isSubtypeInitialization(AnnotationMirror rhs, AnnotationMirror lhs) {
             if (!isInitializationAnnotation(rhs) ||

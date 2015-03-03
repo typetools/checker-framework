@@ -16,17 +16,11 @@ import org.checkerframework.javacutil.ErrorReporter;
 public abstract class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, AnnotatedTypeMirror> {
     /**
      * Compares two annotated type mirrors. 
-     * @param type
-     * @param p 
-     * @return
      */
     protected abstract R compare(AnnotatedTypeMirror type, AnnotatedTypeMirror p);
     
     /**
      * Supplies the logic to reduce on how to combine two R objects
-     * @param r1
-     * @param r2
-     * @return
      */
     protected abstract R combineRs(R r1, R r2);
     

@@ -335,7 +335,8 @@
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
         <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}" destdir="${api.doc}"
-                 failonerror="true"
+                 additionalParam="-Xdoclint:all,-missing"
+                 failonerror="true" failonwarning="true"
                  executable="${javadoc.bin}"
                  classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"

@@ -1541,9 +1541,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Checks the type of the exception parameter
      * Subclasses should override checkExceptionParameter(CatchTree node)
      * rather than this method to change the behavior of this check.
-     * @param node
-     * @param p
-     * @return
      */
     @Override
     public Void visitCatch(CatchTree node, Void p) {
@@ -1555,10 +1552,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Checks the type of a thrown exception. Subclasses should override
      * checkThrownExpression(ThrowTree node) rather than this method to change
      * the behavior of this check.
-     *
-     * @param node
-     * @param p
-     * @return
      */
     @Override
     public Void visitThrow(ThrowTree node, Void p) {

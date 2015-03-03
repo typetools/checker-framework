@@ -219,9 +219,6 @@ public final class ASTHelper {
     /**
      * Adds the given statement to the specified block. The list of statements
      * will be initialized if it is <code>null</code>.
-     * 
-     * @param block
-     * @param stmt
      */
     public static void addStmt(BlockStmt block, Statement stmt) {
         List<Statement> stmts = block.getStmts();
@@ -235,9 +232,6 @@ public final class ASTHelper {
     /**
      * Adds the given expression to the specified block. The list of statements
      * will be initialized if it is <code>null</code>.
-     * 
-     * @param block
-     * @param expr
      */
     public static void addStmt(BlockStmt block, Expression expr) {
         addStmt(block, new ExpressionStmt(expr));

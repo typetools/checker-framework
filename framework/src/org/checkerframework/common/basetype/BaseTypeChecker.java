@@ -164,7 +164,6 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
 
     /**
      * Returns whether or not reflection should be resolved
-     * @return
      */
     public boolean shouldResolveReflection() {
         // Because this method is indirectly called by getSubcheckers and
