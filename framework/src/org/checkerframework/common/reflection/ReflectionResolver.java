@@ -16,6 +16,8 @@ import com.sun.source.tree.MethodInvocationTree;
  * as {@link Method#invoke(Object, Object...)} or
  * {@link Constructor#newInstance(Object...)}.
  *
+ * @checker_framework.manual #reflection-resolution Reflection resolution
+ *
  * @author rjust
  *
  */
