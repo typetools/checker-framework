@@ -10,6 +10,9 @@ import org.checkerframework.framework.source.SourceChecker;
 /**
  * An aggregated checker for the nullness type-system (with rawness) and
  * {@link KeyFor}.
+ *
+ * @checker_framework.manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #initialization-rawness-checker Rawness Initialization Checker
  */
 public class NullnessRawnessChecker extends AggregateChecker {
 

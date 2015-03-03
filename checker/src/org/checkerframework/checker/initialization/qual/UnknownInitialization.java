@@ -41,7 +41,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * Just {@code @UnknownInitialization} is equivalent to
  * {@code @UnknownInitialization(Object.class)}.
  *
- * @checker_framework.manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #initialization-checker Initialization Checker
  */
 @TypeQualifier
 @SubtypeOf({})
