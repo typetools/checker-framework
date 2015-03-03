@@ -6,6 +6,8 @@ import org.checkerframework.framework.qual.*;
 
 /**
  * Meter per second.
+ *
+ * @checker_framework.manual #units-checker Units Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

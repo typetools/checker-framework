@@ -6,6 +6,8 @@ import org.checkerframework.framework.qual.*;
 
 /**
  * Ampere.
+ *
+ * @checker_framework.manual #units-checker Units Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
