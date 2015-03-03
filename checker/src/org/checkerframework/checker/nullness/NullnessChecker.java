@@ -9,7 +9,9 @@ import org.checkerframework.framework.source.SourceChecker;
 
 /**
  * An aggregated checker for the nullness type-system (with
- * freedom-before-commitment) and {@link KeyFor}).
+ * freedom-before-commitment and {@link KeyFor}).
+ *
+ * @checker_framework.manual #nullness-checker Nullness Checker
  */
 public class NullnessChecker extends AggregateChecker {
 

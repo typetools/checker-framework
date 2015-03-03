@@ -8,6 +8,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 /**
  * @author plvines
  * 
+ * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 public class ValueChecker extends BaseTypeChecker {
 
