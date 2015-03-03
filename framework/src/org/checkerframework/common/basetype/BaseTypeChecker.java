@@ -91,6 +91,9 @@ import com.sun.tools.javac.util.Log;
  * may override the {@link BaseAnnotatedTypeFactory#createQualifierHierarchy()} method.
  *
  * @see org.checkerframework.framework.qual
+ *
+/**
+ * @checker_framework.manual ##writing-compiler-interface The checker class
  */
 public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeContext {
 

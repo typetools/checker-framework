@@ -7,6 +7,9 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.SupportedLintOptions;
 
+/**
+ * @checker_framework.manual #guieffect-checker GUI Effect Checker
+ */
 @SupportedLintOptions({"debugSpew"})
 @TypeQualifiers({
     UI.class, PolyUI.class, AlwaysSafe.class
