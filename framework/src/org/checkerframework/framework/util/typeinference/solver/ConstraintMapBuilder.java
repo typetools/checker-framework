@@ -21,7 +21,35 @@ import java.util.Set;
  */
 public class ConstraintMapBuilder {
 
-
+    /**
+     * Let Ti be a the ith target being inferred
+     * Let ATV(i) be the annotated type variable that represents as use of Ti which may or may not
+     * have primary annotations.
+     * Let ATM be an annotated type mirror that may or may not be target Tx, or have a component target Tx
+     * Let Ai be the type argument we are trying to infer for Ti
+     *
+     * We have a set of constraints of the form:
+     * ATV(i) <?> ATM
+     *
+     * Where <?> is either a subtype (<:), supertype (:>), or equality relationship (=).
+     *
+     * Regardless of what <?> is, a constraint will only imply constraints on Ai in a given
+     * hierarchy if ATV(i) does NOT have a primary annotation in that hierarchy.  That is:
+     *
+     * E.g. Let ATV(i) be @NonNull Ti,  the constraints @NonNull Ti = @NonNull @Initialized String
+     * does not imply any primary annotation in the Nullness hierarchy for type argument Ai because the Annotated
+     * type mirror has a primary annotation in the NUllness hierarchy.
+     *
+     * However, it does imply that Ai has a primary annotation of @Initialized since ATV(i) has no
+     * primary annotation in the initialization hierarchy.
+     *
+     * Note, constraints come in 2 forms:
+     *   a) between a target and a concrete AnnotatedTypeMirror.
+     *   E.g., As seen above (@NonNull Ti = @NonNull @Initialized String)
+     *
+     *   b) between two targets
+     *   E.g., (@NonNull Ti = Tj)
+     */
     public ConstraintMap build(Set<TypeVariable> targets,
                                Set<TUConstraint> constraints,
                                AnnotatedTypeFactory typeFactory) {
@@ -65,20 +93,16 @@ public class ConstraintMapBuilder {
                                 uAnnos.add(tAnno);
 
                             } else {
-                                //Tell's us nothing?  The two annotation should be equal?  Test that they are
-                                //equal?
-                                if (AnnotationUtils.areSame(uAnno, tAnno)) {
-                                    ErrorReporter.errorAbort(
-                                            "Annotations should be equivalent!\n"
-                                                    + "tAnno = " + uAnno + "\n"
-                                                    + "uAnno = " + tAnno + "\n"
-                                                    + "constraint = " + constraint + "\n"
-                                    );
-                                }
+                                //This tells us nothing, they both should be equal but either way
+                                //we gain no information if both type vars have annotations
                             }
                         }
                     }
 
+                    // If we have a case where Ti = @NonNull Tj  we know that for the @Initialization
+                    // hierarchy Ti = TJ and we know that for the @Nullable hierarchy Ti = @NonNull <some other type>
+                    // this step saves @NonNull annotation.
+                    // This case also covers the case where i = j
                     if (!tAnnos.isEmpty()) {
                         addToPrimaryRelationship(typeT.getUnderlyingType(),
                                                  constraint, result, tAnnos, qualifierHierarchy);
@@ -90,6 +114,7 @@ public class ConstraintMapBuilder {
                     }
                 }
 
+                // This is the case where we have a relationship between two different targets (Ti <?> Tj and i != j)
                 if (!typeT.getUnderlyingType().equals(typeU.getUnderlyingType())) {
                     addToTargetRelationship(typeT.getUnderlyingType(), (TypeVariable) typeU.getUnderlyingType(),
                                             result, constraint, hierarchiesInRelation);

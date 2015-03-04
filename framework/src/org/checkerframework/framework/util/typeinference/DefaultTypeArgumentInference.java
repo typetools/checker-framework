@@ -26,17 +26,9 @@ import static org.checkerframework.framework.util.typeinference.TypeArgInference
 import static org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil.treesToTypes;
 
 /**
- * An implementation of TypeArgumentInference that closely follows the process outlined in JLS7
+ * An implementation of TypeArgumentInference that mostly follows the process outlined in JLS7
  * @link http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7
- *
- * This implementation works in 5 steps:
- *     1.) build up a set of constraints between the method invocation's arguments (to its formal parameters)
- *     2.) solve that set of constraints, inferring as many type arguments as possible
- *     3.) build up a set of constraints between the method invocation's return type and any type it is assigned to
- *         (using object if there is NONE)
- *     4.) for all type arguments that have not been inferred, use the set of constraints from step 3 to infer
- *         their arguments.
- *
+ * *
  * Note, there are some deviations JLS 7 for the following cases:
  *     a.) Places where the JLS is vague.  For these cases, first the OpenJDK implementation was consulted
  *     and then we favored the behavior we desire rather than the implied behavior of the JLS or JDK implementation.
@@ -44,13 +36,16 @@ import static org.checkerframework.framework.util.typeinference.TypeArgInference
  *     b.) The fact that any given type variable type may or may not have annotations for multiple hierarchies means
  *     that constraints are more complicated than their Java equivalents.  Every constraint must identify the
  *     hierarchies to which they apply.  This makes solving the constraint sets more complicated.
+ *
+ *  TODO: The following limitations need to be fixed, as at the time of this writing we do not have the time
+ *        to handle them:
+ *      1) The GlbUtil does not correctly handled wildcards/typevars when the glb result should be a wildcard or typevar
  */
 public class DefaultTypeArgumentInference implements TypeArgumentInference {
     private final EqualitiesSolver equalitiesSolver = new EqualitiesSolver();
     private final SupertypesSolver supertypesSolver = new SupertypesSolver();
     private final SubtypesSolver subtypesSolver = new SubtypesSolver();
     private final ConstraintMapBuilder constraintMapBuilder = new ConstraintMapBuilder();
-
 
     @Override
     public Map<TypeVariable, AnnotatedTypeMirror> inferTypeArgs(AnnotatedTypeFactory typeFactory,
@@ -65,13 +60,155 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             return new HashMap<>();
         }
 
+        //steps 1-4
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
         final Map<TypeVariable, AnnotatedTypeMirror> inferredArgs = infer(typeFactory, invocation, methodType, targets);
+
+        //step 5
         handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
         return inferredArgs;
     }
 
+    /**
+     * This algorithm works as follows:
+     * 1.  Build Argument Constraints - up a set of constraints using the arguments to the type parameter declarations,
+     * the formal parameters, and the arguments to the method call
+     * 2.  Solve Argument Constraints - Create two solutions from the arguments.
+     *       a. Equality Arg Solution: Solution inferred from arguments used in an invariant position
+     *       (i.e. from equality constraints)
+     *       b. Supertypes Arg Solution: Solution inferred from constraints in which the parameter is a supertype of
+     *       argument types. These are kept separate and merged later.
+     *
+     * Note: If there is NO assignment context we just combine the results from 2.a and 2.b, giving preference
+     * to those in 2.a, and return the result.
+     *
+     * 3.  Build and Solve Initial Assignment Constraints - Create a set of constraints from the assignment context WITHOUT
+     *       substituting either solution from step 2.
+     *
+     * 4.  Combine the solutions from steps 2.a and 3.  This handles cases like the following:
+     *
+     *        <T> List<T> method(T t1) {}
+     *        List<@Nullable String> nl = method("");
+     *
+     *  If we use just the arguments to infer T we will infer @NonNull String (since the lub of all arguments would
+     *  be @NonNull String).  However, this would cause the assignment to fail.
+     *  Instead, since @NonNull String <: @Nullable String, we can safely infer T to be @Nullable String and
+     *  both the argument types and the assignment types are compatible.
+     *  In step 4, we combine the results of Step 2.b (which came from lubbing argument and argument component types)
+     *  with the solution from equality constraints via the assignment context.
+     *
+     *  Note, we always give preference to the results inferred from method arguments if there is a conflict between
+     *  the steps 2 and 4.  For example:
+     *
+     *        <T> List<T> method(T t1) {}
+     *        List<@NonNull String> nl = method(null);
+     *
+     *  In the above example, the null argument requires that T must be @Nullable String.  But the assignment
+     *  context requires that the T must be @NonNull String.  But, in this case if we use @NonNull String
+     *  the argument "null" is invalid.  In this case, we use @Nullable String and report an
+     *  assignment.type.incompatible because we ALWAYS favor the arguments over the assignment context.
+     *
+     * 5. Combine the result from 2.a and step 4, if there is a conflict use the result from step 2.a
+     *
+     * Suppose we have the following:
+     *       <T> void method(List<@NonNull T> t, @Initialized Tt) { ... }
+     *       List<@FBCBottom String> lBottom = ...;
+     *       method( lbBottom, "nonNullString" );
+     *
+     * From the first argument we can infer that T must be exactly @FBCBottom String but we cannot infer anything
+     * for the Nullness hierarchy.  For the second argument we can infer that T is at most @NonNull String but
+     * we can infer nothing in the initialization hierarchy.  In this step we combine these two results, always
+     * favoring the equality constraints if there is a conflict.  For the above example we would infer
+     * the following:
+     *     T -> @FBCBottom @NonNull String
+     *
+     * Another case covered in this step is:
+     *
+     *        <T> List<T> method(List<T> t1) {}
+     *        List<@NonNull String> nonNullList = new ArrayList<>();
+     *        List<@Nullable String> nl = method(nonNullList);
+     *
+     *  The above assignment should fail because T is forced to be both @NonNull and @Nullable.  In cases like these,
+     *  we use @NonNull String becasue we always favor constraints from the arguments over the assignment context.
+     *
+     * 6. Infer from Assignment Context
+     * Finally, the JLS states that we should substitute the types we have inferred up until this point back
+     * into the original argument constraints.  We should then combine the constraints we get from the
+     * assignment context and solve using the greatest lower bounds of all of the constraints of the form:
+     * F :> U  (these are referred to as "subtypes" in the ConstraintMap.TargeConstraints).
+     *
+     * 7. Merge the result from steps 5 and 6 giving preference to 5 (the argument constraints).
+     * Return the result.
+     */
+    private Map<TypeVariable, AnnotatedTypeMirror> infer(final AnnotatedTypeFactory typeFactory,
+                                                         final ExpressionTree expression,
+                                                         final AnnotatedExecutableType methodType,
+                                                         final Set<TypeVariable> targets) {
 
+        //1.  Step 1 - Build up argument constraints
+        //The AFConstraints for arguments are used also in the
+        Set<AFConstraint> afArgumentConstraints = createArgumentAFConstraints(typeFactory, expression, methodType, targets);
+
+        //2. Step 2 - Solve the constraints.
+        Pair<InferenceResult, InferenceResult> argInference =
+                inferFromArguments(typeFactory, expression, methodType, afArgumentConstraints, targets);
+
+        final InferenceResult fromArgEqualities = argInference.first;  //result 2.a
+        final InferenceResult fromArgSupertypes = argInference.second; //result 2.b
+
+
+        //if this method invocation's has a return type and it is assigned/pseudo-assigned to
+        //a variable, assignedTo is the type of that variable
+        final AnnotatedTypeMirror assignedTo =
+                TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expression));
+
+        if (assignedTo == null) {
+            fromArgEqualities.mergeSubordinate(fromArgSupertypes);
+            return fromArgEqualities.toAtmMap();
+        } //else
+
+        final AnnotatedTypeMirror declaredReturnType = methodType.getReturnType();
+        final AnnotatedTypeMirror boxedReturnType;
+        if (declaredReturnType == null) {
+            boxedReturnType = null;
+        } else if (declaredReturnType.getKind().isPrimitive()) {
+            boxedReturnType = typeFactory.getBoxedType((AnnotatedPrimitiveType) declaredReturnType);
+        } else {
+            boxedReturnType = declaredReturnType;
+        }
+
+        // Step 3 - Infer a solution from the equality constraints in the assignment context
+        InferenceResult fromAssignmentEqualities =
+                inferFromAssignmentEqualities(assignedTo, boxedReturnType, targets, typeFactory);
+
+        // Step 4 - Combine the results from 2.b and step 3
+        InferenceResult combinedSupertypesAndAssignment =
+                combineSupertypeAndAssignmentResults(targets, typeFactory, fromAssignmentEqualities, fromArgSupertypes);
+
+        // Step 5 - Combine the result from 2.a and step 4, if there is a conflict use the result from step 2.a
+        fromArgEqualities.mergeSubordinate(combinedSupertypesAndAssignment);
+        final InferenceResult fromArguments = fromArgEqualities;
+
+        //if we don't have a result for all type arguments
+        //Step 6 - Infer the type arguments from the greatest-lower-bounds of all "subtype" constraints
+        if (!fromArguments.isComplete(targets)) {
+            InferenceResult fromAssignment = inferFromAssignment(assignedTo, boxedReturnType, methodType, afArgumentConstraints,
+                    fromArguments, targets, typeFactory);
+
+            //Step 7 - Merge the argument and the assignment constraints
+            fromArguments.mergeSubordinate(fromAssignment);
+        }
+
+        return fromArguments.toAtmMap();
+
+    }
+
+    /**
+     * Create a constraint Ai << Fi for each Argument(Ai) to formal parameter(Fi).  Remove any constraint that
+     * does not involve a type parameter to be inferred.  Reduce the remaining constraints so that Fi = Tj
+     * where Tj is a type parameter with an argument to be inferred.
+     * Return the resulting constraint set.
+     */
     protected Set<AFConstraint> createArgumentAFConstraints(final AnnotatedTypeFactory typeFactory,
                                                             final ExpressionTree expression,
                                                             final AnnotatedExecutableType methodType,
@@ -100,6 +237,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return reducedConstraints;
     }
 
+    /**
+     * Step 1:
+     * Create a set of constraints between return type and any type to which it is assigned.  Reduce these
+     * set of constraints and remove any that is not an equality (FIsA) constraint.
+     */
     protected Set<FIsA> createInitialAssignmentConstraints(final AnnotatedTypeMirror assignedTo,
                                                            final AnnotatedTypeMirror boxedReturnType,
                                                            final AnnotatedTypeFactory typeFactory,
@@ -124,6 +266,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return result;
     }
 
+    /**
+     * Step 2.
+     * Infer type arguments from the equality (TisU) and the supertype (TSuperU) constraints of
+     * the methods arguments.
+     */
     private Pair<InferenceResult,InferenceResult> inferFromArguments(final AnnotatedTypeFactory typeFactory,
                                                                      final ExpressionTree expression,
                                                                      final AnnotatedExecutableType methodType,
@@ -142,23 +289,14 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return Pair.of(inferredFromArgEqualities, inferredFromLubs);
     }
 
+    /**
+     * Step 3.
+     * Infer type arguments from the equality constraints of the assignment context.
+     */
     private InferenceResult inferFromAssignmentEqualities(final AnnotatedTypeMirror assignedTo,
                                                           final AnnotatedTypeMirror boxedReturnType,
                                                           final Set<TypeVariable> targets,
                                                           final AnnotatedTypeFactory typeFactory) {
-        //TODO: REWORK COMMENT THEY DON'T TAKE PRECEDENCE
-        //placing the equality constraints for the return type/assignment context means they
-        //will take precedence over the supertype constraints from the arguments (but not the
-        //equality constraints of the arguments).
-        //Consider the following:
-        // <T> Set<T> makeSet(T ... t) {...}
-        // Set<@Nullable String> nullableSet = makeSet("a","b","c");         //TODO: ADD THIS AS A TEST
-        //
-        // Given the types to the var args t, a valid inferred type would be @NonNull String
-        // However, since T appears in an invariant location in the return type this causes
-        // a type checking error when assigned to nullableSet
-        // Inferring the type to be @Nullable String would support both the set of arguments
-        // and the return type.
         Set<FIsA> afInitialAssignmentConstraints =
                 createInitialAssignmentConstraints(assignedTo, boxedReturnType, typeFactory, targets);
 
@@ -168,6 +306,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return equalitiesSolver.solveEqualities(targets, initialAssignmentConstraints, typeFactory);
     }
 
+    /**
+     * The first half of Step 6.
+     * This method creates constraints:
+     *     a) between the bounds of types that are already inferred and their inferred arguments
+     *     b) between the assignment context and the return type of the method (with the previously inferred
+     *     arguments substituted into these constraints)
+     */
     public ConstraintMap createAssignmentConstraints(final AnnotatedTypeMirror assignedTo,
                                                      final AnnotatedTypeMirror boxedReturnType,
                                                      final AnnotatedExecutableType methodType,
@@ -176,13 +321,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                                                      final Set<TypeVariable> targets,
                                                      final AnnotatedTypeFactory typeFactory) {
 
-        //TODO: ANYTHING NOT INFERRED BY EQUALITY IN ARGUMENTS BUT INFERRED BY EQUALITY IN ASSIGNMENT SHOULD
-        //TODO: USE THE ASSIGNMENT, NOTE WHY! PERHAPS USE ONLY THE ANNOTATIONS ON NULL VALUES
         final LinkedList<AFConstraint> assignmentAfs = new LinkedList<>();
         for(AnnotatedTypeVariable typeParam : methodType.getTypeVariables()) {
             final TypeVariable target = typeParam.getUnderlyingType();
             final AnnotatedTypeMirror inferredType = inferredArgs.get(target);
-            //for all inferred types Ti:  Ti >> Bi where Bi is upper bound and Ti << Li where Li is the lower bound  //TODO: I THINK THIS ENDS UP JUST BEING IGNORED SINCE THE BOUND TYPES ARE ANTs
+            //for all inferred types Ti:  Ti >> Bi where Bi is upper bound and Ti << Li where Li is the lower bound
             //for all uninferred types Tu: Tu >> Bi a nd Lu >> Tu
             if (inferredType != null) {
                 assignmentAfs.add(new A2F(inferredType, typeParam.getUpperBound()));
@@ -207,16 +350,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         final AnnotatedTypeMirror substitutedReturnType = TypeArgInferenceUtil.substitute(inferredArgs, boxedReturnType);
         substitutedAssignmentConstraints.add(new F2A(substitutedReturnType, assignedTo));
 
-
-        //TODO: THIS IS What we should do
-        //if the return type is a primitive, box it
-        //substitute the inferred types into the return type
-        //for all subtype constraints rewrite them using the inferred types
-        //for all equality constraints rewrite them using the inferred types
-        //resolve all equality constraints
-        //take the glb of all subtype constraints
-        //If Ti appears as a type argument in any Uk, then Ti is inferred to be a type variable X whose upper bound is the parameterized type given by glb(U1[Ti=X], ..., Uk[Ti=X]) and whose lower bound is the null type.
-
         final Set<AFConstraint> reducedConstraints = new LinkedHashSet<>();
         reduceAfConstraints(typeFactory, reducedConstraints, substitutedAssignmentConstraints, targets);
         final Set<TUConstraint> tuAssignmentConstraints = afToTuConstraints(reducedConstraints, targets);
@@ -224,6 +357,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return constraintMapBuilder.build(targets, tuAssignmentConstraints, typeFactory);
     }
 
+    /**
+     * The Second half of step 6.
+     * Use the assignment context to infer a result.
+     */
     private InferenceResult inferFromAssignment(final AnnotatedTypeMirror assignedTo,
                                                 final AnnotatedTypeMirror boxedReturnType,
                                                 final AnnotatedExecutableType methodType,
@@ -244,60 +381,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return equalitiesResult;
     }
 
-    private Map<TypeVariable, AnnotatedTypeMirror> infer(final AnnotatedTypeFactory typeFactory,
-                                                         final ExpressionTree expression,
-                                                         final AnnotatedExecutableType methodType,
-                                                         final Set<TypeVariable> targets) {
-
-        Set<AFConstraint> afArgumentConstraints = createArgumentAFConstraints(typeFactory, expression, methodType, targets);
-
-        Pair<InferenceResult, InferenceResult> argInference =
-                inferFromArguments(typeFactory, expression, methodType, afArgumentConstraints, targets);
-
-        final InferenceResult fromArgEqualities = argInference.first;
-        final InferenceResult fromArgSupertypes = argInference.second;
-
-        //if this method invocation's has a return type and it is assigned/pseudo-assigned to
-        //a variable, assignedTo is the type of that variable
-        final AnnotatedTypeMirror assignedTo =
-                TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expression));
-
-        if (assignedTo == null) {
-            fromArgEqualities.mergeSubordinate(fromArgSupertypes);
-            return fromArgEqualities.toAtmMap();
-        } //else
-
-        final AnnotatedTypeMirror declaredReturnType = methodType.getReturnType();
-        final AnnotatedTypeMirror boxedReturnType;
-        if (declaredReturnType == null) {
-            boxedReturnType = null;
-        } else if (declaredReturnType.getKind().isPrimitive()) {
-            boxedReturnType = typeFactory.getBoxedType((AnnotatedPrimitiveType) declaredReturnType);
-        } else {
-            boxedReturnType = declaredReturnType;
-        }
-
-        InferenceResult fromAssignmentEqualities =
-                inferFromAssignmentEqualities(assignedTo, boxedReturnType, targets, typeFactory);
-
-        //TODO: EXPLAIN HERE
-        InferenceResult combinedSupertypesAndAssignment =
-                combineSupertypeAndAssignmentResults(targets, typeFactory, fromAssignmentEqualities, fromArgSupertypes);
-
-        fromArgEqualities.mergeSubordinate(combinedSupertypesAndAssignment);
-        final InferenceResult fromArguments = fromArgEqualities;
-
-        if (!fromArguments.isComplete(targets)) {
-            InferenceResult fromAssignment = inferFromAssignment(assignedTo, boxedReturnType, methodType, afArgumentConstraints,
-                    fromArguments, targets, typeFactory);
-
-            fromArguments.mergeSubordinate(fromAssignment);
-        }
-
-        return fromArguments.toAtmMap();
-
-    }
-
+    /**
+     * Step 4. Combine the results from using the Supertype constraints the Equality constraints from the
+     * assignment context.
+     */
     private InferenceResult combineSupertypeAndAssignmentResults(Set<TypeVariable> targets, AnnotatedTypeFactory typeFactory,
                                                                  InferenceResult equalityResult, InferenceResult supertypeResult) {
         final TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
@@ -336,9 +423,14 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return result;
     }
 
+    /**
+     * For any types we have not inferred, use a wildcard with the bounds from the original type parameter.
+     * For any types we have inferred to be an AnnotatedNullType, create a wildcard but apply the primary
+     * annotations from that AnnotatedNullType.
+     */
     private void handleUninferredTypeVariables(AnnotatedTypeFactory typeFactory, AnnotatedExecutableType methodType,
                                               Set<TypeVariable> targets, Map<TypeVariable, AnnotatedTypeMirror> inferredArgs) {
-        //TODO: NOT WHAT THE ACTUAL INFERENCE DOES
+
         for (AnnotatedTypeVariable atv : methodType.getTypeVariables()) {
             final TypeVariable typeVar = atv.getUnderlyingType();
             if (targets.contains(typeVar)) {
@@ -356,9 +448,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
     }
 
-    //TO avoid infinite recursion keep a list of handled constraints
+    /**
+     * Given a set of AFConstraints, remove all constraints that are not relevant to inference and return
+     * a set of AFConstraints in which the F is a use of one of the type parameters to infer.
+     */
     private void reduceAfConstraints(final AnnotatedTypeFactory typeFactory,
-                                     final Set<AFConstraint> outgoing, final Queue<AFConstraint> toProcess, //TODO: Comment note the reason we use the linked hash set is to add to the end
+                                     final Set<AFConstraint> outgoing, final Queue<AFConstraint> toProcess,
                                      final Set<TypeVariable> targets) {
 
         final Set<AFConstraint> visited = new HashSet<>();
@@ -396,7 +491,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
 
 
-    //TODO: FIX CAPITALIZATION ISSUES
+    /**
+     * Convert AFConstraints to TUConstraints
+     */
     private Set<TUConstraint> afToTuConstraints(Set<? extends AFConstraint> afConstraints, Set<TypeVariable> targets) {
         final Set<TUConstraint> outgoing = new LinkedHashSet<>();
         for(final AFConstraint afConstraint : afConstraints) {
@@ -414,6 +511,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return outgoing;
     }
 
+    /**
+     * Declarations of the form:
+     * <A, B extends A> implies a TUConstraint of B <: A.  Add these to the constraint list.
+     */
     public void addConstraintsBetweenTargets(Set<TUConstraint> constraints, Set<TypeVariable> targets,
                                              boolean asSubtype, AnnotatedTypeFactory typeFactory) {
         final Types types = typeFactory.getProcessingEnv().getTypeUtils();

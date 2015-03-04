@@ -7,6 +7,7 @@ import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.PluginUtil;
+import org.checkerframework.javacutil.ErrorReporter;
 
 import javax.lang.model.type.TypeKind;
 import java.util.List;
@@ -14,8 +15,11 @@ import java.util.Set;
 import static org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil.*;
 
 /**
- * Reduces F2A results
- * @see org.checkerframework.framework.util.typeinference.constraint.AFReducer
+ * F2AReducer takes an F2A constraint that is not irreducible (@see AFConstraint.isIrreducible)
+ * and reduces it by one step.  The resulting constraint may still be reducible.
+ *
+ * Generally reductions should map to corresponding rules in
+ * http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7
  */
 public class F2AReducer implements AFReducer {
 
@@ -39,6 +43,25 @@ public class F2AReducer implements AFReducer {
         }
     }
 
+    /**
+     * Given an F2A constraint of the form:
+     * F2A( typeFromFormalParameter, typeFromMethodArgument )
+     *
+     * F2AReducingVisitor visits the constraint as follows:
+     * visit ( typeFromFormalParameter, typeFromMethodArgument, newConstraints )
+     *
+     * The visit method will determine if the given constraint should either:
+     *    a) be discarded - in this case, the visitor just returns
+     *    b) reduced to a simpler constraint or set of constraints - in this case, the new constraint
+     *    or set of constraints is added to newConstraints
+     *
+     *  Sprinkled throughout this class are comments of the form:
+     *
+     *  //If F has the form G<..., Yk-1, ? super U, Yk+1, ...>, where U involves Tj
+     *
+     *  These are excerpts from the JLS, if you search for them you will find the corresponding
+     *  JLS description of the case being covered.
+     */
     class F2AReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFConstraint>> {
 
         @Override
@@ -48,9 +71,18 @@ public class F2AReducer implements AFReducer {
                  + "parameter=" + parameter + "\n"
                  + "constraints=[\n" + PluginUtil.join(", ", afConstraints) + "\n]";
         }
+
+        //------------------------------------------------------------------------
+        //Arrays as arguments
+        //From the JLS
+        //If F = U[], where the type U involves Tj, then if A is an array type V[], or a type variable with an
+        //upper bound that is an array type V[], where V is a reference type, this algorithm is applied
+        // recursively to the constraint V >> U. Otherwise, no constraint is implied on Tj.
+
         @Override
         public Void visitArray_Array(AnnotatedArrayType parameter, AnnotatedArrayType argument, Set<AFConstraint> constraints) {
-            constraints.add(new F2A(parameter.getComponentType(), argument.getComponentType()));   //TODO: HANDLE THE INVARIANT ARRAYS PARAM
+            //TODO: This method currently does not handle the -AinvariantArrays option
+            constraints.add(new F2A(parameter.getComponentType(), argument.getComponentType()));
             return null;
         }
 
@@ -72,6 +104,12 @@ public class F2AReducer implements AFReducer {
 
         //------------------------------------------------------------------------
         //Declared as argument
+        /**
+         * I believe there should be only 1 way to have an A2F of this form:
+         * visit (Array<T>, T [])
+         * At this point, I don't think that's a valid argument for a formal parameter.  If this occurs
+         * is is because of idiosyncrasies with the Checker Framework .  We're going to skip this case for now.
+         */
         @Override
         public Void visitDeclared_Array(AnnotatedDeclaredType parameter, AnnotatedArrayType argument, Set<AFConstraint> constraints) {
             //should this be Array<String> - T[] the new A2F(String, T)
@@ -95,42 +133,36 @@ public class F2AReducer implements AFReducer {
                 final AnnotatedTypeMirror argTypeArg = argTypeArgs.get(i);
                 final AnnotatedTypeMirror paramTypeArg = paramTypeArgs.get(i);
 
+                //If F has the form G<..., Yk-1, ? extends U, Yk+1, ...>, where U involves Tj
+                //If F has the form G<..., Yk-1, ? super U, Yk+1, ...>, where U involves Tj
+                //Since we always have both bounds in the checker framework we always compare both
                 if (paramTypeArg.getKind() == TypeKind.WILDCARD) {
-                    visitTypeArgWildF((AnnotatedWildcardType) paramTypeArg, argTypeArg, constraints);
+                    final AnnotatedWildcardType paramWc = (AnnotatedWildcardType) paramTypeArg;
+
+                    if (argTypeArg.getKind() == TypeKind.WILDCARD) {
+                        final AnnotatedWildcardType argWc = (AnnotatedWildcardType) argTypeArg;
+                        constraints.add(new F2A(paramWc.getExtendsBound(), argWc.getExtendsBound()));
+                        constraints.add(new A2F(argWc.getSuperBound(), paramWc.getExtendsBound()));
+                    } else {
+                        //no constraint implied
+
+                    }
 
                 } else {
-                    visitTypeArgNonWildF(paramTypeArg, argTypeArg, constraints);
+                    //If F has the form G<..., Yk-1, U, Yk+1, ...>, where U is a type expression that involves Tj, then:
+                    if (argTypeArg.getKind() != TypeKind.WILDCARD) {
+                        constraints.add(new FIsA(paramTypeArg, argTypeArg));
+
+                    } else {
+                        final AnnotatedWildcardType argWc = (AnnotatedWildcardType) argTypeArg;
+                        constraints.add(new F2A(paramTypeArg, argWc.getExtendsBound()));
+                        constraints.add(new A2F(argWc.getSuperBound(), paramTypeArg));
+                    }
 
                 }
             }
 
             return null;
-        }
-
-        //If F has the form G<..., Yk-1, U, Yk+1, ...>, where U is a type expression that involves Tj, then:
-        private void visitTypeArgNonWildF(AnnotatedTypeMirror parameterTypeArg, AnnotatedTypeMirror argumentTypeArg, Set<AFConstraint> constraints) {
-            if (argumentTypeArg.getKind() != TypeKind.WILDCARD) {
-                constraints.add(new FIsA(parameterTypeArg, argumentTypeArg));
-
-            } else {
-                AnnotatedWildcardType argWc = (AnnotatedWildcardType) argumentTypeArg;
-                if (isExplicitlyExtendsBounded(argWc)) {
-                    constraints.add(new F2A(parameterTypeArg, argWc.getExtendsBound()));
-
-                } else {
-                    constraints.add(new A2F(argWc.getSuperBound(), parameterTypeArg));
-                }
-
-            }
-        }
-
-        private void visitTypeArgWildF(AnnotatedWildcardType parameterTypeArg, AnnotatedTypeMirror argumentTypeArg, Set<AFConstraint> constraints) {
-            if (isExplicitlyExtendsBounded(parameterTypeArg)) {
-                visitTypeArgNonWildF(parameterTypeArg.getExtendsBound(), argumentTypeArg, constraints);
-
-            } else if (isUnboundedOrSuperBounded((AnnotatedWildcardType) argumentTypeArg)) {
-                constraints.add(new A2F(((AnnotatedWildcardType) argumentTypeArg).getSuperBound(), parameterTypeArg.getSuperBound()));
-            }
         }
 
         @Override
@@ -148,11 +180,13 @@ public class F2AReducer implements AFReducer {
             return null;
         }
 
+        //Remember that NULL types can come from lower bounds
         @Override
         public Void visitDeclared_Null(AnnotatedDeclaredType argument, AnnotatedNullType parameter, Set<AFConstraint> constraints) {
             return null;
         }
 
+        //a primitive parameter provides us no information on the type of any type parameters for that method
         @Override
         public Void visitDeclared_Primitive(AnnotatedDeclaredType argument, AnnotatedPrimitiveType parameter, Set<AFConstraint> constraints) {
             return null;
@@ -168,7 +202,7 @@ public class F2AReducer implements AFReducer {
 
         @Override
         public Void visitDeclared_Union(AnnotatedDeclaredType argument, AnnotatedUnionType parameter, Set<AFConstraint> constraints) {
-            return null;  //TODO: Just not handled at the moment
+            return null;  //TODO: NOT SUPPORTED AT THE MOMENT
         }
 
         @Override
@@ -193,7 +227,7 @@ public class F2AReducer implements AFReducer {
 
         @Override
         public Void visitIntersection_Intersection(AnnotatedIntersectionType argument, AnnotatedIntersectionType parameter, Set<AFConstraint> constraints) {
-            return null; //TODO: Just not handled yet
+            return null;  //TODO: NOT SUPPORTED AT THE MOMENT
         }
 
 
@@ -214,6 +248,13 @@ public class F2AReducer implements AFReducer {
             return null;
         }
 
+        /**
+         * TODO: PERHAPS FOR ALL OF THESE WHERE WE COMPARE AGAINST THE LOWER BOUND, WE SHOULD INSTEAD COMPARE
+         * TODO: against the UPPER_BOUND with the LOWER_BOUND's PRIMARY ANNOTATIONS
+         * For captured types, the lower bound might be interesting so we compare against the lower bound but for
+         * most types the constraint added in this method is probably discarded in the next round of
+         * reduction (especially since we don't implement capture at the moment).
+         */
         @Override
         public Void visitNull_Typevar(AnnotatedNullType argument, AnnotatedTypeVariable parameter, Set<AFConstraint> constraints) {
             //Note: We expect the A2F constraints where F == a targeted type parameter to already be removed
@@ -236,7 +277,7 @@ public class F2AReducer implements AFReducer {
 
         @Override
         public Void visitNull_Union(AnnotatedNullType argument, AnnotatedUnionType parameter, Set<AFConstraint> constraints) {
-            return null;
+            return null; //TODO: UNIONS ARE NOT YET SUPPORTED
         }
 
         @Override
@@ -254,6 +295,8 @@ public class F2AReducer implements AFReducer {
         //Primitive as argument
         @Override
         public Void visitPrimitive_Declared(AnnotatedPrimitiveType argument, AnnotatedDeclaredType parameter, Set<AFConstraint> constraints) {
+            //we may be able to eliminate this case, since I believe the corresponding constraint will just be discarded
+            //as the parameter must be a boxed primitive
             constraints.add(new A2F(typeFactory.getBoxedType(argument), parameter));
             return null;
         }
@@ -286,6 +329,8 @@ public class F2AReducer implements AFReducer {
 
         @Override
         public Void visitTypevar_Typevar(AnnotatedTypeVariable argument, AnnotatedTypeVariable parameter, Set<AFConstraint> constraints) {
+            //if we've reached this point and the two are corresponding type variables, then they are NOT ones that
+            //may have a type variable we are inferring types for and therefore we can discard this constraint
             if (!AnnotatedTypes.areCorrespondingTypeVariables(typeFactory.getElementUtils(), argument, parameter)) {
                 constraints.add(new A2F(argument.getUpperBound(), parameter.getLowerBound()));
             }
@@ -343,7 +388,11 @@ public class F2AReducer implements AFReducer {
 
         @Override
         public Void visitWildcard_Wildcard(AnnotatedWildcardType argument, AnnotatedWildcardType parameter, Set<AFConstraint> constraints) {
-            constraints.add(new A2F(argument.getExtendsBound(), parameter.getSuperBound())); //TODO: NOT SURE ABOUT THIS ONE
+            //since wildcards are handled in visitDeclared_Declared this could only occur if two wildcards
+            //were passed to type argument inference at the top level.  This can only occur because we do not implement
+            //capture conversion
+            constraints.add(new F2A(parameter.getExtendsBound(), parameter.getExtendsBound()));
+            constraints.add(new A2F(argument.getSuperBound(),  parameter.getSuperBound()));
             return null;
         }
     }
