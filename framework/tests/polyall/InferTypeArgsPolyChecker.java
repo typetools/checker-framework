@@ -1,6 +1,8 @@
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import polyall.quals.*;
 
 class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
@@ -80,10 +82,10 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
     void contextF(List<@H1Bot @H2Bot? extends @H1Top @H2S1  String> l1, List<? super @H1S1 @H2S2 String> l2,
                   List<@H1S1 @H2S2 ? extends @H1Top @H2Top String> l3) {
 
-        //:: error : (argument.type.incompatible)
+        //:: error: (argument.type.incompatible)
         List<? super @H1Bot @H2Bot String> lstr1 = methodF(l1, l2);
 
-        //:: error : (argument.type.incompatible)
+        //:: error: (argument.type.incompatible)
         List<? super @H1Top @H2S2 String> lstr2 = methodF(l3, l2);
     }
 
@@ -99,4 +101,17 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
 
     //add test case for Array<String> vs. String[]
     //add test case of E extends F, F extends G, H extends List<? super E> and other craziness
+
+    <M, N extends M> Map<M,N> method() {
+        return null;
+    }
+
+    void contextMN() {
+
+        //so I am not exactly sure how to create a meaningful test for this case
+        //what occurs is the SubtypeSolver.propagateGlbs forces N to be a subtype of M
+        //and it works (at least while I was debugging) but I don't know how to create
+        //a check that fails or succeeds because of this
+        Map<? super @H1S1 @H2S2 CharSequence, @H1Top @H2Top ? super String> mnl = method();
+    }
 }
