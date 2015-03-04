@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  *  class A { }
  *
  *  is equivalent to:
- *  class A<<aParam>> { }
+ *  class A《aParam》{ }
  * }
  * </pre>
  */
