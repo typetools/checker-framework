@@ -31,7 +31,7 @@ public class TypeArgInferenceUtil {
      * Takes an expression tree that must be either a MethodInovcationTree or a NewClassTree (constructor invocation)
      * and returns the arguments to its formal parameters.  An IllegalArgumentException will be thrown if it is neither
      * @param expression A MethodInvocationTree or a NewClassTree
-     * @return The list of argumenhts to Expression
+     * @return The list of arguments to Expression
      */
     public static List<? extends ExpressionTree> expressionToArgTrees(final ExpressionTree expression) {
         final List<? extends ExpressionTree> argTrees;
@@ -104,6 +104,16 @@ public class TypeArgInferenceUtil {
      */
     public static boolean isExplicitlyExtendsBounded(final AnnotatedWildcardType wildcardType) {
         return !isUnboundedOrSuperBounded(wildcardType);
+    }
+
+    /**
+     *
+     */
+    /**
+     * Returns true if this type is super bounded or unbounded.
+     */
+    public static boolean isUnboundedOrExtendsBounded(final AnnotatedWildcardType wildcardType) {
+        return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound();
     }
 
     /**
