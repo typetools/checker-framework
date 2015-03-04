@@ -13,72 +13,31 @@ import java.util.*;
 import java.util.Map.Entry;
 
 /**
- *  A class used to perform greatest lower bound calculations
- *
+ *  A class used to determine the greatest lower bounds for a set of AnnotatedTypeMirrors.
  */
 public class GlbUtil {
 
-    private static boolean isSubtypeInHierarchies(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype,
-                                                  final Set<AnnotationMirror> hierarchies, AnnotatedTypeFactory typeFactory) {
-        final TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
-        for (AnnotationMirror top : hierarchies) {
-            if (!typeHierarchy.isSubtype(subtype, supertype, top)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public static AnnotatedTypeMirror hackGlb(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2,
-                                   final Set<AnnotationMirror> hierarchies, final AnnotatedTypeFactory typeFactory) {
-        if (isSubtypeInHierarchies(type1, type2, hierarchies, typeFactory)) {
-            return type1;
-        }
-
-        if (isSubtypeInHierarchies(type2, type1, hierarchies, typeFactory)) {
-            return type2;
-        }
-
-        return null;
-    }
-
-    public static boolean isInterface(final AnnotatedTypeMirror type) {
-        if (type.getKind() == TypeKind.DECLARED) {
-            return ((DeclaredType) type.getUnderlyingType()).asElement().getKind().isInterface();
-
-        } else if (type.getKind() == TypeKind.TYPEVAR) {
-            return isInterface(((AnnotatedTypeVariable) type).getUpperBound());
-
-        } else if (type.getKind() == TypeKind.WILDCARD) {
-            return isInterface(((AnnotatedWildcardType) type).getExtendsBound());
-
-        } else if (type.getKind() == TypeKind.INTERSECTION) {
-            //the first bound of an intersection type is either a class or an interface
-            //all other bounds are interfaces.  Therefore, if the first one is an interface
-            //they all are
-            TypeMirror firstBound = ((IntersectionType)type.getUnderlyingType()).getBounds().get(0);
-            return ((DeclaredType)firstBound).asElement().getKind().isInterface();
-        }
-
-        return false;
-    }
-
+    /**
+     * Note: This method can be improved for wildcards and type variables.
+     * @return the greatest lower bound of typeMirrors.  If any of the type mirrors are incomparable, use
+     * an AnnotatedNullType that will contain the greatest lower bounds of the primary annotations of typeMirrors
+     */
     public static AnnotatedTypeMirror glbAll(final Map<AnnotatedTypeMirror, Set<AnnotationMirror>> typeMirrors, final AnnotatedTypeFactory typeFactory) {
         final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
         if (typeMirrors.isEmpty()) {
             return null;
         }
 
-        //what to do when the GLB is an unannotated type variable
-
+        //dtermine the greatest lower bounds for the primary annotations
         Map<AnnotationMirror, AnnotationMirror> glbPrimaries = AnnotationUtils.createAnnotationMap();
         for(Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> tmEntry : typeMirrors.entrySet()) {
             final Set<AnnotationMirror> typeAnnoHierarchies = tmEntry.getValue();
             final AnnotatedTypeMirror type = tmEntry.getKey();
 
-            //TODO: GLB TYPE VARS
             for (AnnotationMirror top : typeAnnoHierarchies) {
+                //TODO: When all of the typeMirrors are either wildcards or type variables than the greatest lower bound
+                //TODO: should involve handling the bounds individually rather than using the effective annotation
+                //TODO: We are doing this for expediency
                 final AnnotationMirror typeAnno = type.getEffectiveAnnotationInHierarchy(top);
                 final AnnotationMirror currentAnno = glbPrimaries.get(top);
                 if (typeAnno != null && currentAnno != null) {
@@ -91,6 +50,7 @@ public class GlbUtil {
 
         final List<AnnotatedTypeMirror> glbTypes = new ArrayList<>();
 
+        //create a copy of all of the the types and apply the glb primary annotation
         final Set<AnnotationMirror> values = new HashSet<>(glbPrimaries.values());
         for (AnnotatedTypeMirror type : typeMirrors.keySet()) {
             if (type.getKind() != TypeKind.TYPEVAR
@@ -98,6 +58,7 @@ public class GlbUtil {
                 final AnnotatedTypeMirror copy = type.deepCopy();
                 copy.replaceAnnotations(values);
                 glbTypes.add(copy);
+
             } else {
                 //if the annotations came from the upper bound of this typevar
                 //we do NOT want to place them as primary annotations (and destroy the
@@ -108,9 +69,10 @@ public class GlbUtil {
 
         final TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
 
+        //sort placing supertypes first
         sortForGlb(glbTypes, typeFactory);
-        //TODO: we might a GLB type that is a TYPE VARIABLE or WILDCARD that is actually below the
-        //type resulting from adding a primary, if so, use that instead
+
+        //find the lowest type in the list that is not an AnnotatedNullType
         AnnotatedTypeMirror glbType = glbTypes.get(0);
         int index = 1;
         while (index < glbTypes.size()) {
@@ -121,6 +83,8 @@ public class GlbUtil {
             index += 1;
         }
 
+        //if the lowest type is a subtype of all glbTypes then it is the GLB, otherwise
+        //there are two types  in glbTypes that are incomparable and we need to use bottom (AnnotatedNullType)
         boolean incomparable = false;
         for(final AnnotatedTypeMirror type : glbTypes) {
             if (!incomparable && !typeHierarchy.isSubtype(glbType, type) && type.getKind() != TypeKind.NULL) {
@@ -128,6 +92,7 @@ public class GlbUtil {
             }
         }
 
+        //we had two incomparable types in glbTypes
         if (incomparable) {
             return createBottom(typeFactory, glbType.getEffectiveAnnotations());
         }
@@ -135,6 +100,9 @@ public class GlbUtil {
         return glbType;
     }
 
+    /**
+     * Returns an AnnotatedNullType with the given annotations as primaries
+     */
     private static AnnotatedNullType createBottom(final AnnotatedTypeFactory typeFactory,
                                            final Set<? extends AnnotationMirror> annos) {
         final AnnotatedNullType nullType = (AnnotatedNullType)
@@ -143,6 +111,14 @@ public class GlbUtil {
         return nullType;
     }
 
+    /**
+     * Sort the lsit of type mirrors, placing supertypes first and subtypes last.
+     *
+     * E.g.
+     * the list:  ArrayList<String>, List<String>, AbstractList<String>
+     * becomes:   List<String>, AbstractList<String>, ArrayList<String>
+     *
+     */
     public static void sortForGlb(final List<? extends AnnotatedTypeMirror> typeMirrors, final AnnotatedTypeFactory typeFactory) {
         final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
         final Types types = typeFactory.getProcessingEnv().getTypeUtils();

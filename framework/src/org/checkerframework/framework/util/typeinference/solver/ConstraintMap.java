@@ -31,6 +31,10 @@ public class ConstraintMap {
         }
     }
 
+    public ConstraintMap(final ConstraintMap toCopy) {
+        this.targetToRecords.putAll(toCopy.targetToRecords);
+    }
+
     /**
      * Gets the equality, subtypes, and supertypes constraints for a particular target
      */
