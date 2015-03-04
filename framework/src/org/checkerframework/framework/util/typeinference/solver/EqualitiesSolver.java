@@ -18,12 +18,30 @@ import java.util.Map.Entry;
 /**
  *  EqualitiesSolver infers type arguments for targets using the equality constraints in ConstraintMap.  When
  *  a type is inferred, it rewrites the remaining equality/supertype constraints
- *
- *  //TODO: SEE IF THERE IS A SIMPLE WAY TO IMPROVE THIS
  */
 public class EqualitiesSolver {
     private boolean dirty = false;
 
+    /**
+     * For each target,
+     *     if there is one or more equality constraints involving concrete types that lets us infer a
+     *       primary annotation in all qualifier hierarchies then infer a concrete type argument.
+     *     else if there is one or more equality constraints involving other targets that lets us
+     *       infer a primary annotation in all qualifier hierarchies then infer that type argument
+     *       is the other type argument
+     *
+     *     if we have inferred either a concrete type or another target as type argument
+     *        rewrite all of the constraints for the current target to instead use the inferred type/target
+     *
+     *
+     * We do this iteratively until NO new inferred type argument is found
+     *
+     *
+     * @param targets The list of type parameters for which we are inferring type arguments
+     * @param constraintMap The set of constraints over the set of targets
+     * @param typeFactory
+     * @return A Map( target -> inferred type or target )
+     */
     public InferenceResult solveEqualities(Set<TypeVariable> targets, ConstraintMap constraintMap, AnnotatedTypeFactory typeFactory) {
         final InferenceResult solution = new InferenceResult();
 
@@ -55,24 +73,38 @@ public class EqualitiesSolver {
         return solution;
     }
 
-    private void rewriteWithInferredType(final TypeVariable target, final AnnotatedTypeMirror type, final ConstraintMap ptMap) {
+    /**
+     * Let Ti be a target type parameter.
+     * When we reach this method we have inferred an argument, Ai, for Ti
+     *
+     * However, there still may be constraints of the form Ti = Tj, Ti <: Tj, Tj <: Ti in the constraint map.  In this
+     * case we need to replace Ti with the type.  That is, they become Ai = Tj, Ai <: Tj, and Tj <: Ai
+     *
+     * To do this, we find the TargetConstraints for Tj and add these constraints to the appropriate map
+     * in TargetConstraints.  We can then clear the constraints for the current target since we have inferred a type.
+     *
+     * @param target The target for which we have inferred a concrete type argument
+     * @param type the type inferred
+     * @param constraints
+     */
+    private void rewriteWithInferredType(final TypeVariable target, final AnnotatedTypeMirror type, final ConstraintMap constraints) {
 
-        final TargetConstraints targetRecord = ptMap.getConstraints(target);
+        final TargetConstraints targetRecord = constraints.getConstraints(target);
         final Map<TypeVariable, Set<AnnotationMirror>> equivalentTargets = targetRecord.equalities.targets;
         //each target that was equivalent to this one needs to be equivalent in the same hierarchies as the inferred type
         for(final Entry<TypeVariable, Set<AnnotationMirror>> eqEntry : equivalentTargets.entrySet()) {
-            ptMap.addTypeEqualities(eqEntry.getKey(), type, eqEntry.getValue());
+            constraints.addTypeEqualities(eqEntry.getKey(), type, eqEntry.getValue());
         }
 
-        for(TypeVariable otherTarget : ptMap.getTargets()) {
+        for(TypeVariable otherTarget : constraints.getTargets()) {
             if (otherTarget != target) {
-                final TargetConstraints record = ptMap.getConstraints(otherTarget);
+                final TargetConstraints record = constraints.getConstraints(otherTarget);
 
                 //each target that was equivalent to this one needs to be equivalent in the same hierarchies as the inferred type
                 final Set<AnnotationMirror> hierarchies = record.equalities.targets.get(target);
                 if (hierarchies != null) {
                     record.equalities.targets.remove(target);
-                    ptMap.addTypeEqualities(otherTarget, type, hierarchies);
+                    constraints.addTypeEqualities(otherTarget, type, hierarchies);
                 }
 
                 //otherTypes may have AnnotatedTypeVariables of type target, run substitution on these with type
@@ -85,15 +117,15 @@ public class EqualitiesSolver {
             }
         }
 
-        for(TypeVariable otherTarget : ptMap.getTargets()) {
+        for(TypeVariable otherTarget : constraints.getTargets()) {
             if (otherTarget != target) {
-                final TargetConstraints record = ptMap.getConstraints(otherTarget);
+                final TargetConstraints record = constraints.getConstraints(otherTarget);
 
                 //each target that was equivalent to this one needs to be equivalent in the same hierarchies as the inferred type
                 final Set<AnnotationMirror> hierarchies = record.supertypes.targets.get(target);
                 if (hierarchies != null) {
                     record.supertypes.targets.remove(target);
-                    ptMap.addTypeEqualities(otherTarget, type, hierarchies);
+                    constraints.addTypeEqualities(otherTarget, type, hierarchies);
                 }
 
                 //otherTypes may have AnnotatedTypeVariables of type target, run substitution on these with type
@@ -107,32 +139,49 @@ public class EqualitiesSolver {
         }
 
         targetRecord.equalities.clear();
+        targetRecord.supertypes.clear();
     }
-
-    private void rewriteWithInferredTarget(final TypeVariable target, final TypeVariable inferredTarget, final ConstraintMap ptMap,
+    /**
+     * Let Ti be a target type parameter.
+     * When we reach this method we have inferred that Ti has the exact same argument as another target Tj
+     *
+     * Therefore, we want to stop solving for Ti and instead wait till we solve for Tj and use that result.
+     *
+     * Let ATM be any annotated type mirror and Tk be a target type parameter where k != i and k != j
+     * Even though we've inferred Ti = Tj, there still may be constraints of the form Ti = ATM or Ti <: Tk
+     * These constraints are still useful for inferring a argument for Ti/Tj.  So, we replace Ti in these
+     * constraints with Tj and place those constraints in the TargetConstraints object for Tj.
+     *
+     * We then clear the constraints for Ti.
+     *
+     * @param target The target for which we know another target is exactly equal to this target
+     * @param inferredTarget the other target inferred to be equal
+     * @param constraints
+     */
+    private void rewriteWithInferredTarget(final TypeVariable target, final TypeVariable inferredTarget, final ConstraintMap constraints,
                                           final AnnotatedTypeFactory typeFactory) {
-        final TargetConstraints targetRecord = ptMap.getConstraints(target);
+        final TargetConstraints targetRecord = constraints.getConstraints(target);
         final Map<AnnotatedTypeMirror, Set<AnnotationMirror>> equivalentTypes = targetRecord.equalities.types;
         final Map<AnnotatedTypeMirror, Set<AnnotationMirror>> supertypes = targetRecord.supertypes.types;
 
         //each type that was equivalent to this one needs to be equivalent in the same hierarchies to the inferred target
         for(final Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> eqEntry : equivalentTypes.entrySet()) {
-            ptMap.addTypeEqualities(inferredTarget, eqEntry.getKey(), eqEntry.getValue());
+            constraints.addTypeEqualities(inferredTarget, eqEntry.getKey(), eqEntry.getValue());
         }
 
         for(final Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> superEntry : supertypes.entrySet()) {
-            ptMap.addTypeSupertype(inferredTarget, superEntry.getKey(), superEntry.getValue());
+            constraints.addTypeSupertype(inferredTarget, superEntry.getKey(), superEntry.getValue());
         }
 
-        for(TypeVariable otherTarget : ptMap.getTargets()) {
+        for(TypeVariable otherTarget : constraints.getTargets()) {
             if (otherTarget != target && otherTarget != inferredTarget) {
-                final TargetConstraints record = ptMap.getConstraints(otherTarget);
+                final TargetConstraints record = constraints.getConstraints(otherTarget);
 
                 //each target that was equivalent to this one needs to be equivalent in the same hierarchies as the inferred target
                 final Set<AnnotationMirror> hierarchies = record.equalities.targets.get(target);
                 if (hierarchies != null) {
                     record.equalities.targets.remove(target);
-                    ptMap.addTargetEquality(otherTarget, inferredTarget, hierarchies);
+                    constraints.addTargetEquality(otherTarget, inferredTarget, hierarchies);
                 }
 
                 //otherTypes may have AnnotatedTypeVariables of type target, run substitution on these with type
@@ -145,14 +194,14 @@ public class EqualitiesSolver {
             }
         }
 
-        for(TypeVariable otherTarget : ptMap.getTargets()) {
+        for(TypeVariable otherTarget : constraints.getTargets()) {
             if (otherTarget != target && otherTarget != inferredTarget) {
-                final TargetConstraints record = ptMap.getConstraints(otherTarget);
+                final TargetConstraints record = constraints.getConstraints(otherTarget);
 
                 final Set<AnnotationMirror> hierarchies = record.supertypes.targets.get(target);
                 if (hierarchies != null) {
                     record.supertypes.targets.remove(target);
-                    ptMap.addTargetSupertype(otherTarget, inferredTarget, hierarchies);
+                    constraints.addTargetSupertype(otherTarget, inferredTarget, hierarchies);
                 }
 
                 //otherTypes may have AnnotatedTypeVariables of type target, run substitution on these with type
@@ -166,16 +215,27 @@ public class EqualitiesSolver {
         }
 
         targetRecord.equalities.clear();
-        //don't need to include supertypes
+        targetRecord.supertypes.clear();
     }
 
-
+    /**
+     * Creates a declaration AnnotatedTypeVariable for TypeVariable.
+     * @return
+     */
     private AnnotatedTypeVariable createAnnotatedTypeVar(final TypeVariable typeVariable, final AnnotatedTypeFactory typeFactory) {
         return (AnnotatedTypeVariable) typeFactory.getAnnotatedType(typeVariable.asElement());
     }
 
 
-    //when this is complete we should have 1 typ
+    /**
+     *
+     * @param typesToHierarchies A mapping of (types -> hierarchies) that indicate that the argument being inferred
+     *                           is equal to the types in each of the hierarchies
+     * @param primaries A map (hierarchy -> annotation in hierarchy) where the annotation in hierarchy is equal to
+     *                  the primary annotation on the argument being inferred
+     * @param tops The set of top annotations in the qualifier hierarchy
+     * @return A concrete type argument or null if there was not enough information to infer one
+     */
     private InferredType mergeTypesAndPrimaries(
             Map<AnnotatedTypeMirror, Set<AnnotationMirror>> typesToHierarchies,
             Map<AnnotationMirror, AnnotationMirror> primaries,
@@ -222,7 +282,9 @@ public class EqualitiesSolver {
 
                     } else {
                         //otherwise the other type is missing an annotation
-                        ErrorReporter.errorAbort("REMOVE THIS, THIS IS FOR TESTING PURPOSE" + "\nmergedType=" + mergedType + "\ncurrentType=" + currentType);
+                        ErrorReporter.errorAbort("Missing annotation.\n"
+                               + "\nmergedType="  + mergedType
+                               + "\ncurrentType=" + currentType);
 
                     }
                 }
@@ -248,7 +310,8 @@ public class EqualitiesSolver {
             return new InferredType(mergedType);
         }
 
-        //TODO: DO SOMETHING SMARTER
+        //TODO: we probably can do more with this information than just putting it back into the
+        //TODO: ConstraintMap (which is what's happening here)
         final Set<AnnotationMirror> hierarchies = new HashSet<>(tops);
         hierarchies.removeAll(missingAnnos);
         typesToHierarchies.put(mergedType, hierarchies);
@@ -256,13 +319,39 @@ public class EqualitiesSolver {
         return null;
     }
 
+    public InferredValue mergeConstraints(final TypeVariable target, final Equalities equalities,
+                                          final InferenceResult solution, ConstraintMap constraintMap,
+                                          AnnotatedTypeFactory typeFactory) {
+        final Set<? extends AnnotationMirror> tops = typeFactory.getQualifierHierarchy().getTopAnnotations();
+        InferredValue inferred = null;
+        if (!equalities.types.isEmpty()) {
+            inferred = mergeTypesAndPrimaries(equalities.types, equalities.primaries, tops);
+        }
+
+        if (inferred != null) {
+            return inferred;
+        } //else
+
+
+        //We did not have enough information to infer a concrete have a "partial solution", one in
+        //which we know the type in some but not all qualifier heirarchies
+        //Update our set of constraints with this information
+        dirty |= updateTargetsWithPartiallyInferredType(equalities, constraintMap, typeFactory);
+        inferred = findEqualTarget(equalities, tops);
+
+        return inferred;
+    }
+
+    // We may have determined that
     //If we determined that this target T1 is equal to a type ATM in hierarchies @A,@B,@C
     //for each of those hierarchy, if a target is equal to T1 in that hierarchy it is also equal to ATM
     // e.g.
     //   if : T1 == @A @B @C ATM in only the A,B hierarchies
-    //    and T1 == T2 in @A hierarchy
+    //    and T1 == T2 only in @A hierarchy
+    //
     //   then T2 == @A @B @C only in the @A hierarchy
-    // add this final constraint
+    //
+    // add this
     public boolean updateTargetsWithPartiallyInferredType( final Equalities equalities, ConstraintMap constraintMap,
                                                            AnnotatedTypeFactory typeFactory) {
 
@@ -270,8 +359,7 @@ public class EqualitiesSolver {
 
         if (!equalities.types.isEmpty()) {
             if (equalities.types.size() != 1) {
-                //TODO: ADD BETTER MESSAGE
-                ErrorReporter.errorAbort("Equalities should be empty!");
+                ErrorReporter.errorAbort("Equalities should have at most 1 constraint.");
             }
 
             Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> remainingTypeEquality;
@@ -307,28 +395,10 @@ public class EqualitiesSolver {
         return updated;
     }
 
-    public InferredValue mergeConstraints(final TypeVariable target, final Equalities equalities,
-                                          final InferenceResult solution, ConstraintMap constraintMap,
-                                          AnnotatedTypeFactory typeFactory) {
-        final Set<? extends AnnotationMirror> tops = typeFactory.getQualifierHierarchy().getTopAnnotations();
-        InferredValue inferred = null;
-        if (!equalities.types.isEmpty()) {
-            inferred = mergeTypesAndPrimaries(equalities.types, equalities.primaries, tops);
-        }
-
-        if (inferred != null) {
-            return inferred;
-        } //else
-
-        //TODO: gonna probably need to make sure that we don't update the equalities of this target
-        //TODO: gonna probably need to make sure that we don't update the equalities of this target
-        //or any target that has been solved
-        dirty |= updateTargetsWithPartiallyInferredType(equalities, constraintMap, typeFactory);
-        inferred = findEqualTarget(equalities, tops);
-
-        return inferred;
-    }
-
+    /**
+     * Attempt to find a target which is equal to this target.
+     * @return a target equal to this target in all hierarchies, or null
+     */
     public InferredTarget findEqualTarget(final Equalities equalities,  Set<? extends AnnotationMirror> tops) {
         for (Map.Entry<TypeVariable, Set<AnnotationMirror>> targetToHierarchies  : equalities.targets.entrySet()) {
             final TypeVariable equalTarget = targetToHierarchies.getKey();
