@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * @see org.checkerframework.framework.util.typeinference.constraint.AFConstraint
  * A constraint of the form:
- * A << F or F >> A
+ * A 《 F or F 》 A
  */
 public class A2F extends AFConstraint {
 

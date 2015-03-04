@@ -14,7 +14,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * Formats a {@link QualParams} into the double chevron {@literal <<Q>>} output format.
+ * Formats a {@link QualParams} into the double chevron 《Q》 output format.
  */
 public class PrettyQualParamsFormatter<Q> implements QualParamsFormatter<Q> {
 

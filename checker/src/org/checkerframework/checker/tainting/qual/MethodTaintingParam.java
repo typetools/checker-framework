@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  *
  *  is equivalent to:
  *
- *  <<aParam>> void food() { }
+ *  《aParam》void food() { }
  * }
  * </pre>
  *
