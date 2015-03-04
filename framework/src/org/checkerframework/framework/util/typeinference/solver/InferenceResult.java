@@ -8,9 +8,16 @@ import javax.lang.model.type.TypeVariable;
 import java.util.*;
 import java.util.Map.Entry;
 
+/**
+ * Represents the result from inferring type arguments.
+ * InferenceResult is a map from: (Target type variable -> inferred type or target)
+ */
 public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> {
     private static final long serialVersionUID = 6911459752070485818L;
 
+    /**
+     * @return The set of targets that still don't have an inferred argument
+     */
     public Set<TypeVariable> getRemainingTargets(final Set<TypeVariable> allTargets, boolean inferredTypesOnly) {
         final LinkedHashSet<TypeVariable> remainingTargets = new LinkedHashSet<>(allTargets);
 
@@ -30,6 +37,9 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
         return remainingTargets;
     }
 
+    /**
+     * @return True if we have inferred a concrete type for all targets
+     */
     public boolean isComplete(final Set<TypeVariable> targets) {
         for (final TypeVariable target : targets) {
             final InferredValue inferred = this.get(target);
@@ -41,14 +51,14 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
         return this.keySet().containsAll(targets);
     }
 
-
-    //TODO: EXPLAIN BETTER
-    //if we have T0 = T1  and T1 = ATM make the first constraint T0 = ATM
+    /**
+     * If we had a set of inferred results, (e.g. T1 = T2, T2 = T3, T3 = String)
+     * propagate any results we have (the above constraints become T1 = String, T2 = String, T3 = String)
+     */
     public void resolveChainedTargets() {
         final Map<TypeVariable, InferredValue> inferredTypes = new LinkedHashMap<>(this.size());
 
-        //TODO: UPDATE THE ConbstraintMap after doing this?
-        //TODO: WE CAN MAKE THIS A LITTLE MORE EFFICIENT
+        //TODO: we can probably make this a bit more efficient
         boolean grew = true;
         while (grew == true) {
             grew = false;
@@ -91,6 +101,11 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
         return result;
     }
 
+    /**
+     * Merges values in subordinate into this result, keeping the results form any
+     * type arguments that were already contained by this InferenceResult
+     * @param subordinate A result which we wish to merge into this result
+     */
     public void mergeSubordinate(final InferenceResult subordinate) {
         final LinkedHashSet<TypeVariable> previousKeySet = new LinkedHashSet<>(this.keySet());
         final LinkedHashSet<TypeVariable> remainingSubKeys = new LinkedHashSet<>(subordinate.keySet());
@@ -105,11 +120,12 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
             this.put(target, subordinate.get(target));
         }
 
-
-        //TODO: IS THIS STRICTLY NECESSARY
         resolveChainedTargets();
     }
 
+    /**
+     * Performs a merge for a specific target, we keep only results that lead to a concrete type
+     */
     protected InferredType mergeTarget(final TypeVariable target, final InferenceResult subordinate) {
         final InferredValue inferred = this.get(target);
         if (inferred instanceof InferredTarget) {
