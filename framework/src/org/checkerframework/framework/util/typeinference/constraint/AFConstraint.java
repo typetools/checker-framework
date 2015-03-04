@@ -15,8 +15,8 @@ import java.util.Set;
  * Subclasses of AFConstraint represent the following types of constraints found in
  * (http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7)
  *
- * A << F and F >> A both imply that A is convertible to F.
- * F << A and A >> F both imply that F is convertible to A (this may happen due to wildcard/typevar bounds and recursive types)
+ * A 《 F and F 》 A both imply that A is convertible to F.
+ * F 《 A and A 》 F both imply that F is convertible to A (this may happen due to wildcard/typevar bounds and recursive types)
  * A = F implies that A is exactly F
  *
  * In the Checker Framework a type, A will be convertible to another type F, if AnnotatedTypes.asSuper will return
@@ -25,8 +25,8 @@ import java.util.Set;
  * In Java type A will be convertible to another type F if there exists a conversion context/method that transforms
  * the one type into the other.
  *
- * A << F and F >> A are represented by class A2F
- * F << A and A >> F are represented by class F2A
+ * A 《 F and F 》 A are represented by class A2F
+ * F 《 A and A 》 F are represented by class F2A
  * F = A is represented by class FIsA
  */
 public abstract class AFConstraint {
