@@ -49,6 +49,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
@@ -57,6 +59,7 @@ import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
+
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -264,16 +267,6 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
 
             return super.visitDeclared(type, p);
         }
-        @Override
-        public Void visitNull(AnnotatedNullType type, Void p) {
-            HashSet<String> values = new HashSet<String>();
-            values.add("null");
-            AnnotationMirror newQual = createAnnotation(
-                    "org.checkerframework.common.value.qual.StringVal",
-                    values);
-            type.replaceAnnotation(newQual);
-            return super.visitNull(type, p);
-        }
 
         /**
          * If any constant-value annotation has &gt; MAX_VALUES number of values provided, treats the value as UnknownVal.
@@ -307,6 +300,20 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
         public ValueQualifierHierarchy(
                 MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
+        }
+        
+        @Override 
+        public AnnotationMirror greatestLowerBound(AnnotationMirror a1,
+                AnnotationMirror a2) {
+            if (isSubtype(a1, a2)) {
+                return a1;
+            } else if (isSubtype(a2, a1)) {
+                return a2;
+            }
+            else {
+                // If the two are unrelated, then bottom is the GLB.
+                return BOTTOMVAL;
+            }
         }
 
         /**
@@ -458,15 +465,17 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
     protected TreeAnnotator createTreeAnnotator() {
 
         // The ValueTreeAnnotator handles propagation differently,
-        // so it doesn't need PropgationTreeAnnotator. Also, the ValueChecker does not have
-        // any implicit annotations, so there is no need to run the ImplicitTreeAnnotator.
-        return new ValueTreeAnnotator(this);
+        // so it doesn't need PropgationTreeAnnotator.
+        return new ListTreeAnnotator( new ValueTreeAnnotator(this),
+                new ImplicitsTreeAnnotator(this));
     }
 
     @Override protected QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defaults = super.createQualifierDefaults();
         defaults.addAbsoluteDefault(UNKNOWNVAL, DefaultLocation.OTHERWISE);
+        defaults.addAbsoluteDefault(BOTTOMVAL, DefaultLocation.LOWER_BOUNDS);
 
+        
         return defaults;
     }
 
@@ -745,12 +754,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                     return null;
                 }
                 else if ( tree.getKind() == Tree.Kind.NULL_LITERAL){
-                    HashSet<String> values = new HashSet<String>();
-                    values.add("null");
-                    AnnotationMirror newQual = createAnnotation(
-                            "org.checkerframework.common.value.qual.StringVal",
-                            values);
-                    type.replaceAnnotation(newQual);
+                    type.replaceAnnotation(BOTTOMVAL);
                 }
             }
             // super.visitLiteral(tree, type);
@@ -1833,6 +1837,8 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 values = convertStringVal(anno, castType);
             } else if (AnnotationUtils.areSameByClass(anno, BoolVal.class)) {
                 values = convertBoolVal(anno, castType);
+            } else if(AnnotationUtils.areSameByClass(anno, BottomVal.class)){
+                values = convertBottomVal(anno, castType);
             }
             if (values == null) {
                 if(reportWarnings)
@@ -1842,6 +1848,14 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
             }
 
             return values;
+        }
+
+        private List<?> convertBottomVal(AnnotationMirror anno,
+                Class<?> newClass) {
+            if (newClass == String.class) {
+                return Collections.singletonList("null");
+            }
+            return null;
         }
 
         private List<?> convertToStringVal(List<?> origValues) {
