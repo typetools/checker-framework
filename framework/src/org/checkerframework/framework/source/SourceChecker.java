@@ -174,6 +174,11 @@ import com.sun.tools.javac.util.Log;
     // org.checkerframework.framework.flow.CFAbstractTransfer.sequentialSemantics
     "concurrentSemantics",
 
+    // Whether to resolve reflective method invocations
+    // resolveReflection=debug cause debugging information
+    // to be output.
+    "resolveReflection",
+
 
     ///
     /// Stub libraries
@@ -1048,7 +1053,7 @@ public abstract class SourceChecker
      * This is preferable to using System.out or System.err, but should
      * only be used for exceptional cases that don't happen in correct usage.
      * Localized messages should be raised using
-     * {@link SourceChecker#message(Kind, Object, String, Object...)}.
+     * {@link SourceChecker#message(Diagnostic.Kind, Object, String, Object...)}.
      *
      * @param kind The kind of message to print.
      * @param msg The message text.

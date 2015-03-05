@@ -6,6 +6,8 @@ import org.checkerframework.framework.qual.*;
 
 /**
  * Candela (unit of luminance).
+ *
+ * @checker_framework.manual #units-checker Units Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

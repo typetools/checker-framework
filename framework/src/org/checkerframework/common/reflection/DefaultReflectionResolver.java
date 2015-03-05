@@ -29,11 +29,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -45,12 +43,10 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Resolve;
-import com.sun.tools.javac.comp.Check.CheckContext;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
@@ -68,8 +64,10 @@ import com.sun.tools.javac.util.Names;
  * <li>{@link Constructor#newInstance(Object...)}</li>
  * </ul>
  * 
- * @author rjust
+ * @checker_framework.manual #reflection-resolution Reflection resolution
  * 
+ * @author rjust
+ *
  */
 public class DefaultReflectionResolver implements ReflectionResolver {
     // Message prefix added to verbose reflection messages
@@ -84,18 +82,11 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     private final ExecutableElement invoke;
     private final ExecutableElement newInstance;
 
-    /**
-     * @param checker
-     *            The type checker to use
-     * @param provider
-     *            The AnnotationProvider that provides the MethodVal annotations
-     * @param debug
-     *            Flag to enable debugging of the reflection resolution process
-     */
+
     public DefaultReflectionResolver(BaseTypeChecker checker,
-            AnnotationProvider provider, boolean debug) {
+            MethodValAnnotatedTypeFactory methodValProvider, boolean debug) {
         this.checker = checker;
-        this.provider = provider;
+        this.provider = methodValProvider;
         this.processingEnv = checker.getProcessingEnvironment();
         this.trees = Trees.instance(processingEnv);
         this.debug = debug;
@@ -107,7 +98,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     @Override
-    public boolean shouldResolveReflection(MethodInvocationTree tree) {
+    public boolean isReflectiveMethodInvocation(MethodInvocationTree tree) {
         if ((TreeUtils.isMethodInvocation(tree, invoke, processingEnv) || TreeUtils
                 .isMethodInvocation(tree, newInstance, processingEnv))) {
             return true;
@@ -120,32 +111,17 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> resolveReflectiveCall(
             AnnotatedTypeFactory factory, MethodInvocationTree tree,
             Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> origResult) {
-        assert shouldResolveReflection(tree);
-
-        // EDITED 1-2-14 by plvines
-        // added this if/else
+        assert isReflectiveMethodInvocation(tree);
         if (TreeUtils.isMethodInvocation(tree, newInstance, processingEnv)) {
             return resolveConstructorCall(factory, tree, origResult);
         } else {
-            /*
-                AnnotationMirror estimate = provider.getAnnotationMirror(
-                        TreeUtils.getReceiverTree(tree), MethodVal.class);
-
-                List<String> listMethodNames = AnnotationUtils
-                        .getElementValueArray(estimate, "methodName", String.class,
-                                true);
-
-                if (INIT.equals(listMethodNames.get(0))) {
-                    return resolveConstructorCall(factory, tree, origResult);
-                }
-            */
             return resolveMethodCall(factory, tree, origResult);
         }
     }
 
     /**
      * Resolves a call to {@link Method#invoke(Object, Object...)}.
-     * 
+     *
      * @param factory
      *            The {@link AnnotatedTypeFactory} of the underlying type
      *            system.
@@ -191,10 +167,12 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
             // Glb receiver types (actual method receiver is passed as first
             // argument to invoke(Object, Object[]))
-            // Checker for static methods whose receiver is null
+            // Check for static methods whose receiver is null
             if (resolvedResult.first.getReceiverType() == null) {
+                // If the method is static the first argument to Method.invoke isn't used,
+                // so assume top.
                 receiverGlb = glb(receiverGlb, factory.getQualifierHierarchy()
-                        .getBottomAnnotations(), factory);
+                        .getTopAnnotations(), factory);
             } else {
                 receiverGlb = glb(receiverGlb, resolvedResult.first
                         .getReceiverType().getAnnotations(), factory);
@@ -273,7 +251,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
     /**
      * Resolves a call to {@link Constructor#newInstance(Object...)}.
-     * 
+     *
      * @param factory
      *            The {@link AnnotatedTypeFactory} of the underlying type
      *            system.
@@ -351,7 +329,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     /**
      * Resolves a reflective method call and returns all possible corresponding
      * method calls.
-     * 
+     *
      * @param tree
      *            The MethodInvocationTree node that is to be resolved
      *            (Method.invoke)
@@ -359,7 +337,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      */
     private List<MethodInvocationTree> resolveReflectiveMethod(
             MethodInvocationTree tree, AnnotatedTypeFactory reflectionFactory) {
-        assert shouldResolveReflection(tree);
+        assert isReflectiveMethodInvocation(tree);
         JCMethodInvocation methodInvocation = (JCMethodInvocation) tree;
 
         Context context = ((JavacProcessingEnvironment) processingEnv)
@@ -371,11 +349,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
         List<MethodInvocationTree> methods = new ArrayList<>();
 
-        boolean unknown = (provider.getAnnotationMirror(
-                TreeUtils.getReceiverTree(tree), UnknownMethod.class) != null);
+        boolean unknown = isUnknownMethod(tree);
 
-        AnnotationMirror estimate = provider.getAnnotationMirror(
-                TreeUtils.getReceiverTree(tree), MethodVal.class);
+        AnnotationMirror estimate = getMethodVal(tree);
 
         if (estimate == null) {
             debugReflection("MethodVal is unknown for: " + tree);
@@ -461,7 +437,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     /**
      * Resolves a reflective constructor call and returns all possible
      * corresponding constructor calls.
-     * 
+     *
      * @param tree
      *            The MethodInvocationTree node that is to be resolved
      *            (Constructor.newInstance)
@@ -469,7 +445,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      */
     private List<JCNewClass> resolveReflectiveConstructor(
             MethodInvocationTree tree, AnnotatedTypeFactory reflectionFactory) {
-        assert shouldResolveReflection(tree);
+        assert isReflectiveMethodInvocation(tree);
         JCMethodInvocation methodInvocation = (JCMethodInvocation) tree;
 
         Context context = ((JavacProcessingEnvironment) processingEnv)
@@ -481,15 +457,11 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
         List<JCNewClass> constructors = new ArrayList<>();
 
-        boolean unknown = (provider.getAnnotationMirror(
-                TreeUtils.getReceiverTree(tree), UnknownMethod.class) != null);
-
-        AnnotationMirror estimate = provider.getAnnotationMirror(
-                TreeUtils.getReceiverTree(tree), MethodVal.class);
+        AnnotationMirror estimate = getMethodVal(tree);
 
         if (estimate == null) {
             debugReflection("MethodVal is unknown for: " + tree);
-            debugReflection("UnknownMethod annotation: " + unknown);
+            debugReflection("UnknownMethod annotation: " + isUnknownMethod(tree));
             return constructors;
         }
 
@@ -522,10 +494,20 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         return constructors;
     }
 
+    private AnnotationMirror getMethodVal(MethodInvocationTree tree) {
+        return provider.getAnnotationMirror(
+                TreeUtils.getReceiverTree(tree), MethodVal.class);
+    }
+
+    private boolean isUnknownMethod(MethodInvocationTree tree) {
+        return provider.getAnnotationMirror(
+                TreeUtils.getReceiverTree(tree), UnknownMethod.class) != null;
+    }
+
     /**
      * Get set of MethodSymbols based on class name, method name, and parameter
      * length.
-     * 
+     *
      * @return The (potentially empty) set of corresponding method Symbol(s).
      */
     private List<Symbol> getMethodSymbolsfor(String className,
@@ -582,7 +564,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     /**
      * Get set of Symbols for constructors based on class name and parameter
      * length.
-     * 
+     *
      * @return The (potentially empty) set of corresponding constructor
      *         Symbol(s).
      */
@@ -666,7 +648,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     /**
      * Reports debug information about the reflection resolution iff the
      * corresponding debug flag is set
-     * 
+     *
      * @param msg
      *            the debug message
      */

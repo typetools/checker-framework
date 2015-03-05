@@ -44,20 +44,41 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
     void contextD(OUTER_SCOPE_TV os1, @H1S1 @H2S1 OUTER_SCOPE_TV os2) {
         OUTER_SCOPE_TV osNaked1 = methodD(os1, os1, os2);
 
-        //TODO: WE COULD DECIDE TO NOT EVER INFER SOMETHING OUTSIDE THE BOUNDS?
-        //TODO: ASK THE GROUP, I ACTUALLY THINK THE type.argument.type.incompatible is
-        //TODO: is more useful here then the alternative (an argument.type.incompatible) form d2
-        //TODO: ONE THING WE COULD DO IS CHECK THIS IMMEDIATELY AFTER inferTypeArgs and
-        //TODO: REPORT AN ERROR THEN
+        //So for the next failure we correctly infer that for methodD to take both os1 and os2 as arguments
+        //D must be @H1Top @H2Top OUTER_SCOPE_TV.
+        //However, the UPPER_BOUND of D is <@H1Bottom @H2Bottom OUTER_SCOPE_TV extends @H1Top @H2Top Object>
+        //notice that our inferred type for D is above this bound.
+        //
+        //A similar, more useful example in the Nullness type system would be:
+        /*
+            class Gen<OUTER> {
+               public List<OUTER> listo;
+
+               <T extends OUTER> void addToListo(T t1, T T2) {
+                   listo.add(t1);
+                   listo.add(t2);
+               }
+
+               void launder(@NonNull OUTER arg1, @Nullable OUTER arg2) {
+                   addToListo(arg1, arg2); //T is inferred to be <@Nullable OUTER>
+                                           //if we did not mark this as type.argument.type.incompatible
+                                           //then we would have no idea that in the last
+                                           //line of this example we are putting a null value into
+                                           //a List of @NonNull Strings
+               }
+
+            }
+
+            Gen<@NonNull String> g = ...;
+            g.listo = new ArrayList<@NonNull String>();
+            g.launder("", null);    //during this method call null would be added to g.listo
+         */
         //:: error: (type.argument.type.incompatible)
         OUTER_SCOPE_TV osNaked2 = methodD(os1, os2, "");
 
         //:: error: (type.argument.type.incompatible)
         OUTER_SCOPE_TV osAnnoed = methodD(os2, os2, "");
 
-        //TODO: WE COULD DECIDE TO NOT EVER INFER SOMETHING OUTSIDE THE BOUNDS?
-        //TODO: ASK THE GROUP, I ACTUALLY THINK THE type.argument.type.incompatible is
-        //TODO: is more useful here then the alternative (an argument.type.incompatible) form d1
         //:: error: (type.argument.type.incompatible)
         String str = methodD2(os2, os1, "");
         OUTER_SCOPE_TV osNaked3 = methodD2(os1, os1, os2);
