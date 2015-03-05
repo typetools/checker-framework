@@ -842,12 +842,24 @@ public class AnnotatedTypes {
 
         // get rid of wildcards and type variables
         if (alub.getKind() == TypeKind.WILDCARD) {
-            //TODO: Wildcard handling of LUB doesn't make much sense, as a stop gap for unannotated
+            final QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+            //TODO: TYPEVAR handling of LUB doesn't make much sense, as a stop gap for unannotated
             //TODO: LOWER/UPPER bounds we'll glb the annotations and add them to the lower bound
             //TODO: this will not handle component annotations if we have compound types as the
-            //TODO: lower bound
-            Set<? extends AnnotationMirror> glb = glbAll(atypeFactory.getQualifierHierarchy(), types);
-            ((AnnotatedWildcardType)alub).getSuperBound().replaceAnnotations(glb);
+            //TODO: lower bound (which for type variables would only happen on a capture)
+            Set<? extends AnnotationMirror> lowerBounds = new HashSet<>(qualifierHierarchy.getTopAnnotations().size());
+            for (AnnotatedTypeMirror type : types) {
+
+                final Set<? extends AnnotationMirror>  annos = findEffectiveLowerBoundAnnotations(qualifierHierarchy, type);
+                if (lowerBounds.isEmpty()) {
+                    lowerBounds = annos;
+                } else if (!annos.isEmpty()) { //for some reason this algorithm some times adds the lub itself
+                                               //into the list of type which may lead to an empty annos set
+                    lowerBounds = qualifierHierarchy.greatestLowerBounds(lowerBounds, annos);
+                }
+            }
+
+            ((AnnotatedWildcardType)alub).getSuperBound().replaceAnnotations(lowerBounds);
 
 
             alub = ((AnnotatedWildcardType)alub).getExtendsBound();
@@ -1569,6 +1581,47 @@ public class AnnotatedTypes {
         }
 
         return source.getAnnotationInHierarchy(top);
+    }
+
+    /**
+     * When comparing types against the bounds of a type variable, we may encounter other
+     * type variables, wildcards, and intersections in those bounds.  This method traverses
+     * the lower bounds until it finds a concrete type from which it can pull an annotation.
+     * This occurs for every hierarchy in QualifierHierarchy
+     * @return The set of effective annotation mirrors in all hierarchies
+     */
+    public static Set<AnnotationMirror> findEffectiveLowerBoundAnnotations(final QualifierHierarchy qualifierHierarchy,
+                                                                           final AnnotatedTypeMirror toSearch) {
+        AnnotatedTypeMirror source = toSearch;
+        TypeKind kind = source.getKind();
+        while( kind == TypeKind.TYPEVAR
+                || kind == TypeKind.WILDCARD
+                || kind == TypeKind.INTERSECTION ) {
+
+            switch(source.getKind()) {
+                case TYPEVAR:
+                    source = ((AnnotatedTypeVariable) source).getLowerBound();
+                    break;
+
+                case WILDCARD:
+                    source = ((AnnotatedWildcardType) source).getSuperBound();
+                    break;
+
+                case INTERSECTION:
+                    //if there are multiple conflicting annotations, choose the lowest
+                    final Set<AnnotationMirror> glb = glbOfBounds((AnnotatedIntersectionType) source, qualifierHierarchy);
+                    return glb;
+
+                default:
+                    ErrorReporter.errorAbort("Unexpected AnnotatedTypeMirror with no primary annotation!"
+                            + "toSearch=" + toSearch
+                            + "source=" + source);
+            }
+
+            kind = source.getKind();
+        }
+
+        return source.getAnnotations();
     }
 
     /**
