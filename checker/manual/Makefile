@@ -37,7 +37,7 @@ external-tools.tex \
 faq.tex \
 troubleshooting.tex
 
-all: figures-all doc manual.pdf manual.html
+all: doc manual.pdf manual.html
 
 .PHONY: figures-all
 figures-all:
@@ -46,7 +46,7 @@ figures-all:
 doc:
 	ln -sf ../doc doc
 
-manual.pdf: bib-update
+manual.pdf: bib-update figures-all
 	pdflatex manual.tex
 	bibtex manual
 	pdflatex manual.tex
