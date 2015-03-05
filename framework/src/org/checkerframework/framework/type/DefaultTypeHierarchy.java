@@ -626,6 +626,23 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         return visitIntersectionSupertype(subtype, supertype,  visited);
     }
 
+    @Override
+    public Boolean visitPrimitive_Wildcard(AnnotatedPrimitiveType subtype, AnnotatedWildcardType supertype, VisitHistory visitHistory) {
+        //this can occur when passing a primitive to a method on a raw type (see test checker/tests/nullness/RawAndPrimitive.java)
+        if (supertype.isTypeArgHack()) {
+            if (ignoreRawTypes) {
+                return true;
+
+            } else {
+                return isPrimarySubtype(subtype, supertype.getSuperBound());
+            }
+
+        } else {
+            ErrorReporter.errorAbort(defaultErrorMessage(subtype, supertype, visitHistory));
+            return false;
+        }
+    }
+
     //------------------------------------------------------------------------
     //Union as subtype
     @Override
@@ -674,7 +691,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
         }
 
-        //TODO: DOCUMENT
         if( AnnotatedTypes.areCorrespondingTypeVariables(checker.getProcessingEnvironment().getElementUtils(), subtype, supertype) ) {
             if( areEqualInHierarchy(subtype, supertype, currentTop) ) {
                 return true;
@@ -805,21 +821,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     public static <T extends AnnotatedTypeMirror> T castedAsSuper(final AnnotatedTypeMirror subtype, final T supertype ) {
         final Types types = subtype.atypeFactory.getProcessingEnv().getTypeUtils();
         final Elements elements = subtype.atypeFactory.getProcessingEnv().getElementUtils();
-
-        //the best example exercising this code is the test: all-systems/Annotations.java
-        //asSuper will return null when casting an instance of an annotation interface to
-        //java.lang.annotation.Annotation.  The if statement below catches this case and
-        //transforms the subtype from an instance of the interface to Annotation
-
-        // Other tests excersing this code:
-        // flow2/Precondition.java, flow2/Postcondition.java,
-        // flow2/ParamFlowExpr.java, flow2/MethodCallFlowExpr.java
-        if( isJavaLangAnnotation(supertype) && implementsAnnotation(subtype) ) { //TODO: Should this go in asSuper?
-            final AnnotatedTypeMirror atm = supertype.deepCopy();
-            atm.clearAnnotations();
-            atm.addAnnotations(subtype.getAnnotations());
-            return (T) atm;
-        }
 
         final AnnotatedTypeMirror asSuperType = AnnotatedTypes.asSuper( types, subtype.atypeFactory, subtype, supertype);
 
