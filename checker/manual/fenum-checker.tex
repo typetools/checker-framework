@@ -1,0 +1,210 @@
+\htmlhr
+\chapter{Fake Enum Checker\label{fenum-checker}}
+
+Java's 
+\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-8.html#jls-8.9}{\code{enum}}
+keyword lets you define an enumeration type: a finite set of distinct values
+that are related to one another but are disjoint from all other
+types, including other enumerations.
+Before enums were added to Java, there were two ways to encode an
+enumeration, both of which are error-prone:
+
+\begin{description}
+\item[the fake enum pattern]  a set of \code{int} or \code{String}
+  constants (as often found in older C code).
+
+\item[the \href{http://www.oracle.com/technetwork/java/page1-139488.html}{typesafe
+enum pattern}]  a class with private constructor.
+% This requires
+% \href{http://www.javaworld.com/javaworld/javatips/jw-javatip122.html}{careful development}.
+\end{description}
+
+Sometimes you need to use the fake enum pattern,
+rather than a real enum or the typesafe enum pattern.
+%
+One reason is backward-compatibility.  A public API that predates Java's
+enum keyword may use \code{int} constants; it cannot be changed, because
+doing so would break existing clients.  For example, Java's JDK still uses
+\code{int} constants in the AWT and Swing frameworks.
+%
+Another reason is performance, especially in environments with limited
+resources.  Use of an int instead of an object can 
+reduce code size, memory requirements, and run time.
+% Android no longer recommends use of ints instead of enums:  see
+% http://stackoverflow.com/questions/5143256/why-was-avoid-enums-where-you-only-need-ints-removed-from-androids-performanc
+
+In cases when code has to use the fake enum pattern, the Fake Enum Checker,
+or Fenum Checker, gives the same safety guarantees as a true enumeration type. 
+The developer can introduce new types that are distinct from all values of the
+base type and from all other fake enums. Fenums can be introduced for
+primitive types as well as for reference types.
+
+Figure~\ref{fig-fenum-hierarchy} shows part of the type hierarchy for the
+Fenum type system.
+
+\begin{figure}
+\includeimage{fenum}{3.2cm}
+\caption{Partial type hierarchy for the Fenum type system.
+There are two forms of fake enumeration annotations --- above, illustrated
+by \code{@Fenum("A")} and \code{@FenumC}.
+See Section~\ref{fenum-annotations} for descriptions of how to
+introduce both types of fenums. The type qualifiers in gray
+(\code{@FenumTop}, \code{@FenumUnqualified}, and \code{@FenumBottom})
+should never be written in
+source code; they are used internally by the type system.}
+\label{fig-fenum-hierarchy}
+\end{figure}
+
+\section{Fake enum annotations\label{fenum-annotations}}
+
+The checker supports two ways to introduce a new fake enum (fenum):
+
+\begin{enumerate}
+\item Introduce your own specialized fenum annotation with code like this in
+file \code{\emph{MyFenum}.java}:
+
+\begin{alltt}
+package \textit{myproject}.qual;
+
+import java.lang.annotation.*;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeQualifier;
+
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@TypeQualifier
+@SubtypeOf( \ttlcb{} FenumTop.class \ttrcb{} )
+public @interface \textit{MyFenum} \ttlcb\ttrcb
+\end{alltt}
+
+You only need to adapt the italicized package, annotation, and file names in the example.
+
+
+\item Use the provided \refqualclass{checker/fenum/qual}{Fenum} annotation, which takes a
+\code{String} argument to distinguish different fenums.
+For example, \code{@Fenum("A")} and \code{@Fenum("B")} are two distinct fenums.
+\end{enumerate}
+
+
+The first approach allows you to define a short, meaningful name suitable for
+your project, whereas the second approach allows quick prototyping.
+
+
+
+\section{What the Fenum Checker checks\label{fenum-checks}}
+
+The Fenum Checker ensures that unrelated types are not mixed. 
+All types with a particular fenum annotation, or \code{@Fenum(...)} with a particular \code{String} argument, are
+disjoint from all unannotated types and all types with a different fenum
+annotation or \code{String} argument.
+
+The checker forbids method calls on fenum types and ensures that
+only compatible fenum types are used in comparisons and arithmetic operations
+(if applicable to the annotated type).
+
+It is the programmer's responsibility to ensure that fields with a fenum type
+are properly initialized before use.  Otherwise, one might observe a \code{null}
+reference or zero value in the field of a fenum type.  (The Nullness Checker
+(\chapterpageref{nullness-checker}) can prevent failure to initialize a
+reference variable.)
+
+
+\section{Running the Fenum Checker\label{fenum-running}}
+
+The Fenum Checker can be invoked by running the following commands.
+
+\begin{itemize}
+  \item 
+If you define your own annotation, provide the name of the annotation using the
+\code{-Aquals} option:
+
+\begin{alltt}
+  javac -processor org.checkerframework.checker.fenum.FenumChecker
+        \textit{-Aquals=myproject.qual.MyFenum} MyFile.java ...
+\end{alltt}
+
+
+\item
+If your code uses the \refqualclass{checker/fenum/qual}{Fenum} annotation, you do
+not need the \code{-Aquals} option:
+
+\begin{Verbatim}
+  javac -processor org.checkerframework.checker.fenum.FenumChecker MyFile.java ...
+\end{Verbatim}
+
+\end{itemize}
+
+
+
+\section{Suppressing warnings\label{fenum-suppressing}}
+
+One example of when you need to suppress warnings is when you initialize the
+fenum constants to literal values.
+To remove this warning message, add a \code{@SuppressWarnings} annotation to either
+the field or class declaration, for example:
+
+\begin{Verbatim}
+@SuppressWarnings("fenum:assignment.type.incompatible")
+class MyConsts {
+  public static final @Fenum("A") int ACONST1 = 1;
+  public static final @Fenum("A") int ACONST2 = 2;  
+}
+\end{Verbatim}
+
+
+
+\section{Example\label{fenum-example}}
+
+The following example introduces two fenums in class \code{TestStatic}
+and then performs a few typical operations.
+
+\begin{Verbatim}
+@SuppressWarnings("fenum:assignment.type.incompatible")   // for initialization
+public class TestStatic {
+  public static final @Fenum("A") int ACONST1 = 1;
+  public static final @Fenum("A") int ACONST2 = 2;
+
+  public static final @Fenum("B") int BCONST1 = 4;
+  public static final @Fenum("B") int BCONST2 = 5;
+}
+
+class FenumUser {
+  @Fenum("A") int state1 = TestStatic.ACONST1;     // ok
+  @Fenum("B") int state2 = TestStatic.ACONST1;     // Incompatible fenums forbidden!
+
+  void fenumArg(@Fenum("A") int p) {}
+	
+  void foo() {
+    state1 = 4;                     // Direct use of value forbidden!
+    state1 = TestStatic.BCONST1;    // Incompatible fenums forbidden!
+    state1 = TestStatic.ACONST2;    // ok
+
+    fenumArg(5);                    // Direct use of value forbidden!
+    fenumArg(TestStatic.BCONST1);   // Incompatible fenums forbidden!
+    fenumArg(TestStatic.ACONST1);   // ok
+  }
+ }
+\end{Verbatim}
+
+
+\section{References\label{fenum-references}}
+
+\begin{itemize}
+\item Java Language Specification on enums:\\
+  \url{https://docs.oracle.com/javase/specs/jls/se8/html/jls-8.html#jls-8.9}
+
+\item Tutorial trail on enums:\\
+  \url{https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html}
+
+\item Typesafe enum pattern:\\
+  \url{http://www.oracle.com/technetwork/java/page1-139488.html}
+
+\item Java Tip 122: Beware of Java typesafe enumerations:\\
+  \url{http://www.javaworld.com/article/2077487/core-java/java-tip-122--beware-of-java-typesafe-enumerations.html}
+
+\end{itemize}
+
+% LocalWords:  enums typesafe Fenum Fenums fenum MyFenum quals fenums Aquals
+% LocalWords:  TestStatic FenumC FenumD myproject RetentionPolicy TypeQualifier
+% LocalWords:  SubtypeOf FenumTop MyFile Enum enum AWT 5cm java jls
+%  LocalWords:  FenumUnqualified FenumBottom
