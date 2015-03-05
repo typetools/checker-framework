@@ -1,0 +1,137 @@
+<!--
+  This is a configuration file for use by Ant when building the 
+  Checker Framework.
+  This top-level build file simply delegates to the subprojects.
+  It assumes that the "checker" project is aware of all dependencies
+  and that it is sufficient to run targets from there.
+
+  Each subproject builds its own Javadoc including the documentation
+  of all projects it in turn depends on. This would allow us to
+  easily ship each subproject independently. Subprojects that
+  already ship independently also build a Javadoc JAR file
+  containing all its documentation.
+-->
+<project name="checkerframework" default="dist"
+        basedir=".">
+
+  <target name="dist"
+          description="Compile and jar all subprojects">
+    <ant dir="checker">
+      <target name="dist"/>
+    </ant>
+  </target>
+
+  <target name="dist-nojdk"
+          description="Rebuild the framework.  Rebuild checker on top of framework without rebuilding the JDK">
+      <ant dir="framework">
+          <target name="clean"/>
+          <target name="dist"/>
+      </ant>
+      <ant dir="checker">
+          <target name="dist-nojdk"/>
+      </ant>
+  </target>
+
+  <target name="build"
+          description="Compile all subprojects">
+    <ant dir="checker">
+      <target name="build"/>
+    </ant>
+  </target>
+
+  <target name="clean"
+          description="Clean all subprojects">
+    <ant dir="checker">
+      <target name="clean"/>
+    </ant>
+  </target>
+
+  <target name="tests" depends="dist"
+          description="Run test cases for all subprojects">
+    <ant dir="checker">
+      <target name="all-tests-nojdk"/>
+    </ant>
+  </target>
+
+    <target name="tests-nojdk" depends="dist-nojdk"
+            description="Run test cases for all subprojects">
+        <ant dir="checker">
+            <target name="all-tests-nojdk"/>
+        </ant>
+    </target>
+
+  <target name="javadoc"
+          description="Generate javadoc for all subprojects">
+    <ant dir="checker">
+      <target name="javadoc"/>
+    </ant>
+    <ant dir="dataflow">
+      <target name="javadoc"/>
+    </ant>
+    <ant dir="framework">
+      <target name="javadoc"/>
+    </ant>
+    <ant dir="javacutil">
+      <target name="javadoc"/>
+    </ant>
+    <ant dir="stubparser">
+      <target name="javadoc"/>
+    </ant>
+  </target>
+
+  <target name="dist-release">
+      <ant dir="checker">
+          <target name="dist-release"/>
+      </ant>
+
+      <ant dir="javacutil">
+          <target name="sources-jar"/>
+      </ant>
+      <ant dir="javacutil">
+        <target name="javadoc-jar" />
+    </ant>
+      <ant dir="dataflow">
+          <target name="sources-jar"/>
+      </ant>
+      <ant dir="dataflow">
+          <target name="javadoc-jar" />
+      </ant>
+  </target>
+
+  <target name="tags"
+          description="Generate TAGS file">
+    <ant dir="checker">
+      <target name="tags"/>
+    </ant>
+    <ant dir="dataflow">
+      <target name="tags"/>
+    </ant>
+    <ant dir="framework">
+      <target name="tags"/>
+    </ant>
+    <ant dir="javacutil">
+      <target name="tags"/>
+    </ant>
+    <ant dir="stubparser">
+      <target name="tags"/>
+    </ant>
+    <exec executable="make" dir="checker/manual" failonerror="true">
+      <arg value="tags"/>
+    </exec>
+    <exec executable="etags" failonerror="true">
+      <arg value="-i"/>
+      <arg value="checker/TAGS"/>
+      <arg value="-i"/>
+      <arg value="dataflow/TAGS"/>
+      <arg value="-i"/>
+      <arg value="framework/TAGS"/>
+      <arg value="-i"/>
+      <arg value="javacutil/TAGS"/>
+      <arg value="-i"/>
+      <arg value="stubparser/TAGS"/>
+      <arg value="-i"/>
+      <arg value="checker/manual/TAGS"/>
+    </exec>
+  </target>
+
+</project>

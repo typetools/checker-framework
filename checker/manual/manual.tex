@@ -1,0 +1,92 @@
+\documentclass[10pt]{report}
+
+\input{manual-style.tex}
+
+\title{The Checker Framework Manual: \\ Custom pluggable types for Java}
+\author{\url{http://checkerframework.org/}}
+\newcommand{\ReleaseVersion}{1.8.11}
+\newcommand{\ReleaseInfo}{1.8.11 (2 Mar 2015)}
+\date{Version \ReleaseInfo{}}
+
+\begin{document}
+
+\begin{center}
+%HEVEA\imgsrc{CFLogo.png}
+%BEGIN LATEX
+  \includegraphics{logo/Logo/CFLogo.pdf}
+%END LATEX
+\end{center}
+
+{\let\newpage\relax\maketitle}
+
+% %BEGIN LATEX
+% \tableofcontents
+% %END LATEX
+
+
+%BEGIN LATEX
+\setcounter{page}{2}
+%END LATEX
+
+
+\noindent
+\textbf{For the impatient:}
+Section~\refwithpageparen{installation}
+describes how to \textbf{install and use} pluggable type-checkers.
+
+%HEVEA \setcounter{tocdepth}{1}
+% Not supported by Hevea, so don't bother: \dominitoc
+\tableofcontents
+\newpage
+
+\input{introduction.tex}
+
+%% Checkers
+
+\input{nullness-checker.tex}
+\input{interning-checker.tex}
+\input{lock-checker.tex}
+\input{fenum-checker.tex}
+\input{tainting-checker.tex}
+\input{regex-checker.tex}
+\input{formatter-checker.tex}
+\input{propkey-checker.tex}
+\input{signature-checker.tex}
+\input{guieffect-checker.tex}
+\input{units-checker.tex}
+\input{constant-value-checker.tex}
+\input{aliasing-checker.tex}
+
+% Less-well-tested checkers:
+\input{linear-checker.tex}
+\input{igj-checker.tex}
+% Reinstate when this is more than a stub.
+% \input{oigj-checker.tex}
+\input{javari-checker.tex}
+\input{reflection-checker.tex}
+
+% Special subtyping checker and external checkers:
+\input{subtyping-checker.tex}
+\input{external-checkers.tex}
+
+%% Advanced material
+
+\input{generics.tex}
+\input{advanced-features.tex}
+\input{warnings.tex}
+\input{annotating-libraries.tex}
+\input{creating-a-checker.tex}
+\input{external-tools.tex}
+\input{faq.tex}
+\input{troubleshooting.tex}
+
+\htmlhr
+\bibliographystyle{alpha}
+% The .bib files are available from
+% http://code.google.com/p/plume-bib/
+% clone the project somewhere and set your BIBINPUTS accordingly.
+\bibliography{bibstring-unabbrev,types,ernst,invariants,generals,alias,concurrency}
+
+\end{document}
+
+% LocalWords:  pt TODO JavaDocs Arg api HEVEA html ernst IGJ igj javari

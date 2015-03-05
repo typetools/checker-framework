@@ -1,0 +1,211 @@
+// Aliasing types for Android API methods.
+
+import org.checkerframework.common.aliasing.qual.*;
+
+package android.content;
+
+class Intent implements Parcelable, Cloneable {
+  @Unique Intent();
+  // Copy constructor.
+  @Unique Intent(@NonLeaked Intent arg0);
+  @Unique Intent(String arg0);
+  @Unique Intent(String arg0, Uri arg1);
+  @Unique Intent(Context arg0, Class<?> arg1);
+  @Unique Intent(String arg0, Uri arg1, Context arg2, Class<?> arg3);
+
+  Intent addCategory(String category) @LeakedToResult;
+  Intent addFlags(int flags) @LeakedToResult;
+  Intent setType(String type) @LeakedToResult;
+  Intent setData(Uri data) @LeakedToResult;
+  Intent setComponent(ComponentName cName) @LeakedToResult;
+  Intent setClass(Context arg0, Class<?> arg1) @LeakedToResult;
+  Intent setAction(String action) @LeakedToResult;
+  Intent putExtra(String arg0, boolean arg1) @LeakedToResult;
+  Intent putExtra(String arg0, byte arg1) @LeakedToResult;
+  Intent putExtra(String arg0, char arg1) @LeakedToResult;
+  Intent putExtra(String arg0, short arg1) @LeakedToResult;
+  Intent putExtra(String arg0, int arg1) @LeakedToResult;
+  Intent putExtra(String arg0, long arg1) @LeakedToResult;
+  Intent putExtra(String arg0, float arg1) @LeakedToResult;
+  Intent putExtra(String arg0, double arg1) @LeakedToResult;
+  Intent putExtra(String arg0, String arg1) @LeakedToResult;
+  Intent putExtra(String arg0, CharSequence arg1) @LeakedToResult;
+  Intent putExtra(String arg0, Parcelable arg1) @LeakedToResult;
+  Intent putExtra(String arg0, Parcelable[] arg1) @LeakedToResult;
+  Intent putParcelableArrayListExtra(String arg0, ArrayList<? extends Parcelable> arg1) @LeakedToResult;
+  Intent putIntegerArrayListExtra(String arg0, ArrayList< Integer> arg1) @LeakedToResult;
+  Intent putStringArrayListExtra(String arg0, ArrayList< String> arg1) @LeakedToResult;
+  Intent putCharSequenceArrayListExtra(String arg0, ArrayList< CharSequence> arg1) @LeakedToResult;
+  Intent putExtra(String arg0, Serializable arg1) @LeakedToResult;
+  Intent putExtra(String arg0, boolean [] arg1) @LeakedToResult;
+  Intent putExtra(String arg0, byte [] arg1) @LeakedToResult;
+  Intent putExtra(String arg0, short [] arg1) @LeakedToResult;
+  Intent putExtra(String arg0, char [] arg1) @LeakedToResult;
+  Intent putExtra(String arg0, int [] arg1) @LeakedToResult;
+  Intent putExtra(String arg0, long [] arg1) @LeakedToResult;
+  Intent putExtra(String arg0, float [] arg1) @LeakedToResult;
+  Intent putExtra(String arg0, double [] arg1) @LeakedToResult;
+  Intent putExtra(String arg0, String [] arg1) @LeakedToResult;
+  Intent putExtra(String arg0, CharSequence [] arg1) @LeakedToResult;
+  Intent putExtra(String arg0, Bundle arg1) @LeakedToResult;
+}
+
+
+package android.app;
+
+
+class BroadcastReceiver{
+    void startActivity(@NonLeaked Intent arg0);
+    void startActivities(@NonLeaked Intent[] arg0);
+    void sendBroadcast(@NonLeaked Intent arg0);
+    void sendBroadcast(@NonLeaked Intent arg0, String arg1);
+    void sendOrderedBroadcast(@NonLeaked Intent arg0, String arg1);
+    void sendOrderedBroadcast(@NonLeaked Intent arg0, String arg1, BroadcastReceiver arg2, Handler arg3, int arg4, String arg5, Bundle arg6);
+    void sendStickyBroadcast(@NonLeaked Intent arg0);
+    void sendStickyOrderedBroadcast(@NonLeaked Intent arg0, BroadcastReceiver arg1, Handler arg2, int arg3, String arg4, Bundle arg5);
+    void removeStickyBroadcast(@NonLeaked Intent arg0);
+    ComponentName startService(@NonLeaked Intent arg0);
+    boolean bindService(@NonLeaked Intent arg0, ServiceConnection arg1, int arg2);
+}
+
+
+class Context {
+    void startActivity(@NonLeaked Intent arg0);
+    void startActivities(@NonLeaked Intent[] arg0);
+    void sendBroadcast(@NonLeaked Intent arg0);
+    void sendBroadcast(@NonLeaked Intent arg0, String arg1);
+    void sendOrderedBroadcast(@NonLeaked Intent arg0, String arg1);
+    void sendOrderedBroadcast(@NonLeaked Intent arg0, String arg1, BroadcastReceiver arg2, Handler arg3, int arg4, String arg5, Bundle arg6);
+    void sendStickyBroadcast(@NonLeaked Intent arg0);
+    void sendStickyOrderedBroadcast(@NonLeaked Intent arg0, BroadcastReceiver arg1, Handler arg2, int arg3, String arg4, Bundle arg5);
+    void removeStickyBroadcast(@NonLeaked Intent arg0);
+    ComponentName startService(@NonLeaked Intent arg0);
+    boolean bindService(@NonLeaked Intent arg0, ServiceConnection arg1, int arg2);
+}
+
+class ContextWrapper extends Context {
+    void startActivity(@NonLeaked Intent arg0);
+    void startActivities(@NonLeaked Intent[] arg0);
+    void sendBroadcast(@NonLeaked Intent arg0);
+    void sendBroadcast(@NonLeaked Intent arg0, String arg1);
+    void sendOrderedBroadcast(@NonLeaked Intent arg0, String arg1);
+    void sendOrderedBroadcast(@NonLeaked Intent arg0, String arg1, BroadcastReceiver arg2, Handler arg3, int arg4, String arg5, Bundle arg6);
+    void sendStickyBroadcast(@NonLeaked Intent arg0);
+    void sendStickyOrderedBroadcast(@NonLeaked Intent arg0, BroadcastReceiver arg1, Handler arg2, int arg3, String arg4, Bundle arg5);
+    void removeStickyBroadcast(@NonLeaked Intent arg0);
+    ComponentName startService(@NonLeaked Intent arg0);
+    boolean bindService(@NonLeaked Intent arg0, ServiceConnection arg1, int arg2);
+}
+
+
+class Service {
+    void startActivity(@NonLeaked Intent arg0);
+    void startActivities(@NonLeaked Intent[] arg0);
+    void sendBroadcast(@NonLeaked Intent arg0);
+    void sendBroadcast(@NonLeaked Intent arg0, String arg1);
+    void sendOrderedBroadcast(@NonLeaked Intent arg0, String arg1);
+    void sendOrderedBroadcast(@NonLeaked Intent arg0, String arg1, BroadcastReceiver arg2, Handler arg3, int arg4, String arg5, Bundle arg6);
+    void sendStickyBroadcast(@NonLeaked Intent arg0);
+    void sendStickyOrderedBroadcast(@NonLeaked Intent arg0, BroadcastReceiver arg1, Handler arg2, int arg3, String arg4, Bundle arg5);
+    void removeStickyBroadcast(@NonLeaked Intent arg0);
+    ComponentName startService(@NonLeaked Intent arg0);
+    boolean bindService(@NonLeaked Intent arg0, ServiceConnection arg1, int arg2);
+}
+
+class Activity {
+    void startActivityForResult(@NonLeaked Intent arg0, int arg1);
+    boolean startActivityIfNeeded(@NonLeaked Intent arg0, int arg1);
+    boolean startNextMatchingActivity(@NonLeaked Intent arg0);
+    void startActivityFromChild(Activity arg0, @NonLeaked Intent arg1, int arg2);
+    void startActivityFromFragment(Fragment arg0, @NonLeaked Intent arg1, int arg2);
+    void startActivity(@NonLeaked Intent arg0);
+    void startActivities(@NonLeaked Intent[] arg0);
+    void sendBroadcast(@NonLeaked Intent arg0);
+    void sendBroadcast(@NonLeaked Intent arg0, String arg1);
+    void sendOrderedBroadcast(@NonLeaked Intent arg0, String arg1);
+    void sendOrderedBroadcast(@NonLeaked Intent arg0, String arg1, BroadcastReceiver arg2, Handler arg3, int arg4, String arg5, Bundle arg6);
+    void sendStickyBroadcast(@NonLeaked Intent arg0);
+    void sendStickyOrderedBroadcast(@NonLeaked Intent arg0, BroadcastReceiver arg1, Handler arg2, int arg3, String arg4, Bundle arg5);
+    void removeStickyBroadcast(@NonLeaked Intent arg0);
+    ComponentName startService(@NonLeaked Intent arg0);
+    boolean bindService(@NonLeaked Intent arg0, ServiceConnection arg1, int arg2);
+}
+
+package android.os;
+
+class Bundle {
+    @Unique Bundle();
+    void putAll(Bundle arg0) @NonLeaked ;
+    void putBoolean(String arg0, boolean arg1) @NonLeaked;
+    void putByte(String arg0, byte arg1) @NonLeaked;
+    void putChar(String arg0, char arg1) @NonLeaked;
+    void putShort(String arg0, short arg1) @NonLeaked;
+    void putInt(String arg0, int arg1) @NonLeaked;
+    void putLong(String arg0, long arg1) @NonLeaked;
+    void putFloat(String arg0, float arg1) @NonLeaked;
+    void putDouble(String arg0, double arg1) @NonLeaked;
+    void putString(String arg0, String arg1) @NonLeaked;
+    void putCharSequence(String arg0, CharSequence arg1) @NonLeaked;
+    void putParcelable(String arg0, Parcelable arg1) @NonLeaked;
+    void putParcelableArray(String arg0, Parcelable[] arg1) @NonLeaked;
+    void putParcelableArrayList(String arg0, ArrayList<? extends Parcelable> arg1) @NonLeaked;
+    void putSparseParcelableArray(String arg0, SparseArray<? extends Parcelable> arg1) @NonLeaked;
+    void putIntegerArrayList(String arg0, ArrayList<Integer> arg1) @NonLeaked;
+    void putStringArrayList(String arg0, ArrayList<String> arg1) @NonLeaked;
+    void putCharSequenceArrayList(String arg0, ArrayList<CharSequence> arg1) @NonLeaked;
+    void putSerializable(String arg0, Serializable arg1) @NonLeaked;
+    void putBooleanArray(String arg0, boolean[] arg1) @NonLeaked;
+    void putByteArray(String arg0, byte[] arg1) @NonLeaked;
+    void putShortArray(String arg0, short[] arg1) @NonLeaked;
+    void putCharArray(String arg0, char[] arg1) @NonLeaked;
+    void putIntArray(String arg0, int[] arg1) @NonLeaked;
+    void putLongArray(String arg0, long[] arg1) @NonLeaked;
+    void putFloatArray(String arg0, float[] arg1) @NonLeaked;
+    void putDoubleArray(String arg0, double[] arg1) @NonLeaked;
+    void putStringArray(String arg0, String[] arg1) @NonLeaked;
+    void putCharSequenceArray(String arg0, CharSequence[] arg1) @NonLeaked;
+    void putBundle(String arg0, Bundle arg1) @NonLeaked;
+    void putBinder(String arg0, IBinder arg1) @NonLeaked;
+    /**
+    boolean getBoolean(String arg0);
+    boolean getBoolean(String arg0, boolean arg1);
+    byte getByte(String arg0);
+    Byte getByte(String arg0, byte arg1);
+    char getChar(String arg0);
+    char getChar(String arg0, char arg1);
+    short getShort(String arg0);
+    short getShort(String arg0, short arg1);
+    int getInt(String arg0);
+    int getInt(String arg0, int arg1);
+    long getLong(String arg0);
+    long getLong(String arg0, long arg1);
+    float getFloat(String arg0);
+    float getFloat(String arg0, float arg1);
+    double getDouble(String arg0);
+    double getDouble(String arg0, double arg1);
+    String getString(String arg0);
+    String getString(String arg0, String arg1);
+    CharSequence getCharSequence(String arg0);
+    CharSequence getCharSequence(String arg0, CharSequence arg1);
+    Bundle getBundle(String arg0);
+    <T> T getParcelable(String arg0);
+    Parcelable[] getParcelableArray(String arg0);
+    <T> ArrayList<T> getParcelableArrayList(String arg0);
+    <T> SparseArray<T> getSparseParcelableArray(String arg0);
+    Serializable getSerializable(String arg0);
+    ArrayList<Integer> getIntegerArrayList(String arg0);
+    ArrayList<String> getStringArrayList(String arg0);
+    ArrayList<CharSequence> getCharSequenceArrayList(String arg0);
+    boolean[] getBooleanArray(String arg0);
+    byte[] getByteArray(String arg0);
+    short[] getShortArray(String arg0);
+    char[] getCharArray(String arg0);
+    int[] getIntArray(String arg0);
+    long[] getLongArray(String arg0);
+    float[] getFloatArray(String arg0);
+    double[] getDoubleArray(String arg0);
+    String[] getStringArray(String arg0);
+    CharSequence[] getCharSequenceArray(String arg0);
+    IBinder getBinder(String arg0);
+    **/
+}

@@ -1,0 +1,22 @@
+
+
+Coding style
+------------
+
+When editing files in the Checker Framework, see Michael Ernst's coding
+style guidelines:
+http://homes.cs.washington.edu/~mernst/advice/coding-style.html
+
+You may also wish to see Oracle's Java code conventions:
+http://www.oracle.com/technetwork/java/javase/documentation/codeconventions-136091.html#248
+
+If you use Eclipse:
+ * Apply the code formatter preferences using
+     Preferences > Java > Code Style > Formatter > Import
+   and file
+     checker-framework/checker/eclipse/checker-framework-formatter.xml
+ * Apply the import order preferences using
+     Preferences > Java > Code Style > Organize Imports pref
+   and file
+     checker-framework/checker/eclipse/checker-framework.importorder
+
