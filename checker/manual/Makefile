@@ -23,6 +23,8 @@ aliasing-checker.tex \
 linear-checker.tex \
 igj-checker.tex \
 javari-checker.tex \
+reflection-checker.tex \
+reflection-inference-rules.tex \
 subtyping-checker.tex \
 external-checkers.tex \
 typestate-checker.tex \
@@ -44,26 +46,14 @@ figures-all:
 doc:
 	ln -sf ../doc doc
 
-manual.dvi: ${TEX_FILES} bib-update
-	$(MAKE) -C figures
-	latex manual.tex
-	bibtex manual
-	latex manual.tex
-	while grep "Rerun to get" manual.log; do latex manual.tex; done
-
-
-manual.pdf: manual.dvi bib-update
+manual.pdf: bib-update
 	pdflatex manual.tex
 	bibtex manual
 	pdflatex manual.tex
 	while grep "Rerun to get" manual.log; do pdflatex manual.tex; done
 
-
-manual.ps: manual.dvi
-	dvips -P cmz -t letter -o manual.ps manual.dvi
-
 html: manual.html
-manual.html: manual.dvi
+manual.html: manual.pdf
 	hevea -fix -exec xxdate.exe manual.tex
 	./add-favicon-to-manual
 # The following three lines are only necessary when using Hevea before version 2.04
@@ -86,6 +76,7 @@ ifndef NOHG
 	-(cd bib && hg pull -u && make)
 endif
 
+# Leaves manual.html, and .svg files that it references.
 clean:
 	@\rm -f doc *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc
 

@@ -66,10 +66,7 @@ public abstract class AnnotatedTypeMirror {
      * Creates the appropriate AnnotatedTypeMirror specific wrapper for the
      * provided type
      *
-     * @param type
-     * @param atypeFactory
      * @param isDeclaration true if the result should is a type declaration
-     * @return [to document]
      */
     public static AnnotatedTypeMirror createType(TypeMirror type,
         AnnotatedTypeFactory atypeFactory, boolean isDeclaration) {
@@ -327,7 +324,6 @@ public abstract class AnnotatedTypeMirror {
      * Returns the actual annotation mirror used to annotate this type,
      * whose name equals the passed annotationName if one exists, null otherwise.
      *
-     * @param annotationName
      * @return the annotation mirror for annotationName
      */
     public AnnotationMirror getAnnotation(Name annotationName) {
@@ -339,7 +335,6 @@ public abstract class AnnotatedTypeMirror {
      * Returns the actual annotation mirror used to annotate this type,
      * whose name equals the string argument if one exists, null otherwise.
      *
-     * @param annotationStr
      * @return the annotation mirror for annotationStr
      */
     public AnnotationMirror getAnnotation(/*@Interned*/ String annotationStr) {

@@ -2,10 +2,7 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ConstructorReturnUtil;
@@ -168,8 +165,9 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             }
             // We need the original t with the implicit annotations
             AnnotatedTypeMirror t = f.getAnnotatedType(node.getExpression());
-            if (t instanceof AnnotatedDeclaredType || t instanceof AnnotatedArrayType)
+            if (t instanceof AnnotatedDeclaredType || t instanceof AnnotatedArrayType || t instanceof AnnotatedTypeVariable) {
                 return AnnotatedTypes.asMemberOf(f.types, f, t, elt).asUse();
+            }
         }
 
         return f.fromElement(elt);
