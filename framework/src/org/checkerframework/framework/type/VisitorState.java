@@ -65,8 +65,6 @@ public class VisitorState {
 
     /**
      * Sets the current path for the visitor.
-     *
-     * @param path
      */
     public void setPath(TreePath path) {
         this.path = path;

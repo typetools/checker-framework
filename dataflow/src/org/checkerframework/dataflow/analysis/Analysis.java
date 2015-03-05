@@ -175,8 +175,6 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     /**
      * Perform the actual analysis. Should only be called once after the object
      * has been created.
-     *
-     * @param cfg
      */
     public void performAnalysis(ControlFlowGraph cfg) {
         assert isRunning == false;

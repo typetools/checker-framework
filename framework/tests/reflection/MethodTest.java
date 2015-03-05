@@ -183,13 +183,13 @@ public class MethodTest {
         } catch (Exception ignore) {
         }
     }
-
+boolean flag = false;
     // Test lub of return types
     public void testLubReturnPass() {
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
             Method m;
-            if (c != null) {
+            if (flag) {
                 m = c.getMethod("getA", new Class[0]);
             } else {
                 m = c.getMethod("getB", new Class[0]);
@@ -202,7 +202,7 @@ public class MethodTest {
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
             Method m;
-            if (c != null) {
+            if (flag) {
                 m = c.getMethod("getA", new Class[0]);
             } else {
                 m = c.getMethod("getB", new Class[0]);
@@ -290,9 +290,6 @@ public void test(){
         try {
             Class<?> c = MethodTest.class;
             Method m = c.getMethod("convertSibling2ToSibling1", new Class[]{Integer.class});
-            // TODO: The required bottom type for the receiver of a static
-            // method might be overly conservative. 
-            //:: error: (argument.type.incompatible)
             @Sibling1 Object o = m.invoke(inst, sibling2);
         } catch (Exception ignore) {}
     }

@@ -113,7 +113,6 @@ public class FlowExpressionParseUtil {
      *            information about any receiver and arguments
      * @param path
      *            The current tree path.
-     * @throws FlowExpressionParseException
      */
     public static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
             FlowExpressionContext context, TreePath path)
@@ -125,7 +124,7 @@ public class FlowExpressionParseUtil {
             FlowExpressionContext context, TreePath path, boolean recursiveCall)
             throws FlowExpressionParseException {
         Receiver result = parse(s, context, path, true, true, true, true, true, true,
-                true, recursiveCall);
+                true, true, recursiveCall);
         return result;
     }
 
@@ -136,7 +135,8 @@ public class FlowExpressionParseUtil {
     private static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
             FlowExpressionContext context, TreePath path, boolean allowSelf,
             boolean allowIdentifier, boolean allowParameter, boolean allowDot,
-            boolean allowMethods, boolean allowArrays, boolean allowLiterals, boolean recursiveCall)
+            boolean allowMethods, boolean allowArrays, boolean allowLiterals,
+            boolean allowLocalVariables, boolean recursiveCall)
             throws FlowExpressionParseException {
         s = s.trim();
 
@@ -153,8 +153,8 @@ public class FlowExpressionParseUtil {
 
         Matcher itselfMatcher = itselfPattern.matcher(s);
         if (recursiveCall && itselfMatcher.matches()) {
-            // Only look for matches to 'itself' after a recursive call
-            // to give the opportunity to find an identifier named 'itself'
+            // Only translate 'itself' to an identifier after a recursive call
+            // to first give the opportunity to find an identifier actually named 'itself'
             s = path.getLeaf().toString();
         }
 
@@ -217,10 +217,11 @@ public class FlowExpressionParseUtil {
         } else if (identifierMatcher.matches() && allowIdentifier) {
             Resolver resolver = new Resolver(env);
             try {
-                // local variable
-                VariableElement varElem = resolver.findLocalVariable(s, path);
-                if (varElem != null) {
-                    return new LocalVariable(varElem);
+                if (allowLocalVariables) {
+                    VariableElement varElem = resolver.findLocalVariable(s, path);
+                    if (varElem != null) {
+                        return new LocalVariable(varElem);
+                    }
                 }
 
                 // field access
@@ -287,7 +288,8 @@ public class FlowExpressionParseUtil {
                     if (!recursiveCall && itselfMatcher.matches()) {
                         return parse(s, context, path, allowSelf,
                                 allowIdentifier, allowParameter, allowDot,
-                                allowMethods, allowArrays, allowLiterals, true);
+                                allowMethods, allowArrays, allowLiterals,
+                                allowLocalVariables, true);
                     }
 
                     throw constructParserException(s);
@@ -405,7 +407,7 @@ public class FlowExpressionParseUtil {
             // Parse the rest, with a new receiver.
             FlowExpressionContext newContext = context.changeReceiver(receiver);
             return parse(remainingString, newContext, path, false, true, false,
-                    true, true, false, false, true);
+                    true, true, false, false, false, true);
         } else {
             throw constructParserException(s);
         }

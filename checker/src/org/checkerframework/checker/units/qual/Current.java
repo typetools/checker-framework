@@ -6,6 +6,8 @@ import org.checkerframework.framework.qual.*;
 
 /**
  * Electric current.
+ *
+ * @checker_framework.manual #units-checker Units Checker
  */
 @TypeQualifier
 @SubtypeOf(UnknownUnits.class)

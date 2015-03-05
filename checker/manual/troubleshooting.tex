@@ -463,7 +463,7 @@ fix the problem by instead using a definition of \<@NonNull> that is a type
 annotation, such as the Checker Framework's annotations; often this only
 requires changing an \<import> statement.
 Alternately, if you wish to continue using the legacy annotations in
-declaration locations, see Section~\ref{running-on-a-java7-jvm}.
+declaration locations, see Section~\ref{declaration-annotations-for-java7}.
 
 
 \item
@@ -481,7 +481,7 @@ constant.  In particular, the type annotations shipped with the Checker
 Framework reference 
 \sunjavadoc{java/lang/annotation/ElementType.html\#TYPE\_USE}{ElementType.TYPE\_USE}.  You can use the Checker
 Framework, but still compile and run your code in a Java 6 or 7 JVM, by
-following the instructions in Section~\ref{running-on-a-java7-jvm}.
+following the instructions in Section~\ref{backward-compatibility}.
 
 If you ignore the error and run your code in a Java 6 or 7 JVM, then you will get a run-time error:
 
@@ -514,79 +514,25 @@ Add this .jar file to your build path.
 An error like this
 
 \begin{Verbatim}
-Unsupported major.minor version 51.0
+Unsupported major.minor version 52.0
 \end{Verbatim}
 
-means that you have compiled some files into the Java 7 format (version
-51.0), but you are trying to run them with Java 6.
-Likewise, ``Unsupported major.minor version 52.0''
 means that you have compiled some files into the Java 8 format (version
 52.0), but you are trying to run them with Java 7 or earlier.
-Run \<java -version> to
-determine the version of Java you are using and use a newer version,
-and/or use the \<-target>
-command-line option to \<javac> to specify the version of the class files
-that are created, such as \<javac -source 7 -target 7 ...>.
+Likewise, ``Unsupported major.minor version 51.0''
+means that you have compiled some files into the Java 7 format (version
+51.0), but you are trying to run them with Java 6 or earlier.
+Here are ways to solve the problem:
 
-
-
-%% Commented out because these are not very helpful in terms of helping
-%% a reader understand whether he/she is encountering the specific problem,
-%% and because the issue tracker is a better way to find out about current
-%% known problems.
-%
-% \subsection{Known problems in the framework\label{known-problems}}
-% 
-% \begin{itemize}
-% 
-% \item
-%   The framework may not parse annotations from skeleton files if the
-%   skeleton files are older than the classfiles.  Running \code{ant
-%     touch-jdk} solves this problem, by applying the 
-%   \code{touch} program to each distributed skeleton file.
-% 
-% % Mahmood will address.  -MDE 3/19/2009
-% \item The framework is missing a check for type argument subtyping in
-%   method invocations if the type arguments are inferred.
-% 
-% % Mahmood will address.  -MDE 3/19/2009
-% \item The checks for enclosed types are not yet fully tested.
-% 
-% \end{itemize}
-% 
-% \subsection{Known problems in the Nullness Checker}
-% 
-% \begin{itemize}
-% \item
-%   The Nullness Checker is often able to determine that a call to
-%   \code{Map.get()} will not return null.  This enables the checker to avoid
-%   issuing false positive warnings, in circumstances like the following.
-% 
-% \begin{Verbatim}
-%     @NonNull String value;
-%     if (myMap.containsKey(key)) {
-%       value = myMap.get(key);
-%     }
-%     for (String keyInMap : myMap.keySet()) {
-%         value = myMap.get(keyInMap);
-%     }
-% \end{Verbatim}
-% 
-%   The Nullness Checker can sometimes fail to issue a warning if the map is
-%   modified or re-assigned between the check of \code{containsKey} and the
-%   call to \code{get}.
-% 
-% % This description really needs an example of a case where the checker
-% % fails.  Right now, it is impossible for a reader to tell what the problem
-% % is or whether a particular piece of code triggers it.
-% % Do we have a test case?
-% 
-% 
-% % The solution is to merge flow with the Map.get heuristics.
-% % And to do forward instead of backward analysis.
-% 
-% 
-% \end{itemize}
+\begin{itemize}
+\item
+Use a newer JVM (run \<java -version> to
+determine the version you are using)
+\item
+Use the Checker Framework to type-check your code, then afterword produce a
+classfile that targets an earlier JVM by supplying arguments such as
+\<javac -source 7 -target 7 ...>.
+\end{itemize}
 
 
 \section{How to report problems (bug reporting)\label{reporting-bugs}}
@@ -894,7 +840,7 @@ Run \code{make} in the \code{checker/manual} directory to build both the PDF and
 
 
 
-\section{Learning more\label{learning-more}}
+\section{Publications\label{publications}\label{learning-more}}
 
 Here are two technical papers about the Checker Framework itself:
 
@@ -904,17 +850,19 @@ Here are two technical papers about the Checker Framework itself:
 (ISSTA 2008, \myurl{http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008.pdf})
 describes the design and implementation of the Checker Framework.
 The paper also describes case
-studies in which each of the checkers found
-previously-unknown errors in real software
-and yielded new insights about type systems.
+studies in which the Nullness, Interning, Javari, and IGJ Checkers found
+previously-unknown errors in real software.
+The case studies also yielded new insights about type systems.
 
 \item
 ``Building and using pluggable
 type-checkers''~\cite{DietlDEMS2011}
 (ICSE 2011, \myurl{http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011.pdf})
 discusses further experience with the Checker Framework, increasing the
-number of lines of verified code to 3 million.  It also evaluates the ease
-of pluggable type-checking with the Checker Framework:  The type-checkers
+number of lines of verified code to 3 million.  The case studies are of the
+Fake Enum, Signature String, Interning, and Nullness Checkers.
+The paper also evaluates the ease
+of pluggable type-checking with the Checker Framework:  type-checkers
 were easy to write, easy for novices to use, and effective in finding
 errors.
 \end{itemize}
@@ -923,6 +871,19 @@ Here are some papers about type systems that were implemented and evaluated
 using the Checker Framework:
 
 \begin{description}
+\item[Nullness (Chapter~\ref{nullness-checker})]
+See the two papers about the Checker Framework, described above.
+
+\item[Rawness initialization (Section~\ref{initialization-rawness-checker})]
+``Inference of field initialization'' (ICSE 2011, \myurl{http://homes.cs.washington.edu/~mernst/pubs/initialization-icse2011-abstract.html})
+describes inference for the Rawness Initialization Checker.
+
+\item[Interning (Chapter~\ref{interning-checker})]
+See the two papers about the Checker Framework, described above.
+
+\item[Fake enumerations (Chapter~\ref{fenum-checker})]
+See the ICSE 2011 paper about the Checker Framework, described above.
+
 \item[Regular expressions (Chapter~\ref{regex-checker})]
 ``A type system for regular expressions''~\cite{SpishakDE2012} (FTfJP 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/regex-types-ftfjp2012-abstract.html})
             describes the Regex Checker.
@@ -931,17 +892,24 @@ using the Checker Framework:
 ``A type system for format strings''~\cite{WeitzKSE2014} (ISSTA 2014, \myurl{http://homes.cs.washington.edu/~mernst/pubs/format-string-issta2014-abstract.html})
             describes the Format String Checker.
 
+\item[Signature strings (Chapter~\ref{signature-checker})]
+See the ICSE 2011 paper about the Checker Framework, described above.
+
 \item[GUI Effects (Chapter~\ref{guieffect-checker})]
 ``JavaUI: Effects for controlling UI object access''~\cite{GordonDEG2013} (ECOOP 2013, \myurl{http://homes.cs.washington.edu/~mernst/pubs/gui-thread-ecoop2013-abstract.html})
             describes the GUI Effect Checker.
 
-\item[Rawness initialization (Section~\ref{initialization-rawness-checker})]
-``Inference of field initialization'' (ICSE 2011, \myurl{http://homes.cs.washington.edu/~mernst/pubs/initialization-icse2011-abstract.html})
-describes inference for the Rawness Initialization Checker.
-
 \item
 ``Verification games: Making verification fun'' (FTfJP 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/verigames-ftfjp2012-abstract.html})
             describes a general inference approach that, at the time, had only been implemented for the Nullness Checker (Section~\ref{nullness-checker}).
+
+\item[IGJ and OIGJ immutability (Chapter~\ref{igj-checker})]
+``Object and reference immutability using Java generics''~\cite{ZibinPAAKE2007} (ESEC/FSE 2007, \myurl{http://homes.cs.washington.edu/~mernst/pubs/immutability-generics-fse2007-abstract.html})
+and
+``Ownership and immutability in generic Java''~\cite{ZibinPLAE2010} (OOPSLA 2010, \myurl{http://homes.cs.washington.edu/~mernst/pubs/ownership-immutability-oopsla2010-abstract.html})
+            describe the IGJ and OIGJ immutability type systems.
+For further case studies, also see the ISSTA 2008 paper about the Checker
+Framework, described above.
 
 \item[Javari immutability (Chapter~\ref{javari-checker})]
 ``Javari: Adding reference immutability to Java''~\cite{TschantzE2005} (OOPSLA 2005, \myurl{http://homes.cs.washington.edu/~mernst/pubs/ref-immutability-oopsla2005-abstract.html})
@@ -950,28 +918,20 @@ For inference, see
 ``Inference of reference immutability''~\cite{QuinonezTE2008} (ECOOP 2008, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-ecoop2008-abstract.html})
 and
 ``Parameter reference immutability: Formal definition, inference tool, and comparison''~\cite{ArtziQKE2009} (J.ASE 2009, \myurl{http://homes.cs.washington.edu/~mernst/pubs/mutability-jase2009-abstract.html}).
+For further case studies, also see the ISSTA 2008 paper about the Checker
+Framework, described above.
 
-\item[IGJ and OIGJ immutability (Chapter~\ref{igj-checker})]
-``Object and reference immutability using Java generics''~\cite{ZibinPAAKE2007} (ESEC/FSE 2007, \myurl{http://homes.cs.washington.edu/~mernst/pubs/immutability-generics-fse2007-abstract.html})
-and
-``Ownership and immutability in generic Java''~\cite{ZibinPLAE2010} (OOPSLA 2010, \myurl{http://homes.cs.washington.edu/~mernst/pubs/ownership-immutability-oopsla2010-abstract.html})
-            describe the IGJ and OIGJ immutability type systems.
+\item[Thread locality (Section~\ref{loci-thread-locality-checker})]
+``Loci: Simple thread-locality for Java''~\cite{WrigstadPMZV2009} (ECOOP 2009, 
+\myurl{http://janvitek.github.io/pubs/ecoop09.pdf})
 
-\item[\href{https://ece.uwaterloo.ca/~wdietl/ownership/}{Generic Universe Types}]
+\item[\href{https://ece.uwaterloo.ca/~wdietl/ownership/}{Generic Universe
+    Types} (Section~\ref{gut-checker})]
 ``Tunable static inference for Generic Universe Types'' (ECOOP 2011, \myurl{http://homes.cs.washington.edu/~mernst/pubs/tunable-typeinf-ecoop2011-abstract.html})
             describes inference for the Generic Universe Types type system.
 
 Another implementation of Universe Types and \href{http://www.cs.rpi.edu/~huangw5/cf-inference/}{ownership types} is  described in
 ``Inference and checking of object ownership''~\cite{HuangDME2012} (ECOOP 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-ownership-ecoop2012-abstract.html}).
-
-\item[ReIm immutability]
-% TODO:  (Section~\ref{reim-checker})
-``ReIm \& ReImInfer: Checking and inference of reference immutability and method purity''~\cite{HuangMDE2012} (OOPSLA 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-oopsla2012-abstract.html})
-            describes the ReIm immutability type system.
-
-\item[Thread locality (Section~\ref{loci-thread-locality-checker})]
-``Loci: Simple thread-locality for Java''~\cite{WrigstadPMZV2009} (ECOOP 2009, 
-\myurl{http://janvitek.github.io/pubs/ecoop09.pdf})
 
 \item[Approximate data (Section~\ref{enerj-checker})]
 ``EnerJ: Approximate Data Types for Safe and General Low-Power Computation''~\cite{SampsonDFGCG2011} (PLDI 2011, \myurl{http://homes.cs.washington.edu/~asampson/media/papers/enerj-pldi2011.pdf})
@@ -980,7 +940,10 @@ Another implementation of Universe Types and \href{http://www.cs.rpi.edu/~huangw
 ``Collaborative Verification of Information Flow
 for a High-Assurance App Store''~\cite{ErnstJMDPRKBBHVW2014} (CCS 2014, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infoflow-ccs2014.pdf}) describes the SPARTA information flow type system.
 
-
+\item[ReIm immutability]
+% TODO:  (Section~\ref{reim-checker})
+``ReIm \& ReImInfer: Checking and inference of reference immutability and method purity''~\cite{HuangMDE2012} (OOPSLA 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-oopsla2012-abstract.html})
+            describes the ReIm immutability type system.
 
 \end{description}
 
@@ -991,8 +954,8 @@ Most educational use of the Checker
 Framework is never published, and most commercial use of the Checker
 Framework is never discussed publicly.
 
-(If you know of a paper or other use that is not listed here, please inform the Checker
-Framework developers.)
+(If you know of a paper or other use that is not listed here, please inform 
+the Checker Framework developers so we can add it.)
 
 
 \section{Comparison to other tools\label{other-tools}}

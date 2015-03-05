@@ -11,6 +11,8 @@ import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Units of temperature.
+ *
+ * @checker_framework.manual #units-checker Units Checker
  */
 @TypeQualifier
 @SubtypeOf(UnknownUnits.class)

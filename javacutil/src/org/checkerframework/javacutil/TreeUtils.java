@@ -322,7 +322,6 @@ public final class TreeUtils {
      *   <li>VariableTree</li>
      * </ul>
      *
-     * @param treePath
      * @return  the assignment context as described.
      */
     public static Tree getAssignmentContext(final TreePath treePath) {
@@ -345,7 +344,6 @@ public final class TreeUtils {
     /**
      * Gets the element for a class corresponding to a declaration.
      *
-     * @param node
      * @return the element for the given class
      */
     public static final TypeElement elementFromDeclaration(ClassTree node) {
@@ -356,7 +354,6 @@ public final class TreeUtils {
     /**
      * Gets the element for a method corresponding to a declaration.
      *
-     * @param node
      * @return the element for the given method
      */
     public static final ExecutableElement elementFromDeclaration(MethodTree node) {
@@ -367,7 +364,6 @@ public final class TreeUtils {
     /**
      * Gets the element for a variable corresponding to its declaration.
      *
-     * @param node
      * @return the element for the given variable
      */
     public static final VariableElement elementFromDeclaration(VariableTree node) {
@@ -687,10 +683,8 @@ public final class TreeUtils {
      * Determine whether the given expression is either "this" or an outer
      * "C.this".
      *
+     * <p>
      * TODO: Should this also handle "super"?
-     *
-     * @param tree
-     * @return
      */
     public static final boolean isExplicitThisDereference(ExpressionTree tree) {
         if (tree.getKind() == Tree.Kind.IDENTIFIER
@@ -709,6 +703,23 @@ public final class TreeUtils {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Determine whether <code>tree</code> is a class literal, such
+     * as
+     *
+     * <pre>
+     *   <em>Object</em> . <em>class</em>
+     * </pre>
+     * 
+     * @return true iff if tree is a class literal
+     */
+    public static boolean isClassLiteral(Tree tree) {
+        if (tree.getKind() != Tree.Kind.MEMBER_SELECT) {
+            return false;
+        }
+        return "class".equals(((MemberSelectTree) tree).getIdentifier().toString());
     }
 
     /**

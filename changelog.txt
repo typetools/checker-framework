@@ -1,6 +1,21 @@
-Version 1.8.10, 1 January 2015
+Version 1.8.12, 31 March 2015
 
-Fixed issues: 37, 127, 350, 364, 365, 387, 392, 395
+Reflection resolution:
+If you supply the -AresolveReflection command-line option, the Checker
+Framework attempts to resolve reflection.  This will reduce the number of false
+positive warnings caused by reflection.
+
+----------------------------------------------------------------------
+
+Version 1.8.11, 2 March 2015
+
+Fixed issues: 396, 400, 401.
+
+----------------------------------------------------------------------
+
+Version 1.8.10, 30 January 2015
+
+Fixed issues: 37, 127, 350, 364, 365, 387, 392, 395.
 
 ----------------------------------------------------------------------
 Version 1.8.9, 19 December 2014

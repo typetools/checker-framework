@@ -2,28 +2,20 @@
 # Make will silently continue if that file does not exist.
 -include Makefile.user
 
-DIA?=dia
+PDFFILES = $(patsubst %.svg,%.pdf,$(wildcard *.svg))
 
-EPSFILES = fenum.eps igj.eps initialization.eps interning.eps javari.eps nullness.eps nullness-and-rawness.eps rawness.eps regex.eps signature-types.eps aliasing.eps formatter-hierarchy.eps formatter-categories.eps
-PDFFILES = fenum.pdf igj.pdf initialization.pdf interning.pdf javari.pdf nullness.pdf nullness-and-rawness.pdf rawness.pdf regex.pdf signature-types.pdf aliasing.pdf formatter-hierarchy.pdf formatter-categories.pdf value-subtyping.pdf
-
-all: ${EPSFILES} ${PDFFILES} png-clean svg-copy
-
-png-clean:
-	rm -f *.png
+all: ${PDFFILES} clean-obsolete-files svg-copy
 
 svg-copy:
 	cp -pf *.svg ..
 
-%.eps : %.svg
-	$(DIA) -t eps $<
+%.pdf : %.svg
+	rsvg-convert -f pdf -o $@ $<
 
-%.pdf : %.eps
-	epstopdf $<
+clean: clean-obsolete-files
+	@\rm -f ${PDFFILES}
 
-value-subtyping.eps:	
+clean-obsolete-files:
+	@\rm -f *.png
+	@\rm -f *.eps
 
-clean:
-	@\rm ${EPSFILES}
-	@\rm ${PDFFILES}
-	rm -f *.png
