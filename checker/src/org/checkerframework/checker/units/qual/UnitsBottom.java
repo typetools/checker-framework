@@ -13,6 +13,8 @@ import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * UnitsBottom is the bottom type of the type hierarchy.
+ *
+ * @checker_framework.manual #units-checker Units Checker
  */
 @TypeQualifier
 @SubtypeOf({}) // needs to be done programmatically

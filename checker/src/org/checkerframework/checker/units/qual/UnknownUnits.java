@@ -13,6 +13,8 @@ import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * UnknownUnits is the top type of the type hierarchy.
+ *
+ * @checker_framework.manual #units-checker Units Checker
  */
 @TypeQualifier
 @InvisibleQualifier

@@ -20,6 +20,7 @@ import com.sun.source.tree.VariableTree;
  * rawness as a type-system for tracking initialization, though FBC is
  * preferred.
  *
+ * @checker_framework.manual #initialization-checker Initialization Checker
  * @author Stefan Heule
  */
 public abstract class InitializationChecker extends BaseTypeChecker {

@@ -15,9 +15,11 @@ import com.sun.source.tree.MethodInvocationTree;
  * Interface for reflection resolvers that handle reflective method calls such
  * as {@link Method#invoke(Object, Object...)} or
  * {@link Constructor#newInstance(Object...)}.
- * 
+ *
+ * @checker_framework.manual #reflection-resolution Reflection resolution
+ *
  * @author rjust
- * 
+ *
  */
 public interface ReflectionResolver {
     /**
@@ -26,21 +28,20 @@ public interface ReflectionResolver {
     public static final String INIT = "<init>";
 
     /**
-     * Determines whether reflection resolution has been enabled and whether the
-     * given tree represents a reflective method or constructor call and
-     * therefore should be resolved.
-     * 
-     * @return <code>true</code> iff reflection should be resolved,
+     * Determines whether the given tree represents a reflective method or
+     * constructor call.
+     *
+     * @return <code>true</code> iff tree is a reflective method invocation,
      *         <code>false</code> otherwise
      */
-    public boolean shouldResolveReflection(MethodInvocationTree tree);
+    public boolean isReflectiveMethodInvocation(MethodInvocationTree tree);
 
     /**
      * Resolve reflection and return the result of
      * <code>factory.methodFromUse</code> for the actual, resolved method or
      * constructor call. If the reflective method cannot be resolved the
      * original result (<code>origResult</code>) is returned.
-     * 
+     *
      * @param factory
      *            the currently used AnnotatedTypeFactory
      * @param tree

@@ -8,6 +8,9 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.SuppressWarningsKeys;
 
+/**
+ * <!-- TODO: reinstate once manual chapter exists: @checker_framework.manual #oigj-checker OIGJ Checker -->
+ */
 @TypeQualifiers({ Dominator.class, Modifier.class, World.class, O.class, OIGJMutabilityBottom.class })
 @SuppressWarningsKeys({ "ownership", "oigj" })
 public class OwnershipSubchecker extends BaseTypeChecker {

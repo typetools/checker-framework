@@ -6,6 +6,8 @@ import org.checkerframework.framework.qual.*;
 
 /**
  * A second (1/60 of a minute).
+ *
+ * @checker_framework.manual #units-checker Units Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

@@ -12,6 +12,8 @@ import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Units of speed.
+ *
+ * @checker_framework.manual #units-checker Units Checker
  */
 @TypeQualifier
 @SubtypeOf(UnknownUnits.class)

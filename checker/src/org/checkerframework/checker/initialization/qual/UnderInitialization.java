@@ -77,7 +77,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * </code>
  * </pre>
  *
- * @checker_framework.manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #initialization-checker Initialization Checker
  */
 @TypeQualifier
 @SubtypeOf(UnknownInitialization.class)
