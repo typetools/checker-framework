@@ -102,7 +102,6 @@ public final class JavaParser {
      * @param encoding encoding of the source code
      * @return CompilationUnit representing the Java source code
      * @throws ParseException if the source code has parser errors
-     * @throws IOException 
      */
     public static IndexUnit parse(File file, String encoding) throws ParseException, IOException {
         FileInputStream in = new FileInputStream(file);
@@ -119,7 +118,6 @@ public final class JavaParser {
      * @param file {@link File} containing Java source code
      * @return CompilationUnit representing the Java source code
      * @throws ParseException if the source code has parser errors
-     * @throws IOException 
      */
     public static IndexUnit parse(File file) throws ParseException, IOException {
         return parse(file, null);

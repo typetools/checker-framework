@@ -9,6 +9,9 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.SuppressWarningsKeys;
 
+/**
+ * <!-- TODO: reinstate once manual chapter exists: @checker_framework.manual #oigj-checker OIGJ Checker -->
+ */
 @TypeQualifiers({ ReadOnly.class, Mutable.class, Immutable.class, I.class,
     AssignsFields.class, OIGJMutabilityBottom.class })
 @SuppressWarningsKeys({ "immutability", "oigj" })

@@ -49,9 +49,9 @@ import com.sun.tools.javac.code.Symbol;
  * the current class can safely be considered initialized.
  * <li>After a method call with a postcondition that ensures a field to be
  * non-null, that field can safely be considered initialized (this is done in
- * {@link InitializationStore#insertValue(Receiver, CFAbstractValue)}).
+ * {@link InitializationStore#insertValue(FlowExpressions.Receiver, CFAbstractValue)}).
  * <li>All non-null fields with an initializer can be considered initialized
- * (this is done in {@link InitializationStore#insertValue(Receiver, CFAbstractValue)}).
+ * (this is done in {@link InitializationStore#insertValue(FlowExpressions.Receiver, CFAbstractValue)}).
  * <li>After the call to a super constructor ("super()" call), all non-null
  * fields of the super class can safely be considered initialized.
  * </ol>

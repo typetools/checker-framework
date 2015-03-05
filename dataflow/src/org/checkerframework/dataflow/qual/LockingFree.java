@@ -7,10 +7,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Behaves identically to @SideEffectFree when running the Lock Checker.
- * Ignored by all other checkers.
+ * The method neither aquires nor releases locks -- nor do any of the methods that it calls.
  *
- * @see SideEffectFree
+ * @checker_framework.manual #locking-checker Locking Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

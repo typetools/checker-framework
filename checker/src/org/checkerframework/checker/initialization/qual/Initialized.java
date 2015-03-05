@@ -25,7 +25,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * reading fields from such objects is fully safe and yields objects of the
  * correct type.
  *
- * @checker_framework.manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #initialization-checker Initialization Checker
  */
 @TypeQualifier
 @SubtypeOf(UnknownInitialization.class)

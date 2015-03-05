@@ -103,7 +103,6 @@ public class ElementUtils {
      * Returns true if the element is a static element: whether it is a static
      * field, static method, or static class
      *
-     * @param element
      * @return true if element is static
      */
     public static boolean isStatic(Element element) {
@@ -114,7 +113,6 @@ public class ElementUtils {
      * Returns true if the element is a final element: a final field, final
      * method, or final class
      *
-     * @param element
      * @return true if the element is final
      */
     public static boolean isFinal(Element element) {
@@ -124,7 +122,6 @@ public class ElementUtils {
     /**
      * Returns true if the element is a effectively final element.
      *
-     * @param element
      * @return true if the element is effectively final
      */
     public static boolean isEffectivelyFinal(Element element) {
@@ -141,7 +138,6 @@ public class ElementUtils {
      * returns the return type of a method element, the class type of a
      * constructor, or simply the type mirror of the element itself.
      *
-     * @param element
      * @return  the type for the element used as a value
      */
     public static TypeMirror getType(Element element) {

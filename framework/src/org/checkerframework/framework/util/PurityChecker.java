@@ -6,6 +6,8 @@ import org.checkerframework.framework.qual.Unqualified;
 
 /**
  * Perform purity checking only.
+ *
+ * @checker_framework.manual #type-refinement-purity Side effects, determinism, purity, and flow-sensitive analysis
  */
 @TypeQualifiers(Unqualified.class)
 public class PurityChecker extends BaseTypeChecker {

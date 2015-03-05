@@ -200,7 +200,8 @@
              dependencies, change the Javadoc dependencies to keep
              them in sync (and vice versa). -->
         <javadoc sourcepath="${src}:${checker.loc}/${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}" destdir="${api.doc}"
-                 failonerror="true"
+                 additionalParam="-Xdoclint:all,-missing"
+                 failonerror="true" failonwarning="true"
                  executable="${javadoc.bin}"
                  classpath="${build}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${javac.lib}:${javadoc.lib}:${junit.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"
@@ -396,6 +397,20 @@
             description="Run tests for the Polyall Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.PolyAllTest"/>
+        </antcall>
+    </target>
+
+    <target name="classval-tests" depends="jar,build-tests"
+            description="Run tests for the ClassVal Checker ">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.ClassValTest"/>
+        </antcall>
+    </target>
+
+    <target name="methodval-tests" depends="jar,build-tests"
+            description="Run tests for the MethodVal Checker ">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.MethodValTest"/>
         </antcall>
     </target>
 
