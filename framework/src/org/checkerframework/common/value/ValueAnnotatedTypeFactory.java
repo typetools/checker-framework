@@ -468,7 +468,9 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
     @Override protected QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defaults = super.createQualifierDefaults();
         defaults.addAbsoluteDefault(UNKNOWNVAL, DefaultLocation.OTHERWISE);
+        defaults.addAbsoluteDefault(BOTTOMVAL, DefaultLocation.LOWER_BOUNDS);
 
+        
         return defaults;
     }
 
