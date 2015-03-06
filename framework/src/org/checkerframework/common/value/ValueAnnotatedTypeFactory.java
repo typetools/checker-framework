@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -708,100 +709,52 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public Void visitAssignment(AssignmentTree tree,
-                AnnotatedTypeMirror type) {
-            super.visitAssignment(tree, type);
-            return null;
-
-        }
-
-        @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             if (isClassCovered(type)) {
-                // Handle Boolean Literal
-                if (tree.getKind() == Tree.Kind.BOOLEAN_LITERAL) {
-                    HashSet<Boolean> values = new HashSet<Boolean>();
-                    values.add((Boolean) tree.getValue());
-                    AnnotationMirror newQual = createAnnotation(
-                            "org.checkerframework.common.value.qual.BoolVal",
-                            values);
-                    type.replaceAnnotation(newQual);
-
+                switch(tree.getKind()){
+                case BOOLEAN_LITERAL:
+                    AnnotationMirror boolAnno = createBooleanAnnotationMirror(Collections
+                            .singletonList((Boolean) tree.getValue()));
+                    type.replaceAnnotation(boolAnno);
+                    return null;
+                    
+                case CHAR_LITERAL:
+                    AnnotationMirror charAnno = createCharAnnotation(Collections
+                            .singletonList((Character) tree.getValue()));
+                    type.replaceAnnotation(charAnno);
+                    return null;
+                    
+                case DOUBLE_LITERAL:
+                    AnnotationMirror doubleAnno = createNumberAnnotationMirror(Collections
+                            .<Number>singletonList((Double) tree.getValue()));
+                    type.replaceAnnotation(doubleAnno);
+                    return null;
+                    
+                case FLOAT_LITERAL:
+                    AnnotationMirror floatAnno = createNumberAnnotationMirror(Collections
+                            .<Number>singletonList((Float) tree.getValue()));
+                    type.replaceAnnotation(floatAnno);
+                    return null;
+                case INT_LITERAL:
+                    AnnotationMirror intAnno = createNumberAnnotationMirror(Collections
+                            .<Number>singletonList((Integer) tree.getValue()));
+                    type.replaceAnnotation(intAnno);
+                    return null;
+                case LONG_LITERAL:
+                    AnnotationMirror longAnno = createNumberAnnotationMirror(Collections
+                            .<Number>singletonList((Long) tree.getValue()));
+                    type.replaceAnnotation(longAnno);
+                    return null;
+                case STRING_LITERAL:
+                    AnnotationMirror stringAnno = createStringValAnnotationMirror(Collections
+                            .singletonList((String) tree.getValue()));
+                    type.replaceAnnotation(stringAnno);
+                    return null;
+                default:
                     return null;
                 }
 
-                // Handle Char Literal
-                else if (tree.getKind() == Tree.Kind.CHAR_LITERAL) {
-                    HashSet<Long> values = new HashSet<Long>();
-                    values.add((long) ((Character) tree.getValue()).charValue());
-                    AnnotationMirror newQual = createAnnotation(
-                            "org.checkerframework.common.value.qual.IntVal",
-                            values);
-                    type.replaceAnnotation(newQual);
-
-                    return null;
-                }
-
-                // Handle Double Literal
-                else if (tree.getKind() == Tree.Kind.DOUBLE_LITERAL) {
-                    HashSet<Double> values = new HashSet<Double>();
-                    values.add((Double) tree.getValue());
-                    AnnotationMirror newQual = createAnnotation(
-                            "org.checkerframework.common.value.qual.DoubleVal",
-                            values);
-                    type.replaceAnnotation(newQual);
-
-                    return null;
-                }
-                // Handle Float Literal
-                else if (tree.getKind() == Tree.Kind.FLOAT_LITERAL) {
-                    HashSet<Double> values = new HashSet<Double>();
-                    values.add(new Double((Float) tree.getValue()));
-                    AnnotationMirror newQual = createAnnotation(
-                            "org.checkerframework.common.value.qual.DoubleVal",
-                            values);
-                    type.replaceAnnotation(newQual);
-
-                    return null;
-                }
-
-                // Handle Integer Literal
-                else if (tree.getKind() == Tree.Kind.INT_LITERAL) {
-                    AnnotationMirror newQual;
-                    HashSet<Long> values = new HashSet<Long>();
-                    values.add(new Long((Integer) tree.getValue()));
-                    newQual = createAnnotation(
-                            "org.checkerframework.common.value.qual.IntVal",
-                            values);
-                    // }
-                    type.replaceAnnotation(newQual);
-                    return null;
-                }
-                // Handle Long Literal
-                else if (tree.getKind() == Tree.Kind.LONG_LITERAL) {
-                    HashSet<Long> values = new HashSet<Long>();
-                    values.add((Long) tree.getValue());
-                    AnnotationMirror newQual = createAnnotation(
-                            "org.checkerframework.common.value.qual.IntVal",
-                            values);
-                    type.replaceAnnotation(newQual);
-
-                    return null;
-                }
-
-                // Handle a String Literal
-                else if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
-                    HashSet<String> values = new HashSet<String>();
-                    values.add((String) tree.getValue());
-                    AnnotationMirror newQual = createAnnotation(
-                            "org.checkerframework.common.value.qual.StringVal",
-                            values);
-                    type.replaceAnnotation(newQual);
-
-                    return null;
-                }
             }
-            // super.visitLiteral(tree, type);
             return null;
         }
 
@@ -2038,5 +1991,86 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 BoolVal.class);
         builder.setValue("value", values);
         return builder.build();
+    }
+    public AnnotationMirror createCharAnnotation(List<Character> values) {
+        List<Long> longValues = new ArrayList<>();
+        for(char value: values){
+            longValues.add((long) value);
+        }
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
+                IntVal.class);
+        builder.setValue("value", longValues);
+        return builder.build();
+    }
+    private AnnotationMirror createStringValAnnotationMirror(List<String> values) {
+        if (values.isEmpty()) {
+            return UNKNOWNVAL;
+        }
+        return createStringAnnotation(values);
+    }
+
+    private AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
+        if (values.isEmpty()) {
+            return UNKNOWNVAL;
+        }
+        Number first = values.get(0);
+        if (first instanceof Integer || first instanceof Short
+                || first instanceof Long) {
+            List<Long> intValues = new ArrayList<>();
+            for (Number number : values) {
+                intValues.add(number.longValue());
+            }
+            return createIntValAnnotation(intValues);
+        }
+        if (first instanceof Double || first instanceof Float) {
+            List<Double> intValues = new ArrayList<>();
+            for (Number number : values) {
+                intValues.add(number.doubleValue());
+            }
+            return createDoubleValAnnotation(intValues);
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    private AnnotationMirror createBooleanAnnotationMirror(List<Boolean> values) {
+        if (values.isEmpty()) {
+            return UNKNOWNVAL;
+        }
+        return createBooleanAnnotation(values);
+
+    }
+    
+    public static List<Character> getCharValues(AnnotationMirror intAnno) {
+        if (intAnno != null) {
+            List<Long> intValues = AnnotationUtils.getElementValueArray(
+                    intAnno, "value", Long.class, true);
+            List<Character> charValues = new ArrayList<Character>();
+            for (Long i : intValues) {
+                charValues.add((char) i.intValue());
+            }
+            return charValues;
+        }
+        return new ArrayList<>();
+    }
+    
+    public static List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
+        if (boolAnno != null) {
+            List<Boolean> boolValues = AnnotationUtils.getElementValueArray(
+                    boolAnno, "value", Boolean.class, true);
+            Set<Boolean> boolSet = new TreeSet<>(boolValues);
+            if (boolSet.size() > 1) {
+                // boolSet={true,false};
+                return new ArrayList<>();
+            }
+            if (boolSet.size() == 0) {
+                // boolSet={};
+                return new ArrayList<>();
+            }
+            if (boolSet.size() == 1) {
+                // boolSet={true} or boolSet={false}
+                return new ArrayList<>(boolSet);
+            }
+        }
+        return new ArrayList<>();
     }
 }
