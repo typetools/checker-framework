@@ -3,8 +3,6 @@ package org.checkerframework.common.value;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -58,6 +56,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 
 import org.checkerframework.javacutil.AnnotationUtils;
+
 
 public class ValueTransfer extends CFTransfer {
     AnnotatedTypeFactory atypefactory;
@@ -116,40 +115,14 @@ public TransferResult<CFValue, CFStore> visitTernaryExpression(
             TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         AnnotationMirror intAnno = value.getType().getAnnotation(BoolVal.class);
-        if (intAnno != null) {
-            List<Boolean> boolValues = AnnotationUtils.getElementValueArray(
-                    intAnno, "value", Boolean.class, true);
-            Set<Boolean> boolSet = new TreeSet<>(boolValues);
-            if (boolSet.size() > 1) {
-                // boolSet={true,false};
-                return new ArrayList<>();
-            }
-            if (boolSet.size() == 0) {
-                // boolSet={};
-                return new ArrayList<>();
-            }
-            if (boolSet.size() == 1) {
-                // boolSet={true} or boolSet={false}
-                return new ArrayList<>(boolSet);
-            }
-        }
-        return new ArrayList<>();
+        return ValueAnnotatedTypeFactory.getBooleanValues(intAnno);
     }
 
     private List<Character> getCharValues(Node subNode,
             TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         AnnotationMirror intAnno = value.getType().getAnnotation(IntVal.class);
-        if (intAnno != null) {
-            List<Long> intValues = AnnotationUtils.getElementValueArray(
-                    intAnno, "value", Long.class, true);
-            List<Character> charValues = new ArrayList<Character>();
-            for (Long i : intValues) {
-                charValues.add((char) i.intValue());
-            }
-            return charValues;
-        }
-        return new ArrayList<>();
+        return ValueAnnotatedTypeFactory.getCharValues(intAnno);
     }
 
     private List<? extends Number> getNumericalValues(Node subNode,
