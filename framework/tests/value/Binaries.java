@@ -1,7 +1,22 @@
 import org.checkerframework.common.value.qual.*;
+import java.util.BitSet;
+
 
 class Binaries {
+    private BitSet bitmap;
 
+    public void test() {
+        int length = bitmap.length();
+        for (int i = 0, t = 0; i < length; i++) {
+                t |= (bitmap.get(i) ? (1 << (7 - i % 8)) : 0);
+                if (i % 8 == 7 || i == length - 1) {
+                        write(t);
+                        t = 0;
+                }
+        }
+    }
+
+    void write(int t){}
     public void add() {
         int a = 1;
         if (true) {
@@ -124,12 +139,14 @@ class Binaries {
 
     }
 
+    public boolean flag = true;
     public void and() {
         boolean a = true;
-        if (true) {
+        if (flag) {
             a = false;
         }
-        @BoolVal({ true, false }) boolean b = a & true;
+        //:: error: (assignment.type.incompatible)
+        @BoolVal({ true }) boolean b = a & true;
 
         int c = 4;
         if (true) {
@@ -151,7 +168,9 @@ class Binaries {
         if (true) {
             a = false;
         }
-        @BoolVal({ true, false }) boolean b = a | true;
+        //TODO: we could detect this case
+        //:: error: (assignment.type.incompatible)
+        @BoolVal({ true }) boolean b = a | true;
 
         int c = 4;
         if (true) {
@@ -172,7 +191,8 @@ class Binaries {
         if (true) {
             a = false;
         }
-        @BoolVal({ true, false }) boolean b = a ^ true;
+        //:: error: (assignment.type.incompatible)
+        @BoolVal({ true }) boolean b = a ^ true;
 
         int c = 4;
         if (true) {
@@ -255,6 +275,36 @@ class Binaries {
 
     public void compareWithNull(){
         String s = "1";
-        boolean b = (s != null);
+        //TODO
+        //:: error: (assignment.type.incompatible)
+    @BoolVal(true) boolean b = (s != null);
     }
+   
+    public void conditionalComparisions(){
+        @BoolVal(true) boolean a1 = true || false;
+        @BoolVal(true) boolean a2 = true || true;
+        @BoolVal(false) boolean a3 = false || false;
+        @BoolVal(true) boolean a4 = false || true;
+        
+        @BoolVal(false) boolean a5 = true && false;
+        @BoolVal(true) boolean a6 = true && true;
+        @BoolVal(false) boolean a7 = false && false;
+        @BoolVal(false) boolean a8 = false && true;
+        
+        boolean unknown = flag?true:false;
+        @BoolVal(true) boolean a9 = true || unknown;
+        @BoolVal(true) boolean a11 = unknown || true;
+        //:: error: (assignment.type.incompatible)
+        @BoolVal(false) boolean a12 = unknown || false;
+        //:: error: (assignment.type.incompatible)
+        @BoolVal(true) boolean a13 = false || unknown;
+        
+        //:: error: (assignment.type.incompatible)
+        @BoolVal(true) boolean a14 = true && unknown;
+        //:: error: (assignment.type.incompatible)
+        @BoolVal(true) boolean a15 = unknown && true;
+        @BoolVal(false) boolean a16 = unknown && false;
+        @BoolVal(false) boolean a17 = false && unknown;
+    }
+    
 }

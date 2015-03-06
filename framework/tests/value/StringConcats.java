@@ -2,12 +2,9 @@ import org.checkerframework.common.value.qual.StringVal;
 
 class Test{
     void stringConcat(){
-        //TODO: the null literal should be interperted as @StringVal("null") in string concats.
-        //:: error: (assignment.type.incompatible)
         @StringVal("helloa11.01.020truenull2626")  String everything = "hello"+'a'+1+1.0+1.0f+20L+true+null+0x1a+0b11010;
 
        @StringVal("true") String bool = ""+true;
-       //:: error: (assignment.type.incompatible)
        @StringVal("null") String nullV= ""+null;
        @StringVal("1") String intL = ""+1;
        @StringVal("$") String charL = ""+'$';
