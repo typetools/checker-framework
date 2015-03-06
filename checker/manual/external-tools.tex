@@ -1,0 +1,608 @@
+\htmlhr
+\chapter{Integration with external tools\label{external-tools}}
+
+This chapter discusses how to run a checker from the command line, from a
+build system, or from an IDE\@.  You can skip to the appropriate section:
+
+% Keep this list up to date with the sections of this chapter and with TWO
+% copies of the list in file introduction.tex .
+\begin{itemize}
+\item javac (Section~\ref{javac-installation})
+\item Ant (Section~\ref{ant-task})
+\item Maven (Section~\ref{maven})
+\item Gradle (Section~\ref{gradle})
+\item IntelliJ IDEA (Section~\ref{intellij})
+\item Eclipse (Section~\ref{eclipse})
+\item tIDE (Section~\ref{tide})
+\end{itemize}
+
+If your build system or IDE is not listed above, you should customize how
+it runs the javac command on your behalf.  See your build system or IDE
+documentation to learn how to
+customize it, adapting the instructions for javac in Section~\ref{javac-installation}.
+If you make another tool support running a checker, please
+inform us via the
+\href{http://groups.google.com/group/checker-framework-discuss}{mailing
+  list} or
+\href{http://code.google.com/p/checker-framework/issues/list}{issue tracker} so
+we can add it to this manual.
+
+This chapter also discusses type inference tools (see
+Section~\ref{type-inference-tools}).
+
+All examples in this chapter are in the public domain, with no copyright nor
+licensing restrictions.
+
+
+\section{Javac compiler\label{javac-installation}}
+
+If you use the \code{javac} compiler from the command line, then you can
+instead use the ``Checker Framework compiler'', a variant of the OpenJDK
+\code{javac} that recognizes type annotations in comments and that includes
+the Checker Framework jar files on its path.
+The Checker Framework compiler is backward-compatible, so using it as your
+Java compiler, even when you are not doing pluggable type-checking, has no
+negative consequences.
+
+You can use the Checker Framework compiler in three ways.  You can use any
+one of them.  However, if you are using the Windows command shell, you must
+use the last one.
+% Is the last one required for Cygwin, as well as for the Windows command shell?
+
+
+\begin{itemize}
+  \item
+    Option 1:
+    Add directory
+    \code{.../checker-framework-1.8.11/checker/bin} to your path, \emph{before} any other
+    directory that contains a \<javac> executable.  Now, whenever
+    you run \code{javac}, you will use the updated compiler.  If you are
+    using the bash shell, a way to do this is to add the following to your
+    \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
+\begin{Verbatim}
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.11
+  export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
+\end{Verbatim}
+    then log out and back in to ensure that the environment variable
+    setting takes effect.
+  \item
+    Option 2:
+    Whenever this document tells you to run \code{javac}, you
+    can instead run \code{\$CHECKERFRAMEWORK/checker/bin/javac}.
+
+    You can simplify this by introducing an alias.  Then,
+    whenever this document tells you to run \code{javac}, instead use that
+    alias.  Here is the syntax for your 
+    \verb|~/.bashrc| file:
+% No Windows example because this doesn't work under Windows.
+\begin{Verbatim}
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.11
+  alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
+\end{Verbatim}
+
+   \item
+   Option 3:
+   Whenever this document tells you to run \code{javac}, instead
+   run checker.jar via \<java> (not \<javac>) as in:
+
+\begin{Verbatim}
+  java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar ...
+\end{Verbatim}
+
+    You can simplify the above command by introducing an alias.  Then,
+    whenever this document tells you to run \code{javac}, instead use that
+    alias.  For example:
+
+\begin{Verbatim}
+  # Unix
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.11
+  alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
+
+  # Windows
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.11\
+  doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
+\end{Verbatim}
+
+   (Explanation for advanced users:  More generally, anywhere that you would use \<javac.jar>, you can substitute
+   \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>; 
+   the result is to use the Checker
+   Framework compiler instead of the regular \<javac>.)
+
+\end{itemize}
+
+
+To ensure that you are using the Checker Framework compiler, run
+\<javac -version> (possibly using the
+full pathname to \<javac> or the alias, if you did not add the Checker
+Framework \<javac> to your path).
+The output should be:
+
+\begin{Verbatim}
+  javac 1.8.0-jsr308-1.8.11
+\end{Verbatim}
+
+
+
+
+%% Does this work?  Text elsewhere in the manual imples that it does not.
+% \item
+% \begin{sloppypar}
+%   In order to use the updated compiler when you type \code{javac}, add the
+%   directory \<C:\ttbs{}Program Files\ttbs{}checker-framework\ttbs{}checkers\ttbs{}binary> to the
+%   beginning of your path variable.  Also set a \code{CHECKERFRAMEWORK} variable.
+% \end{sloppypar}
+% 
+% % Instructions stolen from http://www.webreference.com/js/tips/020429.html
+% 
+% To set an environment variable, you have two options:  make the change
+% temporarily or permanently.
+% \begin{itemize}
+% \item
+% To make the change \textbf{temporarily}, type at the command shell prompt:
+% 
+% \begin{alltt}
+% path = \emph{newdir};%PATH%
+% \end{alltt}
+% 
+% For example:
+% 
+% \begin{Verbatim}
+% set CHECKERFRAMEWORK = C:\Program Files\checker-framework
+% path = %CHECKERFRAMEWORK%\checker\bin;%PATH%
+% \end{Verbatim}
+% 
+% This is a temporary change that endures until the window is closed, and you
+% must re-do it every time you start a new command shell.
+% 
+% \item
+% To make the change \textbf{permanently},
+% Right-click the \<My Computer> icon and
+% select \<Properties>. Select the \<Advanced> tab and click the
+% \<Environment Variables> button. You can set the variable as a ``System
+% Variable'' (visible to all users) or as a ``User Variable'' (visible to
+% just this user).  Both work; the instructions below show how to set as a
+% ``System Variable''.
+% In the \<System Variables> pane, select
+% \<Path> from the list and click \<Edit>. In the \<Edit System Variable>
+% dialog box, move the cursor to the beginning of the string in the
+% \<Variable Value> field and type the full directory name (not using the
+% \verb|%CHECKERFRAMEWORK%| environment variable) followed by a
+% semicolon (\<;>).
+% 
+% % This is for the benefit of the Ant task.
+% Similarly, set the \code{CHECKERFRAMEWORK} variable.
+% 
+% This is a permanent change that only needs to be done once ever.
+% \end{itemize}
+
+
+
+\section{Ant task\label{ant-task}}
+
+If you use the \href{http://ant.apache.org/}{Ant} build tool to compile
+your software, then you can add an Ant task that runs a checker.  We assume
+that your Ant file already contains a compilation target that uses the
+\code{javac} task.
+
+\begin{enumerate}
+\item
+Set the \code{jsr308javac} property:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  <property environment="env"/>
+
+  <property name="checkerframework" value="${env.CHECKERFRAMEWORK}" />
+  
+  <!-- On Mac/Linux, use the javac shell script; on Windows, use javac.bat -->
+  <condition property="cfJavac" value="javac.bat" else="javac">
+      <os family="windows" />
+  </condition>
+
+  <presetdef name="jsr308.javac">
+    <javac fork="yes" executable="${checkerframework}/checker/bin/${cfJavac}" >
+      <!-- JSR-308-related compiler arguments -->
+      <compilerarg value="-version"/>
+      <compilerarg value="-implicit:class"/>
+    </javac>
+  </presetdef>
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\item \textbf{Duplicate} the compilation target, then \textbf{modify} it slightly as
+indicated in this example:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  <target name="check-nullness"
+          description="Check for null pointer dereferences"
+          depends="clean,...">
+    <!-- use jsr308.javac instead of javac -->
+    <jsr308.javac ... >
+      <compilerarg line="-processor org.checkerframework.checker.nullness.NullnessChecker"/>
+      <!-- optional, to not check uses of library methods: <compilerarg value="-AskipUses=^(java\.awt\.|javax\.swing\.)"/> -->
+      <compilerarg line="-Xmaxerrs 10000"/>
+      ...
+    </jsr308.javac>
+  </target>
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+Fill in each ellipsis (\ldots) from the original compilation target.
+
+In the example, the target is named \code{check-nullness}, but you can
+name it whatever you like.
+\end{enumerate}
+
+\subsection{Explanation\label{ant-task-explanation}}
+
+This section explains each part of the Ant task.
+
+\begin{enumerate}
+\item Definition of \code{jsr308.javac}:
+
+The \code{fork} field of the \code{javac} task
+ensures that an external javac program is called.  Otherwise, Ant will run
+javac via a Java method call, and there is no guarantee that it will get
+the Checker Framework compiler that is distributed with the Checker Framework.
+
+The \code{-version} compiler argument is just for debugging; you may omit
+it.
+
+The \code{-implicit:class} compiler argument causes annotation processing
+to be performed on implicitly compiled files.  (An implicitly compiled file
+is one that was not specified on the command line, but for which the source
+code is newer than the \code{.class} file.)  This is the default, but
+supplying the argument explicitly suppresses a compiler warning.
+
+%% -Awarns was removed above without removing it here.
+% The \code{-Awarns} compiler argument is optional, and causes the checker to
+% treat errors as warnings so that compilation does not fail even if
+% pluggable type-checking fails; see Section~\ref{checker-options}.
+
+\item The \code{check-nullness} target:
+
+The target assumes the existence of a \code{clean} target that removes all
+\code{.class} files.  That is necessary because Ant's \code{javac} target
+doesn't re-compile \code{.java} files for which a \code{.class} file
+already exists.
+
+The \code{-processor ...} compiler argument indicates which checker to
+run.  You can supply additional arguments to the checker as well.
+
+\end{enumerate}
+
+
+\section{Maven\label{maven}}
+
+\textbf{Note: The Maven plugin
+was deprecated in favor of the following approach.  The plugin is no
+longer maintained and the final release was on June 2, 2014.}
+
+If you use the \href{http://maven.apache.org/}{Maven} tool,
+then you can specify pluggable type-checking as part of your build
+process. This is done by pointing Maven to a script that
+makes Maven use the Type Annotations compiler.
+
+\begin{enumerate}
+
+\item Declare a dependency on the type qualifier annotations.  Find the
+  existing \code{<dependencies>} section and add a new
+  \code{<dependencies>} item:
+
+\begin{alltt}
+    <dependencies>
+        ... existing <dependency> items ...
+
+        <!-- annotations from the Checker Framework: nullness, interning, locking, ... -->
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+            <version>\ReleaseVersion{}</version>
+        </dependency>
+
+    </dependencies>
+\end{alltt}
+
+\item Direct the Maven compiler plugin to use the \code{javac\_maven} script. Find
+the existing reference to the \code{maven-compiler-plugin} within the \code{<plugins>}
+section or add it if necessary.
+
+\begin{alltt}
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+          <fork>true</fork>
+          <executable>(absolute path to checker framework installation)/checker/bin/javac_maven</executable>
+        </configuration>
+      </plugin>
+\end{alltt}
+
+On Windows, the \code{javac\_maven.bat} script is automatically used instead
+of the \code{javac\_maven} script -- it is not necessary to include the \code{.bat}
+extension in the absolute path above.
+
+This script assumes that the Checker Framework is the only annotation processor being run.
+If this is not the case, please modify the \code{javac\_maven} script accordingly.
+
+\item Create a text file named \code{argfile} in the same directory as the \code{pom.xml}
+and include in it the command-line parameters to pass to the Java compiler.
+
+Example contents of \code{argfile}:
+
+\begin{alltt}
+-processor org.checkerframework.checker.nullness.NullnessChecker
+-AsuppressWarnings=purity.invalid.overriding
+-Alint
+-AprintErrorStack
+-Awarns
+-Xmaxwarns 10000
+\end{alltt}
+
+Due to limitations of the \code{pom.xml} syntax, some command-line options are
+difficult or impossible to pass via the \code{pom.xml}, hence the need for this file.
+
+If you would like to call this file something other than \code{argfile},
+please modify the \code{javac\_maven} script accordingly.
+
+\subsection{Debugging the Maven compiler command-line arguments\label{debugging-maven-args}}
+
+Maven will sometimes hide important Checker Framework and/or Java compiler debugging output.
+If Maven is not producing the expected output when using it with the Type Annotations compiler
+and Checker Framework, it is possible to output the compiler command-line arguments produced
+by Maven to a file.  This file can then be used as a script to execute the compiler in the
+same way Maven would have but without running Maven.  This is done through the
+\<-AoutputArgsToFile> command-line parameter.  To use it with Maven, modify (or copy) the
+\code{javac\_maven} script such that the last line in the script ends with:
+
+\begin{verbatim}
+[...] "-AoutputArgsToFile=<path to filename>" "$@"
+\end{verbatim}
+
+For \code{javac\_maven.bat}, modify (or copy) it such that the last line ends with:
+
+\begin{verbatim}
+[...] -AoutputArgsToFile=<path to filename> %*
+\end{verbatim}
+
+Please see Section~\ref{debugging-options-output-args} for more details on how to use
+the resulting file.
+
+\end{enumerate}
+
+\section{Gradle\label{gradle}}
+
+% This information came from:
+% http://jira.codehaus.org/browse/GRADLE-342
+% http://docs.codehaus.org/display/GRADLE/Gradle+0.8+Breaking+Changes
+
+If you fork the compilation task, \href{http://gradle.org/}{Gradle}
+lets you specify the executable to compile java programs.
+
+To specify the appropriate executable, set
+\code{options.fork = true} and
+\code{compile.options.fork.executable = "\$CHECKERFRAMEWORK/checker/bin/javac"}
+
+To specify command-line arguments, set
+\code{compile.options.compilerArgs}.  Here is a possible example:
+
+\begin{Verbatim}
+allprojects {
+  tasks.withType(JavaCompile).all { JavaCompile compile ->
+    compile.options.debug = true
+    compile.options.compilerArgs = [
+      '-version',
+      '-implicit:class',
+      '-processor', 'org.checkerframework.checker.nullness.NullnessChecker'
+    ]
+    options.fork = true
+    options.forkOptions.executable = "$CHECKERFRAMEWORK/checker/bin/javac"
+  }
+}
+\end{Verbatim}
+
+% extra $ to unconfuse Emacs's LaTeX mode
+
+
+\section{IntelliJ IDEA\label{intellij}}
+
+IntelliJ IDEA (Maia release)
+\href{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}{supports}
+the Type Annotations (JSR-308) syntax.
+See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}.
+
+\section{Eclipse\label{eclipse}}
+
+Eclipse supports type annotations.
+Eclipse does not directly support running the Checker Framework, 
+nor is Eclipse necessary for running the Checker Framework.
+
+There are two ways to run a checker from within the Eclipse IDE:  via Ant
+or using an Eclipse plug-in.  These two methods are described below.
+
+No matter what method you choose, we suggest that
+all Checker Framework annotations be written in the comments
+if you are using a version of Eclipse that
+does not support Java 8.  This will avoid many
+text highlighting errors with versions of Eclipse that don't support Java 8
+and type annotations.
+
+Even in a version of Eclipse that supports Java 8's type annotations, you
+still need to run the Checker Framework via Ant or via the plug-in, rather
+than by supplying the \<-processor> command-line option to the ejc
+compiler.  The reason is that the Checker Framework is built upon javac,
+and ejc represents the Java program differently.  (If both javac and ejc
+implemented JSR 198~\cite{JSR198}, then it would be possible to build
+type-checking plug-ins that work with both compilers.)
+
+
+\paragraph{Using an Ant task\label{eclipse-ant}}
+
+Add an Ant target as described in Section~\ref{ant-task}.  You can
+run the Ant target by executing the following steps
+(instructions copied from {\codesize\url{http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.platform.doc.user%2FgettingStarted%2Fqs-84_run_ant.htm}}):
+
+\begin{enumerate}
+
+\item
+  Select \code{build.xml} in one of the navigation views and choose
+  {\bf Run As $>$ Ant Build...} from its context menu.
+
+\item
+  A launch configuration dialog is opened on a launch configuration
+  for this Ant buildfile.
+
+\item
+  In the {\bf Targets} tab, select the new ant task (e.g., check-interning).
+
+\item
+  Click {\bf Run}.
+
+\item
+  The Ant buildfile is run, and the output is sent to the Console view.
+
+\end{enumerate}
+
+\paragraph{Eclipse plug-in for the Checker Framework\label{eclipse-plug-in}}
+
+The Checker Plugin is an Eclipse plugin that enables the use of the Checker
+Framework.
+Its website (\myurl{http://types.cs.washington.edu/checker-framework/eclipse/}).
+The website contains instructions for installing and using the plugin.
+% The plugin has been substantially improved through a Google Summer of Code 2010 project
+% and supports all checkers that are distributed with the Checker Framework.
+
+
+\section{tIDE\label{tide}}
+
+\begin{sloppypar}
+tIDE, an open-source Java IDE, supports the Checker Framework.  See its
+documentation at \myurl{http://tide.olympe.in/}.
+\end{sloppypar}
+
+
+\section{Type inference tools\label{type-inference-tools}}
+
+\subsection{Varieties of type inference\label{type-inference-varieties}}
+
+There are two different tasks that are commonly called ``type inference''.
+
+\begin{enumerate}
+\item
+  Type inference during type-checking (Section~\ref{type-refinement}):
+  During type-checking, if certain variables have no type qualifier, the
+  type-checker determines whether there is some type qualifier that would
+  permit the program to type-check.  If so, the type-checker uses that type
+  qualifier, but never tells the programmer what it was.  Each time the
+  type-checker runs, it re-infers the type qualifier for that variable.  If
+  no type qualifier exists that permits the program to type-check, the
+  type-checker issues a type warning.
+
+  This variety of type inference is built into the Checker Framework.  Every
+  checker can take advantage of it at no extra effort.  However, it only
+  works within a method, not across method boundaries.
+
+  Advantages of this variety of type inference include:
+  \begin{itemize}
+  \item
+    If the type qualifier is obvious to the programmer, then omitting it
+    can reduce annotation clutter in the program.
+  \item
+    The type inference can take advantage of only the code currently being
+    compiled, rather than having to be correct for all possible calls.
+    Additionally, if the code changes, then there is no old annotation to
+    update.
+  \end{itemize}
+
+
+\item
+  Type inference to annotate a program (Section~\ref{type-inference-to-annotate}):
+  As a separate step before type-checking, a type inference tool takes the
+  program as input, and outputs a set of type qualifiers that would
+  type-check.  These qualifiers are inserted into the source code or the
+  class file.  They can be viewed and adjusted by the programmer, and can
+  be used by tools such as the type-checker.
+
+  This variety of type inference must be provided by a separate tool.  It
+  is not built into the Checker Framework.
+
+  Advantages of this variety of type inference include:
+  \begin{itemize}
+  \item
+    The program contains documentation in the form of type qualifiers,
+    which can aid programmer understanding.
+  \item
+    Error messages may be more comprehensible.  With type inference
+    during type-checking, error messages can be obscure, because the
+    compiler has already inferred (possibly incorrect) types for a number
+    of variables.
+  \item
+    A minor advantage is speed:  type-checking can be modular, which can be
+    faster than re-doing type inference every time the
+    program is type-checked.
+  \end{itemize}
+
+\end{enumerate}
+
+Advantages of both varieties of inference include:
+\begin{itemize}
+\item
+  Less work for the programmer.
+\item
+  The tool chooses the most general type, whereas a programmer might
+  accidentally write a more specific, less generally-useful annotation.
+\end{itemize}
+
+
+Each variety of type inference has its place.  When using the Checker
+Framework, type inference during type-checking is performed only
+\emph{within} a method (Section~\ref{type-refinement}).  Every method
+signature (arguments and return values) and field must have already been explicitly annotated,
+either by the programmer or by a separate type-checking tool
+(Section~\ref{type-inference-to-annotate}).
+This approach enables modular checking (one class or method at a time) and
+gives documentation benefits.
+The programmer still has to
+put in some effort, but much less than without inference:  typically, a
+programmer does not have to write any qualifiers
+inside the body of a method.
+
+
+\subsection{Type inference to annotate a program\label{type-inference-to-annotate}}
+
+This section lists tools that take a program and output a set of
+annotations for it.
+
+Section~\ref{nullness-inference} lists several tools that infer
+annotations for the Nullness Checker.
+
+Section~\ref{javari-inference} lists a tool that infers
+annotations for the Javari Checker, which detects mutation errors.
+
+\href{https://github.com/reprogrammer/cascade/}{Cascade}~\cite{VakilianPEJ2014}
+is an Eclipse plug-in that implements interactive type qualifier inference.
+Cascade is interactive rather than fully-automated:  it makes it easier for
+a developer to insert annotations.
+Cascade starts with an unannotated program and runs a type-checker.  For each
+warning it suggests multiple fixes, the developer chooses a fix, and
+Cascade applies it.  Cascade works with any checker built on the Checker
+Framework.
+You can find installation instructions and a video tutorial at \url{https://github.com/reprogrammer/cascade}.
+
+
+% LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
+% LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle
+% LocalWords:  compilerArgs Xbootclasspath JSR308 jsr308 jsr308javac mvn
+%  LocalWords:  plugins proc procOnly DirectoryScanner setIncludes groupId
+%  LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
+%%  LocalWords:  artifactId quals failOnError ejc
