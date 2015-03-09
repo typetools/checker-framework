@@ -203,7 +203,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
     }
 
-
     /**
      * Constructs an instance of the appropriate type factory for the
      * implemented type system.
@@ -3021,9 +3020,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     // This is a test to ensure that all types are valid
-    protected final BaseTypeValidator typeValidator;
+    protected final TypeValidator typeValidator;
 
-    protected BaseTypeValidator createTypeValidator() {
+    protected TypeValidator createTypeValidator() {
         return new BaseTypeValidator(checker, this, atypeFactory);
     }
 
