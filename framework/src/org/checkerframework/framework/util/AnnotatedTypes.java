@@ -824,13 +824,13 @@ public class AnnotatedTypes {
     private static void addAnnotations(Elements elements, AnnotatedTypeFactory atypeFactory,
                                        AnnotatedTypeMirror alub,
                                        ArrayList<AnnotatedTypeMirror> types) {
-        Set<TypeMirror> visited = new HashSet<>();
+        Set<AnnotatedTypeMirror> visited = Collections.newSetFromMap(new IdentityHashMap<AnnotatedTypeMirror,Boolean>());
         addAnnotationsImpl(elements, atypeFactory, alub, visited, types);
     }
 
     private static void addAnnotationsImpl(Elements elements, AnnotatedTypeFactory atypeFactory,
                                            AnnotatedTypeMirror alub,
-                                           Set<TypeMirror> visited,
+                                           Set<AnnotatedTypeMirror> visited,
                                            ArrayList<AnnotatedTypeMirror> types) {
         // System.out.println("AnnotatedTypes.addAnnotationsImpl: alub: " + alub +
         //        "\n   visited: " + visited +
@@ -878,10 +878,10 @@ public class AnnotatedTypes {
             alub = ((AnnotatedTypeVariable)alub).getUpperBound();
         }
 
-        if (visited.contains(alub.getUnderlyingType())) {
+        if (visited.contains(alub)) {
             return;
         }
-        visited.add(alub.getUnderlyingType());
+        visited.add(alub);
 
         for (int i = 0; i < types.size(); ++i) {
             final AnnotatedTypeMirror typei = types.get(i);
