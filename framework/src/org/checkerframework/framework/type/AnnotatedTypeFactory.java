@@ -6,13 +6,6 @@ import org.checkerframework.checker.javari.qual.Mutable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MemberReferenceTree;
-import com.sun.source.tree.TypeCastTree;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
@@ -76,6 +69,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -88,10 +82,13 @@ import javax.tools.Diagnostic.Kind;
 //@jdk.Exported and therefore somewhat safe to use.
 //Try to avoid using non-@jdk.Exported classes.
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -99,9 +96,13 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
 
 /**
  * The methods of this class take an element or AST node, and return the
@@ -312,6 +313,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public void setRoot(/*@Nullable*/ CompilationUnitTree root) {
         this.root = root;
         treePathCache.clear();
+        pathHack.clear();
 
         // There is no need to clear the following caches, they
         // are all limited by CACHE_SIZE.
@@ -2500,9 +2502,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * org.checkerframework.framework.type.AnnotatedTypeFactory.fromTypeTree(Tree)
      */
     public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar) {
-        WildcardType wc = types.getWildcardType(typeVar.getUnderlyingType(), null);
+        TypeMirror up = typeVar.getUnderlyingType().getUpperBound();
+        WildcardType wc;
+        if (up.getKind() == TypeKind.INTERSECTION) {
+            // TODO: Intersection types are not allowed as upper bounds of wildcards.
+            // What is a better way to handle this?
+            up = ((IntersectionType)up).getBounds().get(0);
+        }
+        wc = types.getWildcardType(up, null);
         AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
-        wctype.setExtendsBound(typeVar);
+        wctype.setExtendsBound(typeVar.getUpperBound());
         wctype.addAnnotations(typeVar.getAnnotations());
         wctype.setTypeArgHack();
         return wctype;
