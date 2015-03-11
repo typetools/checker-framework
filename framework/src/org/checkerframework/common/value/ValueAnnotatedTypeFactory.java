@@ -776,11 +776,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree,
                 AnnotatedTypeMirror type) {
-            super.visitMethodInvocation(tree, type);
-
             if (isClassCovered(type)
                     && methodIsStaticallyExecutable(TreeUtils
                             .elementFromUse(tree))) {
+                // Get argument values
                 List<? extends ExpressionTree> arguments = tree.getArguments();
                 ArrayList<List<?>> argValues;
                 if (arguments.size() > 0) {
@@ -798,6 +797,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else {
                     argValues = null;
                 }
+                
+                // Get receiver values
                 AnnotatedTypeMirror receiver = getReceiverType(tree);
                 List<?> receiverValues;
                 
@@ -812,6 +813,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else {
                     receiverValues = null;
                 }
+                
+                // Evaluate method
                 List<?> returnValues = evalutator.evaluteMethodCall(argValues,
                         receiverValues, tree);
                 AnnotationMirror returnType = resultAnnotationHandler(
@@ -860,7 +863,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     if (paramClass.contains("java")) {
                         paramClzz.add(Class.forName(paramClass));
                     } else {
-                        paramClzz.add(ValueCheckerUtils.getClassFromType(ElementUtils.getType(e), tree));
+                        paramClzz.add(ValueCheckerUtils.getClassFromType(ElementUtils.getType(e)));
                     }
                 }
             }
@@ -1017,80 +1020,40 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitNewClass(NewClassTree tree, AnnotatedTypeMirror type) {
+            boolean wrapperClass = TypesUtils.isBoxedPrimitive(type
+                    .getUnderlyingType())
+                    || TypesUtils.isDeclaredOfName(type.getUnderlyingType(),
+                            "java.lang.String");
 
-            super.visitNewClass(tree, type);
-
-            if (isClassCovered(type)) {
-
-                // First, make sure all the args are known
-                List<? extends ExpressionTree> argTrees = tree.getArguments();
-                ArrayList<AnnotatedTypeMirror> argTypes = new ArrayList<AnnotatedTypeMirror>(
-                        argTrees.size());
-                for (ExpressionTree e : argTrees) {
-                    argTypes.add(getAnnotatedType(e));
-                }
-                boolean known = true;
-                for (AnnotatedTypeMirror t : argTypes) {
-                    if (nonValueAnno(t)) {
-                        known = false;
-                        break;
-                    }
-                }
-
-                // If all the args are known we can evaluate
-                if (known) {
-                    try {
-                        // get the constructor
-                        Class<?>[] argClasses = getParameterTypes(tree);
-                        Class<?> recClass = boxPrimatives(getClass(type, tree));
-                        Constructor<?> constructor = recClass
-                                .getConstructor(argClasses);
-
-                        AnnotationMirror newAnno = evaluateNewClass(
-                                constructor, argTypes, type, tree);
-                        if (newAnno != null) {
-                            type.replaceAnnotation(newAnno);
+            if (wrapperClass || (isClassCovered(type)
+                    && methodIsStaticallyExecutable(TreeUtils
+                            .elementFromUse(tree)))) {
+                // get arugment values
+                List<? extends ExpressionTree> arguments = tree.getArguments();
+                ArrayList<List<?>> argValues;
+                if (arguments.size() > 0) {
+                    argValues = new ArrayList<List<?>>();
+                    for (ExpressionTree argument : arguments) {
+                        AnnotatedTypeMirror argType = getAnnotatedType(argument);
+                        List<?> values = getCastedValues(argType, argument);
+                        if (values.isEmpty()) {
+                            // values aren't known, so don't try to evaluate the
+                            // method
                             return null;
                         }
-                    } catch (ReflectiveOperationException e) {
-                        if (reportWarnings)
-                            checker.report(Result.warning(
-                                    "constructor.evaluation.failed",
-                                    type.getUnderlyingType(), argTypes), tree);
+                        argValues.add(values);
                     }
+                } else {
+                    argValues = null;
                 }
-                type.replaceAnnotation(UNKNOWNVAL);
-
+                // Evaluate method
+                List<?> returnValues = evalutator.evaluteConstrutorCall(argValues, tree, type.getUnderlyingType());
+                AnnotationMirror returnType = resultAnnotationHandler(
+                        type.getUnderlyingType(), returnValues, tree);
+                type.replaceAnnotation(returnType);
             }
+
             return null;
-        }
-
-        /**
-         * Returns the box primitive type if the passed type is an (unboxed)
-         * primitive. Otherwise it returns the passed type
-         * 
-         * @param type
-         * @return
-         */
-        private Class<?> boxPrimatives(Class<?> type) {
-            if (type == byte.class) {
-                return Byte.class;
-            } else if (type == short.class) {
-                return Short.class;
-            } else if (type == int.class) {
-                return Integer.class;
-            } else if (type == long.class) {
-                return Long.class;
-            } else if (type == float.class) {
-                return Float.class;
-            } else if (type == double.class) {
-                return Double.class;
-            } else if (type == char.class) {
-                return Character.class;
-            } else if (type == boolean.class) {
-                return Boolean.class;
-            }
-            return type;
         }
 
         /**
@@ -1349,7 +1312,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private Class<?> getClass(AnnotatedTypeMirror typeMirror, Tree tree) {
             TypeMirror type = typeMirror.getUnderlyingType();
-            return ValueCheckerUtils.getClassFromType(type, tree);
+            return ValueCheckerUtils.getClassFromType(type);
         }
 
        
@@ -1359,7 +1322,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Class<?>[] classes = new Class<?>[e.getParameters().size()];
             int i = 0;
             for (Element param : e.getParameters()) {
-                classes[i] = ValueCheckerUtils.getClassFromType(ElementUtils.getType(param), tree);
+                classes[i] = ValueCheckerUtils.getClassFromType(ElementUtils.getType(param));
                 i++;
             }
             return classes;
@@ -1474,6 +1437,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     bytes.add(s.getBytes());
                 }
                 return bytes;
+            } else if (newClass == char[].class) {
+                List<char[]> chars = new ArrayList<>();
+                for (String s : strings) {
+                    chars.add(s.toCharArray());
+                }
+                return chars;
             } else if (newClass == Object.class && strings.size() == 1) {
                 if (strings.get(0).equals("null"))
                     return strings;
@@ -1591,7 +1560,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private AnnotationMirror resultAnnotationHandler(
                 TypeMirror resultType, List<?> results, Tree tree) {
         
-            Class<?> resultClass = ValueCheckerUtils.getClassFromType(resultType, tree);
+            Class<?> resultClass = ValueCheckerUtils.getClassFromType(resultType);
 
             // For some reason null is included in the list of values,
             // so remove it so that it does not cause a NPE else where.
