@@ -859,61 +859,52 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitMemberSelect(MemberSelectTree tree,
                 AnnotatedTypeMirror type) {
-            /*
-             * NOTE: None of the objects, except arrays, being handled by this
-             * system possess non-static fields, so I am assuming I can simply
-             * reflectively call the fields on a reflectively generated object
-             * representing the class
-             */
-            super.visitMemberSelect(tree, type);
-            AnnotatedTypeMirror receiverType = getAnnotatedType(tree
-                    .getExpression());
-
-            Element elem = TreeUtils.elementFromUse(tree);
-            // KNOWN-LENGTH ARRAYS
-            if (AnnotationUtils.areSameIgnoringValues(
-                    getValueAnnotation(receiverType), ARRAYLEN)) {
-                if (tree.getIdentifier().contentEquals("length")) {
-                    type.replaceAnnotation(handleArrayLength(receiverType));
+            if (TreeUtils.isFieldAccess(tree)
+                    && isClassCovered(type.getUnderlyingType())) {
+                VariableElement elem = (VariableElement) InternalUtils
+                        .symbol(tree);
+                Object value = elem.getConstantValue();
+                if (value != null) {
+                    // compile time constant
+                    type.replaceAnnotation(
+                    resultAnnotationHandler(type.getUnderlyingType(), Collections.singletonList(value), tree));
+                    return null;
                 }
-            }
-
-            if (isClassCovered(elem.asType())) {
-                if (ElementUtils.isCompileTimeConstant(elem)) {
-
-                    ArrayList<Object> value = new ArrayList<Object>(1);
-                    value.add(((VariableElement) elem).getConstantValue());
-
-                    AnnotationMirror newAnno = resultAnnotationHandler(
-                            elem.asType(), value, tree);
-
-                    if (newAnno != null) {
-                        type.replaceAnnotation(newAnno);
-                    } else {
-                        type.replaceAnnotation(UNKNOWNVAL);
+                if (ElementUtils.isStatic(elem)
+                        && ElementUtils.isFinal(elem)) {
+                    Element e = InternalUtils.symbol(tree.getExpression());
+                    if (e != null) {
+                        String classname = ElementUtils
+                                .getQualifiedClassName(e).toString();
+                        String fieldName = tree.getIdentifier().toString();
+                        value = evalutator.evaluateStaticFieldAccess(classname,
+                                fieldName, tree);
+                        if (value != null)
+                            type.replaceAnnotation(resultAnnotationHandler(type.getUnderlyingType(), Collections.singletonList(value), tree));
+                        return null;
                     }
+                }
 
-                } else if (elem.getKind() == javax.lang.model.element.ElementKind.FIELD
-                        && ElementUtils.isStatic(elem)
-                        && ElementUtils.isFinal(elem)
-                        // If the identifier is class then this is a class
-                        // literal, not a regular member select
-                        && !tree.getIdentifier().toString().equals("class")) {
-                    // if an element is not a compile-time constant, we still
-                    // might be able to find the value
-                    // if the type of the field is a wrapped primitive class.
-                    // eg Boolean.FALSE
-                    TypeMirror retType = elem.asType();
-                    AnnotationMirror newAnno = evaluateStaticFieldAccess(
-                            tree.getIdentifier(), retType, tree);
-                    if (newAnno != null) {
-                        type.replaceAnnotation(newAnno);
+                if (tree.getIdentifier().toString().equals("length")) {
+                    AnnotatedTypeMirror receiverType = getAnnotatedType(tree
+                            .getExpression());
+                    if (receiverType.getKind() == TypeKind.ARRAY) {
+                        AnnotationMirror arrayAnno = receiverType
+                                .getAnnotation(ArrayLen.class);
+                        if (arrayAnno != null) {
+                            // array.length, where array : @ArrayLen(x)
+                            List<Integer> lengths = ValueAnnotatedTypeFactory
+                                    .getArrayLength(arrayAnno);
+                            type.replaceAnnotation(createNumberAnnotationMirror(new ArrayList<Number>(
+                                    lengths)));
+                            return null;
+                        }
                     }
                 }
             }
             return null;
         }
-
+    
         /**
          * If the receiverType object has an ArrayLen annotation it returns an
          * IntVal with all the ArrayLen annotation's values as its possible
@@ -1494,6 +1485,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         return createBooleanAnnotation(values);
 
+    }
+    
+    public static List<Integer> getArrayLength(AnnotationMirror arrayAnno) {
+        return AnnotationUtils.getElementValueArray(
+                arrayAnno, "value", Integer.class, true); 
     }
     
     public static List<Character> getCharValues(AnnotationMirror intAnno) {
