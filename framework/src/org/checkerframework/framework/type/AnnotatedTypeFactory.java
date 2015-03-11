@@ -69,7 +69,6 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -89,7 +88,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
@@ -2502,16 +2500,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * org.checkerframework.framework.type.AnnotatedTypeFactory.fromTypeTree(Tree)
      */
     public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar) {
-        TypeMirror up = typeVar.getUnderlyingType().getUpperBound();
-        WildcardType wc;
-        if (up.getKind() == TypeKind.INTERSECTION) {
-            // TODO: Intersection types are not allowed as upper bounds of wildcards.
-            // What is a better way to handle this?
-            up = ((IntersectionType)up).getBounds().get(0);
-        }
-        wc = types.getWildcardType(up, null);
+        WildcardType wc = types.getWildcardType(typeVar.getUnderlyingType(), null);
         AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
-        wctype.setExtendsBound(typeVar.getUpperBound());
+        wctype.setExtendsBound(typeVar);
         wctype.addAnnotations(typeVar.getAnnotations());
         wctype.setTypeArgHack();
         return wctype;
