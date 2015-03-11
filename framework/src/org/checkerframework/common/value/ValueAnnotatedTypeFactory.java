@@ -7,7 +7,6 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -18,7 +17,6 @@ import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -903,76 +901,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
             return null;
-        }
-    
-        /**
-         * If the receiverType object has an ArrayLen annotation it returns an
-         * IntVal with all the ArrayLen annotation's values as its possible
-         * values.
-         *
-         * @param receiverType
-         */
-        private AnnotationMirror handleArrayLength(
-                AnnotatedTypeMirror receiverType) {
-            AnnotationMirror recAnno = getValueAnnotation(receiverType);
-
-            if (AnnotationUtils.areSameIgnoringValues(recAnno, ARRAYLEN)) {
-                List<Integer> lengthInts = AnnotationUtils
-                        .getElementValueArray(recAnno, "value", Integer.class,
-                                true);
-                HashSet<Long> lengthValues = new HashSet<>();
-                for (int i : lengthInts) {
-                    lengthValues.add((long) i);
-                }
-
-                return createAnnotation(
-                        "org.checkerframework.common.value.qual.IntVal",
-                        lengthValues);
-            } else {
-                return UNKNOWNVAL;
-            }
-        }
-
-        /**
-         * Evalautes a static field access by getting the field reflectively
-         * from the field name and class name
-         *
-         * @param fieldName
-         *            the field to be access
-         * @param recType
-         *            the AnnotatedTypeMirror of the tree being evaluated, used
-         *            to create the return annotation and to reflectively create
-         *            the Class object to get the field from
-         * @param tree
-         *            location for error reporting
-         *
-         * @return
-         */
-        private AnnotationMirror evaluateStaticFieldAccess(Name fieldName,
-                TypeMirror retType, MemberSelectTree tree) {
-            String clzzname = "";
-            try {
-                Element e = InternalUtils.symbol(tree.getExpression());
-                if (e == null)
-                    return null;
-                clzzname = ElementUtils.getQualifiedClassName(e).toString();
-                Class<?> recClass = Class.forName(clzzname);
-                Field field = recClass.getField(fieldName.toString());
-                ArrayList<Object> result = new ArrayList<Object>(1);
-                result.add(field.get(recClass));
-
-                return resultAnnotationHandler(retType, result, tree);
-            } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
-                if (reportWarnings)
-                    checker.report(
-                            Result.warning("class.find.failed", clzzname), tree);
-                return null;
-            } catch (ReflectiveOperationException e) {
-                if (reportWarnings)
-                    checker.report(Result.warning("field.access.failed",
-                            fieldName, clzzname), tree);
-                return null;
-            }
         }
 
         /**
