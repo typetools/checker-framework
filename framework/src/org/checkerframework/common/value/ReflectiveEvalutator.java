@@ -5,6 +5,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -28,6 +29,8 @@ import org.checkerframework.framework.source.Result;
 
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
 
 public class ReflectiveEvalutator {
     private BaseTypeChecker checker;
@@ -118,31 +121,7 @@ public class ReflectiveEvalutator {
             ExecutableElement ele = TreeUtils.elementFromUse(tree);
             Name clazz = TypesUtils.getQualifiedName((DeclaredType) ele
                     .getEnclosingElement().asType());
-            List<? extends VariableElement> paramEles = ele.getParameters();
-            List<Class<?>> paramClzz = new ArrayList<>();
-            for (Element e : paramEles) {
-                TypeMirror pType = ElementUtils.getType(e);
-                if (pType.getKind() == TypeKind.ARRAY) {
-                    ArrayType pArrayType = (ArrayType) pType;
-                    String par = TypesUtils.getQualifiedName(
-                            (DeclaredType) pArrayType.getComponentType())
-                            .toString();
-                    if (par.equals("java.lang.Object")) {
-                        paramClzz.add(java.lang.Object[].class);
-                    } else if (par.equals("java.lang.String")) {
-                        paramClzz.add(java.lang.String[].class);
-                    }
-
-                } else {
-                    String paramClass = ElementUtils.getType(e).toString();
-                    if (paramClass.contains("java")) {
-                        paramClzz.add(Class.forName(paramClass));
-                    } else {
-                        paramClzz.add(ValueCheckerUtils.getClassFromType(
-                                ElementUtils.getType(e), tree));
-                    }
-                }
-            }
+            List<Class<?>> paramClzz = getParameterClasses(tree, ele);
             Class<?> clzz = Class.forName(clazz.toString());
             Method method = clzz.getMethod(ele.getSimpleName().toString(),
                     paramClzz.toArray(new Class<?>[0]));
@@ -174,6 +153,17 @@ public class ReflectiveEvalutator {
             }
             return null;
         }
+    }
+
+    private List<Class<?>> getParameterClasses(Tree tree,
+            ExecutableElement ele) throws ClassNotFoundException {
+        List<? extends VariableElement> paramEles = ele.getParameters();
+        List<Class<?>> paramClzz = new ArrayList<>();
+        for (Element e : paramEles) {
+            TypeMirror pType = ElementUtils.getType(e);
+            paramClzz.add(ValueCheckerUtils.getClassFromType(pType));
+        }
+        return paramClzz;
     }
 
     private List<Object[]> cartesianProduct(List<List<?>> allArgValues,
@@ -226,5 +216,59 @@ public class ReflectiveEvalutator {
                         classname), tree);
             return null;
         }
+    }
+
+    public List<?> evaluteConstrutorCall(ArrayList<List<?>> argValues,
+            NewClassTree tree, TypeMirror typeToCreate) {
+        try {
+            // get the constructor
+            Constructor<?> constructor = 
+                    getConstrutorObject(tree,typeToCreate);
+            if (constructor == null) {
+                return new ArrayList<>();
+            }
+
+            List<Object[]> listOfArguments;
+            if (argValues == null) {
+                // Method does not have arguments
+                listOfArguments = new ArrayList<Object[]>();
+                listOfArguments.add(null);
+            } else {
+                // Find all possible argument sets
+                listOfArguments = cartesianProduct(argValues,
+                        argValues.size() - 1);
+            }
+            
+            List<Object> results = new ArrayList<>();
+            for (Object[] arguments : listOfArguments) {
+                try {
+                    results.add(constructor.newInstance(arguments));
+                } catch (ReflectiveOperationException e) {
+                    if (reportWarnings)
+                        checker.report(
+                                Result.warning("constructor.invocation.failed"),
+                                tree);
+                    return new ArrayList<Object>();
+                }
+                return results;
+            }
+
+        } catch (ReflectiveOperationException e) {
+            if (reportWarnings)
+                checker.report(Result.warning("constructor.evaluation.failed"),
+                        tree);
+        }
+        return new ArrayList<>();
+    }
+
+    private Constructor<?> getConstrutorObject(NewClassTree tree, TypeMirror typeToCreate)
+            throws ClassNotFoundException, NoSuchMethodException {
+        ExecutableElement ele = TreeUtils.elementFromUse(tree);
+        List<Class<?>> paramClasses = getParameterClasses(tree, ele);
+        Class<?> recClass = ValueCheckerUtils
+                .boxPrimatives(ValueCheckerUtils.getClassFromType(typeToCreate));
+        Constructor<?> constructor = recClass.getConstructor(paramClasses
+                .toArray(new Class<?>[0]));
+        return constructor;
     }
 }
