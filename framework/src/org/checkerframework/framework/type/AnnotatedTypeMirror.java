@@ -6,6 +6,20 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.interning.qual.*;
 */
 
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.InvisibleQualifier;
+import org.checkerframework.framework.qual.TypeQualifier;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
+import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,20 +52,6 @@ import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.qual.InvisibleQualifier;
-import org.checkerframework.framework.qual.TypeQualifier;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
-import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
-import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
@@ -928,6 +928,7 @@ public abstract class AnnotatedTypeMirror {
             return declaration;
         }
 
+        @Override
         public AnnotatedDeclaredType asUse() {
             if (!this.isDeclaration()) {
                 return this;
@@ -1698,6 +1699,7 @@ public abstract class AnnotatedTypeMirror {
             this.declaration = declaration;
         }
 
+        @Override
         public AnnotatedTypeVariable asUse() {
             if (!this.isDeclaration()) {
                 return this;
