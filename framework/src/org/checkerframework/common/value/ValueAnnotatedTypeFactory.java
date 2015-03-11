@@ -7,11 +7,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -21,12 +17,9 @@ import java.util.TreeSet;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -825,199 +818,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
 
-        /**
-         * Method for reflectively obtaining a method object so it can
-         * (potentially) be statically executed by the checker for constant
-         * propagation
-         *
-         * @param tree
-         * @return the Method object corresponding to the method being invoke in
-         *         tree
-         * @throws ClassNotFoundException
-         * @throws NoSuchMethodException
-         */
-        private Method getMethodObject(MethodInvocationTree tree)
-                throws ClassNotFoundException, NoSuchMethodException {
-            Method method;
-            ExecutableElement ele = TreeUtils.elementFromUse(tree);
-            ele.getEnclosingElement();
-            Name clazz = TypesUtils.getQualifiedName((DeclaredType) ele
-                    .getEnclosingElement().asType());
-            List<? extends VariableElement> paramEles = ele.getParameters();
-            List<Class<?>> paramClzz = new ArrayList<>();
-            for (Element e : paramEles) {
-                TypeMirror pType = ElementUtils.getType(e);
-                if (pType.getKind() == TypeKind.ARRAY) {
-                    ArrayType pArrayType = (ArrayType) pType;
-                    String par = TypesUtils.getQualifiedName(
-                            (DeclaredType) pArrayType.getComponentType())
-                            .toString();
-                    if (par.equals("java.lang.Object")) {
-                        paramClzz.add(java.lang.Object[].class);
-                    } else if (par.equals("java.lang.String")) {
-                        paramClzz.add(java.lang.String[].class);
-                    }
-
-                } else {
-                    String paramClass = ElementUtils.getType(e).toString();
-                    if (paramClass.contains("java")) {
-                        paramClzz.add(Class.forName(paramClass));
-                    } else {
-                        paramClzz.add(ValueCheckerUtils.getClassFromType(ElementUtils.getType(e)));
-                    }
-                }
-            }
-            Class<?> clzz = Class.forName(clazz.toString());
-            method = clzz.getMethod(ele.getSimpleName().toString(),
-                    paramClzz.toArray(new Class<?>[0]));
-            return method;
-        }
-
-        /**
-         * Evaluates the possible results of a method and returns an annotation
-         * containing those results.
-         *
-         * @param recType
-         *            the AnnotatedTypeMirror of the receiver
-         * @param method
-         *            the method to evaluate
-         * @param argTypes
-         *            the List of AnnotatedTypeMirror for the arguments from
-         *            which possible argument values are extracted
-         * @param retType
-         *            the AnnotatedTypeMirror of the tree being evaluated, used
-         *            to determine the type of AnnotationMirr to return
-         * @param tree
-         *            location for error reporting
-         *
-         * @return an AnnotationMirror of the type specified by retType's
-         *         underlyingType and with its value array populated by all the
-         *         possible evaluations of method. Or UnknownVal
-         */
-        private AnnotationMirror evaluateMethod(AnnotatedTypeMirror recType,
-                Method method, List<AnnotatedTypeMirror> argTypes,
-                AnnotatedTypeMirror retType, MethodInvocationTree tree) {
-            List<?> recValues = null;
-            // If we are going to need the values of the receiver, get them.
-            // Otherwise they can be null because the method is static
-            if (!java.lang.reflect.Modifier.isStatic(method.getModifiers())) {
-                recValues = getCastedValues(recType, tree);
-            }
-
-            // Get the values for all the arguments
-            ArrayDeque<List<?>> allArgValues = getAllArgumentAnnotationValues(
-                    argTypes, tree);
-            // Evaluate the method by recursively navigating through all the
-            // argument value lists, adding all results to the results list.
-            ArrayDeque<Object> specificArgValues = new ArrayDeque<Object>();
-            ArrayList<Object> results = new ArrayList<Object>();
-
-            evaluateMethodHelper(allArgValues, specificArgValues, recValues,
-                    method, results, tree);
-            return resultAnnotationHandler(retType.getUnderlyingType(), results, tree);
-        }
-
-        /**
-         * Recursive helper function for evaluateMethod. Recurses through each
-         * List of Object representing possible argument values. At each
-         * recursion, all possible values for an argument are incremented
-         * through and the method is invoked on each one and the result is added
-         * to the results list.
-         *
-         * @param argArrayDeque
-         *            ArrayDeque of Lists of Objects representing possible
-         *            values for each argument
-         * @param values
-         *            ArrayDeque of Objects containing the argument values for a
-         *            specific invocation of method. This is the structure that
-         *            is modified at each recursion to add a different argument
-         *            value.
-         * @param receiverValues
-         *            a List of Object representing all the possible values of
-         *            the receiver
-         * @param method
-         *            the method to invoke
-         * @param results
-         *            a List of all values returned. Once all calls are finished
-         *            this will contain the results for all possible
-         *            combinations of argument and receiver values invoking the
-         *            method
-         * @param tree
-         *            location for error reporting
-         */
-        private void evaluateMethodHelper(ArrayDeque<List<?>> argArrayDeque,
-                ArrayDeque<Object> values, List<?> receiverValues,
-                Method method, List<Object> results, MethodInvocationTree tree) {
-            // If we have descended through all the argument value lists
-            if (argArrayDeque.size() == 0) {
-                try {
-                    // If the receiver has values (the method is not static)
-                    if (receiverValues != null) {
-
-                        // Iterate through all the receiver's values
-                        for (Object o : receiverValues) {
-
-                            // If there were argument values, invoke with them
-                            if (values.size() > 0) {
-                                results.add(method.invoke(o, values.toArray()));
-                            }
-                            // Otherwise, invoke without them (the method took
-                            // no arguments)
-                            else {
-                                results.add(method.invoke(o));
-                            }
-                        }
-                    }
-                    // If this is a static method, the receiver values do not
-                    // exist/do not matter
-                    else {
-                        // If there were arguments, invoke with them
-                        if (values.size() > 0) {
-                            results.add(method.invoke(null, values.toArray()));
-                        }
-                        // Otherwise, invoke without them
-                        else {
-                            results.add(method.invoke(null));
-                        }
-                    }
-                } catch (InvocationTargetException e) {
-                    if (reportWarnings)
-                        checker.report(Result.warning(
-                                "method.evaluation.exception", method, e
-                                        .getTargetException().toString()), tree);
-                    results = new ArrayList<Object>();
-                } catch (ReflectiveOperationException e) {
-                    if (reportWarnings)
-                        checker.report(Result.warning(
-                                "method.evaluation.failed", method), tree);
-                    results = new ArrayList<Object>();
-                    /*
-                     * fail by setting the results list to empty. Since we
-                     * failed on the invoke, all calls of this method will fail,
-                     * so the final results list will be an empty list. That
-                     * will cause an UnknownVal annotation to be created, which
-                     * seems appropriate here
-                     */
-                }
-            }
-
-            // If there are still lists of argument values left in the deque
-            else {
-
-                // Pop an argument off and iterate through all its values
-                List<?> argValues = argArrayDeque.pop();
-                for (Object o : argValues) {
-
-                    // Push one of the arg's values on and evaluate, then pop
-                    // and do the next
-                    values.push(o);
-                    evaluateMethodHelper(argArrayDeque, values, receiverValues,
-                            method, results, tree);
-                    values.pop();
-                }
-            }
-        }
-
         @Override
         public Void visitNewClass(NewClassTree tree, AnnotatedTypeMirror type) {
             boolean wrapperClass = TypesUtils.isBoxedPrimitive(type
@@ -1054,104 +854,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             return null;
-        }
-
-        /**
-         * Attempts to evaluate a New call by retrieving the constructor and
-         * invoking it reflectively.
-         *
-         * @param constructor
-         *            the constructor to invoke
-         * @param argTypes
-         *            List of AnnnotatedTypeMirror of the arguments
-         * @param retType
-         *            AnnotatedTypeMirror of the tree being evaluate, used to
-         *            determine what the return AnnotationMirror should be
-         * @param tree
-         *            location for error reporting
-         *
-         * @return an AnnotationMirror containing all the possible values of the
-         *         New call based on combinations of argument values
-         */
-        private AnnotationMirror evaluateNewClass(Constructor<?> constructor,
-                List<AnnotatedTypeMirror> argTypes,
-                AnnotatedTypeMirror retType, NewClassTree tree) {
-            ArrayDeque<List<?>> allArgValues = getAllArgumentAnnotationValues(
-                    argTypes, tree);
-
-            ArrayDeque<Object> specificArgValues = new ArrayDeque<Object>();
-            ArrayList<Object> results = new ArrayList<Object>();
-            evaluateNewClassHelper(allArgValues, specificArgValues,
-                    constructor, results, tree);
-
-            return resultAnnotationHandler(retType.getUnderlyingType(), results, tree);
-        }
-
-        /**
-         * Recurses through all the possible argument values and invokes the
-         * constructor on each one, adding the result to the results list
-         *
-         * @param argArrayDeque
-         *            ArrayDeque of List of Object containing all the argument
-         *            values
-         * @param values
-         *            ArrayDeque of Objects containing the argument values for a
-         *            specific invocation of method. This is the structure that
-         *            is modified at each recursion to add a different argument
-         *            value.
-         * @param constructor
-         *            the constructor to invoke
-         * @param results
-         *            a List of all values returned. Once all calls are finished
-         *            this will contain the results for all possible
-         *            combinations of argument values invoking the constructor
-         * @param tree
-         *            location for error reporting
-         */
-        private void evaluateNewClassHelper(ArrayDeque<List<?>> argArrayDeque,
-                ArrayDeque<Object> values, Constructor<?> constructor,
-                List<Object> results, NewClassTree tree) {
-            // If we have descended through all argument value lists
-            if (argArrayDeque.size() == 0) {
-                try {
-                    // If there are argument values (not an empty constructor)
-                    if (values.size() > 0) {
-                        results.add(constructor.newInstance(values.toArray()));
-                    }
-                    // If there are no argument values (empty constructor)
-                    else {
-                        results.add(constructor.newInstance());
-                    }
-                } catch (ReflectiveOperationException e) {
-                    if (reportWarnings)
-                        checker.report(
-                                Result.warning("constructor.invocation.failed"),
-                                tree);
-                    results = new ArrayList<Object>();
-                    /*
-                     * fail by setting the results list to empty. Since we
-                     * failed on the newInstance, all calls of this constructor
-                     * will fail, so the final results list will be an empty
-                     * list. That will cause an UnknownVal annotation to be
-                     * created, which seems appropriate here
-                     */
-                }
-            }
-            // If there are still lists of argument values left in the deque
-            else {
-
-                // Pop an argument off and iterate through all its values
-                List<?> argValues = argArrayDeque.pop();
-                for (Object o : argValues) {
-
-                    // Push one of the arg's values on and evaluate, then pop
-                    // and do the next
-                    values.push(o);
-                    evaluateNewClassHelper(argArrayDeque, values, constructor,
-                            results, tree);
-                    values.pop();
-                }
-            }
         }
 
         @Override
@@ -1313,19 +1015,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private Class<?> getClass(AnnotatedTypeMirror typeMirror, Tree tree) {
             TypeMirror type = typeMirror.getUnderlyingType();
             return ValueCheckerUtils.getClassFromType(type);
-        }
-
-       
-
-        private Class<?>[] getParameterTypes(NewClassTree tree) {
-            ExecutableElement e = TreeUtils.elementFromUse(tree);
-            Class<?>[] classes = new Class<?>[e.getParameters().size()];
-            int i = 0;
-            for (Element param : e.getParameters()) {
-                classes[i] = ValueCheckerUtils.getClassFromType(ElementUtils.getType(param));
-                i++;
-            }
-            return classes;
         }
 
         /**
@@ -1513,36 +1202,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return convertToStringVal(doubles);
             }
             return null;
-        }
-
-        /**
-         * Extracts and correctly casts all the values of a List of
-         * AnnotatedTypeMirror elements and stores them in an ArrayDeque. The
-         * order in the ArrayDeque is the reverse of the order of the List
-         * (List[0] -> ArrayDeque[size -1]). This ordering may not be intuitive
-         * but this method is used in conjunction with the recursive descent to
-         * evaluate method and constructor invocations, which will pop argument
-         * values off and push them onto another deque, so the order actually
-         * gets reversed twice and the original order is maintained.
-         *
-         * @param argTypes
-         *            a List of AnnotatedTypeMirror elements
-         *
-         * @param tree
-         *            location for error reporting
-         *
-         * @return an ArrayDeque containing List of Object where each list
-         *         corresponds to the annotation values of an
-         *         AnnotatedTypeMirror passed in.
-         */
-        private ArrayDeque<List<?>> getAllArgumentAnnotationValues(
-                List<AnnotatedTypeMirror> argTypes, Tree tree) {
-            ArrayDeque<List<?>> allArgValues = new ArrayDeque<List<?>>();
-
-            for (AnnotatedTypeMirror a : argTypes) {
-                allArgValues.push(getCastedValues(a, tree));
-            }
-            return allArgValues;
         }
 
         /**
