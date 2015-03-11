@@ -1,5 +1,11 @@
 package org.checkerframework.common.value;
 
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -59,13 +65,6 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
-
-import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -106,6 +105,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** should this type factory report warnings? **/
     private boolean reportWarnings = true;
+    
+    private ReflectiveEvalutator evalutator = new ReflectiveEvalutator(checker, this, reportWarnings);
 
     /**
      * Constructor. Initializes all the AnnotationMirror constants.
@@ -780,93 +781,43 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (isClassCovered(type)
                     && methodIsStaticallyExecutable(TreeUtils
                             .elementFromUse(tree))) {
-                ExpressionTree methodTree = tree.getMethodSelect();
-
-                // First, check that all argument values are known
-                List<? extends Tree> argTrees = tree.getArguments();
-                List<AnnotatedTypeMirror> argTypes = new ArrayList<AnnotatedTypeMirror>(
-                        argTrees.size());
-                for (Tree t : argTrees) {
-                    argTypes.add(getAnnotatedType(t));
-                }
-
-                boolean known = true;
-                for (AnnotatedTypeMirror t : argTypes) {
-                    if (nonValueAnno(t)) {
-                        known = false;
+                List<? extends ExpressionTree> arguments = tree.getArguments();
+                ArrayList<List<?>> argValues;
+                if (arguments.size() > 0) {
+                    argValues = new ArrayList<List<?>>();
+                    for (ExpressionTree argument : arguments) {
+                        AnnotatedTypeMirror argType = getAnnotatedType(argument);
+                        List<?> values = getCastedValues(argType, argument);
+                        if (values.isEmpty()) {
+                            // values aren't known, so don't try to evaluate the
+                            // method
+                            return null;
+                        }
+                        argValues.add(values);
                     }
+                } else {
+                    argValues = null;
                 }
-
-                if (known) {
-
-                    boolean isStatic = false;
-                    AnnotatedTypeMirror recType = null;
-                    Method method = null;
-
-                    try {
-                        method = getMethodObject(tree);
-                        isStatic = java.lang.reflect.Modifier.isStatic(method
-                                .getModifiers());
-
-                        if (!isStatic) {
-                            // Method is defined in another class
-                            recType = getAnnotatedType(((MemberSelectTree) methodTree)
-                                    .getExpression());
-                        }
-
-                        // Check if this is a method that can be evaluated
-
-                        // Second, check that the receiver class and method can
-                        // be reflectively instantiated, and that the method is
-                        // static or the receiver is not UnknownVal
-
-                        // Method is evaluatable because all arguments are known
-                        // and the method is static or the receiver is known
-                        if (isStatic || !nonValueAnno(recType)) {
-
-                            if (!method.isAccessible()) {
-                                method.setAccessible(true);
-                            }
-                            AnnotationMirror newAnno = evaluateMethod(recType,
-                                    method, argTypes, type, tree);
-                            if (newAnno != null) {
-                                type.replaceAnnotation(newAnno);
-                                return null;
-                            }
-                        }
-                    } catch (ClassNotFoundException
-                            | UnsupportedClassVersionError e) {
-                        if (reportWarnings)
-                            checker.report(Result.warning("class.find.failed",
-                                    (TreeUtils.elementFromUse(tree))
-                                            .getEnclosingElement()), tree);
-
-                    } catch (NoSuchMethodException e) {
-                        // The class we attempted to getMethod from inside the
-                        // call to getMethodObject.
-                        Element classElem = TreeUtils.elementFromUse(tree)
-                                .getEnclosingElement();
-
-                        if (classElem == null) {
-                            if (reportWarnings)
-                                checker.report(Result.warning(
-                                        "method.find.failed",
-                                        ((MemberSelectTree) methodTree)
-                                                .getIdentifier(), argTypes),
-                                        tree);
-                        } else {
-                            if (reportWarnings)
-                                checker.report(Result.warning(
-                                        "method.find.failed.in.class",
-                                        ((MemberSelectTree) methodTree)
-                                                .getIdentifier(), argTypes,
-                                        classElem), tree);
-                        }
+                AnnotatedTypeMirror receiver = getReceiverType(tree);
+                List<?> receiverValues;
+                
+                if (receiver != null && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
+                    receiverValues = getCastedValues(receiver,
+                            TreeUtils.getReceiverTree(tree));
+                    if (receiverValues.isEmpty()) {
+                        // values aren't known, so don't try to evaluate the
+                        // method
+                        return null;
                     }
+                } else {
+                    receiverValues = null;
                 }
+                List<?> returnValues = evalutator.evaluteMethodCall(argValues,
+                        receiverValues, tree);
+                AnnotationMirror returnType = resultAnnotationHandler(
+                        type.getUnderlyingType(), returnValues, tree);
+                type.replaceAnnotation(returnType);
             }
-            // Method was not able to be analyzed
-            type.replaceAnnotation(UNKNOWNVAL);
 
             return null;
         }
@@ -909,7 +860,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     if (paramClass.contains("java")) {
                         paramClzz.add(Class.forName(paramClass));
                     } else {
-                        paramClzz.add(getClass(ElementUtils.getType(e), tree));
+                        paramClzz.add(ValueCheckerUtils.getClassFromType(ElementUtils.getType(e), tree));
                     }
                 }
             }
@@ -960,7 +911,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             evaluateMethodHelper(allArgValues, specificArgValues, recValues,
                     method, results, tree);
-            return resultAnnotationHandler(retType, results, tree);
+            return resultAnnotationHandler(retType.getUnderlyingType(), results, tree);
         }
 
         /**
@@ -1170,7 +1121,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             evaluateNewClassHelper(allArgValues, specificArgValues,
                     constructor, results, tree);
 
-            return resultAnnotationHandler(retType, results, tree);
+            return resultAnnotationHandler(retType.getUnderlyingType(), results, tree);
         }
 
         /**
@@ -1389,38 +1340,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Gets a Class object corresponding to the String name stringType. If
-         * stringType specifies a primitive or wrapper object, the primitive
-         * version is returned ("int" or "java.lang.Integer" return int.class)
-         * To get the Class corresponding to the value array a value annotation
-         * has for a given type, use getTypeValueClass. (e.g. "int" return
-         * Long.class)
-         *
-         * @param stringType
-         * @param tree
-         *            location for error reporting
-         *
-         * @return
-         */
-        private Class<?> getClass(String stringType, Tree tree) {
-            switch (stringType) {
-            case "<nulltype>":
-                return Object.class;
-            }
-
-            try {
-                return Class.forName(stringType);
-            } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
-                if (reportWarnings)
-                    checker.report(
-                            Result.failure("class.find.failed", stringType),
-                            tree);
-                return Object.class;
-            }
-
-        }
-
-        /**
          * 
          * @param typeMirror
          *            the underlying type is used
@@ -1430,68 +1349,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private Class<?> getClass(AnnotatedTypeMirror typeMirror, Tree tree) {
             TypeMirror type = typeMirror.getUnderlyingType();
-            return getClass(type, tree);
+            return ValueCheckerUtils.getClassFromType(type, tree);
         }
 
-        private Class<?> getClass(TypeMirror type, Tree tree) {
-
-            switch (type.getKind()) {
-            case INT:
-                return int.class;
-            case LONG:
-                return long.class;
-            case SHORT:
-                return short.class;
-            case BYTE:
-                return byte.class;
-            case CHAR:
-                return char.class;
-            case DOUBLE:
-                return double.class;
-            case FLOAT:
-                return float.class;
-            case BOOLEAN:
-                return boolean.class;
-            case ARRAY:
-                return getArrayType(((ArrayType) type).getComponentType());
-            case DECLARED:
-                String stringType = TypesUtils.getQualifiedName(
-                        (DeclaredType) type).toString();
-                return getClass(stringType, tree);
-            default:
-                return Object.class;
-            }
-        }
-
-        private Class<?> getArrayType(TypeMirror componentType) {
-            switch (componentType.getKind()) {
-            case INT:
-                return int[].class;
-            case LONG:
-                return long[].class;
-            case SHORT:
-                return short[].class;
-            case BYTE:
-                return byte[].class;
-            case CHAR:
-                return char[].class;
-            case DOUBLE:
-                return double[].class;
-            case FLOAT:
-                return float[].class;
-            case BOOLEAN:
-                return boolean[].class;
-            default:
-                return Object[].class;
-            }
-        }
+       
 
         private Class<?>[] getParameterTypes(NewClassTree tree) {
             ExecutableElement e = TreeUtils.elementFromUse(tree);
             Class<?>[] classes = new Class<?>[e.getParameters().size()];
             int i = 0;
             for (Element param : e.getParameters()) {
-                classes[i] = getClass(ElementUtils.getType(param), tree);
+                classes[i] = ValueCheckerUtils.getClassFromType(ElementUtils.getType(param), tree);
                 i++;
             }
             return classes;
@@ -1554,6 +1422,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 values = convertBoolVal(anno, castType);
             } else if (AnnotationUtils.areSameByClass(anno, BottomVal.class)) {
                 values = convertBottomVal(anno, castType);
+            } else if (AnnotationUtils.areSameByClass(anno, UnknownVal.class)){
+                values = new ArrayList<>();
             }
             if (values == null) {
                 if (reportWarnings)
@@ -1719,31 +1589,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @return
          */
         private AnnotationMirror resultAnnotationHandler(
-                AnnotatedTypeMirror resultType, List<Object> results, Tree tree) {
-            return resultAnnotationHandler(getClass(resultType, tree), results);
-        }
+                TypeMirror resultType, List<?> results, Tree tree) {
+        
+            Class<?> resultClass = ValueCheckerUtils.getClassFromType(resultType, tree);
 
-        private AnnotationMirror resultAnnotationHandler(TypeMirror resultType,
-                List<Object> results, Tree tree) {
-            return resultAnnotationHandler(getClass(resultType, tree), results);
-        }
-
-        /**
-         * Returns an AnnotationMirror based on what Class it is supposed to
-         * apply to, with the annotation containing results in its value field.
-         * Annotations should never have empty value fields, so if |results| ==
-         * 0 then UnknownVal is returned.
-         *
-         * @param resultClass
-         *            the Class to return an annotation
-         * @param results
-         *            the results to go in the annotation's value field
-         *
-         * @return an AnnotationMirror containing results and corresponding to
-         *         resultClass, if possible. UnknownVal otherwise
-         */
-        private AnnotationMirror resultAnnotationHandler(Class<?> resultClass,
-                List<Object> results) {
             // For some reason null is included in the list of values,
             // so remove it so that it does not cause a NPE else where.
             results.remove(null);
@@ -1755,65 +1604,44 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 for (Object o : results) {
                     boolVals.add((Boolean) o);
                 }
-                AnnotationMirror newAnno = createAnnotation(
-                        "org.checkerframework.common.value.qual.BoolVal",
-                        boolVals);
-                return newAnno;
+                return createBooleanAnnotation(new ArrayList<Boolean>(boolVals));
 
             } else if (resultClass == Double.class
-                    || resultClass == double.class) {
-                HashSet<Double> doubleVals = new HashSet<Double>(results.size());
-                for (Object o : results) {
-                    doubleVals.add((Double) o);
-                }
-                return createAnnotation(
-                        "org.checkerframework.common.value.qual.DoubleVal",
-                        doubleVals);
-            } else if (resultClass == Float.class || resultClass == float.class) {
-                HashSet<Double> floatVals = new HashSet<Double>(results.size());
-                for (Object o : results) {
-                    floatVals.add(new Double((Float) o));
-                }
-                return createAnnotation(
-                        "org.checkerframework.common.value.qual.DoubleVal",
-                        floatVals);
-            } else if (resultClass == Integer.class || resultClass == int.class
+                    || resultClass == double.class
+                    || resultClass == Float.class || resultClass == float.class
+                    || resultClass == Integer.class || resultClass == int.class
                     || resultClass == Long.class || resultClass == long.class
                     || resultClass == Short.class || resultClass == short.class
                     || resultClass == Byte.class || resultClass == byte.class) {
-                HashSet<Long> intVals = new HashSet<Long>(results.size());
+                HashSet<Number> vals = new HashSet<>(results.size());
                 for (Object o : results) {
-                    intVals.add(((Number) o).longValue());
+                    vals.add((Number) o);
                 }
-                return createAnnotation(
-                        "org.checkerframework.common.value.qual.IntVal",
-                        intVals);
+                return createNumberAnnotationMirror(new ArrayList<Number>(vals));
             } else if (resultClass == char.class
                     || resultClass == Character.class) {
-                HashSet<Long> intVals = new HashSet<Long>(results.size());
+                HashSet<Character> intVals = new HashSet<>(results.size());
                 for (Object o : results) {
-                    intVals.add(new Long(((Character) o).charValue()));
+                    intVals.add((Character) o);
                 }
-                return createAnnotation(
-                        "org.checkerframework.common.value.qual.IntVal",
-                        intVals);
+                return createCharAnnotation(new ArrayList<Character>(intVals));
             } else if (resultClass == String.class) {
                 HashSet<String> stringVals = new HashSet<String>(results.size());
                 for (Object o : results) {
                     stringVals.add((String) o);
                 }
-                return createAnnotation(
-                        "org.checkerframework.common.value.qual.StringVal",
-                        stringVals);
+                return createStringValAnnotationMirror(new ArrayList<String>(
+                        stringVals));
             } else if (resultClass == byte[].class) {
                 HashSet<String> stringVals = new HashSet<String>(results.size());
                 for (Object o : results) {
                     stringVals.add(new String((byte[]) o));
                 }
-                return createAnnotation(
-                        "org.checkerframework.common.value.qual.StringVal",
-                        stringVals);
+                return createStringValAnnotationMirror(new ArrayList<String>(
+                        stringVals));
+
             }
+
             return UNKNOWNVAL;
         }
 
@@ -2015,7 +1843,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         Number first = values.get(0);
         if (first instanceof Integer || first instanceof Short
-                || first instanceof Long) {
+                || first instanceof Long || first instanceof Byte) {
             List<Long> intValues = new ArrayList<>();
             for (Number number : values) {
                 intValues.add(number.longValue());
@@ -2029,7 +1857,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             return createDoubleValAnnotation(intValues);
         }
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("ValueAnnotatedTypeFactory: unexpected class: "+first.getClass());
     }
 
     private AnnotationMirror createBooleanAnnotationMirror(List<Boolean> values) {
