@@ -1,13 +1,5 @@
 package org.checkerframework.framework.type;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeVariable;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -19,6 +11,14 @@ import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeVariable;
 
 /**
  * Class to test {@link AnnotatedTypeMirror} subtype relationships.
@@ -212,7 +212,7 @@ public class TypeHierarchy {
             if (lhsBase.getKind() == TypeKind.WILDCARD && rhs.getKind() != TypeKind.WILDCARD) {
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType)lhsBase;
                 if (wildcard.isTypeArgHack()) {
-                    AnnotatedTypeMirror bnd = ((AnnotatedTypeVariable)wildcard.getExtendsBound()).getEffectiveUpperBound();
+                    AnnotatedTypeMirror bnd = wildcard.getExtendsBound();
                     return isSubtypeImpl(rhs, bnd);
                 }
                 if (wildcard.getSuperBound() != null &&
