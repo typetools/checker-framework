@@ -1,0 +1,459 @@
+\htmlhr
+\chapter{Annotating libraries\label{annotating-libraries}}
+
+When annotated code uses an unannotated library, a checker may issue warnings.
+As described in Section~\ref{unannotated-code}, the best way to correct
+this problem is to add annotations to the library.  (Alternately, you can instead
+suppress all warnings related to an unannotated library by use of the
+\code{-AskipUses} or \code{-AonlyUses} command-line option; see
+Section~\ref{askipuses}.)  If you have source code for the
+library, you can easily add the annotations.
+This chapter tells you
+how to add annotations to a library for which you have no source code,
+because the library is distributed only in binary form
+(as \code{.class} files, possibly packaged in a \code{.jar} file).
+This chapter is also useful if you do not wish to edit the
+library's source code.
+
+Note that this chapter is about annotating libraries, not analyzing them.
+The Checker Framework analyzes all, and only, the source code that is
+passed to it.  The Checker Framework is a plug-in to the javac compiler,
+and it never analyzes code that is not being compiled, though it does look
+up annotations for code that is not being compiled.
+
+You can make the library's annotations known to the checkers in two ways.
+
+\begin{itemize}
+
+\item
+  You can write annotations in a ``stub
+  file'' containing classes with no method bodies.
+  Section~\ref{stub} describes how to create and use stub files.
+
+\item
+  You can insert annotations in the compiled
+  \code{.class} files of the library.
+  You would express the annotations textually, typically as an annotation index file, and
+  then insert them in the library by using the Annotation File Utilities
+  (\myurl{http://types.cs.washington.edu/annotation-file-utilities/}).
+  See the Annotation File Utilities documentation for full details.
+
+\end{itemize}
+
+The Checker Framework distribution contains annotations for popular
+libraries, such as the JDK\@.  It uses both of the above mechanisms.  The
+Nullness, Javari, IGJ, and Interning Checkers use the annotated JDKs
+(Section~\ref{skeleton}), and all other checkers use stub files
+(Section~\ref{stub}).
+
+If you annotate additional libraries, please share them with us so that we
+can distribute the annotations with the Checker Framework; see
+Section~\ref{reporting-bugs}.
+You can determine the correct annotations for a library either
+automatically by running an inference tool, or manually by reading the
+documentation.  Presently, automated type inference tools are available for the
+Nullness (Section~\ref{nullness-inference}) and Javari
+(Section~\ref{javari-inference}) type systems.
+
+
+\section{Choosing between stub files and annotated \<.class> files\label{stub-vs-class-files}}
+
+A checker can read annotations either from a stub file or from a library's
+\<.class> files.  This section helps you choose between the two alternatives.
+
+Once created, a stub file can be used directly; this makes it an easy way
+to get started with library annotations.
+When provided by the author of the checker, a stub file is used
+automatically, with no need for the user to supply a command-line option.
+
+Inserting annotations in a library's \<.class> files takes an extra step
+using an external tool, the Annotation File Utilities
+(\myurl{http://types.cs.washington.edu/annotation-file-utilities/}).
+However, this process does not suffer the limitations of stub files
+(Section~\ref{stub-limitations}).
+
+
+\section{Using stub classes\label{stub}\label{stub-creating-and-using}}
+
+A stub file contains ``stub classes'' that contain annotated signatures,
+but no method bodies.  A
+checker uses the annotated signatures at compile time, instead of or in
+addition to annotations that appear in the library.
+
+Section~\ref{stub-creating} describes how to create stub classes.
+Section~\ref{stub-using} describes how to use stub classes.
+These sections illustrate stub classes via the example of creating a \refqualclass{checker/interning/qual}{Interned}-annotated
+version of \code{java.lang.String}.  You don't need to repeat these steps
+to handle \code{java.lang.String} for the Interning Checker,
+but you might do something similar for a different class and/or checker.
+
+% First, you must install the skeleton class generator
+% (Section~\ref{skeleton-installing}).
+
+
+\subsection{Using a stub file\label{stub-using}}
+
+The \code{-Astubs} argument causes the Checker Framework to read
+annotations from annotated stub classes in preference to the unannotated
+original library classes.  For example:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  javac -processor org.checkerframework.checker.interning.InterningChecker -Astubs=String.astub:stubs MyFile.java MyOtherFile.java ...
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+Each stub path entry is a file or a directory; specifying a directory is
+equivalent to specifying every file in it whose name ends with
+\code{.astub}.  The stub path entries are delimited by
+\<File.pathSeparator> (`\<:>' for Linux and Mac, `\<;>' for Windows).
+
+A checker automatically reads the stub file \code{jdk.astub}.  (The checker
+author should place it in the same directory as the Checker class, i.e.,
+the subclass of \code{BaseTypeVisitor}.)  Programmers should only use the
+\<-Astubs> argument for additional stub files they create themselves.
+
+If a method appears in more than one stub file (or twice in the same 
+stub file), then the annotations are merged. If any of the 
+methods have different annotations from the same hierarchy on the same type,
+then the annotation from the last declaration is used.  
+
+% \textbf{The following is not implemented yet}
+% A library writers should create a file \code{library.astub} on the
+% classpath (in the resources directory or the binary jars).
+% The Checker Framework automatically imports all the stub files named
+% \code{library.astub} found in the classpath.  
+
+
+
+\subsection{Stub file format\label{stub-format}}
+
+Every Java file is a valid stub file.  However, you can omit information
+that is not relevant to pluggable type-checking; this makes the stub file
+smaller and easier for people to read and write.
+
+As an illustration, a stub file for the Interning type system
+(Chapter~\ref{interning-checker}) could be:
+
+\begin{Verbatim}
+  import org.checkerframework.checker.interning.qual.Interned;
+  package java.lang;
+  @Interned class Class<T> { }
+  class String {
+    @Interned String intern();
+  }
+\end{Verbatim}
+
+Note, annotations in comments are ignored.
+
+The stub file format is allowed to differ from Java source code in the
+following ways:
+\begin{description}
+
+\item{\textbf{Method bodies:}}
+  The stub class does not require method bodies for classes; any method
+  body may be replaced by a semicolon (\code{;}), as in an interface or
+  abstract method declaration.
+
+\item{\textbf{Method declarations:}}
+  You only have to specify the methods that you need to annotate.
+  Any method declaration may be omitted, in which case the checker reads
+  its annotations from library's \<.class> files.  (If you are using a stub class, then
+  typically the library is unannotated.)
+
+\item{\textbf{Declaration specifiers:}}
+  Declaration specifiers (e.g., \<public>, \<final>, \<volatile>)
+  may be omitted.
+
+\item{\textbf{Return types:}}
+  The return type of a method does not need to match the real method.
+  In particular, it is valid to use \<java.lang.Object> for every method.
+  This simplifies the creation of stub files.
+
+\item{\textbf{Import statements:}}
+  All imports must be at the beginning of the file.
+  The only required import statements are the ones to import type
+  annotations.  Import statements for types are optional.
+
+  Enum constants in annotations need to be either fully qualified
+  or imported.
+  For example, one has to either write the enum constant \<ANY> in
+  fully-qualified form:
+
+\begin{Verbatim}
+@Source(sparta.checkers.quals.FlowPermission.ANY)
+\end{Verbatim}
+
+\noindent
+or correctly import the enum class:
+
+\begin{Verbatim}
+import sparta.checkers.quals.FlowPermission;
+...
+@Source(FlowPermission.ANY)
+\end{Verbatim}
+
+\noindent
+or statically import the enum constants:
+
+\begin{Verbatim}
+import static sparta.checkers.quals.FlowPermission.*;
+...
+@Source(ANY)
+\end{Verbatim}
+
+  Importing all packages from a class (\<import my.package.*;>) only
+  considers annotations from that package; enum types need to be
+  explicitly imported.
+
+\item{\textbf{Multiple classes and packages:}}
+  The stub file format permits having multiple classes and packages.
+  The packages are separated by a package statement:
+  \<package my.package;>.  Each package declaration may occur only once; in
+  other words, all classes from a package must appear together.
+
+\end{description}
+
+
+
+\subsection{Creating a stub file\label{stub-creating}}
+
+
+\subsubsection{If you have access to the Java source code\label{stub-creating-with-source}}
+
+Every Java file is a stub file.  If you have access to the Java file, then
+you can use the Java file as the stub file, without removing
+any of the parts that the stub file format permits you to.  Just add
+annotations to the signatures, leaving the method bodies unchanged.
+Optionally (but highly recommended!), run the type-checker to verify that
+your annotations are correct.  When you run the type-checker on your
+annotations, there should not be any stub file that also contains
+annotations for the class.  In particular, if you are type-checking the JDK
+itself, then you should use the \<-Aignorejdkastub> command-line option.
+
+This approach retains the original
+documentation and source code, making it easier for a programmer to
+double-check the annotations.  It also enables creation of diffs, easing
+the process of upgrading when a library adds new methods.  And, the
+annotations are in a format that the library maintainers can even
+incorporate.
+
+The downside of this approach is that the stub files are larger.  This can
+slow down parsing.  Furthermore, a programmer must search the stub file
+for a given method rather than just skimming a few pages of method signatures.
+
+
+\subsubsection{If you do not have access to the Java source code\label{stub-creating-without-source}}
+
+If you do not have access to the library source code, then you can create a
+stub file from the class file (Section~\ref{stub-creating}),
+and then annotate it.  The rest of this section describes this approach.
+
+
+\begin{enumerate}
+
+\item
+  Create a stub file by running the stub class generator.  (\<checker.jar> and \<javac.jar>
+  must be on your classpath.)
+
+\begin{Verbatim}
+  cd nullness-stub
+  java org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
+\end{Verbatim}
+
+  Supply it with the fully-qualified name of the class for which you wish to
+  generate a stub class.  The stub class generator prints the
+  stub class to standard out, so you may wish to redirect its output to a
+  file.
+
+\item
+  Add import statements for the annotations.  So you would need to
+add the following import statement at the beginning of the file:
+
+\begin{Verbatim}
+  import org.checkerframework.checker.interning.qual.*;
+\end{Verbatim}
+
+\noindent
+The stub file parser silently ignores any annotations that it cannot
+resolve to a type, so don't forget the import statement.
+Use the \<-AstubWarnIfNotFound> command-line option to see warnings
+if an entry could not be found.
+
+\item
+  Add annotations to the stub class.  For example, you might annotate
+  the \sunjavadoc{java/lang/String.html\#intern()}{String.intern()} method as follows:
+
+\begin{Verbatim}
+  @Interned String intern();
+\end{Verbatim}
+
+  You may also remove irrelevant parts of the stub file; see
+  Section~\ref{stub-format}.
+
+\end{enumerate}
+
+
+Two command-line options can be used to debug the behavior of stub
+files:
+\<-AstubWarnIfNotFound> warns if a stub file entry could not be
+found. Annotations on unknown classes and methods are silently
+ignored. Use this option to ensure that all stub file entries could be
+resolved.
+\<-AstubDebug> outputs debug messages while parsing stub files.
+
+
+\subsection{Troubleshooting stub libraries\label{stub-troubleshooting}}
+
+An error is issued if a stub file has a typo or the API method does not
+exist.
+
+Fix this error by removing the extra L in the method name:
+\begin{Verbatim}
+StubParser: Method isLLowerCase(char) not found in type java.lang.Character
+\end{Verbatim}
+
+Fix this error by removing the method \<enableForgroundNdefPush(...)> from
+the stub file, because it is not defined in class \<android.nfc.NfcAdapter>
+in the version of the library you are using:
+\begin{Verbatim}
+StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback) 
+      not found in type android.nfc.NfcAdapter
+\end{Verbatim}
+
+
+\subsection{Limitations\label{stub-limitations}}
+
+The stub file reader has several limitations.  We will fix these in a
+future release.
+
+\begin{itemize}
+
+\item 
+  The receiver is written after the method parameter list, instead of as an
+  explicit first parameter.  That is, instead of
+
+\begin{Verbatim}
+     returntype methodname(@Annotations C this, params);
+\end{Verbatim}
+
+\noindent
+in a stub file one has to write
+
+\begin{Verbatim}
+     returntype methodname(params) @Annotations;
+\end{Verbatim}
+
+\item
+  The stub file reader
+  does not handle nested classes.  To work around this, it permits a
+  top-level class to be written with a \<\$> in its name, and applies the
+  annotations to the appropriate nested class.
+
+\item
+  Annotations must be written before the package name on a fully qualified 
+  types rather than directly on the type it qualifies.  However, it is usually not 
+  necessary to write the fully qualified name.  
+  
+  \begin{Verbatim}
+          void init(@Nullable java.security.SecureRandom random);
+   \end{Verbatim}
+
+\item
+  Annotations can only use string, boolean, or integer literals; other literals are not
+  yet supported.
+\end{itemize}
+
+If these limitations are a problem, then you should insert annotations
+in the library's \<.class> files instead.
+
+
+% Label "skeleton" is for old links from the Javarifier manual, to prevent
+% them from being broken links.
+
+\section{Using distributed annotated JDKs\label{skeleton-using}\label{skeleton}}
+
+The Checker Framework distribution contains two
+annotated JDKs at the paths \<checker/dist/jdk7.jar> and
+\<checker/dist/jdk8.jar>.
+The \<javac> that is distributed with the Checker Framework and the command
+\code{java -jar \$CHECKERFRAMEWORK/checker/dist/checker.jar} both use the appropriate \<jdk7.jar> or \<jdk8.jar>
+based on the version of Java used to run them.
+
+The annotated JDKs should \emph{not} be in your classpath at run time, only
+at compile time; and they are automatically added to your classpath at
+compile time.
+
+% Skeleton classes are inferior to stub classes for two reasons.  First,
+% skeleton files must be on the classpath during compilation but must
+% \emph{not} be on the classpath during execution; this is inconvenient and
+% error-prone.  Second, the skeleton files contain incorrect values for
+% certain static final fields.  These incorrect values can lead to
+% run-time problems unless the Java code is re-compiled without the skeleton
+% classes after type-checking is complete.
+
+
+
+% \section{Installing the skeleton class generator\label{skeleton-installing}}
+%
+% Source code for the skeleton class generator tool is included in the
+% Checker Framework
+% distribution, but because the tool has additional dependencies, the provided
+% build script does not build the tool by default.
+%
+% Follow these steps to install the skeleton class generator:
+%
+% \begin{enumerate}
+%
+% \item
+%   Install the annotation file utilities, using the instructions at
+%   \myurl{http://types.cs.washington.edu/annotation-file-utilities/}.
+%   Per those instructions, the \code{annotation-file-utilities.jar} file
+%   should be on your classpath.
+%
+% % TODO This item should become optional; tell people to install the AFU in
+% % the right place.
+% \item
+%   Update the \code{build.properties} file in the Checker Framework distribution so
+%   that the \code{annotation-utils.lib} property specifies the location of
+%   the \code{annotation-file-utilities.jar} library.
+%
+% \item
+%   Build the skeleton class generator tool by running \code{ant
+%     skeleton-util dist} in the \code{checker} directory.  This updates the
+%   \code{checker.jar} file to contain the skeleton class generator.
+%   \code{checker.jar} should already be on your classpath (see
+%   Section~\ref{installation}).
+%
+% \end{enumerate}
+
+
+\section{Troubleshooting/debugging annotated libraries\label{libraries-troubleshooting}}
+
+Sometimes, it may seem that a checker is treating a library as unannotated
+even though the library has annotations.  The compiler has two flags that
+may help you in determining whether library files are read, and if they are
+read whether the library's annotations are parsed.
+
+\begin{description}
+\item \<-verbose>
+  Outputs info about compile phases --- when the compiler
+  reads/parses/attributes/writes any file.  Also outputs the classpath and
+  sourcepath paths.
+\item \<-XDTA:parser> (which is equivalent to \<-XDTA:reader> plus \<-XDTA:writer>)
+  Sets the internal \<debugJSR308> flag, which outputs information about
+  reading and writing.
+\end{description}
+
+
+% LocalWords:  plugin utils util dist RuntimeException NonNull TODO AFU enum
+% LocalWords:  sourcepath Nullness javac classpath src quals pathSeparator JDKs
+% LocalWords:  IGJ's jdk Astubs skipUses astub AskipUses toArray IGJ JDK6
+% LocalWords:  CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
+% LocalWords:  Interning's UsesObjectEquals Anocheckjdk AonlyUses java
+%  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug jdk6 jdk7
+%  LocalWords:  enableForgroundNdefPush XDTA debugJSR308

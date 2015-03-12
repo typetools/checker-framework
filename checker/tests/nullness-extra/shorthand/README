@@ -1,0 +1,24 @@
+This is a test of the "checker shorthand" feature.
+See: http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#shorthand-for-checkers
+This test is not Nullness specific.
+
+We have placed this test in this location because it has two preconditions:
+1) It must be run after checker.jar is created
+2) It must be run via CheckerMain and not via bootclasspath manipulation in the build file
+The normal testing methods do not require a fully built checker.jar and we did not want to force this
+requirement on them.  Furthermore, the JUnit tests do not run through CheckerMain.  This cannot be placed in
+the jtreg test suite because it does not run through CheckerMain.
+
+This test ensures that:
+  a) Single checkers can be called using the shorthand notation
+     see NullnessOnlyExpected.txt
+
+  b) Multiple checkers can be called using the shorthand notation
+     see NullnessRegexExpected.txt
+
+  c) That adding a package-name in front of a checker eliminates it as a candidate for shorthand.
+     see NullnessBadExpected.txt
+
+  d) That names that aren't checkers actually lead to the usual error message for missing annotation processors
+     even when they are of the correct form for a shorthand processor.
+     see NonsenseExpected.txt
