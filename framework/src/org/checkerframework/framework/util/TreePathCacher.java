@@ -1,14 +1,12 @@
 package org.checkerframework.framework.util;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
-
-import java.lang.ref.SoftReference;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * TreePathCacher is a TreeScanner that creates and caches a TreePath for a target
@@ -20,9 +18,9 @@ import java.util.Map;
  *
  * @author mcarthur
  */
-public class TreePathCacher  extends TreeScanner<TreePath, Tree> {
+public class TreePathCacher extends TreeScanner<TreePath, Tree> {
 
-    private Map<Tree, TreePath> foundPaths = new HashMap<>();
+    private final Map<Tree, TreePath> foundPaths = new HashMap<>();
     // The TreePath of the previous tree scanned.
     // It is always set back to null after a scan has completed.
     private TreePath path;
