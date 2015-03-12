@@ -1,10 +1,10 @@
 package org.checkerframework.checker.oigj;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * A type-checker plug-in for the OIGJ immutability type system that finds (and

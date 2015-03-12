@@ -2,7 +2,6 @@ package org.checkerframework.checker.propkey.qual;
 
 import java.lang.annotation.*;
 
-import com.sun.source.tree.Tree;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;

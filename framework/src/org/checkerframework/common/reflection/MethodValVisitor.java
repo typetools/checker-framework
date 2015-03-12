@@ -1,10 +1,5 @@
 package org.checkerframework.common.reflection;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.lang.model.element.AnnotationMirror;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -13,6 +8,10 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
+
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
 
 import com.sun.source.tree.Tree;
 
