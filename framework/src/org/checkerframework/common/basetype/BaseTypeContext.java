@@ -1,7 +1,6 @@
 package org.checkerframework.common.basetype;
 
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
 
 /** An extension of {@link CFContext} that includes {@link

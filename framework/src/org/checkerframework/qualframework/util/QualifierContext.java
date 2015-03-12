@@ -1,9 +1,5 @@
 package org.checkerframework.qualframework.util;
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-
 import org.checkerframework.framework.util.BaseContext;
 import org.checkerframework.qualframework.base.Checker;
 import org.checkerframework.qualframework.base.CheckerAdapter;
