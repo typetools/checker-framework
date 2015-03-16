@@ -24,8 +24,7 @@ public interface AFReducer {
      *
      * @param constraint The constraint to reduce
      * @param newConstraints The new constraints that may still need to be reduced
-     * @param finished The set of constraints that are irreducible
      * @return True if the input constraint was handled by this reducer, false otherwise
      */
-    public boolean reduce(AFConstraint constraint, Set<AFConstraint> newConstraints, Set<AFConstraint> finished);
+    public boolean reduce(AFConstraint constraint, Set<AFConstraint> newConstraints);
 }
