@@ -8,6 +8,7 @@ import java.util.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -154,6 +155,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         TypeMirror underlyingType = InternalUtils.greatestLowerBound(analysis
                 .getEnv(), getType().getUnderlyingType(), other.getType()
                 .getUnderlyingType());
+
+        underlyingType = handleTypeVarIntersections(
+                getType().getUnderlyingType(), other.getType().getUnderlyingType(), underlyingType);
+
         if (underlyingType.getKind() == TypeKind.ERROR
                 || underlyingType.getKind() == TypeKind.NONE) {
             // pick one of the option
@@ -175,6 +180,43 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         } else {
             return backup;
         }
+    }
+
+    /**
+     * TODO: RETHINK THESE WHEN WE ACTUALLY CONSIDER THE INTENDED SEMANTICS OF INTERSECTIONS
+     * When data flow encounters the following:
+     * <T> void method(T t) {
+     *     if (t instance of Cloneable) {
+     *     }
+     * }
+     *
+     * We will take glb(T, Cloneable) and it will yield T & Cloneable
+     * Much of our handling of intersection types relies on the fact that you cannot write a
+     * type variable in an intersection bound.  This will cause many errors.
+     *
+     * Since t must be a type T, it is useful just to use T itself as the mostSpecific type,
+     * so we will use it for now.
+     *
+     * @return
+     */
+    private static TypeMirror handleTypeVarIntersections(TypeMirror thisType, TypeMirror other, TypeMirror glbType) {
+
+        TypeMirror typeVar = null;
+        if (  thisType.getKind() == TypeKind.TYPEVAR ) {
+            typeVar = thisType;
+        } else if ( other.getKind() == TypeKind.TYPEVAR ) {
+            typeVar = other;
+        }
+
+        if (typeVar != null && glbType.getKind() == TypeKind.INTERSECTION) {
+            for (TypeMirror bound : ((IntersectionType) glbType).getBounds()) {
+                if (bound.equals(typeVar)) {
+                    return typeVar;
+                }
+            }
+        }
+
+        return glbType;
     }
 
     /**
