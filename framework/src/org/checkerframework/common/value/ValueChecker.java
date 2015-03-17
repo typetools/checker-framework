@@ -4,12 +4,14 @@ import java.util.LinkedHashSet;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.qual.StubFiles;
 
 /**
  * @author plvines
  * 
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
+@StubFiles("statically-executable.astub")
 public class ValueChecker extends BaseTypeChecker {
 
     @Override
