@@ -26,9 +26,11 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultForInUntyped;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.DefaultQualifierInUntyped;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.Unqualified;
@@ -343,40 +345,58 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defs = new QualifierDefaults(elements, this);
+	boolean foundDefaultOtherwise = false;
 
-        // TODO: this should be per qualifier hierarchy.
-        boolean foundDefaultOtherwise = false;
-
+        // TODO: Verify that only one default per location type is present.
         for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
-            boolean hasDefaultFor = false;
             if (defaultFor != null) {
                 defs.addAbsoluteDefaults(AnnotationUtils.fromClass(elements,qual),
-                        defaultFor.value());
-                hasDefaultFor = true;
-                for (DefaultLocation dl : defaultFor.value()) {
-                    if (dl == DefaultLocation.OTHERWISE) {
-                        foundDefaultOtherwise = true;
-                    }
-                }
+                    defaultFor.value());
+
+		if (Arrays.asList(defaultFor.value()).contains(DefaultLocation.OTHERWISE)) {
+		    foundDefaultOtherwise = true;
+		}
             }
 
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
-                if (hasDefaultFor) {
+                if (defaultFor != null) {
                     // A type qualifier should either have a DefaultFor or
                     // a DefaultQualifierInHierarchy annotation
                     ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
                             "qualifier has both @DefaultFor and @DefaultQualifierInHierarchy annotations: " +
                             qual.getCanonicalName());
-                // } else if (foundDefaultOtherwise) {
-                    // TODO: raise an error once we know whether the previous
-                    // occurrence was in the same hierarchy
                 } else {
                     defs.addAbsoluteDefault(AnnotationUtils.fromClass(elements, qual),
-                            DefaultLocation.OTHERWISE);
-                    foundDefaultOtherwise = true;
+                        DefaultLocation.OTHERWISE);
+		    foundDefaultOtherwise = true;
                 }
             }
+
+	    // Add defaults for untyped code if conservative untyped flag is passed.
+	    if (checker.hasOption("conservativeUntyped")) {
+		DefaultForInUntyped defaultForUntyped = qual.getAnnotation(DefaultForInUntyped.class);
+
+		if (defaultForUntyped != null) {
+		    defs.addUntypedDefaults(AnnotationUtils.fromClass(elements, qual),
+			defaultForUntyped.value());
+		}
+
+		if (qual.getAnnotation(DefaultQualifierInUntyped.class) != null) {
+		    if (defaultForUntyped != null) {
+			// A type qualifier should either have a DefaultForInUntyped or
+			// a DefaultQualifierInUntyped annotation.
+			ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
+			    "qualifier has both @DefaultForInUntyped and @DefaultQualifierInUntyped annotations: " +
+   			    qual.getCanonicalName());
+		    } else {
+			for (DefaultLocation location : QualifierDefaults.validLocationsForUntyped()) {
+  			    defs.addUntypedDefault(AnnotationUtils.fromClass(elements, qual),
+			        location);
+			}
+		    }
+	      	}
+	    }
         }
 
         // If Unqualified is a supported qualifier, make it the default.
