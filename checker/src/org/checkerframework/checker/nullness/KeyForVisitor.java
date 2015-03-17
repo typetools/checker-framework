@@ -1,5 +1,9 @@
 package org.checkerframework.checker.nullness;
 
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
+
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
