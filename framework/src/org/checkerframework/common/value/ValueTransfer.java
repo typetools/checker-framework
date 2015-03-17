@@ -1,21 +1,5 @@
 package org.checkerframework.common.value;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
-
-import org.checkerframework.common.value.qual.BoolVal;
-import org.checkerframework.common.value.qual.BottomVal;
-import org.checkerframework.common.value.qual.DoubleVal;
-import org.checkerframework.common.value.qual.IntVal;
-import org.checkerframework.common.value.qual.StringVal;
-import org.checkerframework.common.value.qual.UnknownVal;
-import org.checkerframework.common.value.util.NumberMath;
-import org.checkerframework.common.value.util.NumberUtils;
-
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -36,6 +20,8 @@ import org.checkerframework.dataflow.cfg.node.IntegerRemainderNode;
 import org.checkerframework.dataflow.cfg.node.LeftShiftNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
+import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
@@ -46,16 +32,33 @@ import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.dataflow.cfg.node.SignedRightShiftNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
-import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
+import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TypesUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+
+import org.checkerframework.common.value.qual.BoolVal;
+import org.checkerframework.common.value.qual.BottomVal;
+import org.checkerframework.common.value.qual.DoubleVal;
+import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.common.value.qual.UnknownVal;
+import org.checkerframework.common.value.util.NumberMath;
+import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-
-import org.checkerframework.javacutil.AnnotationUtils;
 
 
 public class ValueTransfer extends CFTransfer {
@@ -65,13 +68,8 @@ public class ValueTransfer extends CFTransfer {
             CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
         atypefactory = analysis.getTypeFactory();
-    }
-@Override
-public TransferResult<CFValue, CFStore> visitTernaryExpression(
-        TernaryExpressionNode n, TransferInput<CFValue, CFStore> p) {
-    // TODO Auto-generated method stub
-    return super.visitTernaryExpression(n, p);
-}
+    } 
+
     private List<String> getStringValues(Node subNode,
             TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
@@ -144,7 +142,6 @@ public TransferResult<CFValue, CFStore> visitTernaryExpression(
             values = AnnotationUtils.getElementValueArray(numberAnno, "value",
                     Long.class, true);
         }
-
         return NumberUtils.castNumbers(subNode.getType(), values);
     }
 
@@ -209,7 +206,7 @@ public TransferResult<CFValue, CFStore> visitTernaryExpression(
         return new RegularTransferResult<>(newResultValue,
                 result.getRegularStore());
     }
-
+    
     @Override
     public TransferResult<CFValue, CFStore> visitStringConcatenate(
             StringConcatenateNode n, TransferInput<CFValue, CFStore> p) {
@@ -576,10 +573,15 @@ public TransferResult<CFValue, CFStore> visitTernaryExpression(
             TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitEqualTo(n,
                 p);
-        List<Boolean> resultValues = calcutateBinaryComparison(
-                n.getLeftOperand(), n.getRightOperand(),
-                ComparisonOperators.EQUAL, p);
-        return createNewResultBoolean(transferResult, resultValues);
+        if (TypesUtils.isPrimitive(n.getLeftOperand().getType())
+                || TypesUtils.isPrimitive(n.getRightOperand().getType())) {
+            //At least one must be a primitive otherwise reference equality is used.
+            List<Boolean> resultValues = calcutateBinaryComparison(
+                    n.getLeftOperand(), n.getRightOperand(),
+                    ComparisonOperators.EQUAL, p);
+            return createNewResultBoolean(transferResult, resultValues);
+        }
+        return super.visitEqualTo(n, p);
     }
 
     @Override
@@ -587,10 +589,16 @@ public TransferResult<CFValue, CFStore> visitTernaryExpression(
             TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super.visitNotEqual(
                 n, p);
-        List<Boolean> resultValues = calcutateBinaryComparison(
-                n.getLeftOperand(), n.getRightOperand(),
-                ComparisonOperators.NOT_EQUAL, p);
-        return createNewResultBoolean(transferResult, resultValues);
+        if (TypesUtils.isPrimitive(n.getLeftOperand().getType())
+                || TypesUtils.isPrimitive(n.getRightOperand().getType())) {
+            // At least one must be a primitive otherwise reference equality is
+            // used.
+            List<Boolean> resultValues = calcutateBinaryComparison(
+                    n.getLeftOperand(), n.getRightOperand(),
+                    ComparisonOperators.NOT_EQUAL, p);
+            return createNewResultBoolean(transferResult, resultValues);
+        }
+        return super.visitNotEqual(n, p);
     }
 
     enum ConditionalOperators {

@@ -246,7 +246,7 @@ public class ReflectiveEvalutator {
                                 Result.warning("constructor.invocation.failed"),
                                 tree);
                     return new ArrayList<Object>();
-                }
+                } 
                 return results;
             }
 
@@ -262,10 +262,37 @@ public class ReflectiveEvalutator {
             throws ClassNotFoundException, NoSuchMethodException {
         ExecutableElement ele = TreeUtils.elementFromUse(tree);
         List<Class<?>> paramClasses = getParameterClasses(tree, ele);
-        Class<?> recClass = ValueCheckerUtils
-                .boxPrimatives(ValueCheckerUtils.getClassFromType(typeToCreate));
+        Class<?> recClass = boxPrimatives(ValueCheckerUtils.getClassFromType(typeToCreate));
         Constructor<?> constructor = recClass.getConstructor(paramClasses
                 .toArray(new Class<?>[0]));
         return constructor;
     }
+    /**
+     * Returns the box primitive type if the passed type is an (unboxed)
+     * primitive. Otherwise it returns the passed type
+     * 
+     * @param type
+     * @return
+     */
+    private static Class<?> boxPrimatives(Class<?> type) {
+        if (type == byte.class) {
+            return Byte.class;
+        } else if (type == short.class) {
+            return Short.class;
+        } else if (type == int.class) {
+            return Integer.class;
+        } else if (type == long.class) {
+            return Long.class;
+        } else if (type == float.class) {
+            return Float.class;
+        } else if (type == double.class) {
+            return Double.class;
+        } else if (type == char.class) {
+            return Character.class;
+        } else if (type == boolean.class) {
+            return Boolean.class;
+        }
+        return type;
+    }
+   
 }
