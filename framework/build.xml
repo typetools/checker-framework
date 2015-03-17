@@ -392,6 +392,13 @@
         </antcall>
     </target>
 
+        <target name="aggregate-tests" depends="jar,build-tests"
+            description="Run tests for aggregate checkers">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.AggregateTest"/>
+        </antcall>
+    </target>
+
     <target name="methodval-tests" depends="jar,build-tests"
             description="Run tests for the MethodVal Checker ">
         <antcall target="-run-tests">
