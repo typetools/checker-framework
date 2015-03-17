@@ -1,0 +1,1069 @@
+\htmlhr
+\chapter{Troubleshooting and getting help\label{troubleshooting}}
+
+\begin{sloppypar}
+The manual might already answer your question, so first please look for
+your answer in the manual,
+including this chapter and the FAQ (Chapter~\ref{faq}).
+If not, you can use the mailing list,
+\code{checker-framework-discuss@googlegroups.com}, to ask other users for
+help.  For archives and to subscribe, see \url{http://groups.google.com/group/checker-framework-discuss}.
+To report bugs, please see Section~\ref{reporting-bugs}.
+If you want to help out, you can give feedback (including on the
+documentation), choose a bug and fix it, or select a
+project from the ideas list at
+\url{http://code.google.com/p/checker-framework/wiki/Ideas}.
+\end{sloppypar}
+
+
+\section{Common problems and solutions\label{common-problems}}
+
+\begin{itemize}
+\item
+To verify that you are using the compiler you think you are, you can add
+\code{-version} to the command line.  For instance, instead of running
+\code{javac -g MyFile.java}, you can run \code{javac \underline{-version} -g
+  MyFile.java}.  Then, javac will print out its version number in addition
+to doing its normal processing.
+
+\end{itemize}
+
+
+
+\subsection{Unable to run the checker, or checker crashes\label{common-problems-running}}
+
+If you are unable to run the checker, or if the checker or the compiler
+terminates with an error, then the problem may be a problem with your environment.
+(If the checker or the compiler crashes, that is a bug in the Checker
+Framework; please report it.  See Section~\ref{reporting-bugs}.)
+This section describes some possible problems and solutions.
+
+\begin{itemize}
+\item
+If you get the error
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+com.sun.tools.javac.code.Symbol$CompletionFailure: class file for com.sun.source.tree.Tree not found
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\noindent
+then you are using the source installation and file \code{tools.jar} is not
+on your classpath.  See the installation instructions
+(Section~\ref{installation}).
+
+\item
+If you get an error such as
+
+\begin{Verbatim}
+package org.checkerframework.checker.nullness.qual does not exist
+\end{Verbatim}
+
+  \noindent
+\begin{sloppypar}
+  despite no apparent use of \code{import org.checkerframework.checker.nullness.qual.*;} in
+  the source code, then perhaps
+  \code{jsr308\_imports} is set as a Java system property, a shell
+  environment variable, or a command-line option.
+  You should solve this by unsetting the variable/option.
+\end{sloppypar}
+
+If the error is 
+
+\begin{Verbatim}
+package org.checkerframework.checker.nullness.qual does not exist
+\end{Verbatim}
+
+\noindent
+(note the extra apostrophe!), then you have probably misused quoting when
+supplying the \code{jsr308\_imports} environment variable.
+
+\item
+If you get an error like one of the following,
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+...\build.xml:59: Error running ${env.CHECKERFRAMEWORK}\checker\bin\javac.bat compiler
+\end{Verbatim}
+
+\begin{Verbatim}
+.../bin/javac: Command not found
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\noindent
+then the problem may be that you have not set the \code{CHECKERFRAMEWORK} environment
+variable, as described in Section~\ref{javac-installation}.  Or, maybe
+you made it a user variable instead of a system variable.
+
+\item
+If you get one of these errors:
+
+\begin{alltt}
+The hierarchy of the type \emph{ClassName} is inconsistent
+
+The type com.sun.source.util.AbstractTypeProcessor cannot be resolved.
+  It is indirectly referenced from required .class files
+\end{alltt}
+
+\noindent
+then you are likely \textbf{not} using the Checker Framework compiler.  Use
+either \code{\$CHECKERFRAMEWORK/checker/bin/javac} one of the alternatives
+described in Section~\ref{installation}.
+
+
+\item
+If you get the error
+
+\begin{Verbatim}
+  java.lang.ArrayStoreException: sun.reflect.annotation.TypeNotPresentExceptionProxy
+\end{Verbatim}
+
+\noindent
+If you get an error such as
+
+\begin{Verbatim}
+  java.lang.NoClassDefFoundError: java/util/Objects
+\end{Verbatim}
+
+\noindent
+then you are trying to run the compiler using a JDK 6 or earlier JVM\@.
+Install and use a Java 7 or 8 JDK, at least for running the Checker
+Framework.
+
+\noindent
+% I'm not 100% sure of the following explanation and solution.
+then an annotation is not present at run time that was present at compile
+time.  For example, maybe when you compiled the code, the \<@Nullable>
+annotation was available, but it was not available at run time.
+You can use JDK 8 at run time, or compile
+with a Java 6 or 7 compiler that will ignore the annotations in comments.
+
+\item
+A ``class file for \ldots\ not found'' error, especially for an inner class
+in the JDK, is probably due to a JDK version mismatch.
+
+In general, Java issues a ``class file for \ldots\ not found'' error when
+your classpath contains code that was compiled
+with some library, but your classpath does not contain that library itself.
+
+For example, suppose that when you run the compiler, you are using JDK 8,
+but some library on your classpath was compiled against JDK 6 or 7, and the
+compiled library refers to a class that only appears in JDK 6 or 7.  (If only
+one version of Java existed, or the Checker Framework didn't try to support
+multiple different versions of Java, this would not be a problem.)
+
+Examples of classes that were in JDK 7 but were removed in JDK 8 include:
+
+\begin{Verbatim}
+  class file for java.util.TimeZone$DisplayNames not found
+\end{Verbatim}
+
+Examples of classes that were in JDK 6 but were removed in JDK 7 include:
+
+\begin{Verbatim}
+  class file for java.io.File$LazyInitialization not found
+  class file for java.util.Hashtable$EmptyIterator not found
+  java.lang.NoClassDefFoundError: java/util/Hashtable$EmptyEnumerator
+\end{Verbatim}
+
+Examples of classes that were not in JDK 7 but were introduced in JDK 8 include:
+
+\begin{Verbatim}
+  The type java.lang.Class$ReflectionData cannot be resolved
+\end{Verbatim}
+
+Examples of classes that were not in JDK 6 but were introduced in JDK 7 include:
+
+\begin{Verbatim}
+  class file for java.util.Vector$Itr not found
+\end{Verbatim}
+
+There are even classes that were introduced within a single JDK release.
+Classes that appear in JDK 7 release 71 but not in JDK 7 release 45 include:
+
+\begin{Verbatim}
+  class file for java.lang.Class$ReflectionData not found
+\end{Verbatim}
+
+You may be able to solve the problem by running
+
+\begin{Verbatim}
+  cd checker
+  ant jdk.jar bindist
+\end{Verbatim}
+
+\noindent
+to re-generate files \code{checker/jdk/jdk\{7,8\}.jar} and \code{checker/bin/jdk\{7,8\}.jar}.
+
+That usually works, but if not, then you should recompile the Checker
+Framework from source rather than using the pre-compiled distribution.
+
+
+\item
+A \<NoSuchFieldError> such as this:
+
+\begin{Verbatim}
+java.lang.NoSuchFieldError: NATIVE_HEADER_OUTPUT
+\end{Verbatim}
+
+\noindent
+Field \<NATIVE\_HEADER\_OUTPUT> was added in JDK 8.
+The error message suggests that
+you're not executing with the right bootclasspath: some classes were
+compiled with the JDK 8 version and expect the field, but you're
+executing the compiler on a JDK without the field.
+
+One possibility is that you are not running the Checker Framework compiler
+--- use \<javac -version> to check this, then use the right one.  (Maybe
+the Checker Framework javac is at the end rather than the beginning of your
+path.)
+
+If you are using Ant, then one possibility
+is that the javac compiler is using the same JDK as Ant is using.  You can
+correct this by being sure to use \<fork="yes"> (see
+Section~\ref{ant-task}) and/or setting the \<build.compiler> property to
+\<extJavac>.
+
+If you are building from source, you might need to rebuild the Annotation
+File Utilities before recompiling or using the Checker Framework.
+
+
+\item
+If you get an error that contains lines like these:
+
+\begin{Verbatim}
+Caused by: java.util.zip.ZipException: error in opening zip file
+	at java.util.zip.ZipFile.open(Native Method)
+	at java.util.zip.ZipFile.<init>(ZipFile.java:131)
+\end{Verbatim}
+
+\noindent
+then one possibility is that you have installed the Checker Framework in a
+directory that contains special characters that Java's ZipFile
+implementation cannot handle.  For instance, if the directory name contains
+``\<+>'', then Java 1.6 throws a ZipException, and Java 1.7 throws a
+FileNotFoundException and prints out the directory name with ``\<+>''
+replaced by blanks.
+
+\item
+If you get an error
+
+\begin{Verbatim}
+error: scoping construct for static nested type cannot be annotated
+\end{Verbatim}
+
+\noindent
+\begin{sloppypar}
+then you have probably written something like \<@Nullable java.util.List>.
+The correct syntax is \<java.util.@Nullable List>.  But, it's usually
+better to add \<import java.util.List> to your source file, so that you can
+just write \<@Nullable List>.  Likewise, you must write \<Outer.@Nullable
+StaticNestedClass> rather than \<@Nullable Outer.StaticNestedClass>.
+\end{sloppypar}
+
+Java 8 requires that a type qualifier be written directly on the type that
+it qualifies, rather than on a scoping mechanism that assists in resolving
+the name.  Examples of scoping mechanisms are package names and outer
+classes of static nested classes.
+
+The reason for the Java 8 syntax is to avoid syntactic irregularity.  When
+writing a member nested class (also known as an inner class), it is
+possible to write annotations on both the outer and the inner class:  \<@A1
+Outer. @A2 Inner>.  Therefore, when writing a static nested class, the
+annotations should go on the same place:  \<Outer. @A3 StaticNested> (rather
+than \<@ConfusingAnnotation Outer. Nested> where
+\<@ConfusingAnnotation> applies to \<Outer> if \<Nested> is a member class
+and applies to \<Nested> if \<Nested> is a static class).  It's not legal
+to write an annotation on the outer class of a static nested class, because
+neither annotations nor instantiations of the outer class affect the static
+nested class.
+
+Similar arguments apply when annotating \<package.Outer.Nested>.
+
+\end{itemize}
+
+
+\subsection{Unexpected type-checking results\label{common-problems-typechecking}}
+
+This section describes possible problems that can lead the type-checker to
+give unexpected results.
+
+
+\begin{itemize}
+\item
+  If the Checker Framework is unable to verify a property that you know is
+  true, then it is helpful to formulate an argument about why the property
+  is true.  Recall that the Checker Framework does modular verification,
+  one procedure at a time; it observes the specifications, but not the
+  implementations, of other methods.
+
+  If any aspects of your argument are not expressed as annotations, then
+  you may need to write more annotations.  If any aspects of your argument
+  are not expressible as annotations, then you may need to extend the
+  type-checker.
+
+\item
+If a checker seems to be ignoring the annotation on a method, then it is
+possible that the checker is reading the method's signature from its
+\code{.class} file, but the \code{.class} file was not created by the JSR
+308 compiler.  You can check whether the annotations actually appear in the
+\code{.class} file by using the \code{javap} tool.
+
+If the annotations do not appear in the \code{.class} file, here are two
+ways to solve the problem:
+\begin{itemize}
+\item
+  Re-compile the method's class with the Checker Framework compiler.  This will
+  ensure that the type annotations are written to the class file, even if
+  no type-checking happens during that execution.
+\item
+  Pass the method's file explicitly on the command line when type-checking,
+  so that the compiler reads its source code instead of its \code{.class}
+  file.
+\end{itemize}
+
+\item
+If a checker issues a warning about a property that it accepted (or that
+was checked) on a previous line, then probably there was a side-effecting
+method call in between that could invalidate the property.  For example, in
+this code:
+
+\begin{Verbatim}
+if (currentOutgoing != null && !message.isCompleted()) {
+    currentOutgoing.continueBuffering(message);
+}
+\end{Verbatim}
+
+\noindent
+the Nullness Checker will issue a warning on the second line:
+\begin{Verbatim}
+warning: [dereference.of.nullable] dereference of possibly-null reference currentOutgoing
+    currentOutgoing.continueBuffering(message);
+    ^
+\end{Verbatim}
+
+If \<currentOutgoing> is a field rather than a local variable, and
+\<isCompleted()> is not a pure method, then a null pointer
+dereference can occur at the given location, because \<isCompleted()> might set
+the field \<currentOutgoing> to \<null>.
+
+If you want to communicate that
+isCompleted() does not set the field \<currentOutgoing> to \<null>, you can use
+\<\refqualclass{dataflow/qual}{Pure}>,
+\<\refqualclass{dataflow/qual}{SideEffectFree}>,
+or \<\refqualclass{checker/nullness/qual}{EnsuresNonNull}> on the
+declaration of \<isCompleted()>; see Sections~\ref{type-refinement-purity}
+and~\ref{nullness-method-annotations}.
+
+
+\item
+If a checker issues a type-checking error for a call that the library's
+documentation states is correct, then maybe that library method has not yet
+been annotated, so default annotations are being used.
+
+To solve the problem, add the missing annotations to the library (see
+Chapter~\ref{annotating-libraries}).  Depending on the checker, the
+annotations might be expressed in the form of stub files (which appear
+together with the checker's source code, such as in file
+\code{checker/src/org/checkerframework/checker/interning/jdk.astub} for the
+Interning Checker) or in the form of annotated libraries (which appear
+under \code{checker/jdk/}, such as at \code{checker/jdk/nullness/src/} for
+the Nullness Checker.
+
+\item
+If the compiler reports that it cannot find a method from the JDK or
+another external library, then maybe the stub/skeleton file for that class
+is incomplete.
+
+To solve the problem, add the missing annotations to the library, as
+described in the previous item.
+
+The error might take one of these forms:
+
+\begin{Verbatim}
+method sleep in class Thread cannot be applied to given types
+cannot find symbol: constructor StringBuffer(StringBuffer)
+\end{Verbatim}
+
+\item
+If you get an error related to a bounded type parameter and a literal such
+as \<null>, the problem may be missing defaulting.  Here is an example:
+
+\begin{Verbatim}
+mypackage/MyClass.java:2044: warning: incompatible types in assignment.
+      T retval = null;
+                 ^
+  found   : null
+  required: T extends @MyQualifier Object
+\end{Verbatim}
+
+\noindent
+A value that can be assigned to a variable of type \<T extends @MyQualifier
+Object> only if that value is of the bottom type, since the bottom type is
+the only one that is a subtype of every subtype of \<T extends @MyQualifier
+Object>.  The value \<null> satisfies this for the Java type system, and it
+must be made to satisfy it for the pluggable type system as well.  The
+typical way to address this is to write the meta-annotation
+\<@ImplicitFor(trees={Tree.Kind.NULL\_LITERAL})> on the definition of the
+bottom type qualifier.
+
+\item
+An error such as 
+
+\begin{Verbatim}
+MyFile.java:123: error: incompatible types in argument.
+                        myModel.addElement("Scanning directories...");
+                                           ^
+  found   : String
+  required: ? extends Object
+\end{Verbatim}
+
+\noindent
+may stem from use of raw types.  (``\<String>'' might be a different type
+and might have type annotations.)  If your declaration was
+
+\begin{Verbatim}
+  DefaultListModel myModel;
+\end{Verbatim}
+
+\noindent
+then it should be
+\begin{Verbatim}
+  DefaultListModel<String> myModel;
+\end{Verbatim}
+
+Running the regular Java compiler with the \<-Xlint:unchecked> command-line
+option will help you to find and fix problems such as raw types.
+
+
+\item
+The error
+
+\begin{Verbatim}
+error: annotation type not applicable to this kind of declaration
+    ... List<@NonNull String> ...
+\end{Verbatim}
+
+\noindent
+indicates that you are using a definition of \<@NonNull> that is a
+declaration annotation, which cannot be used in that syntactic location.
+For example, many legacy annotations such as those listed in
+Figure~\ref{fig-nullness-refactoring} are declaration annotations.  You can
+fix the problem by instead using a definition of \<@NonNull> that is a type
+annotation, such as the Checker Framework's annotations; often this only
+requires changing an \<import> statement.
+Alternately, if you wish to continue using the legacy annotations in
+declaration locations, see Section~\ref{declaration-annotations-for-java7}.
+
+
+\item
+This compile-time error
+
+\begin{Verbatim}
+  unknown enum constant java.lang.annotation.ElementType.TYPE_USE
+\end{Verbatim}
+
+\noindent
+indicates that you are compiling using a Java 6 or 7 JDK, but your code
+references an enum constant that is only defined in the Java 8 JDK.  The
+problem might be that your code uses a library that references the enum
+constant.  In particular, the type annotations shipped with the Checker
+Framework reference 
+\sunjavadoc{java/lang/annotation/ElementType.html\#TYPE\_USE}{ElementType.TYPE\_USE}.  You can use the Checker
+Framework, but still compile and run your code in a Java 6 or 7 JVM, by
+following the instructions in Section~\ref{backward-compatibility}.
+
+If you ignore the error and run your code in a Java 6 or 7 JVM, then you will get a run-time error:
+
+\begin{Verbatim}
+  java.lang.ArrayStoreException: sun.reflect.annotation.EnumConstantNotPresentExceptionProxy
+\end{Verbatim}
+
+
+\item
+If Eclipse gives the warning
+
+\begin{Verbatim}
+The annotation @NonNull is disallowed for this location
+\end{Verbatim}
+
+\noindent
+then you have the wrong version of the \<org.eclipse.jdt.annotation>
+classes.  Eclipse includes two incompatible versions of these annotations.
+You want the one with a name like
+\<org.eclipse.jdt.annotation\_2.0.0.....jar>, which you can find in the
+\<plugins> subdirectory under the Eclipse installation directory.
+Add this .jar file to your build path.
+
+
+\end{itemize}
+
+
+\subsection{Unable to build the checker, or to run programs\label{common-problems-running-java}}
+
+An error like this
+
+\begin{Verbatim}
+Unsupported major.minor version 52.0
+\end{Verbatim}
+
+means that you have compiled some files into the Java 8 format (version
+52.0), but you are trying to run them with Java 7 or earlier.
+Likewise, ``Unsupported major.minor version 51.0''
+means that you have compiled some files into the Java 7 format (version
+51.0), but you are trying to run them with Java 6 or earlier.
+Here are ways to solve the problem:
+
+\begin{itemize}
+\item
+Use a newer JVM (run \<java -version> to
+determine the version you are using)
+\item
+Use the Checker Framework to type-check your code, then afterword produce a
+classfile that targets an earlier JVM by supplying arguments such as
+\<javac -source 7 -target 7 ...>.
+\end{itemize}
+
+
+\section{How to report problems (bug reporting)\label{reporting-bugs}}
+
+If you have a problem with any checker, or with the Checker Framework,
+please file a bug at 
+\url{http://code.google.com/p/checker-framework/issues/list}.
+(First, check whether there is an existing bug report for that issue.)
+
+Alternately (especially if your communication is not a bug report), you can
+send mail to checker-framework-dev@googlegroups.com.
+We welcome suggestions, annotated libraries, bug fixes, new
+features, new checker plugins, and other improvements.
+
+Please ensure that your bug report is clear and that it is complete.
+Otherwise, we may be unable to understand it or to reproduce it, either of
+which would prevent us from fixing the bug.  Your bug report will be most
+helpful if you:
+
+\begin{itemize}
+\item
+  Add \code{-version -verbose -AprintErrorStack -AprintAllQualifiers} to the javac options.  This causes the compiler to output
+  debugging information, including its version number.
+\item
+  Indicate exactly what you did.  Don't skip any steps, and don't merely
+  describe your actions in words.  Show the exact commands by attaching a
+  file or using cut-and-paste from your command shell;
+\item
+  Include all files that are necessary to reproduce the problem.  This
+  includes every file that is used by any of the commands you reported, and
+  possibly other files as well.
+\item
+  Indicate exactly what the result was by attaching a file or using
+  cut-and-paste from your command shell (don't merely describe it in
+  words).  Also indicate what you expected the result to be --- remember, a
+  bug is a difference between desired and actual outcomes.
+\end{itemize}
+
+A particularly useful format for a test case is as a new file, or a diff to
+an existing file, for the existing Checker Framework test suite.  For
+instance, for the Nullness
+Checker, see directory \<checker-framework/checker/tests/nullness/>.
+But, please report your bug even if you do not report it in this format.
+
+
+\section{Building from source\label{build-source}}
+
+The Checker Framework release (Section~\ref{installation}) contains
+everything that most users need, both to use the distributed checkers and
+to write your own checkers.  This section describes how to compile its
+binaries from source.  You will be using the latest development version of
+the Checker Framework, rather than an official release.
+
+% Doing
+% so permits you to examine and modify the implementation of the distributed
+% checkers and of the checker framework.  It may also help you to debug
+% problems more effectively.
+
+
+\subsection{Obtain the source\label{building-obtain-source}}
+
+Obtain the latest source code from the version control repository:
+
+\begin{Verbatim}
+export JSR308=$HOME/jsr308
+mkdir -p $JSR308
+cd $JSR308
+hg clone https://code.google.com/p/jsr308-langtools/ jsr308-langtools
+hg clone https://code.google.com/p/checker-framework/ checker-framework
+hg clone https://code.google.com/p/annotation-tools/ annotation-tools
+\end{Verbatim}
+% $ to unconfuse Emacs LaTeX mode
+
+\noindent
+(Alternately, you could use the version of the source code that is packaged
+in the Checker Framework release.)
+
+% TODO: the AFU and JSR 308 source code is not included in the
+% checker-framework.zip file!
+
+
+\subsection{Build the Type Annotations compiler\label{building-compiler}}
+
+The Checker Framework compiler is built upon a compiler called the Type
+Annotations compiler.  The Type Annotations compiler is a variant of the
+OpenJDK javac that supports annotations in comments.  The Checker Framework
+compiler is a small wrapper around the Type Annotations compiler, which
+adds annotated JDKs and the Checker Framework jars to the classpath.
+
+
+\begin{enumerate}
+\item
+% Why is this necessary?  What goes wrong if it is not set?  Can I avoid
+% the need to set it?  It's used for:
+%  * the location of tools.jar, below.
+%  * the default location of RTJAR, in checker/jdk/Makefile.
+Set the \<JAVA\_HOME> environment variable to the location of your JDK 
+7 or 8 installation (not the JRE installation, and not JDK 6 or earlier).
+This needs to be an Oracle JDK.
+(The \<JAVA\_HOME> environment
+variable might already be set, because it is needed for Ant to work.)
+
+In the bash shell, the following command \emph{sometimes} works (it might
+not because \<java> might be the version in the JDK or in the JRE):
+% Can someone give a simpler command?
+\begin{Verbatim}
+  export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
+\end{Verbatim}
+
+\item
+Compile the Type Annotations tools:
+
+\begin{Verbatim}
+  cd $JSR308/jsr308-langtools/make
+  ant clean-and-build-all-tools
+\end{Verbatim}
+% $ to unconfuse Emacs LaTeX mode
+
+\item
+ Add the \<jsr308-langtools/dist/bin> directory to the front of your PATH environment variable.
+  Example command:
+
+\begin{Verbatim}
+  export PATH=$JSR308/jsr308-langtools/dist/bin:${PATH}
+\end{Verbatim}
+
+You may wish to later put the Checker Framework \<javac> even earlier on
+your path.  The Checker Framework's \<javac> ensures that the Checker
+Framework is on your classpath and bootclasspath, but is otherwise
+identical to the Type Annotations compiler.
+
+\end{enumerate}
+
+% Java 8 extends the Java language to permit annotations to appear on types,
+% as in \code{List<@NonNull String>} (see Section~\ref{writing-annotations}).
+% This change will be part of the Java 8 language.  We recommend that you
+% write annotations in comments, as in \code{List</*@NonNull*/ String>} (see
+% Section~\ref{annotations-in-comments}).  The Checker Framework compiler still reads
+% such annotations, but this syntax permits you to use a compiler other than
+% the Checker Framework compiler.  For example, you can compile your code with a Java 5
+% compiler, and you can use a checker as an external tool in an IDE.
+
+
+
+\subsection{Build the Annotation File Utilities\label{afu-building}}
+
+This is simply done by:
+
+\begin{Verbatim}
+  cd $JSR308/annotation-tools
+  ant
+\end{Verbatim}
+
+You do not need to add the Annotation File Utilities to the path, as
+the Checker Framework build finds it using relative paths.
+
+
+\subsection{Build the Checker Framework\label{building}}
+
+% Building (compiling) the checkers and framework from source creates the
+% \code{checker.jar} file.  A pre-compiled \code{checker.jar} is included
+% in the distribution, so building it is optional.  It is mostly useful for
+% people who are developing compiler plug-ins (type-checkers).  If you only
+% want to \emph{use} the compiler and existing plug-ins, it is sufficient to
+% use the pre-compiled version.
+
+\begin{enumerate}
+% \item
+% Edit \code{checker/build.properties} file so that the
+% \code{compiler.lib} property specifies the location of the Checker
+% Framework
+% \code{javac.jar} library.  (If you also installed the JSR 308 compiler from
+% source, and you made the \code{checker-framework} and \code{jsr308-langtools} directories
+% siblings, then you don't need to edit \code{checker/build.properties}.)
+
+\item
+Run \code{ant} to create \<checker.jar>:
+
+\begin{Verbatim}
+  cd $JSR308/checker-framework/checker
+  ant
+\end{Verbatim}
+% $ to unconfuse Emacs LaTeX mode
+
+\item Add \code{tools.jar} and \code{checker.jar} to your classpath.
+  (If you do not do this, you will have to supply the \code{-cp} option
+  whenever you run \code{javac} and use a checker plugin.)
+  Example command:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  export CLASSPATH=${CLASSPATH}:$JAVA_HOME/lib/tools.jar:$JSR308/checker-framework/checker/dist/checker.jar
+\end{Verbatim}
+% $ to unconfuse Emacs LaTeX mode
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+  %% In Cygwin, are reversed slashes required?
+
+\item Test that everything works:
+
+  \begin{itemize}
+
+  \item Run \code{ant all-tests} in the \code{checker} directory:
+\begin{Verbatim}
+  cd $JSR308/checker-framework/checker
+  ant all-tests
+\end{Verbatim}
+% $ to unconfuse Emacs LaTeX mode
+
+  \item Run the Nullness Checker examples (see
+    Section~\refwithpage{nullness-example}).
+
+  \end{itemize}
+
+\end{enumerate}
+
+\subsection{Build the Checker Framework Manual (this document)\label{building-manual}}
+
+\begin{enumerate}
+\item
+To build the manual you will need plume-bib (\myurl{http://code.google.com/p/plume-bib/}) and {\hevea} (\myurl{http://hevea.inria.fr/}) installed.
+
+\item
+Run \code{make} in the \code{checker/manual} directory to build both the PDF and HTML versions of the manual.
+\end{enumerate}
+
+% \subsection{Adjust classpath}
+
+% Building the Checker Framework requires use of a Java 8 compiler.  You may
+% use either the OpenJDK compiler or the Checker Framework compiler.  The latter has a
+% few extra features and tends to get bug fixes more quickly.
+
+% The following instructions give detailed steps for installing the source
+% release of the Checker Framework.
+
+
+% \item Download and install the JSR 308 implementation; follow the instructions at
+% % alternative: \urldef{\JsrInstallingUrl}{\url}{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}
+% {\codesize\url{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}}.
+% This creates a \code{jsr308-langtools} directory.
+% 
+% \item Download the Checker Framework distribution zipfile from
+% \myurl{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip},
+% and unzip it to create a \code{checkers} directory.  We recommend that the
+% \code{checkers} directory and the \code{jsr308-langtools} directory be siblings.
+% Example commands:
+% 
+% \begin{Verbatim}
+%   cd $JSR308
+%   wget http://types.cs.washington.edu/checker-framework/current/checker-framework.zip
+%   unzip checker-framework.zip
+% \end{Verbatim}
+% 
+% You will also need to adjust the path to \<javac> in any Ant buildfiles,
+% etc.
+
+% \item Optionally edit property \code{compiler.lib} in file
+%   \code{build-common.properties}.  You don't have to do this if the
+%   \code{checker} directory and the \code{jsr308-langtools} directory are
+%   siblings.
+
+
+% (A checker implementation builds on
+% standard mechanisms such as JSR 269 annotation processing, but also
+% accesses the compiler's AST. In the long run, a checker built using the
+% Checker Framework should not be dependent on any compiler specifics.)
+% If you do not place the annotations in 
+% then you should also disable Eclipse's on-the-fly syntax checking.
+
+
+
+
+% \subsection{TO DO:  The short instructions (for Linux only)}
+% 
+% %%% This comment does not seem to be correct any longer.
+% %% This text is identically reproduced at ../../jsr308-langtools/README-jsr308.html
+% %% so if you change either one, change the other also!
+% 
+% The following commands install
+% the JSR 308 \code{javac} compiler and the Checker
+% Framework, or update an existing installation.
+% It currently works only on \textbf{Linux}.
+% For more details, or if anything goes wrong, see the comments in the 
+% \code{Makefile-jsr308-install} file.
+% 
+% \begin{enumerate}
+% 
+% \item
+%   Execute the following commands:
+% 
+% \begin{Verbatim}
+%   cd
+%   wget -nv -N http://types.cs.washington.edu/jsr308/Makefile-jsr308-install
+%   make -f Makefile-jsr308-install
+% \end{Verbatim}
+% 
+% \item
+% Set some environment variables according to the instructions at the top of file
+% \code{Makefile-jsr308-install}.
+% 
+% \end{enumerate}
+
+
+
+\section{Publications\label{publications}\label{learning-more}}
+
+Here are two technical papers about the Checker Framework itself:
+
+\begin{itemize}
+\item
+``Practical pluggable types for Java''~\cite{PapiACPE2008}
+(ISSTA 2008, \myurl{http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008.pdf})
+describes the design and implementation of the Checker Framework.
+The paper also describes case
+studies in which the Nullness, Interning, Javari, and IGJ Checkers found
+previously-unknown errors in real software.
+The case studies also yielded new insights about type systems.
+
+\item
+``Building and using pluggable
+type-checkers''~\cite{DietlDEMS2011}
+(ICSE 2011, \myurl{http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011.pdf})
+discusses further experience with the Checker Framework, increasing the
+number of lines of verified code to 3 million.  The case studies are of the
+Fake Enum, Signature String, Interning, and Nullness Checkers.
+The paper also evaluates the ease
+of pluggable type-checking with the Checker Framework:  type-checkers
+were easy to write, easy for novices to use, and effective in finding
+errors.
+\end{itemize}
+
+Here are some papers about type systems that were implemented and evaluated
+using the Checker Framework:
+
+\begin{description}
+\item[Nullness (Chapter~\ref{nullness-checker})]
+See the two papers about the Checker Framework, described above.
+
+\item[Rawness initialization (Section~\ref{initialization-rawness-checker})]
+``Inference of field initialization'' (ICSE 2011, \myurl{http://homes.cs.washington.edu/~mernst/pubs/initialization-icse2011-abstract.html})
+describes inference for the Rawness Initialization Checker.
+
+\item[Interning (Chapter~\ref{interning-checker})]
+See the two papers about the Checker Framework, described above.
+
+\item[Fake enumerations (Chapter~\ref{fenum-checker})]
+See the ICSE 2011 paper about the Checker Framework, described above.
+
+\item[Regular expressions (Chapter~\ref{regex-checker})]
+``A type system for regular expressions''~\cite{SpishakDE2012} (FTfJP 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/regex-types-ftfjp2012-abstract.html})
+            describes the Regex Checker.
+
+\item[Format Strings (Chapter~\ref{formatter-checker})]
+``A type system for format strings''~\cite{WeitzKSE2014} (ISSTA 2014, \myurl{http://homes.cs.washington.edu/~mernst/pubs/format-string-issta2014-abstract.html})
+            describes the Format String Checker.
+
+\item[Signature strings (Chapter~\ref{signature-checker})]
+See the ICSE 2011 paper about the Checker Framework, described above.
+
+\item[GUI Effects (Chapter~\ref{guieffect-checker})]
+``JavaUI: Effects for controlling UI object access''~\cite{GordonDEG2013} (ECOOP 2013, \myurl{http://homes.cs.washington.edu/~mernst/pubs/gui-thread-ecoop2013-abstract.html})
+            describes the GUI Effect Checker.
+
+\item
+``Verification games: Making verification fun'' (FTfJP 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/verigames-ftfjp2012-abstract.html})
+            describes a general inference approach that, at the time, had only been implemented for the Nullness Checker (Section~\ref{nullness-checker}).
+
+\item[IGJ and OIGJ immutability (Chapter~\ref{igj-checker})]
+``Object and reference immutability using Java generics''~\cite{ZibinPAAKE2007} (ESEC/FSE 2007, \myurl{http://homes.cs.washington.edu/~mernst/pubs/immutability-generics-fse2007-abstract.html})
+and
+``Ownership and immutability in generic Java''~\cite{ZibinPLAE2010} (OOPSLA 2010, \myurl{http://homes.cs.washington.edu/~mernst/pubs/ownership-immutability-oopsla2010-abstract.html})
+            describe the IGJ and OIGJ immutability type systems.
+For further case studies, also see the ISSTA 2008 paper about the Checker
+Framework, described above.
+
+\item[Javari immutability (Chapter~\ref{javari-checker})]
+``Javari: Adding reference immutability to Java''~\cite{TschantzE2005} (OOPSLA 2005, \myurl{http://homes.cs.washington.edu/~mernst/pubs/ref-immutability-oopsla2005-abstract.html})
+            describes the Javari type system.
+For inference, see
+``Inference of reference immutability''~\cite{QuinonezTE2008} (ECOOP 2008, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-ecoop2008-abstract.html})
+and
+``Parameter reference immutability: Formal definition, inference tool, and comparison''~\cite{ArtziQKE2009} (J.ASE 2009, \myurl{http://homes.cs.washington.edu/~mernst/pubs/mutability-jase2009-abstract.html}).
+For further case studies, also see the ISSTA 2008 paper about the Checker
+Framework, described above.
+
+\item[Thread locality (Section~\ref{loci-thread-locality-checker})]
+``Loci: Simple thread-locality for Java''~\cite{WrigstadPMZV2009} (ECOOP 2009, 
+\myurl{http://janvitek.github.io/pubs/ecoop09.pdf})
+
+\item[\href{https://ece.uwaterloo.ca/~wdietl/ownership/}{Generic Universe
+    Types} (Section~\ref{gut-checker})]
+``Tunable static inference for Generic Universe Types'' (ECOOP 2011, \myurl{http://homes.cs.washington.edu/~mernst/pubs/tunable-typeinf-ecoop2011-abstract.html})
+            describes inference for the Generic Universe Types type system.
+
+Another implementation of Universe Types and \href{http://www.cs.rpi.edu/~huangw5/cf-inference/}{ownership types} is  described in
+``Inference and checking of object ownership''~\cite{HuangDME2012} (ECOOP 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-ownership-ecoop2012-abstract.html}).
+
+\item[Approximate data (Section~\ref{enerj-checker})]
+``EnerJ: Approximate Data Types for Safe and General Low-Power Computation''~\cite{SampsonDFGCG2011} (PLDI 2011, \myurl{http://homes.cs.washington.edu/~asampson/media/papers/enerj-pldi2011.pdf})
+
+\item[Information flow and tainting (Section~\ref{sparta-checker})]
+``Collaborative Verification of Information Flow
+for a High-Assurance App Store''~\cite{ErnstJMDPRKBBHVW2014} (CCS 2014, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infoflow-ccs2014.pdf}) describes the SPARTA information flow type system.
+
+\item[ReIm immutability]
+% TODO:  (Section~\ref{reim-checker})
+``ReIm \& ReImInfer: Checking and inference of reference immutability and method purity''~\cite{HuangMDE2012} (OOPSLA 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-oopsla2012-abstract.html})
+            describes the ReIm immutability type system.
+
+\end{description}
+
+In addition to these papers that discuss use the Checker Framework
+directly, other academic papers use the Checker Framework in their
+implementation or evaluation.
+Most educational use of the Checker
+Framework is never published, and most commercial use of the Checker
+Framework is never discussed publicly.
+
+(If you know of a paper or other use that is not listed here, please inform 
+the Checker Framework developers so we can add it.)
+
+
+\section{Comparison to other tools\label{other-tools}}
+
+A pluggable type-checker, such as those created by the Checker Framework,
+aims to help you prevent or detect all errors of a given variety.  An
+alternate approach is to use a bug detector such as
+\href{http://findbugs.sourceforge.net/}{FindBugs},
+\href{http://jlint.sourceforge.net/}{Jlint}, or
+\href{http://pmd.sourceforge.net/}{PMD}.
+
+A pluggable type-checker
+differs from a bug detector in several ways:
+\begin{itemize}
+\item
+  A type-checker aims to find \emph{all} errors.  Thus, it can verify the
+  \emph{absence} of errors:  if the type-checker says there are no null
+  pointer errors in your code, then there are none.  (This guarantee only
+  holds for the code it checks, of course; see
+  Section~\ref{checker-guarantees}.)
+
+  A bug detector aims to find \emph{some} of the most obvious errors.  Even
+  if it reports no errors, then there may still be errors in your code.
+
+  Both types of tools may issue false alarms,
+  also known as false positive warnings;
+  see Section~\ref{suppressing-warnings}.
+
+\item
+  A type-checker requires you to annotate your code with type qualifiers,
+  or to run an inference tool that does so for you.  A bug detector may not
+  require annotations.  This means that it may be easier to get started
+  running a bug detector.
+
+\item
+  A type-checker may use a more sophisticated and complete analysis.
+  A bug detector typically does a more lightweight analysis, coupled with
+  heuristics to suppress false positives.
+
+  As one example, a type-checker can take advantage of annotations on
+  generic type parameters, such as \code{List<@NonNull String>}, permitting
+  it to be much more precise for code that uses generics.
+
+\end{itemize}
+
+A case study~\cite[\S6]{PapiACPE2008} compared the Checker Framework's nullness
+checker with those of FindBugs, Jlint, and PMD\@.  The case study was on a
+well-tested program in daily use.  The Checker Framework tool found 8
+nullness errors (that is, null pointer dereferences).  None of the other
+tools found any errors.
+
+Also see the
+\href{http://types.cs.washington.edu/jsr308/}{JSR 308}~\cite{JSR308-2008-09-12}
+documentation for a detailed discussion of related work.
+
+
+
+\section{Credits, changelog, and license\label{credits}}
+
+The key developers of the Checker Framework are Mahmood Ali, Telmo Correa,
+Werner M. Dietl, Michael D. Ernst, and Matthew M. Papi.
+Many other developers have also contributed, for example by writing
+the checkers that are distributed with the Checker Framework.
+Many, many users to list have provided valuable feedback, for which we are
+grateful.
+
+%% Not so accurate, since Mahmood is really an author of the nullness and
+%% interned checkers too, and since then they have been essentially
+%% rewritten from scratch.
+% The Checker Framework was implemented by 
+% The Nullness Checker was implemented by Matthew M. Papi.
+% The Interning Checker was implemented by Matthew M. Papi.
+% The Javari Checker was implemented by Telmo Correa.
+% The IGJ Checker was implemented by Mahmood Ali.
+% The Subtyping Checker was implemented by Matthew M. Papi.
+% The Fake Enum Checker was written by Werner M. Dietl.
+% ... many others ...
+
+Differences from previous versions of the checkers and framework can be found
+in the \code{changelog.txt} file.  This file is included in the
+Checker Framework distribution and is also available on the web at
+\myurl{http://types.cs.washington.edu/checker-framework/current/changelog.txt}.
+
+Two different licenses apply to different parts of the Checker Framework.
+\begin{itemize}
+\item
+The Checker Framework itself is licensed under the GNU General Public License
+(GPL), version 2.  The GPL is the same license that OpenJDK is licensed
+under.  That means that type-checking your code using the Checker Framework
+is no more dangerous (from an intellectual property point of view) than
+compiling your code using javac.
+\item
+The more permissive MIT License applies
+to code that you might want to include in your own
+program, such as the annotations.
+\end{itemize}
+\noindent
+For details, see file \<LICENSE.txt>.
+
+
+
+% LocalWords:  jsr unsetting plugins langtools zipfile cp plugin Nullness txt
+% LocalWords:  nullness classpath NonNull MyObject javac uref changelog MyEnum
+% LocalWords:  subtyping containsKey proc classfiles SourceChecker javap jdk
+% LocalWords:  MyFile buildfiles ClassName JRE java jsr308 bootclasspath
+%  LocalWords:  extJavac ZipFile AprintErrorStack AprintAllQualifiers Jlint
+%  LocalWords:  Telmo Correa Papi NoSuchFieldError ZipException Xlint A1
+%  LocalWords:  FileNotFoundException MyQualifier ImplicitFor A2 A3 JDKs
+%  LocalWords:  StaticNestedClass StaticNested ConfusingAnnotation
+%%  LocalWords:  CHECKERFRAMEWORK currentOutgoing isCompleted
+%%  LocalWords:  EnsuresNonNull

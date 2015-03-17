@@ -1,0 +1,334 @@
+package org.checkerframework.common.reflection;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.reflection.qual.ClassBound;
+import org.checkerframework.common.reflection.qual.ClassVal;
+import org.checkerframework.common.reflection.qual.ClassValBottom;
+import org.checkerframework.common.reflection.qual.UnknownClass;
+import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.framework.qual.TypeQualifiers;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
+
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.ArrayType;
+import com.sun.tools.javac.code.Type.UnionClassType;
+
+@TypeQualifiers({ UnknownClass.class, ClassVal.class, ClassBound.class,
+        ClassValBottom.class })
+public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+
+    /**Methods with the form: @ClassVal("name") Class method(String name){...}*/
+    private final ExecutableElement[] forName = {
+            TreeUtils.getMethod("java.lang.Class", "forName", 1, processingEnv),
+            TreeUtils.getMethod("java.lang.ClassLoader", "loadClass", 1,
+                    processingEnv) };
+
+    /**Methods the form: @ClassBound("ReceiverType") Class method(ReceiverType this){...}*/
+    private final ExecutableElement[] getClass = {TreeUtils.getMethod(
+            "java.lang.Object", "getClass", 0, processingEnv)};
+
+    protected final AnnotationMirror CLASSVAL_TOP = AnnotationUtils
+            .fromClass(elements, UnknownClass.class);
+
+
+    public ClassValAnnotatedTypeFactory(BaseTypeChecker checker) {
+        super(checker);
+        if (this.getClass().equals(ClassValAnnotatedTypeFactory.class)) {
+            this.postInit();
+        }
+    }
+
+    private AnnotationMirror createClassVal(List<String> values) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
+                ClassVal.class.getCanonicalName());
+        builder.setValue("value", values);
+        return builder.build();
+    }
+
+    private AnnotationMirror createClassBound(List<String> values) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
+                ClassBound.class.getCanonicalName());
+        builder.setValue("value", values);
+        return builder.build();
+    }
+
+    /**
+     * Returns the list of classnames from <code>@ClassBound</code> or <code>@ClassVal</code> if anno is
+     * <code>@ClassBound</code> or <code>@ClassVal</code>, otherwise returns an empty list
+     *
+     * @param anno any AnnotationMirror
+     * @return List of classnames in anno
+     */
+    public static List<String> getClassNamesFromAnnotation(AnnotationMirror anno) {
+        if (AnnotationUtils.areSameByClass(anno, ClassBound.class)
+                || AnnotationUtils.areSameByClass(anno, ClassVal.class)) {
+            return AnnotationUtils.getElementValueArray(anno, "value",
+                    String.class, true);
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new ClassValQualifierHierarchy(factory);
+    }
+
+    /**
+     * The qualifier hierarchy for the ClassVal type system
+     */
+    protected class ClassValQualifierHierarchy extends
+            MultiGraphQualifierHierarchy {
+
+        public ClassValQualifierHierarchy(MultiGraphFactory f) {
+            super(f);
+        }
+
+        /*
+         * Determines the least upper bound of a1 and a2. If both are ClassVal
+         * annotations, then the least upper bound is the set of elements
+         * obtained by combining the values of both annotations.
+         */
+        @Override
+        public AnnotationMirror leastUpperBound(AnnotationMirror a1,
+                AnnotationMirror a2) {
+            if (!AnnotationUtils.areSameIgnoringValues(getTopAnnotation(a1),
+                    getTopAnnotation(a2))) {
+                return null;
+            } else if (isSubtype(a1, a2)) {
+                return a2;
+            } else if (isSubtype(a2, a1)) {
+                return a1;
+            } else  {
+                List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
+                List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
+                Set<String> lubClassNames = new TreeSet<String>();
+                lubClassNames.addAll(a1ClassNames);
+                lubClassNames.addAll(a2ClassNames);
+
+                //If either annotation is a ClassBound, the lub must also be a class bound.
+                if (AnnotationUtils.areSameByClass(a1, ClassBound.class) ||
+                        AnnotationUtils.areSameByClass(a2, ClassBound.class)) {
+                    return createClassBound(new ArrayList<>(lubClassNames));
+                } else {
+                    return createClassVal(new ArrayList<>(lubClassNames));
+                }
+            }
+        }
+
+        /*
+         * Computes subtyping as per the subtyping in the qualifier hierarchy
+         * structure unless both annotations are ClassVal. In this case, rhs is
+         * a subtype of lhs iff lhs contains at least every element of rhs
+         */
+        @Override
+        public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
+            if (AnnotationUtils.areSame(sub, sup)
+                    || AnnotationUtils.areSameByClass(sup, UnknownClass.class)
+                    || AnnotationUtils
+                            .areSameByClass(sub, ClassValBottom.class)) {
+                return true;
+            }
+            if (AnnotationUtils.areSameByClass(sub, UnknownClass.class)
+                    || AnnotationUtils
+                            .areSameByClass(sup, ClassValBottom.class)) {
+                return false;
+            }
+            if (AnnotationUtils.areSameByClass(sup, ClassVal.class)
+                    && AnnotationUtils.areSameByClass(sub, ClassBound.class)) {
+                return false;
+            }
+
+            //if super: ClassVal && sub is ClassVal
+            //if super: ClassBound && (sub is ClassBound or ClassVal)
+
+            List<String> supValues = getClassNamesFromAnnotation(sup);
+            List<String> subValues = getClassNamesFromAnnotation(sub);
+
+            return supValues.containsAll(subValues);
+        }
+    }
+
+    @Override
+    protected TreeAnnotator createTreeAnnotator() {
+        return new ListTreeAnnotator(new ClassValTreeAnnotator(this),
+                super.createTreeAnnotator());
+    }
+
+    /**
+     * Implements these type inference rules:
+     * C.class:             @ClassVal(fully qualified name of C)
+     * Class.forName(name): @ClassVal("name")
+     * exp.getClass():      @ClassBound(fully qualified classname of exp)
+     */
+    protected class ClassValTreeAnnotator extends TreeAnnotator {
+
+        protected ClassValTreeAnnotator(ClassValAnnotatedTypeFactory factory) {
+            super(factory);
+        }
+
+        @Override
+        public Void visitMemberSelect(MemberSelectTree tree,
+                AnnotatedTypeMirror type) {
+            if (TreeUtils.isClassLiteral(tree)) {
+                // Create annotations for Class literals
+                // C.class: @ClassVal(fully qualified name of C)
+                ExpressionTree etree = tree.getExpression();
+                Type classType = (Type) InternalUtils.typeOf(etree);
+                String name = getClassNameFromType(classType);
+                if (name != null) {
+                    AnnotationMirror newQual = createClassVal(Arrays
+                            .asList(name));
+                    type.replaceAnnotation(newQual);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public Void visitMethodInvocation(MethodInvocationTree tree,
+                AnnotatedTypeMirror type) {
+
+            if (isForNameMethodInovaction(tree)) {
+                //Class.forName(name): @ClassVal("name")
+                ExpressionTree arg = tree.getArguments().get(0);
+                List<String> classNames = getStringValues(arg);
+                if (classNames != null) {
+                    AnnotationMirror newQual = createClassVal(classNames);
+                    type.replaceAnnotation(newQual);
+                }
+            } else if (isGetClassMethodInovaction(tree)) {
+                // exp.getClass(): @ClassBound(fully qualified class name of exp)
+                Type clType;
+                if (TreeUtils.getReceiverTree(tree) != null) {
+                    clType = (Type) InternalUtils.typeOf(TreeUtils
+                            .getReceiverTree(tree));
+                } else { // receiver is null, so it is implicitly "this"
+                    ClassTree classTree = TreeUtils
+                            .enclosingClass(getPath(tree));
+                    clType = (Type) InternalUtils.typeOf(classTree);
+                }
+                String className = getClassNameFromType(clType);
+                AnnotationMirror newQual = createClassBound(Arrays
+                        .asList(className));
+                type.replaceAnnotation(newQual);
+            }
+            return null;
+        }
+
+        private boolean isForNameMethodInovaction(MethodInvocationTree tree) {
+            for(ExecutableElement method: forName ){
+                if(TreeUtils.isMethodInvocation(tree, method, processingEnv)){
+                    return true;
+                }
+            }
+           return false;
+        }
+        private boolean isGetClassMethodInovaction(MethodInvocationTree tree) {
+            for(ExecutableElement method: getClass ){
+                if(TreeUtils.isMethodInvocation(tree, method, processingEnv)){
+                    return true;
+                }
+            }
+           return false;
+        }
+
+        private List<String> getStringValues(ExpressionTree arg) {
+            ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
+            AnnotationMirror annotation = valueATF.getAnnotationMirror(arg,StringVal.class);
+            if(annotation == null){
+                return null;
+            }
+            return AnnotationUtils.getElementValueArray(annotation, "value",
+                    String.class, true);
+        }
+
+        /**
+         * Return String representation of class name. This will not return the
+         * correct name for anonymous classes.
+         */
+        private String getClassNameFromType(Type classType) {
+            switch(classType.getKind())
+            {
+                case  ARRAY:
+                    String array = "";
+                while(classType.getKind() == TypeKind.ARRAY){
+                    classType = ((ArrayType) classType).getComponentType();
+                    array+="[]";
+                }
+                return getClassNameFromType(classType)+array;
+            case DECLARED:
+                StringBuilder className = new StringBuilder(TypesUtils
+                        .getQualifiedName((DeclaredType) classType).toString());
+                if (classType.getEnclosingType() != null) {
+                    while (classType.getEnclosingType().getKind() != TypeKind.NONE) {
+                        classType = classType.getEnclosingType();
+                        int last = className.lastIndexOf(".");
+                        if (last > -1)
+                            className.replace(last, last + 1, "$");
+                    }
+                }
+                return className.toString();
+            case INTERSECTION:
+                // This could be more precise
+                return "java.lang.Object";
+            case NULL:
+                return "java.lang.Object";
+            case UNION:
+                classType = ((UnionClassType) classType).getLub();
+                return getClassNameFromType(classType);
+            case TYPEVAR:
+            case WILDCARD:
+                classType = classType.getUpperBound();
+                return getClassNameFromType(classType);
+            case INT:
+                return int.class.getCanonicalName();
+            case LONG:
+                return long.class.getCanonicalName();
+            case SHORT:
+                return short.class.getCanonicalName();
+            case BYTE:
+                return byte.class.getCanonicalName();
+            case CHAR:
+                return char.class.getCanonicalName();
+            case DOUBLE:
+                return double.class.getCanonicalName();
+            case FLOAT:
+                return float.class.getCanonicalName();
+            case BOOLEAN:
+                return boolean.class.getCanonicalName();
+            default:
+                checker.errorAbort("ClassValAnnotatedTypeFactory.getClassname: did not expect " +classType.getKind());
+                return "java.lang.Object";
+            }
+
+        }
+    }
+}
