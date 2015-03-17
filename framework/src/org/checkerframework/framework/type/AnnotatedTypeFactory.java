@@ -10,7 +10,10 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -1103,7 +1106,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // When visiting an executable type, skip the receiver so we
             // never inherit class annotations there.
 
-            scan(type.getReturnType(), p);
+            // Also skip constructor return types (which somewhat act like
+            // the receiver).
+            MethodSymbol methodElt = (MethodSymbol)type.getElement();
+            if (methodElt == null || !methodElt.isConstructor()) {
+                scan(type.getReturnType(), p);
+            }
+
             scanAndReduce(type.getParameterTypes(), p, null);
             scanAndReduce(type.getThrownTypes(), p, null);
             scanAndReduce(type.getTypeVariables(), p, null);
