@@ -685,8 +685,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
             if (isUnderlyingTypeAValue(type)) {
-                handleCast(tree.getExpression(),
-                        ValueCheckerUtils.getClassFromType(type.getUnderlyingType()), type);
+                AnnotatedTypeMirror castedAnnotation = getAnnotatedType(tree.getExpression());
+                List<?> values = getValuesCastedToType(castedAnnotation, tree,type.getUnderlyingType());
+                type.replaceAnnotation(resultAnnotationHandler(type.getUnderlyingType(), values, tree));
             } else if (type.getKind() == TypeKind.ARRAY) {
                 handleArrayCast(tree, type);
             }
@@ -777,7 +778,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     argValues = new ArrayList<List<?>>();
                     for (ExpressionTree argument : arguments) {
                         AnnotatedTypeMirror argType = getAnnotatedType(argument);
-                        List<?> values = getCastedValues(argType, argument);
+                        List<?> values = getValuesCastedToUnderlyingType(argType, argument);
                         if (values.isEmpty()) {
                             // values aren't known, so don't try to evaluate the
                             // method
@@ -794,7 +795,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<?> receiverValues;
                 
                 if (receiver != null && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
-                    receiverValues = getCastedValues(receiver,
+                    receiverValues = getValuesCastedToUnderlyingType(receiver,
                             TreeUtils.getReceiverTree(tree));
                     if (receiverValues.isEmpty()) {
                         // values aren't known, so don't try to evaluate the
@@ -833,7 +834,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     argValues = new ArrayList<List<?>>();
                     for (ExpressionTree argument : arguments) {
                         AnnotatedTypeMirror argType = getAnnotatedType(argument);
-                        List<?> values = getCastedValues(argType, argument);
+                        List<?> values = getValuesCastedToUnderlyingType(argType, argument);
                         if (values.isEmpty()) {
                             // values aren't known, so don't try to evaluate the
                             // method
@@ -925,10 +926,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *            be report
          * @return a list of values cast to the type of tree
          */
-        private List<?> getCastedValues(AnnotatedTypeMirror typeMirror,
+        private List<?> getValuesCastedToUnderlyingType(AnnotatedTypeMirror typeMirror,
                 Tree tree) {
-            Class<?> castType = ValueCheckerUtils.getClassFromType(typeMirror
-                    .getUnderlyingType());
+            return getValuesCastedToType(typeMirror, tree, typeMirror.getUnderlyingType());
+        }
+
+        private List<?> getValuesCastedToType(AnnotatedTypeMirror typeMirror,
+                Tree tree, TypeMirror castTo) {
+            Class<?> castType = ValueCheckerUtils.getClassFromType(castTo);
             AnnotationMirror anno = getValueAnnotation(typeMirror);
             List<?> values = null;
             if (AnnotationUtils.areSameByClass(anno, DoubleVal.class)) {
@@ -956,10 +961,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         private List<?> convertBottomVal(AnnotationMirror anno,
                 Class<?> newClass) {
-            if (newClass == String.class) {
                 return Collections.singletonList("null");
-            }
-            return null;
         }
 
         private List<?> convertToStringVal(List<?> origValues) {
@@ -973,21 +975,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private List<?> convertBoolVal(AnnotationMirror anno, Class<?> newClass) {
             List<Boolean> bools = AnnotationUtils.getElementValueArray(anno,
                     "value", Boolean.class, true);
-            if (newClass == Boolean.class || newClass == boolean.class) {
-                return bools;
-            } else if (newClass == String.class) {
+
+            if (newClass == String.class) {
                 return convertToStringVal(bools);
             }
-            return null;
+            return bools;
         }
 
         private List<?> convertStringVal(AnnotationMirror anno,
                 Class<?> newClass) {
             List<String> strings = AnnotationUtils.getElementValueArray(anno,
                     "value", String.class, true);
-            if (newClass == String.class) {
-                return strings;
-            } else if (newClass == byte[].class) {
+            
+            if (newClass == byte[].class) {
                 List<byte[]> bytes = new ArrayList<>();
                 for (String s : strings) {
                     bytes.add(s.getBytes());
@@ -1003,15 +1003,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (strings.get(0).equals("null"))
                     return strings;
             }
-            return null;
+            return strings;
         }
 
         private List<?> convertIntVal(AnnotationMirror anno, Class<?> newClass) {
             List<Long> longs = AnnotationUtils.getElementValueArray(anno,
                     "value", Long.class, true);
-            if (newClass == Long.class || newClass == long.class) {
-                return longs;
-            } else if (newClass == Integer.class || newClass == int.class) {
+ 
+            if (newClass == Integer.class || newClass == int.class) {
                 List<Integer> ints = new ArrayList<Integer>();
                 for (Long l : longs) {
                     ints.add(l.intValue());
@@ -1050,25 +1049,42 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (newClass == String.class) {
                 return convertToStringVal(longs);
             }
-            return null;
+            return longs;
         }
 
         private List<?> convertDoubleVal(AnnotationMirror anno,
                 Class<?> newClass) {
             List<Double> doubles = AnnotationUtils.getElementValueArray(anno,
                     "value", Double.class, true);
-            if (newClass == Double.class || newClass == double.class) {
-                return doubles;
-            } else if (newClass == Float.class || newClass == float.class) {
+            if (newClass == Float.class || newClass == float.class) {
                 List<Float> floats = new ArrayList<Float>();
                 for (Double d : doubles) {
                     floats.add(d.floatValue());
                 }
                 return floats;
+            } else if (newClass == Integer.class || newClass == int.class) {
+                List<Integer> floats = new ArrayList<Integer>();
+                for (Double d : doubles) {
+                    floats.add(d.intValue());
+                }
+                return floats;
+            } else if (newClass == Short.class || newClass == short.class) {
+                List<Short> floats = new ArrayList<Short>();
+                for (Double d : doubles) {
+                    floats.add(d.shortValue());
+                }
+                return floats;
+            } else if (newClass == Byte.class || newClass == byte.class) {
+                List<Byte> floats = new ArrayList<>();
+                for (Double d : doubles) {
+                    floats.add(d.byteValue());
+                }
+                return floats;
+
             } else if (newClass == String.class) {
                 return convertToStringVal(doubles);
             }
-            return null;
+            return doubles;
         }
 
         /**
@@ -1108,16 +1124,28 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || resultClass == Long.class || resultClass == long.class
                     || resultClass == Short.class || resultClass == short.class
                     || resultClass == Byte.class || resultClass == byte.class) {
-                HashSet<Number> vals = new HashSet<>(results.size());
+                HashSet<Number> numberVals = new HashSet<>(results.size());
+                List<Character> charVals = new ArrayList<>();
                 for (Object o : results) {
-                    vals.add((Number) o);
+                    if (o instanceof Character) {
+                        charVals.add((Character) o);
+                    } else {
+                        numberVals.add((Number) o);
+                    }
                 }
-                return createNumberAnnotationMirror(new ArrayList<Number>(vals));
+                if (numberVals.isEmpty()) {
+                    return createCharAnnotation(charVals);
+                }
+                return createNumberAnnotationMirror(new ArrayList<Number>(numberVals));
             } else if (resultClass == char.class
                     || resultClass == Character.class) {
                 HashSet<Character> intVals = new HashSet<>(results.size());
                 for (Object o : results) {
-                    intVals.add((Character) o);
+                    if (o instanceof Number) {
+                        intVals.add((char) ((Number) o).intValue());
+                    } else {
+                        intVals.add((char) o);
+                    }
                 }
                 return createCharAnnotation(new ArrayList<Character>(intVals));
             } else if (resultClass == String.class) {
@@ -1130,7 +1158,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (resultClass == byte[].class) {
                 HashSet<String> stringVals = new HashSet<String>(results.size());
                 for (Object o : results) {
-                    stringVals.add(new String((byte[]) o));
+                    if (o instanceof byte[]) {
+                        stringVals.add(new String((byte[]) o));
+                    } else {
+                        stringVals.add(o.toString());
+                    }
                 }
                 return createStringValAnnotationMirror(new ArrayList<String>(
                         stringVals));
