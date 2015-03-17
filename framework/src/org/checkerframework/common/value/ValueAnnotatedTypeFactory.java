@@ -567,7 +567,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
 
                     AnnotationMirror newQual;
-                    Class<?> clazz = getClass(type, tree);
+                    Class<?> clazz = ValueCheckerUtils.getClassFromType(type.getUnderlyingType());
                     String stringVal = null;
                     if (clazz.equals(byte[].class)) {
                         stringVal = getByteArrayStringVal(initializers);
@@ -684,9 +684,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
-            if (isClassCovered(type)) {
+            if (isUnderlyingTypeAValue(type)) {
                 handleCast(tree.getExpression(),
-                        getClass(type, tree.getType()), type);
+                        ValueCheckerUtils.getClassFromType(type.getUnderlyingType()), type);
             } else if (type.getKind() == TypeKind.ARRAY) {
                 handleArrayCast(tree, type);
             }
@@ -702,7 +702,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            if (isClassCovered(type)) {
+            if (isUnderlyingTypeAValue(type)) {
                 switch(tree.getKind()){
                 case BOOLEAN_LITERAL:
                     AnnotationMirror boolAnno = createBooleanAnnotationMirror(Collections
@@ -767,7 +767,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree,
                 AnnotatedTypeMirror type) {
-            if (isClassCovered(type)
+            if (isUnderlyingTypeAValue(type)
                     && methodIsStaticallyExecutable(TreeUtils
                             .elementFromUse(tree))) {
                 // Get argument values
@@ -823,7 +823,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || TypesUtils.isDeclaredOfName(type.getUnderlyingType(),
                             "java.lang.String");
 
-            if (wrapperClass || (isClassCovered(type)
+            if (wrapperClass || (isUnderlyingTypeAValue(type)
                     && methodIsStaticallyExecutable(TreeUtils
                             .elementFromUse(tree)))) {
                 // get arugment values
@@ -858,7 +858,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitMemberSelect(MemberSelectTree tree,
                 AnnotatedTypeMirror type) {
             if (TreeUtils.isFieldAccess(tree)
-                    && isClassCovered(type.getUnderlyingType())) {
+                    && isUnderlyingTypeAValue(type)) {
                 VariableElement elem = (VariableElement) InternalUtils
                         .symbol(tree);
                 Object value = elem.getConstantValue();
@@ -910,30 +910,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @param type
          * @return
          */
-        private boolean isClassCovered(AnnotatedTypeMirror type) {
-            return isClassCovered(type.getUnderlyingType());
-        }
-
-        /**
-         *
-         * @param type
-         * @return true if the type name is in coveredClassStrings
-         */
-        private boolean isClassCovered(TypeMirror type) {
-            return coveredClassStrings.contains(type.toString());
-        }
-
-        /**
-         * 
-         * @param typeMirror
-         *            the underlying type is used
-         * @param tree
-         *            Tree for error reporting
-         * @return class object corresponding to the typeMirror passed.
-         */
-        private Class<?> getClass(AnnotatedTypeMirror typeMirror, Tree tree) {
-            TypeMirror type = typeMirror.getUnderlyingType();
-            return ValueCheckerUtils.getClassFromType(type);
+        private boolean isUnderlyingTypeAValue(AnnotatedTypeMirror type) {
+            return coveredClassStrings.contains(type.getUnderlyingType().toString());
         }
 
         /**
@@ -949,39 +927,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private List<?> getCastedValues(AnnotatedTypeMirror typeMirror,
                 Tree tree) {
-            return getCastedValues(typeMirror, getClass(typeMirror, tree), tree);
-        }
-
-        /**
-         * Returns a list of values from the typeMirror cast to castType
-         * 
-         * @param typeMirror
-         *            AnnotatedTypeMirror with values
-         * @param castType
-         *            Class with type to cast to
-         * @param tree
-         *            Tree used for location of errors
-         * @return a list of values casted to typeCast
-         */
-        private List<?> getCastedValues(AnnotatedTypeMirror typeMirror,
-                Class<?> castType, Tree tree) {
+            Class<?> castType = ValueCheckerUtils.getClassFromType(typeMirror
+                    .getUnderlyingType());
             AnnotationMirror anno = getValueAnnotation(typeMirror);
-            return getCastedValues(anno, castType, tree);
-        }
-
-        /**
-         * Returns a list of values from the typeMirror cast to castType
-         * 
-         * @param typeMirror
-         *            AnnotationMirror with values
-         * @param castType
-         *            Class with type to cast to
-         * @param tree
-         *            Tree used for location of errors
-         * @return a list of values casted to typeCast
-         */
-        private List<?> getCastedValues(AnnotationMirror anno,
-                Class<?> castType, Tree tree) {
             List<?> values = null;
             if (AnnotationUtils.areSameByClass(anno, DoubleVal.class)) {
                 values = convertDoubleVal(anno, castType);
@@ -1341,6 +1289,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createIntValAnnotation(List<Long> intValues) {
+        intValues = ValueCheckerUtils.removeDuplicates(intValues);
+        if (intValues.isEmpty() || intValues.size() > MAX_VALUES) {
+            return UNKNOWNVAL;
+        }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
                 IntVal.class);
         builder.setValue("value", intValues);
@@ -1348,6 +1300,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createDoubleValAnnotation(List<Double> doubleValues) {
+        doubleValues = ValueCheckerUtils.removeDuplicates(doubleValues);
+        if (doubleValues.isEmpty() || doubleValues.size() > MAX_VALUES) {
+            return UNKNOWNVAL;
+        }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
                 DoubleVal.class);
         builder.setValue("value", doubleValues);
@@ -1355,6 +1311,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createStringAnnotation(List<String> values) {
+        values =ValueCheckerUtils.removeDuplicates(values);
+        if (values.isEmpty() || values.size() > MAX_VALUES) {
+            return UNKNOWNVAL;
+        }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
                 StringVal.class);
         builder.setValue("value", values);
@@ -1362,12 +1322,20 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public AnnotationMirror createBooleanAnnotation(List<Boolean> values) {
+        values = ValueCheckerUtils.removeDuplicates(values);
+        if (values.isEmpty() || values.size() > MAX_VALUES) {
+            return UNKNOWNVAL;
+        }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
                 BoolVal.class);
         builder.setValue("value", values);
         return builder.build();
     }
     public AnnotationMirror createCharAnnotation(List<Character> values) {
+        values = ValueCheckerUtils.removeDuplicates(values);
+        if (values.isEmpty() || values.size() > MAX_VALUES) {
+            return UNKNOWNVAL;
+        }
         List<Long> longValues = new ArrayList<>();
         for(char value: values){
             longValues.add((long) value);
