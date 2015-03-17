@@ -1,39 +1,39 @@
 import org.checkerframework.common.value.qual.*;
 
 class Basics {
-//
-//    public void boolTest() {
-//        boolean a = false;
-//        if (true) {
-//            a = true;
-//        }
-//        @BoolVal({ true, false }) boolean b = a;
-//
-//        //:: error: (assignment.type.incompatible)
-//        @BoolVal({ false }) boolean c = a;
-//    }
-//
-//    public void CharacterTest() {
-//        Character a = 'a';
-//        if (true) {
-//            a = 'b';
-//        }
-//        @IntVal({ 'a', 'b' }) Character b = a;
-//
-//        //:: error: (assignment.type.incompatible)
-//        @IntVal({ 'a' }) Character c = a;
-//    }
-//
-//    public void charTest() {
-//        char a = 'a';
-//        if (true) {
-//            a = 'b';
-//        }
-//        @IntVal({ 'a', 'b' }) char b = a;
-//
-//        //:: error: (assignment.type.incompatible)
-//        @IntVal({ 'a' }) char c = a;
-//    }
+
+    public void boolTest() {
+        boolean a = false;
+        if (true) {
+            a = true;
+        }
+        @BoolVal({ true, false }) boolean b = a;
+
+        //:: error: (assignment.type.incompatible)
+        @BoolVal({ false }) boolean c = a;
+    }
+
+    public void CharacterTest() {
+        Character a = 'a';
+        if (true) {
+            a = 'b';
+        }
+        @IntVal({ 'a', 'b' }) Character b = a;
+
+        //:: error: (assignment.type.incompatible)
+        @IntVal({ 'a' }) Character c = a;
+    }
+
+    public void charTest() {
+        char a = 'a';
+        if (true) {
+            a = 'b';
+        }
+        @IntVal({ 'a', 'b' }) char b = a;
+
+        //:: error: (assignment.type.incompatible)
+        @IntVal({ 'a' }) char c = a;
+    }
 
     public void DoubleTest() {
         Double a = new Double(0.0);
