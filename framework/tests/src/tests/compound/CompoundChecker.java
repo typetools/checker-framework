@@ -20,6 +20,7 @@ import tests.compound.qual.CCTop;
 public class CompoundChecker extends BaseTypeChecker {
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         LinkedHashSet<Class<? extends BaseTypeChecker>> subcheckers = new LinkedHashSet<>();
+        subcheckers.addAll(super.getImmediateSubcheckerClasses());
         subcheckers.add(AliasingChecker.class);
         subcheckers.add(AnotherCompoundChecker.class);
         return subcheckers;
