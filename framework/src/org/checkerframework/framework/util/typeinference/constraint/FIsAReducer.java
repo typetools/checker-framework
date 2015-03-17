@@ -32,10 +32,10 @@ public class FIsAReducer implements AFReducer {
     }
 
     @Override
-    public boolean reduce(AFConstraint constraint, Set<AFConstraint> newConstraints, Set<AFConstraint> finished) {
+    public boolean reduce(AFConstraint constraint, Set<AFConstraint> newConstraints) {
         if (constraint instanceof FIsA) {
             final FIsA fIsA = (FIsA) constraint;
-            visitor.visit(fIsA.argument, fIsA.formalParameter, newConstraints);
+            visitor.visit(fIsA.formalParameter, fIsA.argument, newConstraints);
             return true;
 
         } else {
@@ -57,7 +57,7 @@ public class FIsAReducer implements AFReducer {
      *    or set of constraints is added to newConstraints
      *
      *  From the JLS, in general there are 2 rules that govern F = A constraints:
-     *  If F = Tj, then the constraint Tj <: A is implied.
+     *  If F = Tj, then the constraint Tj = A is implied.
      *  If F = U[], where the type U involves Tj, then if A is an array type V[], or a type variable with an
      *  upper bound that is an array type V[], where V is a reference type, this algorithm is applied recursively
      *  to the constraint V >> U. Otherwise, no constraint is implied on Tj.
@@ -102,13 +102,13 @@ public class FIsAReducer implements AFReducer {
         //------------------------------------------------------------------------
         //Declared as argument
         @Override
-        public Void visitDeclared_Array(AnnotatedDeclaredType argument, AnnotatedArrayType parameter, Set<AFConstraint> constraints) {
+        public Void visitDeclared_Array(AnnotatedDeclaredType parameter, AnnotatedArrayType argument, Set<AFConstraint> constraints) {
             //should this be Array<String> - T[] the new A2F(String, T)
             return null;
         }
 
         @Override
-        public Void visitDeclared_Declared(AnnotatedDeclaredType argument, AnnotatedDeclaredType parameter, Set<AFConstraint> constraints) {
+        public Void visitDeclared_Declared(AnnotatedDeclaredType parameter, AnnotatedDeclaredType argument, Set<AFConstraint> constraints) {
             if (argument.wasRaw() || parameter.wasRaw()) {
                 return null;
             }
@@ -143,54 +143,57 @@ public class FIsAReducer implements AFReducer {
         }
 
         @Override
-        public Void visitDeclared_Null(AnnotatedDeclaredType argument, AnnotatedNullType parameter, Set<AFConstraint> constraints) {
+        public Void visitDeclared_Null(AnnotatedDeclaredType parameter, AnnotatedNullType argument, Set<AFConstraint> constraints) {
             return null;
         }
 
         @Override
-        public Void visitDeclared_Primitive(AnnotatedDeclaredType argument, AnnotatedPrimitiveType parameter, Set<AFConstraint> constraints) {
+        public Void visitDeclared_Primitive(AnnotatedDeclaredType parameter, AnnotatedPrimitiveType argument, Set<AFConstraint> constraints) {
             return null;
         }
 
         @Override
-        public Void visitDeclared_Union(AnnotatedDeclaredType argument, AnnotatedUnionType parameter, Set<AFConstraint> constraints) {
+        public Void visitDeclared_Union(AnnotatedDeclaredType parameter, AnnotatedUnionType argument, Set<AFConstraint> constraints) {
             return null;  //TODO: NOT SUPPORTED AT THE MOMENT
         }
 
         @Override
-        public Void visitIntersection_Intersection(AnnotatedIntersectionType argument, AnnotatedIntersectionType parameter, Set<AFConstraint> constraints) {
+        public Void visitIntersection_Intersection(AnnotatedIntersectionType parameter, AnnotatedIntersectionType argument, Set<AFConstraint> constraints) {
             return null;  //TODO: NOT SUPPORTED AT THE MOMENT
         }
 
 
         @Override
-        public Void visitIntersection_Null(AnnotatedIntersectionType argument, AnnotatedNullType parameter, Set<AFConstraint> constraints) {
+        public Void visitIntersection_Null(AnnotatedIntersectionType parameter, AnnotatedNullType argument, Set<AFConstraint> constraints) {
+            return null;
+        }
+
+        @Override
+        public Void visitNull_Null(AnnotatedNullType parameter, AnnotatedNullType argument, Set<AFConstraint> afConstraints) {
+            //we sometimes get these when we have captured types passed as arguments
+            //regardless they don't give any information
             return null;
         }
 
         //------------------------------------------------------------------------
         //Primitive as argument
         @Override
-        public Void visitPrimitive_Declared(AnnotatedPrimitiveType argument, AnnotatedDeclaredType parameter, Set<AFConstraint> constraints) {
+        public Void visitPrimitive_Declared(AnnotatedPrimitiveType parameter, AnnotatedDeclaredType argument, Set<AFConstraint> constraints) {
             //we may be able to eliminate this case, since I believe the corresponding constraint will just be discarded
             //as the parameter must be a boxed primitive
-            constraints.add(new A2F(typeFactory.getBoxedType(argument), parameter));
+            constraints.add(new FIsA(typeFactory.getBoxedType(parameter), argument));
             return null;
         }
 
         @Override
-        public Void visitPrimitive_Primitive(AnnotatedPrimitiveType argument, AnnotatedPrimitiveType parameter, Set<AFConstraint> constraints) {
+        public Void visitPrimitive_Primitive(AnnotatedPrimitiveType parameter, AnnotatedPrimitiveType argument, Set<AFConstraint> constraints) {
             return null;
         }
 
         @Override
-        public Void visitTypevar_Typevar(AnnotatedTypeVariable argument, AnnotatedTypeVariable parameter, Set<AFConstraint> constraints) {
+        public Void visitTypevar_Typevar(AnnotatedTypeVariable parameter, AnnotatedTypeVariable argument, Set<AFConstraint> constraints) {
             //if we've reached this point and the two are corresponding type variables, then they are NOT ones that
             //may have a type variable we are inferring types for and therefore we can discard this constraint
-            if (!AnnotatedTypes.areCorrespondingTypeVariables(typeFactory.getElementUtils(), argument, parameter)) {
-                constraints.add(new FIsA(argument, parameter));
-            }
-
             return null;
         }
 

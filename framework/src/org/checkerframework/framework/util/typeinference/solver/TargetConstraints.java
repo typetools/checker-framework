@@ -9,13 +9,13 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * TargetConstraints represents the sum of all TUConstraints for which target was the type parameter,
+ * TargetConstraints represents the set of all TUConstraints for which target was the type parameter,
  * i.e. the T in the TUConstraint.  Unlike AF/TU Constraints, this class holds multiple constraints and
  * is mutated during solving (where the TU/AF Constraints are immutable).
  * @see org.checkerframework.framework.util.typeinference.solver.ConstraintMap
  */
 public class TargetConstraints {
-    //The type parameter for which we are inferring a type argument.  All constraint in this
+    //The type parameter for which we are inferring a type argument.  All constraints in this
     //object are related to this target.
     public final TypeVariable target;
 
