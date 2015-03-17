@@ -53,7 +53,7 @@ public class NumberUtils {
             }
             return shorts;
         default:
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException(typeKind.toString());
         }
     }
 

@@ -1,4 +1,5 @@
 import org.checkerframework.common.value.qual.*;
+
 import java.util.BitSet;
 
 
@@ -214,6 +215,7 @@ class Binaries {
         @BoolVal({ true }) boolean b = false || true;
 
     }
+    
     public void conditionals() {
         @BoolVal({ false }) boolean a = 1.0f == '1';
         @BoolVal({ true }) boolean b = 1 != 2.0;
@@ -221,7 +223,19 @@ class Binaries {
         @BoolVal({ true }) boolean d = 1 >= 1.0;
         @BoolVal({ true }) boolean e = 1 < 1.1f;
         @BoolVal({ true }) boolean f = (char) 2 <= 2.0;
+        @IntVal('!') Character BANG = '!';
+        @BoolVal(true) boolean g = (BANG == '!');
+        char bangChar = '!';
+        @BoolVal(true) boolean h =(BANG == bangChar);
+        
+        Character bang = '!';
+        //Reference equalitiy is used
+        //:: error: (assignment.type.incompatible)
+        @BoolVal(false) boolean i =(BANG == bang);
+        
+
     }
+    
     
     public void loop() throws InterruptedException {
         int spurious_count = 0;
