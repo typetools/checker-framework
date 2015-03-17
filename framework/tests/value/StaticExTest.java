@@ -1,8 +1,4 @@
-import org.checkerframework.common.value.qual.BoolVal;
-import org.checkerframework.common.value.qual.DoubleVal;
-import org.checkerframework.common.value.qual.IntVal;
-import org.checkerframework.common.value.qual.StaticallyExecutable;
-import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.common.value.qual.*;
 
 
 
@@ -41,6 +37,12 @@ public class StaticExTest {
         @StringVal({ "hello", "ellob", "hellob", "elloby", "abcde", "bcdef",
                 "abcdef", "bcdefg" })
         String s = new String(data, offset, charCount);
+    }
+    static byte[] b = new byte[0];
+    void constructorsArrays(){
+        char @ArrayLen(100)[] c = new char[100];
+        String s = new String(c);
+        new String(b); 
     }
    
 }
