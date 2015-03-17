@@ -59,12 +59,6 @@ public class TypesIntoElements {
 
         storeTypeParameters(processingEnv, types, atypeFactory, tree.getTypeParameters(), csym);
 
-        /* TODO: storing extends/implements types results in
-         * a strange error e.g. from the Nullness Checker.
-         * I think somewhere we take the annotations on extends/implements as
-         * the receiver annotation on a constructor, breaking logic there.
-         * I assume that the problem is the default that we use for these locations.
-         * Once we've decided the defaulting, enable this.
         storeClassExtends(processingEnv, types, atypeFactory, tree.getExtendsClause(), csym, -1);
         {
             int implidx = 0;
@@ -73,7 +67,6 @@ public class TypesIntoElements {
                 ++implidx;
             }
         }
-        */
 
         for (Tree mem : tree.getMembers()) {
             if (mem.getKind() == Tree.Kind.METHOD) {
@@ -168,7 +161,7 @@ public class TypesIntoElements {
             type = atypeFactory.fromElement(csym.getSuperclass().asElement());
             pos = -1;
         } else {
-            type = atypeFactory.getAnnotatedType(ext);
+            type = atypeFactory.getAnnotatedTypeFromTypeTree(ext);
             pos = ((JCTree) ext).pos;
         }
 

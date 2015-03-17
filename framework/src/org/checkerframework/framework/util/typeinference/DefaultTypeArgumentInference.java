@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.typeinference;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -68,7 +69,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         //steps 1-4
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
-        final Map<TypeVariable, AnnotatedTypeMirror> inferredArgs = infer(typeFactory, invocation, methodType, targets);
+        final Map<TypeVariable, AnnotatedTypeMirror> inferredArgs = infer(typeFactory, invocation, methodElem, methodType, targets);
 
         //step 5
         handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
@@ -148,6 +149,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      */
     private Map<TypeVariable, AnnotatedTypeMirror> infer(final AnnotatedTypeFactory typeFactory,
                                                          final ExpressionTree expression,
+                                                         final ExecutableElement methodElem,
                                                          final AnnotatedExecutableType methodType,
                                                          final Set<TypeVariable> targets) {
 
@@ -183,26 +185,32 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             boxedReturnType = declaredReturnType;
         }
 
-        // Step 3 - Infer a solution from the equality constraints in the assignment context
-        InferenceResult fromAssignmentEqualities =
-                inferFromAssignmentEqualities(assignedTo, boxedReturnType, targets, typeFactory);
-
-        // Step 4 - Combine the results from 2.b and step 3
-        InferenceResult combinedSupertypesAndAssignment =
-                combineSupertypeAndAssignmentResults(targets, typeFactory, fromAssignmentEqualities, fromArgSupertypes);
-
-        // Step 5 - Combine the result from 2.a and step 4, if there is a conflict use the result from step 2.a
-        fromArgEqualities.mergeSubordinate(combinedSupertypesAndAssignment);
         final InferenceResult fromArguments = fromArgEqualities;
+        if (!((MethodSymbol)methodElem).isConstructor()) {
+            // Step 3 - Infer a solution from the equality constraints in the assignment context
+            InferenceResult fromAssignmentEqualities =
+                    inferFromAssignmentEqualities(assignedTo, boxedReturnType, targets, typeFactory);
 
-        //if we don't have a result for all type arguments
-        //Step 6 - Infer the type arguments from the greatest-lower-bounds of all "subtype" constraints
-        if (!fromArguments.isComplete(targets)) {
-            InferenceResult fromAssignment = inferFromAssignment(assignedTo, boxedReturnType, methodType, afArgumentConstraints,
-                    fromArguments, targets, typeFactory);
+            // Step 4 - Combine the results from 2.b and step 3
+            InferenceResult combinedSupertypesAndAssignment =
+                    combineSupertypeAndAssignmentResults(targets, typeFactory, fromAssignmentEqualities, fromArgSupertypes);
 
-            //Step 7 - Merge the argument and the assignment constraints
-            fromArguments.mergeSubordinate(fromAssignment);
+            // Step 5 - Combine the result from 2.a and step 4, if there is a conflict use the result from step 2.a
+            fromArgEqualities.mergeSubordinate(combinedSupertypesAndAssignment);
+
+            //if we don't have a result for all type arguments
+            //Step 6 - Infer the type arguments from the greatest-lower-bounds of all "subtype" constraints
+            if (!fromArguments.isComplete(targets)) {
+                InferenceResult fromAssignment = inferFromAssignment(assignedTo, boxedReturnType, methodType, afArgumentConstraints,
+                        fromArguments, targets, typeFactory);
+
+                //Step 7 - Merge the argument and the assignment constraints
+                fromArguments.mergeSubordinate(fromAssignment);
+            }
+
+        } else {
+
+            fromArguments.mergeSubordinate(fromArgSupertypes);
         }
 
         return fromArguments.toAtmMap();
