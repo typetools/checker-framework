@@ -1,25 +1,23 @@
 package org.checkerframework.common.value;
 
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
+
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -58,13 +56,6 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
-
-import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -85,8 +76,8 @@ import com.sun.source.util.TreePath;
  *
  */
 @TypeQualifiers({ ArrayLen.class, BoolVal.class, DoubleVal.class, IntVal.class,
-        StringVal.class, BottomVal.class, UnknownVal.class }) public class ValueAnnotatedTypeFactory
-        extends BaseAnnotatedTypeFactory {
+        StringVal.class, BottomVal.class, UnknownVal.class })
+public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Annotation constants */
     protected final AnnotationMirror INTVAL, DOUBLEVAL, BOOLVAL, ARRAYLEN,
@@ -102,10 +93,11 @@ import com.sun.source.util.TreePath;
                                                 // array
     protected final List<AnnotationMirror> constantAnnotations;
     protected Set<String> coveredClassStrings;
-    
+
     /** should this type factory report warnings? **/
     private boolean reportWarnings = true;
-
+    
+    private ReflectiveEvalutator evalutator = new ReflectiveEvalutator(checker, this, reportWarnings);
 
     /**
      * Constructor. Initializes all the AnnotationMirror constants.
@@ -162,11 +154,12 @@ import com.sun.source.util.TreePath;
             this.postInit();
         }
     }
-    
-    public void disableWarnings(){
+
+    public void disableWarnings() {
         reportWarnings = false;
     }
-    public void enableWarnings(){
+
+    public void enableWarnings() {
         reportWarnings = true;
     }
 
@@ -193,59 +186,61 @@ import com.sun.source.util.TreePath;
         }
     }
 
-    private AnnotatedTypeMirror getPostFixAnno(UnaryTree tree, AnnotatedTypeMirror anno) {
-    	if ( anno.hasAnnotation(DoubleVal.class)){
-    		return  postFixDoubl(anno, tree.getKind() == Tree.Kind.POSTFIX_INCREMENT);
-    	} else if (anno.hasAnnotation(IntVal.class)){
-    		return  postFixInt(anno, tree.getKind() == Tree.Kind.POSTFIX_INCREMENT);
-    	}
-    	return anno;
-    	
-	}
-    
-	private AnnotatedTypeMirror postFixInt(AnnotatedTypeMirror anno, boolean increment) {
-		List<Long> values = AnnotationUtils.getElementValueArray(
-				anno.getAnnotation(IntVal.class), "value", Long.class,
-				true);
-		List<? extends Number> castedValues = NumberUtils.castNumbers(
-				anno.getUnderlyingType(), values);
-		List<Long> results = new ArrayList<>();
-		for (Number value : castedValues) {
-			NumberMath<?> number = NumberMath.getNumberMath(value);
-			if (increment) {
-				results.add(number.minus(1).longValue());
-			} else {
-				results.add(number.plus(1).longValue());
+    private AnnotatedTypeMirror getPostFixAnno(UnaryTree tree,
+            AnnotatedTypeMirror anno) {
+        if (anno.hasAnnotation(DoubleVal.class)) {
+            return postFixDoubl(anno,
+                    tree.getKind() == Tree.Kind.POSTFIX_INCREMENT);
+        } else if (anno.hasAnnotation(IntVal.class)) {
+            return postFixInt(anno,
+                    tree.getKind() == Tree.Kind.POSTFIX_INCREMENT);
+        }
+        return anno;
 
-			}
-		}
-		anno.replaceAnnotation(createIntValAnnotation(results));
-		return anno;
-	}
+    }
 
-	private AnnotatedTypeMirror postFixDoubl(AnnotatedTypeMirror anno,
-			boolean increment) {
-		List<Double> values = AnnotationUtils.getElementValueArray(
-				anno.getAnnotation(DoubleVal.class), "value", Double.class,
-				true);
-		List<? extends Number> castedValues = NumberUtils.castNumbers(
-				anno.getUnderlyingType(), values);
-		List<Double> results = new ArrayList<>();
-		for (Number value : castedValues) {
-			NumberMath<?> number = NumberMath.getNumberMath(value);
-			if (increment) {
-				results.add(number.minus(1).doubleValue());
-			} else {
-				results.add(number.plus(1).doubleValue());
+    private AnnotatedTypeMirror postFixInt(AnnotatedTypeMirror anno,
+            boolean increment) {
+        List<Long> values = AnnotationUtils.getElementValueArray(
+                anno.getAnnotation(IntVal.class), "value", Long.class, true);
+        List<? extends Number> castedValues = NumberUtils.castNumbers(
+                anno.getUnderlyingType(), values);
+        List<Long> results = new ArrayList<>();
+        for (Number value : castedValues) {
+            NumberMath<?> number = NumberMath.getNumberMath(value);
+            if (increment) {
+                results.add(number.minus(1).longValue());
+            } else {
+                results.add(number.plus(1).longValue());
 
-			}
-		}
-		anno.replaceAnnotation(createDoubleValAnnotation(results));
-		return anno;
-	}
+            }
+        }
+        anno.replaceAnnotation(createIntValAnnotation(results));
+        return anno;
+    }
 
+    private AnnotatedTypeMirror postFixDoubl(AnnotatedTypeMirror anno,
+            boolean increment) {
+        List<Double> values = AnnotationUtils.getElementValueArray(
+                anno.getAnnotation(DoubleVal.class), "value", Double.class,
+                true);
+        List<? extends Number> castedValues = NumberUtils.castNumbers(
+                anno.getUnderlyingType(), values);
+        List<Double> results = new ArrayList<>();
+        for (Number value : castedValues) {
+            NumberMath<?> number = NumberMath.getNumberMath(value);
+            if (increment) {
+                results.add(number.minus(1).doubleValue());
+            } else {
+                results.add(number.plus(1).doubleValue());
 
-	/**
+            }
+        }
+        anno.replaceAnnotation(createDoubleValAnnotation(results));
+        return anno;
+    }
+
+    /**
      * Creates an annotation of the name given with the set of values given.
      * Issues a checker warning and return UNKNOWNVAL if values.size &gt;
      * MAX_VALUES
@@ -261,29 +256,29 @@ import com.sun.source.util.TreePath;
             builder.setValue("value", valuesList);
             return builder.build();
         } else {
-           return UNKNOWNVAL;
+            return UNKNOWNVAL;
         }
     }
-    public AnnotationMirror createAnnotation(Class<? extends Annotation> name, Set<?> values) {
-    	return createAnnotation(name.getCanonicalName(), values);
+
+    public AnnotationMirror createAnnotation(Class<? extends Annotation> name,
+            Set<?> values) {
+        return createAnnotation(name.getCanonicalName(), values);
     }
 
-
-    @Override protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
+    @Override
+    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
         return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
     }
 
-    @Override public QualifierHierarchy createQualifierHierarchy(
-            MultiGraphFactory factory) {
+    @Override
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new ValueQualifierHierarchy(factory);
     }
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
-        return new ListTypeAnnotator(
-                new ValueTypeAnnotator(this),
-                super.createTypeAnnotator()
-        );
+        return new ListTypeAnnotator(new ValueTypeAnnotator(this),
+                super.createTypeAnnotator());
     }
 
     private class ValueTypeAnnotator extends TypeAnnotator {
@@ -307,14 +302,18 @@ import com.sun.source.util.TreePath;
         }
 
         /**
-         * If any constant-value annotation has &gt; MAX_VALUES number of values provided, treats the value as UnknownVal.
-         * Works together with ValueVisitor.visitAnnotation, which issues a warning to the user in this case.
+         * If any constant-value annotation has &gt; MAX_VALUES number of values
+         * provided, treats the value as UnknownVal. Works together with
+         * ValueVisitor.visitAnnotation, which issues a warning to the user in
+         * this case.
          */
-        private void replaceWithUnknownValIfTooManyValues(AnnotatedTypeMirror atm){
+        private void replaceWithUnknownValIfTooManyValues(
+                AnnotatedTypeMirror atm) {
             AnnotationMirror anno = atm.getAnnotationInHierarchy(UNKNOWNVAL);
 
             if (anno != null && anno.getElementValues().size() > 0) {
-                List<Object> values = AnnotationUtils.getElementValueArray(anno, "value", Object.class, false);
+                List<Object> values = AnnotationUtils.getElementValueArray(
+                        anno, "value", Object.class, false);
                 if (values != null && values.size() > MAX_VALUES) {
                     atm.replaceAnnotation(UNKNOWNVAL);
                 }
@@ -339,16 +338,15 @@ import com.sun.source.util.TreePath;
                 MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
         }
-        
-        @Override 
+
+        @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1,
                 AnnotationMirror a2) {
             if (isSubtype(a1, a2)) {
                 return a1;
             } else if (isSubtype(a2, a1)) {
                 return a2;
-            }
-            else {
+            } else {
                 // If the two are unrelated, then bottom is the GLB.
                 return BOTTOMVAL;
             }
@@ -368,7 +366,8 @@ import com.sun.source.util.TreePath;
          *
          * @return the least upper bound of a1 and a2
          */
-        @Override public AnnotationMirror leastUpperBound(AnnotationMirror a1,
+        @Override
+        public AnnotationMirror leastUpperBound(AnnotationMirror a1,
                 AnnotationMirror a2) {
             if (!AnnotationUtils.areSameIgnoringValues(getTopAnnotation(a1),
                     getTopAnnotation(a2))) {
@@ -395,12 +394,14 @@ import com.sun.source.util.TreePath;
             }
             // Annotations are in this hierarchy, but they are not the same
             else {
-                // If either is UNKNOWNVAL, ARRAYLEN, STRINGVAL, or BOOLEAN then the LUB is
+                // If either is UNKNOWNVAL, ARRAYLEN, STRINGVAL, or BOOLEAN then
+                // the LUB is
                 // UnknownVal
                 if (!isNumberAnnotation(a1) || !isNumberAnnotation(a2)) {
                     return UNKNOWNVAL;
                 } else {
-                    // At this point one of them must be a DoubleVal and one an IntVal
+                    // At this point one of them must be a DoubleVal and one an
+                    // IntVal
                     AnnotationMirror higher;
                     AnnotationMirror lower;
 
@@ -442,8 +443,8 @@ import com.sun.source.util.TreePath;
          *
          * @return true if rhs is a subtype of lhs, false otherwise
          */
-        @Override public boolean isSubtype(AnnotationMirror rhs,
-                AnnotationMirror lhs) {
+        @Override
+        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
             if (System.currentTimeMillis() > t + 1000) {
                 t = System.currentTimeMillis();
             }
@@ -460,7 +461,8 @@ import com.sun.source.util.TreePath;
                         rhs, "value", Object.class, true);
                 return lhsValues.containsAll(rhsValues);
             }
-            // not the same type, but if they are DOUBLEVAL and INTVAL they might still be subtypes
+            // not the same type, but if they are DOUBLEVAL and INTVAL they
+            // might still be subtypes
             if (AnnotationUtils.areSameIgnoringValues(lhs, DOUBLEVAL)
                     && AnnotationUtils.areSameIgnoringValues(rhs, INTVAL)) {
                 List<Long> rhsValues;
@@ -503,16 +505,16 @@ import com.sun.source.util.TreePath;
     protected TreeAnnotator createTreeAnnotator() {
         // The ValueTreeAnnotator handles propagation differently,
         // so it doesn't need PropgationTreeAnnotator.
-        return new ListTreeAnnotator( new ValueTreeAnnotator(this),
+        return new ListTreeAnnotator(new ValueTreeAnnotator(this),
                 new ImplicitsTreeAnnotator(this));
     }
 
-    @Override protected QualifierDefaults createQualifierDefaults() {
+    @Override
+    protected QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defaults = super.createQualifierDefaults();
         defaults.addAbsoluteDefault(UNKNOWNVAL, DefaultLocation.OTHERWISE);
         defaults.addAbsoluteDefault(BOTTOMVAL, DefaultLocation.LOWER_BOUNDS);
 
-        
         return defaults;
     }
 
@@ -525,8 +527,8 @@ import com.sun.source.util.TreePath;
             super(factory);
         }
 
-        @Override public Void visitNewArray(NewArrayTree tree,
-                AnnotatedTypeMirror type) {
+        @Override
+        public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
 
             TreePath path = getPath(tree);
 
@@ -583,7 +585,6 @@ import com.sun.source.util.TreePath;
                         return null;
                     }
 
-
                     newQual = createAnnotation(
                             "org.checkerframework.common.value.qual.ArrayLen",
                             value);
@@ -601,11 +602,11 @@ import com.sun.source.util.TreePath;
             int i = 0;
             for (ExpressionTree e : initializers) {
                 if (e.getKind() == Tree.Kind.INT_LITERAL) {
-                    bytes[i] = (byte) (((Integer) ((LiteralTree) e)
-                            .getValue()).intValue());
+                    bytes[i] = (byte) (((Integer) ((LiteralTree) e).getValue())
+                            .intValue());
                 } else if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
-                    bytes[i] = (byte) (((Character) ((LiteralTree) e).getValue())
-                            .charValue());                    
+                    bytes[i] = (byte) (((Character) ((LiteralTree) e)
+                            .getValue()).charValue());
                 } else {
                     allLiterals = false;
                 }
@@ -613,8 +614,8 @@ import com.sun.source.util.TreePath;
             }
             if (allLiterals)
                 return new String(bytes);
-            //If any part of the initialize isn't know,
-            //the stringval isn't known.
+            // If any part of the initialize isn't know,
+            // the stringval isn't known.
             return null;
         }
 
@@ -636,8 +637,8 @@ import com.sun.source.util.TreePath;
             }
             if (allLiterals)
                 return stringVal;
-            //If any part of the initialize isn't know,
-            //the stringval isn't known.
+            // If any part of the initialize isn't know,
+            // the stringval isn't known.
             return null;
         }
 
@@ -681,117 +682,71 @@ import com.sun.source.util.TreePath;
             }
         }
 
-        @Override public Void visitTypeCast(TypeCastTree tree,
-                AnnotatedTypeMirror type) {
+        @Override
+        public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
             if (isClassCovered(type)) {
-                handleCast(tree.getExpression(), getClass(type, tree.getType()), type);
-            } else if(type.getKind() == TypeKind.ARRAY){
-            	handleArrayCast(tree, type);
+                handleCast(tree.getExpression(),
+                        getClass(type, tree.getType()), type);
+            } else if (type.getKind() == TypeKind.ARRAY) {
+                handleArrayCast(tree, type);
             }
             return super.visitTypeCast(tree, type);
         }
 
         private void handleArrayCast(TypeCastTree tree, AnnotatedTypeMirror type) {
-        	if(tree.getExpression().getKind() == Kind.NULL_LITERAL){
-        		type.replaceAnnotation(BOTTOMVAL);
-        	}
-			
-		}
-
-		@Override public Void visitAssignment(AssignmentTree tree,
-                AnnotatedTypeMirror type) {
-            super.visitAssignment(tree, type);
-            return null;
+            if (tree.getExpression().getKind() == Kind.NULL_LITERAL) {
+                type.replaceAnnotation(BOTTOMVAL);
+            }
 
         }
 
-        @Override public Void visitLiteral(LiteralTree tree,
-                AnnotatedTypeMirror type) {
+        @Override
+        public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             if (isClassCovered(type)) {
-                // Handle Boolean Literal
-                if (tree.getKind() == Tree.Kind.BOOLEAN_LITERAL) {
-                    HashSet<Boolean> values = new HashSet<Boolean>();
-                    values.add((Boolean) tree.getValue());
-                    AnnotationMirror newQual = createAnnotation(
-                            "org.checkerframework.common.value.qual.BoolVal",
-                            values);
-                    type.replaceAnnotation(newQual);
-
+                switch(tree.getKind()){
+                case BOOLEAN_LITERAL:
+                    AnnotationMirror boolAnno = createBooleanAnnotationMirror(Collections
+                            .singletonList((Boolean) tree.getValue()));
+                    type.replaceAnnotation(boolAnno);
+                    return null;
+                    
+                case CHAR_LITERAL:
+                    AnnotationMirror charAnno = createCharAnnotation(Collections
+                            .singletonList((Character) tree.getValue()));
+                    type.replaceAnnotation(charAnno);
+                    return null;
+                    
+                case DOUBLE_LITERAL:
+                    AnnotationMirror doubleAnno = createNumberAnnotationMirror(Collections
+                            .<Number>singletonList((Double) tree.getValue()));
+                    type.replaceAnnotation(doubleAnno);
+                    return null;
+                    
+                case FLOAT_LITERAL:
+                    AnnotationMirror floatAnno = createNumberAnnotationMirror(Collections
+                            .<Number>singletonList((Float) tree.getValue()));
+                    type.replaceAnnotation(floatAnno);
+                    return null;
+                case INT_LITERAL:
+                    AnnotationMirror intAnno = createNumberAnnotationMirror(Collections
+                            .<Number>singletonList((Integer) tree.getValue()));
+                    type.replaceAnnotation(intAnno);
+                    return null;
+                case LONG_LITERAL:
+                    AnnotationMirror longAnno = createNumberAnnotationMirror(Collections
+                            .<Number>singletonList((Long) tree.getValue()));
+                    type.replaceAnnotation(longAnno);
+                    return null;
+                case STRING_LITERAL:
+                    AnnotationMirror stringAnno = createStringValAnnotationMirror(Collections
+                            .singletonList((String) tree.getValue()));
+                    type.replaceAnnotation(stringAnno);
+                    return null;
+                default:
                     return null;
                 }
 
-                // Handle Char Literal
-                else if (tree.getKind() == Tree.Kind.CHAR_LITERAL) {
-                    HashSet<Long> values = new HashSet<Long>();
-                    values.add((long) ((Character) tree.getValue()).charValue());
-                    AnnotationMirror newQual = createAnnotation(
-                            "org.checkerframework.common.value.qual.IntVal",
-                            values);
-                    type.replaceAnnotation(newQual);
-
-                    return null;
-                }
-
-                // Handle Double Literal
-                else if (tree.getKind() == Tree.Kind.DOUBLE_LITERAL) {
-                    HashSet<Double> values = new HashSet<Double>();
-                    values.add((Double) tree.getValue());
-                    AnnotationMirror newQual = createAnnotation(
-                            "org.checkerframework.common.value.qual.DoubleVal",
-                            values);
-                    type.replaceAnnotation(newQual);
-
-                    return null;
-                }
-                // Handle Float Literal
-                else if (tree.getKind() == Tree.Kind.FLOAT_LITERAL) {
-                    HashSet<Double> values = new HashSet<Double>();
-                    values.add(new Double((Float) tree.getValue()));
-                    AnnotationMirror newQual = createAnnotation(
-                            "org.checkerframework.common.value.qual.DoubleVal",
-                            values);
-                    type.replaceAnnotation(newQual);
-
-                    return null;
-                }
-
-                // Handle Integer Literal
-                else if (tree.getKind() == Tree.Kind.INT_LITERAL) {
-                    AnnotationMirror newQual;
-                    HashSet<Long> values = new HashSet<Long>();
-                    values.add(new Long((Integer) tree.getValue()));
-                    newQual = createAnnotation(
-                            "org.checkerframework.common.value.qual.IntVal",
-                            values);
-                    // }
-                    type.replaceAnnotation(newQual);
-                    return null;
-                }
-                // Handle Long Literal
-                else if (tree.getKind() == Tree.Kind.LONG_LITERAL) {
-                    HashSet<Long> values = new HashSet<Long>();
-                    values.add((Long) tree.getValue());
-                    AnnotationMirror newQual = createAnnotation(
-                            "org.checkerframework.common.value.qual.IntVal",
-                            values);
-                    type.replaceAnnotation(newQual);
-
-                    return null;
-                }
-
-                // Handle a String Literal
-                else if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
-                    HashSet<String> values = new HashSet<String>();
-                    values.add((String) tree.getValue());
-                    AnnotationMirror newQual = createAnnotation(
-                            "org.checkerframework.common.value.qual.StringVal",
-                            values);
-                    type.replaceAnnotation(newQual);
-
-                    return null;
-                }
             }
-            // super.visitLiteral(tree, type);
             return null;
         }
 
@@ -809,595 +764,143 @@ import com.sun.source.util.TreePath;
             return getDeclAnnotation(method, StaticallyExecutable.class) != null;
         }
 
-        @Override public Void visitMethodInvocation(MethodInvocationTree tree,
+        @Override
+        public Void visitMethodInvocation(MethodInvocationTree tree,
                 AnnotatedTypeMirror type) {
-            super.visitMethodInvocation(tree, type);
-
             if (isClassCovered(type)
                     && methodIsStaticallyExecutable(TreeUtils
                             .elementFromUse(tree))) {
-                ExpressionTree methodTree = tree.getMethodSelect();
-
-                // First, check that all argument values are known
-                List<? extends Tree> argTrees = tree.getArguments();
-                List<AnnotatedTypeMirror> argTypes = new ArrayList<AnnotatedTypeMirror>(
-                        argTrees.size());
-                for (Tree t : argTrees) {
-                    argTypes.add(getAnnotatedType(t));
-                }
-
-                boolean known = true;
-                for (AnnotatedTypeMirror t : argTypes) {
-                    if (nonValueAnno(t)) {
-                        known = false;
-                    }
-                }
-
-                if (known) {
-
-                    boolean isStatic = false;
-                    AnnotatedTypeMirror recType = null;
-                    Method method = null;
-
-                    try {
-                        method = getMethodObject(tree);
-                        isStatic = java.lang.reflect.Modifier.isStatic(method
-                                .getModifiers());
-
-                        if (!isStatic) {
-                            // Method is defined in another class
-                            recType = getAnnotatedType(((MemberSelectTree) methodTree)
-                                    .getExpression());
-                        }
-
-                        // Check if this is a method that can be evaluated
-
-                        // Second, check that the receiver class and method can
-                        // be reflectively instantiated, and that the method is
-                        // static or the receiver is not UnknownVal
-
-                        // Method is evaluatable because all arguments are known
-                        // and the method is static or the receiver is known
-                        if (isStatic || !nonValueAnno(recType)) {
-
-                            if (!method.isAccessible()) {
-                                method.setAccessible(true);
-                            }
-                            AnnotationMirror newAnno = evaluateMethod(recType,
-                                    method, argTypes, type, tree);
-                            if (newAnno != null) {
-                                type.replaceAnnotation(newAnno);
-                                return null;
-                            }
-                        }
-                    } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
-                        if(reportWarnings)
-                        checker.report(Result.warning("class.find.failed",
-                                (TreeUtils.elementFromUse(tree))
-                                        .getEnclosingElement()), tree);
-
-                    } catch (NoSuchMethodException e) {
-                        // The class we attempted to getMethod from inside the call to getMethodObject.
-                        Element classElem = TreeUtils.elementFromUse(tree).getEnclosingElement();
-
-                        if (classElem == null) {
-                            if(reportWarnings)
-                            checker.report(Result
-                                    .warning("method.find.failed",
-                                            ((MemberSelectTree) methodTree)
-                                                    .getIdentifier(), argTypes),tree);
-                        }
-                        else {
-                            if(reportWarnings)
-                            checker.report(Result
-                                    .warning("method.find.failed.in.class",
-                                            ((MemberSelectTree) methodTree)
-                                                    .getIdentifier(), argTypes,
-                                                    classElem), tree);
-                        }
-                    }
-                }
-            }
-            // Method was not able to be analyzed
-            type.replaceAnnotation(UNKNOWNVAL);
-
-            return null;
-        }
-
-        /**
-         * Method for reflectively obtaining a method object so it can
-         * (potentially) be statically executed by the checker for constant
-         * propagation
-         *
-         * @param tree
-         * @return the Method object corresponding to the method being invoke in
-         *         tree
-         * @throws ClassNotFoundException
-         * @throws NoSuchMethodException
-         */
-        private Method getMethodObject(MethodInvocationTree tree)
-                throws ClassNotFoundException, NoSuchMethodException {
-            Method method;
-            ExecutableElement ele = TreeUtils.elementFromUse(tree);
-            ele.getEnclosingElement();
-            Name clazz = TypesUtils.getQualifiedName((DeclaredType) ele
-                    .getEnclosingElement().asType());
-            List<? extends VariableElement> paramEles = ele.getParameters();
-            List<Class<?>> paramClzz = new ArrayList<>();
-            for (Element e : paramEles) {
-                TypeMirror pType = ElementUtils.getType(e);
-                if (pType.getKind() == TypeKind.ARRAY) {
-                    ArrayType pArrayType = (ArrayType) pType;
-                    String par = TypesUtils.getQualifiedName(
-                            (DeclaredType) pArrayType.getComponentType())
-                            .toString();
-                    if (par.equals("java.lang.Object")) {
-                        paramClzz.add(java.lang.Object[].class);
-                    } else if (par.equals("java.lang.String")) {
-                        paramClzz.add(java.lang.String[].class);
-                    }
-
-                } else {
-                    String paramClass = ElementUtils.getType(e).toString();
-                    if (paramClass.contains("java")) {
-                        paramClzz.add(Class.forName(paramClass));
-                    } else {
-                        paramClzz.add(getClass(ElementUtils.getType(e), tree));
-                    }
-                }
-            }
-            Class<?> clzz = Class.forName(clazz.toString());
-            method = clzz.getMethod(ele.getSimpleName().toString(),
-                    paramClzz.toArray(new Class<?>[0]));
-            return method;
-        }
-
-        /**
-         * Evaluates the possible results of a method and returns an annotation
-         * containing those results.
-         *
-         * @param recType
-         *            the AnnotatedTypeMirror of the receiver
-         * @param method
-         *            the method to evaluate
-         * @param argTypes
-         *            the List of AnnotatedTypeMirror for the arguments from
-         *            which possible argument values are extracted
-         * @param retType
-         *            the AnnotatedTypeMirror of the tree being evaluated, used
-         *            to determine the type of AnnotationMirr to return
-         * @param tree
-         *            location for error reporting
-         *
-         * @return an AnnotationMirror of the type specified by retType's
-         *         underlyingType and with its value array populated by all the
-         *         possible evaluations of method. Or UnknownVal
-         */
-        private AnnotationMirror evaluateMethod(AnnotatedTypeMirror recType,
-                Method method, List<AnnotatedTypeMirror> argTypes,
-                AnnotatedTypeMirror retType, MethodInvocationTree tree) {
-            List<?> recValues = null;
-            // If we are going to need the values of the receiver, get them.
-            // Otherwise they can be null because the method is static
-            if (!java.lang.reflect.Modifier.isStatic(method.getModifiers())) {
-                recValues = getCastedValues(recType, tree);
-            }
-
-            // Get the values for all the arguments
-            ArrayDeque<List<?>> allArgValues = getAllArgumentAnnotationValues(
-                    argTypes, tree);
-            // Evaluate the method by recursively navigating through all the
-            // argument value lists, adding all results to the results list.
-            ArrayDeque<Object> specificArgValues = new ArrayDeque<Object>();
-            ArrayList<Object> results = new ArrayList<Object>();
-
-            evaluateMethodHelper(allArgValues, specificArgValues, recValues,
-                    method, results, tree);
-            return resultAnnotationHandler(retType, results, tree);
-        }
-
-        /**
-         * Recursive helper function for evaluateMethod. Recurses through each
-         * List of Object representing possible argument values. At each
-         * recursion, all possible values for an argument are incremented
-         * through and the method is invoked on each one and the result is added
-         * to the results list.
-         *
-         * @param argArrayDeque
-         *            ArrayDeque of Lists of Objects representing possible
-         *            values for each argument
-         * @param values
-         *            ArrayDeque of Objects containing the argument values for a
-         *            specific invocation of method. This is the structure that
-         *            is modified at each recursion to add a different argument
-         *            value.
-         * @param receiverValues
-         *            a List of Object representing all the possible values of
-         *            the receiver
-         * @param method
-         *            the method to invoke
-         * @param results
-         *            a List of all values returned. Once all calls are finished
-         *            this will contain the results for all possible
-         *            combinations of argument and receiver values invoking the
-         *            method
-         * @param tree
-         *            location for error reporting
-         */
-        private void evaluateMethodHelper(
-                ArrayDeque<List<?>> argArrayDeque,
-                ArrayDeque<Object> values, List<?> receiverValues,
-                Method method, List<Object> results, MethodInvocationTree tree) {
-            // If we have descended through all the argument value lists
-            if (argArrayDeque.size() == 0) {
-                try {
-                    // If the receiver has values (the method is not static)
-                    if (receiverValues != null) {
-
-                        // Iterate through all the receiver's values
-                        for (Object o : receiverValues) {
-
-                            // If there were argument values, invoke with them
-                            if (values.size() > 0) {
-                                results.add(method.invoke(o, values.toArray()));
-                            }
-                            // Otherwise, invoke without them (the method took
-                            // no arguments)
-                            else {
-                                results.add(method.invoke(o));
-                            }
-                        }
-                    }
-                    // If this is a static method, the receiver values do not
-                    // exist/do not matter
-                    else {
-                        // If there were arguments, invoke with them
-                        if (values.size() > 0) {
-                            results.add(method.invoke(null, values.toArray()));
-                        }
-                        // Otherwise, invoke without them
-                        else {
-                            results.add(method.invoke(null));
-                        }
-                    }
-                } catch (InvocationTargetException e) {
-                    if(reportWarnings)
-                    checker.report(Result.warning(
-                            "method.evaluation.exception", method, e
-                                    .getTargetException().toString()), tree);
-                    results = new ArrayList<Object>();
-                } catch (ReflectiveOperationException e) {
-                    if(reportWarnings)
-                    checker.report(
-                            Result.warning("method.evaluation.failed", method),
-                            tree);
-                    results = new ArrayList<Object>();
-                    /*
-                     * fail by setting the results list to empty. Since we
-                     * failed on the invoke, all calls of this method will fail,
-                     * so the final results list will be an empty list. That
-                     * will cause an UnknownVal annotation to be created, which
-                     * seems appropriate here
-                     */
-                }
-            }
-
-            // If there are still lists of argument values left in the deque
-            else {
-
-                // Pop an argument off and iterate through all its values
-                List<?> argValues = argArrayDeque.pop();
-                for (Object o : argValues) {
-
-                    // Push one of the arg's values on and evaluate, then pop
-                    // and do the next
-                    values.push(o);
-                    evaluateMethodHelper(argArrayDeque, values, receiverValues,
-                            method, results, tree);
-                    values.pop();
-                }
-            }
-        }
-
-        @Override public Void visitNewClass(NewClassTree tree,
-                AnnotatedTypeMirror type) {
-
-            super.visitNewClass(tree, type);
-
-            if (isClassCovered(type)) {
-
-                // First, make sure all the args are known
-                List<? extends ExpressionTree> argTrees = tree.getArguments();
-                ArrayList<AnnotatedTypeMirror> argTypes = new ArrayList<AnnotatedTypeMirror>(
-                        argTrees.size());
-                for (ExpressionTree e : argTrees) {
-                    argTypes.add(getAnnotatedType(e));
-                }
-                boolean known = true;
-                for (AnnotatedTypeMirror t : argTypes) {
-                    if (nonValueAnno(t)) {
-                        known = false;
-                        break;
-                    }
-                }
-
-                // If all the args are known we can evaluate
-                if (known) {
-                    try {
-                        // get the constructor
-                        Class<?>[] argClasses = getParameterTypes(tree);
-                        Class<?> recClass = boxPrimatives(getClass(type, tree));
-                        Constructor<?> constructor = recClass
-                                .getConstructor(argClasses);
-
-                        AnnotationMirror newAnno = evaluateNewClass(
-                                constructor, argTypes, type, tree);
-                        if (newAnno != null) {
-                            type.replaceAnnotation(newAnno);
+                // Get argument values
+                List<? extends ExpressionTree> arguments = tree.getArguments();
+                ArrayList<List<?>> argValues;
+                if (arguments.size() > 0) {
+                    argValues = new ArrayList<List<?>>();
+                    for (ExpressionTree argument : arguments) {
+                        AnnotatedTypeMirror argType = getAnnotatedType(argument);
+                        List<?> values = getCastedValues(argType, argument);
+                        if (values.isEmpty()) {
+                            // values aren't known, so don't try to evaluate the
+                            // method
                             return null;
                         }
-                    } catch (ReflectiveOperationException e) {
-                        if(reportWarnings)
-                        checker.report(Result.warning(
-                                "constructor.evaluation.failed",
-                                type.getUnderlyingType(), argTypes), tree);
+                        argValues.add(values);
                     }
+                } else {
+                    argValues = null;
                 }
-                type.replaceAnnotation(UNKNOWNVAL);
-
+                
+                // Get receiver values
+                AnnotatedTypeMirror receiver = getReceiverType(tree);
+                List<?> receiverValues;
+                
+                if (receiver != null && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
+                    receiverValues = getCastedValues(receiver,
+                            TreeUtils.getReceiverTree(tree));
+                    if (receiverValues.isEmpty()) {
+                        // values aren't known, so don't try to evaluate the
+                        // method
+                        return null;
+                    }
+                } else {
+                    receiverValues = null;
+                }
+                
+                // Evaluate method
+                List<?> returnValues = evalutator.evaluteMethodCall(argValues,
+                        receiverValues, tree);
+                AnnotationMirror returnType = resultAnnotationHandler(
+                        type.getUnderlyingType(), returnValues, tree);
+                type.replaceAnnotation(returnType);
             }
+
             return null;
         }
 
-        /**
-         * Returns the box primitive type if the passed type is an (unboxed)
-         * primitive. Otherwise it returns the passed type
-         * 
-         * @param type
-         * @return
-         */
-        private Class<?> boxPrimatives(Class<?> type) {
-            if(type == byte.class){
-                return Byte.class;
-            } else if(type == short.class){
-                return Short.class;
-            } else if(type == int.class){
-                return Integer.class;
-            } else if(type == long.class){
-                return Long.class;
-            } else if(type == float.class){
-                return Float.class;
-            } else if(type == double.class){
-                return Double.class;
-            } else if(type == char.class){
-                return Character.class;
-            } else if(type == boolean.class){
-                return Boolean.class;
-            }  
-            return type;
-        }
+        @Override
+        public Void visitNewClass(NewClassTree tree, AnnotatedTypeMirror type) {
+            boolean wrapperClass = TypesUtils.isBoxedPrimitive(type
+                    .getUnderlyingType())
+                    || TypesUtils.isDeclaredOfName(type.getUnderlyingType(),
+                            "java.lang.String");
 
-        /**
-         * Attempts to evaluate a New call by retrieving the constructor and
-         * invoking it reflectively.
-         *
-         * @param constructor
-         *            the constructor to invoke
-         * @param argTypes
-         *            List of AnnnotatedTypeMirror of the arguments
-         * @param retType
-         *            AnnotatedTypeMirror of the tree being evaluate, used to
-         *            determine what the return AnnotationMirror should be
-         * @param tree
-         *            location for error reporting
-         *
-         * @return an AnnotationMirror containing all the possible values of the
-         *         New call based on combinations of argument values
-         */
-        private AnnotationMirror evaluateNewClass(Constructor<?> constructor,
-                List<AnnotatedTypeMirror> argTypes,
-                AnnotatedTypeMirror retType, NewClassTree tree) {
-            ArrayDeque<List<?>> allArgValues = getAllArgumentAnnotationValues(
-                    argTypes, tree);
-
-            ArrayDeque<Object> specificArgValues = new ArrayDeque<Object>();
-            ArrayList<Object> results = new ArrayList<Object>();
-            evaluateNewClassHelper(allArgValues, specificArgValues,
-                    constructor, results, tree);
-
-            return resultAnnotationHandler(retType, results, tree);
-        }
-
-        /**
-         * Recurses through all the possible argument values and invokes the
-         * constructor on each one, adding the result to the results list
-         *
-         * @param argArrayDeque
-         *            ArrayDeque of List of Object containing all the argument
-         *            values
-         * @param values
-         *            ArrayDeque of Objects containing the argument values for a
-         *            specific invocation of method. This is the structure that
-         *            is modified at each recursion to add a different argument
-         *            value.
-         * @param constructor
-         *            the constructor to invoke
-         * @param results
-         *            a List of all values returned. Once all calls are finished
-         *            this will contain the results for all possible
-         *            combinations of argument values invoking the constructor
-         * @param tree
-         *            location for error reporting
-         */
-        private void evaluateNewClassHelper(
-                ArrayDeque<List<?>> argArrayDeque,
-                ArrayDeque<Object> values, Constructor<?> constructor,
-                List<Object> results, NewClassTree tree) {
-            // If we have descended through all argument value lists
-            if (argArrayDeque.size() == 0) {
-                try {
-                    // If there are argument values (not an empty constructor)
-                    if (values.size() > 0) {
-                        results.add(constructor.newInstance(values.toArray()));
+            if (wrapperClass || (isClassCovered(type)
+                    && methodIsStaticallyExecutable(TreeUtils
+                            .elementFromUse(tree)))) {
+                // get arugment values
+                List<? extends ExpressionTree> arguments = tree.getArguments();
+                ArrayList<List<?>> argValues;
+                if (arguments.size() > 0) {
+                    argValues = new ArrayList<List<?>>();
+                    for (ExpressionTree argument : arguments) {
+                        AnnotatedTypeMirror argType = getAnnotatedType(argument);
+                        List<?> values = getCastedValues(argType, argument);
+                        if (values.isEmpty()) {
+                            // values aren't known, so don't try to evaluate the
+                            // method
+                            return null;
+                        }
+                        argValues.add(values);
                     }
-                    // If there are no argument values (empty constructor)
-                    else {
-                        results.add(constructor.newInstance());
-                    }
-                } catch (ReflectiveOperationException e) {
-                    if(reportWarnings)
-                    checker.report(
-                            Result.warning("constructor.invocation.failed"),
-                            tree);
-                    results = new ArrayList<Object>();
-                    /*
-                     * fail by setting the results list to empty. Since we
-                     * failed on the newInstance, all calls of this constructor
-                     * will fail, so the final results list will be an empty
-                     * list. That will cause an UnknownVal annotation to be
-                     * created, which seems appropriate here
-                     */
+                } else {
+                    argValues = null;
                 }
+                // Evaluate method
+                List<?> returnValues = evalutator.evaluteConstrutorCall(argValues, tree, type.getUnderlyingType());
+                AnnotationMirror returnType = resultAnnotationHandler(
+                        type.getUnderlyingType(), returnValues, tree);
+                type.replaceAnnotation(returnType);
             }
-            // If there are still lists of argument values left in the deque
-            else {
 
-                // Pop an argument off and iterate through all its values
-                List<?> argValues = argArrayDeque.pop();
-                for (Object o : argValues) {
-
-                    // Push one of the arg's values on and evaluate, then pop
-                    // and do the next
-                    values.push(o);
-                    evaluateNewClassHelper(argArrayDeque, values, constructor,
-                            results, tree);
-                    values.pop();
-                }
-            }
+            return null;
         }
 
-        @Override public Void visitMemberSelect(MemberSelectTree tree,
+        @Override
+        public Void visitMemberSelect(MemberSelectTree tree,
                 AnnotatedTypeMirror type) {
-            /*
-             * NOTE: None of the objects, except arrays, being handled by this
-             * system possess non-static fields, so I am assuming I can simply
-             * reflectively call the fields on a reflectively generated object
-             * representing the class
-             */
-            super.visitMemberSelect(tree, type);
-            AnnotatedTypeMirror receiverType = getAnnotatedType(tree
-                    .getExpression());
-
-            Element elem = TreeUtils.elementFromUse(tree);
-            // KNOWN-LENGTH ARRAYS
-            if (AnnotationUtils.areSameIgnoringValues(
-                    getValueAnnotation(receiverType), ARRAYLEN)) {
-                if (tree.getIdentifier().contentEquals("length")) {
-                    type.replaceAnnotation(handleArrayLength(receiverType));
+            if (TreeUtils.isFieldAccess(tree)
+                    && isClassCovered(type.getUnderlyingType())) {
+                VariableElement elem = (VariableElement) InternalUtils
+                        .symbol(tree);
+                Object value = elem.getConstantValue();
+                if (value != null) {
+                    // compile time constant
+                    type.replaceAnnotation(
+                    resultAnnotationHandler(type.getUnderlyingType(), Collections.singletonList(value), tree));
+                    return null;
                 }
-            }
-
-            if (isClassCovered(elem.asType())) {
-                if (ElementUtils.isCompileTimeConstant(elem)) {
-
-                    ArrayList<Object> value = new ArrayList<Object>(1);
-                    value.add(((VariableElement) elem).getConstantValue());
-
-                    AnnotationMirror newAnno = resultAnnotationHandler(
-                            elem.asType(), value, tree);
-
-                    if (newAnno != null) {
-                        type.replaceAnnotation(newAnno);
-                    } else {
-                        type.replaceAnnotation(UNKNOWNVAL);
+                if (ElementUtils.isStatic(elem)
+                        && ElementUtils.isFinal(elem)) {
+                    Element e = InternalUtils.symbol(tree.getExpression());
+                    if (e != null) {
+                        String classname = ElementUtils
+                                .getQualifiedClassName(e).toString();
+                        String fieldName = tree.getIdentifier().toString();
+                        value = evalutator.evaluateStaticFieldAccess(classname,
+                                fieldName, tree);
+                        if (value != null)
+                            type.replaceAnnotation(resultAnnotationHandler(type.getUnderlyingType(), Collections.singletonList(value), tree));
+                        return null;
                     }
+                }
 
-                } else if (elem.getKind() == javax.lang.model.element.ElementKind.FIELD
-                        && ElementUtils.isStatic(elem)
-                        && ElementUtils.isFinal(elem)
-                        //If the identifier is class then this is a class literal, not a regular member select
-                        && !tree.getIdentifier().toString().equals("class")) {
-                    //if an element is not a compile-time constant, we still might be able to find the value
-                    //if the type of the field is a wrapped primitive class.
-                    //eg Boolean.FALSE
-                    TypeMirror retType = elem.asType();
-                    AnnotationMirror newAnno = evaluateStaticFieldAccess(
-                            tree.getIdentifier(), retType, tree);
-                    if (newAnno != null) {
-                        type.replaceAnnotation(newAnno);
+                if (tree.getIdentifier().toString().equals("length")) {
+                    AnnotatedTypeMirror receiverType = getAnnotatedType(tree
+                            .getExpression());
+                    if (receiverType.getKind() == TypeKind.ARRAY) {
+                        AnnotationMirror arrayAnno = receiverType
+                                .getAnnotation(ArrayLen.class);
+                        if (arrayAnno != null) {
+                            // array.length, where array : @ArrayLen(x)
+                            List<Integer> lengths = ValueAnnotatedTypeFactory
+                                    .getArrayLength(arrayAnno);
+                            type.replaceAnnotation(createNumberAnnotationMirror(new ArrayList<Number>(
+                                    lengths)));
+                            return null;
+                        }
                     }
                 }
             }
             return null;
-        }
-
-        /**
-         * If the receiverType object has an ArrayLen annotation it returns an
-         * IntVal with all the ArrayLen annotation's values as its possible
-         * values.
-         *
-         * @param receiverType
-         */
-        private AnnotationMirror handleArrayLength(
-                AnnotatedTypeMirror receiverType) {
-            AnnotationMirror recAnno = getValueAnnotation(receiverType);
-
-            if (AnnotationUtils.areSameIgnoringValues(recAnno, ARRAYLEN)) {
-                List<Integer>lengthInts =  AnnotationUtils.getElementValueArray(recAnno, "value",
-                                Integer.class, true);
-                HashSet<Long> lengthValues = new HashSet<>();
-                for(int i: lengthInts){
-                	lengthValues.add((long) i);
-                }
-
-                return createAnnotation(
-                        "org.checkerframework.common.value.qual.IntVal",
-                        lengthValues);
-            } else {
-                return UNKNOWNVAL;
-            }
-        }
-
-        /**
-         * Evalautes a static field access by getting the field reflectively
-         * from the field name and class name
-         *
-         * @param fieldName
-         *            the field to be access
-         * @param recType
-         *            the AnnotatedTypeMirror of the tree being evaluated, used
-         *            to create the return annotation and to reflectively create
-         *            the Class object to get the field from
-         * @param tree
-         *            location for error reporting
-         *
-         * @return
-         */
-        private AnnotationMirror evaluateStaticFieldAccess(Name fieldName,
-                TypeMirror retType, MemberSelectTree tree) {
-            String clzzname = "";
-            try {
-                Element e = InternalUtils.symbol(tree.getExpression());
-                if (e == null)
-                    return null;
-                clzzname = ElementUtils.getQualifiedClassName(e).toString();
-                Class<?> recClass = Class.forName(clzzname);
-                Field field = recClass.getField(fieldName.toString());
-                ArrayList<Object> result = new ArrayList<Object>(1);
-                result.add(field.get(recClass));
-
-                return resultAnnotationHandler(retType, result, tree);
-            } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
-                if(reportWarnings)
-                checker.report(Result.warning("class.find.failed", clzzname),
-                        tree);
-                return null;
-            } catch (ReflectiveOperationException e) {
-                if(reportWarnings)
-                checker.report(Result.warning("field.access.failed", fieldName,
-                        clzzname), tree);
-                return null;
-            }
         }
 
         /**
@@ -1421,109 +924,16 @@ import com.sun.source.util.TreePath;
         }
 
         /**
-         * Gets a Class object corresponding to the String name stringType. If
-         * stringType specifies a primitive or wrapper object, the primitive
-         * version is returned ("int" or "java.lang.Integer" return int.class)
-         * To get the Class corresponding to the value array a value annotation
-         * has for a given type, use getTypeValueClass. (e.g. "int" return
-         * Long.class)
-         *
-         * @param stringType
-         * @param tree
-         *            location for error reporting
-         *
-         * @return
-         */
-        private Class<?> getClass(String stringType, Tree tree) {
-            switch (stringType) {
-            case "<nulltype>":
-                return Object.class;
-            }
-
-            try {
-                return Class.forName(stringType);
-            } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
-                if(reportWarnings)
-                checker.report(Result.failure("class.find.failed", stringType),
-                        tree);
-                return Object.class;
-            }
-
-        }
-
-        /**
          * 
-         * @param typeMirror the underlying type is used
-         * @param tree Tree for error reporting
+         * @param typeMirror
+         *            the underlying type is used
+         * @param tree
+         *            Tree for error reporting
          * @return class object corresponding to the typeMirror passed.
          */
         private Class<?> getClass(AnnotatedTypeMirror typeMirror, Tree tree) {
             TypeMirror type = typeMirror.getUnderlyingType();
-            return getClass(type, tree);
-        }
-
-        private Class<?> getClass(TypeMirror type, Tree tree) {
-
-            switch (type.getKind()) {
-            case INT:
-                return int.class;
-            case LONG:
-                return long.class;
-            case SHORT:
-                return short.class;
-            case BYTE:
-                return byte.class;
-            case CHAR:
-                return char.class;
-            case DOUBLE:
-                return double.class;
-            case FLOAT:
-                return float.class;
-            case BOOLEAN:
-                return boolean.class;
-            case ARRAY:
-                return getArrayType(((ArrayType) type).getComponentType());
-            case DECLARED:
-                String stringType = TypesUtils.getQualifiedName(
-                        (DeclaredType) type).toString();
-                return getClass(stringType, tree);
-            default:
-                return Object.class;
-            }
-        }
-
-        private Class<?> getArrayType(TypeMirror componentType) {
-            switch (componentType.getKind()) {
-            case INT:
-                return int[].class;
-            case LONG:
-                return long[].class;
-            case SHORT:
-                return short[].class;
-            case BYTE:
-                return byte[].class;
-            case CHAR:
-                return char[].class;
-            case DOUBLE:
-                return double[].class;
-            case FLOAT:
-                return float[].class;
-            case BOOLEAN:
-                return boolean[].class;
-            default:
-                return Object[].class;
-            }
-        }
-
-        private Class<?>[] getParameterTypes(NewClassTree tree) {
-            ExecutableElement e = TreeUtils.elementFromUse(tree);
-            Class<?>[] classes = new Class<?>[e.getParameters().size()];
-            int i=0;
-            for(Element param: e.getParameters()){
-                classes[i] = getClass(ElementUtils.getType(param), tree);
-                i++;
-            }
-            return classes;
+            return ValueCheckerUtils.getClassFromType(type);
         }
 
         /**
@@ -1544,9 +954,13 @@ import com.sun.source.util.TreePath;
 
         /**
          * Returns a list of values from the typeMirror cast to castType
-         * @param typeMirror  AnnotatedTypeMirror with values
-         * @param castType Class with type to cast to
-         * @param tree Tree used for location of errors
+         * 
+         * @param typeMirror
+         *            AnnotatedTypeMirror with values
+         * @param castType
+         *            Class with type to cast to
+         * @param tree
+         *            Tree used for location of errors
          * @return a list of values casted to typeCast
          */
         private List<?> getCastedValues(AnnotatedTypeMirror typeMirror,
@@ -1554,11 +968,16 @@ import com.sun.source.util.TreePath;
             AnnotationMirror anno = getValueAnnotation(typeMirror);
             return getCastedValues(anno, castType, tree);
         }
+
         /**
          * Returns a list of values from the typeMirror cast to castType
-         * @param typeMirror  AnnotationMirror with values
-         * @param castType Class with type to cast to
-         * @param tree Tree used for location of errors
+         * 
+         * @param typeMirror
+         *            AnnotationMirror with values
+         * @param castType
+         *            Class with type to cast to
+         * @param tree
+         *            Tree used for location of errors
          * @return a list of values casted to typeCast
          */
         private List<?> getCastedValues(AnnotationMirror anno,
@@ -1572,13 +991,15 @@ import com.sun.source.util.TreePath;
                 values = convertStringVal(anno, castType);
             } else if (AnnotationUtils.areSameByClass(anno, BoolVal.class)) {
                 values = convertBoolVal(anno, castType);
-            } else if(AnnotationUtils.areSameByClass(anno, BottomVal.class)){
+            } else if (AnnotationUtils.areSameByClass(anno, BottomVal.class)) {
                 values = convertBottomVal(anno, castType);
+            } else if (AnnotationUtils.areSameByClass(anno, UnknownVal.class)){
+                values = new ArrayList<>();
             }
             if (values == null) {
-                if(reportWarnings)
-                checker.report(Result.warning("class.convert.failed", anno,
-                        castType), tree);
+                if (reportWarnings)
+                    checker.report(Result.warning("class.convert.failed", anno,
+                            castType), tree);
                 values = Collections.EMPTY_LIST;
             }
 
@@ -1624,8 +1045,14 @@ import com.sun.source.util.TreePath;
                     bytes.add(s.getBytes());
                 }
                 return bytes;
-            } else if( newClass == Object.class && strings.size() == 1){
-                if(strings.get(0).equals("null"))
+            } else if (newClass == char[].class) {
+                List<char[]> chars = new ArrayList<>();
+                for (String s : strings) {
+                    chars.add(s.toCharArray());
+                }
+                return chars;
+            } else if (newClass == Object.class && strings.size() == 1) {
+                if (strings.get(0).equals("null"))
                     return strings;
             }
             return null;
@@ -1672,7 +1099,7 @@ import com.sun.source.util.TreePath;
                     floats.add((float) l.intValue());
                 }
                 return floats;
-            }else if (newClass == String.class) {
+            } else if (newClass == String.class) {
                 return convertToStringVal(longs);
             }
             return null;
@@ -1697,36 +1124,6 @@ import com.sun.source.util.TreePath;
         }
 
         /**
-         * Extracts and correctly casts all the values of a List of
-         * AnnotatedTypeMirror elements and stores them in an ArrayDeque. The
-         * order in the ArrayDeque is the reverse of the order of the List
-         * (List[0] -> ArrayDeque[size -1]). This ordering may not be intuitive
-         * but this method is used in conjunction with the recursive descent to
-         * evaluate method and constructor invocations, which will pop argument
-         * values off and push them onto another deque, so the order actually
-         * gets reversed twice and the original order is maintained.
-         *
-         * @param argTypes
-         *            a List of AnnotatedTypeMirror elements
-         *
-         * @param tree
-         *            location for error reporting
-         *
-         * @return an ArrayDeque containing List of Object where each list
-         *         corresponds to the annotation values of an
-         *         AnnotatedTypeMirror passed in.
-         */
-        private ArrayDeque<List<?>> getAllArgumentAnnotationValues(
-                List<AnnotatedTypeMirror> argTypes, Tree tree) {
-            ArrayDeque<List<?>> allArgValues = new ArrayDeque<List<?>>();
-
-            for (AnnotatedTypeMirror a : argTypes) {
-                allArgValues.push(getCastedValues(a, tree));
-            }
-            return allArgValues;
-        }
-
-        /**
          * Overloaded version to accept an AnnotatedTypeMirror
          *
          * @param resultType
@@ -1739,31 +1136,10 @@ import com.sun.source.util.TreePath;
          * @return
          */
         private AnnotationMirror resultAnnotationHandler(
-                AnnotatedTypeMirror resultType, List<Object> results, Tree tree) {
-            return resultAnnotationHandler(getClass(resultType, tree), results);
-        }
+                TypeMirror resultType, List<?> results, Tree tree) {
+        
+            Class<?> resultClass = ValueCheckerUtils.getClassFromType(resultType);
 
-        private AnnotationMirror resultAnnotationHandler(TypeMirror resultType,
-                List<Object> results, Tree tree) {
-            return resultAnnotationHandler(getClass(resultType, tree), results);
-        }
-
-        /**
-         * Returns an AnnotationMirror based on what Class it is supposed to
-         * apply to, with the annotation containing results in its value field.
-         * Annotations should never have empty value fields, so if |results| ==
-         * 0 then UnknownVal is returned.
-         *
-         * @param resultClass
-         *            the Class to return an annotation
-         * @param results
-         *            the results to go in the annotation's value field
-         *
-         * @return an AnnotationMirror containing results and corresponding to
-         *         resultClass, if possible. UnknownVal otherwise
-         */
-        private AnnotationMirror resultAnnotationHandler(Class<?> resultClass,
-                List<Object> results) {
             // For some reason null is included in the list of values,
             // so remove it so that it does not cause a NPE else where.
             results.remove(null);
@@ -1775,65 +1151,44 @@ import com.sun.source.util.TreePath;
                 for (Object o : results) {
                     boolVals.add((Boolean) o);
                 }
-                AnnotationMirror newAnno = createAnnotation(
-                        "org.checkerframework.common.value.qual.BoolVal",
-                        boolVals);
-                return newAnno;
+                return createBooleanAnnotation(new ArrayList<Boolean>(boolVals));
 
             } else if (resultClass == Double.class
-                    || resultClass == double.class) {
-                HashSet<Double> doubleVals = new HashSet<Double>(results.size());
-                for (Object o : results) {
-                    doubleVals.add((Double) o);
-                }
-                return createAnnotation(
-                        "org.checkerframework.common.value.qual.DoubleVal",
-                        doubleVals);
-            } else if (resultClass == Float.class || resultClass == float.class) {
-                HashSet<Double> floatVals = new HashSet<Double>(results.size());
-                for (Object o : results) {
-                    floatVals.add(new Double((Float) o));
-                }
-                return createAnnotation(
-                        "org.checkerframework.common.value.qual.DoubleVal",
-                        floatVals);
-            } else if (resultClass == Integer.class || resultClass == int.class
+                    || resultClass == double.class
+                    || resultClass == Float.class || resultClass == float.class
+                    || resultClass == Integer.class || resultClass == int.class
                     || resultClass == Long.class || resultClass == long.class
                     || resultClass == Short.class || resultClass == short.class
                     || resultClass == Byte.class || resultClass == byte.class) {
-                HashSet<Long> intVals = new HashSet<Long>(results.size());
+                HashSet<Number> vals = new HashSet<>(results.size());
                 for (Object o : results) {
-                    intVals.add(((Number) o).longValue());
+                    vals.add((Number) o);
                 }
-                return createAnnotation(
-                        "org.checkerframework.common.value.qual.IntVal",
-                        intVals);
+                return createNumberAnnotationMirror(new ArrayList<Number>(vals));
             } else if (resultClass == char.class
                     || resultClass == Character.class) {
-                HashSet<Long> intVals = new HashSet<Long>(results.size());
+                HashSet<Character> intVals = new HashSet<>(results.size());
                 for (Object o : results) {
-                    intVals.add(new Long(((Character) o).charValue()));
+                    intVals.add((Character) o);
                 }
-                return createAnnotation(
-                        "org.checkerframework.common.value.qual.IntVal",
-                        intVals);
+                return createCharAnnotation(new ArrayList<Character>(intVals));
             } else if (resultClass == String.class) {
                 HashSet<String> stringVals = new HashSet<String>(results.size());
                 for (Object o : results) {
                     stringVals.add((String) o);
                 }
-                return createAnnotation(
-                        "org.checkerframework.common.value.qual.StringVal",
-                        stringVals);
+                return createStringValAnnotationMirror(new ArrayList<String>(
+                        stringVals));
             } else if (resultClass == byte[].class) {
                 HashSet<String> stringVals = new HashSet<String>(results.size());
                 for (Object o : results) {
                     stringVals.add(new String((byte[]) o));
                 }
-                return createAnnotation(
-                        "org.checkerframework.common.value.qual.StringVal",
-                        stringVals);
+                return createStringValAnnotationMirror(new ArrayList<String>(
+                        stringVals));
+
             }
+
             return UNKNOWNVAL;
         }
 
@@ -1870,7 +1225,7 @@ import com.sun.source.util.TreePath;
                     anno += "StringVal";
                     alteredType.replaceAnnotation(createAnnotation(anno,
                             newValues));
-                } else if(isNumberAnnotation(treeAnno)) {
+                } else if (isNumberAnnotation(treeAnno)) {
                     List<Number> valuesToCast;
                     valuesToCast = AnnotationUtils.getElementValueArray(
                             treeAnno, "value", Number.class, true);
@@ -1928,8 +1283,9 @@ import com.sun.source.util.TreePath;
                     alteredType.replaceAnnotation(createAnnotation(anno,
                             newValues));
                 } else {
-                    //If the expression to cast has a BoolVal anno or a StringVal anno,
-                    //just copy the annotation of the expression.
+                    // If the expression to cast has a BoolVal anno or a
+                    // StringVal anno,
+                    // just copy the annotation of the expression.
                     alteredType.replaceAnnotation(treeAnno);
                 }
             }
@@ -1952,8 +1308,8 @@ import com.sun.source.util.TreePath;
         }
 
         /**
-         * Check that the annotation in the Value Checker hierarchy has
-         * a value of some kind.
+         * Check that the annotation in the Value Checker hierarchy has a value
+         * of some kind.
          *
          * @param mirror
          *            the AnnotatedTypeMirror to check
@@ -1984,20 +1340,19 @@ import com.sun.source.util.TreePath;
                 || AnnotationUtils.areSameIgnoringValues(anno, DOUBLEVAL);
     }
 
-    public AnnotationMirror createIntValAnnotation(List<Long> intValues) {    	
+    public AnnotationMirror createIntValAnnotation(List<Long> intValues) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
                 IntVal.class);
         builder.setValue("value", intValues);
         return builder.build();
     }
 
-	public AnnotationMirror createDoubleValAnnotation(
-			List<Double> doubleValues) {
-		AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
-				DoubleVal.class);
-		builder.setValue("value", doubleValues);
-		return builder.build();
-	}
+    public AnnotationMirror createDoubleValAnnotation(List<Double> doubleValues) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
+                DoubleVal.class);
+        builder.setValue("value", doubleValues);
+        return builder.build();
+    }
 
     public AnnotationMirror createStringAnnotation(List<String> values) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
@@ -2011,5 +1366,91 @@ import com.sun.source.util.TreePath;
                 BoolVal.class);
         builder.setValue("value", values);
         return builder.build();
+    }
+    public AnnotationMirror createCharAnnotation(List<Character> values) {
+        List<Long> longValues = new ArrayList<>();
+        for(char value: values){
+            longValues.add((long) value);
+        }
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
+                IntVal.class);
+        builder.setValue("value", longValues);
+        return builder.build();
+    }
+    private AnnotationMirror createStringValAnnotationMirror(List<String> values) {
+        if (values.isEmpty()) {
+            return UNKNOWNVAL;
+        }
+        return createStringAnnotation(values);
+    }
+
+    private AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
+        if (values.isEmpty()) {
+            return UNKNOWNVAL;
+        }
+        Number first = values.get(0);
+        if (first instanceof Integer || first instanceof Short
+                || first instanceof Long || first instanceof Byte) {
+            List<Long> intValues = new ArrayList<>();
+            for (Number number : values) {
+                intValues.add(number.longValue());
+            }
+            return createIntValAnnotation(intValues);
+        }
+        if (first instanceof Double || first instanceof Float) {
+            List<Double> intValues = new ArrayList<>();
+            for (Number number : values) {
+                intValues.add(number.doubleValue());
+            }
+            return createDoubleValAnnotation(intValues);
+        }
+        throw new UnsupportedOperationException("ValueAnnotatedTypeFactory: unexpected class: "+first.getClass());
+    }
+
+    private AnnotationMirror createBooleanAnnotationMirror(List<Boolean> values) {
+        if (values.isEmpty()) {
+            return UNKNOWNVAL;
+        }
+        return createBooleanAnnotation(values);
+
+    }
+    
+    public static List<Integer> getArrayLength(AnnotationMirror arrayAnno) {
+        return AnnotationUtils.getElementValueArray(
+                arrayAnno, "value", Integer.class, true); 
+    }
+    
+    public static List<Character> getCharValues(AnnotationMirror intAnno) {
+        if (intAnno != null) {
+            List<Long> intValues = AnnotationUtils.getElementValueArray(
+                    intAnno, "value", Long.class, true);
+            List<Character> charValues = new ArrayList<Character>();
+            for (Long i : intValues) {
+                charValues.add((char) i.intValue());
+            }
+            return charValues;
+        }
+        return new ArrayList<>();
+    }
+    
+    public static List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
+        if (boolAnno != null) {
+            List<Boolean> boolValues = AnnotationUtils.getElementValueArray(
+                    boolAnno, "value", Boolean.class, true);
+            Set<Boolean> boolSet = new TreeSet<>(boolValues);
+            if (boolSet.size() > 1) {
+                // boolSet={true,false};
+                return new ArrayList<>();
+            }
+            if (boolSet.size() == 0) {
+                // boolSet={};
+                return new ArrayList<>();
+            }
+            if (boolSet.size() == 1) {
+                // boolSet={true} or boolSet={false}
+                return new ArrayList<>(boolSet);
+            }
+        }
+        return new ArrayList<>();
     }
 }
