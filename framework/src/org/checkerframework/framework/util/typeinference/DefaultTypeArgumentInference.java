@@ -40,6 +40,12 @@ import static org.checkerframework.framework.util.typeinference.TypeArgInference
  *  TODO: The following limitations need to be fixed, as at the time of this writing we do not have the time
  *        to handle them:
  *      1) The GlbUtil does not correctly handled wildcards/typevars when the glb result should be a wildcard or typevar
+ *      2) Interdependent Method Invocations - Currently we do not correctly handle the case where two methods need
+ *         to have their arguments inferred and one is the argument to the other.
+ *         E.g. <T> T get()
+ *              <S> void set(S s)
+ *              set(get())
+ *         Presumably, we want to detect these situations and combine the set of constraints with T <: S
  */
 public class DefaultTypeArgumentInference implements TypeArgumentInference {
     private final EqualitiesSolver equalitiesSolver = new EqualitiesSolver();
@@ -71,7 +77,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     /**
      * This algorithm works as follows:
-     * 1.  Build Argument Constraints - up a set of constraints using the arguments to the type parameter declarations,
+     * 1.  Build Argument Constraints - create a set of constraints using the arguments to the type parameter declarations,
      * the formal parameters, and the arguments to the method call
      * 2.  Solve Argument Constraints - Create two solutions from the arguments.
      *       a. Equality Arg Solution: Solution inferred from arguments used in an invariant position
@@ -85,7 +91,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      * 3.  Build and Solve Initial Assignment Constraints - Create a set of constraints from the assignment context WITHOUT
      *       substituting either solution from step 2.
      *
-     * 4.  Combine the solutions from steps 2.a and 3.  This handles cases like the following:
+     * 4.  Combine the solutions from steps 2.b and 3.  This handles cases like the following:
      *
      *        <T> List<T> method(T t1) {}
      *        List<@Nullable String> nl = method("");
@@ -135,7 +141,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      * Finally, the JLS states that we should substitute the types we have inferred up until this point back
      * into the original argument constraints.  We should then combine the constraints we get from the
      * assignment context and solve using the greatest lower bounds of all of the constraints of the form:
-     * F :> U  (these are referred to as "subtypes" in the ConstraintMap.TargeConstraints).
+     * F :> U  (these are referred to as "subtypes" in the ConstraintMap.TargetConstraints).
      *
      * 7. Merge the result from steps 5 and 6 giving preference to 5 (the argument constraints).
      * Return the result.
@@ -204,6 +210,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
 
     /**
+     * Step 1:
      * Create a constraint Ai << Fi for each Argument(Ai) to formal parameter(Fi).  Remove any constraint that
      * does not involve a type parameter to be inferred.  Reduce the remaining constraints so that Fi = Tj
      * where Tj is a type parameter with an argument to be inferred.
@@ -235,35 +242,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         reduceAfConstraints(typeFactory, reducedConstraints, afConstraints, targets);
         return reducedConstraints;
-    }
-
-    /**
-     * Step 1:
-     * Create a set of constraints between return type and any type to which it is assigned.  Reduce these
-     * set of constraints and remove any that is not an equality (FIsA) constraint.
-     */
-    protected Set<FIsA> createInitialAssignmentConstraints(final AnnotatedTypeMirror assignedTo,
-                                                           final AnnotatedTypeMirror boxedReturnType,
-                                                           final AnnotatedTypeFactory typeFactory,
-                                                           final Set<TypeVariable> targets) {
-        final Set<FIsA> result = new LinkedHashSet<>();
-
-        if (assignedTo != null) {
-            final Set<AFConstraint> reducedConstraints = new LinkedHashSet<>();
-
-            final Queue<AFConstraint> constraints = new LinkedList<>();
-            constraints.add(new F2A(boxedReturnType, assignedTo));
-
-            reduceAfConstraints(typeFactory, reducedConstraints, constraints, targets);
-
-            for (final AFConstraint reducedConstraint : reducedConstraints) {
-                if (reducedConstraint instanceof FIsA) {
-                    result.add((FIsA) reducedConstraint);
-                }
-            }
-        }
-
-        return result;
     }
 
     /**
@@ -307,6 +285,34 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
 
     /**
+     * Create a set of constraints between return type and any type to which it is assigned.  Reduce these
+     * set of constraints and remove any that is not an equality (FIsA) constraint.
+     */
+    protected Set<FIsA> createInitialAssignmentConstraints(final AnnotatedTypeMirror assignedTo,
+                                                           final AnnotatedTypeMirror boxedReturnType,
+                                                           final AnnotatedTypeFactory typeFactory,
+                                                           final Set<TypeVariable> targets) {
+        final Set<FIsA> result = new LinkedHashSet<>();
+
+        if (assignedTo != null) {
+            final Set<AFConstraint> reducedConstraints = new LinkedHashSet<>();
+
+            final Queue<AFConstraint> constraints = new LinkedList<>();
+            constraints.add(new F2A(boxedReturnType, assignedTo));
+
+            reduceAfConstraints(typeFactory, reducedConstraints, constraints, targets);
+
+            for (final AFConstraint reducedConstraint : reducedConstraints) {
+                if (reducedConstraint instanceof FIsA) {
+                    result.add((FIsA) reducedConstraint);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * The first half of Step 6.
      * This method creates constraints:
      *     a) between the bounds of types that are already inferred and their inferred arguments
@@ -326,7 +332,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             final TypeVariable target = typeParam.getUnderlyingType();
             final AnnotatedTypeMirror inferredType = inferredArgs.get(target);
             //for all inferred types Ti:  Ti >> Bi where Bi is upper bound and Ti << Li where Li is the lower bound
-            //for all uninferred types Tu: Tu >> Bi a nd Lu >> Tu
+            //for all uninferred types Tu: Tu >> Bi and Lu >> Tu
             if (inferredType != null) {
                 assignmentAfs.add(new A2F(inferredType, typeParam.getUpperBound()));
                 assignmentAfs.add(new F2A(typeParam.getLowerBound(), inferredType));
@@ -476,7 +482,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                     final Iterator<AFReducer> reducerIterator = reducers.iterator();
                     boolean handled = false;
                     while (!handled && reducerIterator.hasNext()) {
-                        handled = reducerIterator.next().reduce(constraint, newConstraints, outgoing);
+                        handled = reducerIterator.next().reduce(constraint, newConstraints);
                     }
 
                     if (!handled) {
@@ -522,14 +528,14 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         final Map<TypeVariable, AnnotatedTypeVariable> paramDeclarations = new HashMap<>();
 
-        while(targetList.size() > 1) {
-            final TypeVariable head = targetList.remove(0);
+        for (int i = 0; i < targetList.size(); i++) {
+            final TypeVariable earlierTarget = targetList.get(i);
 
-            for(int i = 0; i < targetList.size(); i++) {
-                final TypeVariable nextTarget = targetList.get(i);
-                if (types.isSameType(head.getUpperBound(), nextTarget)) {
-                    final AnnotatedTypeVariable headDecl = addOrGetDeclarations(head, typeFactory, paramDeclarations);
-                    final AnnotatedTypeVariable nextDecl = addOrGetDeclarations(nextTarget, typeFactory, paramDeclarations);
+            for (int j = i + 1; j < targetList.size(); j++) {
+                final TypeVariable laterTarget = targetList.get(j);
+                if (types.isSameType(earlierTarget.getUpperBound(), laterTarget)) {
+                    final AnnotatedTypeVariable headDecl = addOrGetDeclarations(earlierTarget, typeFactory, paramDeclarations);
+                    final AnnotatedTypeVariable nextDecl = addOrGetDeclarations(laterTarget, typeFactory, paramDeclarations);
 
                     if (asSubtype) {
                         constraints.add(new TSubU(headDecl, nextDecl));
@@ -538,9 +544,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                         constraints.add(new TSuperU(nextDecl, headDecl));
 
                     }
-                } else if (types.isSameType(nextTarget.getUpperBound(), head)) {
-                    final AnnotatedTypeVariable headDecl = addOrGetDeclarations(head, typeFactory, paramDeclarations);
-                    final AnnotatedTypeVariable nextDecl = addOrGetDeclarations(nextTarget, typeFactory, paramDeclarations);
+                } else if (types.isSameType(laterTarget.getUpperBound(), earlierTarget)) {
+                    final AnnotatedTypeVariable headDecl = addOrGetDeclarations(earlierTarget, typeFactory, paramDeclarations);
+                    final AnnotatedTypeVariable nextDecl = addOrGetDeclarations(laterTarget, typeFactory, paramDeclarations);
 
                     if (asSubtype) {
                         constraints.add(new TSubU(nextDecl, headDecl));
@@ -551,6 +557,14 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                     }
 
                 }
+            }
+        }
+
+        while(targetList.size() > 1) {
+            final TypeVariable firstTarget = targetList.remove(0);
+
+            for(int i = 0; i < targetList.size(); i++) {
+
             }
         }
     }

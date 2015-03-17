@@ -35,8 +35,7 @@ import com.sun.source.tree.VariableTree;
 /**
  * A visitor to validate the types in a tree.
  */
-// TODO: add a TypeValidator interface
-public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
+public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implements TypeValidator {
     protected boolean isValid = true;
 
     protected final BaseTypeChecker checker;
