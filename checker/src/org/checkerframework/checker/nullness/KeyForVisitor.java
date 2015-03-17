@@ -1,11 +1,5 @@
 package org.checkerframework.checker.nullness;
 
-import java.util.List;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Modifier;
-
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -15,6 +9,11 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.javacutil.AnnotationUtils;
+
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Modifier;
 
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
@@ -53,8 +52,8 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
 
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type, Tree p) {
-        	// Verify that a static variable cannot be @KeyFor("this")
-        	
+            // Verify that a static variable cannot be @KeyFor("this")
+
             AnnotationMirror kf = type.getAnnotation(KeyFor.class);
             if (kf != null) {
                 List<String> maps = AnnotationUtils.getElementValueArray(kf, "value", String.class, false);
