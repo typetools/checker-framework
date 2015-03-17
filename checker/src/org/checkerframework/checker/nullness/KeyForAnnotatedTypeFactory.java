@@ -1,5 +1,9 @@
 package org.checkerframework.checker.nullness;
 
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
+
 import org.checkerframework.checker.nullness.KeyForPropagator.PropagationDirection;
 import org.checkerframework.checker.nullness.qual.Covariant;
 import org.checkerframework.checker.nullness.qual.KeyFor;
