@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -34,6 +33,8 @@ import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
+import org.checkerframework.common.value.util.NumberMath;
+import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -45,14 +46,11 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
@@ -67,8 +65,6 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -80,11 +76,10 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.tree.JCTree.JCBinary;
-import com.sun.tools.javac.tree.JCTree.JCUnary;
 
 /**
  * @author plvines
+ * @author smillst
  *
  *         AnnotatedTypeFactory for the Value type system.
  *
@@ -107,10 +102,6 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                                                 // array
     protected final List<AnnotationMirror> constantAnnotations;
     protected Set<String> coveredClassStrings;
-    /**
-     * propTreeCache ensures that the ValueATF terminates on compound binary/unary trees.
-     */
-    private final Map<Tree, AnnotatedTypeMirror> propTreeCache = createLRUCache(200);
     
     /** should this type factory report warnings? **/
     private boolean reportWarnings = true;
@@ -186,23 +177,75 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
         // to reflectively create a transfer with the checker name followed
         // by Transfer. Since this factory is intended to be used with
         // any checker, explicitly create the default CFTransfer
-        return new CFTransfer(analysis);
+        return new ValueTransfer(analysis);
     }
 
     @Override
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
-        if(propTreeCache.containsKey(tree)){
-            return propTreeCache.get(tree).deepCopy();
+        if (tree.getKind() == Tree.Kind.POSTFIX_DECREMENT
+                || tree.getKind() == Tree.Kind.POSTFIX_INCREMENT) {
+
+            return getPostFixAnno((UnaryTree) tree,
+                    super.getAnnotatedType(tree));
+
+        } else {
+            return super.getAnnotatedType(tree);
         }
-        AnnotatedTypeMirror anno = super.getAnnotatedType(tree);
-        if(tree instanceof JCBinary ||
-                tree instanceof JCUnary){
-            propTreeCache.put(tree, anno.deepCopy());
-        }
-        return anno;
     }
 
-    /**
+    private AnnotatedTypeMirror getPostFixAnno(UnaryTree tree, AnnotatedTypeMirror anno) {
+    	if ( anno.hasAnnotation(DoubleVal.class)){
+    		return  postFixDoubl(anno, tree.getKind() == Tree.Kind.POSTFIX_INCREMENT);
+    	} else if (anno.hasAnnotation(IntVal.class)){
+    		return  postFixInt(anno, tree.getKind() == Tree.Kind.POSTFIX_INCREMENT);
+    	}
+    	return anno;
+    	
+	}
+    
+	private AnnotatedTypeMirror postFixInt(AnnotatedTypeMirror anno, boolean increment) {
+		List<Long> values = AnnotationUtils.getElementValueArray(
+				anno.getAnnotation(IntVal.class), "value", Long.class,
+				true);
+		List<? extends Number> castedValues = NumberUtils.castNumbers(
+				anno.getUnderlyingType(), values);
+		List<Long> results = new ArrayList<>();
+		for (Number value : castedValues) {
+			NumberMath<?> number = NumberMath.getNumberMath(value);
+			if (increment) {
+				results.add(number.minus(1).longValue());
+			} else {
+				results.add(number.plus(1).longValue());
+
+			}
+		}
+		anno.replaceAnnotation(createIntValAnnotation(results));
+		return anno;
+	}
+
+	private AnnotatedTypeMirror postFixDoubl(AnnotatedTypeMirror anno,
+			boolean increment) {
+		List<Double> values = AnnotationUtils.getElementValueArray(
+				anno.getAnnotation(DoubleVal.class), "value", Double.class,
+				true);
+		List<? extends Number> castedValues = NumberUtils.castNumbers(
+				anno.getUnderlyingType(), values);
+		List<Double> results = new ArrayList<>();
+		for (Number value : castedValues) {
+			NumberMath<?> number = NumberMath.getNumberMath(value);
+			if (increment) {
+				results.add(number.minus(1).doubleValue());
+			} else {
+				results.add(number.plus(1).doubleValue());
+
+			}
+		}
+		anno.replaceAnnotation(createDoubleValAnnotation(results));
+		return anno;
+	}
+
+
+	/**
      * Creates an annotation of the name given with the set of values given.
      * Issues a checker warning and return UNKNOWNVAL if values.size &gt;
      * MAX_VALUES
@@ -247,11 +290,6 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
 
         public ValueTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
-        }
-        @Override
-        public Void visitTypeVariable(AnnotatedTypeVariable type, Void p) {
-            type.getLowerBound().replaceAnnotation(BOTTOMVAL);
-            return super.visitTypeVariable(type, p);
         }
 
         @Override
@@ -463,7 +501,6 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-
         // The ValueTreeAnnotator handles propagation differently,
         // so it doesn't need PropgationTreeAnnotator.
         return new ListTreeAnnotator( new ValueTreeAnnotator(this),
@@ -753,262 +790,9 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
 
                     return null;
                 }
-                else if ( tree.getKind() == Tree.Kind.NULL_LITERAL){
-                    type.replaceAnnotation(BOTTOMVAL);
-                }
             }
             // super.visitLiteral(tree, type);
             return null;
-        }
-
-        @Override public Void visitUnary(UnaryTree tree,
-                AnnotatedTypeMirror type) {
-            super.visitUnary(tree, type);
-
-            if (isClassCovered(type)) {
-                Tree.Kind operation = tree.getKind();
-
-                AnnotatedTypeMirror argType = getAnnotatedType(tree
-                        .getExpression());
-
-                if (!nonValueAnno(argType)) {
-                    Class<?> argClass = boxPrimatives(getClass(type, tree));
-                    handleCast(tree.getExpression(), getClass(type, tree), argType);
-
-                    AnnotationMirror argAnno = getValueAnnotation(argType);
-                    AnnotationMirror newAnno = evaluateUnaryOperator(argAnno,
-                            operation.toString(), argClass, tree);
-                    if (newAnno != null) {
-                        type.replaceAnnotation(newAnno);
-                        return null;
-                    }
-                }
-
-                type.replaceAnnotation(UNKNOWNVAL);
-            }
-            return null;
-        }
-        @Override
-        public Void visitCompoundAssignment(CompoundAssignmentTree node,
-                AnnotatedTypeMirror p) {
-            // TODO Auto-generated method stub
-            return super.visitCompoundAssignment(node, p);
-        }
-
-
-        /**
-         * This method resolves a unary operator by converting it to a
-         * reflective call to one of the operators defined in Operators.java.
-         * The values in the annotations of the arguments will be converted to
-         * the type of argClass. Thus argClass should always result in a
-         * lossless casting (e.g. int to long).
-         *
-         * @param lhsType
-         *            the annotated type mirror of the LHS argument
-         * @param rhsType
-         *            the annotated type mirror of the RHS argument
-         * @param operation
-         *            the String name of the operation
-         * @param argClass
-         *            the Class of the operations arguments (used for reflective
-         *            code)
-         * @param tree
-         *            location to provide to error message
-         *
-         *
-         * @return
-         */
-        private AnnotationMirror evaluateUnaryOperator(
-                AnnotationMirror argAnno, String operation, Class<?> argClass,
-                UnaryTree tree) {
-            try {
-                argClass = boxPrimatives(argClass);
-                Class<?>[] argClasses = new Class<?>[] { argClass };
-                Method m = Operators.class.getMethod(operation, argClasses);
-
-                List<?> annoValues = getCastedValues(argAnno, argClass, tree);
-
-                ArrayList<Object> results = new ArrayList<Object>(
-                        annoValues.size());
-
-                for (Object val : annoValues) {
-                    results.add(m.invoke(null, new Object[] { val }));
-                }
-                return resultAnnotationHandler(m.getReturnType(), results);
-            } catch (ReflectiveOperationException e) {
-                checker.report(Result
-                        .warning("operator.unary.evaluation.failed", operation,
-                                argClass), tree);
-                return null;
-            }
-        }
-
-
-        @Override 
-        public Void visitBinary(BinaryTree tree,
-                AnnotatedTypeMirror type) {
-            if (!isClassCovered(type)) {
-                return super.visitBinary(tree, type);
-            }
-            Tree.Kind operation = tree.getKind();
-
-            AnnotatedTypeMirror lhsType = getAnnotatedType(tree
-                    .getLeftOperand());
-            AnnotatedTypeMirror rhsType = getAnnotatedType(tree
-                    .getRightOperand());
-            if (!nonValueAnno(lhsType) && !nonValueAnno(rhsType)) {
-
-                Class<?> resultClass = null;
-                AnnotationMirror newAnno = null;
-
-                // Non-Comparison Binary Operation
-                if (operation != Tree.Kind.EQUAL_TO
-                        && operation != Tree.Kind.NOT_EQUAL_TO
-                        && operation != Tree.Kind.GREATER_THAN
-                        && operation != Tree.Kind.GREATER_THAN_EQUAL
-                        && operation != Tree.Kind.LESS_THAN
-                        && operation != Tree.Kind.LESS_THAN_EQUAL) {
-                    resultClass = getClass(type, tree);
-                    if (resultClass != String.class) {
-                        // Convert to the final type
-                        List<?> lhs = getCastedValues(lhsType, resultClass, tree);
-                        List<?> rhs = getCastedValues(rhsType, resultClass, tree);
-
-                        // Evaluate
-                        newAnno = evaluateBinaryOperator(lhs, rhs,
-                                operation.toString(), resultClass, tree);
-                    } else {
-                        // Get values based on underlying type of the left and
-                        // right trees, then cast the values to strings.
-                        List<?> lhs = convertToStringVal(getCastedValues(
-                                lhsType, tree.getLeftOperand()));
-                        List<?> rhs = convertToStringVal(getCastedValues(
-                                rhsType, tree.getRightOperand()));
-                        // Evaluate
-                        newAnno = evaluateBinaryOperator(lhs, rhs,
-                                operation.toString(), resultClass, tree);
-                    }
-                }
-                // Comparison Binary Operation We're okay to cast
-                // everything to DoubleVal *UNLESS* we're
-                // comparing StringsVals, so we do This
-                // potentially means we could remove the
-                // non-double versions of comparisons in
-                // Operators.java
-                else {
-                    if (AnnotationUtils.areSameIgnoringValues(
-                            getValueAnnotation(lhsType), STRINGVAL)) {
-                        resultClass = getAnnotationValueClass(getValueAnnotation(lhsType));
-                    } else if (AnnotationUtils.areSameByClass(
-                            getValueAnnotation(lhsType), BoolVal.class)) {
-                        resultClass = getAnnotationValueClass(getValueAnnotation(lhsType));
-                    }else {
-                        resultClass = double.class;
-                        handleBinaryCast(tree.getLeftOperand(), lhsType,
-                                tree.getRightOperand(), rhsType, double.class);
-                    }
-                    newAnno = evaluateComparison(lhsType, rhsType,
-                            operation.toString(), resultClass, tree);
-                }
-                if (newAnno != null) {
-                    type.replaceAnnotation(newAnno);
-                    return null;
-                }
-            }
-            type.replaceAnnotation(UNKNOWNVAL);
-
-            return null;
-        }
-
-        /**
-         * Casts the two arguments of a binary operator to the final type of
-         * that operator. i.e. double + int -> double so DoubleVal + IntVal ->
-         * DoubleVal
-         *
-         * @param lhs
-         * @param lhsType
-         * @param rhs
-         * @param rhsType
-         * @param castType
-         */
-        private void handleBinaryCast(ExpressionTree lhs,
-                AnnotatedTypeMirror lhsType, ExpressionTree rhs,
-                AnnotatedTypeMirror rhsType, Class<?> castType) {
-            handleCast(lhs, castType, lhsType);
-            handleCast(rhs, castType, rhsType);
-        }
-
-        private AnnotationMirror evaluateComparison(
-                AnnotatedTypeMirror lhsType, AnnotatedTypeMirror rhsType,
-                String operation, Class<?> argClass, BinaryTree tree) {
-            try {
-                argClass = boxPrimatives(argClass);
-                Class<?>[] argClasses = new Class<?>[] { argClass, argClass };
-                Method m = Operators.class.getMethod(operation, argClasses);
-
-                List<?> lhsAnnoValues = getCastedValues(lhsType, argClass, tree);
-                List<?> rhsAnnoValues = getCastedValues(rhsType, argClass, tree);
-
-                ArrayList<Object> results = new ArrayList<Object>(
-                        lhsAnnoValues.size() * rhsAnnoValues.size());
-
-                for (Object lhsO : lhsAnnoValues) {
-                    for (Object rhsO : rhsAnnoValues) {
-                        results.add(m.invoke(null, new Object[] { lhsO, rhsO }));
-                    }
-                }
-                return resultAnnotationHandler(m.getReturnType(), results);
-            } catch (ReflectiveOperationException e) {
-                checker.report(Result.warning(
-                        "operator.binary.evaluation.failed", operation,
-                        argClass), tree);
-                return null;
-            }
-        }
-
-        /**
-         * This method resolves a binary operator by converting it to a
-         * reflective call to one of the operators defined in Operators.java.
-         * The values in the annotations of the arguments will be converted to
-         * the type of argClass. Thus argClass should always result in a
-         * lossless casting (e.g. int to long).
-         *
-         * @param lhsAnnoValues
-         *            the annotated type mirror of the LHS argument
-         * @param rhsAnnoValues
-         *            the annotated type mirror of the RHS argument
-         * @param operation
-         *            the String name of the operation
-         * @param argClass
-         *            the Class of the operations arguments (used for reflective
-         *            code)
-         * @param tree
-         *            location for error reporting
-         * @return
-         */
-        private AnnotationMirror evaluateBinaryOperator(
-                List<?> lhsAnnoValues, List<?> rhsAnnoValues,
-                String operation, Class<?> argClass, BinaryTree tree) {
-            try {
-                argClass = boxPrimatives(argClass);
-                Class<?>[] argClasses = new Class<?>[] { argClass, argClass };
-                Method m = Operators.class.getMethod(operation, argClasses);
-
-                ArrayList<Object> results = new ArrayList<Object>(
-                        lhsAnnoValues.size() * rhsAnnoValues.size());
-
-                for (Object lhsO : lhsAnnoValues) {
-                    for (Object rhsO : rhsAnnoValues) {
-                        results.add(m.invoke(null, new Object[] { lhsO, rhsO }));
-                    }
-                }
-                return resultAnnotationHandler(m.getReturnType(), results);
-            } catch (ReflectiveOperationException e) {
-                checker.report(Result.warning(
-                        "operator.binary.evaluation.failed", operation,
-                        argClass), tree);
-                return null;
-            }
         }
 
         /**
@@ -1392,33 +1176,6 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
             }  
             return type;
         }
-        /**
-         * Returns the unboxed primitive type if the passed type is a boxed
-         * primitive. Otherwise it returns the passed type
-         * 
-         * @param type
-         * @return
-         */
-        private Class<?> unboxPrimatives(Class<?> type) {
-            if(type == Byte.class){
-                return byte.class;
-            } else if(type == Short.class){
-                return short.class;
-            } else if(type == Integer.class){
-                return int.class;
-            } else if(type == Long.class){
-                return long.class;
-            } else if(type == Float.class){
-                return float.class;
-            } else if(type == Double.class){
-                return double.class;
-            } else if(type == Character.class){
-                return char.class;
-            } else if(type == Boolean.class){
-                return boolean.class;
-            }  
-            return type;
-        }
 
         /**
          * Attempts to evaluate a New call by retrieving the constructor and
@@ -1757,28 +1514,6 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 return Object[].class;
             }
         }
-
-        /**
-         *
-         * @param anno
-         * @return the Class object for the value array of an annotation or null
-         *         if the annotation has no value array
-         */
-        private Class<?> getAnnotationValueClass(AnnotationMirror anno) {
-            if (AnnotationUtils.areSameIgnoringValues(anno, INTVAL)) {
-                return Long.class;
-            } else if (AnnotationUtils.areSameIgnoringValues(anno, DOUBLEVAL)) {
-                return Double.class;
-            } else if (AnnotationUtils.areSameIgnoringValues(anno, BOOLVAL)) {
-                return Boolean.class;
-            } else if (AnnotationUtils.areSameIgnoringValues(anno, STRINGVAL)) {
-                return String.class;
-            }
-
-            return null;
-
-        }
-
 
         private Class<?>[] getParameterTypes(NewClassTree tree) {
             ExecutableElement e = TreeUtils.elementFromUse(tree);
@@ -2247,5 +1982,34 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
     private boolean isNumberAnnotation(AnnotationMirror anno) {
         return AnnotationUtils.areSameIgnoringValues(anno, INTVAL)
                 || AnnotationUtils.areSameIgnoringValues(anno, DOUBLEVAL);
+    }
+
+    public AnnotationMirror createIntValAnnotation(List<Long> intValues) {    	
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
+                IntVal.class);
+        builder.setValue("value", intValues);
+        return builder.build();
+    }
+
+	public AnnotationMirror createDoubleValAnnotation(
+			List<Double> doubleValues) {
+		AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
+				DoubleVal.class);
+		builder.setValue("value", doubleValues);
+		return builder.build();
+	}
+
+    public AnnotationMirror createStringAnnotation(List<String> values) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
+                StringVal.class);
+        builder.setValue("value", values);
+        return builder.build();
+    }
+
+    public AnnotationMirror createBooleanAnnotation(List<Boolean> values) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
+                BoolVal.class);
+        builder.setValue("value", values);
+        return builder.build();
     }
 }
