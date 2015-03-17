@@ -174,6 +174,11 @@ import com.sun.tools.javac.util.Log;
     // org.checkerframework.framework.flow.CFAbstractTransfer.sequentialSemantics
     "concurrentSemantics",
 
+    // Whether to use conservative checks for untyped code, these are configured
+    // by the specific type checker using Default[For|Qualifier]InUntyped.
+    // They may require more annotations or stub files.
+    "conservativeUntyped",
+
     // Whether to resolve reflective method invocations
     // resolveReflection=debug cause debugging information
     // to be output.
