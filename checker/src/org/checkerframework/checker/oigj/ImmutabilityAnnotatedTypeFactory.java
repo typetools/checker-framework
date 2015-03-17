@@ -743,15 +743,29 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (typeSuper.getKind() != TypeKind.TYPEVAR)
                 return visit(typeSuper, actualType);
 
-            assert typeSuper.getKind() == actualType.getKind() : actualType;
-            assert type.getKind() == actualType.getKind() : actualType;
-            AnnotatedTypeVariable tvType = (AnnotatedTypeVariable)typeSuper;
 
-            typeVar.add(type.getUnderlyingType());
-            // a type variable cannot be annotated
-            Map<String, AnnotationMirror> result = visit(type.getUpperBound(), tvType.getUpperBound());
-            typeVar.remove(type.getUnderlyingType());
-            return result;
+            if (typeSuper.getKind() == actualType.getKind()
+             && type.getKind() == actualType.getKind()) {
+                //I've preserved the old logic here, I am not sure the actual reasoning
+                //however, please see the else case as to where it fails
+
+                AnnotatedTypeVariable tvType = (AnnotatedTypeVariable)typeSuper;
+
+                typeVar.add(type.getUnderlyingType());
+                // a type variable cannot be annotated
+                Map<String, AnnotationMirror> result = visit(type.getUpperBound(), tvType.getUpperBound());
+                typeVar.remove(type.getUnderlyingType());
+                return result;
+
+            } else {
+                //When using the templateCollect we compare the formal parameters to the actual
+                //arguments but, when the formal parameters are uses of method type parameters
+                //then the declared formal parameters may not actually be supertypes of their arguments
+                // (though they should be if we substituted them for the method call's type arguments)
+                //See also the poly collector
+                //For an example of this see framework/tests/all-system/PolyCollectorTypeVars.java
+                return visit(type.getUpperBound(), actualType);
+            }
         }
 
         @Override

@@ -693,6 +693,7 @@ public class AnnotatedTypes {
         }
     }
 
+    private static Set<TypeMirror> wildcards = Collections.newSetFromMap(new IdentityHashMap<TypeMirror, Boolean>());
     // TODO: compare to leastUpperBound method that is in comments further
     // below and see how to incorporate the logic.
     // Also see CFAbstractValue for other methods that should be in
@@ -707,7 +708,10 @@ public class AnnotatedTypes {
         // see commented-out version below.
         TypeMirror lubType = InternalUtils.leastUpperBound(processingEnv, a.getUnderlyingType(), b.getUnderlyingType());
         AnnotatedTypeMirror res = AnnotatedTypeMirror.createType(lubType, atypeFactory, false);
+
+        wildcards.clear();
         annotateAsLub(processingEnv, atypeFactory, res, list);
+        wildcards.clear();
         return res;
     }
 
@@ -787,12 +791,10 @@ public class AnnotatedTypes {
                 }
             }
             if (subtypes.size() > 0) {
-                if (!lub.getAnnotations().isEmpty()) {
-                    //The lub was created immediately before this method and if we reached this
-                    //point it has had no annotations added to it
-                    ErrorReporter.errorAbort("LUB should not have annotations here\n"
-                                          +  "lub=" + lub + "\n"
-                                          +  "subtypes=" + PluginUtil.join(", ", subtypes));
+                if (!findEffectiveAnnotations(atypeFactory.getQualifierHierarchy(), lub).isEmpty()) {
+                    //I believe the only place this can happen is within recursive types and
+                    //if we already have annotations than the type has been visited
+                    return;
                 }
             }
 
@@ -860,8 +862,34 @@ public class AnnotatedTypes {
             ((AnnotatedWildcardType)alub).getSuperBound().replaceAnnotations(lowerBounds);
 
 
-            alub = ((AnnotatedWildcardType)alub).getExtendsBound();
+            //TODO: AGAIN, ALL LUB CODE SHOULD BE EXTRACTED OUT TO IT'S OWN CLASS OR THE TYPE HIERARCHY
+            //TODO: AND REWRITTEN
+            boolean allWildcards = true;
+            for (int i = 0; i < types.size() && allWildcards; i++) {
+                if (types.get(i).getKind() != TypeKind.WILDCARD) {
+                    allWildcards = false;
+                }
+            }
 
+            if (allWildcards) {
+                if (wildcards.contains(alub.getUnderlyingType())) {
+                    return;
+                }
+                wildcards.add(alub.getUnderlyingType());
+                final List<AnnotatedTypeMirror> upperBounds = new ArrayList<>(types.size());
+                for (final AnnotatedTypeMirror type : types) {
+                    upperBounds.add(((AnnotatedWildcardType)type).getExtendsBound());
+                }
+
+                alub = ((AnnotatedWildcardType) alub).getExtendsBound();
+
+                annotateAsLub(atypeFactory.getProcessingEnv(), atypeFactory, alub, upperBounds);
+                return;
+
+            } else {
+                //old behavior
+                alub = ((AnnotatedWildcardType) alub).getExtendsBound();
+            }
 
 
             // TODO using the getEffective versions copies objects, losing side-effects.
@@ -1714,7 +1742,10 @@ public class AnnotatedTypes {
                                                      final QualifierHierarchy qualifierHierarchy) {
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
         for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-            result.add(glbOfBoundsInHierarchy(isect, top, qualifierHierarchy));
+            final AnnotationMirror glbAnno = glbOfBoundsInHierarchy(isect, top, qualifierHierarchy);
+            if (glbAnno != null) {
+                result.add(glbAnno);
+            }
         }
 
         return result;

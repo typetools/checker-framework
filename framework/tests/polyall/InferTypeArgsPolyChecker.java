@@ -135,4 +135,34 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
         //a check that fails or succeeds because of this
         Map<? super @H1S1 @H2S2 CharSequence, @H1Top @H2Top ? super String> mnl = method();
     }
+
+//    class Pair<PONE,PTWO> {
+//        PONE _1;
+//        PTWO _2;
+//    }
+
+    <O extends P, P> @H1Top @H2Top P methodOP(@H1Top @H2Top P p, O o) {
+        return null;
+    }
+
+    void contextOP(@H1S1 @H2S1 String s1, @H1Bot @H2Bot String s2) {
+        //This test is actually here to test that the constraint P :> O is implied on p
+        //:: error: (assignment.type.incompatible)
+        @H1Bot @H2Bot String loc = methodOP(s1, s2);
+    }
+
+
+//    class Triplet<L,M,N> {
+//        L l;
+//        M m;
+//        N n;
+//    }
+//
+//    <X extends Y, Y extends Z, Z> Triplet<X,Y,Z> methodXYZ() {
+//        return null;
+//    }
+//
+//    void contextXYZ() {
+//        Triplet<@H1S>
+//    }
 }
