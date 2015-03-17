@@ -1,5 +1,44 @@
 package org.checkerframework.common.value;
 
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.value.qual.ArrayLen;
+import org.checkerframework.common.value.qual.BoolVal;
+import org.checkerframework.common.value.qual.BottomVal;
+import org.checkerframework.common.value.qual.DoubleVal;
+import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.qual.StaticallyExecutable;
+import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.common.value.qual.UnknownVal;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
+import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeQualifiers;
+import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -23,48 +62,6 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.value.qual.ArrayLen;
-import org.checkerframework.common.value.qual.BoolVal;
-import org.checkerframework.common.value.qual.BottomVal;
-import org.checkerframework.common.value.qual.DoubleVal;
-import org.checkerframework.common.value.qual.IntVal;
-import org.checkerframework.common.value.qual.StaticallyExecutable;
-import org.checkerframework.common.value.qual.StringVal;
-import org.checkerframework.common.value.qual.UnknownVal;
-import org.checkerframework.framework.flow.CFAbstractAnalysis;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFTransfer;
-import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.qual.DefaultLocation;
-import org.checkerframework.framework.qual.TypeQualifiers;
-import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
-import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
-import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.util.AnnotationBuilder;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.framework.util.defaults.QualifierDefaults;
-
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
@@ -111,7 +108,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
      * propTreeCache ensures that the ValueATF terminates on compound binary/unary trees.
      */
     private final Map<Tree, AnnotatedTypeMirror> propTreeCache = createLRUCache(200);
-    
+
     /** should this type factory report warnings? **/
     private boolean reportWarnings = true;
 
@@ -171,7 +168,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
             this.postInit();
         }
     }
-    
+
     public void disableWarnings(){
         reportWarnings = false;
     }
@@ -301,8 +298,8 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
         }
-        
-        @Override 
+
+        @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1,
                 AnnotationMirror a2) {
             if (isSubtype(a1, a2)) {
@@ -475,7 +472,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
         defaults.addAbsoluteDefault(UNKNOWNVAL, DefaultLocation.OTHERWISE);
         defaults.addAbsoluteDefault(BOTTOMVAL, DefaultLocation.LOWER_BOUNDS);
 
-        
+
         return defaults;
     }
 
@@ -568,7 +565,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                             .getValue()).intValue());
                 } else if (e.getKind() == Tree.Kind.CHAR_LITERAL) {
                     bytes[i] = (byte) (((Character) ((LiteralTree) e).getValue())
-                            .charValue());                    
+                            .charValue());
                 } else {
                     allLiterals = false;
                 }
@@ -658,7 +655,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
         	if(tree.getExpression().getKind() == Kind.NULL_LITERAL){
         		type.replaceAnnotation(BOTTOMVAL);
         	}
-			
+
 		}
 
 		@Override public Void visitAssignment(AssignmentTree tree,
@@ -772,7 +769,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                         .getExpression());
 
                 if (!nonValueAnno(argType)) {
-                    Class<?> argClass = boxPrimatives(getClass(type, tree));
+                    Class<?> argClass = boxPrimitives(getClass(type, tree));
                     handleCast(tree.getExpression(), getClass(type, tree), argType);
 
                     AnnotationMirror argAnno = getValueAnnotation(argType);
@@ -822,7 +819,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 AnnotationMirror argAnno, String operation, Class<?> argClass,
                 UnaryTree tree) {
             try {
-                argClass = boxPrimatives(argClass);
+                argClass = boxPrimitives(argClass);
                 Class<?>[] argClasses = new Class<?>[] { argClass };
                 Method m = Operators.class.getMethod(operation, argClasses);
 
@@ -844,7 +841,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
         }
 
 
-        @Override 
+        @Override
         public Void visitBinary(BinaryTree tree,
                 AnnotatedTypeMirror type) {
             if (!isClassCovered(type)) {
@@ -942,7 +939,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 AnnotatedTypeMirror lhsType, AnnotatedTypeMirror rhsType,
                 String operation, Class<?> argClass, BinaryTree tree) {
             try {
-                argClass = boxPrimatives(argClass);
+                argClass = boxPrimitives(argClass);
                 Class<?>[] argClasses = new Class<?>[] { argClass, argClass };
                 Method m = Operators.class.getMethod(operation, argClasses);
 
@@ -990,7 +987,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 List<?> lhsAnnoValues, List<?> rhsAnnoValues,
                 String operation, Class<?> argClass, BinaryTree tree) {
             try {
-                argClass = boxPrimatives(argClass);
+                argClass = boxPrimitives(argClass);
                 Class<?>[] argClasses = new Class<?>[] { argClass, argClass };
                 Method m = Operators.class.getMethod(operation, argClasses);
 
@@ -1342,7 +1339,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                     try {
                         // get the constructor
                         Class<?>[] argClasses = getParameterTypes(tree);
-                        Class<?> recClass = boxPrimatives(getClass(type, tree));
+                        Class<?> recClass = boxPrimitives(getClass(type, tree));
                         Constructor<?> constructor = recClass
                                 .getConstructor(argClasses);
 
@@ -1368,12 +1365,12 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
         /**
          * Returns the box primitive type if the passed type is an (unboxed)
          * primitive. Otherwise it returns the passed type
-         * 
+         *
          * @param type
          * @return
          */
-        private Class<?> boxPrimatives(Class<?> type) {
-            if(type == byte.class){
+        private Class<?> boxPrimitives(Class<?> type) {
+            if (type == byte.class){
                 return Byte.class;
             } else if(type == short.class){
                 return Short.class;
@@ -1389,34 +1386,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
                 return Character.class;
             } else if(type == boolean.class){
                 return Boolean.class;
-            }  
-            return type;
-        }
-        /**
-         * Returns the unboxed primitive type if the passed type is a boxed
-         * primitive. Otherwise it returns the passed type
-         * 
-         * @param type
-         * @return
-         */
-        private Class<?> unboxPrimatives(Class<?> type) {
-            if(type == Byte.class){
-                return byte.class;
-            } else if(type == Short.class){
-                return short.class;
-            } else if(type == Integer.class){
-                return int.class;
-            } else if(type == Long.class){
-                return long.class;
-            } else if(type == Float.class){
-                return float.class;
-            } else if(type == Double.class){
-                return double.class;
-            } else if(type == Character.class){
-                return char.class;
-            } else if(type == Boolean.class){
-                return boolean.class;
-            }  
+            }
             return type;
         }
 
@@ -1695,7 +1665,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
         }
 
         /**
-         * 
+         *
          * @param typeMirror the underlying type is used
          * @param tree Tree for error reporting
          * @return class object corresponding to the typeMirror passed.
@@ -1794,7 +1764,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
         /**
          * Gets a list of values in the annotated casted to the type of the
          * tree.
-         * 
+         *
          * @param typeMirror
          *            AnnotatedTypeMirror with values
          * @param tree
