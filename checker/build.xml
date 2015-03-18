@@ -792,9 +792,21 @@
         </antcall>
     </target>
 
-    <target name="jtreg-tests" depends="-def-jtreg,jar"
+    <target name="jtreg-tests-checkers" depends="-def-jtreg,jar"
             description="Run jtreg tests">
         <jtreg-tool name="all" tests="."/>
+    </target>
+
+    <target name="jtreg-tests-framework" depends="-def-jtreg,jar"
+            description="Run framework jtreg tests">
+       <ant dir="${framework.loc}">
+           <target name="jtreg-tests" />
+       </ant>
+    </target>
+
+    <target name="jtreg-tests"
+            depends="-def-jtreg,jar,jtreg-tests-checkers,jtreg-tests-framework"
+            description="Run jtreg tests">
     </target>
 
     <target name="-def-check">
