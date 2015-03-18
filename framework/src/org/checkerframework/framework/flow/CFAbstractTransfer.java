@@ -273,7 +273,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                     }
                     loopTree = loopTree.getParentPath();
                 }
-                while (!anEnclosingElement.equals(InternalUtils.symbol(enclosingTree))) {
+                while (anEnclosingElement != null &&
+                        !anEnclosingElement.equals(InternalUtils.symbol(enclosingTree))) {
                     if (anEnclosingElement.getKind() == ElementKind.INSTANCE_INIT
                             || anEnclosingElement.getKind() == ElementKind.STATIC_INIT) {
                         enclosingElement = anEnclosingElement;
@@ -283,7 +284,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 }
 
             }
-                if (enclosingElement != null) {
+            if (enclosingElement != null) {
                 addFinalLocalValues(info, enclosingElement);
             }
 
