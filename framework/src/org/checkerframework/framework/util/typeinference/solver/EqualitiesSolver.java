@@ -39,8 +39,7 @@ public class EqualitiesSolver {
      *
      * @param targets The list of type parameters for which we are inferring type arguments
      * @param constraintMap The set of constraints over the set of targets
-     * @param typeFactory
-     * @return A Map( target -> inferred type or target )
+     * @return A Map( {@code target -> inferred type or target })
      */
     public InferenceResult solveEqualities(Set<TypeVariable> targets, ConstraintMap constraintMap, AnnotatedTypeFactory typeFactory) {
         final InferenceResult solution = new InferenceResult();
@@ -220,7 +219,6 @@ public class EqualitiesSolver {
 
     /**
      * Creates a declaration AnnotatedTypeVariable for TypeVariable.
-     * @return
      */
     private AnnotatedTypeVariable createAnnotatedTypeVar(final TypeVariable typeVariable, final AnnotatedTypeFactory typeFactory) {
         return (AnnotatedTypeVariable) typeFactory.getAnnotatedType(typeVariable.asElement());

@@ -57,17 +57,23 @@ public class KeyForPropagator {
      * Note the primary annotations of subtype/supertype are not used.
      *
      * Simple Example:
+     * <pre>{@code 
      * typeOf(subtype) = ArrayList<@KeyFor("a") String>
      * typeOf(supertype) = List<@UnknownKeyFor String>
      * direction = TO_SUPERTYPE
-     * The type of supertype after propagate would be: List<@KeyFor("a") String>
+     * }</pre>
+     * The type of supertype after propagate would be:
+     * {@code List<@KeyFor("a") String>}
      *
      * A more complex example would be:
+     * <pre>{@code
      * typeOf(subtype) = HashMap<@UnknownKeyFor String, @KeyFor("b") List<@KeyFor("c") String>>
      * typeOf(supertype) = Map<@KeyFor("a") String, @KeyFor("b") List<@KeyFor("c") String>>
      * direction = TO_SUBTYPE
+     * }</pre>
      *
-     * The type of subtype after propagate would be: HashMap<@KeyFor("a") String, @KeyFor("b") List<@KeyFor("c") String>>
+     * The type of subtype after propagate would be:
+     * {@code HashMap<@KeyFor("a") String, @KeyFor("b") List<@KeyFor("c") String>>}
      */
     public void propagate(final AnnotatedDeclaredType subtype, final AnnotatedDeclaredType supertype,
                           PropagationDirection direction, final AnnotatedTypeFactory typeFactory) {

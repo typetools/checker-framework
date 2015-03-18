@@ -202,7 +202,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * @param subtype expected subtype
      * @param supertype expected supertype
      * @return true if subtype is actually a subtype of supertype
-     * @return
      */
     public boolean isSubtype(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype, VisitHistory visited) {
         return AtmCombo.accept(subtype, supertype, visited, this);
@@ -280,7 +279,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     /**
      * Check and subtype first determines if the subtype/supertype combination has already been visited.
      * If so, it returns true, otherwise add the subtype/supertype combination and then make a subtype check
-     * @return
      */
     protected boolean checkAndSubtype(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype, VisitHistory visited) {
         if(visited.contains(subtype, supertype)) {
@@ -478,7 +476,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * Compare typeArgs is called on a single pair of type args that should share a relationship
      * subTypeArg {@literal <:} superTypeArg (subtypeArg is contained by superTypeArg).  However, if either
      * type is raw then either (subTypeArg {@literal <:} superTypeArg) or the rawnessComparer.isValid(superTypeArg, subTypeArg, visited)
-     * @return
      */
     protected boolean compareTypeArgs(AnnotatedTypeMirror subTypeArg, AnnotatedTypeMirror superTypeArg,
                                    boolean subtypeRaw, boolean supertypeRaw, VisitHistory visited) {

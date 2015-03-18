@@ -122,7 +122,6 @@ public class TypeArgInferenceUtil {
      * Returns the annotated type that the method invocation at the leaf
      * is assigned to.
      *
-     * @param path
      * @return type that it path leaf is assigned to
      */
     public static AnnotatedTypeMirror assignedTo(AnnotatedTypeFactory atypeFactory, TreePath path) {
@@ -225,7 +224,7 @@ public class TypeArgInferenceUtil {
 
     /**
      * Create a copy of toModify. In the copy,
-     *      For each pair typeVariable -> annotated type
+     *      For each pair {@code typeVariable -> annotated type}
      *          replace uses of typeVariable with the corresponding annotated type using
      *          normal substitution rules (@see TypeVariableSubstitutor)
      * Return the copy

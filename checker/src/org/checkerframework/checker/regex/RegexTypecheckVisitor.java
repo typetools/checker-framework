@@ -21,8 +21,6 @@ import javax.lang.model.element.VariableElement;
 
 /**
  * The {@link org.checkerframework.common.basetype.BaseTypeVisitor} for the Regex-Qual-Param type system.
- *
- * @see org.checkerframework.checker.regex.RegexVisitor
  */
 public class RegexTypecheckVisitor extends TypecheckVisitorAdapter<QualParams<Regex>> {
 

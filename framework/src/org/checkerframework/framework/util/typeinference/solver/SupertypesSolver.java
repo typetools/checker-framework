@@ -28,8 +28,7 @@ public class SupertypesSolver {
      * Infers type arguments using supertype constraints.
      * @param remainingTargets Targets for which we still need to infer a value.
      * @param constraintMap The set of constraints for all targets.
-     * @param typeFactory
-     * @return A mapping of ( target -> inferred type ), note this class always infers concrete types
+     * @return A mapping of ( {@code target -> inferred type} ), note this class always infers concrete types
      *         and will not infer that the target is equivalent to another target
      */
     public InferenceResult solveFromArguments(final Set<TypeVariable> remainingTargets,
@@ -290,7 +289,7 @@ public class SupertypesSolver {
     }
 
     /**
-     * Take a set of annotations and separate them into a mapping of (hierarchy top -> annotations in hierarchy)
+     * Take a set of annotations and separate them into a mapping of ({@code hierarchy top -> annotations in hierarchy})
      */
     public static Map<AnnotationMirror, AnnotationMirror> createHierarchyMap(final Set<AnnotationMirror> annos,
                                                                              final QualifierHierarchy qualifierHierarchy) {

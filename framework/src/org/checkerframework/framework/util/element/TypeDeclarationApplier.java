@@ -64,7 +64,6 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
 
     /**
      * All TypeCompounds (annotations) on the ClassSymbol
-     * @return
      */
     @Override
     protected Iterable<Attribute.TypeCompound> getRawTypeAttributes() {

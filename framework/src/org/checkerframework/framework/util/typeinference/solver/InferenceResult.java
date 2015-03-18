@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 
 /**
  * Represents the result from inferring type arguments.
- * InferenceResult is a map from: (Target type variable -> inferred type or target)
+ * InferenceResult is a map from: ({@code Target type variable -> inferred type or target})
  */
 public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> {
     private static final long serialVersionUID = 6911459752070485818L;

@@ -295,7 +295,6 @@ public class CheckersMojo extends AbstractMojo {
     /**
      * TODO: Think of a better way to do CheckerProps, it's weird to have some params built in
      * TODO: and some as MISC_OPTIONS
-     * @return
      */
     private Map<PluginUtil.CheckerProp, Object> makeProps() {
 
