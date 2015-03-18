@@ -17,7 +17,6 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
     /**
      * Returns true if, by default, anno should not be printed
      * @see org.checkerframework.framework.qual.InvisibleQualifier
-     * @param anno
      * @return True if anno's declaration was qualified by InvisibleQualifier.
      */
     public static boolean isInvisibleQualified(AnnotationMirror anno) {

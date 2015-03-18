@@ -91,20 +91,20 @@ public abstract class AFConstraint {
      *
      * That is:
      * Let S be a partial solution to our inference (i.e. we have inferred type arguments for some types)
-     * Let S be a map (T0 -> A0, T1 -> A1, ..., TN -> AN) where Ti is a type parameter and Ai is its solved argument.
+     * Let S be a map {@code (T0 -> A0, T1 -> A1, ..., TN -> AN)} where Ti is a type parameter and Ai is its solved argument.
      * For all uses of Ti in this constraint, replace them with Ai.
      *
-     * For the mapping (T0 -> A0), the following constraint:
-     * ArrayList<T0> << List<T1>
+     * For the mapping {@code (T0 -> A0)}, the following constraint:
+     * {@code ArrayList<T0> << List<T1>}
      *
      * Becomes:
-     * ArrayList<A0> << List<T1>
+     * {@code ArrayList<A0> << List<T1>}
      *
      * A constraint:
-     * T0 << T1
+     * {@code T0 << T1}
      *
      * Becomes:
-     * A0 << T1
+     * {@code A0 << T1}
      *
      *
      * @param substitutions A mapping of target type parameter to the type argument to

@@ -1996,7 +1996,6 @@ public abstract class AnnotatedTypeMirror {
 
         /**
          * @see org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable#getErased()
-         * @return
          */
         @Override
         public AnnotatedTypeMirror getErased() {

@@ -115,8 +115,8 @@ public class GlbUtil {
      * Sort the lsit of type mirrors, placing supertypes first and subtypes last.
      *
      * E.g.
-     * the list:  ArrayList<String>, List<String>, AbstractList<String>
-     * becomes:   List<String>, AbstractList<String>, ArrayList<String>
+     * the list:  {@code ArrayList<String>, List<String>, AbstractList<String>}
+     * becomes:   {@code List<String>, AbstractList<String>, ArrayList<String>}
      *
      */
     public static void sortForGlb(final List<? extends AnnotatedTypeMirror> typeMirrors, final AnnotatedTypeFactory typeFactory) {

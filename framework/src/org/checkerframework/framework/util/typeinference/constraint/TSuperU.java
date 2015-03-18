@@ -6,7 +6,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 /**
  * @see org.checkerframework.framework.util.typeinference.constraint.TUConstraint
  * A constraint of the form:
- * T :> U
+ * {@code T :> U}
  */
 public class TSuperU extends TUConstraint {
     public TSuperU(AnnotatedTypeVariable typeVariable, AnnotatedTypeMirror relatedType) {

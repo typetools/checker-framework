@@ -19,15 +19,18 @@ import javax.lang.model.type.TypeKind;
  *
  * 1. If a keySet is being saved to a newly declared set, we transfer the annotations from the
  * keySet to the lhs. e.g.,
- *
+ * <pre>{@code
  * //Previously,the user would be required to annotate the LHS's type argument with @KeyFor("m")
  * Set<String> keySet = m.keySet();
+ * }</pre>
  *
  * 2. If a variable declaration contains type arguments with an @KeyFor annotation and it's initializer
  * is a new class tree with corresponding type arguments that have an @UknownKeyFor primary annotation
  * we transfer from the LHS to RHS.  e.g.,
+ * <pre>{@code
  * //normally a user would have to write the @KeyFor("m") on both sides
  * List<@KeyFor("m") String> keys = new ArrayList<String>();
+ * }</pre>
  *
  * 3. IMPORTANT NOTE:  The following case must be (and is) handled in KeyForAnnotatedTypeFactory.
  * In BaseTypeVisitor we check to make sure that the constructor called in a NewClassTree is actually

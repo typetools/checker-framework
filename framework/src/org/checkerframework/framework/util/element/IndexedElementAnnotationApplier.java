@@ -21,7 +21,6 @@ abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotation
 
     /**
      * The index of element in the list of elements that contains it
-     * @return
      */
     public abstract int getElementIndex();
 

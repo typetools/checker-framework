@@ -91,7 +91,6 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
      * on substitution.  Therefore, in these cases we remove the primary annotation and rely on
      * the fact that the bounds are also merged into the type to.
      * @param from a type variable or wildcard
-     * @param to
      */
     public void resolvePrimaries(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
         if (from.getKind() == TypeKind.WILDCARD || from.getKind() == TypeKind.TYPEVAR) {
