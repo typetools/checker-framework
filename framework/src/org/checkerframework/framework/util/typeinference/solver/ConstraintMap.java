@@ -15,7 +15,7 @@ import java.util.*;
  * we are inferring an argument.  The ConstraintMap is edited on the fly as the various solvers
  * work (unlike the AF/TU Constraints which are immutable).
  * This really consists of 2 things:
- *    a) a Map(target -> constraints for target)
+ *    a) a Map({@code target -> constraints for target})
  *    b) Methods to easily build up the constraints in the map
  *    c) A getter for the constraints of individual targets.
  *       Note: This class, along with TargetConstraints, uses a lot of mutable state and few setters/getters

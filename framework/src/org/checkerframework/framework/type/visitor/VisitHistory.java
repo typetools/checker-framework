@@ -58,8 +58,6 @@ public class VisitHistory {
 
     /**
      * Add a visit for type1 and type2.
-     * @param type1
-     * @param type2
      */
     public void add(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
         this.visited.add(new Visit(type1, type2));
@@ -68,8 +66,6 @@ public class VisitHistory {
     /**
      * Returns true if type1 and type2 (or an equivalent pair) have been passed to the
      * add method previously.
-     * @param type1
-     * @param type2
      * @return true if an equivalent pair has already been added to the history
      */
     public boolean contains(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {

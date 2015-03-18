@@ -47,7 +47,6 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     /**
      * Used by subclasses and other constructors to specify the underlying implementation of
      * this DefaultAnnotatedTypeFormatter
-     * @param visitor
      */
     protected DefaultAnnotatedTypeFormatter(FormattingVisitor visitor) {
         this.formattingVisitor = visitor;

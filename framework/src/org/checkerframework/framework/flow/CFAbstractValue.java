@@ -196,8 +196,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      *
      * Since t must be a type T, it is useful just to use T itself as the mostSpecific type,
      * so we will use it for now.
-     *
-     * @return
      */
     private static TypeMirror handleTypeVarIntersections(TypeMirror thisType, TypeMirror other, TypeMirror glbType) {
 

@@ -332,9 +332,6 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * x: if the argument is an array with @ArrayLen(x)
          * UNKNOWN_PARAM_LENGTH: if the argument is an array with @UnknownVal
          * 1: otherwise
-         *
-         * @param argument
-         * @return
          */
         private List<Integer> getNumberOfParameterOneArg(ExpressionTree argument) {
             AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(argument);
