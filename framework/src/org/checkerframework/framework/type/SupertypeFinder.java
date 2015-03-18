@@ -154,9 +154,8 @@ class SupertypeFinder {
             }
 
             if (typeElement.getKind() == ElementKind.ANNOTATION_TYPE) {
-                Element jlaElement = atypeFactory.elements.getTypeElement(Annotation.class.getCanonicalName());
-
-                AnnotatedDeclaredType jlaAnnotation = (AnnotatedDeclaredType) atypeFactory.fromElement(jlaElement);
+                TypeElement jlaElement = atypeFactory.elements.getTypeElement(Annotation.class.getCanonicalName());
+                AnnotatedDeclaredType jlaAnnotation = atypeFactory.fromElement(jlaElement);
                 jlaAnnotation.addAnnotations(type.getAnnotations());
                 supertypes.add(jlaAnnotation);
             }

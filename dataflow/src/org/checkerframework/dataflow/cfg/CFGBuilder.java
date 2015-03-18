@@ -4,10 +4,6 @@ package org.checkerframework.dataflow.cfg;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
@@ -188,6 +184,10 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
 
 /**
  * Builds the control flow graph of some Java code (either a method, or an
@@ -3446,14 +3446,7 @@ public class CFGBuilder {
                   treeBuilder.buildMethodInvocation(iteratorSelect);
               handleArtificialTree(iteratorCall);
 
-              TypeMirror iteratorType = InternalUtils.typeOf(iteratorCall);
-
-              // Declare and initialize a new, unique iterator variable
-              VariableTree iteratorVariable =
-                  treeBuilder.buildVariableDecl(iteratorType, // annotatedIteratorTypeTree,
-                                                uniqueName("iter"),
-                                                variableElement.getEnclosingElement(),
-                                                iteratorCall);
+              VariableTree iteratorVariable = createEnhancedForLoopIteratorVariable(iteratorCall, variableElement);
               handleArtificialTree(iteratorVariable);
 
               VariableDeclarationNode iteratorVariableDecl =
@@ -3557,14 +3550,7 @@ public class CFGBuilder {
               // TODO: Shift any labels after the initialization of the
               // temporary array variable.
 
-              TypeMirror arrayType = InternalUtils.typeOf(expression);
-
-              // Declare and initialize a temporary array variable
-              VariableTree arrayVariable =
-                  treeBuilder.buildVariableDecl(arrayType,
-                                                uniqueName("array"),
-                                                variableElement.getEnclosingElement(),
-                                                expression);
+              VariableTree arrayVariable = createEnhancedForLoopArrayVariable(expression, variableElement);
               handleArtificialTree(arrayVariable);
 
               VariableDeclarationNode arrayVariableNode =
@@ -3710,6 +3696,30 @@ public class CFGBuilder {
           continueTargetL = oldContinueTargetL;
 
           return null;
+        }
+
+        protected VariableTree createEnhancedForLoopIteratorVariable(MethodInvocationTree iteratorCall, VariableElement variableElement) {
+            TypeMirror iteratorType = InternalUtils.typeOf(iteratorCall);
+
+            // Declare and initialize a new, unique iterator variable
+            VariableTree iteratorVariable =
+                treeBuilder.buildVariableDecl(iteratorType, // annotatedIteratorTypeTree,
+                                              uniqueName("iter"),
+                                              variableElement.getEnclosingElement(),
+                                              iteratorCall);
+            return iteratorVariable;
+        }
+
+        protected VariableTree createEnhancedForLoopArrayVariable(ExpressionTree expression, VariableElement variableElement) {
+            TypeMirror arrayType = InternalUtils.typeOf(expression);
+
+            // Declare and initialize a temporary array variable
+            VariableTree arrayVariable =
+                    treeBuilder.buildVariableDecl(arrayType,
+                            uniqueName("array"),
+                            variableElement.getEnclosingElement(),
+                            expression);
+            return arrayVariable;
         }
 
         @Override
@@ -4008,7 +4018,7 @@ public class CFGBuilder {
          * during inference. This map is necessary because dataflow does
          * not create a <code>Node</code> for a <code>ParenthesizedTree.</code>
          */
-        private Map<Tree, ParenthesizedTree> parenMapping = new HashMap<>();
+        private final Map<Tree, ParenthesizedTree> parenMapping = new HashMap<>();
 
         @Override
         public Node visitParenthesized(ParenthesizedTree tree, Void p) {

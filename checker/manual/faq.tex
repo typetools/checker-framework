@@ -28,6 +28,7 @@ the answers, or other questions to include here.
 \faqtocpara{\ref{faq-getting-started-section}: Getting started}
 \\ \ref{faq-annotate-existing-program}: How do I get started annotating an existing program?
 \\ \ref{faq-first-checker}: Which checker should I start with?
+\\ \ref{faq-typequals-vs-subtypes}: Should I use pluggable types or Java subtypes?
 
 \faqtocpara{\ref{faq-usability-section}: Usability of pluggable type-checking}
 \\ \ref{faq-ease-of-use}: Are type annotations easy to read and write?
@@ -173,6 +174,88 @@ The
 have known bugs that limit their
 usability.  (Report the ones that affect you, and the Checker Framework
 developers will prioritize fixing them.)
+
+
+\subsection{Should I use pluggable types or Java subtypes?\label{faq-typequals-vs-subtypes}}
+
+% Old label, from when this discussion was in the introduction
+\label{when-to-use-type-qualifiers}
+
+For some programming tasks, you can use either a Java subclass or a type
+qualifier.  As an example that your code currently uses \code{String} to
+represent an address.  You could use Java subclasses by creating a new
+\code{Address} class and refactor your code to use it, or you could use
+type qualifiers by creating an \code{@Address} annotation and applying it
+to some uses of \code{String} in your code.  As another example, suppose
+that your code currently uses \code{MyClass} in two different ways that
+should not interact with one another.  You could use Java subclasses by
+changing MyClass into an interface or abstract class, defining two
+subclasses, and ensuring that neither subclass ever refers to the other
+subclass nor to the parent class.
+
+If  Java subclasses solve your problem, then that is probably better.
+We do not encourage you to use type qualifiers as a poor substitute for
+classes.  An advantage of using classes is that the Java type-checker
+always runs; by contrast, it is possible to forget to run the pluggable
+type-checker.  However, here are some reasons type qualifiers may be a
+better choice.
+
+\begin{description}
+
+\item[Backward compatibility]
+Using a new class may make your code incompatible with existing libraries or
+clients.  Brian Goetz expands on this issue in an article on the
+pseudo-typedef antipattern~\cite{Goetz2006:typedef}.  Even if compatibility
+is not a concern, a code change may introduce bugs, whereas adding
+annotations does not change the run-time behavior.  It is possible to add
+annotations to existing code, including code you do not maintain or cannot
+change.  For code that strictly cannot be changed, you can add
+annotations in comments (see Section~\ref{annotations-in-comments}), or you
+can write library annotations (see Chapter~\ref{annotating-libraries}).
+
+\item[Broader applicability]
+Type annotations can be applied to primitives and to final classes such as
+\code{String}, which cannot be subclassed.
+
+\item[Richer semantics and new supertypes]
+Type qualifiers permit you to remove operations, with a compile-time
+guarantee.  An example is that an immutable version of a type prohibits
+calling mutator methods
+(see Chapters~\ref{igj-checker} and~\ref{javari-checker}).  More
+generally, type qualifiers permit creating a new supertype, not just a
+subtype, of an existing Java type.
+
+\item[More precise type-checking]
+The Checker Framework is able to verify the correctness of code that the
+Java type-checker would reject.  Here are a few examples.
+\begin{itemize}
+\item
+  It uses a dataflow analysis to determine a more precise type for
+  variables after conditional tests or assignments.
+\item
+  It treats certain Java constructs more precisely, such as 
+  reflection (see Chapter~\ref{reflection-resolution}).
+\item
+  It includes special-case logic for type-checking specific methods, such
+  as the Nullness Checker's treatment of \code{Map.get}.
+\end{itemize}
+
+
+\item[Efficiency]
+  Type qualifiers have no run-time representation.  Therefore, there is no
+  space overhead for separate classes or for wrapper classes for
+  primitives.  There is no run-time overhead for due to extra dereferences
+  or dynamic dispatch for methods that could otherwise be statically
+  dispatched.
+
+\item[Less code clutter]
+  The programmer does not have to convert primitive types to wrappers,
+  which would make the code both uglier and slower.  Thanks to defaults and
+  type inference, you may be able to write and think in terms of the
+  original Java type, rather than having to explicitly write one of the
+  subtypes in all locations.
+
+\end{description}
 
 
 \section{Usability of pluggable type-checking\label{faq-usability-section}}
@@ -1031,4 +1114,4 @@ annotations-in-comments feature (Section~\ref{annotations-in-comments}).
 %  LocalWords:  8's igj javari MonotonicNonNull EnsuresNonNull myFieldName
 %  LocalWords:  m1 m2 RequiresNonNull AconcurrentSemantics 8's 8's MyQual
 %  LocalWords:  MyClass MyMoreRestrictiveQual TOPTYPEANNO DEFAULTANNO api
-%%  LocalWords:  OtherClass 8's
+%%  LocalWords:  OtherClass 8's Goetz antipattern subclassed
