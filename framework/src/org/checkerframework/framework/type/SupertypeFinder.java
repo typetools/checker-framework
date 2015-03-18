@@ -239,7 +239,7 @@ class SupertypeFinder {
             List<AnnotatedDeclaredType> supertypes = new ArrayList<AnnotatedDeclaredType>();
             if (classTree.getExtendsClause() != null) {
                 AnnotatedDeclaredType adt = (AnnotatedDeclaredType)
-                        atypeFactory.fromTypeTree(classTree.getExtendsClause());
+                        atypeFactory.getAnnotatedTypeFromTypeTree(classTree.getExtendsClause());
                 supertypes.add(adt);
             } else if (!ElementUtils.isObject(TreeUtils.elementFromDeclaration(classTree))) {
                 supertypes.add(AnnotatedTypeMirror.createTypeOfObject(atypeFactory));
