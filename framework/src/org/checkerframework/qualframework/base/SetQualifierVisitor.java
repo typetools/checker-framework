@@ -1,10 +1,17 @@
 package org.checkerframework.qualframework.base;
 
-import java.util.*;
-
-import org.checkerframework.qualframework.base.QualifiedTypeMirror;
-import org.checkerframework.qualframework.base.QualifiedTypeMirror.*;
-import org.checkerframework.qualframework.base.QualifiedTypeVisitor;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedArrayType;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedIntersectionType;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedNoType;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedNullType;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedPrimitiveType;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeDeclaration;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedUnionType;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
 
 
 /** Visitor that replaces the qualifier of a {@link QualifiedTypeMirror}.

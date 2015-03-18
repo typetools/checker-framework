@@ -852,7 +852,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return coveredClassStrings.contains(type.getUnderlyingType().toString());
         }
 
-       
 
         /**
          * Overloaded version to accept an AnnotatedTypeMirror

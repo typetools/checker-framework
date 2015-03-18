@@ -1,13 +1,9 @@
 package org.checkerframework.framework.type;
 
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TreeVisitor;
-import com.sun.source.util.SimpleTreeVisitor;
-import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.ErrorReporter;
 
-import java.lang.reflect.Method;
-import java.util.*;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.SimpleTreeVisitor;
 
 /**
  * Converts a Tree into an AnnotatedTypeMirror.  This class is abstract and provides 2 important properties
@@ -32,6 +28,5 @@ abstract class TypeFromTreeVisitor extends SimpleTreeVisitor<AnnotatedTypeMirror
         );
         return null; // dead code
     }
-
 
 }
