@@ -5,12 +5,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 
 import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory;
@@ -19,19 +21,31 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
+import org.checkerframework.dataflow.analysis.TransferInput;
+import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
-import org.checkerframework.framework.type.ImplicitsTreeAnnotator;
-import org.checkerframework.framework.type.ListTreeAnnotator;
-import org.checkerframework.framework.type.PropagationTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TreeAnnotator;
-import org.checkerframework.framework.type.TypeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.DependentTypes;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -67,7 +81,6 @@ public class NullnessAnnotatedTypeFactory
     /** Dependent types instance. */
     protected final DependentTypes dependentTypes;
 
-    protected final MapGetHeuristics mapGetHeuristics;
     protected final SystemGetPropertyHandler systemGetPropertyHandler;
     protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
 
@@ -143,7 +156,6 @@ public class NullnessAnnotatedTypeFactory
         // need to be replaced, or carefully checked for correctness.
         generalFactory = new GeneralAnnotatedTypeFactory(checker);
         // Alias the same generalFactory below and ensure that setRoot updates it.
-        mapGetHeuristics = new MapGetHeuristics(checker, this, generalFactory);
         dependentTypes = new DependentTypes(checker, generalFactory);
 
         systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
@@ -232,6 +244,14 @@ public class NullnessAnnotatedTypeFactory
         return new NullnessTransfer((NullnessAnalysis) analysis);
     }
 
+    /**
+     * @return an AnnotatedTypeFormatter that does not print the qualifiers on null literals
+     */
+    @Override
+    protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
+        return new NullnessAnnotatedTypeFormatter(checker.hasOption("printAllQualifiers"));
+    }
+
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
             MethodInvocationTree tree) {
@@ -239,18 +259,6 @@ public class NullnessAnnotatedTypeFactory
                 .methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
 
-        TreePath path = this.getPath(tree);
-        if (path != null) {
-            /*
-             * The above check for null ensures that Issue 109 does not arise.
-             * TODO: I'm a bit concerned about one aspect: it looks like the
-             * field initializer is used to determine the type of a read field.
-             * Why is this not just using the declared type of the field? Could
-             * this lead to confusion for programmers? I think skipping the
-             * mapGetHeuristics is always a safe option.
-             */
-            mapGetHeuristics.handle(path, method);
-        }
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
         return mfuPair;
@@ -275,12 +283,15 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
-        return new NullnessTypeAnnotator(this);
+        return new ListTypeAnnotator(
+                super.createTypeAnnotator(),
+                new NullnessTypeAnnotator(this)
+        );
     }
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
+        return new ListTreeAnnotator( // DebugListTreeAnnotator(new Tree.Kind[] {Tree.Kind.CONDITIONAL_EXPRESSION},
                 new NullnessPropagationAnnotator(this),
                 new ImplicitsTreeAnnotator(this),
                 new NullnessTreeAnnotator(this),
@@ -415,7 +426,7 @@ public class NullnessAnnotatedTypeFactory
         public Void visitCompoundAssignment(CompoundAssignmentTree node,
                 AnnotatedTypeMirror type) {
             type.replaceAnnotation(NONNULL);
-            // Committment will run after for initialization defaults
+            // Commitment will run after for initialization defaults
             return null;
         }
 

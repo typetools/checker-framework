@@ -40,7 +40,7 @@ import com.sun.tools.javac.util.Log;
  */
 public abstract class AggregateChecker extends SourceChecker {
 
-    protected List<SourceChecker> checkers;
+    protected final List<SourceChecker> checkers;
 
     /**
      * Returns the list of supported checkers to be run together.
@@ -79,7 +79,12 @@ public abstract class AggregateChecker extends SourceChecker {
 
     @Override
     public void initChecker() {
-        super.initChecker();
+        // No need to call super, it might result in reflective instantiations
+        // of visitor/factory classes.
+        // super.initChecker();
+        // To prevent the warning that initChecker wasn't called.
+        messager = processingEnv.getMessager();
+
         // first initialize all checkers
         for (SourceChecker checker : checkers) {
             checker.initChecker();

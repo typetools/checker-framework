@@ -16,6 +16,7 @@ import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
@@ -819,6 +820,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     public /*@Nullable*/ V getValue(LocalVariableNode n) {
         Element el = n.getElement();
         return localVariableValues.get(el);
+    }
+
+    /* --------------------------------------------------------- */
+    /* Handling of the current object */
+    /* --------------------------------------------------------- */
+
+    /**
+     * @return Current abstract value of a local variable, or {@code null} if no
+     *         information is available.
+     */
+    public /*@Nullable*/ V getValue(ThisLiteralNode n) {
+        return thisValue;
     }
 
     /* --------------------------------------------------------- */

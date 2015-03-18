@@ -8,7 +8,7 @@
 // We should also add a jtreg version of this test to
 // ensure that each error is only output once and in the right place.
 
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
+import org.checkerframework.checker.tainting.qual.*;
 
 abstract class TypeInvalid {
     // Duplication forbidden

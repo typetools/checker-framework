@@ -1,5 +1,6 @@
 package org.checkerframework.checker.experimental.regex_qual;
 
+import org.checkerframework.framework.util.OptionConfiguration;
 import org.checkerframework.qualframework.base.Checker;
 
 /**

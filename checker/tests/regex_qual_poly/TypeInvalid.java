@@ -8,7 +8,8 @@
 // We should also add a jtreg version of this test to
 // ensure that each error is only output once and in the right place.
 
-import org.checkerframework.checker.experimental.regex_qual_poly.qual.*;
+import org.checkerframework.checker.regex.qual.*;
+import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 abstract class TypeInvalid {
     // Duplication forbidden

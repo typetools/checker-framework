@@ -2,6 +2,7 @@ package org.checkerframework.qualframework.poly;
 
 import java.util.*;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
 import org.checkerframework.qualframework.base.AnnotationConverter;
@@ -15,8 +16,9 @@ public interface QualifierParameterAnnotationConverter<Q> extends AnnotationConv
      * or method declaration {@link Element}.
      *
      * @param elt the element to inspect for parameters
+     * @param declAnnotations the declaration annotations on elt
      * @param type the ExtendedTypeMirror for the element, after stub file annotations have been applied
      * @return the list of declared parameters
      */
-    Set<String> getDeclaredParameters(Element elt, ExtendedTypeMirror type);
+    Set<String> getDeclaredParameters(Element elt, Set<AnnotationMirror> declAnnotations, ExtendedTypeMirror type);
 }

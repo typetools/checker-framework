@@ -56,7 +56,7 @@ public class TypeAnnotationUtils {
                     //   types.isSameType(rawat.type, tc.type) &&
                     // but each fails in some cases.
                     rawat.values.equals(tc.values) &&
-                    isSameTAPosition(rawat.position, tc.position)) {
+                    isSameTAPositionExceptTreePos(rawat.position, tc.position)) {
                 return true;
             }
         }
@@ -72,6 +72,14 @@ public class TypeAnnotationUtils {
      */
     public static boolean isSameTAPosition(TypeAnnotationPosition p1,
             TypeAnnotationPosition p2) {
+        if (isSameTAPositionExceptTreePos(p1, p2) && p1.pos == p2.pos ) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isSameTAPositionExceptTreePos(TypeAnnotationPosition p1,
+                                           TypeAnnotationPosition p2) {
         if (p1.isValidOffset == p2.isValidOffset &&
                 p1.bound_index == p2.bound_index &&
                 p1.exception_index == p2.exception_index &&
@@ -82,7 +90,6 @@ public class TypeAnnotationUtils {
                 p1.offset == p2.offset &&
                 p1.onLambda == p2.onLambda &&
                 p1.parameter_index == p2.parameter_index &&
-                p1.pos == p2.pos &&
                 p1.type == p2.type &&
                 p1.type_index == p2.type_index) {
             return true;

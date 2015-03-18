@@ -472,7 +472,7 @@
         <mkdir dir="${build.reports}"/>
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
-               printsummary="true"
+               printsummary="false"
                haltonfailure="${halt.on.test.failure}">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
@@ -496,7 +496,7 @@
             description="Run tests for all checkers"/>
 
     <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
-    <target name="all-tests-nojdk" depends="jar, all-tests-nojar"
+    <target name="all-tests-nojdk" depends="jar, jdk.jar.exists, all-tests-nojar"
             description="Run tests for all checkers, WITHOUT updating jdkX.jar">
     </target>
 
@@ -507,8 +507,6 @@
           <target name="all-tests-nojar"/>
       </ant>
 
-      <!-- TODO: for all -nojdk targets:
-           check whether jdk.jar exists and create if not. -->
       <antcall target="nullness-extra-tests-nojdk"/>
 
       <!-- Copied from -run-tests target -->
@@ -516,7 +514,7 @@
 
       <junit fork="${run.tests.should.fork}"
              dir="${basedir}"
-             printsummary="true"
+             printsummary="false"
              haltonfailure="${halt.on.test.failure}">
           <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
           <jvmarg line="-ea"/>
@@ -553,9 +551,9 @@
     </target>
 
     <target name="compilermsg-tests" depends="jar,build-tests"
-            description="Run tests for the Compiler Message Checker">
+            description="Run tests for the Compiler Messages Checker">
         <antcall target="-run-tests">
-            <param name="param" value="tests.CompilermsgTest"/>
+            <param name="param" value="tests.CompilerMessagesTest"/>
         </antcall>
     </target>
 
@@ -619,12 +617,12 @@
     </target>
 
     <target name="nullness-tests"
-            depends="jar,build-tests,nullness-base-tests,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-extra-tests,nullness-reflection-tests"
+            depends="jar,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-extra-tests,nullness-reflection-tests"
             description="Run tests for the Nullness Checker">
     </target>
 
     <target name="nullness-tests-nojdk"
-            depends="jar,build-tests,nullness-base-tests,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-extra-tests-nojdk,nullness-reflection-tests"
+            depends="jar,jdk.jar.exists,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-extra-tests-nojdk,nullness-reflection-tests"
             description="Run tests for the Nullness Checker, WITHOUT updating jdkX.jar">
     </target>
 
@@ -642,12 +640,26 @@
         </antcall>
     </target>
 
+    <target name="nullness-base-tests-with-asserts" depends="jar,build-tests"
+            description="Run base tests for the Nullness Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessFbcTestWithAsserts"/>
+        </antcall>
+    </target>
+
+    <target name="nullness-uninit-tests-with-asserts" depends="jar,build-tests"
+            description="Run uninit tests for the Nullness Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessRawnessTestWithAsserts"/>
+        </antcall>
+    </target>
+
     <!-- Differs from other targets in that it is defined via a Makefile and
        is not run via the "-run-tests" Antfile target, as other tests are. -->
     <target name="nullness-extra-tests" depends="dist,build-tests,nullness-extra-tests-nojdk"
             description="Run extra tests for the Nullness Checker"/>
 
-    <target name="nullness-extra-tests-nojdk" depends="dist-nojdk,build-tests"
+    <target name="nullness-extra-tests-nojdk" depends="dist-nojdk,jdk.jar.exists,build-tests"
             description="Run extra tests for the Nullness Checker, WITHOUT updating jdkX.jar">
       <exec executable="chmod">
         <arg line="+x ${basedir}/bin/javac"/>
@@ -716,17 +728,17 @@
         </antcall>
     </target>
 
+    <target name="regex_classic-tests" depends="jar,build-tests"
+            description="Run tests for the Regex Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.RegexClassicTest"/>
+        </antcall>
+    </target>
+
     <target name="regex_qual-tests" depends="jar,build-tests"
             description="Run tests for the qualifier API Regex Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.RegexQualTest"/>
-        </antcall>
-    </target>
-
-    <target name="regex_qual_poly-tests" depends="jar,build-tests"
-            description="Run tests for the qualifier polymorphism Regex Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.RegexQualPolyTest"/>
         </antcall>
     </target>
 
@@ -744,17 +756,17 @@
         </antcall>
     </target>
 
+    <target name="tainting_classic-tests" depends="jar,build-tests"
+            description="Run tests for the classic Tainting Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.TaintingClassicTest"/>
+        </antcall>
+    </target>
+
     <target name="tainting_qual-tests" depends="jar,build-tests"
             description="Run tests for the qualifier API Tainting Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.TaintingQualTest"/>
-        </antcall>
-    </target>
-
-    <target name="tainting_qual_poly-tests" depends="jar,build-tests"
-            description="Run tests for the qualifier polymorphism Tainting Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.TaintingQualPolyTest"/>
         </antcall>
     </target>
 
@@ -895,12 +907,17 @@
             </path>
         </pathconvert>
 
+        <condition property="maybeDebug" value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=${debugPort}" else="">
+            <isset property="debugPort"/>
+        </condition>
+
         <echo message="${src.files}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
               classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg line="${maybeDebug}"/>
             <arg value="-g"/>
             <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
             <arg value="-source"/>
@@ -1070,7 +1087,7 @@
             description="Build checker.jar, checker-qual.jar, and jdkX.jar where X is the major version number of java in JAVA_HOME (only Java 7/8/9 are currently supported).  This comprises all jars needed to run the framework.">
     </target>
 
-    <target name="dist-nojdk" depends="-prep-dist,jar"
+    <target name="dist-nojdk" depends="-prep-dist,jar,jdk.jar.exists"
             description="Build checker.jar, checker-qual.jar WITHOUT updating jdkX.jar.  Move all relevant files to the binary directory.">
 
         <mkdir dir="dist" />
@@ -1078,6 +1095,13 @@
         <copy tofile="dist/javac.jar" file="${javac.lib}"
               overwrite="true" failonerror="true" />
 
+        <copy file="jdk/jdk7.jar" tofile="dist/jdk7.jar" overwrite="true" failonerror="false" />
+        <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar" overwrite="true" failonerror="false" />
+        <copy file="jdk/jdk9.jar" tofile="dist/jdk9.jar" overwrite="true" failonerror="false" />
+    </target>
+
+    <target name="jdk.jar.exists"
+	    description="Check whether an annotated JDK exists.">
         <condition property="an.annotated.jdk.exists">
             <or>
                 <available file="jdk/jdk7.jar"/>
@@ -1088,10 +1112,6 @@
 
         <fail message="No jdk jars were found in the jdk directory.  At least one annotated JDK (jdk/jdk[678].jar) must be built!"
               unless="an.annotated.jdk.exists"/>
-
-        <copy file="jdk/jdk7.jar" tofile="dist/jdk7.jar" overwrite="true" failonerror="false" />
-        <copy file="jdk/jdk8.jar" tofile="dist/jdk8.jar" overwrite="true" failonerror="false" />
-        <copy file="jdk/jdk9.jar" tofile="dist/jdk9.jar" overwrite="true" failonerror="false" />
     </target>
 
     <!-- For debugging -->

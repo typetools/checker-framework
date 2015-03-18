@@ -452,7 +452,7 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
                 // method.getElement().getKind() != ElementKind.CONSTRUCTOR) {
             Set<AnnotationMirror> recvAnnos = atypeFactory.getReceiverType(node).getAnnotations();
             AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
-            AnnotatedTypeMirror treeReceiver = methodReceiver.getCopy(false);
+            AnnotatedTypeMirror treeReceiver = methodReceiver.shallowCopy(false);
             AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(node);
             treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
             // If receiver is Nullable, then we don't want to issue a warning

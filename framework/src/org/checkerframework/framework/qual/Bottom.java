@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
  * bottom type.
  * Other type systems could reuse this qualifier instead of introducing their own
  * dedicated bottom qualifier. The programmer would then use methods like
- * {@link org.checkerframework.framework.type.ImplicitsTreeAnnotator#addTreeKind(com.sun.source.tree.Tree.Kind, javax.lang.model.element.AnnotationMirror)} to
+ * {@link org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator#addTreeKind(com.sun.source.tree.Tree.Kind, javax.lang.model.element.AnnotationMirror)} to
  * add implicit annotations and needs to manually add the bottom qualifier to the
  * qualifier hierarchy.
  * <p>

@@ -1,24 +1,34 @@
 package org.checkerframework.checker.tainting;
 
-import org.checkerframework.checker.tainting.qual.PolyTainted;
-import org.checkerframework.checker.tainting.qual.Tainted;
-import org.checkerframework.checker.tainting.qual.Untainted;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.PolyAll;
-import org.checkerframework.framework.qual.TypeQualifiers;
-import org.checkerframework.framework.source.SuppressWarningsKeys;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
+import org.checkerframework.qualframework.base.CheckerAdapter;
+import org.checkerframework.qualframework.base.TypecheckVisitorAdapter;
+import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
+import org.checkerframework.qualframework.poly.QualParams;
 
-/**
- * A type-checker plug-in for the Tainting type system qualifier that finds
- * (and verifies the absence of) trust bugs.
- * <p>
- *
- * It verifies that only verified values are trusted and that user-input
- * is sanitized before use.
- *
- * @checker_framework.manual #tainting-checker Tainting Checker
- */
-@TypeQualifiers({Untainted.class, Tainted.class,
-    PolyTainted.class, PolyAll.class})
-@SuppressWarningsKeys("untainted")
-public class TaintingChecker extends BaseTypeChecker {}
+public class TaintingChecker extends CheckerAdapter<QualParams<Tainting>> {
+    public TaintingChecker() {
+        super(new TaintingQualChecker());
+    }
+
+    @Override
+    protected BaseTypeVisitor<?> createSourceVisitor() {
+        return new TypecheckVisitorAdapter<>(this);
+    }
+
+    @Override
+    public void setupDefaults(QualifierDefaults defaults) {
+        defaults.addAbsoluteDefault(
+                getTypeMirrorConverter().getAnnotation(
+                        new QualParams<>(new GroundQual<>(Tainting.UNTAINTED))),
+                DefaultLocation.IMPLICIT_LOWER_BOUNDS);
+
+        defaults.addAbsoluteDefault(
+                getTypeMirrorConverter().getAnnotation(
+                        new QualParams<>(new GroundQual<>(Tainting.TAINTED))),
+                DefaultLocation.LOCAL_VARIABLE);
+    }
+
+}

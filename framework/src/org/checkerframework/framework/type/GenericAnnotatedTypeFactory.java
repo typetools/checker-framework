@@ -34,7 +34,15 @@ import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.util.QualifierDefaults;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -96,6 +104,9 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /** to annotate types based on the given tree */
     protected TypeAnnotator typeAnnotator;
+
+    /** for use in addTypeImplicits */
+    private ImplicitsTypeAnnotator implicitsTypeAnnotator;
 
     /** to annotate types based on the given un-annotated types */
     protected TreeAnnotator treeAnnotator;
@@ -209,7 +220,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns a {@link TreeAnnotator} that adds annotations to a type based
      * on the contents of a tree.
      *
-     * Subclasses may override this method to specify more appriopriate
+     * Subclasses may override this method to specify more appropriate
      * {@link TreeAnnotator}
      *
      * @return a tree annotator
@@ -222,13 +233,22 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns a {@link TypeAnnotator} that adds annotations to a type based
+     * Returns a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator} that adds annotations to a type based
      * on the content of the type itself.
      *
      * @return a type annotator
      */
     protected TypeAnnotator createTypeAnnotator() {
-        return new TypeAnnotator(this);
+        implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
+
+        return new ListTypeAnnotator(
+                new PropagationTypeAnnotator(this),
+                implicitsTypeAnnotator
+        );
+    }
+
+    protected void addTypeNameImplicit(Class<?> clazz, AnnotationMirror implicitAnno) {
+        implicitsTypeAnnotator.addTypeName(clazz, implicitAnno);
     }
 
     /**
@@ -860,12 +880,15 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns the inferred value (by the org.checkerframework.dataflow analysis) for a given tree.
      */
     public Value getInferredValueFor(Tree tree) {
+        if (tree == null) {
+            ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.getInferredValueFor called with null tree. Don't!");
+            return null; // dead code
+        }
         Value as = null;
-        if (!analyses.isEmpty() && tree != null) {
+        if (!analyses.isEmpty()) {
             as = analyses.getFirst().getValue(tree);
         }
         if (as == null &&
-                tree != null &&
                 // TODO: this comparison shouldn't be needed, but
                 // Daikon check-nullness started failing without it.
                 flowResult != null) {
@@ -878,34 +901,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * Applies the annotations inferred by the org.checkerframework.dataflow analysis to the type {@code type}.
      */
     protected void applyInferredAnnotations(AnnotatedTypeMirror type, Value as) {
-        AnnotatedTypeMirror inferred = as.getType();
-        for (AnnotationMirror top : getQualifierHierarchy().getTopAnnotations()) {
-            AnnotationMirror inferredAnnotation;
-            if (QualifierHierarchy.canHaveEmptyAnnotationSet(type)) {
-                inferredAnnotation = inferred.getAnnotationInHierarchy(top);
-            } else {
-                inferredAnnotation = inferred.getEffectiveAnnotationInHierarchy(top);
-            }
-            if (inferredAnnotation == null) {
-                // We inferred "no annotation" for this hierarchy.
-                type.removeAnnotationInHierarchy(top);
-            } else {
-                // We inferred an annotation.
-                AnnotationMirror present = type
-                        .getAnnotationInHierarchy(top);
-                if (present != null) {
-                    if (getQualifierHierarchy().isSubtype(
-                            inferredAnnotation, present)) {
-                        // TODO: why is the above check needed?
-                        // Shouldn't inferred qualifiers always be
-                        // subtypes?
-                        type.replaceAnnotation(inferredAnnotation);
-                    }
-                } else {
-                    type.addAnnotation(inferredAnnotation);
-                }
-            }
-        }
+        new DefaultInferredTypesApplier().applyInferredType(getQualifierHierarchy(), type, as.getType());
     }
 
     @Override

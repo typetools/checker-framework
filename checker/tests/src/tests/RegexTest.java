@@ -1,10 +1,10 @@
 package tests;
 
-import java.io.File;
-import java.util.Collection;
-
 import org.checkerframework.framework.test.ParameterizedCheckerTest;
 import org.junit.runners.Parameterized.Parameters;
+
+import java.io.File;
+import java.util.Collection;
 
 public class RegexTest extends ParameterizedCheckerTest {
 
@@ -17,6 +17,6 @@ public class RegexTest extends ParameterizedCheckerTest {
 
     @Parameters
     public static Collection<Object[]> data() {
-        return testFiles("regex", "regex_poly", "all-systems");
+        return testFiles("regex", "regex_poly", "regex_qual_poly", "all-systems");
     }
 }

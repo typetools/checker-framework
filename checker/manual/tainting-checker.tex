@@ -36,7 +36,7 @@ or you might have forgotten to annotate untrusted data as having a tainted
 type.
 
 To run the Tainting Checker, supply the
-\code{-processor org.checkerframework.checker.tainting.TaintingChecker}
+\code{-processor TaintingChecker}
 command-line option to javac.
 %TODO: For examples, see Section~\ref{tainting-examples}.
 
@@ -143,6 +143,15 @@ types of tainting in a single program, then you can copy the definition of
 the Tainting Checker to create a new annotation and checker with a more
 specific name and semantics.  See Chapter~\ref{writing-a-checker} for more
 details.
+
+\subsection{Qualifier Parameters\label{tainting-qual-params}}
+The Tainting Checker supports qualifier parameters.
+See section \ref{qualifier-parameters} for more details on qualifier parameters.
+
+The qualifier parameter system currently (as of February 2015)
+incurs a 50\% performance penalty. If this is unacceptable you can run the
+original Tainting Checker by passing \code{-processor org.checkerframework.checker.tainting.classic.TaintingClassicChecker}
+command-line option to javac.
 
 % TODO: one could add a String[] value to @Untainted to distinguish different
 % values, eg @Untainted{``SQL''} versus @Untainted{``HTML''}.

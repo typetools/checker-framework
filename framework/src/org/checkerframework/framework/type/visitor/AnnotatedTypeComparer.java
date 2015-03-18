@@ -60,12 +60,11 @@ public abstract class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, A
         ErrorReporter.errorAbort("AnnotatedTypeComparer.scanAndReduce: " + p + "is not Iterable<? extends AnnotatedTypeMirror>");
         return null;
     }
+
     @Override
     protected R scan(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {
         return reduce(super.scan(type, p), compare(type, p));
     }
-
-
 
     @Override
     public final R visitDeclared(AnnotatedDeclaredType type, AnnotatedTypeMirror p) {
@@ -102,6 +101,9 @@ public abstract class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, A
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
+
+        visitedNodes.put(type, null);
+
         if (p instanceof AnnotatedTypeVariable) {
             AnnotatedTypeVariable tv = (AnnotatedTypeVariable) p;
             r = scan(type.getLowerBound(), tv.getLowerBound());
@@ -118,12 +120,14 @@ public abstract class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, A
     }
 
     @Override
-    public final R visitWildcard(AnnotatedWildcardType type, AnnotatedTypeMirror p) {
+    public R visitWildcard(AnnotatedWildcardType type, AnnotatedTypeMirror p) {
         assert p instanceof AnnotatedWildcardType : p;
         AnnotatedWildcardType w = (AnnotatedWildcardType) p;
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
+
+        visitedNodes.put(type, null);
         R r = scan(type.getExtendsBound(), w.getExtendsBound());
         visitedNodes.put(type, r);
         r = scanAndReduce(type.getSuperBound(), w.getSuperBound(), r);

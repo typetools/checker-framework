@@ -1,6 +1,7 @@
 // @skip-tests  qualifier polymorphism system doesn't do capture conversion yet
 // Test that capture conversion occurs.
-import org.checkerframework.checker.experimental.regex_qual_poly.qual.*;
+import org.checkerframework.checker.regex.qual.*;
+import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 abstract class Test {
     abstract void takeOne(@PolyRegex Integer i);
