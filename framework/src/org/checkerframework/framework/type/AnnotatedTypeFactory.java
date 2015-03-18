@@ -1108,7 +1108,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // When visiting an executable type, skip the receiver so we
             // never inherit class annotations there.
 
-            scan(type.getReturnType(), p);
+            // Also skip constructor return types (which somewhat act like
+            // the receiver).
+            MethodSymbol methodElt = (MethodSymbol)type.getElement();
+            if (methodElt == null || !methodElt.isConstructor()) {
+                scan(type.getReturnType(), p);
+            }
+
             scanAndReduce(type.getParameterTypes(), p, null);
             scanAndReduce(type.getThrownTypes(), p, null);
             scanAndReduce(type.getTypeVariables(), p, null);
