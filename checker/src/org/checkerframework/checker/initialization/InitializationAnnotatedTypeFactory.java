@@ -35,6 +35,11 @@ import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -587,7 +592,10 @@ public abstract class InitializationAnnotatedTypeFactory<
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
-        return new CommitmentTypeAnnotator(this);
+        return new ListTypeAnnotator(
+                super.createTypeAnnotator(),
+                new CommitmentTypeAnnotator(this)
+        );
     }
 
     @Override
@@ -660,7 +668,6 @@ public abstract class InitializationAnnotatedTypeFactory<
             return super.visitLiteral(tree, type);
         }
     }
-
 
     /**
      * The {@link QualifierHierarchy} for the initialization type system.

@@ -1,7 +1,7 @@
 package org.checkerframework.checker.experimental.regex_qual;
 
 import org.checkerframework.checker.experimental.regex_qual.Regex.RegexVal;
-import org.checkerframework.checker.regex.RegexTransfer;
+import org.checkerframework.checker.regex.classic.RegexTransfer;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;

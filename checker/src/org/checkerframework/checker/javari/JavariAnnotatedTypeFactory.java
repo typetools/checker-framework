@@ -20,9 +20,7 @@ import org.checkerframework.checker.javari.qual.ReadOnly;
 import org.checkerframework.checker.javari.qual.ThisMutable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TypeHierarchy;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -31,6 +29,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
+import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
@@ -103,7 +102,7 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param checker the checker to which this factory belongs
      */
     public JavariAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(checker);
+        super(checker, false);
 
         this.READONLY = AnnotationUtils.fromClass(elements, ReadOnly.class);
         this.THISMUTABLE = AnnotationUtils.fromClass(elements, ThisMutable.class);
@@ -239,16 +238,19 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public AnnotatedDeclaredType getSelfType(Tree tree) {
-        AnnotatedDeclaredType act = getCurrentClassType(tree);
-        AnnotatedDeclaredType methodReceiver = getCurrentMethodReceiver(tree);
-
-        if (methodReceiver == null) {
-            methodReceiver = act;
-        }/* else if (methodReceiver.hasAnnotation(MUTABLE)) {
-            methodReceiver.replaceAnnotation(THISMUTABLE);
-        }*/
-
-        return methodReceiver;
+//TODO: SINCE THIS DOESN'T SEEM LIKE IT DOES ANYTHING USEFUL I NOW CALL THE SUPERTYPE IMPLEMENTATION
+//        AnnotatedDeclaredType act = getCurrentClassType(tree);
+//        AnnotatedDeclaredType methodReceiver = getCurrentMethodReceiver(tree);
+//
+//        if (methodReceiver == null) {
+//            methodReceiver = act;
+//        }/* else if (methodReceiver.hasAnnotation(MUTABLE)) {
+//            methodReceiver.replaceAnnotation(THISMUTABLE);
+//        }*/
+//
+//
+//        return methodReceiver;
+        return super.getSelfType(tree);
     }
 
     @Override
@@ -766,31 +768,41 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    @Override
+    protected TypeHierarchy createTypeHierarchy() {
+        return new JavariTypeHierarchy(checker, qualHierarchy,
+                                       checker.hasOption("ignoreRawTypeArguments"),
+                                       checker.hasOption("invariantArrays"));
+    }
+
+
     /**
      * Implements the {@code @QReadOnly} behavior on generic types,
-     * creating a new {@link TypeHierarchy} class that allows a
+     * creating a new {@link org.checkerframework.framework.type.TypeHierarchy} class that allows a
      * comparison of type arguments to succeed if the left hand side
      * is annotated with {@code @QReadOnly} or if the regular
      * comparison succeeds.
      */
-    @Override
-    protected TypeHierarchy createTypeHierarchy() {
-        return new TypeHierarchy(checker, getQualifierHierarchy()) {
-            /**
-             * Checks if one the parameters is primitive, or if a type is
-             * subtype of another. Primitive types always pass to avoid issues
-             * with boxing.
-             */
-            @Override
-            public boolean isSubtype(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
-                return sub.getKind().isPrimitive() || sup.getKind().isPrimitive() || super.isSubtype(sub, sup);
-            }
+    private class JavariTypeHierarchy extends DefaultTypeHierarchy  {
 
-            @Override
-            protected boolean isSubtypeAsTypeArgument(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
-                return lhs.hasEffectiveAnnotation(QREADONLY) || super.isSubtypeAsTypeArgument(rhs, lhs);
-            }
-         };
+        public JavariTypeHierarchy(BaseTypeChecker checker, QualifierHierarchy qualifierHierarchy,
+                                   boolean ignoreRawTypes, boolean invariantArrayComponents) {
+            super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents);
+        }
+
+        @Override
+        public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, VisitHistory visited) {
+            return subtype.getKind().isPrimitive()
+                || supertype.getKind().isPrimitive()
+                || super.isSubtype(subtype, supertype, visited);
+        }
+
+        @Override
+        protected boolean isContainedBy(AnnotatedTypeMirror inside, AnnotatedTypeMirror outside,
+                                        VisitHistory visited, boolean canBeCovariant) {
+            return outside.hasEffectiveAnnotation(QREADONLY)
+               || super.isContainedBy(inside, outside, visited, canBeCovariant);
+        }
     }
 
 }

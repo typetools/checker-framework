@@ -18,6 +18,9 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
+import org.checkerframework.framework.util.AnnotationFormatter;
+import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
@@ -59,6 +62,7 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
         Store extends InitializationStore<Value, Store>>
     extends BaseTypeVisitor<Factory> {
 
+    protected final AnnotationFormatter annoFormatter;
     // Error message keys
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CAST = "initialization.invalid.cast";
     private static final /*@CompilerMessageKey*/ String COMMITMENT_FIELDS_UNINITIALIZED = "initialization.fields.uninitialized";
@@ -69,6 +73,7 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
 
     public InitializationVisitor(BaseTypeChecker checker) {
         super(checker);
+        annoFormatter = new DefaultAnnotationFormatter();
         initializedFields = new ArrayList<>();
         checkForAnnotatedJdk();
     }
@@ -121,11 +126,9 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
                     return; // prevent issuing another errow about subtyping
                 }
                 // for field access on the current object, make sure that we don't
-                // allow
-                // invalid assignments. that is, even though reading this.f in a
+                // allow invalid assignments. that is, even though reading this.f in a
                 // constructor yields @Nullable (or similar for other typesystems),
-                // it
-                // is not allowed to write @Nullable to a @NonNull field.
+                // it is not allowed to write @Nullable to a @NonNull field.
                 // This is done by first getting the type as usual (var), and then
                 // again not using the postAsMember method (which takes care of
                 // transforming the type of o.f for a free receiver to @Nullable)
@@ -139,11 +142,10 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
                 AnnotatedTypeMirror var2 = atypeFactory.getAnnotatedType(lhs);
                 atypeFactory.HACK_DONT_CALL_POST_AS_MEMBER = old;
                 atypeFactory.shouldReadCache = old2;
-                final AnnotationMirror newAnno = var2.getAnnotationInHierarchy(
-                        atypeFactory.getFieldInvariantAnnotation());
-                if (newAnno != null) {
-                    var.replaceAnnotation(newAnno);
-                }
+
+                final AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
+                AnnotatedTypeMerger.merge(var2, var, invariantAnno);
+
                 checkAssignability(var, varTree);
                 commonAssignmentCheck(var, valueExp, errorKey, false);
                 return;
@@ -240,8 +242,8 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
 
         if (!isSubtype) {
             checker.report(Result.failure(COMMITMENT_INVALID_CAST,
-                    AnnotatedTypeMirror.formatAnnotationMirror(exprAnno),
-                    AnnotatedTypeMirror.formatAnnotationMirror(castAnno)), node);
+                    annoFormatter.formatAnnotationMirror(exprAnno),
+                    annoFormatter.formatAnnotationMirror(castAnno)), node);
             return p; // suppress cast.unsafe warning
         }
 

@@ -526,18 +526,30 @@ public class QualifierPolymorphism {
             if (typeSuper.getKind() != TypeKind.TYPEVAR)
                 return visit(typeSuper, actualType);
 
-            assert typeSuper.getKind() == actualType.getKind() : actualType;
-            assert type.getKind() == actualType.getKind() : actualType;
-            AnnotatedTypeVariable tvType = (AnnotatedTypeVariable)typeSuper;
+            if (typeSuper.getKind() == actualType.getKind()
+             && type.getKind() == actualType.getKind()) {
+                //I've preserved the old logic here, I am not sure the actual reasoning
+                //however, please see the else case as to where it fails
 
-            if (visited.contains(actualType.getUnderlyingType()))
-                return Collections.emptyMap();
-            visited.add(type.getUnderlyingType());
-            // a type variable cannot be annotated
-            Map<AnnotationMirror, Set<? extends AnnotationMirror>> result =
-                    visit(type.getUpperBound(), tvType.getUpperBound());
-            visited.remove(type.getUnderlyingType());
-            return result;
+                AnnotatedTypeVariable tvType = (AnnotatedTypeVariable)typeSuper;
+                if (visited.contains(actualType.getUnderlyingType()))
+                    return Collections.emptyMap();
+                visited.add(type.getUnderlyingType());
+                // a type variable cannot be annotated
+                Map<AnnotationMirror, Set<? extends AnnotationMirror>> result =
+                        visit(type.getUpperBound(), tvType.getUpperBound());
+                visited.remove(type.getUnderlyingType());
+                return result;
+
+            } else {
+                //When using the polyCollector we compare the formal parameters to the actual
+                //arguments but, when the formal parameters are uses of method type parameters
+                //then the declared formal parameters may not actually be supertypes of their arguments
+                // (though they should be if we substituted them for the method call's type arguments)
+                //For an example of this see framework/tests/all-system/PolyCollectorTypeVars.java
+                return visit(type.getUpperBound(), actualType);
+            }
+
         }
 
         @Override
@@ -552,12 +564,13 @@ public class QualifierPolymorphism {
             if (((com.sun.tools.javac.code.Type.WildcardType) typeSuper.getUnderlyingType()).isUnbound()) {
                 return Collections.emptyMap();
             }
-            assert typeSuper.getKind() == actualType.getKind() ||
-                    // TODO: actualType might be the capture of a wildcard;
-                    // better/different check?
-                    actualType.getKind() == TypeKind.TYPEVAR :
-                "PolyCollector: mismatched type kinds: " + actualType + " (" + actualType.getKind() +
-                ") and " + typeSuper + " (" + typeSuper.getKind() + ")";
+
+            if (actualType.getKind() != TypeKind.WILDCARD && actualType.getKind() != TypeKind.TYPEVAR) {
+                //currently because the default action of inferTypeArgs is to use a wildcard when we fail
+                //to infer a type, the actualType might not be a wildcard
+                return Collections.emptyMap();
+            }
+
             AnnotatedWildcardType wcType = (AnnotatedWildcardType)typeSuper;
 
             if (visited.contains(actualType.getUnderlyingType())) {

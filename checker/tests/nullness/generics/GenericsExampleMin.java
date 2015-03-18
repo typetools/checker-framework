@@ -60,6 +60,7 @@ class GenericsExampleMin {
       @NonNull T nn;
       
       public MyList3(T t, @Nullable T nble, @NonNull T nn) {
+          //:: error: (assignment.type.incompatible)
           this.t = nble;
           this.t = nn;
           //:: error: (assignment.type.incompatible)
@@ -69,4 +70,22 @@ class GenericsExampleMin {
           this.nn = nn;
       }
   }
+
+    class MyList4<T extends @NonNull Object> {
+        T t;
+        @Nullable T nble;
+        @NonNull T nn;
+
+        public MyList4(T t, @Nullable T nble, @NonNull T nn) {
+            //:: error: (assignment.type.incompatible)
+            this.t = nble;
+            this.t = nn;
+            this.nn = t;
+            //:: error: (assignment.type.incompatible)
+            this.nn = nble;
+            this.nn = nn;
+            this.nn = t;
+            this.nble = t;
+        }
+    }
 }

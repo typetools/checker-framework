@@ -58,8 +58,8 @@ public class CFCFGBuilder extends CFGBuilder {
     public ControlFlowGraph run(
             CompilationUnitTree root, ProcessingEnvironment env,
             UnderlyingAST underlyingAST) {
-        declaredClasses = new LinkedList<>();
-        declaredLambdas = new LinkedList<>();
+        declaredClasses.clear();
+        declaredLambdas.clear();
 
         CFTreeBuilder builder = new CFTreeBuilder(env);
         PhaseOneResult phase1result = new CFCFGTranslationPhaseOne().process(

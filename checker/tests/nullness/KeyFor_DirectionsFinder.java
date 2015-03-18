@@ -1,20 +1,24 @@
+// @skip-test
 import org.checkerframework.checker.nullness.qual.*;
 
 import java.util.*;
 
-// TODO: To fix later; skipped for now so all tests don't fail
-// @skip-test
 public class KeyFor_DirectionsFinder {
 
     class GeoPoint {}
 
     class StreetSegment {}
+    
+    class Graph {
+        public void addEdge(StreetSegment endSeg, StreetSegment beginSeg) {}
+    }
 
-    public static void buildGraph(List<StreetSegment> segs) {
+    public void buildGraph(List<StreetSegment> segs) {
         Map<GeoPoint, Set<StreetSegment>> endMap = new 
             HashMap<GeoPoint, Set<StreetSegment>>();
         Map<@KeyFor("endMap") GeoPoint, Set<StreetSegment>> beginMap = new 
             HashMap<@KeyFor("endMap") GeoPoint, Set<StreetSegment>>();
+        Graph graph = new Graph();
 
         for(StreetSegment seg : segs) {
             GeoPoint p1 = new GeoPoint();
@@ -30,7 +34,7 @@ public class KeyFor_DirectionsFinder {
         for (@KeyFor("endMap") GeoPoint p : beginMap.keySet()) {
             for (StreetSegment beginSeg : beginMap.get(p)) {
                 for (StreetSegment endSeg : endMap.get(p)) {
-                    // graph.addEdge(endSeg,beginSeg);
+                    graph.addEdge(endSeg,beginSeg); // endSeg and beginSeg are @NonNull
                 }
             }
         }

@@ -13,6 +13,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -30,10 +31,12 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.PureMethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ValueLiteral;
+import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -42,6 +45,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -70,11 +74,11 @@ public class FlowExpressionParseUtil {
      * Matches the self reference. In the future we could allow "#0" as a
      * synonym for "this".
      */
-    protected static final Pattern selfPattern = Pattern.compile("^(this)$");
+    protected static final Pattern selfPattern = Pattern.compile("^this$");
     /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
-    protected static final Pattern itselfPattern = Pattern.compile("^(itself)$");
+    protected static final Pattern itselfPattern = Pattern.compile("^itself$");
     /** Matches 'super' */
-    protected static final Pattern superPattern = Pattern.compile("^(super)$");
+    protected static final Pattern superPattern = Pattern.compile("^super$");
     /** Matches an identifier */
     protected static final Pattern identifierPattern = Pattern.compile("^"
             + identifierRegex + "$");
@@ -88,15 +92,15 @@ public class FlowExpressionParseUtil {
             .compile("^([^.]+)\\.(.+)$");
     /** Matches integer literals */
     protected static final Pattern intPattern = Pattern
-            .compile("^([1-9][0-9]*)$");
+            .compile("^[1-9][0-9]*$");
     /** Matches long literals */
     protected static final Pattern longPattern = Pattern
-            .compile("^([1-9][0-9]*L)$");
+            .compile("^[1-9][0-9]*L$");
     /** Matches string literals */
     protected static final Pattern stringPattern = Pattern
-            .compile("^(\"([^\"\\\\]|\\\\.)*\")$");
+            .compile("^\"([^\"\\\\]|\\\\.)*\"$");
     /** Matches the null literal */
-    protected static final Pattern nullPattern = Pattern.compile("^(null)$");
+    protected static final Pattern nullPattern = Pattern.compile("^null$");
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or
@@ -183,7 +187,12 @@ public class FlowExpressionParseUtil {
                     s.substring(1, s.length() - 1));
         } else if (selfMatcher.matches() && allowSelf) {
             // this literal, even after the call above to set s = context.receiver.toString();
-            return new ThisReference(context.receiver.getType());
+            if (context.receiver == null || context.receiver.containsUnknown()) {
+                return new ThisReference(context.receiver == null ? null : context.receiver.getType());
+            }
+            else { // If we already know the receiver, return it.
+                return context.receiver;
+            }
         } else if (superMatcher.matches() && allowSelf) {
             // super literal
             List<? extends TypeMirror> superTypes = types
@@ -217,6 +226,7 @@ public class FlowExpressionParseUtil {
 
                 // field access
                 TypeMirror receiverType = context.receiver.getType();
+                boolean originalReceiver = true;
                 VariableElement fieldElem = null;
 
                 // Search for field in each enclosing class.
@@ -226,11 +236,13 @@ public class FlowExpressionParseUtil {
                         break;
                     }
                     receiverType = ((DeclaredType)receiverType).getEnclosingType();
+                    originalReceiver = false;
                 }
 
                 if (fieldElem == null) { // Try static fields of the enclosing class
                     Element classElem = context.checkerContext.getTreeUtils().getElement(TreeUtils.pathTillClass(path));
                     receiverType = ElementUtils.getType(classElem);
+                    originalReceiver = false;
 
                     // Search for field in each enclosing class.
                     while (receiverType.getKind() == TypeKind.DECLARED) {
@@ -253,8 +265,14 @@ public class FlowExpressionParseUtil {
                     return new FieldAccess(staticClassReceiver,
                             fieldType, fieldElem);
                 } else {
-                    return new FieldAccess(context.receiver,
-                            fieldType, fieldElem);
+                    if (originalReceiver) {
+                        return new FieldAccess(context.receiver,
+                                fieldType, fieldElem);
+                    }
+                    else {
+                        return new FieldAccess(FlowExpressions.internalReprOf(context.checkerContext.getAnnotationProvider(), new ImplicitThisLiteralNode(receiverType)),
+                                fieldType, fieldElem);
+                    }
                 }
             } catch (Throwable t) { // TODO: It is poor design to use exceptions to pass information around. We should change this.
                 try {
@@ -645,7 +663,7 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * @return A {@link FlowExpressionContext} for the method {@code node}
+     * @return A {@link FlowExpressionContext} for the method {@code n}
      *         (represented as a {@link Node} as seen at the method use (i.e.,
      *         at a method call site).
      */
@@ -662,4 +680,42 @@ public class FlowExpressionParseUtil {
                 internalReceiver, internalArguments, checkerContext);
         return flowExprContext;
     }
+
+    /**
+     * @return A {@link FlowExpressionContext} for the constructor {@code n}
+     *         (represented as a {@link Node} as seen at the method use (i.e.,
+     *         at a method call site).
+     */
+    public static FlowExpressionContext buildFlowExprContextForUse(
+            ObjectCreationNode n, TreePath currentPath, BaseContext checkerContext) {
+
+    	// Since the object that is being created does not exist yet,
+    	// the receiver of the constructor will be the current object if
+    	// the constructor is called within a nonstatic method body.
+    	// Otherwise it will be the enclosing class.
+    	
+        Node receiver = null;
+
+        MethodTree enclosingMethod = TreeUtils.enclosingMethod(currentPath);
+        ClassTree enclosingClass = TreeUtils.enclosingClass(currentPath);
+
+        if (enclosingMethod != null && !enclosingMethod.getModifiers().getFlags().contains(Modifier.STATIC)) {
+            receiver = new ImplicitThisLiteralNode(InternalUtils.typeOf(enclosingClass));
+        }
+        else {
+            receiver = new ClassNameNode(enclosingClass);
+        }
+
+        Receiver internalReceiver = FlowExpressions.internalReprOf(checkerContext.getAnnotationProvider(), receiver);
+    	
+    	List<Receiver> internalArguments = new ArrayList<>();
+        for (Node arg : n.getArguments()) {
+            internalArguments.add(FlowExpressions.internalReprOf(checkerContext.getAnnotationProvider(), arg));
+        }
+
+        FlowExpressionContext flowExprContext = new FlowExpressionContext(
+        		internalReceiver, internalArguments, checkerContext);
+
+        return flowExprContext;
+    }    
 }

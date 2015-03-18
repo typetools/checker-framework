@@ -28,7 +28,7 @@ class AnnotatedTypeParams3 {
         return annotation;
     }
 
-    <@Regex T> void test(T p) {
+    <@Regex T extends @Regex Object> void test(T p) {
         Object o = p;
         @Regex Object re = o;
     }

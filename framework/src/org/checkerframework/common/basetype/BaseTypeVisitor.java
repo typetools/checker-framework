@@ -36,6 +36,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -81,6 +82,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
@@ -201,6 +203,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
     }
 
+    protected BaseTypeVisitor(BaseTypeChecker checker, Factory typeFactory) {
+        super(checker);
+
+        this.checker = checker;
+        this.atypeFactory = typeFactory;
+        this.contractsUtils = ContractsUtils.getInstance(atypeFactory);
+        this.positions = trees.getSourcePositions();
+        this.visitorState = atypeFactory.getVisitorState();
+        this.typeValidator = createTypeValidator();
+        this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+    }
 
     /**
      * Constructs an instance of the appropriate type factory for the
@@ -340,7 +353,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // by circular AnnotatedTypeMirrors, which avoids problems with
         // later checks.
         // TODO: Find a cleaner way to ensure circular AnnotatedTypeMirrors.
-        AnnotatedExecutableType methodType = AnnotatedTypes.deepCopy(atypeFactory.getAnnotatedType(node));
+        AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(node).deepCopy();
         AnnotatedDeclaredType preMRT = visitorState.getMethodReceiver();
         MethodTree preMT = visitorState.getMethodTree();
         visitorState.setMethodReceiver(methodType.getReceiverType());
@@ -1461,13 +1474,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (checker.hasOption("checkCastElementType")) {
                 AnnotatedTypeMirror newCastType;
                 if (castType.getKind() == TypeKind.TYPEVAR) {
-                    newCastType = ((AnnotatedTypeVariable)castType).getEffectiveUpperBound();
+                    newCastType = ((AnnotatedTypeVariable)castType).getUpperBound();
                 } else {
                     newCastType = castType;
                 }
                 AnnotatedTypeMirror newExprType;
                 if (exprType.getKind() == TypeKind.TYPEVAR) {
-                    newExprType = ((AnnotatedTypeVariable)exprType).getEffectiveUpperBound();
+                    newExprType = ((AnnotatedTypeVariable)exprType).getUpperBound();
                 } else {
                     newExprType = exprType;
                 }
@@ -1807,13 +1820,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             varTypeString = varType.toString(true);
         }
 
-        if (isLocalVariableAssignment && varType.getKind() == TypeKind.TYPEVAR
-                && varType.getAnnotations().isEmpty()) {
-            // If we have an unbound local variable that is a type variable,
-            // then we allow the assignment.
-            return;
-        }
-
         if (checker.hasOption("showchecks")) {
             long valuePos = positions.getStartPosition(root, valueTree);
             System.out.printf(
@@ -1880,6 +1886,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param typeargs the type arguments from the type or method invocation
      * @param typeargTrees the type arguments as trees, used for error reporting
      */
+    // TODO: see updated version below that performs more well-formedness checks.
     protected void checkTypeArguments(Tree toptree,
             List<? extends AnnotatedTypeParameterBounds> paramBounds,
             List<? extends AnnotatedTypeMirror> typeargs,
@@ -1902,40 +1909,153 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         while (boundsIter.hasNext()) {
 
             AnnotatedTypeParameterBounds bounds = boundsIter.next();
-            AnnotatedTypeMirror typearg = argIter.next();
+            AnnotatedTypeMirror typeArg = argIter.next();
 
-            // TODO skip wildcards for now to prevent a crash
-            if (typearg.getKind() == TypeKind.WILDCARD)
+            if (shouldBeCaptureConverted(typeArg, bounds)) {
                 continue;
+            }
+
+            final AnnotatedTypeMirror paramUpperBound = replaceMalformedWildcards(bounds.getUpperBound(), typeArg);
 
             if (typeargTrees == null || typeargTrees.isEmpty()) {
                 // The type arguments were inferred and we mark the whole method.
                 // The inference fails if we provide invalid arguments,
                 // therefore issue an error for the arguments.
                 // I hope this is less confusing for users.
-                commonAssignmentCheck(bounds.getUpperBound(),
-                        typearg, toptree,
+                commonAssignmentCheck(paramUpperBound,
+                        typeArg, toptree,
                         "type.argument.type.incompatible", false);
             } else {
-                commonAssignmentCheck(bounds.getUpperBound(), typearg,
-                        typeargTrees.get(typeargs.indexOf(typearg)),
+                commonAssignmentCheck(paramUpperBound, typeArg,
+                        typeargTrees.get(typeargs.indexOf(typeArg)),
                         "type.argument.type.incompatible", false);
             }
 
-            if (!atypeFactory.getTypeHierarchy().isSubtype(bounds.getLowerBound(), typearg)) {
+            if (!atypeFactory.getTypeHierarchy().isSubtype(bounds.getLowerBound(), typeArg)) {
                 if (typeargTrees == null || typeargTrees.isEmpty()) {
                     // The type arguments were inferred and we mark the whole method.
                     checker.report(Result.failure("type.argument.type.incompatible",
-                            typearg, bounds),
+                                    typeArg, bounds),
                             toptree);
                 } else {
                     checker.report(Result.failure("type.argument.type.incompatible",
-                            typearg, bounds),
-                            typeargTrees.get(typeargs.indexOf(typearg)));
+                                    typeArg, bounds),
+                            typeargTrees.get(typeargs.indexOf(typeArg)));
                 }
             }
         }
     }
+
+    //TODO: REMOVE WHEN CAPTURE CONVERSION IS IMPLEMENTED
+    //TODO: This may not occur only in places where capture conversion occurs but in those cases
+    //TODO: The containment check provided by this method should be enough
+    /**
+     * Identifies cases that would not happen if capture conversion were implemented.  These special cases
+     * should be removed when capture conversion is implemented.
+     */
+    private boolean shouldBeCaptureConverted(final AnnotatedTypeMirror typeArg,
+                                             final AnnotatedTypeParameterBounds bounds) {
+        return typeArg.getKind() == TypeKind.WILDCARD && bounds.getUpperBound().getKind() == TypeKind.WILDCARD;
+    }
+
+    //If we have a declaration:
+    // class MyClass<T extends String> ...
+    //
+    //the javac compiler allows wildcard type arguments that have Java types OUTSIDE of the
+    //bounds of T, i.e:
+    // MyClass<? extends Object>
+    //
+    //This is sound because every NON-WILDCARD reference to MyClass MUST obey those bounds
+    //This leads to cases where the type parameter's upper bound is actually a subtype of typeArg
+    //In this case, we convert the upper bound to the type of typeArg and use that for checks
+    //against the parameter's upper bound
+    private AnnotatedTypeMirror replaceMalformedWildcards(final AnnotatedTypeMirror paramUpperBound,
+                                                          final AnnotatedTypeMirror typeArg) {
+        if (typeArg.getKind() == TypeKind.WILDCARD) {
+            final TypeMirror varUnderlyingUb = paramUpperBound.getUnderlyingType();
+            final TypeMirror argUnderlyingUb = ((AnnotatedWildcardType) typeArg).getExtendsBound().getUnderlyingType();
+            if (!types.isSubtype(argUnderlyingUb, varUnderlyingUb)
+                    && types.isSubtype(varUnderlyingUb, argUnderlyingUb)) {
+                return AnnotatedTypes.asSuper(types, atypeFactory,paramUpperBound, typeArg);
+            }
+        } //else
+
+        return paramUpperBound;
+    }
+
+    /* Updated version that performs more well-formedness checks.
+
+    protected void checkTypeArguments(Tree toptree,
+            List<? extends AnnotatedTypeVariable> typevars,
+            List<? extends AnnotatedTypeMirror> typeargs,
+            List<? extends Tree> typeargTrees) {
+
+        // System.out.printf("BaseTypeVisitor.checkTypeArguments: %s, TVs: %s, TAs: %s, TATs: %s\n",
+        //         toptree, typevars, typeargs, typeargTrees);
+
+        // If there are no type variables, do nothing.
+        if (typevars.isEmpty())
+            return;
+
+        assert typevars.size() == typeargs.size() :
+            "BaseTypeVisitor.checkTypeArguments: mismatch between type arguments: " +
+            typeargs + " and type variables " + typevars;
+
+        assert typeargTrees.isEmpty() ||
+                    typeargTrees.size() == typeargs.size() :
+            "BaseTypeVisitor.checkTypeArguments: mismatch between type arguments: " +
+            typeargs + " and their trees " + typeargTrees;
+
+        Iterator<? extends AnnotatedTypeVariable> varIter = typevars.iterator();
+        Iterator<? extends AnnotatedTypeMirror> argIter = typeargs.iterator();
+        Iterator<? extends Tree> argTreeIter = typeargTrees.iterator();
+
+        while (varIter.hasNext()) {
+
+            AnnotatedTypeVariable typeVar = varIter.next();
+            AnnotatedTypeMirror typearg = argIter.next();
+
+            Tree typeArgTree = null;
+            if (argTreeIter.hasNext()) {
+                typeArgTree = argTreeIter.next();
+            }
+
+            if (typeArgTree != null) {
+                boolean valid = validateType(typeArgTree, typearg);
+                if (!valid) {
+                    // validateType already issued an error; check the next argument.
+                    continue;
+                }
+            } else {
+                if (!AnnotatedTypes.isValidType(atypeFactory.getQualifierHierarchy(), typearg)) {
+                    continue;
+                }
+                typeArgTree = toptree;
+            }
+
+            if (typeVar.getUpperBound() != null) {
+                if (!AnnotatedTypes.isValidType(atypeFactory.getQualifierHierarchy(), typeVar.getUpperBound())) {
+                    continue;
+                }
+
+                commonAssignmentCheck(typeVar.getUpperBound(),
+                        typearg, typeArgTree,
+                        "type.argument.type.incompatible", false);
+            }
+
+            // Should we compare lower bounds instead of the annotations on the
+            // type variables?
+            if (!typeVar.getAnnotations().isEmpty()) {
+                if (!typearg.getEffectiveAnnotations().equals(typeVar.getEffectiveAnnotations())) {
+                    checker.report(Result.failure("type.argument.type.incompatible",
+                            typearg, typeVar),
+                            typeArgTree);
+                }
+            }
+
+        }
+    }
+    */
 
     /**
      * Tests whether the method can be invoked using the receiver of the 'node'
@@ -1963,7 +2083,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
-        AnnotatedTypeMirror treeReceiver = methodReceiver.getCopy(false);
+        AnnotatedTypeMirror treeReceiver = methodReceiver.shallowCopy(false);
         AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(node);
 
         treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
@@ -1978,6 +2098,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected boolean checkConstructorInvocation(AnnotatedDeclaredType dt,
             AnnotatedExecutableType constructor, Tree src) {
         AnnotatedDeclaredType ret = (AnnotatedDeclaredType) constructor.getReturnType();
+
+        //When an interface is used as the identifier in an anonymous class (e.g. new Comparable() {})
+        //the constructor method will be Object.init() {} which has an Object return type
+        //When TypeHierarchy attempts to convert it to the supertype (e.g. Comparable) it will return
+        //null from asSuper and return false for the check.  Instead, copy the primary annotations
+        //to the declared type and then do a subtyping check
+        if( dt.getUnderlyingType().asElement().getKind().isInterface() &&
+            TypesUtils.isObject(ret.getUnderlyingType()) ) {
+
+            final AnnotatedDeclaredType retAsDt = dt.deepCopy();
+            retAsDt.replaceAnnotations(ret.getAnnotations());
+            ret = retAsDt;
+        }
 
         boolean b = atypeFactory.getTypeHierarchy().isSubtype(dt, ret) ||
                 atypeFactory.getTypeHierarchy().isSubtype(ret, dt);
@@ -2021,6 +2154,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             visitorState.setAssignmentContext(preAssCtxt);
         }
     }
+
+    /**
+     * @return true if both types are type variables and outer contains inner
+     * Outer contains inner implies:
+     * {@literal
+     *     inner.upperBound <: outer.upperBound
+     *     outer.lowerBound <: inner.lowerBound
+     * }
+     */
+    protected boolean testTypevarContainment(final AnnotatedTypeMirror inner,
+                                             final AnnotatedTypeMirror outer) {
+        if(inner.getKind() == TypeKind.TYPEVAR && outer.getKind() == TypeKind.TYPEVAR ) {
+
+            final AnnotatedTypeVariable innerAtv = (AnnotatedTypeVariable) inner;
+            final AnnotatedTypeVariable outerAtv = (AnnotatedTypeVariable) outer;
+
+            if (AnnotatedTypes.areCorrespondingTypeVariables(elements, innerAtv, outerAtv)) {
+                final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
+                return typeHierarchy.isSubtype(innerAtv.getUpperBound(), outerAtv.getUpperBound())
+                        && typeHierarchy.isSubtype(outerAtv.getLowerBound(), innerAtv.getLowerBound());
+            }
+        }
+
+        return false;
+    }
+
 
     /**
      * Type checks that a method may override another method.
@@ -2389,7 +2548,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     return true; // Dead code
                 case SUPER:
                     receiverDecl = overrider.getReceiverType();
-                    receiverArg = atypeFactory.getSelfType(memberTree);
+                    receiverArg = atypeFactory.getAnnotatedType(memberTree.getQualifierExpression());
+
+                    final AnnotatedTypeMirror selfType = atypeFactory.getSelfType(memberTree);
+                    receiverArg.replaceAnnotations(selfType.getAnnotations());
                     break;
                 case BOUND:
                     receiverDecl = overrider.getReceiverType();
@@ -2427,7 +2589,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             // overridden receiver.  Hence copying the annotations.
             // TODO: this will need to be improved for generic receivers.
             AnnotatedTypeMirror overriddenReceiver =
-                    overrider.getReceiverType().getErased().getCopy(false);
+                    overrider.getReceiverType().getErased().shallowCopy(false);
             overriddenReceiver.addAnnotations(overridden.getReceiverType().getAnnotations());
             if (!atypeFactory.getTypeHierarchy().isSubtype(overriddenReceiver,
                     overrider.getReceiverType().getErased())) {
@@ -2456,6 +2618,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             for (int i = 0; i < overriderParams.size(); ++i) {
                 boolean success = atypeFactory.getTypeHierarchy().isSubtype(overriddenParams.get(i), overriderParams.get(i));
+                if(!success) {
+                    success = testTypevarContainment(overriddenParams.get(i), overriderParams.get(i));
+                }
+
                 checkParametersMsg(success, i, overriderParams, overriddenParams);
                 result &= success;
             }
@@ -2491,6 +2657,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             // Check the return value.
             if ((overridingReturnType.getKind() != TypeKind.VOID)) {
                 success = atypeFactory.getTypeHierarchy().isSubtype(overridingReturnType, overriddenReturnType);
+
+                //If both the overridden method have type variables as return types and both types were
+                //defined in their respective methods then, they can be covariant or invariant
+                //use super/subtypes for the overrides locations
+                if (!success) {
+                    success = testTypevarContainment(overridingReturnType, overriddenReturnType);
+                }
+
                 checkReturnMsg(success);
             }
             return success;
@@ -2834,7 +3008,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         default:
             type = atypeFactory.getAnnotatedType(tree);
         }
+        return validateType(tree, type);
+    }
 
+    /**
+     * Tests whether the type and corresponding type tree is a valid type,
+     * and emits an error if that is not the case (e.g. '@Mutable String').
+     * If the tree is a method or constructor, check the return type.
+     *
+     * @param tree  the type tree supplied by the user
+     * @param type  the type corresponding to tree
+     */
+    public boolean validateType(Tree tree, AnnotatedTypeMirror type) {
         // basic consistency checks
         if (!AnnotatedTypes.isValidType(atypeFactory.getQualifierHierarchy(), type)) {
             checker.report(Result.failure("type.invalid", type.getAnnotations(),
@@ -2847,9 +3032,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     // This is a test to ensure that all types are valid
-    protected final BaseTypeValidator typeValidator;
+    protected final TypeValidator typeValidator;
 
-    protected BaseTypeValidator createTypeValidator() {
+    protected TypeValidator createTypeValidator() {
         return new BaseTypeValidator(checker, this, atypeFactory);
     }
 

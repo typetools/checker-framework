@@ -245,6 +245,18 @@ public abstract class PolyQual<Q> {
             return Combined.from(op, newVars, newGround);
         }
 
+        public CombiningOperation<Q> getOp() {
+            return op;
+        }
+
+        public Set<QualVar<Q>> getVars() {
+            return vars;
+        }
+
+        public Q getGround() {
+            return ground;
+        }
+
         @Override
         public Q getMinimum() {
             Q result = ground;

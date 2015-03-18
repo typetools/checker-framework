@@ -5,7 +5,7 @@ import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotatio
 /**
  * When using {@link SimpleQualifierParameterAnnotationConverter}, this enum
  * allows specifying super and extends bounds, e.g {@code {@literal @}Tainted(wildcard=Extends) MyClass} is equivalent
- * to {@code MyClass<<? extends {@literal @}Tainted>>}.
+ * to MyClass《? extends {@literal @}Tainted》.
  */
 public enum Wildcard {
     NONE, EXTENDS, SUPER

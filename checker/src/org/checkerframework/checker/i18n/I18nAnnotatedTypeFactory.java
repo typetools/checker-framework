@@ -6,6 +6,8 @@ import org.checkerframework.checker.i18n.qual.Localized;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 import com.sun.source.tree.BinaryTree;
@@ -21,7 +23,7 @@ public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public TreeAnnotator createTreeAnnotator() {
+    protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
                 super.createTreeAnnotator(),
                 new I18nTreeAnnotator(this)

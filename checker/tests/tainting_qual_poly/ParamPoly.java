@@ -1,13 +1,13 @@
 // Simple test for qualifier parameters on methods.
-import org.checkerframework.checker.experimental.tainting_qual_poly.qual.*;
+import org.checkerframework.checker.tainting.qual.*;
 
 // Polymorphic method parameters
 @ClassTaintingParam("Main")
 class A { }
 
 abstract class Test {
-    abstract void test(@PolyTainting(param="Main") A i, @PolyTainting(param="Main") A j);
-    abstract @PolyTainting(param="Main") A id(@PolyTainting(param="Main") A i);
+    abstract void test(@PolyTainted(param="Main") A i, @PolyTainted(param="Main") A j);
+    abstract @PolyTainted(param="Main") A id(@PolyTainted(param="Main") A i);
 
     abstract @Tainted(param="Main") A makeTainted();
     abstract @Untainted(param="Main") A makeUntainted();

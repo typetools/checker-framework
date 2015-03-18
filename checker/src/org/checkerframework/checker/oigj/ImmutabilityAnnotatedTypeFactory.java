@@ -1,13 +1,6 @@
 package org.checkerframework.checker.oigj;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -29,8 +22,14 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
+import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -150,7 +149,10 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
-        return new IGJTypePostAnnotator(this);
+        return new ListTypeAnnotator(
+                new IGJTypePostAnnotator(this),
+                super.createTypeAnnotator()
+        );
     }
 
     // TODO: do store annotations into the Element -> remove this override
@@ -393,6 +395,45 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // resolving @I Immutability
     // **********************************************************************
 
+    //SupertypeVisit and related classes are used to cut the infinite loop that occurred on
+    //recursive direct super types e.g.
+    //class MyClass implements List<MyClass {}
+    private static final StructuralEqualityComparer structEquals = new StructuralEqualityComparer();
+    private final class SupertypeVisit {
+        private final AnnotatedTypeMirror type;
+        public SupertypeVisit(final AnnotatedTypeMirror type) {
+            this.type = type;
+        }
+
+        @Override
+        public int hashCode() {
+            return this.type.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object that) {
+            if (that == null) return false;
+            if (!that.getClass().equals(SupertypeVisit.class)) {
+                return false;
+            }
+
+            return structEquals.areEqual(type, ((SupertypeVisit) that).type);
+        }
+    }
+
+    private final Set<SupertypeVisit> visited = new HashSet<>();
+
+    public boolean checkVisitingSupertype(final AnnotatedTypeMirror type) {
+        final SupertypeVisit visit = new SupertypeVisit(type);
+        if (!visited.contains(visit)) {
+            visited.add(visit);
+            return true;
+        }
+
+        visited.remove(visit);
+        return false;
+    }
+
     /**
      * Replace all instances of {@code @I} in the super types with the
      * immutability of the current type
@@ -404,12 +445,14 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected void postDirectSuperTypes(AnnotatedTypeMirror type,
             List<? extends AnnotatedTypeMirror> supertypes) {
         super.postDirectSuperTypes(type, supertypes);
-        Map<String, AnnotationMirror> templateMapping =
-            new ImmutabilityTemplateCollector().visit(type);
+        if (checkVisitingSupertype(type)) {
+            Map<String, AnnotationMirror> templateMapping =
+                    new ImmutabilityTemplateCollector().visit(type);
 
-        new ImmutabilityResolver().visit(supertypes, templateMapping);
-        for (AnnotatedTypeMirror supertype: supertypes) {
-            typeAnnotator.visit(supertype, null);
+            new ImmutabilityResolver().visit(supertypes, templateMapping);
+            for (AnnotatedTypeMirror supertype : supertypes) {
+                typeAnnotator.visit(supertype, null);
+            }
         }
     }
 
@@ -689,15 +732,29 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (typeSuper.getKind() != TypeKind.TYPEVAR)
                 return visit(typeSuper, actualType);
 
-            assert typeSuper.getKind() == actualType.getKind() : actualType;
-            assert type.getKind() == actualType.getKind() : actualType;
-            AnnotatedTypeVariable tvType = (AnnotatedTypeVariable)typeSuper;
 
-            typeVar.add(type.getUnderlyingType());
-            // a type variable cannot be annotated
-            Map<String, AnnotationMirror> result = visit(type.getUpperBound(), tvType.getUpperBound());
-            typeVar.remove(type.getUnderlyingType());
-            return result;
+            if (typeSuper.getKind() == actualType.getKind()
+             && type.getKind() == actualType.getKind()) {
+                //I've preserved the old logic here, I am not sure the actual reasoning
+                //however, please see the else case as to where it fails
+
+                AnnotatedTypeVariable tvType = (AnnotatedTypeVariable)typeSuper;
+
+                typeVar.add(type.getUnderlyingType());
+                // a type variable cannot be annotated
+                Map<String, AnnotationMirror> result = visit(type.getUpperBound(), tvType.getUpperBound());
+                typeVar.remove(type.getUnderlyingType());
+                return result;
+
+            } else {
+                //When using the templateCollect we compare the formal parameters to the actual
+                //arguments but, when the formal parameters are uses of method type parameters
+                //then the declared formal parameters may not actually be supertypes of their arguments
+                // (though they should be if we substituted them for the method call's type arguments)
+                //See also the poly collector
+                //For an example of this see framework/tests/all-system/PolyCollectorTypeVars.java
+                return visit(type.getUpperBound(), actualType);
+            }
         }
 
         @Override
@@ -774,37 +831,32 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     //
     @Override
     protected TypeHierarchy createTypeHierarchy() {
-        return new OIGJImmutabilityTypeHierarchy(checker, getQualifierHierarchy());
+        return new OIGJImmutabilityTypeHierarchy(checker, getQualifierHierarchy(),
+                                                 checker.hasOption("ignoreRawTypeArguments"),
+                                                 checker.hasOption("invariantArrays"));
     }
 
-    private final class OIGJImmutabilityTypeHierarchy extends TypeHierarchy {
+    private final class OIGJImmutabilityTypeHierarchy extends DefaultTypeHierarchy {
 
-        public OIGJImmutabilityTypeHierarchy(BaseTypeChecker checker,
-                QualifierHierarchy qualifierHierarchy) {
-            super(checker, qualifierHierarchy);
+        public OIGJImmutabilityTypeHierarchy(BaseTypeChecker checker, QualifierHierarchy qualifierHierarchy,
+                                boolean ignoreRawTypes, boolean invariantArrayComponents) {
+            super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents, true);
         }
 
-        /**
-         * OIGJ Rule 6. <b>Same-class subtype definition</b>
-         */
-        // TODO: Handle CoVariant(X_i, C)
         @Override
-        protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
-            if (ignoreRawTypeArguments(rhs, lhs)) {
-                return true;
-            }
+        public Boolean visitTypeArgs(final AnnotatedDeclaredType subtype, final AnnotatedDeclaredType supertype,
+                                        final VisitHistory visited,  final boolean subtypeIsRaw, final boolean supertypeIsRaw) {
 
-            if (lhs.hasEffectiveAnnotation(MUTABLE))
-                return super.isSubtypeTypeArguments(rhs, lhs);
+            boolean ignoreTypeArgs = ignoreRawTypes && (subtypeIsRaw || supertypeIsRaw);
 
-            if (!lhs.getTypeArguments().isEmpty()
-                    && !rhs.getTypeArguments().isEmpty()) {
-                assert lhs.getTypeArguments().size() == rhs.getTypeArguments().size();
-                for (int i = 0; i < lhs.getTypeArguments().size(); ++i) {
-                    if (!isSubtype(rhs.getTypeArguments().get(i), lhs.getTypeArguments().get(i)))
-                        return false;
+            if( !ignoreTypeArgs ) {
+                if (supertype.hasEffectiveAnnotation(MUTABLE)) {
+                    return super.visitTypeArgs(subtype, supertype, visited, subtypeIsRaw, supertypeIsRaw);
                 }
+
+                return super.visitTypeArgs(subtype, supertype, visited, subtypeIsRaw, supertypeIsRaw);
             }
+
             return true;
         }
     }
