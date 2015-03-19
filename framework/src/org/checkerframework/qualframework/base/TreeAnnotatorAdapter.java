@@ -12,7 +12,6 @@ import com.sun.source.tree.*;
  * {@link org.checkerframework.framework.type.treeannotator.TreeAnnotator org.checkerframework.framework.type.treeannotator.TreeAnnotator}.
  */
 class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
-    private final QualifiedTypeFactoryAdapter<Q> factoryAdapter;
     private final TreeAnnotator<Q> underlying;
     private final TypeMirrorConverter<Q> converter;
 
@@ -20,7 +19,6 @@ class TreeAnnotatorAdapter<Q> extends PropagationTreeAnnotator {
                                 TypeMirrorConverter<Q> converter,
                                 QualifiedTypeFactoryAdapter<Q> factoryAdapter) {
         super(factoryAdapter);
-        this.factoryAdapter = factoryAdapter;
         this.underlying = underlying;
         this.converter = converter;
     }

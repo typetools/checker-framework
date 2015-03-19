@@ -1,17 +1,8 @@
 package org.checkerframework.framework.util.typeinference.constraint;
 
-import com.sun.tools.javac.code.Type;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
-import org.checkerframework.framework.type.DefaultTypeHierarchy;
-import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
-import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.PluginUtil;
-import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 
-import javax.lang.model.type.TypeKind;
-import java.util.List;
 import java.util.Set;
 
 /**
