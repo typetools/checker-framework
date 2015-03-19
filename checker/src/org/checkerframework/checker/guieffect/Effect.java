@@ -1,12 +1,12 @@
 package org.checkerframework.checker.guieffect;
 
-import java.lang.annotation.Annotation;
-
 import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
 import org.checkerframework.checker.guieffect.qual.SafeEffect;
 import org.checkerframework.checker.guieffect.qual.UIEffect;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+
+import java.lang.annotation.Annotation;
 
 public final class Effect {
     // Colin hates Java's comparable interface, so he's not using it

@@ -10,9 +10,8 @@ import org.checkerframework.checker.regex.RegexChecker;
 import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 
 public class NestedAggregateChecker extends AggregateChecker {
     @Override

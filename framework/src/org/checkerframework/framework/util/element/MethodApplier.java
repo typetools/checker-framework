@@ -1,26 +1,50 @@
 package org.checkerframework.framework.util.element;
 
-
-import com.sun.tools.javac.code.Attribute.TypeCompound;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import static org.checkerframework.framework.type.AnnotatedTypeMirror.*;
-import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.TargetType;
-
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.*;
-import static com.sun.tools.javac.code.TargetType.*;
-
-import com.sun.tools.javac.code.TypeAnnotationPosition;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import java.util.*;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.addAnnotationsFromElement;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.applyAllElementAnnotations;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.partitionByTargetType;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.lang.model.element.Element;
+
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Attribute.TypeCompound;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.TargetType;
+import com.sun.tools.javac.code.TypeAnnotationPosition;
+
+import static com.sun.tools.javac.code.TargetType.CAST;
+import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT;
+import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_REFERENCE;
+import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT;
+import static com.sun.tools.javac.code.TargetType.EXCEPTION_PARAMETER;
+import static com.sun.tools.javac.code.TargetType.INSTANCEOF;
+import static com.sun.tools.javac.code.TargetType.LOCAL_VARIABLE;
+import static com.sun.tools.javac.code.TargetType.METHOD_FORMAL_PARAMETER;
+import static com.sun.tools.javac.code.TargetType.METHOD_INVOCATION_TYPE_ARGUMENT;
+import static com.sun.tools.javac.code.TargetType.METHOD_RECEIVER;
+import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE;
+import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE_TYPE_ARGUMENT;
+import static com.sun.tools.javac.code.TargetType.METHOD_RETURN;
+import static com.sun.tools.javac.code.TargetType.METHOD_TYPE_PARAMETER;
+import static com.sun.tools.javac.code.TargetType.METHOD_TYPE_PARAMETER_BOUND;
+import static com.sun.tools.javac.code.TargetType.NEW;
+import static com.sun.tools.javac.code.TargetType.RESOURCE_VARIABLE;
+import static com.sun.tools.javac.code.TargetType.THROWS;
 
 /**
  * Adds annotations from element to the return type, formal parameter types, type parameters, and
