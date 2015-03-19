@@ -1,6 +1,6 @@
 package org.checkerframework.qualframework.base;
 
-import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 import javax.lang.model.element.AnnotationMirror;
 
@@ -11,10 +11,6 @@ class TypeHierarchyAdapter<Q> extends org.checkerframework.framework.type.Defaul
 
     private final TypeHierarchy<Q> underlying;
 
-    /** A copy of {@link underlying} with a more precise type, or null if
-     * {@link underlying} is not a {@link DefaultTypeHierarchy} instance.
-     */
-    private DefaultTypeHierarchy<Q> defaultUnderlying;
     private final TypeMirrorConverter<Q> converter;
 
     public TypeHierarchyAdapter(TypeHierarchy<Q> underlying,
@@ -25,20 +21,6 @@ class TypeHierarchyAdapter<Q> extends org.checkerframework.framework.type.Defaul
             boolean invariantArrayComponents) {
         super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents);
         this.underlying = underlying;
-
-        if (underlying instanceof DefaultTypeHierarchy) {
-            DefaultTypeHierarchy<Q> defaultUnderlying =
-                (DefaultTypeHierarchy<Q>)underlying;
-            this.defaultUnderlying = defaultUnderlying;
-        } else {
-            // It's fine to leave 'defaultUnderlying' null here, because only
-            // 'DefaultTypeHierarchy' is able to invoke the annotation-based
-            // code that uses 'defaultUnderlying'.  (Note that 'isSubtype', the
-            // only public entry point, uses 'underlying', not
-            // 'defaultUnderlying'.)
-            this.defaultUnderlying = null;
-        }
-
         this.converter = converter;
     }
 
