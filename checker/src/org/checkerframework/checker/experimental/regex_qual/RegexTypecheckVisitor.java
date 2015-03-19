@@ -18,8 +18,6 @@ import com.sun.source.tree.Tree;
 
 /**
  * The {@link org.checkerframework.common.basetype.BaseTypeVisitor} for the Regex-Qual type system.
- *
- * @see org.checkerframework.checker.regex.RegexVisitor
  */
 public class RegexTypecheckVisitor extends TypecheckVisitorAdapter<Regex> {
 

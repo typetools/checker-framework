@@ -490,7 +490,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * TypeVariableSubstitutor provides a method to replace type parameters with
      * their arguments.
-     * @return
      */
     protected TypeVariableSubstitutor createTypeVariableSubstitutor() {
         return new TypeVariableSubstitutor();
@@ -1532,12 +1531,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Java special cases the return type of getClass.  Though the method has a return type of Class<?>,
+     * Java special cases the return type of getClass.  Though the method has a return type of {@code Class<?>},
      * the compiler special cases this return type and changes the bound of the type argument to the
      * erasure of the receiver type.  e.g.,
      *
-     * x.getClass() has the type Class< ? extends erasure_of_x >
-     * someInteger.getClass() has the type Class< ? extends Integer >
+     * x.getClass() has the type {@code Class< ? extends erasure_of_x >}
+     * someInteger.getClass() has the type {@code Class< ? extends Integer >}
      *
      * @param getClassType This must be a type representing a call to Object.getClass otherwise
      *                     a runtime exception will be thrown

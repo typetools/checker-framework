@@ -40,8 +40,6 @@ public class Paths
     /**
      * Ordered by preference.  Use listRoots to get drive letters for windows and
      * put C (if available) up front and (A:) in the back.
-     *
-     * @return
      */
     private static List<File> determineOrderedDriveRoots() {
         final File [] files = File.listRoots();

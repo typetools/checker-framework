@@ -37,7 +37,7 @@ import com.sun.source.tree.Tree;
  * Instead, only the most basic and required polymorphic methods are manually
  * supported by visitMethodInvocation.
  *
- * @see org.checkerframework.checker.regex.RegexAnnotatedTypeFactory
+ * see org.checkerframework.checker.regex.RegexAnnotatedTypeFactory
  *
  */
 public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex> {

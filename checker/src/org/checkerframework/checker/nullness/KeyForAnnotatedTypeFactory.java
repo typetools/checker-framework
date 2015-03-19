@@ -160,11 +160,6 @@ public class KeyForAnnotatedTypeFactory extends
   }
   */
 
-    /**
-     *
-     * @param tree
-     * @return
-     */
   @Override
   public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(NewClassTree tree) {
       Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> result = super.constructorFromUse(tree);

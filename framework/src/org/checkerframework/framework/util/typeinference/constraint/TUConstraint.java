@@ -13,19 +13,21 @@ import java.util.Set;
  * the TASolver to infer arguments.
  *
  * TU constraints come in the classic form of subtype, supertype, and equality constraints.
- * T <: U  - implies T is a subtype of U, it is represented by TSubU
- * T >: U  - implies T is a supertype of U, it is represented by TSuperU
- * T = U   - implies T is equal to U, it is represented by TIsU
+ * {@code T <: U}  - implies T is a subtype of U, it is represented by TSubU
+ * {@code T >: U}  - implies T is a supertype of U, it is represented by TSuperU
+ * {@code T = U}   - implies T is equal to U, it is represented by TIsU
  *
  * Note, it is important that the type parameter is represented by an AnnotatedTypeVariable
  * because if a use of the type parameter has a primary annotation, then the two types
  * represented in by a TUConstraint are NOT constrained in the hierarchy of that annotation.
  * e.g.
+ * <pre>{@code
  *   <T> void method(List<@NonNull T> t1, T t2)
  *   method(new ArrayList<@NonNull String>(), null);
+ * }</pre>
  *
  *   The above method call would eventually be reduced to
- *   constraints:   [@NonNull String == @NonNull T, @Nullable null <: T]
+ *   constraints:   {@code [@NonNull String == @NonNull T, @Nullable null <: T]}
  *
  *   In this example, if we did not ignore the first constraint then the type argument
  *   would be exactly @NonNull String and the second argument would be invalid.  However,

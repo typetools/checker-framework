@@ -109,7 +109,6 @@ public abstract class Checker<Q> implements QualifierContext<Q> {
 
     /**
      * Return a list of qualifiers that should not be printed unless printAllQualifiers is enabled.
-     * @return
      */
     protected Set<?> getInvisibleQualifiers() {
         return new HashSet<>();

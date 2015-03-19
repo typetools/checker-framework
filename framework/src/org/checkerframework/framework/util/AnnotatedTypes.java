@@ -634,7 +634,6 @@ public class AnnotatedTypes {
      * were specified and otherwise it infers them based on the passed arguments
      * or the return type context, according to JLS 15.12.2.
      *
-     * @param processingEnv
      * @param atypeFactory the annotated type factory
      * @param expr the method or constructor invocation tree; the passed argument
      *   has to be a subtype of MethodInvocationTree or NewClassTree.

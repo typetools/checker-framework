@@ -44,7 +44,6 @@ public class HashcodeAtmVisitor extends AnnotatedTypeScanner<Integer, Void> {
      * annotation.  This method does not descend into component types (this occurs in the
      * scan method)
      * @param type The type
-     * @return
      */
     private Integer generateHashcode(AnnotatedTypeMirror type) {
         //To differentiate between partially initialized type's (which may have null components)
