@@ -4,24 +4,6 @@ package org.checkerframework.common.basetype;
 import org.checkerframework.checker.igj.qual.*;
 */
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
-import javax.lang.model.element.TypeElement;
-
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifiers;
@@ -34,12 +16,28 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ErrorReporter;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Log;
-
-import javax.lang.model.element.AnnotationMirror;
 
 /**
  * An abstract {@link SourceChecker} that provides a simple {@link
@@ -489,7 +487,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     protected Object processArg(Object arg) {
         if (arg instanceof Collection) {
             List<Object> newList = new LinkedList<>();
-            for (Object o : ((Collection)arg)) {
+            for (Object o : ((Collection<?>)arg)) {
                 newList.add(processArg(o));
             }
             return newList;

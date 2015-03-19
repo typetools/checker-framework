@@ -2,7 +2,6 @@ package org.checkerframework.framework.type;
 
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.Pair;
 
 import com.sun.source.tree.ClassTree;

@@ -3,7 +3,6 @@ package org.checkerframework.framework.type;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
-import org.checkerframework.javacutil.ErrorReporter;
 
 import javax.lang.model.element.AnnotationMirror;
 
@@ -47,7 +46,7 @@ public class DefaultInferredTypesApplier {
      */
     protected static class InferredTypeApplyingVisitor extends AbstractAtmComboVisitor<Void, AnnotationMirror> {
         private final boolean omitSubtypingCheck;
-        private QualifierHierarchy qualifierHierarchy;
+        private final QualifierHierarchy qualifierHierarchy;
 
         public InferredTypeApplyingVisitor(QualifierHierarchy qualifierHierarchy, boolean omitSubtypingCheck) {
             this.qualifierHierarchy = qualifierHierarchy;

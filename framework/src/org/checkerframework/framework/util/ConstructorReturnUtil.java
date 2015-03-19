@@ -1,16 +1,17 @@
 package org.checkerframework.framework.util;
 
-import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.tree.JCTree;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.javacutil.AnnotationUtils;
 
-import javax.lang.model.element.AnnotationMirror;
 import java.util.List;
 import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Symbol;
 
 /**
  * Class to hold a utility method needed by TypeFromExpression and BaseTypeVisitor.

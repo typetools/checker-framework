@@ -1,50 +1,33 @@
 package org.checkerframework.common.value;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BoolVal;
-import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
-import org.checkerframework.common.value.qual.UnknownVal;
-
-import com.sun.source.tree.Tree;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.util.ElementFilter;
-
-import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+
+import java.util.List;
+
+import javax.lang.model.element.Element;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
-
 /**
  * @author plvines
- * 
+ *
  *         Visitor for the Constant Value type-system.
- * 
+ *
  */
 public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 

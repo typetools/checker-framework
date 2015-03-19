@@ -1,13 +1,11 @@
 package org.checkerframework.checker.regex;
 
 import org.checkerframework.checker.regex.qual.Regex;
+import org.checkerframework.framework.qual.EnsuresQualifierIf;
+import org.checkerframework.framework.qual.EnsuresQualifiersIf;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
-import org.checkerframework.framework.qual.EnsuresQualifierIf;
-
-import org.checkerframework.framework.qual.EnsuresQualifiersIf;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.*;
