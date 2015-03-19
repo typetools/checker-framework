@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="10.5cm" height="4.5cm" viewBox="639 239 402 165" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="880" y="300" width="160" height="42"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="880" y="300" width="160" height="42"/>
+    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal" x="960" y="325.85">
+      <tspan x="960" y="325.85">@ReadOnly Date</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="640" y="300" width="160" height="42"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="640" y="300" width="160" height="42"/>
+    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal" x="720" y="325.85">
+      <tspan x="720" y="325.85">@Mutable Object</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="759.975" y="240" width="160.05" height="42"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="759.975" y="240" width="160.05" height="42"/>
+    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal" x="840" y="265.85">
+      <tspan x="840" y="265.85">@ReadOnly Object</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="720" y1="300" x2="825.166" y2="284.225"/>
+    <polygon style="fill: #000000" points="826.204,291.148 839.011,282.148 824.128,277.303 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="826.204,291.148 839.011,282.148 824.128,277.303 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="960" y1="300" x2="854.834" y2="284.225"/>
+    <polygon style="fill: #000000" points="855.872,277.303 840.989,282.148 853.796,291.148 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="855.872,277.303 840.989,282.148 853.796,291.148 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="840" y1="360" x2="734.834" y2="344.225"/>
+    <polygon style="fill: #000000" points="735.872,337.303 720.989,342.148 733.796,351.148 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="735.872,337.303 720.989,342.148 733.796,351.148 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="840" y1="360" x2="945.166" y2="344.225"/>
+    <polygon style="fill: #000000" points="946.204,351.148 959.011,342.148 944.128,337.303 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="946.204,351.148 959.011,342.148 944.128,337.303 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="760" y="360" width="160" height="42"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="760" y="360" width="160" height="42"/>
+    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal" x="840" y="385.85">
+      <tspan x="840" y="385.85">@Mutable Date</tspan>
+    </text>
+  </g>
+</svg>
