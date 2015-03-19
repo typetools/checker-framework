@@ -1,19 +1,18 @@
 package org.checkerframework.checker.nullness;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-
+import org.checkerframework.checker.initialization.InitializationTransfer;
+import org.checkerframework.checker.initialization.qual.Initialized;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.NonRaw;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
@@ -22,14 +21,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
-import org.checkerframework.checker.initialization.InitializationTransfer;
-import org.checkerframework.checker.initialization.qual.Initialized;
-import org.checkerframework.checker.nullness.qual.KeyFor;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.NonRaw;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.PolyNull;
-import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -39,6 +30,14 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -67,12 +66,12 @@ public class NullnessTransfer extends
     /** Annotations of the non-null type system. */
     protected final AnnotationMirror NONNULL, NULLABLE;
 
-	protected final KeyForAnnotatedTypeFactory keyForTypeFactory;
-	
+    protected final KeyForAnnotatedTypeFactory keyForTypeFactory;
+
     public NullnessTransfer(NullnessAnalysis analysis) {
         super(analysis);
         this.analysis = analysis;
-    	this.keyForTypeFactory = ((BaseTypeChecker)analysis.getTypeFactory().getContext().getChecker()).getTypeFactoryOfSubchecker(KeyForSubchecker.class);
+        this.keyForTypeFactory = ((BaseTypeChecker)analysis.getTypeFactory().getContext().getChecker()).getTypeFactoryOfSubchecker(KeyForSubchecker.class);
         NONNULL = AnnotationUtils.fromClass(analysis.getTypeFactory()
                 .getElementUtils(), NonNull.class);
         NULLABLE = AnnotationUtils.fromClass(analysis.getTypeFactory()
@@ -228,13 +227,13 @@ public class NullnessTransfer extends
         }
 
         // Handle KeyFor annotations
-        
-    	String methodName = n.getTarget().getMethod().toString();
+
+        String methodName = n.getTarget().getMethod().toString();
 
         // First verify if the method name is get. This is an inexpensive check.
 
         if (methodName.startsWith("get(")) {
-        	// Now verify that the receiver of the method invocation is of a type
+            // Now verify that the receiver of the method invocation is of a type
             // that extends that java.util.Map interface. This is a more expensive check.
 
             javax.lang.model.util.Types types = analysis.getTypes();

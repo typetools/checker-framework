@@ -1,23 +1,29 @@
 package org.checkerframework.framework.type;
 
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
-import org.checkerframework.framework.type.visitor.AtmComboVisitor;
 import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.AtmCombo;
+import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Types;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.checkerframework.framework.type.AnnotatedTypeMirror.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Types;
+
 /**
  * A visitor used to compare two type mirrors for "structural" equality.  Structural equality
  * implies that, for two objects, all fields are also structurally equal and for primitives
@@ -33,7 +39,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     //TODO: THE PROBLEM IS THIS CLASS SHOULD FAIL WHEN INCOMPARABLE TYPES ARE COMPARED BUT
     //TODO: TO CURRENTLY SUPPORT THE BUGGY inferTypeArgs WE FALL BACK TO the RawnessComparer
     //TODO: WHICH IS CLOSE TO THE OLD TypeHierarchy behavior
-    private DefaultRawnessComparer fallback;
+    private final DefaultRawnessComparer fallback;
 
 
     //explain this one

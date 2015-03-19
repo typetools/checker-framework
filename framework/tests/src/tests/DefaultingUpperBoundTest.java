@@ -3,10 +3,8 @@ package tests;
 import org.checkerframework.framework.test.ParameterizedCheckerTest;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collection;
 
-import org.checkerframework.framework.util.PluginUtil;
 import org.junit.runners.Parameterized.Parameters;
 
 /**

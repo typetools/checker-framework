@@ -39,8 +39,8 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
     }
 
     protected boolean compare(final AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
-        if (  (type1 == null && type2 != null)
-           && (type1 != null && type2 == null)) {
+        if ((type1 == null && type2 != null)
+           || (type1 != null && type2 == null)) {
             return false;
         }
 
@@ -58,6 +58,7 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
         return type1 == type2;
     }
 
+    @Override
     protected Boolean scan(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void v) {
         return compare(type1, type2) && reduce(true, super.scan(type1, type2, v));
     }
