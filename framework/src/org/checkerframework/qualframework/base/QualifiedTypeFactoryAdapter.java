@@ -78,13 +78,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         return (QualifierHierarchyAdapter<Q>.Implementation)getQualifierHierarchy();
     }
 
-    /** Returns the same result as {@link getTypeHierarchy}, but downcast to a
-     * more precise type. */
-    @SuppressWarnings("unchecked")
-    private TypeHierarchyAdapter<Q> getTypeHierarchyAdapter() {
-        return (TypeHierarchyAdapter<Q>)getTypeHierarchy();
-    }
-
     @Override
     protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
         return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);

@@ -4,7 +4,27 @@ package org.checkerframework.framework.flow;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
-import java.util.*;
+import org.checkerframework.dataflow.analysis.AbstractValue;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.util.HashCodeUtils;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TypeHierarchy;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
+import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
+
+import java.util.Collection;
+import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -12,21 +32,6 @@ import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-
-import org.checkerframework.dataflow.analysis.AbstractValue;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.framework.type.*;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
-import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
 
 /**
  * An implementation of an abstract value used by the Checker Framework org.checkerframework.dataflow
@@ -170,8 +175,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         }
         AnnotatedTypeMirror result = AnnotatedTypeMirror.createType(
                 underlyingType, analysis.getTypeFactory(), false);
-        QualifierHierarchy qualHierarchy = analysis.getTypeFactory()
-                .getQualifierHierarchy();
         AnnotatedTypeMirror otherType = other.getType();
 
         if (mostSpecific(analysis.getTypeFactory(), getType(), otherType,
