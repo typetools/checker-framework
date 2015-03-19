@@ -2,7 +2,7 @@ class Unboxing {
     boolean b = Boolean.TRUE;
 
     <T> T foo(Class<T> expectedType) {
-	return null;
+        return null;
     }
 
     boolean b2 = foo(Boolean.class);

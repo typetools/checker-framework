@@ -4,24 +4,6 @@ package org.checkerframework.framework.util;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
-
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -44,6 +26,24 @@ import org.checkerframework.javacutil.Resolver;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
@@ -689,11 +689,11 @@ public class FlowExpressionParseUtil {
     public static FlowExpressionContext buildFlowExprContextForUse(
             ObjectCreationNode n, TreePath currentPath, BaseContext checkerContext) {
 
-    	// Since the object that is being created does not exist yet,
-    	// the receiver of the constructor will be the current object if
-    	// the constructor is called within a nonstatic method body.
-    	// Otherwise it will be the enclosing class.
-    	
+        // Since the object that is being created does not exist yet,
+        // the receiver of the constructor will be the current object if
+        // the constructor is called within a nonstatic method body.
+        // Otherwise it will be the enclosing class.
+
         Node receiver = null;
 
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(currentPath);
@@ -707,15 +707,15 @@ public class FlowExpressionParseUtil {
         }
 
         Receiver internalReceiver = FlowExpressions.internalReprOf(checkerContext.getAnnotationProvider(), receiver);
-    	
-    	List<Receiver> internalArguments = new ArrayList<>();
+
+        List<Receiver> internalArguments = new ArrayList<>();
         for (Node arg : n.getArguments()) {
             internalArguments.add(FlowExpressions.internalReprOf(checkerContext.getAnnotationProvider(), arg));
         }
 
         FlowExpressionContext flowExprContext = new FlowExpressionContext(
-        		internalReceiver, internalArguments, checkerContext);
+                internalReceiver, internalArguments, checkerContext);
 
         return flowExprContext;
-    }    
+    }
 }

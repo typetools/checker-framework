@@ -195,13 +195,13 @@ public class FormatterTreeUtil {
          * Returns null if the format string does not contain syntactic errors.
          */
         public final Result<String> isIllegalFormat() {
-        	String res = null;
+            String res = null;
             if (!formatAnno.hasAnnotation(Format.class)) {
                 res = "(is a @Format annotation missing?)";
-	            AnnotationMirror inv = formatAnno.getAnnotation(InvalidFormat.class);
-	            if (inv != null) {
-	                res = invalidFormatAnnotationToErrorMessage(inv);
-	            }
+                AnnotationMirror inv = formatAnno.getAnnotation(InvalidFormat.class);
+                if (inv != null) {
+                    res = invalidFormatAnnotationToErrorMessage(inv);
+                }
             }
             return new ResultImpl<String>(res, formatArg);
         }
@@ -261,7 +261,7 @@ public class FormatterTreeUtil {
 
             ExpressionTree loc = node.getMethodSelect();
             if (type!=InvocationType.VARARG && args.size() > 0) {
-            	loc = args.get(0);
+                loc = args.get(0);
             }
             return new ResultImpl<InvocationType>(type, loc);
         }
