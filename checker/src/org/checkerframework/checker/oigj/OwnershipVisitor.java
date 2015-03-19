@@ -1,12 +1,12 @@
 package org.checkerframework.checker.oigj;
 
-import javax.lang.model.element.Element;
-
 import org.checkerframework.checker.oigj.qual.Dominator;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+
+import javax.lang.model.element.Element;
 
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ExpressionTree;
@@ -33,6 +33,7 @@ public class OwnershipVisitor extends BaseTypeVisitor<OwnershipAnnotatedTypeFact
             return false;
         return super.isAccessAllowed(field, receiver, accessTree);
     }
+
     @Override
     protected void checkExceptionParameter(CatchTree node) {
         // TODO: Top is @World, but the default is bottom, @Modifier.

@@ -1,10 +1,5 @@
 package org.checkerframework.qualframework.base;
 
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
@@ -15,13 +10,20 @@ import org.checkerframework.qualframework.util.QualifierContext;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror.WrappedAnnotatedTypeVariable;
 
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Set;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Set;
+
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 
 /** Default implementation of {@link QualifiedTypeFactory}.  Most type systems
  * should extend this class (or a subclass) instead of implementing {@link
@@ -52,7 +54,7 @@ import java.util.Set;
  * QualifierHierarchy}.
  */
 public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFactory<Q> {
-    private IdentityHashMap<ExtendedParameterDeclaration, QualifiedTypeParameterBounds<Q>> paramBoundsMap = new IdentityHashMap<>();
+    private final IdentityHashMap<ExtendedParameterDeclaration, QualifiedTypeParameterBounds<Q>> paramBoundsMap = new IdentityHashMap<>();
 
     private QualifiedTypes<Q> qualifiedTypes;
     private QualifierHierarchy<Q> qualifierHierarchy;
@@ -63,7 +65,7 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     private TypeAnnotator<Q> typeAnnotator;
 
     private QualifiedTypeFactoryAdapter<Q> adapter;
-    private QualifierContext<Q> context;
+    private final QualifierContext<Q> context;
 
     public DefaultQualifiedTypeFactory(QualifierContext<Q> context) {
         this.context = context;
@@ -155,6 +157,7 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     }
 
 
+    @Override
     public final QualifiedTypes<Q> getQualifiedTypes() {
         if (this.qualifiedTypes == null) {
             this.qualifiedTypes = createQualifiedTypes();
@@ -195,11 +198,11 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
      * Constructs a {@link TypeHierarchy} for the current type system.  The
      * default implementation constructs a {@link DefaultTypeHierarchy}.
      *
-     * @param qualifierHierarchy   
+     * @param qualifierHierarchy
      *      a reference to the {@link QualifierHierarchy} used by this type system
      */
     protected TypeHierarchy<Q> createTypeHierarchy(QualifierHierarchy<Q> qualifierHierarchy) {
-        return new DefaultTypeHierarchy<Q>(qualifierHierarchy);
+        return new DefaultTypeHierarchy<Q>();
     }
 
 

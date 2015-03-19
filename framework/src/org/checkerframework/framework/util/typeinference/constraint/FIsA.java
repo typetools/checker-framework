@@ -3,8 +3,6 @@ package org.checkerframework.framework.util.typeinference.constraint;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 
-import javax.lang.model.type.TypeVariable;
-
 /**
  * @see org.checkerframework.framework.util.typeinference.constraint.AFConstraint
  * A constraint of the form:

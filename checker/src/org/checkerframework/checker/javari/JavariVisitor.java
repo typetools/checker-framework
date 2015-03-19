@@ -1,13 +1,5 @@
 package org.checkerframework.checker.javari;
 
-
-import java.util.Collections;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-
-import org.checkerframework.checker.javari.qual.Mutable;
 import org.checkerframework.checker.javari.qual.Assignable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -17,11 +9,15 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.javacutil.TreeUtils;
 
+import java.util.Collections;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
-
 
 /**
  * A type-checking visitor for the Javari mutability annotations
