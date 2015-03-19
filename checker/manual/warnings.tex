@@ -212,6 +212,15 @@ as for \<@SuppressWarnings> annotations, such as writing a comment
 justifying why the assumption is safe
 (Section~\ref{suppresswarnings-best-practices}).
 
+The \<-AassumeAssertionsAreEnabled> and \<-AassumeAssertionsAreDisabled>
+command-line options (Section~\ref{type-refinement-assertions}) do not
+affect processing of \<assert> statements that have \<@AssumeAssertion> in
+their message.  Writing \<@AssumeAssertion> means that the assertion would
+succeed if it were executed, and the Checker Framework makes use of that
+information regardless of the \<-AassumeAssertionsAreEnabled> and
+\<-AassumeAssertionsAreDisabled> command-line options.
+
+
 %% Redundant.
 % If the string \<@AssumeAssertion(\emph{warningkey})> does not appear in the
 % assertion message, then the Checker Framework treats the assertion as
