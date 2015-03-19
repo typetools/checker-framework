@@ -1,7 +1,7 @@
 This document describes how to run and write tests for the Checker
 Framework.  Running and writing tests is useful for Checker Framework
 maintainers, checker writers, and bug submitters.  Users of the Checker
-Framework and of the org.checkerframework.checker packaged with it should read the manual
+Framework and of the checkers packaged with it should read the manual
 instead; see file ../manual/manual.html .
 
 
@@ -27,7 +27,7 @@ or, less commonly (to run from .class files instead of .jar file):
 
 where the specific checker and command-line arguments are often clear from
 the directory name but can also be determined from
-  checker-framework/org.checkerframework.checker/tests/src/tests/MyTypeSystemTest.java
+  checker-framework/checker/tests/src/tests/MyTypeSystemTest.java
 
 
 How to write test cases for the Checker Framework
@@ -43,7 +43,7 @@ A checker test case has two parts:
 
 Both parts can be expressed in one file that is stored in the folder
 corresponding to the checker name, such as
-checker-framework/org.checkerframework.checker/tests/nullness/.
+checker-framework/checker/tests/nullness/.
 
 
 Writing new tests for an existing checker
@@ -62,8 +62,8 @@ class MyNullnessTest {
 The Nullness Checker should report an error for the dereference in line 4.
 The non-localized message key for such an error is
 'dereference.of.nullable'.  You could learn that by reading the Javadoc (or
-the source code) for org.checkerframework.checker.nullness.NullnessVisitor, or by creating the
-test and observing the failure.
+the source code) for org.checkerframework.checker.nullness.NullnessVisitor,
+or by creating the test and observing the failure.
 
 To indicate the expected failure, insert the line
   //:: error: (<error-message-key>)
@@ -86,21 +86,25 @@ class MyNullnessTest {
   }
 }
 
-The file may appear anywhere in or under org.checkerframework.checker/tests/nullness/.  (You may
+The file may appear anywhere in or under checker-framework/checker/tests/nullness/.  (You may
 find it useful to use separate subfolders, such as
 nullness/tests/nullness/dereference/.)  Each checker should have its own
-folder under org.checkerframework.checker/tests, such as org.checkerframework.checker/tests/igj/,
-org.checkerframework.checker/tests/interning/, etc.
+folder under checker-framework/checker/tests, such as checker-framework/checker/tests/igj/,
+checker-framework/checker/tests/interning/, etc.
+
+
+Writing new tests with differet command-line arguments
+======================================================
 
 You may wish to supply different command-line arguments (flags) to the
 checker for certain test cases -- for instance, to check an optional
 command-line argument that should not be enabled for every test.  To do
 this:
  * create a top-level test directory, such as
-   org.checkerframework.checker/tests/nullness-uninit, for the test cases
+   checker-framework/checker/tests/nullness-uninit, for the test cases
  * create a top-level JUnit test, such as:
-   org.checkerframework.checker/tests/src/tests/NullnessUninitializedTest.java
- * change org.checkerframework.checker/build.xml to run those tests
+   checker-framework/checker/tests/src/tests/NullnessUninitializedTest.java
+ * change checker-framework/checker/build.xml to run those tests
 
 
 Disabling a test case
@@ -126,9 +130,9 @@ test directory for testing different command-line arguments, as described
 above.
 
 You will thus create a new file such as 
-  checker-framework/org.checkerframework.checker/tests/src/tests/MyTypeSystemTest.java
+  checker-framework/checker/tests/src/tests/MyTypeSystemTest.java
 and a new directory such as 
-  checker-framework/org.checkerframework.checker/tests/mytypesystem/
+  checker-framework/checker/tests/mytypesystem/
 
 
 Annotated JDK
