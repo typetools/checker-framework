@@ -3,19 +3,12 @@ package org.checkerframework.qualframework.base;
 import javax.lang.model.type.TypeKind;
 
 /** Default implementation of {@link TypeHierarchy}.  Applies standard Java
- * subtyping rules to compare Java types, and uses a {@link QualifierHierarchy}
- * to compare qualifiers.
+ * subtyping rules to compare Java types.
  */
 public class DefaultTypeHierarchy<Q> implements TypeHierarchy<Q> {
-    private QualifierHierarchy<Q> qualifierHierarchy;
     private TypeHierarchyAdapter<Q> adapter;
 
-    /**
-     * @param qualifierHierarchy   
-     *      a {@link QualifierHierarchy} to use for comparing individual qualifiers
-     */
-    public DefaultTypeHierarchy(QualifierHierarchy<Q> qualifierHierarchy) {
-        this.qualifierHierarchy = qualifierHierarchy;
+    public DefaultTypeHierarchy() {
     }
 
     void setAdapter(TypeHierarchyAdapter<Q> adapter) {
@@ -36,6 +29,7 @@ public class DefaultTypeHierarchy<Q> implements TypeHierarchy<Q> {
                 case NULL:
                 case TYPEVAR:
                     return true;
+                default:
             }
         }
 
