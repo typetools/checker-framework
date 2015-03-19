@@ -1,40 +1,22 @@
 package org.checkerframework.common.value;
 
+import org.checkerframework.common.value.qual.BoolVal;
+import org.checkerframework.common.value.qual.BottomVal;
+import org.checkerframework.common.value.qual.DoubleVal;
+import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.common.value.qual.UnknownVal;
+import org.checkerframework.common.value.util.NumberMath;
+import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.BitwiseAndNode;
-import org.checkerframework.dataflow.cfg.node.BitwiseComplementNode;
-import org.checkerframework.dataflow.cfg.node.BitwiseOrNode;
-import org.checkerframework.dataflow.cfg.node.BitwiseXorNode;
-import org.checkerframework.dataflow.cfg.node.ConditionalAndNode;
-import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
-import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
-import org.checkerframework.dataflow.cfg.node.EqualToNode;
-import org.checkerframework.dataflow.cfg.node.FloatingDivisionNode;
-import org.checkerframework.dataflow.cfg.node.FloatingRemainderNode;
-import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
-import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
-import org.checkerframework.dataflow.cfg.node.IntegerDivisionNode;
-import org.checkerframework.dataflow.cfg.node.IntegerRemainderNode;
-import org.checkerframework.dataflow.cfg.node.LeftShiftNode;
-import org.checkerframework.dataflow.cfg.node.LessThanNode;
-import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
-import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.NotEqualNode;
-import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
-import org.checkerframework.dataflow.cfg.node.NumericalMinusNode;
-import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
-import org.checkerframework.dataflow.cfg.node.NumericalPlusNode;
-import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
-import org.checkerframework.dataflow.cfg.node.SignedRightShiftNode;
-import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
-import org.checkerframework.dataflow.cfg.node.StringConversionNode;
-import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
-import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
-
+import org.checkerframework.dataflow.cfg.node.*;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
+import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -44,21 +26,6 @@ import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-
-import org.checkerframework.common.value.qual.BoolVal;
-import org.checkerframework.common.value.qual.BottomVal;
-import org.checkerframework.common.value.qual.DoubleVal;
-import org.checkerframework.common.value.qual.IntVal;
-import org.checkerframework.common.value.qual.StringVal;
-import org.checkerframework.common.value.qual.UnknownVal;
-import org.checkerframework.common.value.util.NumberMath;
-import org.checkerframework.common.value.util.NumberUtils;
-import org.checkerframework.framework.flow.CFAbstractAnalysis;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFTransfer;
-import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 
 
 public class ValueTransfer extends CFTransfer {
@@ -68,7 +35,7 @@ public class ValueTransfer extends CFTransfer {
             CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
         atypefactory = analysis.getTypeFactory();
-    } 
+    }
 
     private List<String> getStringValues(Node subNode,
             TransferInput<CFValue, CFStore> p) {
@@ -88,7 +55,7 @@ public class ValueTransfer extends CFTransfer {
         if (numberAnno != null) {
             return Collections.singletonList("null");
         }
-        
+
         //@IntVal, @DoubleVal, @BoolVal (have to be converted to string)
         List<? extends Object> values;
         numberAnno = value.getType().getAnnotation(BoolVal.class);
@@ -206,7 +173,7 @@ public class ValueTransfer extends CFTransfer {
         return new RegularTransferResult<>(newResultValue,
                 result.getRegularStore());
     }
-    
+
     @Override
     public TransferResult<CFValue, CFStore> visitStringConcatenate(
             StringConcatenateNode n, TransferInput<CFValue, CFStore> p) {

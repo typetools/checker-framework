@@ -1,24 +1,5 @@
 package org.checkerframework.common.value;
 
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
@@ -48,11 +29,28 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
@@ -83,9 +81,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** should this type factory report warnings? **/
     private boolean reportWarnings = true;
-    
+
     /** Helper class that evaluates statically executable methods, constructor, and fields.*/
-    private ReflectiveEvalutator evalutator = new ReflectiveEvalutator(checker, this, reportWarnings);
+    private final ReflectiveEvalutator evalutator = new ReflectiveEvalutator(checker, this, reportWarnings);
 
     public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -372,7 +370,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         intAnno = a2;
                     }
                     List<Long> intVals = getIntValues(intAnno);
-                    List<Double> doubleVals = getDoubleValues(doubleAnno);                    
+                    List<Double> doubleVals = getDoubleValues(doubleAnno);
 
                     for (Long n : intVals) {
                         doubleVals.add(n.doubleValue());
@@ -486,7 +484,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             return null;
         }
-        
+
         /**
          * Recursive method to handle array initializations. Recursively
          * descends the initializer to find each dimension's size and create the
@@ -519,7 +517,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 AnnotationMirror newQual = createArrayLenAnnotation(new ArrayList<>(lengths));
                 type.replaceAnnotation(newQual);
-            } 
+            }
         }
 
         private void handleInitalizers(List<? extends ExpressionTree> initializers,AnnotatedArrayType type) {
@@ -562,7 +560,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 componentType.addAnnotation(createArrayLenAnnotation(summarylengths.get(i)));
                 componentType = ((AnnotatedArrayType) componentType).getComponentType();
                 i++;
-            }               
+            }
         }
 
         private String getByteArrayStringVal(
@@ -648,19 +646,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             .singletonList((Boolean) tree.getValue()));
                     type.replaceAnnotation(boolAnno);
                     return null;
-                    
+
                 case CHAR_LITERAL:
                     AnnotationMirror charAnno = createCharAnnotation(Collections
                             .singletonList((Character) tree.getValue()));
                     type.replaceAnnotation(charAnno);
                     return null;
-                    
+
                 case DOUBLE_LITERAL:
                     AnnotationMirror doubleAnno = createNumberAnnotationMirror(Collections
                             .<Number>singletonList((Double) tree.getValue()));
                     type.replaceAnnotation(doubleAnno);
                     return null;
-                    
+
                 case FLOAT_LITERAL:
                     AnnotationMirror floatAnno = createNumberAnnotationMirror(Collections
                             .<Number>singletonList((Float) tree.getValue()));
@@ -727,11 +725,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else {
                     argValues = null;
                 }
-                
+
                 // Get receiver values
                 AnnotatedTypeMirror receiver = getReceiverType(tree);
                 List<?> receiverValues;
-                
+
                 if (receiver != null && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
                     receiverValues = getValues(receiver,receiver.getUnderlyingType());
                     if (receiverValues.isEmpty()) {
@@ -742,7 +740,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else {
                     receiverValues = null;
                 }
-                
+
                 // Evaluate method
                 List<?> returnValues = evalutator.evaluteMethodCall(argValues,
                         receiverValues, tree);
@@ -852,7 +850,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return coveredClassStrings.contains(type.getUnderlyingType().toString());
         }
 
-       
 
         /**
          * Overloaded version to accept an AnnotatedTypeMirror
@@ -868,7 +865,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private AnnotationMirror resultAnnotationHandler(
                 TypeMirror resultType, List<?> results, Tree tree) {
-        
+
             Class<?> resultClass = ValueCheckerUtils.getClassFromType(resultType);
 
             // For some reason null is included in the list of values,
@@ -972,7 +969,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         builder.setValue("value", values);
         return builder.build();
     }
-    
+
     public AnnotationMirror createArrayLenAnnotation(List<Integer> values) {
         values =ValueCheckerUtils.removeDuplicates(values);
         if (values.isEmpty() || values.size() > MAX_VALUES) {
@@ -1031,22 +1028,22 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         throw new UnsupportedOperationException("ValueAnnotatedTypeFactory: unexpected class: "+first.getClass());
     }
-    
+
     public static List<Long> getIntValues(AnnotationMirror intAnno) {
         return AnnotationUtils.getElementValueArray(
-                intAnno, "value", Long.class, true); 
+                intAnno, "value", Long.class, true);
     }
-    
+
     public static List<Double> getDoubleValues(AnnotationMirror doubleAnno) {
         return AnnotationUtils.getElementValueArray(
-                doubleAnno, "value", Double.class, true); 
+                doubleAnno, "value", Double.class, true);
     }
-    
+
     public static List<Integer> getArrayLength(AnnotationMirror arrayAnno) {
         return AnnotationUtils.getElementValueArray(
-                arrayAnno, "value", Integer.class, true); 
+                arrayAnno, "value", Integer.class, true);
     }
-    
+
     public static List<Character> getCharValues(AnnotationMirror intAnno) {
         if (intAnno != null) {
             List<Long> intValues = AnnotationUtils.getElementValueArray(
@@ -1059,7 +1056,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         return new ArrayList<>();
     }
-    
+
     public static List<Boolean> getBooleanValues(AnnotationMirror boolAnno) {
         if (boolAnno != null) {
             List<Boolean> boolValues = AnnotationUtils.getElementValueArray(
