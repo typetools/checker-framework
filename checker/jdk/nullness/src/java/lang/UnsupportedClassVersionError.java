@@ -6,10 +6,10 @@ public
 class UnsupportedClassVersionError extends ClassFormatError {
     private static final long serialVersionUID = 0L;
     public UnsupportedClassVersionError() {
-	super();
+        super();
     }
 
     public UnsupportedClassVersionError(@Nullable String s) {
-	super(s);
+        super(s);
     }
 }

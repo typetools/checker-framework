@@ -1,13 +1,13 @@
 package org.checkerframework.checker.nullness;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-
 import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 /**
  * An implementation of the nullness type-system based on an initialization
@@ -46,13 +46,13 @@ public abstract class AbstractNullnessChecker extends InitializationChecker {
         super.initChecker();
     }
     */
-    
+
     @Override
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         LinkedHashSet<Class<? extends BaseTypeChecker>> checkers
             = super.getImmediateSubcheckerClasses();
         checkers.add(KeyForSubchecker.class);
-    	return checkers;
+        return checkers;
     }
 
     @Override
