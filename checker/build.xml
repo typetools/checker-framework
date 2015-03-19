@@ -617,12 +617,12 @@
     </target>
 
     <target name="nullness-tests"
-            depends="jar,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-extra-tests,nullness-reflection-tests"
+            depends="jar,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-assume-assertions-are-enabled-tests,nullness-extra-tests,nullness-reflection-tests"
             description="Run tests for the Nullness Checker">
     </target>
 
     <target name="nullness-tests-nojdk"
-            depends="jar,jdk.jar.exists,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-extra-tests-nojdk,nullness-reflection-tests"
+            depends="jar,jdk.jar.exists,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-assume-assertions-are-enabled-tests,nullness-extra-tests-nojdk,nullness-reflection-tests"
             description="Run tests for the Nullness Checker, WITHOUT updating jdkX.jar">
     </target>
 
@@ -645,6 +645,17 @@
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessFbcTestWithAsserts"/>
         </antcall>
+    </target>
+
+
+    <target name="nullness-assume-assertions-are-enabled-tests" depends="jar,build-tests"
+            description="Run uninit tests for the Nullness Checker">
+<!-- TODO: re-enable this once issue 417 is fixed; see
+https://code.google.com/p/checker-framework/issues/detail?id=416
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessAssumeAssertionsAreDisabled"/>
+        </antcall>
+-->
     </target>
 
     <target name="nullness-uninit-tests-with-asserts" depends="jar,build-tests"
