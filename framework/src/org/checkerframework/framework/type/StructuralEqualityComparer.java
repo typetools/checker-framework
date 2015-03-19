@@ -72,7 +72,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * @return true if type1 and type2 are equal
      */
     public boolean areEqual(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2 ) {
-        return AtmCombo.accept(type1, type2, new VisitHistory(this), this);
+        return AtmCombo.accept(type1, type2, new VisitHistory(), this);
     }
 
     /**

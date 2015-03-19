@@ -2,10 +2,6 @@ package org.checkerframework.framework.util.typeinference.constraint;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
-
-import javax.lang.model.type.TypeVariable;
-import java.util.Set;
 
 /**
  * @see org.checkerframework.framework.util.typeinference.constraint.AFConstraint

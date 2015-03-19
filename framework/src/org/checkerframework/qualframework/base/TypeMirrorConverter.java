@@ -25,7 +25,6 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedType
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedUnionType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
-import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 
 import java.util.ArrayList;
@@ -439,17 +438,6 @@ public class TypeMirrorConverter<Q> {
         // workaround.
         //return watm.accept(UPDATED_QTM_BUILDER, getQualifier(watm.unwrap()));
     }
-
-    /** getQualifiedType lifted to operate on a list of AnnotatedTypeMirrors.
-     */
-    private List<QualifiedTypeMirror<Q>> getQualifiedTypeListFromWrapped(List<? extends ExtendedTypeMirror> watms) {
-        List<QualifiedTypeMirror<Q>> result = new ArrayList<>();
-        for (int i = 0; i < watms.size(); ++i) {
-            result.add(getQualifiedTypeFromWrapped((WrappedAnnotatedTypeMirror)watms.get(i)));
-        }
-        return result;
-    }
-
 
     /* Conversion functions between qualifiers and @Key AnnotationMirrors */
 
