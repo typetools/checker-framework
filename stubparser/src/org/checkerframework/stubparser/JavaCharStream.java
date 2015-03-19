@@ -2,7 +2,7 @@
 /* JavaCCOptions:STATIC=false,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 /*
  * Copyright (C) 2008 Júlio Vilmar Gesser.
- * 
+ *
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
  * Java 1.5 parser and Abstract Syntax Tree is free software: you can redistribute it and/or modify
@@ -320,7 +320,7 @@ class JavaCharStream
         }
         catch(java.io.IOException e)
         {
-	  // We are returning one backslash so we should only backup (count-1)
+          // We are returning one backslash so we should only backup (count-1)
           if (backSlashCnt > 1)
             backup(backSlashCnt-1);
 

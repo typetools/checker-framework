@@ -122,10 +122,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         Element leftElt = null;
         Element rightElt = null;
         if(left instanceof org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType){
-        	leftElt = ((DeclaredType)left.getUnderlyingType()).asElement();
+            leftElt = ((DeclaredType)left.getUnderlyingType()).asElement();
         }
         if(right instanceof org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType){
-        	rightElt = ((DeclaredType)right.getUnderlyingType()).asElement();
+            rightElt = ((DeclaredType)right.getUnderlyingType()).asElement();
         }
 
         //if neither @Interned or @UsesObjectEquals, report error
@@ -161,7 +161,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      *
      * If a class is not marked @UsesObjectEquals, it must:
      *
-     * 	  -not have a superclass marked @UsesObjectEquals
+     *  -not have a superclass marked @UsesObjectEquals
      *
      *
      * @see org.checkerframework.common.basetype.BaseTypeVisitor#visitClass(com.sun.source.tree.ClassTree, java.lang.Object)

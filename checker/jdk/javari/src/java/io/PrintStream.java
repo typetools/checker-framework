@@ -17,24 +17,24 @@ public class PrintStream extends FilterOutputStream
         throws UnsupportedEncodingException { super(null); }
 
     public PrintStream(String fileName) throws FileNotFoundException {
-	super(null);
+        super(null);
         throw new RuntimeException("skeleton method");
     }
 
     public PrintStream(String fileName, String csn)
     throws FileNotFoundException, UnsupportedEncodingException {
-	super(null);
+        super(null);
         throw new RuntimeException("skeleton method");
     }
 
     public PrintStream(File file) throws FileNotFoundException {
-	super(null);
+        super(null);
         throw new RuntimeException("skeleton method");
     }
 
     public PrintStream(File file, String csn)
     throws FileNotFoundException, UnsupportedEncodingException {
-	super(null);
+        super(null);
         throw new RuntimeException("skeleton method");
     }
 
