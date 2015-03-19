@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 import org.checkerframework.framework.qual.*;
 
 /**
- * Indicates that the annotated reference of an Object that is a key in a map.
+ * Indicates that the annotated reference of an Object is a key in a map.
  *
  * <p>
  * The value of the annotation should be the reference name of the map.  Suppose that <tt>config</tt> is a <tt>Map&lt;String, String&gt;</tt>.  Then the

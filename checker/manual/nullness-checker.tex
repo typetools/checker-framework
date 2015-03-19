@@ -553,8 +553,9 @@ code:
   // Another way to use castNonNull as a cast:
   castNonNull(possiblyNull2).toString();
 
-  // It is possible, but not recommmended, to use castNonNull as a statement
-  // (it would be better to write an assert statement and @AssumeAssertion instead):
+  // It is possible, but not recommmended, to use castNonNull as a statement:
+  // (It would be better to write an assert statement with @AssumeAssertion
+  // in its message, instead.)
   castNonNull(possiblyNull3);
   possiblyNull3.toString();
 \end{Verbatim}
@@ -736,8 +737,9 @@ Here are some other tips:
     contains possibly-null objects.
 \item
     If you know that a particular variable is definitely not null, but the
-    Nullness Checker cannot figure it out, then you can tell it by writing
-    an assertion (see Section~\ref{suppressing-warnings}):
+    Nullness Checker estimates that the variable might be null, then you can
+    make the Nullness Checker trust your judgment by writing
+    an assertion (see Section~\ref{assumeassertion}):
 \begin{Verbatim}
 assert var != null : "@AssumeAssertion(nullness)";
 \end{Verbatim}
@@ -2192,7 +2194,7 @@ Section~\ref{type-refinement}.
 % https://code.google.com/p/checker-framework/issues/detail?id=221
 % https://code.google.com/p/checker-framework/issues/detail?id=241
 % https://code.google.com/p/checker-framework/issues/detail?id=273
-Currently, the set of expressions allowed in @KeyFor is less expressive
+Currently, the set of expressions allowed in \<@KeyFor> is less expressive
 than the expressions described in
 Section~\ref{java-expressions-as-arguments}.  The Checker Framework
 developers are working to correct this bug.
