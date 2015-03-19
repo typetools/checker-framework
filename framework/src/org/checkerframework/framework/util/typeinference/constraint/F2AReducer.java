@@ -2,17 +2,8 @@ package org.checkerframework.framework.util.typeinference.constraint;
 
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
-import org.checkerframework.framework.type.DefaultTypeHierarchy;
-import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
-import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.PluginUtil;
-import org.checkerframework.javacutil.ErrorReporter;
 
-import javax.lang.model.type.TypeKind;
-import java.util.List;
 import java.util.Set;
-import static org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil.*;
 
 /**
  * F2AReducer takes an F2A constraint that is not irreducible (@see AFConstraint.isIrreducible)

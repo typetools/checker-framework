@@ -1,10 +1,5 @@
 package org.checkerframework.qualframework.base;
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-
-import com.sun.source.util.Trees;
 import org.checkerframework.framework.util.OptionConfiguration;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.qualframework.base.format.DefaultQualFormatter;
@@ -15,6 +10,12 @@ import org.checkerframework.qualframework.util.QualifierContext;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+
+import com.sun.source.util.Trees;
+
 /** Main entry point for a pluggable type system.  Each type system must
  * provide an implementation of this abstract class that produces an
  * appropriate {@link QualifiedTypeFactory} for the type system.
@@ -22,7 +23,6 @@ import java.util.Set;
 public abstract class Checker<Q> implements QualifierContext<Q> {
     private QualifiedTypeFactory<Q> typeFactory;
     private CheckerAdapter<Q> adapter;
-    private QualifiedTypeFormatter<Q> typeFormatter;
 
     void setAdapter(CheckerAdapter<Q> adapter) {
         this.adapter = adapter;
@@ -79,7 +79,7 @@ public abstract class Checker<Q> implements QualifierContext<Q> {
 
     /**
      * Constructs the {@link QualifiedTypeFactory} for use by this {@link
-     * Checker}. 
+     * Checker}.
      */
     protected abstract QualifiedTypeFactory<Q> createTypeFactory();
 

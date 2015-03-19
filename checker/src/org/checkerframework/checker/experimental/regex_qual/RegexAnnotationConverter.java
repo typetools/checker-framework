@@ -3,11 +3,9 @@ package org.checkerframework.checker.experimental.regex_qual;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.qualframework.base.AnnotationConverter;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.ExecutableElement;
 import java.util.Collection;
-import java.util.Map;
+
+import javax.lang.model.element.AnnotationMirror;
 
 /**
  * Convert {@link org.checkerframework.checker.regex.qual.Regex}

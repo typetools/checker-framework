@@ -1,14 +1,18 @@
 package org.checkerframework.checker.oigj;
 
-import java.lang.annotation.Target;
-
 import org.checkerframework.checker.oigj.qual.I;
 import org.checkerframework.checker.oigj.qual.Immutable;
 import org.checkerframework.checker.oigj.qual.Modifier;
 import org.checkerframework.checker.oigj.qual.Mutable;
 import org.checkerframework.checker.oigj.qual.O;
-import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+
+import java.lang.annotation.Target;
 
 import com.sun.source.tree.Tree.Kind;
 

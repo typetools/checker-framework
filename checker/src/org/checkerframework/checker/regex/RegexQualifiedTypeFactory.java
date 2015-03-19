@@ -48,7 +48,7 @@ import java.util.regex.PatternSyntaxException;
  */
 public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Regex> {
 
-    private CombiningOperation<Regex> lubOp = new CombiningOperation.Lub<>(new RegexQualifierHierarchy());
+    private final CombiningOperation<Regex> lubOp = new CombiningOperation.Lub<>(new RegexQualifierHierarchy());
 
     /**
      * The Pattern.compile method.
@@ -273,7 +273,7 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
 
     private boolean isPolyRegex(PolyQual<Regex> possiblePoly) {
         return possiblePoly instanceof QualVar
-                && ((QualVar) possiblePoly).getName().equals(SimpleQualifierParameterAnnotationConverter.POLY_NAME);
+                && ((QualVar<?>) possiblePoly).getName().equals(SimpleQualifierParameterAnnotationConverter.POLY_NAME);
     }
 
     /**
