@@ -21,6 +21,8 @@ import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 
+import static com.sun.tools.javac.code.TypeTag.WILDCARD;
+
 /**
  * A utility class that helps with {@link TypeMirror}s.
  *
@@ -316,12 +318,18 @@ public final class TypesUtils {
         }
     }
 
+    // Version of com.sun.tools.javac.code.Types.wildLowerBound(Type)
+    // that works with both jdk8 (called upperBound there) and jdk8u.
     public static Type wildLowerBound(ProcessingEnvironment env, TypeMirror tm) {
-        com.sun.tools.javac.code.Type.WildcardType wct = (com.sun.tools.javac.code.Type.WildcardType) tm;
-        com.sun.tools.javac.util.Context ctx = ((com.sun.tools.javac.processing.JavacProcessingEnvironment) env).getContext();
-        return com.sun.tools.javac.code.Types.instance(ctx).wildLowerBound(wct);
+        Type t = (Type) tm;
+        if (t.hasTag(WILDCARD)) {
+            Context context = ((JavacProcessingEnvironment) env).getContext();
+            Symtab syms = Symtab.instance(context);
+            Type.WildcardType w = (Type.WildcardType) TypeAnnotationUtils.unannotatedType(t);
+            return w.isExtendsBound() ? syms.botType : wildLowerBound(env, w.type);
+        }
+        else return t.unannotatedType();
     }
-
     /**
      * Returns the {@link TypeMirror} for a given {@link Class}.
      */
