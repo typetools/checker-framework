@@ -13,11 +13,9 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Log;
 
 /**
@@ -167,7 +165,10 @@ public abstract class AggregateChecker extends SourceChecker {
 
     @Override
     protected SourceVisitor<?, ?> createSourceVisitor() {
-        return new AggregateVisitor(this);
+        return new SourceVisitor<Void, Void>(this) {
+            // Aggregate checkers do not visit source,
+            // the checkers in the aggregate checker do.
+        };
     }
 
     // TODO some methods in a component checker should behave differently if they
@@ -175,33 +176,4 @@ public abstract class AggregateChecker extends SourceChecker {
     // return the name of the aggregate checker.
     // We could add a query method in SourceChecker that refers to the aggregate, if present.
     // At the moment, all the component checkers manually need to add the name of the aggregate.
-}
-
-// TODO: change to independent compound visitor
-class AggregateVisitor extends SourceVisitor<Void, Void> {
-
-    protected List<SourceVisitor<?, ?>> visitors;
-
-    public AggregateVisitor(AggregateChecker checker) {
-        super(checker);
-        ListBuffer<SourceVisitor<?, ?>> visitorsLB = new ListBuffer<SourceVisitor<?, ?>>();
-        for (SourceChecker achecker : checker.checkers) {
-            visitorsLB.add(achecker.createSourceVisitor());
-        }
-        visitors = visitorsLB.toList();
-    }
-
-    @Override
-    public void setRoot(CompilationUnitTree root) {
-        for (SourceVisitor<?, ?> avisitor : visitors) {
-            avisitor.setRoot(root);
-        }
-    }
-
-    @Override
-    public void visit(TreePath path) {
-        for (SourceVisitor<?, ?> avisitor : visitors) {
-            avisitor.visit(path);
-        }
-    }
 }

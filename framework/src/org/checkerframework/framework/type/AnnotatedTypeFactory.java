@@ -343,6 +343,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public void setRoot(/*@Nullable*/ CompilationUnitTree root) {
         this.root = root;
         treePathCache.clear();
+        pathHack.clear();
 
         // There is no need to clear the following caches, they
         // are all limited by CACHE_SIZE.

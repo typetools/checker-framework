@@ -433,7 +433,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         // errsOnLastExit should not include any Java errors.
         Context context = ((JavacProcessingEnvironment)processingEnv).getContext();
         Log log = Log.instance(context);
-        int nerrorsOfAllPreviousCheckers = 0;
+        // Start with this.errsOnLastExit which will account for errors seen by
+        // by a previous checker run in an aggregate checker.
+        int nerrorsOfAllPreviousCheckers = this.errsOnLastExit;
         for (BaseTypeChecker checker : getSubcheckers()) {
             checker.errsOnLastExit += nerrorsOfAllPreviousCheckers;
             int errorsBeforeTypeChecking = log.nerrors;
