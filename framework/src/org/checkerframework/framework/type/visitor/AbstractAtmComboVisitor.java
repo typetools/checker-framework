@@ -10,9 +10,6 @@ import org.checkerframework.javacutil.ErrorReporter;
  * defaultErrorMessage.  Implement only those methods you expect to be called on your subclass.
  *
  * This class does no traversal.
- *
- * @param <RETURN_TYPE>
- * @param <PARAM>
  */
 public abstract class AbstractAtmComboVisitor<RETURN_TYPE, PARAM> implements AtmComboVisitor<RETURN_TYPE, PARAM> {
 

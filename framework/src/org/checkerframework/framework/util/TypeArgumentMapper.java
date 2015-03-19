@@ -16,21 +16,33 @@ import java.util.*;
  * Records any mapping between the type parameters of a subtype to the corresponding
  * type parameters of a supertype.
  * e.g., Suppose we have the following classes:
+ * <pre>{@code
  *      class Map<M1,M2>
  *      class HashMap<H1, H2> extends Map<H1,H2>
+ * }</pre>
  *  And we pass HashMap and Map to mapTypeArguments, the result would be:
+ * <pre>{@code
  *      Map(H1 -> M1, H2 -> M2)
+ * }</pre>
  *
  * Note, a single type argument in the subtype can map to multiple type parameters in the supertype.
  * e.g.,
+ * <pre>{@code
  *      class OneTypeMap<O1> extends Map<O1,O1>
+ * }</pre>
  * would have the result:
+ * <pre>{@code
  *      Map(O1 -> [M1,M2])
+ * }</pre>
  *
  * This utility only maps between corresponding type parameters, so the the following class:
+ * <pre>{@code
  *      class StringMap extends Map<String,String>
+ * }</pre>
  * would have an empty map as a result:
+ * <pre>{@code
  *      Map() //there are no type argument relationships between the two types
+ * }</pre>
  */
 public class TypeArgumentMapper {
 
@@ -89,10 +101,12 @@ public class TypeArgumentMapper {
      * supertype that must be the same type as subtype.
      *
      * e.g.,
+     * <pre>{@code
      * class A<A1,A2,A3>
      * class B<B1,B2,B3,B4> extends A<B1,B1,B3> {}
+     * }</pre>
      *
-     * results in a Map(B1 -> [A1,A2], B2 -> [], B3 -> [A3], B4 -> [])
+     * results in a {@code Map(B1 -> [A1,A2], B2 -> [], B3 -> [A3], B4 -> [])}
      *
      * @return a mapping from the type parameters of subtype to the supertype type parameter's
      * that to which they are a type argument

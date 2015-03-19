@@ -28,7 +28,6 @@ public class DefaultInferredTypesApplier {
     /**
      * For each top in qualifier hierarchy, traverse inferred and copy the required annotations over to
      * type.
-     * @param qualifierHierarchy
      * @param type The type to which annotations are being applied
      * @param inferred The type inferred by data flow
      */

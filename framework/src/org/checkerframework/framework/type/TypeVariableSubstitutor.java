@@ -24,8 +24,6 @@ public class TypeVariableSubstitutor {
      * Given a mapping between type variable's to typeArgument, replace each instance of
      * type variable with a copy of type argument.
      * @see #substituteTypeVariable(AnnotatedTypeMirror, org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable)
-     * @param typeParamToArg
-     * @param typeMirror
      * @return A copy of typeMirror with its type variables substituted
      */
     public AnnotatedTypeMirror substitute(final Map<TypeVariable, AnnotatedTypeMirror> typeParamToArg,

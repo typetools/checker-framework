@@ -28,8 +28,8 @@ import static org.checkerframework.framework.util.typeinference.TypeArgInference
 
 /**
  * An implementation of TypeArgumentInference that mostly follows the process outlined in JLS7
- * @link http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7
- * *
+ * See <a href="http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7">JLS &sect;5.12.2.7</a>
+ *
  * Note, there are some deviations JLS 7 for the following cases:
  *     a.) Places where the JLS is vague.  For these cases, first the OpenJDK implementation was consulted
  *     and then we favored the behavior we desire rather than the implied behavior of the JLS or JDK implementation.
@@ -43,10 +43,13 @@ import static org.checkerframework.framework.util.typeinference.TypeArgInference
  *      1) The GlbUtil does not correctly handled wildcards/typevars when the glb result should be a wildcard or typevar
  *      2) Interdependent Method Invocations - Currently we do not correctly handle the case where two methods need
  *         to have their arguments inferred and one is the argument to the other.
- *         E.g. <T> T get()
+ *         E.g.
+ * <pre>{@code
+ *              <T> T get()
  *              <S> void set(S s)
  *              set(get())
- *         Presumably, we want to detect these situations and combine the set of constraints with T <: S
+ * }</pre>
+ *         Presumably, we want to detect these situations and combine the set of constraints with {@code T <: S}.
  */
 public class DefaultTypeArgumentInference implements TypeArgumentInference {
     private final EqualitiesSolver equalitiesSolver = new EqualitiesSolver();
@@ -219,7 +222,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     /**
      * Step 1:
-     * Create a constraint Ai << Fi for each Argument(Ai) to formal parameter(Fi).  Remove any constraint that
+     * Create a constraint {@code Ai << Fi} for each Argument(Ai) to formal parameter(Fi).  Remove any constraint that
      * does not involve a type parameter to be inferred.  Reduce the remaining constraints so that Fi = Tj
      * where Tj is a type parameter with an argument to be inferred.
      * Return the resulting constraint set.
@@ -527,7 +530,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     /**
      * Declarations of the form:
-     * <A, B extends A> implies a TUConstraint of B <: A.  Add these to the constraint list.
+     * {@code <A, B extends A>} implies a TUConstraint of {@code B <: A}.  Add these to the constraint list.
      */
     public void addConstraintsBetweenTargets(Set<TUConstraint> constraints, Set<TypeVariable> targets,
                                              boolean asSubtype, AnnotatedTypeFactory typeFactory) {

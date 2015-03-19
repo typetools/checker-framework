@@ -14,11 +14,15 @@ import java.util.Map;
  * when no explicit arguments are provided.
  *
  * e.g.  If we have a method declaration:
+ * <pre>{@code
  * <A,B> B method(A a, B b) {...}
+ * }</pre>
  * And an invocation of that method:
+ * <pre>{@code
  * method("some Str", 35);
+ * }</pre>
  *
- * TypeArgumentInference will determine what the type arguments to type parameters <A,B> are.
+ * TypeArgumentInference will determine what the type arguments to type parameters A and B are.
  * In Java, if T(A) = the type argument for a, in the above example T(A) == String and T(B) == Integer
  *
  * For the Checker Framework we also need to infer reasonable annotations for these type arguments.

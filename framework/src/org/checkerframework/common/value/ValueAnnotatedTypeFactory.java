@@ -285,8 +285,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * @param factory
          *            MultiGraphFactory to use to construct this
-         *
-         * @return
          */
         public ValueQualifierHierarchy(
                 MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
@@ -690,12 +688,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Simple method to take a MemberSelectTree representing a method call
          * and determine if the method's return is annotated with
-         *
          * @StaticallyExecutable.
          *
-         * @param method
-         *
-         * @return
          */
         private boolean methodIsStaticallyExecutable(Element method) {
             return getDeclAnnotation(method, StaticallyExecutable.class) != null;
@@ -842,9 +836,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Overloaded method for convenience of dealing with
          * AnnotatedTypeMirrors. See isClassCovered(TypeMirror type) below
-         *
-         * @param type
-         * @return
          */
         private boolean isUnderlyingTypeAValue(AnnotatedTypeMirror type) {
             return coveredClassStrings.contains(type.getUnderlyingType().toString());
@@ -857,11 +848,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @param resultType
          *            is evaluated using getClass to derived a Class object for
          *            passing to the other resultAnnotationHandler function
-         * @param results
          * @param tree
          *            location for error reporting
-         *
-         * @return
          */
         private AnnotationMirror resultAnnotationHandler(
                 TypeMirror resultType, List<?> results, Tree tree) {

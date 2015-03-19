@@ -29,11 +29,11 @@ public class ConstraintMapBuilder {
      * Let Ai be the type argument we are trying to infer for Ti
      *
      * We have a set of constraints of the form:
-     * ATV(i) <?> ATM
+     * {@code ATV(i) <?> ATM}
      *
-     * Where <?> is either a subtype (<:), supertype (:>), or equality relationship (=).
+     * Where {@code <?>} is either a subtype ({@code <:}), supertype ({@code :>}), or equality relationship ({@code =}).
      *
-     * Regardless of what <?> is, a constraint will only imply constraints on Ai in a given
+     * Regardless of what {@code <?>} is, a constraint will only imply constraints on Ai in a given
      * hierarchy if ATV(i) does NOT have a primary annotation in that hierarchy.  That is:
      *
      * E.g. Let ATV(i) be @NonNull Ti,  the constraints @NonNull Ti = @NonNull @Initialized String
