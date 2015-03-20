@@ -1,6 +1,5 @@
 package org.checkerframework.checker.regex;
 
-import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;

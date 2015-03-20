@@ -308,8 +308,8 @@ public class Subtraction {
         //:: error: (assignment.type.incompatible)
         @mol int sMole = aCandela - bMole;
 
-	// Second
+        // Second
         //:: error: (assignment.type.incompatible)
-	@s int sSecond = aSecond - bSquareKilometer;
+        @s int sSecond = aSecond - bSquareKilometer;
     }
 }

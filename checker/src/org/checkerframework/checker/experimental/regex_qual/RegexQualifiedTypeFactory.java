@@ -1,12 +1,5 @@
 package org.checkerframework.checker.experimental.regex_qual;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.qualframework.base.AnnotationConverter;
@@ -20,15 +13,22 @@ import org.checkerframework.qualframework.base.TreeAnnotator;
 import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
 import org.checkerframework.qualframework.base.dataflow.QualTransfer;
 import org.checkerframework.qualframework.base.dataflow.QualValue;
-import org.checkerframework.qualframework.poly.QualParams;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 import org.checkerframework.qualframework.util.QualifierContext;
 
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 
 /**
  * The QualifiedTypeFactory for the Regex-Qual type system.

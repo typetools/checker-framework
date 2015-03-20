@@ -6,10 +6,10 @@ public
 class UnknownError extends VirtualMachineError {
     private static final long serialVersionUID = 0L;
     public UnknownError() {
-	super();
+        super();
     }
 
     public UnknownError(@Nullable String s) {
-	super(s);
+        super(s);
     }
 }

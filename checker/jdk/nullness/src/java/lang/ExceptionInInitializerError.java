@@ -13,19 +13,19 @@ public class ExceptionInInitializerError extends LinkageError {
 
     public ExceptionInInitializerError(@Nullable Throwable thrown) {
         initCause(null);  // Disallow subsequent initCause
-	this.exception = thrown;
+        this.exception = thrown;
     }
 
     public ExceptionInInitializerError(@Nullable String s) {
-	super(s);
+        super(s);
         initCause(null);  // Disallow subsequent initCause
     }
 
     public @Nullable Throwable getException() {
-	return exception;
+        return exception;
     }
 
     public @Nullable Throwable getCause() {
-	return exception;
+        return exception;
     }
 }

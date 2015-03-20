@@ -1,10 +1,5 @@
 package org.checkerframework.checker.experimental.regex_qual;
 
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.qualframework.base.CheckerAdapter;
@@ -14,6 +9,12 @@ import org.checkerframework.qualframework.base.TypecheckVisitorAdapter;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 
 /**
  * The {@link org.checkerframework.common.basetype.BaseTypeVisitor} for the Regex-Qual type system.

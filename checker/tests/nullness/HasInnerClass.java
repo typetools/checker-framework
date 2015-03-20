@@ -6,5 +6,5 @@ public class HasInnerClass<E> {
       HasInnerClass<?>.InternalEdge other = null;
     }
   }
-	
+
 }

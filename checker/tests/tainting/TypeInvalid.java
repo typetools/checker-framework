@@ -30,7 +30,7 @@ abstract class TypeInvalid {
 
     //:: error: (type.invalid)
     @Tainted @Untainted Object bar() {
-	return null;
+        return null;
     }
 
     //:: error: (type.invalid)

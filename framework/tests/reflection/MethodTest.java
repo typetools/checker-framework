@@ -9,7 +9,7 @@ public class MethodTest {
 
     @Sibling1 int sibling1;
     @Sibling2 int sibling2;
-    
+
     public void real_class(){
         try {
         Class<?> c = Object.class;
@@ -21,6 +21,7 @@ public class MethodTest {
         } catch (Exception ignore) {
         }
     }
+
     public void pass1(@ReflectBottom MethodTest this ) {
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
@@ -29,7 +30,7 @@ public class MethodTest {
         } catch (Exception ignore) {
         }
     }
-    
+
     public void pass1b(@ReflectBottom MethodTest this ) {
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
@@ -81,7 +82,7 @@ public class MethodTest {
         @Sibling1 int val1 = sibling1;
         @Sibling1 Integer val2 = val1;
         try {
-        	//
+            //
             Class<?> c = Class.forName("MethodTest$SuperClass");
             Method m = c.getMethod(str, int.class);
             m.invoke(this, val1);
@@ -164,6 +165,7 @@ public class MethodTest {
         } catch (Exception ignore) {
         }
     }
+
     public void pass11b() {
         try {
             Class<?> c = getClass();
@@ -183,7 +185,8 @@ public class MethodTest {
         } catch (Exception ignore) {
         }
     }
-boolean flag = false;
+
+    boolean flag = false;
     // Test lub of return types
     public void testLubReturnPass() {
         try {
@@ -198,6 +201,7 @@ boolean flag = false;
         } catch (Exception ignore) {
         }
     }
+
     public void testLubReturnFail() {
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
@@ -212,9 +216,10 @@ boolean flag = false;
         } catch (Exception ignore) {
         }
     }
-public void test(){
-	
-}
+
+    public void test(){
+    }
+
     public void fail1() {
         try {
             Class<?> c = MethodTest.class;
@@ -310,9 +315,9 @@ public void test(){
         @Sibling1 int val1 = sibling1;
         @Sibling1 Object[] args = new Object[]{val1};
         try {
-        	//
+            //
             Class<?> c = Class.forName("MethodTest$SuperClass");
-            
+
             Method m = c.getMethod(str, int.class);
             // This error is a bug.
             // See DefaultReflectionResolver.resolveMethodCall(...)
@@ -322,6 +327,7 @@ public void test(){
         } catch (Exception ignore) {
         }
     }
+
     public void bug2(@ReflectBottom MethodTest this) {
         String str = "setAB";
         @Sibling1 int val1 = sibling1;
@@ -329,7 +335,7 @@ public void test(){
 
         Object[] args = new Object[]{val1, val2};
         try {
-        	//
+            //
             Class<?> c = Class.forName("MethodTest$SuperClass");
             Method m = c.getMethod(str, int.class, int.class);
             // This error is a bug.

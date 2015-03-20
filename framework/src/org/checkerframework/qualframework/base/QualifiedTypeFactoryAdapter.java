@@ -1,33 +1,30 @@
 package org.checkerframework.qualframework.base;
 
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
 import org.checkerframework.qualframework.base.dataflow.QualTransferAdapter;
 
+import java.util.List;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import java.util.List;
+
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 
 /**
  * Adapter class for {@link QualifiedTypeFactory}, extending
@@ -35,7 +32,7 @@ import java.util.List;
  */
 class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     /** The underlying {@link QualifiedTypeFactory}. */
-    private QualifiedTypeFactory<Q> underlying;
+    private final QualifiedTypeFactory<Q> underlying;
 
     /** The qualAnalysis instance to use for dataflow. */
     private QualAnalysis<Q> qualAnalysis;
@@ -79,13 +76,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     @SuppressWarnings("unchecked")
     private QualifierHierarchyAdapter<Q>.Implementation getQualifierHierarchyAdapter() {
         return (QualifierHierarchyAdapter<Q>.Implementation)getQualifierHierarchy();
-    }
-
-    /** Returns the same result as {@link getTypeHierarchy}, but downcast to a
-     * more precise type. */
-    @SuppressWarnings("unchecked")
-    private TypeHierarchyAdapter<Q> getTypeHierarchyAdapter() {
-        return (TypeHierarchyAdapter<Q>)getTypeHierarchy();
     }
 
     @Override
@@ -322,6 +312,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         return qualResult;
     }
 
+    @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(ExpressionTree tree,
             ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
 
@@ -386,6 +377,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
      * @param type
      * @param iUseFlow
      */
+    @Override
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
         assert root != null : "GenericAnnotatedTypeFactory.annotateImplicit: " +
                 " root needs to be set when used on trees; factory: " + this.getClass();

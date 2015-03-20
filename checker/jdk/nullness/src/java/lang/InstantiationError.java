@@ -6,10 +6,10 @@ public
 class InstantiationError extends IncompatibleClassChangeError {
     private static final long serialVersionUID = 0L;
     public InstantiationError() {
-	super();
+        super();
     }
 
     public InstantiationError(@Nullable String s) {
-	super(s);
+        super(s);
     }
 }

@@ -6,10 +6,10 @@ public
 class IncompatibleClassChangeError extends LinkageError {
     private static final long serialVersionUID = 0L;
     public IncompatibleClassChangeError () {
-	super();
+        super();
     }
 
     public IncompatibleClassChangeError(@Nullable String s) {
-	super(s);
+        super(s);
     }
 }

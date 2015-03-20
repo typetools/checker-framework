@@ -17,22 +17,21 @@ import org.checkerframework.checker.nullness.qual.*;
 
 class KeyForPropagation {
 
-	{
-		List<@KeyFor("a") String>  a = new ArrayList<String>();
-	}
-	
-	static {
-		List<@KeyFor("b") String>  b = new ArrayList<String>();
-	}
-	
-    List<@KeyFor("c") String> c = new ArrayList<String>();
-    
-    void method() {
-    	
-    	List<@KeyFor("d") String> d = new ArrayList<String>();
+    {
+        List<@KeyFor("a") String>  a = new ArrayList<String>();
     }
-	
-	void method(Map<String, String> v) {
-		Set<String> ks = v.keySet();
-	}
+
+    static {
+        List<@KeyFor("b") String>  b = new ArrayList<String>();
+    }
+
+    List<@KeyFor("c") String> c = new ArrayList<String>();
+
+    void method() {
+        List<@KeyFor("d") String> d = new ArrayList<String>();
+    }
+
+    void method(Map<String, String> v) {
+        Set<String> ks = v.keySet();
+    }
 }

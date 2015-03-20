@@ -6,10 +6,10 @@ public
 class UnsatisfiedLinkError extends LinkageError {
     private static final long serialVersionUID = 0L;
     public UnsatisfiedLinkError() {
-	super();
+        super();
     }
 
     public UnsatisfiedLinkError(@Nullable String s) {
-	super(s);
+        super(s);
     }
 }

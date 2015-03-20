@@ -1,11 +1,10 @@
 package org.checkerframework.qualframework.base;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 
-import javax.lang.model.type.TypeVariable;
 import java.util.Map;
+
+import javax.lang.model.type.TypeVariable;
 
 /**
  * TypeVariableSubstitutor replaces type variables from a declaration with arguments to its use.
