@@ -66,8 +66,8 @@ public class LazyInitialization {
     }
 
     class PptRelation1b {
-    	// This is the same code as in PptRelation1, but comes after the class
-    	// declaration of PptTopLevel. This works as expected.
+        // This is the same code as in PptRelation1, but comes after the class
+        // declaration of PptTopLevel. This works as expected.
         public void init_hierarchy_new (PptTopLevel ppt, Object eq) {
             ppt.equality_view = eq;
             ppt.equality_view.toString();
@@ -79,7 +79,7 @@ public class LazyInitialization {
         public void init_hierarchy_new (PptRelation2 pr1, PptRelation2 pr2, Object eq) {
             //:: error: (dereference.of.nullable)
             pr1.equality_view2.toString();
-            
+
             pr1.equality_view2 = eq;
             pr1.equality_view2.toString();
 

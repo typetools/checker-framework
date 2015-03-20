@@ -1,11 +1,17 @@
 package org.checkerframework.framework.type;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.AnnotatedTypes;
-
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.TypeArgumentMapper;
@@ -13,15 +19,21 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
+import static org.checkerframework.framework.util.AnnotatedTypes.isDeclarationOfJavaLangEnum;
+import static org.checkerframework.framework.util.AnnotatedTypes.isEnum;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import java.util.*;
-
-import static org.checkerframework.framework.util.AnnotatedTypes.*;
 
 /**
  * Default implementation of TypeHierarchy that implements the JLS specification with minor
@@ -155,8 +167,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     public boolean isSubtype(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype,
                              final AnnotationMirror top) {
         currentTop = top;
-        return isSubtype(subtype, supertype, new VisitHistory(equalityComparer));
+        return isSubtype(subtype, supertype, new VisitHistory());
     }
+
     /**
      * Calls is subtype pair-wise on the elements of the subtypes/supertypes Iterable.
      * @return true if for each pair, the subtype element is a subtype of the supertype element.  An

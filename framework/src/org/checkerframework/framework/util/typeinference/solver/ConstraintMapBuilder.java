@@ -7,14 +7,13 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference.constraint.TIsU;
 import org.checkerframework.framework.util.typeinference.constraint.TSuperU;
 import org.checkerframework.framework.util.typeinference.constraint.TUConstraint;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * Converts a set of TUConstraints into a ConstraintMap.

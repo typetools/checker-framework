@@ -34,11 +34,11 @@ public class CompoundCheckerAnnotatedTypeFactory extends
                         // Just access the subchecker type factories to make
                         // sure they were created properly
                         GenericAnnotatedTypeFactory<?, ?, ?, ?> accATF = getTypeFactoryOfSubchecker(AnotherCompoundChecker.class);
-                        AnnotatedTypeMirror another = accATF
-                                .getAnnotatedType(node);
+                        @SuppressWarnings("unused")
+                        AnnotatedTypeMirror another = accATF.getAnnotatedType(node);
                         GenericAnnotatedTypeFactory<?, ?, ?, ?> aliasingATF = getTypeFactoryOfSubchecker(AliasingChecker.class);
-                        AnnotatedTypeMirror aliasing = aliasingATF
-                                .getAnnotatedType(node);
+                        @SuppressWarnings("unused")
+                        AnnotatedTypeMirror aliasing = aliasingATF.getAnnotatedType(node);
                         GenericAnnotatedTypeFactory<?, ?, ?, ?> valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
                         assert valueATF == null : "Should not be able to access the ValueChecker annotations.";
                         return super.defaultAction(node, p);

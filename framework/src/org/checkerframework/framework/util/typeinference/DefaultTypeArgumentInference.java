@@ -1,7 +1,5 @@
 package org.checkerframework.framework.util.typeinference;
 
-import com.sun.source.tree.ExpressionTree;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -11,20 +9,49 @@ import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.PluginUtil;
-import org.checkerframework.framework.util.typeinference.constraint.*;
-import org.checkerframework.framework.util.typeinference.solver.*;
+import org.checkerframework.framework.util.typeinference.constraint.A2F;
+import org.checkerframework.framework.util.typeinference.constraint.A2FReducer;
+import org.checkerframework.framework.util.typeinference.constraint.AFConstraint;
+import org.checkerframework.framework.util.typeinference.constraint.AFReducer;
+import org.checkerframework.framework.util.typeinference.constraint.F2A;
+import org.checkerframework.framework.util.typeinference.constraint.F2AReducer;
+import org.checkerframework.framework.util.typeinference.constraint.FIsA;
+import org.checkerframework.framework.util.typeinference.constraint.FIsAReducer;
+import org.checkerframework.framework.util.typeinference.constraint.TSubU;
+import org.checkerframework.framework.util.typeinference.constraint.TSuperU;
+import org.checkerframework.framework.util.typeinference.constraint.TUConstraint;
+import org.checkerframework.framework.util.typeinference.solver.ConstraintMap;
+import org.checkerframework.framework.util.typeinference.solver.ConstraintMapBuilder;
+import org.checkerframework.framework.util.typeinference.solver.EqualitiesSolver;
+import org.checkerframework.framework.util.typeinference.solver.InferenceResult;
+import org.checkerframework.framework.util.typeinference.solver.InferredValue;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
+import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
+import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
+
+import static org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil.expressionToArgTrees;
+import static org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil.treesToTypes;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
-import java.util.*;
 
-import static org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil.expressionToArgTrees;
-import static org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil.treesToTypes;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 
 /**
  * An implementation of TypeArgumentInference that mostly follows the process outlined in JLS7
@@ -568,14 +595,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                     }
 
                 }
-            }
-        }
-
-        while(targetList.size() > 1) {
-            final TypeVariable firstTarget = targetList.remove(0);
-
-            for(int i = 0; i < targetList.size(); i++) {
-
             }
         }
     }

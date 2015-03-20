@@ -1,15 +1,39 @@
 package org.checkerframework.framework.type;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.IntersectionType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 
 /**
  * BoundsInitializer creates the bounds for type variables and wildcards.  It's static helper methods
@@ -425,9 +449,7 @@ public class BoundsInitializer {
         }
 
         public ReferenceMap createReferenceMap(final BoundStructure boundStruct) {
-            final TypeVariable typeVar = boundStruct instanceof TypeVariableStructure ?
-                                            ((TypeVariableStructure) boundStruct).typeVar : null;
-            final ReferenceMap refMap = new ReferenceMap( typeVar );
+            final ReferenceMap refMap = new ReferenceMap();
 
             for(Entry<BoundPath, TypeVariable> entry : boundStruct.pathToTypeVar.entrySet()) {
                 TypeVariableStructure targetStructure = typeVarToStructure.get(entry.getValue());
@@ -462,19 +484,8 @@ public class BoundsInitializer {
          * for all atvs that of sourceType
          */
         @SuppressWarnings("serial")
-        private class ReferenceMap extends LinkedHashMap<BoundPath, AnnotatedTypeVariable> {     //TODO: EXPLAINED LINK DUE TO TYPEVAR SLED
-            public final TypeVariable sourceType;
-            public ReferenceMap(final TypeVariable sourceType) {
-                this.sourceType = sourceType;
-            }
-
-            public ReferenceMap copy() {
-                final ReferenceMap copy = new ReferenceMap(this.sourceType);
-                for(Entry<BoundPath, AnnotatedTypeVariable> entry : entrySet()) {
-                    copy.put(entry.getKey(), entry.getValue().deepCopy());
-                }
-                return copy;
-            }
+        private class ReferenceMap extends LinkedHashMap<BoundPath, AnnotatedTypeVariable> {
+            //TODO: EXPLAINED LINK DUE TO TYPEVAR SLED
         }
 
         public void resolveTypeVarReferences(final AnnotatedTypeMirror boundedType) {
@@ -609,14 +620,9 @@ public class BoundsInitializer {
         public final AnnotatedTypeVariable annotatedTypeVar;
 
         /**
-         * Whether or not this type variable structure is still being visited
-         */
-        private boolean closed = false;
-
-        /**
          * The boundStructure that was active before this one
          */
-        private BoundStructure parent;
+        private final BoundStructure parent;
 
         /**
          * If this type variable is upper or lower bounded by another type variable (not a declared type or intersection)
@@ -631,14 +637,6 @@ public class BoundsInitializer {
             this.parent = parent;
             this.typeVar = annotatedTypeVar.getUnderlyingType();
             this.annotatedTypeVar = annotatedTypeVar;
-        }
-
-        public void close() {
-            closed = true;
-        }
-
-        public boolean isClosed() {
-            return closed;
         }
 
         @Override

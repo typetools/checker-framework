@@ -6,15 +6,6 @@ import org.checkerframework.checker.javari.qual.Mutable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MemberReferenceTree;
-import com.sun.source.tree.TypeCastTree;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
@@ -39,8 +30,14 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.framework.util.*;
+import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.AnnotationFormatter;
+import org.checkerframework.framework.util.CFContext;
+import org.checkerframework.framework.util.DefaultAnnotationFormatter;
+import org.checkerframework.framework.util.GraphQualifierHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -104,6 +101,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
