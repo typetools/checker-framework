@@ -11,13 +11,13 @@ class CFValue extends CFAbstractValue<CFValue> {
 
 class CFAbstractStore<V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>>{}
 class CFAbstractTransfer<V extends CFAbstractValue<V>,
-            			 S extends CFAbstractStore<V, S>,
-            		     T extends CFAbstractTransfer<V, S, T>> {}
+        S extends CFAbstractStore<V, S>,
+        T extends CFAbstractTransfer<V, S, T>> {}
 
 class CFAbstractAnalysis<V extends CFAbstractValue<V>, 
-						 S extends CFAbstractStore<V,S>,
-						 T extends CFAbstractTransfer<V,S,T>> {
+        S extends CFAbstractStore<V,S>,
+        T extends CFAbstractTransfer<V,S,T>> {
     public CFValue defaultCreateAbstractValue(CFAbstractAnalysis<CFValue, ?, ?> analysis) {
-    	return new CFValue(analysis);
+        return new CFValue(analysis);
     }
 }

@@ -1,9 +1,10 @@
 package tests;
 
+import org.checkerframework.framework.test.ParameterizedCheckerTest;
+
 import java.io.File;
 import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
 import org.junit.runners.Parameterized.Parameters;
 
 public class GuiEffectTest extends ParameterizedCheckerTest {
@@ -16,6 +17,6 @@ public class GuiEffectTest extends ParameterizedCheckerTest {
 
     @Parameters
     public static Collection<Object[]> data() {
-	return testFiles("guieffect", "all-systems");
+        return testFiles("guieffect", "all-systems");
     }
 }

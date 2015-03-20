@@ -13,7 +13,6 @@ import org.checkerframework.checker.units.qual.kmPERh;
 import org.checkerframework.checker.units.qual.m;
 import org.checkerframework.checker.units.qual.m2;
 import org.checkerframework.checker.units.qual.mPERs;
-import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.min;
 import org.checkerframework.checker.units.qual.mm;
 import org.checkerframework.checker.units.qual.mm2;

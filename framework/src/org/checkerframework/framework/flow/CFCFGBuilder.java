@@ -10,7 +10,6 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.Collection;
-import java.util.LinkedList;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;

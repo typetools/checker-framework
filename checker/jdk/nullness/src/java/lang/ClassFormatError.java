@@ -6,10 +6,10 @@ public
 class ClassFormatError extends LinkageError {
   private static final long serialVersionUID = 0;
     public ClassFormatError() {
-	super();
+        super();
     }
 
     public ClassFormatError(@Nullable String s) {
-	super(s);
+        super(s);
     }
 }

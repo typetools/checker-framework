@@ -1,14 +1,9 @@
 package org.checkerframework.qualframework.base;
 
-import javax.lang.model.type.TypeMirror;
+import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.SimpleTreeVisitor;
-
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-
-import org.checkerframework.qualframework.util.ExtendedTypeMirror;
-
 
 /**
  * {@link DefaultQualifiedTypeFactory} component for computing the qualified

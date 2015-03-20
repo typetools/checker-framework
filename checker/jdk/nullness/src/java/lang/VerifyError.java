@@ -6,10 +6,10 @@ public
 class VerifyError extends LinkageError {
     private static final long serialVersionUID = 0L;
     public VerifyError() {
-	super();
+        super();
     }
 
     public VerifyError(@Nullable String s) {
-	super(s);
+        super(s);
     }
 }

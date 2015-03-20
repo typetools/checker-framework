@@ -6,10 +6,10 @@ public
 class StackOverflowError extends VirtualMachineError {
     private static final long serialVersionUID = 0L;
     public StackOverflowError() {
-	super();
+        super();
     }
 
     public StackOverflowError(@Nullable String s) {
-	super(s);
+        super(s);
     }
 }

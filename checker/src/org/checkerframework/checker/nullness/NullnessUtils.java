@@ -1,6 +1,11 @@
 package org.checkerframework.checker.nullness;
 
-import org.checkerframework.checker.nullness.qual.*;
+/*>>>
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+*/
+
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 
 /**
  * Utilities class for the Nullness Checker.

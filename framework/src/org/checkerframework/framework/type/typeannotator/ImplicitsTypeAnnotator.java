@@ -1,5 +1,14 @@
 package org.checkerframework.framework.type.typeannotator;
 
+import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.TypeQualifiers;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.TypesUtils;
+
 import java.lang.annotation.Annotation;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -11,17 +20,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
-
-import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.qual.TypeQualifiers;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.Tree;
 

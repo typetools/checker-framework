@@ -2,7 +2,7 @@ import org.checkerframework.common.util.report.qual.*;
 
 class Overrides {
     class A {
-	void m() {}
+        void m() {}
     }
 
     class B extends A {

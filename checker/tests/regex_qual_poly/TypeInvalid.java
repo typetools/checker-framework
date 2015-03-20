@@ -33,7 +33,7 @@ abstract class TypeInvalid {
 
     //:: error: (type.invalid)
     @Regex @Regex(1) Object bar() {
-	return null;
+        return null;
     }
 
     //:: error: (type.invalid)

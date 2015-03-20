@@ -11,8 +11,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 @SuppressWarnings("rawtypes")
 public final
-    class Method extends AccessibleObject implements GenericDeclaration,
-						     Member {
+    class Method extends AccessibleObject implements GenericDeclaration, Member {
     Method(Class declaringClass,
            String name,
            Class[] parameterTypes,
@@ -113,8 +112,8 @@ public final
     // warning whenever null is passed, in order to give a guarantee that
     // no nullness-related exception will be thrown by the invoked method.
     public @Nullable Object invoke(Object obj, Object ... args)
-	throws IllegalAccessException, IllegalArgumentException,
-           InvocationTargetException
+            throws IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException
     {
         throw new RuntimeException("skeleton method");
     }

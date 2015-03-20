@@ -1,11 +1,11 @@
 package org.checkerframework.checker.experimental.regex_qual;
 
-import org.checkerframework.qualframework.base.QualifierHierarchy;
-
 import static org.checkerframework.checker.experimental.regex_qual.Regex.BOTTOM;
-import static org.checkerframework.checker.experimental.regex_qual.Regex.PartialRegex;
-import static org.checkerframework.checker.experimental.regex_qual.Regex.RegexVal;
 import static org.checkerframework.checker.experimental.regex_qual.Regex.TOP;
+
+import org.checkerframework.checker.experimental.regex_qual.Regex.PartialRegex;
+import org.checkerframework.checker.experimental.regex_qual.Regex.RegexVal;
+import org.checkerframework.qualframework.base.QualifierHierarchy;
 
 /**
  * QualifierHierarchy for the Regex-Qual type system. The Hierarchy consists of

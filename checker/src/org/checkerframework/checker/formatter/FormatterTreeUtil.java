@@ -4,6 +4,22 @@ package org.checkerframework.checker.formatter;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 */
 
+import org.checkerframework.checker.formatter.qual.ConversionCategory;
+import org.checkerframework.checker.formatter.qual.Format;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.formatter.qual.InvalidFormat;
+import org.checkerframework.checker.formatter.qual.ReturnsFormat;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
+import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
+
 import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Locale;
@@ -22,22 +38,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.SimpleElementVisitor7;
 import javax.lang.model.util.SimpleTypeVisitor7;
-
-import org.checkerframework.checker.formatter.qual.ConversionCategory;
-import org.checkerframework.checker.formatter.qual.Format;
-import org.checkerframework.checker.formatter.qual.FormatMethod;
-import org.checkerframework.checker.formatter.qual.InvalidFormat;
-import org.checkerframework.checker.formatter.qual.ReturnsFormat;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
-import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreeUtils;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -195,13 +195,13 @@ public class FormatterTreeUtil {
          * Returns null if the format string does not contain syntactic errors.
          */
         public final Result<String> isIllegalFormat() {
-        	String res = null;
+            String res = null;
             if (!formatAnno.hasAnnotation(Format.class)) {
                 res = "(is a @Format annotation missing?)";
-	            AnnotationMirror inv = formatAnno.getAnnotation(InvalidFormat.class);
-	            if (inv != null) {
-	                res = invalidFormatAnnotationToErrorMessage(inv);
-	            }
+                AnnotationMirror inv = formatAnno.getAnnotation(InvalidFormat.class);
+                if (inv != null) {
+                    res = invalidFormatAnnotationToErrorMessage(inv);
+                }
             }
             return new ResultImpl<String>(res, formatArg);
         }
@@ -213,7 +213,7 @@ public class FormatterTreeUtil {
          */
         public final Result<InvocationType> getInvocationType() {
             InvocationType type = InvocationType.VARARG;
-            
+
             if (args.size() == 1){
                 final ExpressionTree first = args.get(0);
                 TypeMirror argType = atypeFactory.getAnnotatedType(first).getUnderlyingType();
@@ -258,10 +258,10 @@ public class FormatterTreeUtil {
                             }
                         }, Void.TYPE);
             }
-            
+
             ExpressionTree loc = node.getMethodSelect();
             if (type!=InvocationType.VARARG && args.size() > 0) {
-            	loc = args.get(0);
+                loc = args.get(0);
             }
             return new ResultImpl<InvocationType>(type, loc);
         }

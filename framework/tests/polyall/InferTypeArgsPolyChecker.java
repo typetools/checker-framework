@@ -8,14 +8,14 @@ import polyall.quals.*;
 class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
     //----------------------------------------------------------
     //Test Case - A
-	<A> A methodA(@H2Top A a1, @H2Top A a2) {
-		return null;
-	}
+    <A> A methodA(@H2Top A a1, @H2Top A a2) {
+        return null;
+    }
 
-	void contextA(@H1S1 @H2Bot String str, @H1Bot @H2Bot List<@H1S2 String> s) {
-		@H2Bot Object a = methodA(str, s);
+    void contextA(@H1S1 @H2Bot String str, @H1Bot @H2Bot List<@H1S2 String> s) {
+        @H2Bot Object a = methodA(str, s);
         @H1Top @H2Bot Object aTester = a;
-	}
+    }
 
     //----------------------------------------------------------
     //Test Case - B

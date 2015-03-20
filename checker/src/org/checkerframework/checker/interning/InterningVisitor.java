@@ -1,6 +1,15 @@
 package org.checkerframework.checker.interning;
 
-import static javax.lang.model.util.ElementFilter.methodsIn;
+import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.interning.qual.UsesObjectEquals;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.Heuristics;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.Comparator;
 import java.util.List;
@@ -14,18 +23,8 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
+import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
-
-import org.checkerframework.checker.interning.qual.Interned;
-import org.checkerframework.checker.interning.qual.UsesObjectEquals;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.Heuristics;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TreeUtils;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
@@ -123,10 +122,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         Element leftElt = null;
         Element rightElt = null;
         if(left instanceof org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType){
-        	leftElt = ((DeclaredType)left.getUnderlyingType()).asElement();
+            leftElt = ((DeclaredType)left.getUnderlyingType()).asElement();
         }
         if(right instanceof org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType){
-        	rightElt = ((DeclaredType)right.getUnderlyingType()).asElement();
+            rightElt = ((DeclaredType)right.getUnderlyingType()).asElement();
         }
 
         //if neither @Interned or @UsesObjectEquals, report error
@@ -162,7 +161,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      *
      * If a class is not marked @UsesObjectEquals, it must:
      *
-     * 	  -not have a superclass marked @UsesObjectEquals
+     *  -not have a superclass marked @UsesObjectEquals
      *
      *
      * @see org.checkerframework.common.basetype.BaseTypeVisitor#visitClass(com.sun.source.tree.ClassTree, java.lang.Object)
@@ -708,7 +707,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         assert clazzElt != null;
 
         // Check all of the methods in the class for name matches and overriding.
-        for (ExecutableElement elt : methodsIn(clazzElt.getEnclosedElements()))
+        for (ExecutableElement elt : ElementFilter.methodsIn(clazzElt.getEnclosedElements()))
             if (elt.getSimpleName().contentEquals(method)
                 && elements.overrides(e, elt, clazzElt))
                 return true;
