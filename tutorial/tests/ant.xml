@@ -1,0 +1,161 @@
+<project name="macro-imports">
+
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+            <pathelement location="../../tests/ant-contrib-1.0b3.jar"/>
+        </classpath>
+    </taskdef>
+
+    <property environment="env"/>
+
+  <!--
+       Macro for calling the JSR 308 Java compiler with a checker
+       for the demo code.
+  -->
+  <macrodef name="run-demo">
+    <attribute name="srcpath"/>
+    <attribute name="files"/>
+    <attribute name="checker"/>
+    <attribute name="lint" default="none"/>
+    <attribute name="custom.lib" default=""/>
+    <sequential>
+      <java fork="true" failonerror="true"
+            classpath="${checker.lib}"
+            classname="org.checkerframework.framework.util.CheckerMain"
+            taskname="javac-jsr308">
+        <!-- <arg value="-version"/> -->
+        <arg value="-g"/>
+        <arg line="-classpath ${checker.lib}:@{custom.lib}"/>
+        <arg line="-sourcepath @{srcpath}"/>
+        <arg line="-processor @{checker}"/>
+        <arg line="-implicit:none"/>
+        <arg line="-source 1.8"/>
+        <arg line="-Xprefer:newer"/>
+        <arg line="@{files}"/>
+        <arg line="-Alint=@{lint}"/>
+        <arg line="-Anocheckjdk"/>
+        <arg line="-AsuppressWarnings=purity"/>
+      </java>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="run-demo-basic">
+    <attribute name="srcpath"/>
+    <attribute name="files"/>
+    <attribute name="checker" default="org.checkerframework.common.subtyping.SubtypingChecker"/>
+    <attribute name="lint" default="none"/>
+    <attribute name="quals" default=""/>
+    <attribute name="custom.lib" default=""/>
+    <sequential>
+      <java fork="true" failonerror="true"
+            classpath="${checker.lib}"
+            classname="org.checkerframework.framework.util.CheckerMain"
+            taskname="javac-jsr308">
+        <!-- <arg value="-version"/> -->
+        <arg value="-g"/>
+        <arg line="-classpath @{custom.lib}"/>
+        <arg line="-sourcepath @{srcpath}"/>
+        <arg line="-processor @{checker}"/>
+        <arg line="-implicit:none"/>
+        <arg line="-source 1.8"/>
+        <arg line="-Xprefer:newer"/>
+        <arg line="@{files}"/>
+        <arg line="-Alint=@{lint}"/>
+        <arg line="-Aquals=@{quals}"/>
+      </java>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="my-diff">
+    <attribute name="file1"/>
+    <attribute name="file2"/>
+    <attribute name="ignore-matching-lines"/>
+    <sequential>
+      <exec executable="diff" resultproperty="diff-result" failonerror="true">
+        <arg value="-q"/>
+        <arg line="-I '@{ignore-matching-lines}'"/>
+        <!-- ignore lint results -->
+        <arg line="-I 'Note:'"/>
+        <!-- ignore ant headers and empty lines -->
+	<arg line="-I '^ *$'"/>
+	<arg line="-I '^[^ ]*:$'"/>
+
+        <!-- ignore paths -->
+        <arg line="-I '.java'"/>
+        <arg line="-I '.xml'"/>
+        <arg line="@{file1}"/>
+        <arg line="@{file2}"/>
+      </exec>
+
+      <if>
+          <isfailure code="${diff-result}" />
+          <then>
+              <loadfile property="results.expected" srcFile="@{file1}"/>
+              <loadfile property="results.actual" srcFile="@{file2}"/>
+              <fail message="Error in the demo.${line.separator}
+${line.separator}Expected:
+${line.separator}=====================================================================
+${line.separator}${results.expected}
+${line.separator}=====================================================================
+${line.separator}
+${line.separator}but found:
+${line.separator}=====================================================================
+${line.separator}${results.actual}
+${line.separator}
+${line.separator}=====================================================================
+${line.separator}NOTE: Did you run 'ant touch-files'?"/>
+          </then>
+      </if>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="my-ant">
+    <attribute name="task" default=""/>
+    <attribute name="logfile" default=""/>
+    <sequential>
+      <exec executable="ant" failonerror="false"
+          resultproperty="property.ignore">
+        <arg line="-Dcompiler.lib=${javac.lib}"/>
+        <arg line="-Dchecker.lib=${checker.lib}"/>
+        <arg value="-e"/>
+        <arg line="-l @{logfile}"/>
+        <arg line="@{task}"/>
+      </exec>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="check-demo">
+    <attribute name="patchfile"/>
+    <attribute name="task"/>
+    <attribute name="expected"/>
+    <sequential>
+      <!-- Apply the patch -->
+      <patch patchfile="@{patchfile}" quiet="yes" strip="0"/>
+      <my-ant task="@{task}" logfile="output.tmp"/>
+      <my-diff file1="@{expected}" file2="output.tmp"
+               ignore-matching-lines="Total time"/>
+      <delete file="output.tmp"/>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="check-demo-common">
+    <attribute name="target"/>
+    <attribute name="step"/>
+    <attribute name="dir" default="testdemo"/>
+    <sequential>
+      <check-demo
+            task="@{target}"
+            patchfile="@{dir}/@{target}.@{step}.patch"
+            expected="@{dir}/@{target}.@{step}.expected"/>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="revert-demo">
+      <attribute name="target"/>
+      <attribute name="step"/>
+      <attribute name="dir" default="testdemo"/>
+      <sequential>
+          <patch patchfile="@{dir}/@{target}.@{step}.patch" quiet="yes" reverse="yes" strip="0"/>
+      </sequential>
+  </macrodef>
+</project>
