@@ -19,7 +19,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
-import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -650,6 +649,8 @@ public class AnnotatedTypes {
                       final ExpressionTree expr,
                       final ExecutableElement elt,
                       final AnnotatedExecutableType preType) {
+        //TODO: TEMPORARY KLUDGE
+        atypeFactory.getTypeArgumentInference().adaptMethodType(atypeFactory, expr, preType);
 
         // Is the method a generic method?
         if (elt.getTypeParameters().isEmpty()) {
@@ -686,9 +687,7 @@ public class AnnotatedTypes {
             }
             return typeArguments;
         } else {
-            final DefaultTypeArgumentInference inference = new DefaultTypeArgumentInference();
-            Map<TypeVariable, AnnotatedTypeMirror> typeArguments = inference.inferTypeArgs(atypeFactory, expr, elt, preType);
-            return typeArguments;
+            return atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, expr, elt, preType);
         }
     }
 
@@ -1204,6 +1203,31 @@ public class AnnotatedTypes {
         if (parameters.size() == args.size()) {
             // Check if one sent an element or an array
             AnnotatedTypeMirror lastArg = atypeFactory.getAnnotatedType(args.get(args.size() - 1));
+            if (lastArg.getKind() == TypeKind.ARRAY &&
+                    getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType)lastArg)) {
+                return parameters;
+            }
+        }
+
+        parameters = new ArrayList<>(parameters.subList(0, parameters.size() - 1));
+        for (int i = args.size() - parameters.size(); i > 0; --i)
+            parameters.add(varargs.getComponentType());
+
+        return parameters;
+    }
+
+    public static List<AnnotatedTypeMirror> expandVarArgsFromTypes(AnnotatedExecutableType method,
+                                                                   List<AnnotatedTypeMirror> args) {
+        List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
+        if (!method.getElement().isVarArgs()) {
+            return parameters;
+        }
+
+        AnnotatedArrayType varargs = (AnnotatedArrayType)parameters.get(parameters.size() - 1);
+
+        if (parameters.size() == args.size()) {
+            // Check if one sent an element or an array
+            AnnotatedTypeMirror lastArg = args.get(args.size() - 1);
             if (lastArg.getKind() == TypeKind.ARRAY &&
                     getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType)lastArg)) {
                 return parameters;
