@@ -218,7 +218,7 @@ public class FlowExpressionParseUtil {
             Resolver resolver = new Resolver(env);
             try {
                 if (allowLocalVariables) {
-                    VariableElement varElem = resolver.findLocalVariable(s, path);
+                    VariableElement varElem = resolver.findLocalVariableOrParameter(s, path);
                     if (varElem != null) {
                         return new LocalVariable(varElem);
                     }
@@ -715,6 +715,57 @@ public class FlowExpressionParseUtil {
 
         FlowExpressionContext flowExprContext = new FlowExpressionContext(
                 internalReceiver, internalArguments, checkerContext);
+
+        return flowExprContext;
+    }
+
+
+    /**
+     * This method is the same as building a flow expression for a MethodInvocationNode except
+     * it uses the PARAMETERS list from the enclosing method context.  If there is no enclosing
+     * method then this method functions exactly like the buildFowExprContextForUse.
+     * This is really built for a use in KeyFor and should likely be replaced
+     */
+    public static FlowExpressionContext buildFlowExprContextForViewpointUse(
+            MethodInvocationNode n, TreePath enclosingMethodPath, BaseContext checkerContext) {
+        final FlowExpressionContext fromCreation = buildFlowExprContextForUse(n, checkerContext);
+
+        if (enclosingMethodPath == null) {
+            return fromCreation;
+        }
+        final MethodTree methodTree = (MethodTree) enclosingMethodPath.getLeaf();
+
+        final FlowExpressionContext fromEnclosingMethod =
+                buildFlowExprContextForDeclaration(methodTree, enclosingMethodPath.getLeaf(), checkerContext);
+
+
+        FlowExpressionContext flowExprContext = new FlowExpressionContext(
+                fromCreation.receiver, fromEnclosingMethod.arguments, checkerContext);
+
+        return flowExprContext;
+    }
+
+    /**
+     * This method is the same as building a flow expression for a ObjectCreationNode except
+     * it uses the PARAMETERS list from the enclosing method context.  If there is no enclosing
+     * method then this method functions exactly like the buildFowExprContextForUse.
+     * This is really built for a use in KeyFor and should likely be replaced
+     */
+    public static FlowExpressionContext buildFlowExprContextForViewpointUse(
+            ObjectCreationNode n, TreePath currentPath, TreePath enclosingMethodPath, BaseContext checkerContext) {
+        final FlowExpressionContext fromCreation = buildFlowExprContextForUse(n, currentPath, checkerContext);
+
+        if (enclosingMethodPath == null) {
+            return fromCreation;
+        }
+        final MethodTree methodTree = (MethodTree) enclosingMethodPath.getLeaf();
+
+        final FlowExpressionContext fromEnclosingMethod =
+                buildFlowExprContextForDeclaration(methodTree, enclosingMethodPath.getLeaf(), checkerContext);
+
+
+        FlowExpressionContext flowExprContext = new FlowExpressionContext(
+               fromCreation.receiver, fromEnclosingMethod.arguments, checkerContext);
 
         return flowExprContext;
     }
