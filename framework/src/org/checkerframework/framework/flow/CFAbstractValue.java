@@ -271,14 +271,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
 
             if (resultKind == TypeKind.WILDCARD) {
                 AnnotatedWildcardType wResult = (AnnotatedWildcardType) result;
-                AnnotatedTypeMirror extendsBound = wResult.getExtendsBound();
-                extendsBound.clearAnnotations();
                 Collection<AnnotationMirror> extendsBound1 = getUpperBound(a);
                 Collection<AnnotationMirror> extendsBound2 = getUpperBound(b);
-                extendsBound.addAnnotations(mostSpecific(qualHierarchy,
-                        extendsBound1, extendsBound2));
-
-                //TODO: LOWER BOUND?
+                wResult.addAnnotations(mostSpecific(qualHierarchy, extendsBound1, extendsBound2));
 
             } else if (a.getKind() == TypeKind.ARRAY
                     && b.getKind() == TypeKind.ARRAY) {
