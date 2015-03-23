@@ -254,7 +254,9 @@ public class TypeArgInferenceUtil {
             typeVars.add(annotatedTypeVar.getUnderlyingType());
         }
 
-        return type.accept(new TypeVariableFinder(), typeVars);
+        //note NULL values creep in because the underlying visitor uses them in various places
+        final Boolean result = type.accept(new TypeVariableFinder(), typeVars);
+        return result != null && result;
     }
 
     /**
@@ -266,8 +268,8 @@ public class TypeArgInferenceUtil {
         protected Boolean scan(Iterable<? extends AnnotatedTypeMirror> types, List<TypeVariable> typeVars) {
             if (types == null)
                 return false;
-            boolean result = false;
-            boolean first = true;
+            Boolean result = false;
+            Boolean first = true;
             for (AnnotatedTypeMirror type : types) {
                 result = (first ? scan(type, typeVars) : scanAndReduce(type, typeVars, result));
                 first = false;
