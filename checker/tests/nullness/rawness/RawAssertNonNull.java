@@ -77,7 +77,7 @@ class RawAssertNonNull {
             m(g);
         }
 
-        @EnsuresNonNull({"f", "g"})
+        @EnsuresNonNull({"f", "this.g"})
         private void m(@Raw @UnknownInitialization Test2 this, Global g) {
             this.f = new ArrayList<String>();
             this.g = new ArrayList<String>();
