@@ -127,7 +127,7 @@ public class Resolver {
      *            The tree path to the local scope.
      * @return The element for the local variable.
      */
-    public VariableElement findLocalVariable(String name, TreePath path) {
+    public VariableElement findLocalVariableOrParameter(String name, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler =
             new Log.DiscardDiagnosticHandler(log);
         try {
@@ -135,7 +135,8 @@ public class Resolver {
             Env<AttrContext> env = scope.getEnv();
             Element res = wrapInvocation(FIND_VAR, env,
                     names.fromString(name));
-            if (res.getKind() == ElementKind.LOCAL_VARIABLE) {
+            if (res.getKind() == ElementKind.LOCAL_VARIABLE
+             || res.getKind() == ElementKind.PARAMETER) {
                 return (VariableElement) res;
             } else {
                 // Most likely didn't find the variable and the Element is a SymbolNotFoundError
