@@ -86,7 +86,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     @Override
     public Map<TypeVariable, AnnotatedTypeMirror> inferTypeArgs(AnnotatedTypeFactory typeFactory,
-                                                                ExpressionTree invocation,
+                                                                ExpressionTree expressionTree,
                                                                 ExecutableElement methodElem,
                                                                 AnnotatedExecutableType methodType) {
 
@@ -97,13 +97,38 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             return new HashMap<>();
         }
 
+        final List<AnnotatedTypeMirror> argTypes = getArgumentTypes(expressionTree, typeFactory);
+        final AnnotatedTypeMirror assignedTo = getAssignedTo(expressionTree, typeFactory);
+
         //steps 1-4
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
-        final Map<TypeVariable, AnnotatedTypeMirror> inferredArgs = infer(typeFactory, invocation, methodElem, methodType, targets);
+        final Map<TypeVariable, AnnotatedTypeMirror> inferredArgs =
+                infer(typeFactory,  argTypes, assignedTo, methodElem, methodType, targets);
 
         //step 5
         handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
         return inferredArgs;
+    }
+
+    @Override
+    public void adaptMethodType(AnnotatedTypeFactory typeFactory, ExpressionTree invocation, AnnotatedExecutableType methodType) {
+        //do nothing
+    }
+
+    /**
+     * TODO: THIS IS A BIG VIOLATION OF Single Responsibility and SHOULD BE FIXED, IT IS SOLELY HERE
+     * TODO: AS A TEMPORARY KLUDGE BEFORE A RELEASE/SPARTA ENGAGEMENT
+     */
+
+
+    protected List<AnnotatedTypeMirror> getArgumentTypes(final ExpressionTree expression,
+                                                         final AnnotatedTypeFactory typeFactory) {
+        final List<? extends ExpressionTree> argTrees = TypeArgInferenceUtil.expressionToArgTrees(expression);
+        return TypeArgInferenceUtil.treesToTypes(argTrees, typeFactory);
+    }
+
+    protected AnnotatedTypeMirror getAssignedTo(ExpressionTree expression, AnnotatedTypeFactory typeFactory ) {
+        return TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expression));
     }
 
     /**
@@ -178,18 +203,18 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      * Return the result.
      */
     private Map<TypeVariable, AnnotatedTypeMirror> infer(final AnnotatedTypeFactory typeFactory,
-                                                         final ExpressionTree expression,
+                                                         final List<AnnotatedTypeMirror> argumentTypes,
+                                                         final AnnotatedTypeMirror assignedTo,
                                                          final ExecutableElement methodElem,
                                                          final AnnotatedExecutableType methodType,
                                                          final Set<TypeVariable> targets) {
 
         //1.  Step 1 - Build up argument constraints
         //The AFConstraints for arguments are used also in the
-        Set<AFConstraint> afArgumentConstraints = createArgumentAFConstraints(typeFactory, expression, methodType, targets);
+        Set<AFConstraint> afArgumentConstraints = createArgumentAFConstraints(typeFactory, argumentTypes, methodType, targets);
 
         //2. Step 2 - Solve the constraints.
-        Pair<InferenceResult, InferenceResult> argInference =
-                inferFromArguments(typeFactory, expression, methodType, afArgumentConstraints, targets);
+        Pair<InferenceResult, InferenceResult> argInference = inferFromArguments(typeFactory, afArgumentConstraints, targets);
 
         final InferenceResult fromArgEqualities = argInference.first;  //result 2.a
         final InferenceResult fromArgSupertypes = argInference.second; //result 2.b
@@ -197,9 +222,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         //if this method invocation's has a return type and it is assigned/pseudo-assigned to
         //a variable, assignedTo is the type of that variable
-        final AnnotatedTypeMirror assignedTo =
-                TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expression));
-
         if (assignedTo == null) {
             fromArgEqualities.mergeSubordinate(fromArgSupertypes);
             return fromArgEqualities.toAtmMap();
@@ -255,12 +277,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      * Return the resulting constraint set.
      */
     protected Set<AFConstraint> createArgumentAFConstraints(final AnnotatedTypeFactory typeFactory,
-                                                            final ExpressionTree expression,
+                                                            final List<AnnotatedTypeMirror> argTypes,
                                                             final AnnotatedExecutableType methodType,
                                                             final Set<TypeVariable> targets) {
-        final List<? extends ExpressionTree> argTrees = expressionToArgTrees(expression);
-        final List<AnnotatedTypeMirror> paramTypes = AnnotatedTypes.expandVarArgs(typeFactory, methodType, argTrees);
-        final List<AnnotatedTypeMirror> argTypes = treesToTypes(argTrees, typeFactory);
+        final List<AnnotatedTypeMirror> paramTypes = AnnotatedTypes.expandVarArgsFromTypes(methodType, argTypes);
 
         if (argTypes.size() != paramTypes.size()) {
             ErrorReporter.errorAbort(
@@ -288,8 +308,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      * the methods arguments.
      */
     private Pair<InferenceResult,InferenceResult> inferFromArguments(final AnnotatedTypeFactory typeFactory,
-                                                                     final ExpressionTree expression,
-                                                                     final AnnotatedExecutableType methodType,
                                                                      final Set<AFConstraint> afArgumentConstraints,
                                                                      final Set<TypeVariable> targets) {
         Set<TUConstraint> tuArgConstraints = afToTuConstraints(afArgumentConstraints, targets);
