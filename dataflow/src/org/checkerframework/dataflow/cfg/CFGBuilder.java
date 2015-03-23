@@ -2483,17 +2483,18 @@ public class CFGBuilder {
 
             // see JLS 14.10
 
-            // If assertions are disabled, then nothing is executed.
-            if (assumeAssertionsDisabled) {
-                return null;
-            }
-
             // If assertions are enabled, then we can just translate the
             // assertion.
             if (assumeAssertionsEnabled || assumeAssertionsEnabledFor(tree)) {
                 translateAssertWithAssertionsEnabled(tree);
                 return null;
             }
+
+            // If assertions are disabled, then nothing is executed.
+            if (assumeAssertionsDisabled) {
+                return null;
+            }
+
 
             // Otherwise, we don't know if assertions are enabled, so we use a
             // variable "ea" and case-split on it. One branch does execute the
