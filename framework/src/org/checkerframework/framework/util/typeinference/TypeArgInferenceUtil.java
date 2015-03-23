@@ -1,13 +1,14 @@
 package org.checkerframework.framework.util.typeinference;
 
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.TypeVariableSubstitutor;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
@@ -68,7 +69,7 @@ public class TypeArgInferenceUtil {
         if (argTrees == null) {
             throw new IllegalArgumentException(
                     "TypeArgumentInference.relationsFromMethodArguments:\n"
-                  + "couldn't determine arguments from tree: " + expression
+                            + "couldn't determine arguments from tree: " + expression
             );
         }
 
@@ -171,8 +172,26 @@ public class TypeArgInferenceUtil {
                     break;
                 }
             }
-            if (treeIndex == -1) return null;
-            return method.getParameterTypes().get(treeIndex);
+
+            assert treeIndex != -1 :  "Could not find path in method invocation."
+                                    + "treePath=" + path.toString() + "\n"
+                                    + "methodInvocation=" + methodInvocation;
+            if (treeIndex == -1) {
+                return null;
+            }
+
+            final AnnotatedTypeMirror paramType = method.getParameterTypes().get(treeIndex);
+
+            //Examples like this:
+            // <T> T outMethod()
+            // <U> void inMethod(U u);
+            // inMethod(outMethod())
+            // would require solving the constraints for both type argument inferences simultaneously
+            if (paramType == null || containsUninferredTypeParameter(paramType, method)) {
+                return null;
+            }
+
+            return paramType;
         } else if (assignmentContext instanceof NewArrayTree) {
             // FIXME: This may cause infinite loop
             AnnotatedTypeMirror type =
@@ -192,7 +211,14 @@ public class TypeArgInferenceUtil {
                     break;
                 }
             }
-            if (treeIndex == -1) return null;
+
+            assert treeIndex != -1 :  "Could not find path in NewClassTre."
+                    + "treePath=" + path.toString() + "\n"
+                    + "methodInvocation=" + newClassTree;
+            if (treeIndex == -1) {
+                return null;
+            }
+
             return constructor.getParameterTypes().get(treeIndex);
         } else if (assignmentContext instanceof ReturnTree) {
             MethodTree method = TreeUtils.enclosingMethod(path);
@@ -216,6 +242,63 @@ public class TypeArgInferenceUtil {
         return null; // dead code
     }
 
+    /**
+     * @return true if the type contains a use of a type variable from methodType
+     */
+    private static boolean containsUninferredTypeParameter(AnnotatedTypeMirror type,
+                                                           AnnotatedExecutableType methodType) {
+        final List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
+        final List<TypeVariable> typeVars = new ArrayList<>(annotatedTypeVars.size());
+
+        for (AnnotatedTypeVariable annotatedTypeVar : annotatedTypeVars) {
+            typeVars.add(annotatedTypeVar.getUnderlyingType());
+        }
+
+        //note NULL values creep in because the underlying visitor uses them in various places
+        final Boolean result = type.accept(new TypeVariableFinder(), typeVars);
+        return result != null && result;
+    }
+
+    /**
+     * Used to detect if the visited type contains one of the type variables in the typeVars parameter
+     */
+    private static class TypeVariableFinder extends AnnotatedTypeScanner<Boolean, List<TypeVariable>> {
+
+        @Override
+        protected Boolean scan(Iterable<? extends AnnotatedTypeMirror> types, List<TypeVariable> typeVars) {
+            if (types == null)
+                return false;
+            Boolean result = false;
+            Boolean first = true;
+            for (AnnotatedTypeMirror type : types) {
+                result = (first ? scan(type, typeVars) : scanAndReduce(type, typeVars, result));
+                first = false;
+            }
+            return result;
+        }
+
+        @Override
+        protected Boolean reduce(Boolean r1, Boolean r2) {
+            if (r1 == null) {
+                return r2 != null && r2;
+
+            } else if(r2 == null) {
+                return r1;
+            }
+
+            return r1 || r2;
+        }
+
+        @Override
+        public Boolean visitTypeVariable(AnnotatedTypeVariable type, List<TypeVariable> typeVars) {
+            if (typeVars.contains(type.getUnderlyingType())) {
+                return true;
+            } else {
+                return super.visitTypeVariable(type, typeVars);
+            }
+        }
+    }
+
     /*
      * Various TypeArgumentInference steps require substituting types for type arguments that have already been
      * inferred into constraints that are used infer other type arguments.  Substituter is used in
@@ -232,7 +315,7 @@ public class TypeArgInferenceUtil {
      * (@see TypeVariableSubstitutor).Return the copy
      */
     public static AnnotatedTypeMirror substitute(final TypeVariable typeVariable, final AnnotatedTypeMirror substitution,
-                                                final AnnotatedTypeMirror toModify) {
+                                                 final AnnotatedTypeMirror toModify) {
         substituteMap.clear();
         substituteMap.put(typeVariable, substitution.deepCopy());
 
