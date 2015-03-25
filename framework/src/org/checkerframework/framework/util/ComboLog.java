@@ -1,14 +1,22 @@
 package org.checkerframework.framework.util;
 
-import com.sun.source.tree.CompilationUnitTree;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import java.io.*;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import com.sun.source.tree.CompilationUnitTree;
+
 /**
  * Created by jburke on 6/12/14.
+ * TODO: Document this class. It is currently not used within the framework.
  */
 public class ComboLog {
 
@@ -54,7 +62,7 @@ public class ComboLog {
 
     private static Agreement parseAgreement(final String line) {
         final String [] tokens = line.split(del_r);
-        if( tokens.length != 4 ) {
+        if (tokens.length != 4) {
             throw new RuntimeException("Could not parseAgreement from: " + line);
         }
 
@@ -72,24 +80,24 @@ public class ComboLog {
     }
 
     public static void writeCombo(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs, String checker) {
-        if( subtypeFile.length() > 100000 ) {
+        if (subtypeFile.length() > 100000) {
             return;
         }
 
-        if( foundCombos == null ) {
+        if (foundCombos == null) {
             initialize();
         }
 
         final Agreement agr =
                 new Agreement(root.getSourceFile().getName(), checker.getClass().getSimpleName(), atmToClassStr(rhs), atmToClassStr(lhs));
-        if( !foundCombos.contains(agr) ) {
+        if (!foundCombos.contains(agr)) {
             foundCombos.add(agr);
             writeCombo(agr);
         }
     }
 
     private static void writeCombo(final Agreement agreement) {
-        if( foundCombos == null ) {
+        if (foundCombos == null) {
             initialize();
         }
 
@@ -110,14 +118,14 @@ public class ComboLog {
     private static void initialize() {
         foundCombos = new HashSet<>();
         try {
-            if( subtypeFile.exists() ) {
+            if (subtypeFile.exists()) {
                 final BufferedReader reader = new BufferedReader(new FileReader(subtypeFile));
 
                 String line;
                 Agreement combo;
                 do {
                     line = reader.readLine();
-                    if( line != null ) {
+                    if (line != null) {
                         combo = parseAgreement(line);
                         foundCombos.add(combo);
                     }
