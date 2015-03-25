@@ -650,12 +650,9 @@
 
     <target name="nullness-assume-assertions-are-enabled-tests" depends="jar,build-tests"
             description="Run uninit tests for the Nullness Checker">
-<!-- TODO: re-enable this once issue 417 is fixed; see
-https://code.google.com/p/checker-framework/issues/detail?id=416
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessAssumeAssertionsAreDisabled"/>
         </antcall>
--->
     </target>
 
     <target name="nullness-uninit-tests-with-asserts" depends="jar,build-tests"
