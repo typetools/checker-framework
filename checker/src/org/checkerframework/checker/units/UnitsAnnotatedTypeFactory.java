@@ -1,48 +1,11 @@
 package org.checkerframework.checker.units;
 
-import java.lang.annotation.Annotation;
-import java.util.*;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.tools.Diagnostic.Kind;
-
-import org.checkerframework.checker.units.qual.A;
-import org.checkerframework.checker.units.qual.Acceleration;
-import org.checkerframework.checker.units.qual.Angle;
-import org.checkerframework.checker.units.qual.Area;
-import org.checkerframework.checker.units.qual.C;
-import org.checkerframework.checker.units.qual.Current;
-import org.checkerframework.checker.units.qual.K;
-import org.checkerframework.checker.units.qual.Length;
-import org.checkerframework.checker.units.qual.Luminance;
-import org.checkerframework.checker.units.qual.Mass;
-import org.checkerframework.checker.units.qual.MixedUnits;
-import org.checkerframework.checker.units.qual.Prefix;
-import org.checkerframework.checker.units.qual.Speed;
-import org.checkerframework.checker.units.qual.Substance;
-import org.checkerframework.checker.units.qual.Temperature;
-import org.checkerframework.checker.units.qual.Time;
-import org.checkerframework.checker.units.qual.UnitsBottom;
-import org.checkerframework.checker.units.qual.UnitsMultiple;
-import org.checkerframework.checker.units.qual.UnknownUnits;
-import org.checkerframework.checker.units.qual.cd;
-import org.checkerframework.checker.units.qual.degrees;
-import org.checkerframework.checker.units.qual.g;
-import org.checkerframework.checker.units.qual.h;
-import org.checkerframework.checker.units.qual.km2;
-import org.checkerframework.checker.units.qual.kmPERh;
-import org.checkerframework.checker.units.qual.m;
-import org.checkerframework.checker.units.qual.m2;
-import org.checkerframework.checker.units.qual.mPERs;
-import org.checkerframework.checker.units.qual.mPERs2;
-import org.checkerframework.checker.units.qual.min;
-import org.checkerframework.checker.units.qual.mm2;
-import org.checkerframework.checker.units.qual.mol;
-import org.checkerframework.checker.units.qual.radians;
-import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.checker.units.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
@@ -51,6 +14,16 @@ import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
+
+import java.lang.annotation.Annotation;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.tools.Diagnostic.Kind;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -306,7 +279,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else {
                 // Handle the binary operations that do not produce a UnitsRelation.
 
-                switch(kind) {
+                switch (kind) {
                 case MINUS:
                 case PLUS:
                     if (lht.getAnnotations().equals(rht.getAnnotations())) {
@@ -376,7 +349,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             AnnotationMirror res = null;
             if (ur!=null) {
-                switch(kind) {
+                switch (kind) {
                 case DIVIDE:
                     res = ur.division(lht, rht);
                     break;

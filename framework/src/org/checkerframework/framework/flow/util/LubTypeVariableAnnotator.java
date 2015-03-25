@@ -1,17 +1,22 @@
 package org.checkerframework.framework.flow.util;
 
-import org.checkerframework.framework.type.*;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 
-import static org.checkerframework.framework.util.AnnotatedTypes.*;
+import static org.checkerframework.framework.util.AnnotatedTypes.findEffectiveAnnotationInHierarchy;
+import static org.checkerframework.framework.util.AnnotatedTypes.haveSameDeclaration;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * At the moment, this class is just a collection of special cases that fix the behavior of AnnotateAsLub
@@ -36,13 +41,13 @@ public class LubTypeVariableAnnotator {
      */
     public static List<AnnotatedTypeVariable> getSubtypesAsTypevars(final AnnotatedTypeVariable lub, final List<? extends AnnotatedTypeMirror> subtypes) {
         final List<AnnotatedTypeVariable> typeVars = new ArrayList<>();
-        for(final AnnotatedTypeMirror subtype : subtypes) {
+        for (final AnnotatedTypeMirror subtype : subtypes) {
             final AnnotatedTypeVariable typeVar;
-            if(subtype.getKind() == TypeKind.TYPEVAR) {
+            if (subtype.getKind() == TypeKind.TYPEVAR) {
                 typeVar = (AnnotatedTypeVariable) subtype;
 
             //asSuper(null, typevar) does not yield a typevar but the value null, handle this here for now
-            } else if(subtype.getKind() == TypeKind.NULL) {
+            } else if (subtype.getKind() == TypeKind.NULL) {
                 typeVar = lub.deepCopy();
                 typeVar.replaceAnnotations(subtype.getAnnotations());
 
@@ -66,7 +71,7 @@ public class LubTypeVariableAnnotator {
         final AnnotatedTypeVariable headSubtype = subtypesIter.next();
 
         annotateEmptyLub(lub, headSubtype, qualHierarchy, types);
-        while( subtypesIter.hasNext() ) {
+        while (subtypesIter.hasNext()) {
             annotateLub(lub, subtypesIter.next(), typeFactory, qualHierarchy, types);
         }
     }
@@ -75,7 +80,7 @@ public class LubTypeVariableAnnotator {
                                          final QualifierHierarchy qualHierarchy, final Types types) {
 
 
-        for(final AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+        for (final AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
             final AnnotatedTypeMirror src = asLubType(headSubtype, lub, top, types);
 
             //lub has no annotation, so copy all annotations from headSubtype
@@ -87,12 +92,12 @@ public class LubTypeVariableAnnotator {
                                    final AnnotatedTypeFactory typeFactory, final QualifierHierarchy qualHierarchy,
                                    final Types types) {
 
-        for(final AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+        for (final AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
             final AnnotatedTypeVariable subAsLub = asLubType(subtype, lub, top, types);
             final AnnotationMirror lubPrimary = lub.getAnnotationInHierarchy(top);
             final AnnotationMirror subPrimary = subtype.getAnnotationInHierarchy(top);
 
-            if(lubPrimary == null && subPrimary == null) {
+            if (lubPrimary == null && subPrimary == null) {
                 //TODO: Sometimes we need to lub a NULL type with annotations
                 //TODO: In these cases we may see a type var with bounds that lack annotations on their
                 //TODO: type args.  To find these cases:
@@ -102,15 +107,15 @@ public class LubTypeVariableAnnotator {
                 continue; //lub is already annotated as subtype is either the same type
                           //or extends lub without adding a primary annotation.
                           //so continue to the next hierarchy
-            } else if(lubPrimary != null && subPrimary != null) {
+            } else if (lubPrimary != null && subPrimary != null) {
                 lub.replaceAnnotation(qualHierarchy.leastUpperBound(lubPrimary,subPrimary));
 
             } else {
                 final TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
-                if(typeHierarchy.isSubtype(subAsLub, lub, top)) {
+                if (typeHierarchy.isSubtype(subAsLub, lub, top)) {
                     //do nothing lub is already above top
-                } else if(typeHierarchy.isSubtype(lub, subAsLub, top)) {
-                    if(lubPrimary != null) { //&& subPrimary == null
+                } else if (typeHierarchy.isSubtype(lub, subAsLub, top)) {
+                    if (lubPrimary != null) { //&& subPrimary == null
                         //since primary annotations are added to the bounds
                         //we need to replace the upper/lower bound annotations
                         lub.removeAnnotation(lubPrimary);
@@ -150,20 +155,20 @@ public class LubTypeVariableAnnotator {
                                                    final AnnotationMirror top, final Types types) {
         AnnotatedTypeMirror typeUpperBound = type;
         AnnotationMirror anno = typeUpperBound.getAnnotationInHierarchy(top);
-        while(typeUpperBound.getKind() == TypeKind.TYPEVAR
+        while (typeUpperBound.getKind() == TypeKind.TYPEVAR
            && !haveSameDeclaration(types, (AnnotatedTypeVariable) typeUpperBound, lub)) {
             typeUpperBound = ((AnnotatedTypeVariable) typeUpperBound).getUpperBound();
-            if(anno == null) {
+            if (anno == null) {
                 anno = typeUpperBound.getAnnotationInHierarchy(top);
             }
 
         }
 
-        if(typeUpperBound.getKind() != TypeKind.TYPEVAR) {
+        if (typeUpperBound.getKind() != TypeKind.TYPEVAR) {
             throw new IllegalArgumentException("Type must extend lub: type=" + type + " lub=" + lub);
         }
 
-        if(anno != null) {
+        if (anno != null) {
             typeUpperBound = typeUpperBound.deepCopy();
             typeUpperBound.addAnnotation(anno);
         }

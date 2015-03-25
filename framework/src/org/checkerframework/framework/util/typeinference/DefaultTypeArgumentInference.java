@@ -272,7 +272,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         final int numberOfParams = paramTypes.size();
         final LinkedList<AFConstraint> afConstraints = new LinkedList<>();
-        for(int i = 0; i < numberOfParams; i++) {
+        for (int i = 0; i < numberOfParams; i++) {
             afConstraints.add(new A2F(argTypes.get(i), paramTypes.get(i)));
         }
 
@@ -366,7 +366,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                                                      final AnnotatedTypeFactory typeFactory) {
 
         final LinkedList<AFConstraint> assignmentAfs = new LinkedList<>();
-        for(AnnotatedTypeVariable typeParam : methodType.getTypeVariables()) {
+        for (AnnotatedTypeVariable typeParam : methodType.getTypeVariables()) {
             final TypeVariable target = typeParam.getUnderlyingType();
             final AnnotatedTypeMirror inferredType = inferredArgs.get(target);
             //for all inferred types Ti:  Ti >> Bi where Bi is upper bound and Ti << Li where Li is the lower bound
@@ -434,7 +434,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         final TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
 
         final InferenceResult result = new InferenceResult();
-        for(final TypeVariable target : targets) {
+        for (final TypeVariable target : targets) {
             final InferredValue equalityInferred = equalityResult.get(target);
             final InferredValue supertypeInferred = supertypeResult.get(target);
 
@@ -540,7 +540,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      */
     private Set<TUConstraint> afToTuConstraints(Set<? extends AFConstraint> afConstraints, Set<TypeVariable> targets) {
         final Set<TUConstraint> outgoing = new LinkedHashSet<>();
-        for(final AFConstraint afConstraint : afConstraints) {
+        for (final AFConstraint afConstraint : afConstraints) {
             if (!afConstraint.isIrreducible(targets)) {
                 ErrorReporter.errorAbort(
                         "All afConstraints should be irreducible before conversion.\n"

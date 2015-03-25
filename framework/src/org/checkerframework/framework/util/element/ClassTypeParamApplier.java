@@ -1,8 +1,5 @@
 package org.checkerframework.framework.util.element;
 
-import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.TargetType;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
@@ -10,6 +7,10 @@ import org.checkerframework.javacutil.ErrorReporter;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.TargetType;
 
 /**
  * Applies the annotations present for a class type parameter onto an AnnotatedTypeVariable.  See
@@ -37,7 +38,7 @@ public class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
     ClassTypeParamApplier(AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory) {
         super(type, element, typeFactory);
 
-        if( !( element.getEnclosingElement() instanceof Symbol.ClassSymbol ) ) {
+        if (!( element.getEnclosingElement() instanceof Symbol.ClassSymbol )) {
             ErrorReporter.errorAbort("TypeParameter not enclosed by class?  Type( " + type + " ) " +
                     "Element ( " + element + " ) ");
         }

@@ -11,12 +11,22 @@ import org.checkerframework.framework.util.typeinference.solver.TargetConstraint
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
-import java.util.*;
-import java.util.Map.Entry;
 
 /**
  * Infers type arguments by using the Least Upper Bound computation on the supertype relationships
@@ -211,7 +221,7 @@ public class SupertypesSolver {
             }
         });
 
-        for(final TypeVariable target : targetsSupertypesLast) {
+        for (final TypeVariable target : targetsSupertypesLast) {
             TargetConstraints targetRecord = constraintMap.getConstraints(target);
             final Map<AnnotationMirror, Set<AnnotationMirror>> subtypeAnnos = targetRecord.supertypes.primaries;
             final Map<AnnotatedTypeMirror, Set<AnnotationMirror>> subtypesOfTarget = targetRecord.supertypes.types;
@@ -280,7 +290,7 @@ public class SupertypesSolver {
                                       QualifierHierarchy qualifierHierarchy) {
 
         lubOfPrimaries.clear();
-        for(final AnnotationMirror top : tops) {
+        for (final AnnotationMirror top : tops) {
             final Set<AnnotationMirror> annosInHierarchy = subtypeAnnos.get(top);
             if (annosInHierarchy != null && !annosInHierarchy.isEmpty()) {
                 lubOfPrimaries.put(top, leastUpperBound(annosInHierarchy, qualifierHierarchy));
@@ -387,7 +397,7 @@ public class SupertypesSolver {
         Iterator<? extends AnnotationMirror> annoIter = annos.iterator();
         AnnotationMirror lub = annoIter.next();
 
-        while(annoIter.hasNext()) {
+        while (annoIter.hasNext()) {
             lub = qualifierHierarchy.leastUpperBound(lub, annoIter.next());
         }
 

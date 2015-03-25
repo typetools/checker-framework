@@ -13,12 +13,12 @@ import javax.lang.model.type.TypeKind;
  * from the visited type. An annotation is replaced if the parameter type
  * already has an annotation in the same hierarchy at the same location as the
  * visited type.
- * 
+ *
  * Example use: AnnotatedTypeMirror visitType = ...; AnnotatedTypeMirror
  * parameter - ...; visitType.accept(new AnnotatedTypesMerger(), parameter);
- * 
+ *
  * @author smillst
- * 
+ *
  */
 public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
 
@@ -64,11 +64,11 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
     }
 
     protected void replaceAnnotations(final AnnotatedTypeMirror one, final AnnotatedTypeMirror two) {
-        if(top == null) {
+        if (top == null) {
             two.replaceAnnotations(one.getAnnotations());
         } else {
             final AnnotationMirror replacement =  one.getAnnotationInHierarchy(top);
-            if(replacement != null) {
+            if (replacement != null) {
                 two.replaceAnnotation(one.getAnnotationInHierarchy(top));
             }
         }

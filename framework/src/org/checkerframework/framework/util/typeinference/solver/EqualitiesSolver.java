@@ -70,7 +70,7 @@ public class EqualitiesSolver {
                 }
             }
 
-        } while(dirty);
+        } while (dirty);
 
         solution.resolveChainedTargets();
 
@@ -96,11 +96,11 @@ public class EqualitiesSolver {
         final TargetConstraints targetRecord = constraints.getConstraints(target);
         final Map<TypeVariable, Set<AnnotationMirror>> equivalentTargets = targetRecord.equalities.targets;
         //each target that was equivalent to this one needs to be equivalent in the same hierarchies as the inferred type
-        for(final Entry<TypeVariable, Set<AnnotationMirror>> eqEntry : equivalentTargets.entrySet()) {
+        for (final Entry<TypeVariable, Set<AnnotationMirror>> eqEntry : equivalentTargets.entrySet()) {
             constraints.addTypeEqualities(eqEntry.getKey(), type, eqEntry.getValue());
         }
 
-        for(TypeVariable otherTarget : constraints.getTargets()) {
+        for (TypeVariable otherTarget : constraints.getTargets()) {
             if (otherTarget != target) {
                 final TargetConstraints record = constraints.getConstraints(otherTarget);
 
@@ -122,7 +122,7 @@ public class EqualitiesSolver {
             }
         }
 
-        for(TypeVariable otherTarget : constraints.getTargets()) {
+        for (TypeVariable otherTarget : constraints.getTargets()) {
             if (otherTarget != target) {
                 final TargetConstraints record = constraints.getConstraints(otherTarget);
 
@@ -147,6 +147,7 @@ public class EqualitiesSolver {
         targetRecord.equalities.clear();
         targetRecord.supertypes.clear();
     }
+
     /**
      * Let Ti be a target type parameter.
      * When we reach this method we have inferred that Ti has the exact same argument as another target Tj
@@ -171,15 +172,15 @@ public class EqualitiesSolver {
         final Map<AnnotatedTypeMirror, Set<AnnotationMirror>> supertypes = targetRecord.supertypes.types;
 
         //each type that was equivalent to this one needs to be equivalent in the same hierarchies to the inferred target
-        for(final Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> eqEntry : equivalentTypes.entrySet()) {
+        for (final Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> eqEntry : equivalentTypes.entrySet()) {
             constraints.addTypeEqualities(inferredTarget, eqEntry.getKey(), eqEntry.getValue());
         }
 
-        for(final Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> superEntry : supertypes.entrySet()) {
+        for (final Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> superEntry : supertypes.entrySet()) {
             constraints.addTypeSupertype(inferredTarget, superEntry.getKey(), superEntry.getValue());
         }
 
-        for(TypeVariable otherTarget : constraints.getTargets()) {
+        for (TypeVariable otherTarget : constraints.getTargets()) {
             if (otherTarget != target && otherTarget != inferredTarget) {
                 final TargetConstraints record = constraints.getConstraints(otherTarget);
 
@@ -201,7 +202,7 @@ public class EqualitiesSolver {
             }
         }
 
-        for(TypeVariable otherTarget : constraints.getTargets()) {
+        for (TypeVariable otherTarget : constraints.getTargets()) {
             if (otherTarget != target && otherTarget != inferredTarget) {
                 final TargetConstraints record = constraints.getConstraints(otherTarget);
 
@@ -268,7 +269,7 @@ public class EqualitiesSolver {
         //differing constraint
         //3. Finally, we expect the following types to be involved in equality constraints:
         //AnnotatedDeclaredTypes, AnnotatedTypeVariables, and AnnotatedArrayTypes
-        while(entryIterator.hasNext() && !missingAnnos.isEmpty()) {
+        while (entryIterator.hasNext() && !missingAnnos.isEmpty()) {
             final Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> current = entryIterator.next();
             final AnnotatedTypeMirror currentType = current.getKey();
             final Set<AnnotationMirror> currentHierarchies = current.getValue();

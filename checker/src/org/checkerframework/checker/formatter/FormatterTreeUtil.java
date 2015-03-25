@@ -134,7 +134,7 @@ public class FormatterTreeUtil {
         if (vararg instanceof ArrayCreationNode) {
             List<Node> convs = ((ArrayCreationNode)vararg).getInitializers();
             ConversionCategory[] res = new ConversionCategory[convs.size()];
-            for (int i=0; i<convs.size(); ++i) {
+            for (int i = 0; i < convs.size(); ++i) {
                 Node conv = convs.get(i);
                 if (conv instanceof FieldAccessNode) {
                     Class<? extends Object> clazz = typeMirrorToClass(((FieldAccessNode) conv).getType());
@@ -214,7 +214,7 @@ public class FormatterTreeUtil {
         public final Result<InvocationType> getInvocationType() {
             InvocationType type = InvocationType.VARARG;
 
-            if (args.size() == 1){
+            if (args.size() == 1) {
                 final ExpressionTree first = args.get(0);
                 TypeMirror argType = atypeFactory.getAnnotatedType(first).getUnderlyingType();
                 // figure out if argType is an array
@@ -286,7 +286,7 @@ public class FormatterTreeUtil {
             // One to make javac happy, the other to make Eclipse happy...
             @SuppressWarnings({"rawtypes", "unchecked"})
             Result<TypeMirror>[] res = new Result[args.size()];
-            for (int i=0; i<res.length; ++i){
+            for (int i = 0; i < res.length; ++i) {
                 ExpressionTree arg = args.get(i);
                 TypeMirror argType = atypeFactory.getAnnotatedType(arg).getUnderlyingType();
                 res[i] = new ResultImpl<TypeMirror>(argType, arg);
@@ -300,7 +300,7 @@ public class FormatterTreeUtil {
          */
         public final boolean isValidParameter(ConversionCategory formatCat, TypeMirror paramType) {
             Class<? extends Object> type = typeMirrorToClass(paramType);
-            if (type == null){
+            if (type == null) {
                 // we did not recognize the parameter type
                 return false;
             }
@@ -394,7 +394,7 @@ public class FormatterTreeUtil {
         AnnotationUtils.getElementValuesWithDefaults(anno).get(formatArgTypesElement).getValue();
 
         ConversionCategory[] argTypes = new ConversionCategory[vals.size()];
-        for (int i=0; i<vals.size(); ++i){
+        for (int i = 0; i < vals.size(); ++i) {
             VariableElement ve = (VariableElement) vals.get(i).getValue();
             argTypes[i] = ConversionCategory.valueOf(ve.getSimpleName().toString());
         }
