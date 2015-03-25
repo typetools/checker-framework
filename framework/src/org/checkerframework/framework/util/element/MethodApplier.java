@@ -119,7 +119,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         methodType.setElement(methodSymbol); //Preserves previous behavior
 
         // Add declaration annotations to the return type if
-        if( methodType.getReturnType() instanceof AnnotatedTypeVariable) {
+        if (methodType.getReturnType() instanceof AnnotatedTypeVariable) {
             applyTypeVarUseOnReturnType();
         }
         addAnnotationsFromElement(methodType.getReturnType(), methodSymbol.getAnnotationMirrors());
@@ -170,7 +170,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
             typeToAnnos.put(thrownType, new ArrayList<TypeCompound>());
         }
 
-        for( TypeCompound anno : annos) {
+        for (TypeCompound anno : annos) {
             final TypeAnnotationPosition annoPos = anno.position;
             if (annoPos.type_index >= 0 && annoPos.type_index < thrown.size()) {
                 final AnnotatedTypeMirror thrownType = thrown.get(annoPos.type_index);
@@ -184,7 +184,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
             }
         }
 
-        for(final Entry<AnnotatedTypeMirror, List<TypeCompound>> typeToAnno : typeToAnnos.entrySet()) {
+        for (final Entry<AnnotatedTypeMirror, List<TypeCompound>> typeToAnno : typeToAnnos.entrySet()) {
             annotateViaTypeAnnoPosition(typeToAnno.getKey(), typeToAnno.getValue());
         }
     }

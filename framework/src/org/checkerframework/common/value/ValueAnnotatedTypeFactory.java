@@ -543,7 +543,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     } else {
                         currentLengths = (new ArrayList<Integer>());
                     }
-                    if(count == summarylengths.size()){
+                    if (count == summarylengths.size()) {
                         summarylengths.add(new ArrayList<Integer>());
                     }
                     summarylengths.get(count).addAll(currentLengths);
@@ -624,7 +624,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         private List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo) {
             AnnotationMirror anno = type.getAnnotationInHierarchy(UNKNOWNVAL);
-            if(anno == null){
+            if (anno == null) {
                 // if type is an AnnotatedTypeVariable (or other type without a primary annotation)
                 // then anno will be null. It would be safe to use the annotation on the upper bound;
                 //  however, unless the upper bound was explicitly annotated, it will be unknown.
@@ -638,7 +638,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             if (isUnderlyingTypeAValue(type)) {
-                switch(tree.getKind()){
+                switch (tree.getKind()) {
                 case BOOLEAN_LITERAL:
                     AnnotationMirror boolAnno = createBooleanAnnotation(Collections
                             .singletonList((Boolean) tree.getValue()));
@@ -985,7 +985,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return UNKNOWNVAL;
         }
         List<Long> longValues = new ArrayList<>();
-        for(char value: values){
+        for (char value: values) {
             longValues.add((long) value);
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv,

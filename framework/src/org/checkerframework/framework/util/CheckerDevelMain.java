@@ -24,7 +24,7 @@ public class CheckerDevelMain extends CheckerMain {
         final String verbose = System.getProperty( VERBOSE_PROP );
 
 
-        if( verbose != null && verbose.equalsIgnoreCase("TRUE") ) {
+        if (verbose != null && verbose.equalsIgnoreCase("TRUE")) {
             System.out.print("CheckerDevelMain:\n" +
                     "Prepended to classpath:     " + cp         +  "\n" +
                     "Prepended to compile bootclasspath: " + compileBcp +  "\n" +
@@ -88,7 +88,7 @@ public class CheckerDevelMain extends CheckerMain {
 
         final List<String> newPathOpts = new ArrayList<String>();
 
-        if(!cp.trim().isEmpty()) {
+        if (!cp.trim().isEmpty()) {
             newPathOpts.addAll(Arrays.asList(cp.split(File.pathSeparator)));
         }
 

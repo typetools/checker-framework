@@ -165,7 +165,7 @@ public final class TestUtilities {
                         msg = ":" + errorLine + ": " + msg.trim();
                         expected.add(msg);
                     }
-                } else if(line.startsWith("//warning:")) {
+                } else if (line.startsWith("//warning:")) {
                     // com.sun.tools.javac.util.AbstractDiagnosticFormatter.formatKind(JCDiagnostic, Locale)
                     // These are warnings from javax.tools.Diagnostic.Kind.WARNING
                     String msg = line.substring(2);

@@ -84,7 +84,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
     @Override
     public Void visitTypeCast(TypeCastTree node, Void p) {
-        if (node.getExpression().getKind() == Kind.NULL_LITERAL){
+        if (node.getExpression().getKind() == Kind.NULL_LITERAL) {
             return null;
         }
         return super.visitTypeCast(node, p);

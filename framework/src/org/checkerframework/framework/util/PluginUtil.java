@@ -55,7 +55,7 @@ public class PluginUtil {
 
     public static List<File> toFiles(final List<String> fileNames) {
         final List<File> files = new ArrayList<File>(fileNames.size());
-        for(final String fn : fileNames) {
+        for (final String fn : fileNames) {
             files.add(new File(fn));
         }
 
@@ -72,7 +72,7 @@ public class PluginUtil {
     public static void writeFofn(final File destination, final List<File> files) throws IOException {
         final BufferedWriter bw = new BufferedWriter(new FileWriter(destination));
         try {
-            for(final File file : files) {
+            for (final File file : files) {
                 bw.write(wrapArg(file.getAbsolutePath()));
                 bw.newLine();
             }
@@ -97,7 +97,7 @@ public class PluginUtil {
     public static File writeTmpFofn(final String prefix, final String suffix, final boolean deleteOnExit,
                                     final List<File> files) throws IOException {
         final File tmpFile = File.createTempFile(prefix, suffix);
-        if( deleteOnExit ) {
+        if (deleteOnExit) {
             tmpFile.deleteOnExit();
         }
         writeFofn(tmpFile, files);
@@ -107,7 +107,7 @@ public class PluginUtil {
     public static File writeTmpArgFile(final String prefix, final String suffix, final boolean deleteOnExit,
                                        final List<String> args) throws IOException {
         final File tmpFile = File.createTempFile(prefix, suffix);
-        if( deleteOnExit ) {
+        if (deleteOnExit) {
             tmpFile.deleteOnExit();
         }
         writeArgFile(tmpFile, args);
@@ -130,7 +130,7 @@ public class PluginUtil {
         String line;
 
         List<String> lines = new ArrayList<String>();
-        while((line = br.readLine()) != null) {
+        while ((line = br.readLine()) != null) {
             lines.add(line);
         }
         br.close();
@@ -142,8 +142,8 @@ public class PluginUtil {
         boolean notFirst = false;
         final StringBuffer sb = new StringBuffer();
 
-        for(final Object obj : objs) {
-            if(notFirst) {
+        for (final Object obj : objs) {
+            if (notFirst) {
                 sb.append(delimiter);
             }
             sb.append(obj.toString());
@@ -173,9 +173,9 @@ public class PluginUtil {
                                              final String ... extras) {
         final List<String> out = new ArrayList<String>();
         final String strProp = (String) props.get(prop);
-        if(strProp != null && !strProp.isEmpty()) {
+        if (strProp != null && !strProp.isEmpty()) {
             out.add(tag + strProp);
-            for(final String extra : extras) {
+            for (final String extra : extras) {
                 out.add(extra);
             }
         }
@@ -186,7 +186,7 @@ public class PluginUtil {
     public static List<String> getBooleanProp(final Map<CheckerProp, Object> props,
                                               final CheckerProp prop, final String tag) {
         Boolean aSkip = (Boolean) props.get(prop);
-        if(aSkip != null && aSkip) {
+        if (aSkip != null && aSkip) {
             return Arrays.asList(tag);
         }
         return new ArrayList<String>();
@@ -268,7 +268,7 @@ public class PluginUtil {
      * @param props  The map of checker properties too search for options in
      */
     private static void addOptions(final List<String> cmd, Map<CheckerProp,Object> props) {
-        for(CheckerProp cp : CheckerProp.values()) {
+        for (CheckerProp cp : CheckerProp.values()) {
             cmd.addAll(cp.getCmdLine(props));
         }
     }
@@ -289,7 +289,7 @@ public class PluginUtil {
     }
 
     public static String wrapArg(final String classpath) {
-        if(classpath.contains(" ")) {
+        if (classpath.contains(" ")) {
             return '"' + escapeQuotesAndSlashes(classpath) + '"';
         }
         return classpath;
@@ -301,7 +301,7 @@ public class PluginUtil {
         replacements.put("\"", "\\\\\"");
 
         String replacement = toEscape;
-        for(final Map.Entry<String, String> entry : replacements.entrySet()) {
+        for (final Map.Entry<String, String> entry : replacements.entrySet()) {
             replacement = replacement.replaceAll(entry.getKey(), entry.getValue());
         }
 
@@ -309,18 +309,18 @@ public class PluginUtil {
     }
 
     public static String getJavaCommand(final String javaHome, final PrintStream out) {
-        if( javaHome == null || javaHome.equals("") ) {
+        if (javaHome == null || javaHome.equals("")) {
             return "java";
         }
 
         final File java    = new File(javaHome, "bin" + File.separator + "java");
         final File javaExe = new File(javaHome, "bin" + File.separator + "java.exe");
-        if(java.exists()) {
+        if (java.exists()) {
             return java.getAbsolutePath();
-        } else if(javaExe.exists()) {
+        } else if (javaExe.exists()) {
             return javaExe.getAbsolutePath();
         } else {
-            if( out != null ) {
+            if (out != null) {
                 out.println("Could not find java executable at: ( " + java.getAbsolutePath()    + "," +
                         javaExe.getAbsolutePath() + ")" +
                         "\n  Using \"java\" command.\n");
@@ -351,32 +351,32 @@ public class PluginUtil {
         cmd.add("-jar");
         cmd.add(checkerHome);
 
-        if(procOnly) {
+        if (procOnly) {
             cmd.add("-proc:only");
-        } else if( outputDirectory != null ) {
+        } else if (outputDirectory != null) {
             cmd.add("-d");
             cmd.add(outputDirectory);
         }
 
-        if(bootClassPath != null && !bootClassPath.trim().isEmpty()) {
+        if (bootClassPath != null && !bootClassPath.trim().isEmpty()) {
             cmd.add("-Xbootclasspath/p:" +  bootClassPath);
         }
 
-        if(javacPath != null) {
+        if (javacPath != null) {
             cmd.add(JAVAC_PATH_OPT);
             cmd.add(javacPath.getAbsolutePath());
         }
 
-        if(jdkPath != null) {
+        if (jdkPath != null) {
             cmd.add(JDK_PATH_OPT);
             cmd.add(jdkPath.getAbsolutePath());
         }
 
-        if(classPathFofn != null ) {
+        if (classPathFofn != null ) {
             cmd.add(fileArgToStr(classPathFofn));
         }
 
-        if(processors != null) {
+        if (processors != null) {
             cmd.add("-processor");
             cmd.add(processors);
         }
@@ -390,7 +390,7 @@ public class PluginUtil {
 
     public static List<String> toJavaOpts(final List<String> opts) {
         final List<String> outOpts = new ArrayList<String>(opts.size());
-        for(final String opt : opts) {
+        for (final String opt : opts) {
             outOpts.add("-J" + opt);
         }
 

@@ -1,9 +1,5 @@
 package org.checkerframework.qualframework.base;
 
-import com.sun.source.tree.CatchTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -14,6 +10,10 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedUnio
 import org.checkerframework.qualframework.util.QualifierContext;
 
 import javax.lang.model.type.TypeKind;
+
+import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 
 /**
  * This class is a shim to allow writing typecheck-visitors using {@link QualifiedTypeMirror}s instead of
@@ -70,7 +70,7 @@ public class TypecheckVisitorAdapter<Q> extends BaseTypeVisitor<GenericAnnotated
             QualifiedUnionType<Q> aut = (QualifiedUnionType<Q>) exceptionParam;
             for (QualifiedTypeMirror<Q> alterntive : aut.getAlternatives()) {
                 Q foundAltern = alterntive.getQualifier();
-                if (!context.getTypeFactory().getQualifierHierarchy().isSubtype(required, foundAltern)){
+                if (!context.getTypeFactory().getQualifierHierarchy().isSubtype(required, foundAltern)) {
                     checker.report(Result.failure("exception.parameter.invalid",
                             foundAltern, required), node.getParameter());
                 }

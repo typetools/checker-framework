@@ -1,11 +1,13 @@
 package org.checkerframework.framework.util.element;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import com.sun.tools.javac.code.Attribute;
 
-import javax.lang.model.element.Element;
 import java.util.List;
 import java.util.Map;
+
+import javax.lang.model.element.Element;
+
+import com.sun.tools.javac.code.Attribute;
 
 /**
  * Some Elements are members of a list (formal method parameters and type parameters).
@@ -48,8 +50,8 @@ abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotation
         //are on the same method but don't pertain to the parameter element being processed, see class comments ).
         //Place these annotations into the valid list.
         int i = 0;
-        while( i < targeted.size() ) {
-            if( getTypeCompoundIndex(targeted.get(i)) != paramIndex ) {
+        while (i < targeted.size()) {
+            if ( getTypeCompoundIndex(targeted.get(i)) != paramIndex) {
                 valid.add(targeted.remove(i));
             } else {
                 ++i;

@@ -100,7 +100,7 @@ public class DefaultInferredTypesApplier {
          * Dataflow will default local variables that are also type variables as follows:
          *
          *   {@code
-         *       <T> void method(){  @TOP T t; }
+         *       <T> void method() {  @TOP T t; }
          *   }
          *
          * The type @TOP T is equivalent to a type  T[ extends @TOP Object super @TOP Void ]

@@ -2,15 +2,24 @@ package org.checkerframework.framework.util.typeinference;
 
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.*;
-import javax.lang.model.util.Types;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 
 /**
  *  A class used to determine the greatest lower bounds for a set of AnnotatedTypeMirrors.
@@ -30,7 +39,7 @@ public class GlbUtil {
 
         //dtermine the greatest lower bounds for the primary annotations
         Map<AnnotationMirror, AnnotationMirror> glbPrimaries = AnnotationUtils.createAnnotationMap();
-        for(Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> tmEntry : typeMirrors.entrySet()) {
+        for (Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> tmEntry : typeMirrors.entrySet()) {
             final Set<AnnotationMirror> typeAnnoHierarchies = tmEntry.getValue();
             final AnnotatedTypeMirror type = tmEntry.getKey();
 
@@ -86,7 +95,7 @@ public class GlbUtil {
         //if the lowest type is a subtype of all glbTypes then it is the GLB, otherwise
         //there are two types  in glbTypes that are incomparable and we need to use bottom (AnnotatedNullType)
         boolean incomparable = false;
-        for(final AnnotatedTypeMirror type : glbTypes) {
+        for (final AnnotatedTypeMirror type : glbTypes) {
             if (!incomparable && !typeHierarchy.isSubtype(glbType, type) && type.getKind() != TypeKind.NULL) {
                 incomparable = true;
             }
