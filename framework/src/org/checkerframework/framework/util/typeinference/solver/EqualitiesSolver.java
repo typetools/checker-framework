@@ -9,11 +9,16 @@ import org.checkerframework.framework.util.typeinference.solver.InferredValue.In
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Equalities;
 import org.checkerframework.javacutil.ErrorReporter;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
-import java.util.*;
-import java.util.Map.Entry;
 
 /**
  *  EqualitiesSolver infers type arguments for targets using the equality constraints in ConstraintMap.  When
@@ -107,10 +112,11 @@ public class EqualitiesSolver {
                 }
 
                 //otherTypes may have AnnotatedTypeVariables of type target, run substitution on these with type
-                for (AnnotatedTypeMirror otherType : record.equalities.types.keySet()) {
+                Map<AnnotatedTypeMirror, Set<AnnotationMirror>> toIterate = new LinkedHashMap<>(record.equalities.types);
+                record.equalities.types.clear();
+                for (AnnotatedTypeMirror otherType : toIterate.keySet()) {
                     final AnnotatedTypeMirror copy = TypeArgInferenceUtil.substitute(target, type, otherType);
-                    final Set<AnnotationMirror> otherHierarchies = record.equalities.types.get(otherType);
-                    record.equalities.types.remove(otherType);
+                    final Set<AnnotationMirror> otherHierarchies = toIterate.get(otherType);
                     record.equalities.types.put(copy, otherHierarchies);
                 }
             }
@@ -128,10 +134,11 @@ public class EqualitiesSolver {
                 }
 
                 //otherTypes may have AnnotatedTypeVariables of type target, run substitution on these with type
-                for (AnnotatedTypeMirror otherType : record.supertypes.types.keySet()) {
+                Map<AnnotatedTypeMirror, Set<AnnotationMirror>> toIterate = new LinkedHashMap<>(record.supertypes.types);
+                record.supertypes.types.clear();
+                for (AnnotatedTypeMirror otherType : toIterate.keySet()) {
                     final AnnotatedTypeMirror copy = TypeArgInferenceUtil.substitute(target, type, otherType);
-                    final Set<AnnotationMirror> otherHierarchies = record.supertypes.types.get(otherType);
-                    record.supertypes.types.remove(otherType);
+                    final Set<AnnotationMirror> otherHierarchies = toIterate.get(otherType);
                     record.supertypes.types.put(copy, otherHierarchies);
                 }
             }
@@ -184,10 +191,11 @@ public class EqualitiesSolver {
                 }
 
                 //otherTypes may have AnnotatedTypeVariables of type target, run substitution on these with type
-                for (AnnotatedTypeMirror otherType : record.equalities.types.keySet()) {
+                Map<AnnotatedTypeMirror, Set<AnnotationMirror>> toIterate = new LinkedHashMap<>(record.equalities.types);
+                record.equalities.types.clear();
+                for (AnnotatedTypeMirror otherType : toIterate.keySet()) {
                     final AnnotatedTypeMirror copy = TypeArgInferenceUtil.substitute(target, createAnnotatedTypeVar(target, typeFactory), otherType);
-                    final Set<AnnotationMirror> otherHierarchies = record.equalities.types.get(otherType);
-                    record.equalities.types.remove(otherType);
+                    final Set<AnnotationMirror> otherHierarchies = toIterate.get(otherType);
                     record.equalities.types.put(copy, otherHierarchies);
                 }
             }
@@ -204,10 +212,11 @@ public class EqualitiesSolver {
                 }
 
                 //otherTypes may have AnnotatedTypeVariables of type target, run substitution on these with type
-                for (AnnotatedTypeMirror otherType : record.supertypes.types.keySet()) {
+                Map<AnnotatedTypeMirror, Set<AnnotationMirror>> toIterate = new LinkedHashMap<>(record.supertypes.types);
+                record.supertypes.types.clear();
+                for (AnnotatedTypeMirror otherType : toIterate.keySet()) {
                     final AnnotatedTypeMirror copy = TypeArgInferenceUtil.substitute(target, createAnnotatedTypeVar(target, typeFactory), otherType);
-                    final Set<AnnotationMirror> otherHierarchies = record.supertypes.types.get(otherType);
-                    record.supertypes.types.remove(otherType);
+                    final Set<AnnotationMirror> otherHierarchies = toIterate.get(otherType);
                     record.supertypes.types.put(copy, otherHierarchies);
                 }
             }
