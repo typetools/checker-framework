@@ -7,11 +7,18 @@ import org.checkerframework.framework.util.typeinference.GlbUtil;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Subtypes;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
-import java.util.*;
-import java.util.Map.Entry;
 
 /**
  * Infers type arguments by using the Greatest Lower Bound computation on the subtype relationships
@@ -56,7 +63,7 @@ public class SubtypesSolver {
             }
         });
 
-        for(final TypeVariable target : targetsSubtypesLast) {
+        for (final TypeVariable target : targetsSubtypesLast) {
             Subtypes subtypes = constraints.getConstraints(target).subtypes;
 
             if (subtypes.types.isEmpty()) {
@@ -153,7 +160,7 @@ public class SubtypesSolver {
         Iterator<? extends AnnotationMirror> annoIter = annos.iterator();
         AnnotationMirror glb = annoIter.next();
 
-        while(annoIter.hasNext()) {
+        while (annoIter.hasNext()) {
             glb = qualifierHierarchy.greatestLowerBound(glb, annoIter.next());
         }
 

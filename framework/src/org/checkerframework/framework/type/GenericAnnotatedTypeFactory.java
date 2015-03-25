@@ -42,8 +42,8 @@ import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.QualifierPolymorphism;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
@@ -629,7 +629,7 @@ public abstract class GenericAnnotatedTypeFactory<
                                     .enclosingClass(getPath(mt))), fieldValues, classTree, false, false);
                 }
 
-                while(lambdaQueue.size() > 0) {
+                while (lambdaQueue.size() > 0) {
                     Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
                     analyze(queue, lambdaQueue,
                             new CFGLambda(lambdaPair.first), fieldValues, classTree, false, false, lambdaPair.second);

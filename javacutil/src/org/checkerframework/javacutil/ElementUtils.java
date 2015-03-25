@@ -4,10 +4,6 @@ package org.checkerframework.javacutil;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
-import static com.sun.tools.javac.code.Flags.ABSTRACT;
-import static com.sun.tools.javac.code.Flags.EFFECTIVELY_FINAL;
-import static com.sun.tools.javac.code.Flags.FINAL;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,6 +28,10 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 
 import com.sun.tools.javac.code.Symbol;
+
+import static com.sun.tools.javac.code.Flags.ABSTRACT;
+import static com.sun.tools.javac.code.Flags.EFFECTIVELY_FINAL;
+import static com.sun.tools.javac.code.Flags.FINAL;
 
 /**
  * A Utility class for analyzing {@code Element}s.
@@ -207,13 +207,13 @@ public class ElementUtils {
      * Returns true if the element is declared in ByteCode.
      * Always return false if elt is a package.
      */
-    public static boolean isElementFromByteCode(Element elt){
+    public static boolean isElementFromByteCode(Element elt) {
         if (elt == null)
             return false;
 
-        if (elt instanceof Symbol.ClassSymbol){
+        if (elt instanceof Symbol.ClassSymbol) {
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
-            if (null != clss.classfile){
+            if (null != clss.classfile) {
                 //The class file could be a .java file
                 return clss.classfile.getName().endsWith(".class");
             } else {
@@ -227,12 +227,12 @@ public class ElementUtils {
      * Returns true if the element is declared in ByteCode.
      * Always return false if elt is a package.
      */
-    private static boolean isElementFromByteCode(Element elt, Element orig){
+    private static boolean isElementFromByteCode(Element elt, Element orig) {
         if (elt == null)
             return false;
-        if (elt instanceof Symbol.ClassSymbol){
+        if (elt instanceof Symbol.ClassSymbol) {
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
-            if (null != clss.classfile){
+            if (null != clss.classfile) {
                 // The class file could be a .java file
                 return (clss.classfile.getName().endsWith(".class") ||
                         clss.classfile.getName().endsWith(".class)") ||

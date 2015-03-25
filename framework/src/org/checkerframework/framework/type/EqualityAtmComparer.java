@@ -71,7 +71,7 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
     protected Boolean reduce(Boolean r1, Boolean r2) {
         if (r1 == null) {
             return r2;
-        } else if(r2 == null) {
+        } else if (r2 == null) {
             return r1;
         } else {
             return r1 && r2;

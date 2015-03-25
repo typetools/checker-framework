@@ -28,9 +28,9 @@ public class ClassValInferenceTest {
     boolean flag = true;
     public void classForNameStringVal() throws ClassNotFoundException{
         Class<?> c2;
-        if(flag){
+        if (flag) {
             c2 = Class.forName("java.lang.Byte");
-        }else{
+        } else {
             c2 = Class.forName("java.lang.Integer");
         }
         @ClassVal({"java.lang.Byte","java.lang.Integer"}) Class<?> c3 = c2;

@@ -84,7 +84,7 @@ public class VisitHistory {
 
         @Override
         public boolean equals(final Object oThat) {
-            if(oThat == null || !oThat.getClass().equals(this.getClass()))  {
+            if (oThat == null || !oThat.getClass().equals(this.getClass()))  {
                 return false;
             }
             final Visit that = (Visit) oThat;
@@ -95,26 +95,26 @@ public class VisitHistory {
          * This is a replacement for AnnotatedTypeMirror.equals, read the class comment for VisitHistory
          */
         private boolean equalityCompare(final AnnotatedTypeMirror thisType, final AnnotatedTypeMirror thatType) {
-            if(thisType == null) {
+            if (thisType == null) {
                 return thatType == null;
             }
 
-            if(thatType == null) {
+            if (thatType == null) {
                 return false;
             }
 
-            if(!thisType.getClass().equals(thatType.getClass())) {
+            if (!thisType.getClass().equals(thatType.getClass())) {
                 return false;
             }
 
-            if(thisType.getClass().equals(AnnotatedTypeMirror.AnnotatedWildcardType.class)) {
-                if(thisType.getUnderlyingType().equals(thatType.getUnderlyingType())) {
+            if (thisType.getClass().equals(AnnotatedTypeMirror.AnnotatedWildcardType.class)) {
+                if (thisType.getUnderlyingType().equals(thatType.getUnderlyingType())) {
                     //TODO: Investigate WHY we get wildcards that are essentially recursive since I
                     //TODO: don't think we can write these wildcards. Perhaps it is related to our lack of
                     //TODO: capture conversion or inferring void methods
                     return true;  //Handles the case of recursive wildcard types
                 }
-                if(!AnnotationUtils.areSame(thisType.getAnnotations(), thatType.getAnnotations())) {
+                if (!AnnotationUtils.areSame(thisType.getAnnotations(), thatType.getAnnotations())) {
                     return false;
                 } else {
                     //TODO: EXPLAIN CASCADING .contains if we don't do it this way

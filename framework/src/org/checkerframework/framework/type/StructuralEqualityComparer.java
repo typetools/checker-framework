@@ -57,7 +57,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     protected Boolean defaultAction(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, VisitHistory visitHistory) {
         //TODO: REMOVE THIS OVERRIDE WHEN inferTypeArgs NO LONGER GENERATES INCOMPARABLE TYPES
         //TODO: THe rawness comparer is close to the old implementation of TypeHierarchy
-        if(fallback != null) {
+        if (fallback != null) {
             return fallback.isValidInHierarchy(type1, type2, currentTop, visitHistory);
         }
 
@@ -129,7 +129,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     protected boolean areAllEqual(final Collection<? extends AnnotatedTypeMirror> types1,
                                   final Collection<? extends AnnotatedTypeMirror> types2,
                                   final VisitHistory visited ) {
-        if( types1.size() != types2.size()) {
+        if (types1.size() != types2.size()) {
             ErrorReporter.errorAbort(
                 "Mismatching collection sizes:\n"
               + PluginUtil.join(",", types1) + "\n"
@@ -139,10 +139,10 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
         final Iterator<? extends AnnotatedTypeMirror> types1Iter = types1.iterator();
         final Iterator<? extends AnnotatedTypeMirror> types2Iter = types2.iterator();
-        while(types1Iter.hasNext()) {
+        while (types1Iter.hasNext()) {
             final AnnotatedTypeMirror type1 = types1Iter.next();
             final AnnotatedTypeMirror type2 = types2Iter.next();
-            if( !checkOrAreEqual(type1, type2, visited) ) {
+            if (!checkOrAreEqual(type1, type2, visited)) {
                 return false;
             }
         }
@@ -156,7 +156,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      */
     protected boolean checkOrAreEqual(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2,
                                       final VisitHistory visited ) {
-        if(visited.contains(type1, type2)) {
+        if (visited.contains(type1, type2)) {
             return true;
         }
 
@@ -187,7 +187,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     public Boolean visitArray_Array(final AnnotatedArrayType type1, final AnnotatedArrayType type2,
                                      final VisitHistory visited) {
-        if(!arePrimeAnnosEqual(type1, type2)) {
+        if (!arePrimeAnnosEqual(type1, type2)) {
             return false;
         }
 
@@ -203,11 +203,11 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     public Boolean visitDeclared_Declared(final AnnotatedDeclaredType type1, final AnnotatedDeclaredType type2,
                                           final VisitHistory visited) {
-        if(visited.contains(type1, type2)) {
+        if (visited.contains(type1, type2)) {
             return true;
         }
 
-        if(!arePrimeAnnosEqual(type1, type2)) {
+        if (!arePrimeAnnosEqual(type1, type2)) {
             return false;
         }
         visited.add(type1, type2);
@@ -229,12 +229,12 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         //TODO: IN THE ORIGINAL TYPE_HIERARCHY WE ALWAYS RETURN TRUE IF ONE OF THE LISTS IS EMPTY
         //TODO: WE SHOULD NEVER GET HERE UNLESS type's declared class and type2's declared class are equal
         //TODO: but potentially this would return true if say we compared (Object, List<String>)
-        if( type1Args.isEmpty() || type2Args.isEmpty() ) {
+        if (type1Args.isEmpty() || type2Args.isEmpty()) {
             return true;
         }
 
         if (type1Args.size() > 0) {
-            if(!areAllEqual(type1Args, type2Args, visited)) {
+            if (!areAllEqual(type1Args, type2Args, visited)) {
                 return false;
             }
         }
@@ -252,7 +252,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     public Boolean visitIntersection_Intersection(final AnnotatedIntersectionType type1, final AnnotatedIntersectionType type2,
                                                   final VisitHistory visited) {
-        if(!arePrimeAnnosEqual(type1, type2)) {
+        if (!arePrimeAnnosEqual(type1, type2)) {
             return false;
         }
 
@@ -289,7 +289,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     public Boolean visitTypevar_Typevar(final AnnotatedTypeVariable type1, final AnnotatedTypeVariable type2,
                                         final VisitHistory visited) {
-        if(visited.contains(type1, type2)) {
+        if (visited.contains(type1, type2)) {
             return true;
         }
         visited.add(type1, type2);
@@ -375,7 +375,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     public Boolean visitWildcard_Wildcard(final AnnotatedWildcardType type1, final AnnotatedWildcardType type2,
                                           final VisitHistory visited) {
-        if(visited.contains(type1, type2)) {
+        if (visited.contains(type1, type2)) {
             return true;
         }
 
@@ -388,7 +388,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     //we must compare primitives with their boxed counterparts
     @Override
     public Boolean visitDeclared_Primitive(AnnotatedDeclaredType type1, AnnotatedPrimitiveType type2, VisitHistory visitHistory) {
-        if(!TypesUtils.isBoxOf(type1.getUnderlyingType(), type2.getUnderlyingType())) {
+        if (!TypesUtils.isBoxOf(type1.getUnderlyingType(), type2.getUnderlyingType())) {
             defaultErrorMessage(type1, type2, visitHistory);
         }
 
@@ -398,7 +398,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     @Override
     public Boolean visitPrimitive_Declared(AnnotatedPrimitiveType type1, AnnotatedDeclaredType type2,
                                            VisitHistory visitHistory) {
-        if(!TypesUtils.isBoxOf(type2.getUnderlyingType(), type1.getUnderlyingType())) {
+        if (!TypesUtils.isBoxOf(type2.getUnderlyingType(), type1.getUnderlyingType())) {
             defaultErrorMessage(type1, type2, visitHistory);
         }
 

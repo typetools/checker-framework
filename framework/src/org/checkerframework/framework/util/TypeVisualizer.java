@@ -1,19 +1,32 @@
 package org.checkerframework.framework.util;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.javacutil.ErrorReporter;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.*;
 
 /**
  * TypeVisualizer prints AnnotatedTypeMirrors as a directed graph where each node is a type and an arrow
@@ -124,8 +137,8 @@ public class TypeVisualizer {
         final String dirPath = directory.endsWith(File.separator) ? directory : directory + File.separator;
         String varName = typeVariable.getUnderlyingType().asElement().toString();
 
-        if(typeVarNames.contains(varName)) {
-            if(png) {
+        if (typeVarNames.contains(varName)) {
+            if (png) {
                 TypeVisualizer.drawToPng(dirPath + varName + ".png", typeVariable);
             } else {
                 TypeVisualizer.drawToDot(dirPath + varName + ".dot", typeVariable);
@@ -147,7 +160,7 @@ public class TypeVisualizer {
      * a LinkedHashMap.
      */
     private static class Node {
-        private AnnotatedTypeMirror type;
+        private final AnnotatedTypeMirror type;
 
         private Node(final AnnotatedTypeMirror type) {
             this.type = type;
@@ -219,7 +232,7 @@ public class TypeVisualizer {
                     writer = new BufferedWriter(new FileWriter(file));
                     writer.write("digraph " + graphName + "{");
                     writer.newLine();
-                    for(final String line : lines) {
+                    for (final String line : lines) {
                         writer.write(line + ";");
                         writer.newLine();
                     }
@@ -231,7 +244,7 @@ public class TypeVisualizer {
                             + "file=" + file + "\n"
                             + "type=" + type,  e);
                 } finally {
-                    if( writer != null ){
+                    if (writer != null) {
                         writer.close();
                     }
                 }
@@ -390,7 +403,7 @@ public class TypeVisualizer {
 
 
             private void visitAll(final List<? extends AnnotatedTypeMirror> types) {
-                for(final AnnotatedTypeMirror type : types) {
+                for (final AnnotatedTypeMirror type : types) {
                     visit(type);
                 }
             }
@@ -411,7 +424,7 @@ public class TypeVisualizer {
 
             @Override
             public Void visitDeclared(AnnotatedDeclaredType type, Void aVoid) {
-                if(checkOrAdd(type)) {
+                if (checkOrAdd(type)) {
                     addLabeledNode(type,
                             getAnnoStr(type) + " " + type.getUnderlyingType().asElement().getSimpleName()
                                     + ( type.getTypeArguments().isEmpty() ? "" : "<...>" ),
@@ -515,7 +528,7 @@ public class TypeVisualizer {
 
             public String getAnnoStr(final AnnotatedTypeMirror atm) {
                 List<String> annoNames = new ArrayList<>();
-                for(final AnnotationMirror anno : atm.getAnnotations()) {
+                for (final AnnotationMirror anno : atm.getAnnotations()) {
                     //TODO: More comprehensive escaping
                     annoNames.add(annoFormatter.formatAnnotationMirror(anno).replace("\"", "\\"));
                 }

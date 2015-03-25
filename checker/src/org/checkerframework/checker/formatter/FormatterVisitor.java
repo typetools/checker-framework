@@ -1,13 +1,13 @@
 package org.checkerframework.checker.formatter;
 
-import javax.lang.model.type.TypeMirror;
-
 import org.checkerframework.checker.formatter.FormatterTreeUtil.FormatCall;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+
+import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.tree.MethodInvocationTree;
 
@@ -29,7 +29,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             FormatCall fc = atypeFactory.treeUtil.new FormatCall(node, atypeFactory);
 
             Result<String> sat = fc.isIllegalFormat();
-            if (sat.value() != null){
+            if (sat.value() != null) {
                 // I.1
                 tu.failure(sat, "format.string.invalid", sat.value());
             } else {
@@ -48,7 +48,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                             // II.2
                             tu.warning(invc, "format.excess.arguments", formatl,paraml);
                         }
-                        for (int i=0; i<formatl; ++i) {
+                        for (int i = 0; i < formatl; ++i) {
                             ConversionCategory formatCat = formatCats[i];
                             Result<TypeMirror> param = paramTypes[i];
                             TypeMirror paramType = param.value();
@@ -79,11 +79,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                     /* continue */
                 case ARRAY:
                     for (ConversionCategory cat : formatCats) {
-                        if (cat == ConversionCategory.NULL){
+                        if (cat == ConversionCategory.NULL) {
                             // I.3
                             tu.failure(invc, "format.specifier.null","");
                         }
-                        if (cat == ConversionCategory.UNUSED){
+                        if (cat == ConversionCategory.UNUSED) {
                             // I.2
                             tu.warning(invc, "format.argument.unused","");
                         }

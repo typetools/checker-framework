@@ -265,8 +265,8 @@ public class AnnotationUtils {
      * @return true iff c contains anno, according to areSame.
      */
     public static boolean containsSame(Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
-        for(AnnotationMirror an : c) {
-            if(AnnotationUtils.areSame(an, anno)) {
+        for (AnnotationMirror an : c) {
+            if (AnnotationUtils.areSame(an, anno)) {
                 return true;
             }
         }
@@ -281,8 +281,8 @@ public class AnnotationUtils {
      * @return true iff c contains anno, according to areSameByClass.
      */
     public static boolean containsSameByClass(Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
-        for(AnnotationMirror an : c) {
-            if(AnnotationUtils.areSameByClass(an, anno)) {
+        for (AnnotationMirror an : c) {
+            if (AnnotationUtils.areSameByClass(an, anno)) {
                 return true;
             }
         }
@@ -297,8 +297,8 @@ public class AnnotationUtils {
      * @return true iff c contains anno, according to areSameIgnoringValues.
      */
     public static boolean containsSameIgnoringValues(Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
-        for(AnnotationMirror an : c) {
-            if(AnnotationUtils.areSameIgnoringValues(an, anno)) {
+        for (AnnotationMirror an : c) {
+            if (AnnotationUtils.areSameIgnoringValues(an, anno)) {
                 return true;
             }
         }

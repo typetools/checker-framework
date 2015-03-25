@@ -795,7 +795,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param elt
      */
     private void addFromByteCode(Element elt) {
-        if (indexDeclAnnos == null){// || trees.getTree(elt) != null) {
+        if (indexDeclAnnos == null) { // || trees.getTree(elt) != null) {
             // Parsing stub files, don't add @FromByteCode
             return;
         }
@@ -1402,7 +1402,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     if (ElementUtils.isStatic(method)) {
                         // Static methods should use type of enclosing class,
                         // by simply taking another turn in the loop.
-                    } else if (method.getKind() == ElementKind.CONSTRUCTOR){
+                    } else if (method.getKind() == ElementKind.CONSTRUCTOR) {
                         // return getSelfType(this.declarationFromElement(method));
                         return (AnnotatedDeclaredType) getAnnotatedType(method).getReturnType();
                     } else {
@@ -2646,7 +2646,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             com.sun.tools.javac.code.Types javacTypes) {
 
         Tree parentTree = TreePath.getPath(this.root, lambdaTree).getParentPath().getLeaf();
-        switch(parentTree.getKind()) {
+        switch (parentTree.getKind()) {
             case TYPE_CAST:
                 TypeCastTree cast = (TypeCastTree) parentTree;
                 assertFunctionalInterface(javacTypes, (Type) trees.getTypeMirror(getPath(cast.getType())), parentTree, lambdaTree);

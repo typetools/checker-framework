@@ -1,5 +1,13 @@
 package org.checkerframework.common.value;
 
+import org.checkerframework.common.value.qual.ArrayLen;
+import org.checkerframework.common.value.qual.BoolVal;
+import org.checkerframework.common.value.qual.BottomVal;
+import org.checkerframework.common.value.qual.DoubleVal;
+import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.common.value.qual.UnknownVal;
+import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -13,15 +21,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-
-import org.checkerframework.common.value.qual.ArrayLen;
-import org.checkerframework.common.value.qual.BoolVal;
-import org.checkerframework.common.value.qual.BottomVal;
-import org.checkerframework.common.value.qual.DoubleVal;
-import org.checkerframework.common.value.qual.IntVal;
-import org.checkerframework.common.value.qual.StringVal;
-import org.checkerframework.common.value.qual.UnknownVal;
-import org.checkerframework.common.value.util.NumberUtils;
 
 
 public class ValueCheckerUtils {
@@ -49,7 +48,7 @@ public class ValueCheckerUtils {
         case DECLARED:
             String stringType = TypesUtils.getQualifiedName(
                     (DeclaredType) type).toString();
-            if(stringType.equals("<nulltype>")){
+            if (stringType.equals("<nulltype>")) {
                 return Object.class;
             }
 
@@ -58,7 +57,7 @@ public class ValueCheckerUtils {
             } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
                 return Object.class;
             }
-            
+
         default:
             return Object.class;
         }
@@ -101,7 +100,8 @@ public class ValueCheckerUtils {
             values = convertBoolVal(anno, castType);
         } else if (AnnotationUtils.areSameByClass(anno, BottomVal.class)) {
             values = convertBottomVal(anno, castType);
-        } else if (AnnotationUtils.areSameByClass(anno, UnknownVal.class) || AnnotationUtils.areSameByClass(anno, ArrayLen.class)){
+        } else if (AnnotationUtils.areSameByClass(anno, UnknownVal.class) ||
+                AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
             values = new ArrayList<>();
         }
         return values;
@@ -109,7 +109,7 @@ public class ValueCheckerUtils {
 
     private static List<?> convertBottomVal(AnnotationMirror anno,
             Class<?> newClass) {
-        if(newClass == String.class){
+        if (newClass == String.class) {
             return Collections.singletonList("null");
         }
         else{
@@ -139,7 +139,7 @@ public class ValueCheckerUtils {
             Class<?> newClass) {
         List<String> strings = AnnotationUtils.getElementValueArray(anno,
                 "value", String.class, true);
-        
+
         if (newClass == byte[].class) {
             List<byte[]> bytes = new ArrayList<>();
             for (String s : strings) {
@@ -170,7 +170,7 @@ public class ValueCheckerUtils {
                 chars.add((char) l.longValue());
             }
             return chars;
-        } else if( newClass == Boolean.class){
+        } else if (newClass == Boolean.class) {
             throw new UnsupportedOperationException("ValueAnnotatedTypeFactory: can't convert double to boolean");
         }
         return NumberUtils.castNumbers(newType, longs);
@@ -187,7 +187,7 @@ public class ValueCheckerUtils {
                 chars.add((char) l.doubleValue());
             }
             return chars;
-        } else if( newClass == Boolean.class){
+        } else if (newClass == Boolean.class) {
             throw new UnsupportedOperationException("ValueAnnotatedTypeFactory: can't convert double to boolean");
         }
         return NumberUtils.castNumbers(newType, doubles);

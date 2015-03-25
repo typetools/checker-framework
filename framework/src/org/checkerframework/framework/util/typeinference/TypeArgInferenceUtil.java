@@ -1,12 +1,12 @@
 package org.checkerframework.framework.util.typeinference;
 
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.TypeVariableSubstitutor;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -105,7 +105,7 @@ public class TypeArgInferenceUtil {
         final List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
         final Set<TypeVariable> targets = new LinkedHashSet<>(annotatedTypeVars.size());
 
-        for(final AnnotatedTypeVariable atv : annotatedTypeVars) {
+        for (final AnnotatedTypeVariable atv : annotatedTypeVars) {
             targets.add(atv.getUnderlyingType());
         }
 
@@ -282,7 +282,7 @@ public class TypeArgInferenceUtil {
             if (r1 == null) {
                 return r2 != null && r2;
 
-            } else if(r2 == null) {
+            } else if (r2 == null) {
                 return r1;
             }
 

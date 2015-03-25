@@ -86,33 +86,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ArrayAccessTree;
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.CatchTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.ConditionalExpressionTree;
-import com.sun.source.tree.EnhancedForLoopTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.InstanceOfTree;
-import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MemberReferenceTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ParameterizedTypeTree;
-import com.sun.source.tree.ReturnTree;
-import com.sun.source.tree.ThrowTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeCastTree;
-import com.sun.source.tree.TypeParameterTree;
-import com.sun.source.tree.UnaryTree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
@@ -1715,7 +1689,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @return Set of annotation mirrors, one per hierarchy, that form an upper
      *         bound of thrown expressions.
      */
-    protected Set<? extends AnnotationMirror> getThrowUpperBoundAnnotations(){
+    protected Set<? extends AnnotationMirror> getThrowUpperBoundAnnotations() {
         return getExceptionParameterLowerBoundAnnotations();
     }
 
@@ -2104,8 +2078,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         //When TypeHierarchy attempts to convert it to the supertype (e.g. Comparable) it will return
         //null from asSuper and return false for the check.  Instead, copy the primary annotations
         //to the declared type and then do a subtyping check
-        if( dt.getUnderlyingType().asElement().getKind().isInterface() &&
-            TypesUtils.isObject(ret.getUnderlyingType()) ) {
+        if (dt.getUnderlyingType().asElement().getKind().isInterface() &&
+            TypesUtils.isObject(ret.getUnderlyingType())) {
 
             final AnnotatedDeclaredType retAsDt = dt.deepCopy();
             retAsDt.replaceAnnotations(ret.getAnnotations());
@@ -2165,7 +2139,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected boolean testTypevarContainment(final AnnotatedTypeMirror inner,
                                              final AnnotatedTypeMirror outer) {
-        if(inner.getKind() == TypeKind.TYPEVAR && outer.getKind() == TypeKind.TYPEVAR ) {
+        if (inner.getKind() == TypeKind.TYPEVAR && outer.getKind() == TypeKind.TYPEVAR) {
 
             final AnnotatedTypeVariable innerAtv = (AnnotatedTypeVariable) inner;
             final AnnotatedTypeVariable outerAtv = (AnnotatedTypeVariable) outer;
@@ -2618,7 +2592,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             for (int i = 0; i < overriderParams.size(); ++i) {
                 boolean success = atypeFactory.getTypeHierarchy().isSubtype(overriddenParams.get(i), overriderParams.get(i));
-                if(!success) {
+                if (!success) {
                     success = testTypevarContainment(overriddenParams.get(i), overriderParams.get(i));
                 }
 
@@ -2800,7 +2774,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected void checkAssignability(AnnotatedTypeMirror varType, Tree varTree) {
         if (TreeUtils.isExpressionTree(varTree)) {
             AnnotatedTypeMirror rcvType = atypeFactory.getReceiverType((ExpressionTree) varTree);
-            if(!isAssignable(varType, rcvType, varTree)) {
+            if (!isAssignable(varType, rcvType, varTree)) {
                 checker.report(Result.failure("assignability.invalid",
                             InternalUtils.symbol(varTree),
                             rcvType),

@@ -366,7 +366,7 @@ public final class TypesUtils {
      * (e.g. declaredType=java.lang.Double and primitiveType=22.5d )
      */
     public static boolean isBoxOf(TypeMirror declaredType, TypeMirror primitiveType) {
-        if(declaredType.getKind() != TypeKind.DECLARED) {
+        if (declaredType.getKind() != TypeKind.DECLARED) {
             return false;
         }
 
