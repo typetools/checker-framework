@@ -23,7 +23,7 @@ The NullnessChecker is actually an ensemble of three pluggable
 type-checkers that work together: the Nullness Checker proper (which is the
 main focus of this chapter), the Initialization Checker
 (Section~\ref{initialization-checker}), and the Map Key Checker
-(Section~\ref{map-key-checker}).
+(\chapterpageref{map-key-checker}).
 Their type hierarchies are completely independent, but they work together
 to provide precise nullness checking.
 
@@ -73,7 +73,7 @@ Parameter passing and return values are checked analogously to assignments.
 The Nullness Checker also checks the correctness, and correct use, of
 rawness annotations for checking initialization (see
 Section~\ref{initialization-rawness-checker}) and of map key annotations (see
-Section~\ref{map-key-checker}).
+\chapterpageref{map-key-checker}).
 
 
 The checker performs additional checks if certain \code{-Alint}
@@ -112,7 +112,7 @@ command-line option.)
 
 The Nullness Checker uses three separate type hierarchies:  one for nullness,
 one for rawness (Section~\ref{initialization-rawness-checker}),
-and one for map keys (Section~\ref{map-key-checker})
+and one for map keys (\chapterpageref{map-key-checker})
 The Nullness Checker has four varieties of annotations:  nullness
 type qualifiers, nullness method annotations, rawness type qualifiers, and
 map key type
@@ -190,7 +190,7 @@ most type qualifiers, because the default annotation
 (Section~\ref{null-defaults}) is usually correct.
 The Nullness Checker verifies three type hierarchies:  this one for
 nullness, one for initialization (Section~\ref{initialization-checker}),
-and one for map keys (Section~\ref{map-key-checker}).}
+and one for map keys (\chapterpageref{map-key-checker}).}
 \label{fig-nullness-hierarchy}
 \end{figure}
 
@@ -253,19 +253,34 @@ details, see Section~\ref{initialization-rawness-checker}.
 
 \subsection{Map key qualifiers\label{map-key-qualifiers}}
 
-The Nullness Checker invokes a Map Key Checker, whose annotation,
-\refqualclass{checker/nullness/qual}{KeyFor}, indicates that
-a value is a key for a given map.  This indicates whether
-\code{map.containsKey(value)} would evaluate to \code{true}.
-
 \begin{description}
 \item[\refqualclass{checker/nullness/qual}{KeyFor}]
 \end{description}
+    indicates that a value is a key for a given map --- that is, indicates
+    whether \code{map.containsKey(value)} would evaluate to \code{true}.
 
-Use of this annotation can help you to type-check more code.  For details,
-see Section~\ref{map-key-checker}.
-
-
+This annotation is checked by a Map Key Checker
+(\chapterpageref{map-key-checker}) that the Nullness Checker
+invokes.  The \refqualclass{checker/nullness/qual}{KeyFor} annotation enables
+the Nullness Checker to treat calls to
+\sunjavadoc{java/util/Map.html\#get(java.lang.Object)}{\code{Map.get}}
+precisely rather than assuming it may always return null.  In particular,
+a call \<mymap.get(mykey)> returns a non-\<null> value if two conditions
+are satisfied:
+\begin{enumerate}
+\item \<mymap>'s values are all non-\<null>; that is, \<mymap> was
+  declared as \code{Map<\emph{KeyType}, @NonNull \emph{ValueType}>}.  Note
+  that \<@NonNull> is the default type, so it need not be written explicitly.
+\item \<mykey> is a key in \<mymap>; that is, \<mymap.containsKey(mykey)>
+  returns \<true>.  You express this fact to the Nullness Checker by
+  declaring \<mykey> as \<@KeyFor("mymap") \emph{KeyType} mykey>.  For a
+  local variable, you generally do not need to write the
+  \<@KeyFor("mymap")> type qualifier, because it can be inferred.
+\end{enumerate}
+\noindent
+If either of these two conditions is violated, then \<mymap.get(mykey)> has
+the possibility of returning \<null>.
+    
 \section{Writing nullness annotations\label{writing-nullness-annotations}}
 
 \subsection{Implicit qualifiers\label{nullness-implicit-qualifiers}}
@@ -2104,100 +2119,6 @@ A better name might have been ``not yet initialized'' or ``partially
 initialized'', but the term ``raw'' is now well-known.
 The \refqualclass{checker/nullness/qual}{Raw}
 annotation has nothing to do with the raw types of Java Generics.
-
-
-\section{Map Key Checker\label{map-key-checker}}
-
-The Map Key Checker uses the \refqualclass{checker/nullness/qual}{KeyFor}
-annotation to declare that a value is a key in a given map.
-
-This is relevant to the Nullness Checker because
-Java's
-\sunjavadoc{java/util/Map.html\#get(java.lang.Object)}{\code{Map.get}}
-method always has the possibility to return null, if the key is not in the
-map.
-In particular,
-a call \<mymap.get(mykey)> returns non-null if two conditions are satisfied:
-\begin{enumerate}
-\item \<mymap>'s values are all non-null; that is, \<mymap> was
-  declared as \code{Map<\emph{KeyType}, @NonNull \emph{ValueType}>}.  Note
-  that \<@NonNull> is the default type, so it need not be written explicitly.
-\item \<mykey> is a key in \<mymap>; that is, \<mymap.containsKey(mykey)>
-  returns \<true>.  You express this fact to the Nullness Checker by
-  declaring \<mykey> as \<@KeyFor("mymap") \emph{KeyType} mykey>.  For a
-  local variable, the \<@KeyFor("mymap")> type qualifier can generally be
-  inferred.
-\end{enumerate}
-\noindent
-If either of these two conditions is violated, then \<mymap.get(mykey)> has
-the possibility of returning null.
-
-
-Thus, for the Nullness Checker to guarantee that the value returned from \code{Map.get} is
-non-null, it is necessary that the map contains only non-null values,
-\emph{and} the key is in the map.
-The \refqualclass{checker/nullness/qual}{KeyFor} annotation states the latter
-property.
-
-If a type is annotated as \code{@KeyFor("m")}, then any value v with that type
-is a key in Map \<m>.  Another way of saying this is that the expression
-\code{m.containsKey(v)} evaluates to true.
-
-You usually do not have to write \code{@KeyFor} explicitly, because the
-checker infers it based on usage patterns, such as calls to
-\code{containsKey} or iteration over a map's
-\sunjavadoc{java/util/Map.html\#keySet()}{\textrm{key set}}.
-
-One usage pattern where you \emph{do} have to write \<@KeyFor> is for a
-user-managed collection that is a subset of the key set:
-
-\begin{Verbatim}
-Map<String, Object> m;
-Set<@KeyFor("m") String> matchingKeys; // keys that match some criterion
-for (@KeyFor("m") String k : matchingKeys) {
-  ... m.get(k) ...  // known to be non-null
-}
-\end{Verbatim}
-
-As with any annotation, use of the \<@KeyFor> annotation may force you to
-slightly refactor your code.  For example, this would be illegal:
-
-\begin{Verbatim}
-  Map<K,V> m;
-  Collection<@KeyFor("m") K> coll;
-  coll.add(x);   // compiler error, because the @KeyFor annotation is violated
-  m.put(x, ...);
-\end{Verbatim}
-
-\noindent
-but reordering the two calls this would be OK (no compiler error):
-
-\begin{Verbatim}
-  Map<K,V> m;
-  Collection<@KeyFor("m") K> coll;
-  m.put(x, ...);
-  coll.add(x);
-\end{Verbatim}
-
-
-Because the \<@KeyFor> type hierarchy is independent from the nullness and
-rawness hierarchies, it uses a different warning suppression key.
-You can suppress warnings related to map keys with
-\<@SuppressWarnings("keyfor")>.
-
-When you perform a run-time check for map keys, such as \<if (m.containsKey(k))
-...>, then the Map Key Checker refines the type of \<k> to
-\<@KeyFor("m")> within the scope of the test.  For more details, see
-Section~\ref{type-refinement}.
-
-% See these issues:
-% https://code.google.com/p/checker-framework/issues/detail?id=221
-% https://code.google.com/p/checker-framework/issues/detail?id=241
-% https://code.google.com/p/checker-framework/issues/detail?id=273
-Currently, the set of expressions allowed in \<@KeyFor> is less expressive
-than the expressions described in
-Section~\ref{java-expressions-as-arguments}.  The Checker Framework
-developers are working to correct this bug.
 
 
 % LocalWords:  NonNull plugin quals un NonNullExampleWithWarnings java ahndrich
