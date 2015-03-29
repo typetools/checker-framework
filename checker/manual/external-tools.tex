@@ -283,14 +283,12 @@ run.  You can supply additional arguments to the checker as well.
 
 \section{Maven\label{maven}}
 
-\textbf{Note: The Maven plugin
-was deprecated in favor of the following approach.  The plugin is no
-longer maintained and the final release was on June 2, 2014.}
-
 If you use the \href{http://maven.apache.org/}{Maven} tool,
 then you can specify pluggable type-checking as part of your build
 process. This is done by pointing Maven to a script that
 makes Maven use the Type Annotations compiler.
+These instructions use the artifacts from
+\href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven Central}.
 
 \begin{enumerate}
 
@@ -354,6 +352,12 @@ difficult or impossible to pass via the \code{pom.xml}, hence the need for this 
 
 If you would like to call this file something other than \code{argfile},
 please modify the \code{javac\_maven} script accordingly.
+
+\medskip
+
+Note: On June 2, 2014, the separate Maven plugin for the Checker
+Framework was deprecated in favor of the above  approach.
+
 
 \subsection{Debugging the Maven compiler command-line arguments\label{debugging-maven-args}}
 
