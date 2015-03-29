@@ -146,7 +146,7 @@ public class ElementAnnotationApplier {
      */
     private static boolean isCaptureConvertedTypeVar(final Element element) {
         final Element enclosure = element.getEnclosingElement();
-        return (((Symbol)enclosure).kind == com.sun.tools.javac.code.Kinds.NIL);
+        return (((Symbol)enclosure).kind == com.sun.tools.javac.code.Kinds.Kind.NIL);
     }
 
 }
