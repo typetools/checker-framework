@@ -719,6 +719,26 @@ public class FlowExpressionParseUtil {
         return flowExprContext;
     }
 
+    /**
+     * Calls the method of the same name but with a first argument type of either MethodInvocationNode or
+     * ObjectCreationNode depending on the type of node.
+     * @throws java.lang.IllegalArgumentException if node is not a MethodInvocationNode or ObjectCreationNode
+     */
+    public static FlowExpressionContext buildFlowExprContextForViewpointUse(
+            Node node, TreePath pathToInvocation, TreePath enclosingMethodPath, BaseContext checkerContext) {
+        if (node instanceof MethodInvocationNode) {
+            return buildFlowExprContextForViewpointUse((MethodInvocationNode) node, enclosingMethodPath, checkerContext);
+        } else if (node instanceof ObjectCreationNode) {
+            return buildFlowExprContextForViewpointUse((ObjectCreationNode) node, pathToInvocation, enclosingMethodPath, checkerContext);
+        }
+
+        throw new IllegalArgumentException(
+           "Node must be either a MethodInvocationNode or an ObjectCreationNode\n"
+         + "node=" + node + "\n"
+         + "pathToInvocation=" + pathToInvocation + "\n"
+         + "enclosingMethodPath=" + enclosingMethodPath
+        );
+    }
 
     /**
      * This method is the same as building a flow expression for a MethodInvocationNode except

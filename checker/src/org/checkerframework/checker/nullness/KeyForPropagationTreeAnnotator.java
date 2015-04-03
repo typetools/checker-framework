@@ -7,6 +7,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -83,6 +84,7 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
                 if (variableType.getKind() == TypeKind.DECLARED) {
                     keyForPropagator.propagate((AnnotatedDeclaredType) initializerType, variableType, PropagationDirection.TO_SUPERTYPE, atypeFactory);
                 }
+
             }
         }
 
@@ -95,14 +97,16 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
         Pair<Tree, AnnotatedTypeMirror> context = atypeFactory.getVisitorState().getAssignmentContext();
 
         if (type.getKind() == TypeKind.DECLARED && context != null && context.first != null) {
-            if (context.first.getKind() == Kind.VARIABLE) {
-                final AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(context.first);
+            AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(atypeFactory, atypeFactory.getPath(node));
+
+            if (assignedTo != null) {
 
                 //array types and boxed primitives etc don't require propagation
-                if (variableType.getKind() == TypeKind.DECLARED) {
+                if (assignedTo.getKind() == TypeKind.DECLARED) {
                     final AnnotatedDeclaredType newClassType = (AnnotatedDeclaredType) type;
-                    keyForPropagator.propagate(newClassType, (AnnotatedDeclaredType) variableType, PropagationDirection.TO_SUBTYPE, atypeFactory);
+                    keyForPropagator.propagate(newClassType, (AnnotatedDeclaredType) assignedTo, PropagationDirection.TO_SUBTYPE, atypeFactory);
                 }
+
             }
         }
 
