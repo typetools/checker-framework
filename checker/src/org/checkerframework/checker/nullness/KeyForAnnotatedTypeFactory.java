@@ -24,14 +24,12 @@ import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.VisitHistory;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -39,6 +37,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
+import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.framework.util.typeinference.TypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -160,18 +159,23 @@ public class KeyForAnnotatedTypeFactory extends
   @Override
   public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(NewClassTree tree) {
       Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> result = super.constructorFromUse(tree);
+
       final AnnotatedTypeMirror returnType = result.first.getReturnType();
 
+      //Can we square this with the KEyForPropagationTreeAnnotator
       Pair<Tree, AnnotatedTypeMirror> context = getVisitorState().getAssignmentContext();
 
       if (returnType.getKind() == TypeKind.DECLARED && context != null && context.first != null) {
-          if (context.first.getKind() == Kind.VARIABLE) {
-              final AnnotatedTypeMirror variableType = getAnnotatedType(context.first);
-              //the only time I can think of where this would not be true is when lhs is a primitive
-              //and the return type is a Boxed primitive
-              if (variableType.getKind() == TypeKind.DECLARED) {
-                  keyForPropagator.propagate((AnnotatedDeclaredType) returnType, (AnnotatedDeclaredType) variableType, PropagationDirection.TO_SUBTYPE, this);
+          AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(this, getPath(tree));
+
+          if (assignedTo != null) {
+
+              //array types and boxed primitives etc don't require propagation
+              if (assignedTo.getKind() == TypeKind.DECLARED) {
+                  final AnnotatedDeclaredType newClassType = (AnnotatedDeclaredType) returnType;
+                  keyForPropagator.propagate(newClassType, (AnnotatedDeclaredType) assignedTo, PropagationDirection.TO_SUBTYPE, this);
               }
+
           }
       }
 
@@ -792,8 +796,7 @@ public class KeyForAnnotatedTypeFactory extends
           if (node instanceof MethodInvocationNode ||
               node instanceof ObjectCreationNode) {
               keyForCanonicalizeValuesForMethodCall(varType, valueType, t, path, node);
-          }
-          else {
+          } else {
               Receiver r = FlowExpressions.internalReprOf(this, node);
 
               List<Receiver> internalArguments = null;
@@ -806,8 +809,7 @@ public class KeyForAnnotatedTypeFactory extends
                   Node receiver = null;
                   if (enclosingMethod.getModifiers().getFlags().contains(Modifier.STATIC)) {
                       receiver = new ClassNameNode(enclosingClass);
-                  }
-                  else {
+                  } else {
                       receiver = new ImplicitThisLiteralNode(InternalUtils.typeOf(enclosingClass));
                   }
 
@@ -927,13 +929,13 @@ public class KeyForAnnotatedTypeFactory extends
 
 
   /**
-   *  A TypeArgumentInference implementation that cannonicalizes keyfor values.
+   *  A TypeArgumentInference implementation that canonicalizes keyfor values.
    */
   class KeyForTypeArgumentInference extends DefaultTypeArgumentInference {
 
       @Override
       public void adaptMethodType(AnnotatedTypeFactory typeFactory, ExpressionTree invocation, AnnotatedExecutableType methodType) {
-          canononicalizeForViewpointAdaptation(invocation, methodType);
+          canonicalizeForViewpointAdaptation(invocation, methodType);
       }
 
       @Override
@@ -951,9 +953,8 @@ public class KeyForAnnotatedTypeFactory extends
               }
 
               FlowExpressionContext flowExpressionContext =
-                      node instanceof MethodInvocationNode ?
-                              FlowExpressionParseUtil.buildFlowExprContextForViewpointUse((MethodInvocationNode) node, enclosingMethodPath, getContext()) :
-                              FlowExpressionParseUtil.buildFlowExprContextForViewpointUse((ObjectCreationNode) node, pathToInvocation, enclosingMethodPath, getContext());
+                  FlowExpressionParseUtil.buildFlowExprContextForViewpointUse(node, pathToInvocation,
+                                                                              enclosingMethodPath, getContext());
 
 
               for (AnnotatedTypeMirror argType : argTypes) {
@@ -969,7 +970,7 @@ public class KeyForAnnotatedTypeFactory extends
           final AnnotatedTypeMirror assignedTo = super.getAssignedTo(expression, typeFactory);
 
           if (assignedTo != null) {
-              canononicalizeForViewpointAdaptation(expression, assignedTo);
+              canonicalizeForViewpointAdaptation(expression, assignedTo);
           }
 
           return assignedTo;
@@ -977,13 +978,14 @@ public class KeyForAnnotatedTypeFactory extends
   }
 
   /**
-   * Immediately before AnnotatedTypes.findTypeArguments we cannonicalize flow expressions using the parameters
+   * Immediately before AnnotatedTypes.findTypeArguments we canonicalize flow expressions using the parameters
    * for the current method (not the one being invoked but the one in which it is contained) and otherwise
    * the flow expression context from the invocation expression.
    */
-  public void canononicalizeForViewpointAdaptation(ExpressionTree invocation, AnnotatedTypeMirror type) {
+  public void canonicalizeForViewpointAdaptation(ExpressionTree invocation, AnnotatedTypeMirror type) {
       final TreePath path = getPath(invocation);
       TreePath enclosingMethodPath = TreeUtils.pathTillOfKind(path, Kind.METHOD);
+
 
       if (path == null || enclosingMethodPath == null) {
           return; //this seems to happen for cases of desugaring from Data Flow
@@ -996,11 +998,20 @@ public class KeyForAnnotatedTypeFactory extends
           return;
       }
 
-      FlowExpressionContext flowExpressionContext =
-              node instanceof MethodInvocationNode ?
-                      FlowExpressionParseUtil.buildFlowExprContextForViewpointUse((MethodInvocationNode) node, enclosingMethodPath, getContext()) :
-                      FlowExpressionParseUtil.buildFlowExprContextForViewpointUse((ObjectCreationNode) node, path, enclosingMethodPath, getContext());
-      keyForCanonicalizer.canonicalize(type, flowExpressionContext, path, invocation);
+      if (  invocation.getKind() != Kind.METHOD_INVOCATION
+              && invocation.getKind() != Kind.NEW_CLASS ) {
+          ErrorReporter.errorAbort(
+                  "canonicalizeForViewpointAdaptation can only be called on method invocations"
+                + "and constructor calls.\n"
+                + "tree=" + invocation + "\n"
+                + "type=" + type + "\n"
+                + "node=" + node + "\n"
 
+          );
+      }
+
+      FlowExpressionContext flowExpressionContext =
+          FlowExpressionParseUtil.buildFlowExprContextForViewpointUse(node, path, enclosingMethodPath, getContext());
+      keyForCanonicalizer.canonicalize(type, flowExpressionContext, path, invocation);
   }
 }

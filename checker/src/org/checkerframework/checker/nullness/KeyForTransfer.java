@@ -5,7 +5,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 
@@ -19,7 +18,6 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -85,15 +83,20 @@ public class KeyForTransfer extends
                 Receiver keyReceiver = flowExprContext.arguments.get(0);
 
                 KeyForAnnotatedTypeFactory atypeFactory = (KeyForAnnotatedTypeFactory) analysis.getTypeFactory();
-                AnnotationMirror am = atypeFactory.createKeyForAnnotationMirrorWithValue(mapName); // @KeyFor(mapName)
+
+                LinkedHashSet<String> keyForMaps = new LinkedHashSet<>();
+                keyForMaps.add(mapName);
 
                 final CFValue previousKeyValue = in.getValueOfSubNode(node.getArgument(0));
                 if (previousKeyValue != null) {
                     final AnnotationMirror prevAm = previousKeyValue.getType().getAnnotationInHierarchy(KEYFOR);
                     if (prevAm != null && AnnotationUtils.areSameByClass(prevAm, KeyFor.class)) {
-                        am = combineKeyFors(am, prevAm);
+                        keyForMaps.addAll(getKeys(prevAm));
                     }
                 }
+
+                AnnotationMirror am = atypeFactory.createKeyForAnnotationMirrorWithValue(keyForMaps);
+
 
                 if (containsKey) {
                     ConditionalTransferResult<CFValue, CFStore> conditionalResult = (ConditionalTransferResult<CFValue, CFStore>) result;
@@ -117,19 +120,5 @@ public class KeyForTransfer extends
         }
 
         return new LinkedHashSet<>(AnnotationUtils.getElementValueArray(keyFor, "value", String.class, true));
-    }
-
-    /**
-     * Given two KeyFor annotations
-     * @return a new KeyFor annotation whose value set is the union of the keysets for current and keyReceiver
-     */
-    private AnnotationMirror combineKeyFors(final AnnotationMirror current, final AnnotationMirror keyReceiver) {
-        final Set<String> combined = getKeys(current);
-        combined.addAll(getKeys(keyReceiver));
-
-        final ProcessingEnvironment procEnv = analysis.getTypeFactory().getProcessingEnv();
-        AnnotationBuilder combinationBuilder = new AnnotationBuilder(procEnv, KeyFor.class);
-        combinationBuilder.setValue("value", combined.toArray());
-        return combinationBuilder.build();
     }
 }
