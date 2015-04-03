@@ -27,7 +27,6 @@ import com.sun.source.tree.Tree;
 @TypeQualifier
 @SubtypeOf({ UnderInitialization.class, Initialized.class })
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL })
-@DefaultFor({DefaultLocation.LOWER_BOUNDS})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 // empty target prevents programmers from writing this in a program
