@@ -23,7 +23,7 @@ public class FormatUtil {
         private final int index;
         private final ConversionCategory cath;
 
-        public Conversion(char c, int index){
+        public Conversion(char c, int index) {
             this.index = index;
             this.cath = ConversionCategory.fromConversionChar(c);
         }
@@ -103,7 +103,7 @@ public class FormatUtil {
         }
 
         ConversionCategory[] res = new ConversionCategory[maxindex+1];
-        for (int i=0; i<=maxindex ;++i){
+        for (int i = 0; i <= maxindex ;++i) {
             res[i] = conv.containsKey(i)?conv.get(i):ConversionCategory.UNUSED;
         }
         return res;
@@ -144,7 +144,7 @@ public class FormatUtil {
         Matcher m = fsPattern.matcher(format);
         while (m.find()) {
             char c = conversionCharFromFormat(m);
-            switch (c){
+            switch (c) {
             case '%':
             case 'n':
                 break;

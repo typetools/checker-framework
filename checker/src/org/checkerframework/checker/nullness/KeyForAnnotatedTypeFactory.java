@@ -312,7 +312,7 @@ public class KeyForAnnotatedTypeFactory extends
 
          arrayType.setComponentType(substElemType);
          // outType aliases arrayType
-     } else if(outType.getKind().isPrimitive() ||
+     } else if (outType.getKind().isPrimitive() ||
              outType.getKind() == TypeKind.WILDCARD ||
              outType.getKind() == TypeKind.TYPEVAR) {
          // TODO: for which of these should we also recursively substitute?
@@ -371,7 +371,7 @@ public class KeyForAnnotatedTypeFactory extends
 
 
       protected boolean isCovariant(final int typeArgIndex, final int[] covariantArgIndexes) {
-          if(covariantArgIndexes != null) {
+          if (covariantArgIndexes != null) {
               for (int covariantIndex : covariantArgIndexes) {
                   if (typeArgIndex == covariantIndex) {
                       return true;
@@ -398,7 +398,7 @@ public class KeyForAnnotatedTypeFactory extends
               final List<? extends AnnotatedTypeMirror> subtypeTypeArgs   = subtype.getTypeArguments();
               final List<? extends AnnotatedTypeMirror> supertypeTypeArgs = supertype.getTypeArguments();
 
-              if( subtypeTypeArgs.isEmpty() || supertypeTypeArgs.isEmpty() ) {
+              if ( subtypeTypeArgs.isEmpty() || supertypeTypeArgs.isEmpty() ) {
                   return true;
               }
 
@@ -407,7 +407,7 @@ public class KeyForAnnotatedTypeFactory extends
                       final AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);
                       final AnnotatedTypeMirror subTypeArg   = subtypeTypeArgs.get(i);
 
-                      if(subtypeIsRaw || supertypeIsRaw) {
+                      if (subtypeIsRaw || supertypeIsRaw) {
                           rawnessComparer.isValidInHierarchy(subtype, supertype, currentTop, visited);
                       } else {
                           if (!isContainedBy(subTypeArg, superTypeArg, visited, isCovariant(i, covariantArgIndexes))) {
@@ -483,7 +483,7 @@ public class KeyForAnnotatedTypeFactory extends
           LinkedHashSet<String> newValues = new LinkedHashSet<String>();
 
           List<String> values = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
-          for (String s: values){
+          for (String s: values) {
               boolean localVariableFound = false;
 
               if (unknownReceiver) {
@@ -566,15 +566,15 @@ public class KeyForAnnotatedTypeFactory extends
       ArrayList<String> formalParamNames = null;
       boolean formalParamNamesAreValid = true;
 
-      for(int i = 0; i < arguments.size(); i++) {
+      for (int i = 0; i < arguments.size(); i++) {
           Receiver argument = arguments.get(i);
 
           List<? extends AnnotationMirror> keyForAnnos = argument.getType().getAnnotationMirrors();
           if (keyForAnnos != null) {
-              for(AnnotationMirror anno : keyForAnnos) {
+              for (AnnotationMirror anno : keyForAnnos) {
                   if (AnnotationUtils.areSameByClass(anno, checkerKeyForClass)) {
                       List<String> values = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
-                      for (String s: values){
+                      for (String s: values) {
                           Matcher identifierMatcher = identifierPattern.matcher(s);
 
                           if (identifierMatcher.matches()) {
@@ -585,7 +585,7 @@ public class KeyForAnnotatedTypeFactory extends
                                       TreeUtils.elementFromUse(((MethodInvocationNode)node).getTree()) :
                                       TreeUtils.elementFromUse(((ObjectCreationNode)node).getTree());
                                   List<? extends VariableElement> varels = el.getParameters();
-                                  for(VariableElement varel : varels) {
+                                  for (VariableElement varel : varels) {
                                       String formalParamName = varel.getSimpleName().toString();
 
                                       // Heuristic: if the formal parameter name appears to be synthesized, and not the
@@ -608,8 +608,7 @@ public class KeyForAnnotatedTypeFactory extends
 
                               if (formalParamNum == -1) {
                                   checker.report(Result.warning(KEYFOR_VALUE_PARAMETER_VARIABLE_NAME, s, paramNumString, methodName), t);
-                              }
-                              else {
+                              } else {
                                   String formalParamNumString = Integer.toString(formalParamNum + 1);
 
                                   checker.report(Result.warning(KEYFOR_VALUE_PARAMETER_VARIABLE_NAME_FORMAL_PARAM_NUM, s, paramNumString, methodName, formalParamNumString), t);

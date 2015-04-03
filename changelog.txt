@@ -2,8 +2,11 @@ Version 1.8.12, 31 March 2015
 
 Reflection resolution:
 If you supply the -AresolveReflection command-line option, the Checker
-Framework attempts to resolve reflection.  This will reduce the number of false
+Framework attempts to resolve reflection.  This reduces the number of false
 positive warnings caused by reflection.
+
+The documentation for the Map Key Checker has been moved into its own
+chapter in the manual.
 
 ----------------------------------------------------------------------
 

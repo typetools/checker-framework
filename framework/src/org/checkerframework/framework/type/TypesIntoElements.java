@@ -87,7 +87,7 @@ public class TypesIntoElements {
     }
 
     private static void storeMethod(ProcessingEnvironment processingEnv, Types types,
-            AnnotatedTypeFactory atypeFactory, MethodTree meth){
+            AnnotatedTypeFactory atypeFactory, MethodTree meth) {
         AnnotatedExecutableType mtype = atypeFactory.getAnnotatedType(meth);
         MethodSymbol sym = (MethodSymbol) TreeUtils.elementFromDeclaration(meth);
         TypeAnnotationPosition tapos;
@@ -136,7 +136,7 @@ public class TypesIntoElements {
     }
 
     private static void storeVariable(ProcessingEnvironment processingEnv, Types types,
-            AnnotatedTypeFactory atypeFactory, VariableTree var){
+            AnnotatedTypeFactory atypeFactory, VariableTree var) {
         VarSymbol sym = (VarSymbol) TreeUtils.elementFromDeclaration(var);
         AnnotatedTypeMirror type;
         if (atypeFactory instanceof GenericAnnotatedTypeFactory) {
@@ -157,7 +157,7 @@ public class TypesIntoElements {
 
     private static void storeClassExtends(ProcessingEnvironment processingEnv, Types types,
             AnnotatedTypeFactory atypeFactory, Tree ext, Symbol.ClassSymbol csym,
-            int implidx){
+            int implidx) {
 
         AnnotatedTypeMirror type;
         int pos;

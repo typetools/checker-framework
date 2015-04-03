@@ -1,5 +1,8 @@
 package org.checkerframework.framework.stub;
 
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TypesUtils;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -16,9 +19,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
-
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -73,7 +73,7 @@ public class StubGenerator {
     public StubGenerator(OutputStream out) {
         this.out = new PrintStream(out);
     }
-    
+
     /**
      * Generate the skeleton file for all the classes within the provided
      * package.
@@ -120,7 +120,7 @@ public class StubGenerator {
      * package.
      */
     public void skeletonFromMethod(Element elt) {
-        if(!(elt.getKind() == ElementKind.CONSTRUCTOR || elt.getKind() == ElementKind.METHOD) )
+        if (!(elt.getKind() == ElementKind.CONSTRUCTOR || elt.getKind() == ElementKind.METHOD))
             return;
 
         String newPackage = ElementUtils.getVerboseName(ElementUtils
@@ -202,7 +202,7 @@ public class StubGenerator {
             return;
 
         out.print(' ');
-        if(outerClass != null){
+        if (outerClass != null) {
             out.print(outerClass + "$");
         }
         out.print(typeElement.getSimpleName());
@@ -239,7 +239,7 @@ public class StubGenerator {
         indent();
         out.println("}");
 
-        for(TypeElement element: innerClass){
+        for (TypeElement element: innerClass) {
             printClass(element,typeElement.getSimpleName().toString());
         }
 

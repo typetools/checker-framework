@@ -1,19 +1,21 @@
 package org.checkerframework.framework.util.element;
 
-import com.sun.tools.javac.code.Attribute.TypeCompound;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.PluginUtil;
-import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.TargetType;
 import org.checkerframework.javacutil.ErrorReporter;
 
-import javax.lang.model.element.Element;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.contains;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.contains;
+import javax.lang.model.element.Element;
+
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Attribute.TypeCompound;
+import com.sun.tools.javac.code.TargetType;
 
 /**
  * TargetedElementAnnotationApplier filters annotations for an element into 3 groups.
@@ -107,7 +109,7 @@ abstract class TargetedElementAnnotationApplier {
      *                handled by handleTargeted or handleValid
      */
     protected void handleInvalid(List<Attribute.TypeCompound> invalid) {
-        if( !invalid.isEmpty() ) {
+        if (!invalid.isEmpty()) {
             ErrorReporter.errorAbort(this.getClass().getName() + ".handleInvalid: " +
                     "Invalid variable and element passed to extractAndApply (" + type + ", " + element +
                     " Annos ( " + PluginUtil.join(", ", invalid) + " ) ");
@@ -127,14 +129,14 @@ abstract class TargetedElementAnnotationApplier {
             targetClassToCompound.put(targetClass, new ArrayList<TypeCompound>());
         }
 
-        for(final Attribute.TypeCompound typeCompound : typeCompounds) {
+        for (final Attribute.TypeCompound typeCompound : typeCompounds) {
             final TargetType typeCompoundTarget = typeCompound.position.type;
             final List<Attribute.TypeCompound> destList;
 
-            if( contains(typeCompoundTarget, annotatedTargets())) {
+            if (contains(typeCompoundTarget, annotatedTargets())) {
                 destList = targetClassToCompound.get(TargetClass.TARGETED);
 
-            } else if( contains(typeCompoundTarget, validTargets())) {
+            } else if (contains(typeCompoundTarget, validTargets())) {
                 destList = targetClassToCompound.get(TargetClass.VALID);
 
             } else {

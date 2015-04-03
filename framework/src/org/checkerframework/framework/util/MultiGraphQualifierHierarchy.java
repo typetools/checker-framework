@@ -7,6 +7,14 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 */
 
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.PolymorphicQualifier;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
+
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,14 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.qual.PolymorphicQualifier;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  * Represents the type qualifier hierarchy of a type system.
@@ -655,11 +655,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         Set<AnnotationMirror> outset = AnnotationUtils.createAnnotationSet();
         outset.addAll(inset);
 
-        for( AnnotationMirror a1 : inset ) {
+        for (AnnotationMirror a1 : inset) {
             Iterator<AnnotationMirror> outit = outset.iterator();
-            while( outit.hasNext() ) {
+            while (outit.hasNext()) {
                 AnnotationMirror a2 = outit.next();
-                if( a1 != a2 && isSubtype(a1, a2) ) {
+                if (a1 != a2 && isSubtype(a1, a2)) {
                     outit.remove();
                 }
             }
@@ -751,11 +751,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         Set<AnnotationMirror> outset = AnnotationUtils.createAnnotationSet();
         outset.addAll(inset);
 
-        for( AnnotationMirror a1 : inset ) {
+        for (AnnotationMirror a1 : inset) {
             Iterator<AnnotationMirror> outit = outset.iterator();
-            while( outit.hasNext() ) {
+            while (outit.hasNext()) {
                 AnnotationMirror a2 = outit.next();
-                if( a1 != a2 && isSubtype(a2, a1) ) {
+                if (a1 != a2 && isSubtype(a2, a1)) {
                     outit.remove();
                 }
             }

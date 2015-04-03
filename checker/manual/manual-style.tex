@@ -6,6 +6,7 @@
 \usepackage{graphicx}
 \usepackage{hevea}
 \usepackage{url}
+\usepackage{color}
 \usepackage{hyperref}
 % Not supported by Hevea, so don't bother: \usepackage{minitoc}
 \usepackage{proof}
@@ -121,6 +122,10 @@
 % (not a method, etc.).  This prepends an @ to the qualifier name.
 \newcommand{\refqualclass}[2]{\href{api/org/checkerframework/#1/#2.html}{\<@#2>}}
 
+% Reference to Checker Framework Javadoc for a type qualifier/annotation class
+% (not a method, etc.) that takes parameters.  This prepends an @ to the
+% qualifier name and includes parentheses around the parameters.
+\newcommand{\refqualclasswithparams}[3]{\href{api/org/checkerframework/#1/#2.html}{\<@#2>}\<(#3)>}
 
 % Reference to Checker Framework Javadoc for a method or field.).
 % Arg 1: package name using "/" as a separator, with no leading or trailing "/".

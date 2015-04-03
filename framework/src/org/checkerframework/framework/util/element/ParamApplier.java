@@ -1,31 +1,48 @@
 package org.checkerframework.framework.util.element;
 
-import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-import com.sun.tools.javac.code.Attribute.TypeCompound;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.TargetType;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.VariableElement;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.partitionByTargetType;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.sun.tools.javac.code.TargetType.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.VariableElement;
+
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Attribute.TypeCompound;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.TargetType;
+
+import static com.sun.tools.javac.code.TargetType.CAST;
+import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT;
+import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_REFERENCE;
 import static com.sun.tools.javac.code.TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT;
+import static com.sun.tools.javac.code.TargetType.EXCEPTION_PARAMETER;
+import static com.sun.tools.javac.code.TargetType.INSTANCEOF;
+import static com.sun.tools.javac.code.TargetType.LOCAL_VARIABLE;
+import static com.sun.tools.javac.code.TargetType.METHOD_FORMAL_PARAMETER;
+import static com.sun.tools.javac.code.TargetType.METHOD_INVOCATION_TYPE_ARGUMENT;
+import static com.sun.tools.javac.code.TargetType.METHOD_RECEIVER;
+import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE;
 import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE_TYPE_ARGUMENT;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.partitionByTargetType;
+import static com.sun.tools.javac.code.TargetType.METHOD_RETURN;
+import static com.sun.tools.javac.code.TargetType.METHOD_TYPE_PARAMETER;
+import static com.sun.tools.javac.code.TargetType.METHOD_TYPE_PARAMETER_BOUND;
+import static com.sun.tools.javac.code.TargetType.NEW;
+import static com.sun.tools.javac.code.TargetType.RESOURCE_VARIABLE;
+import static com.sun.tools.javac.code.TargetType.THROWS;
 
 /**
  * Adds annotations to one formal parameter of a method or lambda within a method.
@@ -51,7 +68,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
         super(type, element);
         enclosingMethod = getParentMethod( element );
 
-        if( enclosingMethod.getKind() != ElementKind.INSTANCE_INIT
+        if (enclosingMethod.getKind() != ElementKind.INSTANCE_INIT
          && enclosingMethod.getKind() != ElementKind.STATIC_INIT
          && enclosingMethod.getParameters().contains(element)) {
             lambdaTree = null;
@@ -62,7 +79,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
             Pair<VariableTree, LambdaExpressionTree> paramToEnclosingLambda =
                 ElementAnnotationApplier.getParamAndLambdaTree((VariableElement) element, typeFactory);
 
-            if(paramToEnclosingLambda != null) {
+            if (paramToEnclosingLambda != null) {
                 VariableTree paramDecl = paramToEnclosingLambda.first;
                 lambdaTree = paramToEnclosingLambda.second;
                 isLambdaParam = true;
@@ -82,16 +99,16 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
      */
     @Override
     public int getElementIndex() {
-        if( isLambdaParam ) {
+        if (isLambdaParam) {
             return lambdaParamIndex;
         }
 
-        if( isReceiver(element) ) {
+        if (isReceiver(element)) {
             return RECEIVER_PARAM_INDEX;
         }
 
         final int paramIndex = enclosingMethod.getParameters().indexOf(element);
-        if( paramIndex == -1 ) {
+        if (paramIndex == -1) {
             ErrorReporter.errorAbort("Could not find parameter Element in parameter list! " +
                     "Parameter( " + element + " ) Parent ( " + enclosingMethod + " ) ");
         }
@@ -147,9 +164,9 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
         //if this is a lambdaParam, filter out from targeted those annos that apply to method formal parameters
         //if this is a method formal param, filter out from targeted those annos that apply to lambdas
         int i = 0;
-        while( i < targeted.size() ) {
+        while (i < targeted.size()) {
             final Tree onLambda = targeted.get(i).position.onLambda;
-            if( onLambda == null ) {
+            if (onLambda == null) {
                 if (!isLambdaParam) {
                     ++i;
                 } else {
@@ -178,7 +195,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
         final List<TypeCompound> formalParams = new ArrayList<>();
         Map<TargetType, List<TypeCompound>> targetToAnnos = partitionByTargetType(targeted, formalParams, METHOD_RECEIVER);
 
-        if( isReceiver( element ) ) {
+        if (isReceiver(element)) {
             annotateViaTypeAnnoPosition(type, targetToAnnos.get(METHOD_RECEIVER));
 
         } else {
@@ -207,7 +224,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
      * @return The MethodSymbol of the method containing methodChildElem
      */
     public static Symbol.MethodSymbol getParentMethod(final Element methodChildElem) {
-        if(!( methodChildElem.getEnclosingElement() instanceof Symbol.MethodSymbol)) {
+        if (!( methodChildElem.getEnclosingElement() instanceof Symbol.MethodSymbol)) {
             throw new RuntimeException("Element is not a direct child of a MethodSymbol. Element ( " + methodChildElem +
                     " parent ( " + methodChildElem.getEnclosingElement() + " ) ");
         }

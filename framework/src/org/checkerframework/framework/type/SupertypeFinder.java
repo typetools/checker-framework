@@ -141,8 +141,8 @@ class SupertypeFinder {
             // Mapping of type variable to actual types
             Map<TypeParameterElement, AnnotatedTypeMirror> mapping = new HashMap<>();
 
-            if(type.getTypeArguments().size() != typeElement.getTypeParameters().size()) {
-                if(!type.wasRaw()) {
+            if (type.getTypeArguments().size() != typeElement.getTypeParameters().size()) {
+                if (!type.wasRaw()) {
                     ErrorReporter.errorAbort(
                         "AnnotatedDeclaredType's element has a different number of type parameters than type.\n"
                       + "type=" + type + "\n"
@@ -208,14 +208,14 @@ class SupertypeFinder {
             }
 
             for (TypeMirror st : typeElement.getInterfaces()) {
-                if(type.wasRaw()) {
+                if (type.wasRaw()) {
                     st = types.erasure(st);
                 }
                 AnnotatedDeclaredType ast =
                         (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(st, false);
                 supertypes.add(ast);
-                if(type.wasRaw()) {
-                    if(st instanceof DeclaredType) {
+                if (type.wasRaw()) {
+                    if (st instanceof DeclaredType) {
                         final List<? extends TypeMirror> typeArgs = ((DeclaredType) st).getTypeArguments();
                         final List<AnnotatedTypeMirror> annotatedTypeArgs = ast.getTypeArguments();
                         for (int i = 0; i < typeArgs.size(); i++) {
