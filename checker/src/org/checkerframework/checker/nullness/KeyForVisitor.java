@@ -118,14 +118,14 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
 
     /**
      * The constructor type will have its flow expressions parsed and its KeyFor values
-     * cannonicalized before this point (in constructorFromUse).  However, the expectedReturnType
-     * will not.  Cannonicalize it now.
+     * canonicalized before this point (in constructorFromUse).  However, the expectedReturnType
+     * will not.  Canonicalize it now.
      */
     protected boolean checkConstructorInvocation(AnnotatedDeclaredType expectedReturnType,
                                                  AnnotatedExecutableType constructor, Tree src) {
 
         NewClassTree invocation = (NewClassTree) src;
-        atypeFactory.canononicalizeForViewpointAdaptation(invocation, expectedReturnType);
+        atypeFactory.canonicalizeForViewpointAdaptation(invocation, expectedReturnType);
         return super.checkConstructorInvocation(expectedReturnType, constructor, invocation);
     }
 }
