@@ -2,6 +2,7 @@ package org.checkerframework.framework.type;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
@@ -116,6 +117,16 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
     }
 
     @Override
+    public Boolean visitArray_Declared(AnnotatedArrayType subtype, AnnotatedDeclaredType supertype, VisitHistory visited) {
+        return arePrimaryAnnotationsEqual(subtype, supertype);
+    }
+
+    @Override
+    public Boolean visitPrimitive_Primitive(AnnotatedPrimitiveType subtype, AnnotatedPrimitiveType supertype, VisitHistory visited) {
+        return arePrimaryAnnotationsEqual(subtype, supertype);
+    }
+
+    @Override
     public Boolean visitDeclared_Wildcard(AnnotatedDeclaredType subtype, AnnotatedWildcardType supertype, VisitHistory visited) {
         return visitWildcardSupertype(subtype, supertype, visited);
     }
@@ -148,6 +159,12 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
     @Override
     public Boolean visitTypevar_Typevar(AnnotatedTypeVariable subtype, AnnotatedTypeVariable supertype, VisitHistory visited) {
         return visitTypevarSupertype(subtype, supertype, visited);
+    }
+
+    //See FromApac5Tests - iterator for when this would occur
+    @Override
+    public Boolean visitWildcard_Array(AnnotatedWildcardType subtype, AnnotatedArrayType supertype, VisitHistory visited) {
+        return arePrimaryAnnotationsEqual(subtype.getExtendsBound(), supertype);
     }
 
     @Override
