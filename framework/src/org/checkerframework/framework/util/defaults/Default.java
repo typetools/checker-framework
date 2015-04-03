@@ -25,7 +25,7 @@ class Default implements Comparable<Default> {
     @Override
     public int compareTo(Default other) {
         int locationOrder = location.compareTo(other.location);
-        if( locationOrder == 0 ) {
+        if (locationOrder == 0) {
             return AnnotationUtils.annotationOrdering().compare(anno, other.anno);
         } else {
             return locationOrder;
@@ -34,11 +34,11 @@ class Default implements Comparable<Default> {
 
     @Override
     public boolean equals(Object thatObj) {
-        if(thatObj == this) {
+        if (thatObj == this) {
             return true;
         }
 
-        if(thatObj == null || !thatObj.getClass().equals(Default.class)) {
+        if (thatObj == null || !thatObj.getClass().equals(Default.class)) {
             return false;
         }
 

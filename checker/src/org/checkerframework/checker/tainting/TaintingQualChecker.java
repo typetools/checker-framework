@@ -33,7 +33,7 @@ public class TaintingQualChecker extends QualifierParameterChecker<Tainting> {
         @Override
         protected AnnotationParts getTargetTypeSystemAnnotation(Tainting qual) {
 
-            switch(qual) {
+            switch (qual) {
                 case TAINTED:
                     return new AnnotationParts("Tainted");
                 case UNTAINTED:

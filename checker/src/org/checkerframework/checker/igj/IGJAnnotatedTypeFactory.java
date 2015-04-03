@@ -948,7 +948,7 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             boolean ignoreTypeArgs = ignoreRawTypes && (subtypeIsRaw || supertypeIsRaw);
 
-            if(!ignoreTypeArgs) {
+            if (!ignoreTypeArgs) {
                 if (supertype.hasEffectiveAnnotation(MUTABLE)) {
                     return super.visitTypeArgs(subtype, supertype, visited,  subtypeIsRaw, supertypeIsRaw);
                 }

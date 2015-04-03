@@ -1,16 +1,5 @@
 package org.checkerframework.common.reflection;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.ClassBound;
@@ -33,6 +22,17 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -45,13 +45,13 @@ import com.sun.tools.javac.code.Type.UnionClassType;
         ClassValBottom.class })
 public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /**Methods with the form: @ClassVal("name") Class method(String name){...}*/
+    /**Methods with the form: @ClassVal("name") Class method(String name) {...}*/
     private final ExecutableElement[] forName = {
             TreeUtils.getMethod("java.lang.Class", "forName", 1, processingEnv),
             TreeUtils.getMethod("java.lang.ClassLoader", "loadClass", 1,
                     processingEnv) };
 
-    /**Methods the form: @ClassBound("ReceiverType") Class method(ReceiverType this){...}*/
+    /**Methods the form: @ClassBound("ReceiverType") Class method(ReceiverType this) {...}*/
     private final ExecutableElement[] getClass = {TreeUtils.getMethod(
             "java.lang.Object", "getClass", 0, processingEnv)};
 
@@ -244,16 +244,16 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private boolean isForNameMethodInovaction(MethodInvocationTree tree) {
-            for(ExecutableElement method: forName ){
-                if(TreeUtils.isMethodInvocation(tree, method, processingEnv)){
+            for (ExecutableElement method: forName ) {
+                if (TreeUtils.isMethodInvocation(tree, method, processingEnv)) {
                     return true;
                 }
             }
            return false;
         }
         private boolean isGetClassMethodInovaction(MethodInvocationTree tree) {
-            for(ExecutableElement method: getClass ){
-                if(TreeUtils.isMethodInvocation(tree, method, processingEnv)){
+            for (ExecutableElement method: getClass ) {
+                if (TreeUtils.isMethodInvocation(tree, method, processingEnv)) {
                     return true;
                 }
             }
@@ -263,7 +263,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private List<String> getStringValues(ExpressionTree arg) {
             ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
             AnnotationMirror annotation = valueATF.getAnnotationMirror(arg,StringVal.class);
-            if(annotation == null){
+            if (annotation == null) {
                 return null;
             }
             return AnnotationUtils.getElementValueArray(annotation, "value",
@@ -275,11 +275,10 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * correct name for anonymous classes.
          */
         private String getClassNameFromType(Type classType) {
-            switch(classType.getKind())
-            {
-                case  ARRAY:
-                    String array = "";
-                while(classType.getKind() == TypeKind.ARRAY){
+            switch (classType.getKind()) {
+            case ARRAY:
+                String array = "";
+                while (classType.getKind() == TypeKind.ARRAY) {
                     classType = ((ArrayType) classType).getComponentType();
                     array+="[]";
                 }

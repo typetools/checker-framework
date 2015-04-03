@@ -2,25 +2,30 @@ package org.checkerframework.framework.util.element;
 
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
-import com.sun.tools.javac.code.Attribute;
-
-import static com.sun.tools.javac.code.Symbol.*;
-import com.sun.tools.javac.code.TargetType;
-import com.sun.tools.javac.code.TypeAnnotationPosition;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.javacutil.ErrorReporter;
+
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.contains;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.getTypeAtLocation;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeParameterElement;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.*;
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.TargetType;
+import com.sun.tools.javac.code.TypeAnnotationPosition;
 
 /**
  * Apply annotations to the use of a type parameter declaration
@@ -53,7 +58,7 @@ public class TypeVarUseApplier {
     private static AnnotatedTypeMirror getNestedComponentType(AnnotatedTypeMirror type) {
 
         AnnotatedTypeMirror componentType = type;
-        while( componentType instanceof AnnotatedArrayType ) {
+        while (componentType instanceof AnnotatedArrayType) {
             componentType = ((AnnotatedArrayType) componentType).getComponentType();
         }
 
@@ -72,12 +77,12 @@ public class TypeVarUseApplier {
     private AnnotatedTypeFactory typeFactory;
 
     TypeVarUseApplier(final AnnotatedTypeMirror type, final Element element, final AnnotatedTypeFactory typeFactory) {
-        if(!accepts(type, element)) {
+        if (!accepts(type, element)) {
             ErrorReporter.errorAbort("TypeParamUseApplier does not accept type/element combination (" +
                                      " type ( " + type + " ) element ( " + element + " ) ");
         }
 
-        if( isGenericArrayType(type) ) {
+        if (isGenericArrayType(type)) {
             this.arrayType    = (AnnotatedArrayType) type;
             this.typeVariable = (AnnotatedTypeVariable) getNestedComponentType(type);
             this.declarationElem =  (TypeParameterElement) typeVariable.getUnderlyingType().asElement();
@@ -106,7 +111,7 @@ public class TypeVarUseApplier {
         final List<Attribute.TypeCompound> annotations = getAnnotations( useElem, declarationElem );
 
         final List<Attribute.TypeCompound> typeVarAnnotations;
-        if( arrayType != null ) {
+        if (arrayType != null) {
             //if the outer-most type is an array type then we want to ensure the outer annotations
             //are not applied as the type variables primary annotation
             typeVarAnnotations = removeComponentAnnotations(arrayType, annotations);
@@ -116,12 +121,12 @@ public class TypeVarUseApplier {
             typeVarAnnotations = annotations;
         }
 
-        for( final Attribute.TypeCompound annotation : typeVarAnnotations ) {
+        for (final Attribute.TypeCompound annotation : typeVarAnnotations) {
             typeVariable.removeAnnotationInHierarchy(annotation);
             typeVariable.addAnnotation(annotation);
 
             final List<? extends AnnotatedTypeMirror> upperBounds;
-            if( typeVariable.getUpperBound() instanceof AnnotatedIntersectionType ) {
+            if (typeVariable.getUpperBound() instanceof AnnotatedIntersectionType) {
                 upperBounds = typeVariable.getUpperBound().directSuperTypes();
             } else {
                 upperBounds = Arrays.asList(typeVariable.getUpperBound());
@@ -129,7 +134,7 @@ public class TypeVarUseApplier {
 
             //TODO: Should we just make primary annotations on annotated intersection types apply to all of
             //TODO: them?  Que dealio?  What should we do?
-            for(final AnnotatedTypeMirror bound : upperBounds) {
+            for (final AnnotatedTypeMirror bound : upperBounds) {
                 bound.removeAnnotationInHierarchy(annotation);
                 bound.addAnnotation(annotation);
             }
@@ -141,10 +146,10 @@ public class TypeVarUseApplier {
 
         final List<Attribute.TypeCompound> componentAnnotations = new ArrayList<Attribute.TypeCompound>();
 
-        if( arrayType != null ) {
-            for( int i = 0; i < annotations.size(); ) {
+        if (arrayType != null) {
+            for (int i = 0; i < annotations.size(); ) {
                 final Attribute.TypeCompound anno = annotations.get(i);
-                if( isBaseComponent(arrayType, anno) ) {
+                if (isBaseComponent(arrayType, anno)) {
                     componentAnnotations.add(anno);
                     annotations.remove(anno);
                 } else {
@@ -167,7 +172,7 @@ public class TypeVarUseApplier {
      */
     private static List<Attribute.TypeCompound> getAnnotations(final Element useElem, final Element declarationElem) {
         final List<Attribute.TypeCompound> annotations;
-        switch(useElem.getKind()) {
+        switch (useElem.getKind()) {
             case METHOD:
                 annotations = getReturnAnnos( useElem );
                 break;
@@ -238,9 +243,9 @@ public class TypeVarUseApplier {
         final int paramIndex = enclosingMethod.getParameters().indexOf(paramElem);
 
         final List<Attribute.TypeCompound> result = new ArrayList<Attribute.TypeCompound>();
-        for( final Attribute.TypeCompound typeAnno : annotations) {
-            if( typeAnno.position.type == TargetType.METHOD_FORMAL_PARAMETER ) {
-                if( typeAnno.position.parameter_index == paramIndex ) {
+        for (final Attribute.TypeCompound typeAnno : annotations) {
+            if (typeAnno.position.type == TargetType.METHOD_FORMAL_PARAMETER) {
+                if (typeAnno.position.parameter_index == paramIndex) {
                     result.add(typeAnno);
                 }
             }
@@ -261,8 +266,8 @@ public class TypeVarUseApplier {
 
         final List<Attribute.TypeCompound> annotations = enclosingMethod.getRawTypeAttributes();
         final List<Attribute.TypeCompound> result = new ArrayList<Attribute.TypeCompound>();
-        for( final Attribute.TypeCompound typeAnno : annotations) {
-            if( typeAnno.position.type == TargetType.METHOD_RETURN ) {
+        for (final Attribute.TypeCompound typeAnno : annotations) {
+            if (typeAnno.position.type == TargetType.METHOD_RETURN) {
                 result.add(typeAnno);
             }
         }

@@ -649,7 +649,7 @@ public abstract class SourceChecker
     }
 
     private void logCheckerError(CheckerError ce) {
-        if( ce.getMessage() == null ) {
+        if (ce.getMessage() == null) {
             final String stackTrace = formatStackTrace(ce.getStackTrace());
             ErrorReporter.errorAbort("Null error message while logging Checker error.\nStack Trace:\n" + stackTrace);
         }
@@ -1444,6 +1444,7 @@ public abstract class SourceChecker
      *
      * @see SourceChecker#getLintOption(String,boolean)
      */
+    @Override
     public final String getOption(String name) {
         return getOption(name, null);
     }
@@ -1452,6 +1453,7 @@ public abstract class SourceChecker
      * Return all active options for this checker.
      * @return all active options for this checker.
      */
+    @Override
     public Map<String, String> getOptions() {
         if (activeOptions == null) {
             activeOptions = createActiveOptions(processingEnv.getOptions());
@@ -1468,6 +1470,7 @@ public abstract class SourceChecker
      * @return True if the option name was provided, false otherwise.
      */
     // TODO I would like to rename getLintOption to hasLintOption
+    @Override
     public final boolean hasOption(String name) {
         return getOptions().containsKey(name);
     }
@@ -1479,6 +1482,7 @@ public abstract class SourceChecker
      * @see SourceChecker#getOption(String)
      * @see SourceChecker#getLintOption(String)
      */
+    @Override
     public final String getOption(String name, String def) {
 
         if (!this.getSupportedOptions().contains(name)) {

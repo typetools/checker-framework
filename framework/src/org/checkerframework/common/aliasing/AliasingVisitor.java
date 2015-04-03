@@ -84,7 +84,7 @@ public class AliasingVisitor extends
                 // happens when the parent's respective constructor is not @Unique.
                 AnnotatedTypeMirror superResult = atypeFactory.
                         getAnnotatedType(node);
-                if(!superResult.hasAnnotation(Unique.class)) {
+                if (!superResult.hasAnnotation(Unique.class)) {
                     checker.report(Result.failure("unique.leaked"), node);
                 }
             } else {

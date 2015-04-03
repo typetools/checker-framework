@@ -8,6 +8,7 @@ manual.tex \
 manual-style.tex \
 introduction.tex \
 nullness-checker.tex \
+map-key-checker.tex \
 interning-checker.tex \
 lock-checker.tex \
 fenum-checker.tex \

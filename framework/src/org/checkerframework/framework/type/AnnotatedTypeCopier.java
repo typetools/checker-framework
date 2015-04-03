@@ -110,7 +110,7 @@ public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMi
 
         if (original.typeArgs != null) {
             final List<AnnotatedTypeMirror> copyTypeArgs = new ArrayList<>();
-            for(final AnnotatedTypeMirror typeArg : original.typeArgs) {
+            for (final AnnotatedTypeMirror typeArg : original.typeArgs) {
                 copyTypeArgs.add(visit(typeArg, originalToCopy));
             }
             copy.typeArgs = Collections.unmodifiableList( copyTypeArgs );
@@ -118,7 +118,7 @@ public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMi
 
         if (original.supertypes != null) {
             final List<AnnotatedDeclaredType> copyTypeArgs = new ArrayList<>();
-            for(final AnnotatedDeclaredType supertype : original.supertypes) {
+            for (final AnnotatedDeclaredType supertype : original.supertypes) {
                 copyTypeArgs.add((AnnotatedDeclaredType) visit(supertype, originalToCopy));
             }
             copy.supertypes = Collections.unmodifiableList( copyTypeArgs );
@@ -141,7 +141,7 @@ public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMi
 
         if (original.supertypes != null) {
             final List<AnnotatedDeclaredType> copySupertypes = new ArrayList<AnnotatedDeclaredType>();
-            for(final AnnotatedDeclaredType supertype : original.supertypes) {
+            for (final AnnotatedDeclaredType supertype : original.supertypes) {
                 copySupertypes.add((AnnotatedDeclaredType) visit(supertype, originalToCopy));
             }
             copy.supertypes = Collections.unmodifiableList( copySupertypes );
@@ -164,7 +164,7 @@ public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMi
 
         if (original.alternatives != null) {
             final List<AnnotatedDeclaredType> copyAlternatives = new ArrayList<AnnotatedDeclaredType>();
-            for(final AnnotatedDeclaredType supertype : original.alternatives) {
+            for (final AnnotatedDeclaredType supertype : original.alternatives) {
                 copyAlternatives.add((AnnotatedDeclaredType) visit(supertype, originalToCopy));
             }
             copy.alternatives = Collections.unmodifiableList( copyAlternatives );

@@ -1,20 +1,29 @@
 package org.checkerframework.framework.type;
 
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.element.ClassTypeParamApplier;
+import org.checkerframework.framework.util.element.MethodApplier;
+import org.checkerframework.framework.util.element.MethodTypeParamApplier;
+import org.checkerframework.framework.util.element.ParamApplier;
+import org.checkerframework.framework.util.element.SuperTypeApplier;
+import org.checkerframework.framework.util.element.TypeDeclarationApplier;
+import org.checkerframework.framework.util.element.TypeVarUseApplier;
+import org.checkerframework.framework.util.element.VariableApplier;
+import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.Pair;
+
+import java.util.List;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
-import org.checkerframework.framework.util.element.*;
-import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.Pair;
-
-import java.util.*;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 
 
 /**
@@ -67,10 +76,10 @@ public class ElementAnnotationApplier {
         if ( element == null ) {
             ErrorReporter.errorAbort("ElementAnnotationUtil.apply: element cannot be null");
 
-        } else if( TypeVarUseApplier.accepts(type, element) ) {
+        } else if ( TypeVarUseApplier.accepts(type, element) ) {
             TypeVarUseApplier.apply(type, element, typeFactory);
 
-        } else if( VariableApplier.accepts(type, element) ) {
+        } else if ( VariableApplier.accepts(type, element) ) {
             VariableApplier.apply(type, element);
 
         } else if ( MethodApplier.accepts(type, element) ) {
@@ -88,7 +97,7 @@ public class ElementAnnotationApplier {
         } else if ( ParamApplier.accepts(type, element) ) {
             ParamApplier.apply(type, element, typeFactory);
 
-        } else if ( isCaptureConvertedTypeVar(element) ){
+        } else if ( isCaptureConvertedTypeVar(element) ) {
             //Types resulting from capture conversion cannot have explicit annotations
 
         } else {
@@ -121,7 +130,7 @@ public class ElementAnnotationApplier {
 
         if (paramDecl != null) {
             final Tree parentTree = typeFactory.getPath(paramDecl).getParentPath().getLeaf();
-            if(parentTree != null && parentTree.getKind() == Kind.LAMBDA_EXPRESSION) {
+            if (parentTree != null && parentTree.getKind() == Kind.LAMBDA_EXPRESSION) {
                 return Pair.of(paramDecl, (LambdaExpressionTree) parentTree);
             }
         }

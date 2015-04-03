@@ -6,9 +6,14 @@ import org.checkerframework.framework.util.typeinference.solver.TargetConstraint
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Subtypes;
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Supertypes;
 
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeVariable;
-import java.util.*;
 
 /**
  * ConstraintMap holds simplified versions of the TUConstraints for ALL type variable for which
@@ -23,10 +28,10 @@ import java.util.*;
  */
 public class ConstraintMap {
 
-    private Map<TypeVariable, TargetConstraints> targetToRecords = new LinkedHashMap<>();
+    private final Map<TypeVariable, TargetConstraints> targetToRecords = new LinkedHashMap<>();
 
     public ConstraintMap(Set<TypeVariable> targets) {
-        for(final TypeVariable target : targets) {
+        for (final TypeVariable target : targets) {
             targetToRecords.put(target, new TargetConstraints(target));
         }
     }
@@ -93,7 +98,7 @@ public class ConstraintMap {
 
     public void addPrimarySupertype(final TypeVariable target, QualifierHierarchy qualifierHierarchy, final Set<AnnotationMirror> annos) {
         Supertypes supertypes = targetToRecords.get(target).supertypes;
-        for( AnnotationMirror anno : annos) {
+        for (final AnnotationMirror anno : annos) {
             final AnnotationMirror top = qualifierHierarchy.getTopAnnotation(anno);
             Set<AnnotationMirror> entries = supertypes.primaries.get(top);
             if (entries == null) {
@@ -126,7 +131,7 @@ public class ConstraintMap {
 
     public void addPrimarySubtypes(final TypeVariable target, QualifierHierarchy qualifierHierarchy, final Set<AnnotationMirror> annos) {
         Subtypes subtypes = targetToRecords.get(target).subtypes;
-        for( AnnotationMirror anno : annos) {
+        for (final AnnotationMirror anno : annos) {
             final AnnotationMirror top = qualifierHierarchy.getTopAnnotation(anno);
             Set<AnnotationMirror> entries = subtypes.primaries.get(top);
             if (entries == null) {

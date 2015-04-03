@@ -332,7 +332,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     @SuppressWarnings("unchecked")
     public <T extends BaseTypeChecker> T getSubchecker(Class<T> checkerClass) {
         for (BaseTypeChecker checker : immediateSubcheckers) {
-            if (checker.getClass().equals(checkerClass)){
+            if (checker.getClass().equals(checkerClass)) {
                 return (T) checker;
             }
         }
@@ -368,11 +368,11 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      *
      * Returns the unmodifiable list of immediate subcheckers of this checker.
      */
-    private List<BaseTypeChecker> instantiateSubcheckers(LinkedHashMap<Class<? extends BaseTypeChecker>, BaseTypeChecker> alreadyInitializedSubcheckerMap){
+    private List<BaseTypeChecker> instantiateSubcheckers(LinkedHashMap<Class<? extends BaseTypeChecker>, BaseTypeChecker> alreadyInitializedSubcheckerMap) {
         LinkedHashSet<Class<? extends BaseTypeChecker>> classesOfImmediateSubcheckers = getImmediateSubcheckerClasses();
         ArrayList<BaseTypeChecker> immediateSubcheckers = new ArrayList<BaseTypeChecker>();
 
-        for (Class<? extends BaseTypeChecker> subcheckerClass : classesOfImmediateSubcheckers){
+        for (Class<? extends BaseTypeChecker> subcheckerClass : classesOfImmediateSubcheckers) {
             BaseTypeChecker subchecker = alreadyInitializedSubcheckerMap.get(subcheckerClass);
             if (subchecker != null) {
                 // Add the already initialized subchecker to the list of immediate subcheckers so that this checker can refer to it.

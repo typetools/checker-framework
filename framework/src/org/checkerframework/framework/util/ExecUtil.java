@@ -1,6 +1,12 @@
 package org.checkerframework.framework.util;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.Arrays;
 
 public class ExecUtil {
@@ -19,11 +25,11 @@ public class ExecUtil {
             final IOException errExc = errRedirect.join();
             final int exitStatus = proc.waitFor();
 
-            if(stdExc != null) {
+            if (stdExc != null) {
                 throw stdExc;
             }
 
-            if(errExc != null) {
+            if (errExc != null) {
                 throw errExc;
             }
 
@@ -62,9 +68,9 @@ public class ExecUtil {
                         try {
 
                             int read = 0;
-                            while( read > -1 ) {
+                            while (read > -1) {
                                 read = in.read(buffer);
-                                if(read > 0) {
+                                if (read > 0) {
                                     out.write(buffer, 0, read);
                                 }
                             }

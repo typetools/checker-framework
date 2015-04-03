@@ -271,7 +271,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                                     receiverNode instanceof ImplicitThisLiteralNode) {
 
                                     // The receivers match. Add to the preconditions set.
-                                    for(String lockExpression : guardedByValue) {
+                                    for (String lockExpression : guardedByValue) {
 
                                         if (lockExpression.equals("itself")) {
                                             // This is critical. That's because right now we know that, since
@@ -301,7 +301,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * under the context {@code flowExprContext}
      * if the the current path is within the expression
      * of a synchronized block (e.g. bar in
-     * synchronized(bar){ ... }
+     * synchronized(bar) { ... }
      *
      *  @param tree The tree that is @GuardedBy.
      *  @param expr The expression of the @GuardedBy annotation.
@@ -328,12 +328,12 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     if (fieldExpr.equals(expr)) {
                         // Avoid issuing warnings when accessing the field that is guarding the receiver.
                         // e.g. avoid issuing a warning when accessing bar below:
-                        // void foo(@GuardedBy("bar") myClass this){ synchronized(bar){ ... }}
+                        // void foo(@GuardedBy("bar") myClass this) { synchronized(bar) { ... }}
 
                         // Also avoid issuing a warning in this scenario:
                         // @GuardedBy("bar") Object bar;
                         // ...
-                        // synchronized(bar){ ... }
+                        // synchronized(bar) { ... }
 
                         // Cover only the most common case: synchronized(variableName).
                         // If the expression in the synchronized statement is more complex,
