@@ -1,13 +1,15 @@
 package org.checkerframework.framework.util.element;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.TargetType;
+
+import java.util.List;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
-import java.util.List;
+
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.TargetType;
 
 /**
  *  When discovering supertypes of an AnnotatedTypeMirror we want to annotate each supertype with the annotations
@@ -27,7 +29,7 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
 
         final int typeOffset = isInterface ? 0 : -1;
 
-        for( int i= 0; i < supertypes.size(); i++ ) {
+        for (int i= 0; i < supertypes.size(); i++) {
             final AnnotatedTypeMirror supertype = supertypes.get(i);
             final int typeIndex = i + typeOffset;
 

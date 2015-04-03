@@ -1,9 +1,5 @@
 package org.checkerframework.framework.util.defaults;
 
-import com.sun.source.tree.*;
-import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Type.WildcardType;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifiers;
@@ -24,6 +20,14 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
+import java.lang.annotation.Annotation;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -31,8 +35,19 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
-import java.lang.annotation.Annotation;
-import java.util.*;
+
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type.WildcardType;
 
 /**
  * Determines the default qualifiers on a type.
@@ -118,10 +133,10 @@ public class QualifierDefaults {
 
         for (Default previous : previousDefaults ) {
 
-            if(!newAnno.equals(previous.anno) && previous.location == newLoc) {
+            if (!newAnno.equals(previous.anno) && previous.location == newLoc) {
                 final AnnotationMirror previousTop = qualHierarchy.getTopAnnotation(previous.anno);
 
-                if(qualHierarchy.isSubtype(previousTop, newAnno)) {
+                if (qualHierarchy.isSubtype(previousTop, newAnno)) {
                     ErrorReporter.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
                                             + previousDefaults + " and new: " + (new Default(newAnno, newLoc)));
                 }
@@ -528,7 +543,7 @@ public class QualifierDefaults {
                             t == type) {
 
                         for (AnnotatedTypeMirror atm : ((AnnotatedExecutableType)t).getParameterTypes()) {
-                            if(shouldBeAnnotated(atm, false)) {
+                            if (shouldBeAnnotated(atm, false)) {
                                 doApply(atm, qual);
                             }
                         }
@@ -546,7 +561,7 @@ public class QualifierDefaults {
                             t == type) {
 
                         final AnnotatedDeclaredType receiver = ((AnnotatedExecutableType) t).getReceiverType();
-                        if(shouldBeAnnotated(receiver, false)) {
+                        if (shouldBeAnnotated(receiver, false)) {
                             doApply(receiver, qual);
                         }
                     }
@@ -557,7 +572,7 @@ public class QualifierDefaults {
                             t.getKind() == TypeKind.EXECUTABLE &&
                             t == type) {
                         final AnnotatedTypeMirror returnType = ((AnnotatedExecutableType)t).getReturnType();
-                        if(shouldBeAnnotated(returnType, false)) {
+                        if (shouldBeAnnotated(returnType, false)) {
                             doApply(returnType, qual);
                         }
                     }
@@ -721,8 +736,8 @@ public class QualifierDefaults {
         UNKNOWN;
 
         public boolean isOneOf(final BoundType ... choices) {
-            for(final BoundType choice : choices) {
-                if(this == choice) {
+            for (final BoundType choice : choices) {
+                if (this == choice) {
                     return true;
                 }
             }

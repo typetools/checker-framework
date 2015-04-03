@@ -377,7 +377,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
             // There is a design flaw where the values of final local values leaks
             // into other methods of the same class. For example, in
-            // class a { void b(){...} void c(){...} }
+            // class a { void b() {...} void c() {...} }
             // final local values from b() would be visible in the store for c(),
             // even though they should only be visible in b() and in classes
             // defined inside the method body of b().
@@ -402,7 +402,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 // then the final local variable value applies.
                 Element enclosingMethodOfCurrentMethod = enclosingElement;
 
-                while(enclosingMethodOfCurrentMethod != null) {
+                while (enclosingMethodOfCurrentMethod != null) {
                     if (enclosingMethodOfVariableDeclaration.equals(enclosingMethodOfCurrentMethod)) {
                         LocalVariable l = new LocalVariable(elem);
                         info.insertValue(l, e.getValue());

@@ -2,20 +2,26 @@ package org.checkerframework.framework.util.element;
 
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import static org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.*;
-import static com.sun.tools.javac.code.Attribute.TypeCompound;
-
-import com.sun.tools.javac.code.TargetType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.ErrorReporter;
+
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.getBoundIndexOffset;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.isOnComponentType;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.TypeKind;
-import java.util.*;
-import java.util.Map.Entry;
+
+import com.sun.tools.javac.code.Attribute.TypeCompound;
+import com.sun.tools.javac.code.TargetType;
 
 /**
  * Applies Element annotations to a single AnnotatedTypeVariable representing a type parameter.
@@ -86,7 +92,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
         final List<TypeCompound> lowerBoundAnnos = new ArrayList<>();
 
 
-        for(final TypeCompound anno : targeted) {
+        for (final TypeCompound anno : targeted) {
             final AnnotationMirror aliasedAnno = typeFactory.aliasedAnnotation(anno);
             final AnnotationMirror canonicalAnno = (aliasedAnno != null) ? aliasedAnno : anno;
 
@@ -98,7 +104,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
             if (isOnComponentType(anno)) {
                 applyComponentAnnotation(anno);
 
-            } else if(anno.position.type == upperBoundTarget()) {
+            } else if (anno.position.type == upperBoundTarget()) {
                 upperBoundAnnos.add(anno);
 
             } else {

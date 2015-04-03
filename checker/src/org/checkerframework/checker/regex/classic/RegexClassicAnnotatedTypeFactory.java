@@ -1,26 +1,20 @@
 package org.checkerframework.checker.regex.classic;
 
-import java.util.List;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-
 import org.checkerframework.checker.regex.RegexUtil;
 import org.checkerframework.checker.regex.classic.qual.PartialRegex;
 import org.checkerframework.checker.regex.classic.qual.PolyRegex;
-import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.regex.classic.qual.RegexBottom;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
@@ -31,6 +25,15 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -429,7 +432,7 @@ public class RegexClassicAnnotatedTypeFactory extends GenericAnnotatedTypeFactor
          */
         private Integer getMinimumRegexCount(final AnnotatedTypeMirror type) {
             final AnnotationMirror primaryRegexAnno = type.getAnnotation(Regex.class);
-            if(primaryRegexAnno == null) {
+            if (primaryRegexAnno == null) {
                 switch (type.getKind()) {
                     case TYPEVAR:
                         return getMinimumRegexCount(((AnnotatedTypeVariable) type).getUpperBound());

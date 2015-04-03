@@ -234,7 +234,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 && QualifierHierarchy.canHaveEmptyAnnotationSet(result);
 
         final TypeKind resultKind = result.getKind();
-        if( resultKind == TypeKind.TYPEVAR ) {
+        if (resultKind == TypeKind.TYPEVAR ) {
             return mostSpecificTypeVariable(typeFactory, a, b, backup, (AnnotatedTypeVariable) result);
 
         } else {
@@ -348,15 +348,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         AnnotatedTypeMerger.merge(declaredType, result);
 
         boolean annotated = true;
-        for(final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-            if(typeHierarchy.isSubtype(type1, type2, top)) {
+        for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
+            if (typeHierarchy.isSubtype(type1, type2, top)) {
                 annotateTypeVarResult(qualifierHierarchy, types, result, type1, top);
 
-            } else if(typeHierarchy.isSubtype(type2, type1, top)) {
+            } else if (typeHierarchy.isSubtype(type2, type1, top)) {
                 annotateTypeVarResult(qualifierHierarchy, types, result, type2, top);
 
             } else {
-                if(backup != null) {
+                if (backup != null) {
                     annotateTypeVarResult(qualifierHierarchy, types, result, backup, top);
                 } else {
                     annotated = false;
@@ -382,17 +382,17 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
 
         //Indicates that source is a non-primary-annotated type variable declared by the same type parameter of result
         //in this case, source is equivalent to the declared type of that type variable and we copy its bounds
-        if(types.isSameType(source.getUnderlyingType(), result.getUnderlyingType()) && sourcePrimaryAnno == null) {
+        if (types.isSameType(source.getUnderlyingType(), result.getUnderlyingType()) && sourcePrimaryAnno == null) {
             final AnnotatedTypeVariable resultDecl = (AnnotatedTypeVariable) source;
 
             final AnnotationMirror declUpperBoundAnno = resultDecl.getUpperBound().getAnnotationInHierarchy(top);
             final AnnotationMirror declLowerBoundAnno = resultDecl.getLowerBound().getAnnotationInHierarchy(top);
 
-            if(declUpperBoundAnno != null) {
+            if (declUpperBoundAnno != null) {
                 result.getUpperBound().addAnnotation(declUpperBoundAnno);
             }
 
-            if(declLowerBoundAnno != null) {
+            if (declLowerBoundAnno != null) {
                 result.getLowerBound().addAnnotation(declLowerBoundAnno);
             }
         } else {
@@ -419,10 +419,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                                                      final AnnotatedTypeMirror toSearch,
                                                      final AnnotationMirror top) {
         AnnotatedTypeMirror source = toSearch;
-        while( source.getAnnotationInHierarchy(top) == null &&
-                !types.isSameType(result.getUnderlyingType(), source.getUnderlyingType()) ) {
+        while (source.getAnnotationInHierarchy(top) == null &&
+                !types.isSameType(result.getUnderlyingType(), source.getUnderlyingType())) {
 
-            switch(source.getKind()) {
+            switch (source.getKind()) {
                 case TYPEVAR:
                     source = ((AnnotatedTypeVariable) source).getUpperBound();
                     break;
@@ -434,7 +434,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 case INTERSECTION:
                     source = mostSpecificSupertype(qualifierHierarchy, (AnnotatedIntersectionType) source, top);
 
-                    if(source == null) {
+                    if (source == null) {
                         ErrorReporter.errorAbort("AnnotatedIntersectionType has no annotation in hierarchy"
                                 + "on any of its supertypes!\n"
                                 + "intersectionType=" + source);
@@ -462,9 +462,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                                                              final AnnotationMirror top) {
         AnnotatedTypeMirror result = null;
         AnnotationMirror anno = null;
-        for(final AnnotatedTypeMirror supertype : isect.directSuperTypes()) {
+        for (final AnnotatedTypeMirror supertype : isect.directSuperTypes()) {
             final AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(top);
-            if(superAnno != null && (anno == null || qualifierHierarchy.isSubtype(superAnno, anno))) {
+            if (superAnno != null && (anno == null || qualifierHierarchy.isSubtype(superAnno, anno))) {
                 anno = superAnno;
                 result = supertype;
             }

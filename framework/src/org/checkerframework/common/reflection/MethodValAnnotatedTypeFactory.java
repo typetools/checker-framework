@@ -1,15 +1,5 @@
 package org.checkerframework.common.reflection;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.ClassBound;
@@ -22,16 +12,26 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.StringVal;
-import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -90,7 +90,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<String> classNames = new ArrayList<>();
         List<String> methodNames = new ArrayList<>();
         List<Integer> params = new ArrayList<>();
-        for(MethodSignature sig:sigs){
+        for (MethodSignature sig:sigs) {
             classNames.add(sig.className);
             methodNames.add(sig.methodName);
             params.add(sig.params);
@@ -182,7 +182,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 AnnotationMirror result = createMethodVal(lubSigs);
                 return result;
-            } 
+            }
             return null;
         }
 
@@ -284,16 +284,16 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private boolean isGetConstructorMethodInovaction(MethodInvocationTree tree) {
-            for(ExecutableElement method: getConstructor ){
-                if(TreeUtils.isMethodInvocation(tree, method, processingEnv)){
+            for (ExecutableElement method: getConstructor ) {
+                if (TreeUtils.isMethodInvocation(tree, method, processingEnv)) {
                     return true;
                 }
             }
            return false;
         }
         private boolean isGetMethodMethodInovaction(MethodInvocationTree tree) {
-            for(ExecutableElement method: getMethod ){
-                if(TreeUtils.isMethodInvocation(tree, method, processingEnv)){
+            for (ExecutableElement method: getMethod ) {
+                if (TreeUtils.isMethodInvocation(tree, method, processingEnv)) {
                     return true;
                 }
             }

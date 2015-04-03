@@ -9,9 +9,9 @@ import org.checkerframework.framework.qual.*;
 import com.sun.source.tree.Tree;
 
 /**
- * TODO: document that this is the bottom type for the KeyFor system.
+ * Used internally by the type system; should never be written by a programmer.
  *
- * @checker_framework.manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #map-key-checker Map Key Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

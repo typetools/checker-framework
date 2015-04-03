@@ -47,7 +47,8 @@ public final class TestUtilities {
         while (in.hasNext()) {
             String nextLine = in.nextLine();
             if (nextLine.contains("@skip-test") ||
-                    (!isJSR308Compiler && nextLine.contains("@non-308-skip-test"))) {
+                    (!isJSR308Compiler && nextLine.contains("@non-308-skip-test")) ||
+                    (!isAtLeast8Jvm && nextLine.contains("@below-java8-jdk-skip-test"))) {
                 in.close();
                 return false;
             }
@@ -62,6 +63,11 @@ public final class TestUtilities {
         OutputStream err = new ByteArrayOutputStream();
         compiler.run(null, null, err, "-version");
         isJSR308Compiler = err.toString().contains("jsr308");
+    }
+
+    public static final boolean isAtLeast8Jvm;
+    static {
+        isAtLeast8Jvm = org.checkerframework.framework.util.PluginUtil.getJreVersion() >= 1.8d;
     }
 
     /**
@@ -159,7 +165,7 @@ public final class TestUtilities {
                         msg = ":" + errorLine + ": " + msg.trim();
                         expected.add(msg);
                     }
-                } else if(line.startsWith("//warning:")) {
+                } else if (line.startsWith("//warning:")) {
                     // com.sun.tools.javac.util.AbstractDiagnosticFormatter.formatKind(JCDiagnostic, Locale)
                     // These are warnings from javax.tools.Diagnostic.Kind.WARNING
                     String msg = line.substring(2);

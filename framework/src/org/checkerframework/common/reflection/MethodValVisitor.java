@@ -51,7 +51,7 @@ class MethodNameValidator extends BaseTypeValidator {
                     "params", Integer.class, true);
             List<String> methodNames = AnnotationUtils.getElementValueArray(
                     methodVal, "methodName", String.class, true);
-            if( !( params.size() == methodNames.size() && params.size() == classNames.size())){
+            if (!( params.size() == methodNames.size() && params.size() == classNames.size())) {
                 checker.report(Result.failure("invalid.methodval", methodVal), tree);
             }
 
@@ -66,18 +66,18 @@ class MethodNameValidator extends BaseTypeValidator {
     }
 
     private boolean legalMethodName(String methodName) {
-        if(methodName.equals(ReflectionResolver.INIT)){
+        if (methodName.equals(ReflectionResolver.INIT)) {
             return true;
         }
-        if(methodName.length()<1){
+        if (methodName.length()<1) {
             return false;
         }
         char[] methodNameChars = methodName.toCharArray();
-        if(!Character.isJavaIdentifierStart(methodNameChars[0])){
+        if (!Character.isJavaIdentifierStart(methodNameChars[0])) {
             return false;
         }
-        for(int i = 1; i<methodNameChars.length;i++){
-            if(!Character.isJavaIdentifierPart(methodNameChars[i])){
+        for (int i = 1; i<methodNameChars.length;i++) {
+            if (!Character.isJavaIdentifierPart(methodNameChars[i])) {
                 return false;
             }
         }

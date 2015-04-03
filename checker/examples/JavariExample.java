@@ -105,7 +105,7 @@ class JavariExample {
             return s;      // ... but cannot return readonly as mutable.
         }
 
-        void argumentReadOnly(@ReadOnly JavariCell c){
+        void argumentReadOnly(@ReadOnly JavariCell c) {
             c.cell = this; // readonly parameter is readonly
             cell = c;      // cannot pass readonly reference to mutable
         }

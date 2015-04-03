@@ -5,9 +5,14 @@ import java.lang.annotation.*;
 import org.checkerframework.framework.qual.*;
 
 /**
- * TODO: document that this is the top type for the KeyFor system.
+ * Used internally by the type system; should never be written by a programmer.
+ * 
+ * <p>
+ * Indicates that the value assigned to the annotated variable is not known to be
+ * a key for any map.  It is the top type qualifier in the
+ * {@link KeyFor} hierarchy.  It is also the default type qualifier.
  *
- * @checker_framework.manual #nullness-checker Nullness Checker
+ * @checker_framework.manual #map-key-checker Map Key Checker
  */
 @TypeQualifier
 @InvisibleQualifier

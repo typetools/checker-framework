@@ -1,11 +1,29 @@
 package org.checkerframework.framework.util;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AtmComboVisitor;
 import org.checkerframework.javacutil.ErrorReporter;
 
-import static org.checkerframework.framework.util.AtmKind.*;
+import static org.checkerframework.framework.util.AtmKind.ARRAY;
+import static org.checkerframework.framework.util.AtmKind.DECLARED;
+import static org.checkerframework.framework.util.AtmKind.EXECUTABLE;
+import static org.checkerframework.framework.util.AtmKind.INTERSECTION;
+import static org.checkerframework.framework.util.AtmKind.NONE;
+import static org.checkerframework.framework.util.AtmKind.NULL;
+import static org.checkerframework.framework.util.AtmKind.PRIMITIVE;
+import static org.checkerframework.framework.util.AtmKind.TYPEVAR;
+import static org.checkerframework.framework.util.AtmKind.UNION;
+import static org.checkerframework.framework.util.AtmKind.WILDCARD;
 
 /**
  * AtmKind should mirror TypeKind except that each member has a reference
@@ -39,9 +57,9 @@ enum AtmKind {
     public static AtmKind valueOf(final AnnotatedTypeMirror atm) {
         final Class<?> argClass = atm.getClass();
 
-        for( AtmKind atmKind : AtmKind.values() ) {
+        for (AtmKind atmKind : AtmKind.values()) {
             final Class<?> kindClass = atmKind.atmClass;
-            if( argClass.equals( kindClass ) ) {
+            if (argClass.equals(kindClass)) {
                 return atmKind;
             }
         }
@@ -59,7 +77,7 @@ enum AtmKind {
  * subclasses.
  *
  * e.g.:
- * switch( AtmCombo.valueOf(atm1, atm2)  ) {
+ * switch (AtmCombo.valueOf(atm1, atm2)) {
  *     case WILDCARD_WILDCARD:
  *     case TYPEVAR_TYPEVAR:
  *         doSomething(atm1, atm2);
@@ -195,7 +213,7 @@ public enum AtmCombo {
      */
     private static final AtmCombo[][] comboMap = new AtmCombo[AtmKind.values().length][AtmKind.values().length];
     static {
-        for(final AtmCombo atmCombo : AtmCombo.values() ) {
+        for (final AtmCombo atmCombo : AtmCombo.values()) {
             comboMap[atmCombo.type1Kind.ordinal()][atmCombo.type2Kind.ordinal()] = atmCombo;
         }
     }
@@ -235,7 +253,7 @@ public enum AtmCombo {
                                                           final PARAM initialParam,
                                                           final AtmComboVisitor<RETURN_TYPE, PARAM> visitor ) {
         final AtmCombo combo = valueOf(type1, type2);
-        switch( combo ) {
+        switch (combo) {
             case ARRAY_ARRAY:
                 return visitor.visitArray_Array( (AnnotatedArrayType) type1, (AnnotatedArrayType) type2, initialParam );
 

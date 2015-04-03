@@ -11,8 +11,8 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.jar.JarInputStream;
 import java.util.List;
+import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -369,7 +369,7 @@ public class CheckerMain {
 
             try{
                 PrintWriter writer = new PrintWriter(outputFilename, "UTF-8");
-                for(int i = 0; i < args.size(); i++) {
+                for (int i = 0; i < args.size(); i++) {
                     String arg = args.get(i);
 
                     // We would like to include the filename of the argfile instead of its contents.
