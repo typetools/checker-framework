@@ -55,7 +55,7 @@ public class Resolver {
         try {
             FIND_METHOD = Resolve.class.getDeclaredMethod("findMethod",
                     Env.class, Type.class, Name.class, List.class, List.class,
-                    boolean.class, boolean.class, boolean.class);
+                    boolean.class, boolean.class);
             FIND_METHOD.setAccessible(true);
 
             FIND_VAR = Resolve.class.getDeclaredMethod("findVar",
@@ -205,7 +205,6 @@ public class Resolver {
             List<Type> typeargtypes = List.nil();
             boolean allowBoxing = true;
             boolean useVarargs = false;
-            boolean operator = true;
 
             try {
                 // For some reason we have to set our own method context, which is rather ugly.
@@ -214,7 +213,7 @@ public class Resolver {
                 Object oldContext = getField(resolve, "currentResolutionContext");
                 setField(resolve, "currentResolutionContext", methodContext);
                 Element result = wrapInvocation(FIND_METHOD, env, site, name, argtypes,
-                    typeargtypes, allowBoxing, useVarargs, operator);
+                    typeargtypes, allowBoxing, useVarargs);
                 setField(resolve, "currentResolutionContext", oldContext);
                 return result;
             } catch (Throwable t) {
