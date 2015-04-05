@@ -249,7 +249,7 @@ public class EqualitiesSolver {
             Map<AnnotatedTypeMirror, Set<AnnotationMirror>> typesToHierarchies,
             Map<AnnotationMirror, AnnotationMirror> primaries,
             final Set<? extends AnnotationMirror> tops) {
-        final Set<AnnotationMirror> missingAnnos = new HashSet<>(tops);
+        final Set<AnnotationMirror> missingAnnos = new HashSet<AnnotationMirror>(tops);
 
         Iterator<Entry<AnnotatedTypeMirror, Set<AnnotationMirror>>> entryIterator = typesToHierarchies.entrySet().iterator();
         if (!entryIterator.hasNext()) {
@@ -321,7 +321,7 @@ public class EqualitiesSolver {
 
         //TODO: we probably can do more with this information than just putting it back into the
         //TODO: ConstraintMap (which is what's happening here)
-        final Set<AnnotationMirror> hierarchies = new HashSet<>(tops);
+        final Set<AnnotationMirror> hierarchies = new HashSet<AnnotationMirror>(tops);
         hierarchies.removeAll(missingAnnos);
         typesToHierarchies.put(mergedType, hierarchies);
 

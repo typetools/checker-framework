@@ -239,7 +239,7 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             List<? extends QualifiedTypeMirror<QualParams<Q>>> supertypes) {
         QualParams<Q> subQuals = subtype.getQualifier();
         if (subQuals == null) {
-            return new ArrayList<>(supertypes);
+            return new ArrayList<QualifiedTypeMirror<QualParams<Q>>>(supertypes);
         }
 
         List<QualifiedTypeMirror<QualParams<Q>>> result = new ArrayList<>();

@@ -904,7 +904,7 @@ public abstract class AnnotatedTypeMirror {
             } else {
                 if (isDeclaration()) {
                     // TODO: check that all args are really declarations
-                    typeArgs = Collections.unmodifiableList(ts);
+                    typeArgs = Collections.<AnnotatedTypeMirror>unmodifiableList(ts);
                 } else {
                     List<AnnotatedTypeMirror> uses = new ArrayList<>();
                     for (AnnotatedTypeMirror t : ts) {
