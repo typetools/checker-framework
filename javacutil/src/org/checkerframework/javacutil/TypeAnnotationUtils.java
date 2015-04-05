@@ -1,5 +1,6 @@
 package org.checkerframework.javacutil;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -580,10 +581,8 @@ public class TypeAnnotationUtils {
                         return copyTAPosition8(tapos);
                     }
                     @Override
-                    public TypeAnnotationPosition call9() throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, InvocationTargetException, NoSuchMethodException {
-                        return (TypeAnnotationPosition) TypeAnnotationPosition.class
-                                .getMethod("copy", TypeAnnotationPosition.class)
-                                .invoke(null, tapos);
+                    public TypeAnnotationPosition call9() throws InstantiationException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, InvocationTargetException, NoSuchMethodException {
+                        return copyTAPosition9(tapos);
                     }
                 }
             );
@@ -607,6 +606,25 @@ public class TypeAnnotationUtils {
         TypeAnnotationPosition.class.getField("pos").set(res, tapos.pos);
         TypeAnnotationPosition.class.getField("type").set(res, tapos.type);
         TypeAnnotationPosition.class.getField("type_index").set(res, tapos.type_index);
+        return res;
+    }
+
+    private static TypeAnnotationPosition copyTAPosition9(TypeAnnotationPosition tapos) throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, InvocationTargetException, NoSuchMethodException {
+        Constructor<TypeAnnotationPosition> c = TypeAnnotationPosition.class.getDeclaredConstructor(TargetType.class, int.class, int.class, JCLambda.class, int.class, int.class, com.sun.tools.javac.util.List.class);
+        c.setAccessible(true);
+        TypeAnnotationPosition res =
+                c.newInstance(tapos.type, tapos.pos, tapos.parameter_index,
+                        tapos.onLambda, tapos.type_index, tapos.bound_index, List.from(tapos.location));
+        res.isValidOffset = tapos.isValidOffset;
+        res.exception_index = tapos.exception_index;
+        res.location = List.from(tapos.location);
+        if (tapos.lvarIndex != null)
+            res.lvarIndex = Arrays.copyOf(tapos.lvarIndex, tapos.lvarIndex.length);
+        if (tapos.lvarLength != null)
+            res.lvarLength = Arrays.copyOf(tapos.lvarLength, tapos.lvarLength.length);
+        if (tapos.lvarOffset != null)
+            res.lvarOffset = Arrays.copyOf(tapos.lvarOffset, tapos.lvarOffset.length);
+        res.offset = tapos.offset;
         return res;
     }
 
