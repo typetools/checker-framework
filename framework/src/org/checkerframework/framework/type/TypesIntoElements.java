@@ -323,12 +323,16 @@ public class TypesIntoElements {
 
             res = directAnnotations(type, tapos);
 
-            int arg = 0;
-            for (AnnotatedTypeMirror ta : type.getTypeArguments()) {
-                TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(tapos);
-                newpos.location = tapos.location.append(new TypePathEntry(TypePathEntryKind.TYPE_ARGUMENT, arg));
-                res = scanAndReduce(ta, newpos, res);
-                ++ arg;
+            //we sometimes fix-up raw types with wildcards, do not write these into the bytecode as there are
+            //no corresponding type arguments and therefore no location to actually add them to
+            if (!type.wasRaw()) {
+                int arg = 0;
+                for (AnnotatedTypeMirror ta : type.getTypeArguments()) {
+                    TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(tapos);
+                    newpos.location = tapos.location.append(new TypePathEntry(TypePathEntryKind.TYPE_ARGUMENT, arg));
+                    res = scanAndReduce(ta, newpos, res);
+                    ++arg;
+                }
             }
 
             AnnotatedTypeMirror encl = type.getEnclosingType();
