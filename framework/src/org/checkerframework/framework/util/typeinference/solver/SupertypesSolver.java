@@ -6,6 +6,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Equalities;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -299,21 +300,6 @@ public class SupertypesSolver {
     }
 
     /**
-     * Take a set of annotations and separate them into a mapping of ({@code hierarchy top -> annotations in hierarchy})
-     */
-    public static Map<AnnotationMirror, AnnotationMirror> createHierarchyMap(final Set<AnnotationMirror> annos,
-                                                                             final QualifierHierarchy qualifierHierarchy) {
-        Map<AnnotationMirror, AnnotationMirror> result = AnnotationUtils.createAnnotationMap();
-
-
-        for (AnnotationMirror anno : annos) {
-            result.put(qualifierHierarchy.getTopAnnotation(anno), anno);
-        }
-
-        return result;
-    }
-
-    /**
      * For each type in typeToHierarchies,
      *    if that type does not have a corresponding annotation for a given hierarchy
      *    replace it with the corresponding value in lowerBoundAnnos
@@ -350,7 +336,7 @@ public class SupertypesSolver {
         QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
         AnnotatedTypeVariable targetsDeclaredType = (AnnotatedTypeVariable) typeFactory.getAnnotatedType(target.asElement());
         final Map<AnnotationMirror, AnnotationMirror> lowerBoundAnnos =
-                createHierarchyMap(targetsDeclaredType.getLowerBound().getEffectiveAnnotations(), qualifierHierarchy);
+                TypeArgInferenceUtil.createHierarchyMap(targetsDeclaredType.getLowerBound().getEffectiveAnnotations(), qualifierHierarchy);
 
         final Iterator<Entry<AnnotatedTypeMirror, Set<AnnotationMirror>>> typesIter = types.entrySet().iterator();
         if (!typesIter.hasNext()) {
