@@ -84,7 +84,7 @@ public class Fields {
 
         //in front of the wildcard (?)
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = FIELD, genericLocation = {3, 0}),
-        @TADescription(annotation = "org/checkerframework/checker/initialization/qual/FBCBottom", type = FIELD, genericLocation = {3, 0}),
+        @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = FIELD, genericLocation = {3, 0}),
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom", type = FIELD, genericLocation = {3, 0}),
     })
     public String wildcards1() {
@@ -99,7 +99,7 @@ public class Fields {
 
         //in front of the wildcard (?)
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = FIELD, genericLocation = {3, 0}),
-        @TADescription(annotation = "org/checkerframework/checker/initialization/qual/FBCBottom", type = FIELD, genericLocation = {3, 0}),
+        @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = FIELD, genericLocation = {3, 0}),
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom", type = FIELD, genericLocation = {3, 0}),
 
         //in front of the second java.util.List
