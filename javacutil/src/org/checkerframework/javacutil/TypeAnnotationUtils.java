@@ -2,6 +2,7 @@ package org.checkerframework.javacutil;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Map;
@@ -638,8 +639,11 @@ public class TypeAnnotationUtils {
                                 .invoke(in);
                     }
                     @Override
-                    public Type call9() {
-                        return in;
+                    public Type call9() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+                        Method m = Type.class
+                                .getDeclaredMethod("typeNoMetadata");
+                        m.setAccessible(true);
+                        return (Type) m.invoke(in);
                     }
                 }
             );
