@@ -18,7 +18,7 @@ public class Overriding {
 
     class SubClass extends SuperClass {
         @HoldingOnEntry({"a", "b"})  // error
-          //:: error: (override.holding.invalid)
+        //:: error: (override.holding.invalid)
         @Override void guardedByOne() { }
 
         @HoldingOnEntry({"a", "b"})

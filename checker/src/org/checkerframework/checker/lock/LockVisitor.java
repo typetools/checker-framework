@@ -169,7 +169,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             }
         }
 
-        return super.checkOverride(overriderTree, enclosingType, overridden, overriddenType, p) && isValid;
+        return isValid && super.checkOverride(overriderTree, enclosingType, overridden, overriddenType, p);
     }
 
     protected List<String> methodHolding(ExecutableElement element) {
