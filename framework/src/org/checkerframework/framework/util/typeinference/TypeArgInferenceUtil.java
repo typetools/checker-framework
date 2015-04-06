@@ -98,7 +98,8 @@ public class TypeArgInferenceUtil {
      * a use of a type variable in the list of targetTypeVars.
      */
     public static boolean isATarget(final AnnotatedTypeMirror type, final Set<TypeVariable> targetTypeVars) {
-        return type.getKind() == TypeKind.TYPEVAR && targetTypeVars.contains(type.getUnderlyingType());
+        return type.getKind() == TypeKind.TYPEVAR &&
+                targetTypeVars.contains(getUnannotatedTypeVariable((AnnotatedTypeVariable) type));
     }
 
     /**
@@ -110,7 +111,7 @@ public class TypeArgInferenceUtil {
         final Set<TypeVariable> targets = new LinkedHashSet<>(annotatedTypeVars.size());
 
         for (final AnnotatedTypeVariable atv : annotatedTypeVars) {
-            targets.add(atv.getUnderlyingType());
+            targets.add(getUnannotatedTypeVariable(atv));
         }
 
         return targets;
@@ -242,7 +243,7 @@ public class TypeArgInferenceUtil {
         final List<TypeVariable> typeVars = new ArrayList<>(annotatedTypeVars.size());
 
         for (AnnotatedTypeVariable annotatedTypeVar : annotatedTypeVars) {
-            typeVars.add(annotatedTypeVar.getUnderlyingType());
+            typeVars.add(getUnannotatedTypeVariable(annotatedTypeVar));
         }
 
         //note NULL values creep in because the underlying visitor uses them in various places
@@ -297,7 +298,7 @@ public class TypeArgInferenceUtil {
 
         @Override
         public Boolean visitTypeVariable(AnnotatedTypeVariable type, List<TypeVariable> typeVars) {
-            if (typeVars.contains(type.getUnderlyingType())) {
+            if (typeVars.contains(getUnannotatedTypeVariable(type))) {
                 return true;
             } else {
                 return super.visitTypeVariable(type, typeVars);
@@ -339,7 +340,8 @@ public class TypeArgInferenceUtil {
      */
     public static AnnotatedTypeMirror substitute(Map<TypeVariable, AnnotatedTypeMirror> substitutions,
                                                  final AnnotatedTypeMirror toModify) {
-        final AnnotatedTypeMirror substitution = substitutions.get(toModify.getUnderlyingType());
+        final AnnotatedTypeMirror substitution = substitutions
+                .get(TypeAnnotationUtils.unannotatedType((Type) toModify.getUnderlyingType()));
         if (substitution != null) {
             return substitution.deepCopy();
         }
@@ -377,5 +379,13 @@ public class TypeArgInferenceUtil {
         }
 
         return lubType;
+    }
+
+    public static Type getUnannotatedType(AnnotatedTypeMirror atm) {
+        return TypeAnnotationUtils.unannotatedType((Type) atm.getUnderlyingType());
+    }
+
+    public static TypeVariable getUnannotatedTypeVariable(AnnotatedTypeVariable atv) {
+        return (TypeVariable) TypeAnnotationUtils.unannotatedType((Type) atv.getUnderlyingType());
     }
 }

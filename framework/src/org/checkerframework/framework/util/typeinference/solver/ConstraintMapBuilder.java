@@ -69,7 +69,7 @@ public class ConstraintMapBuilder {
             final AnnotatedTypeVariable typeT = constraint.typeVariable;
             final AnnotatedTypeMirror typeU = constraint.relatedType;
 
-            if (typeU.getKind() == TypeKind.TYPEVAR && targets.contains(typeU.getUnderlyingType())) {
+            if (typeU.getKind() == TypeKind.TYPEVAR && targets.contains(TypeArgInferenceUtil.getUnannotatedType(typeU))) {
                 if (typeT.getAnnotations().isEmpty() && typeU.getAnnotations().isEmpty()) {
                     hierarchiesInRelation.addAll(tops);
 
@@ -103,19 +103,20 @@ public class ConstraintMapBuilder {
                     // this step saves @NonNull annotation.
                     // This case also covers the case where i = j
                     if (!tAnnos.isEmpty()) {
-                        addToPrimaryRelationship(typeT.getUnderlyingType(),
+                        addToPrimaryRelationship(TypeArgInferenceUtil.getUnannotatedTypeVariable(typeT),
                                                  constraint, result, tAnnos, qualifierHierarchy);
                     }
 
                     if (!uAnnos.isEmpty()) {
-                        addToPrimaryRelationship((TypeVariable) typeU.getUnderlyingType(),
+                        addToPrimaryRelationship((TypeVariable) TypeArgInferenceUtil.getUnannotatedType(typeU),
                                                  constraint, result, uAnnos, qualifierHierarchy);
                     }
                 }
 
                 // This is the case where we have a relationship between two different targets (Ti <?> Tj and i != j)
-                if (!typeT.getUnderlyingType().equals(typeU.getUnderlyingType())) {
-                    addToTargetRelationship(typeT.getUnderlyingType(), (TypeVariable) typeU.getUnderlyingType(),
+                if (!TypeArgInferenceUtil.getUnannotatedType(typeT).equals(TypeArgInferenceUtil.getUnannotatedType(typeU))) {
+                    addToTargetRelationship(TypeArgInferenceUtil.getUnannotatedTypeVariable(typeT),
+                            TypeArgInferenceUtil.getUnannotatedTypeVariable((AnnotatedTypeVariable) typeU),
                                             result, constraint, hierarchiesInRelation);
                 }
             } else {
@@ -127,7 +128,8 @@ public class ConstraintMapBuilder {
                     }
                 }
 
-                addToTypeRelationship(typeT.getUnderlyingType(), typeU, result, constraint, hierarchiesInRelation);
+                addToTypeRelationship(TypeArgInferenceUtil.getUnannotatedTypeVariable(typeT),
+                        typeU, result, constraint, hierarchiesInRelation);
             }
 
         }
