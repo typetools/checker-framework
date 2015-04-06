@@ -54,11 +54,11 @@ public class Boxing {
     void invalidCompoundAssignmentAsValue() {
         @NonNull Integer var = 3;
         Integer val = null;
-        //:: error: (unboxing.of.nullable)
+        //:: error: (unboxing.of.nullable) :: error: (compound.assignment.type.incompatible)
         var += val;
         Boolean b1 = null;
         boolean b2 = true;
-        //:: error: (unboxing.of.nullable)
+        //:: error: (unboxing.of.nullable) :: error: (compound.assignment.type.incompatible)
         b2 &= b1;     // invalid
     }
 

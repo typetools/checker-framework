@@ -18,7 +18,7 @@ abstract class References {
         FuncB funcB1 = References::aMethod1;
         // No error
         FuncB funcB2 = References::aMethod2;
-        //:: error: (methodref.return.invalid)
+        //:: error: (methodref.return.invalid) :: error: (methodref.param.invalid)
         FuncB funcB3 = References::aMethod3;
         //:: error: (methodref.return.invalid)
         FuncB funcB4 = References::aMethod4;

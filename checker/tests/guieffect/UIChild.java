@@ -21,10 +21,10 @@ public class UIChild extends UIParent {
     //:: error: (annotations.conflicts)
     @UIEffect @SafeEffect public void doubleAnnot1() {
     }
-    //:: error: (annotations.conflicts)
+    //:: error: (annotations.conflicts) :: error: (polymorphism.invalid)
     @UIEffect @PolyUIEffect public void doubleAnnot2() {
     }
-    //:: error: (annotations.conflicts)
+    //:: error: (annotations.conflicts) :: error: (polymorphism.invalid)
     @PolyUIEffect @SafeEffect public void doubleAnnot3() {
     }
 }
