@@ -371,7 +371,7 @@ public class InternalUtils {
             return methodType;
         }
         // TODO: find a nicer way to substitute type variables
-        String t = methodType.toString();
+        String t = TypeAnnotationUtils.unannotatedType((Type) methodType).toString();
         Type finalReceiverType = (Type) substitutedReceiverType;
         int i = 0;
         for (TypeSymbol typeParam : finalReceiverType.tsym.getTypeParameters()) {
