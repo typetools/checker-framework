@@ -70,6 +70,11 @@ public class Subtraction {
         @mPERs int bMeterPerSecond = 5 * UnitsTools.mPERs;
         @mPERs int sMeterPerSecond = aMeterPerSecond - bMeterPerSecond;
 
+        // Meter per second square
+        @mPERs2 int aMeterPerSecondSquare = 5 * UnitsTools.mPERs2;
+        @mPERs2 int bMeterPerSecondSquare = 5 * UnitsTools.mPERs2;
+        @mPERs2 int sMeterPerSecondSquare = aMeterPerSecondSquare - bMeterPerSecondSquare;
+
         // Minute
         @min int aMinute = 5 * UnitsTools.min;
         @min int bMinute = 5 * UnitsTools.min;
@@ -96,11 +101,15 @@ public class Subtraction {
         @s int sSecond = aSecond - bSecond;
     }
 
-    // Addition is illegal when the operands have different units or one
+    // Subtraction is illegal when the operands have different units or one
     // is unqualified.  In these tests, we cycle between the result and
     // the first or second operand having an incorrect type.
     void bad() {
         // Dimensions
+        // Acceleration
+        @Acceleration int aAcceleration = 5 * UnitsTools.mPERs2;
+        @Acceleration int bAcceleration = 5 * UnitsTools.mPERs2;
+
         // Area
         @Area int aArea = 5 * UnitsTools.km2;
         @Area int bArea = 5 * UnitsTools.mm2;
@@ -134,6 +143,9 @@ public class Subtraction {
         @Time int bTime = 5 * UnitsTools.h;
 
         // Dimensions
+        //:: error: (assignment.type.incompatible)
+        @Acceleration int sAcceleration = aAcceleration - bMass;
+
         // Area
         //:: error: (assignment.type.incompatible)
         @Luminance int sLuminance = aArea - bArea;
@@ -219,6 +231,10 @@ public class Subtraction {
         @mPERs int aMeterPerSecond = 5 * UnitsTools.mPERs;
         @mPERs int bMeterPerSecond = 5 * UnitsTools.mPERs;
 
+        // Meter per second square
+        @mPERs2 int aMeterPerSecondSquare = 5 * UnitsTools.mPERs2;
+        @mPERs2 int bMeterPerSecondSquare = 5 * UnitsTools.mPERs2;
+
         // Minute
         @min int aMinute = 5 * UnitsTools.min;
         @min int bMinute = 5 * UnitsTools.min;
@@ -291,6 +307,10 @@ public class Subtraction {
         // Meter per second
         //:: error: (assignment.type.incompatible)
         @mm2 int sSquareMillimeter = aMeterPerSecond - bMeterPerSecond;
+
+        // Meter per second square
+        //:: error: (assignment.type.incompatible)
+        @mPERs2 int sMeterPerSecondSquare = aMeterPerSecondSquare - bMeter;
 
         // Minute
         //:: error: (assignment.type.incompatible)
