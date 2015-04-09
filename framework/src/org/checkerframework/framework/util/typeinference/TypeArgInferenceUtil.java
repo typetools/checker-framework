@@ -115,30 +115,6 @@ public class TypeArgInferenceUtil {
     }
 
     /**
-     * Returns true if this type is super bounded or unbounded.
-     */
-    public static boolean isUnboundedOrSuperBounded(final AnnotatedWildcardType wildcardType) {
-        return ((Type.WildcardType) wildcardType.getUnderlyingType()).isSuperBound();
-    }
-
-    /**
-     * Returns true if wildcard type was explicitly unbounded.
-     */
-    public static boolean isExplicitlyExtendsBounded(final AnnotatedWildcardType wildcardType) {
-        return !isUnboundedOrSuperBounded(wildcardType);
-    }
-
-    /**
-     *
-     */
-    /**
-     * Returns true if this type is super bounded or unbounded.
-     */
-    public static boolean isUnboundedOrExtendsBounded(final AnnotatedWildcardType wildcardType) {
-        return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound();
-    }
-
-    /**
      * Returns the annotated type that the leaf of path is assigned to, if it
      * is within an assignment context.
      * Returns the annotated type that the method invocation at the leaf
