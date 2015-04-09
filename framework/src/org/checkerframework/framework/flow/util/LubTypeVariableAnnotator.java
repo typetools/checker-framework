@@ -165,7 +165,11 @@ public class LubTypeVariableAnnotator {
         }
 
         if (typeUpperBound.getKind() != TypeKind.TYPEVAR) {
-            throw new IllegalArgumentException("Type must extend lub: type=" + type + " lub=" + lub);
+            //TODO: This currently happens because the underlying types of AnnotatedTypeMirrors may not be updated
+            //when they're components are substituted.  Therefore, the lub returned by Javac using these underlying
+            //types can actually differ from the component types.  See issue 421
+            return type;
+            //throw new IllegalArgumentException("Type must extend lub: type=" + type + " lub=" + lub);
         }
 
         if (anno != null) {
