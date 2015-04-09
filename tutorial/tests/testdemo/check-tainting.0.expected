@@ -1,0 +1,21 @@
+
+clean:
+Deleting directory /Users/smillst/src/jsr308/checker-framework/tutorial/eclipse-projects/personalblog-demo/bin
+
+check-tainting:
+Created dir: /Users/smillst/src/jsr308/checker-framework/tutorial/eclipse-projects/personalblog-demo/bin
+Compiling 2 source files to /Users/smillst/src/jsr308/checker-framework/tutorial/eclipse-projects/personalblog-demo/bin
+javac 1.8.0-jsr308-1.8.11
+/Users/smillst/src/jsr308/checker-framework/tutorial/eclipse-projects/personalblog-demo/src/net/eyde/personalblog/service/PersonalBlogService.java:173: error: [argument.type.incompatible] incompatible types in argument.
+                    "where post.category like '%", category,
+                                                   ^
+  found   : @Tainted String
+  required: @Untainted String
+1 error
+
+BUILD FAILED
+/Users/smillst/src/jsr308/checker-framework/tutorial/eclipse-projects/personalblog-demo/build.xml:35: Compile failed; see the compiler error output for details.
+
+Total time: 3 seconds
+
+
