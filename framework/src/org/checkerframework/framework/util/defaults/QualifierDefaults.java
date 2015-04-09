@@ -97,12 +97,11 @@ public class QualifierDefaults {
      * List of DefaultLocations which are valid for untyped code defaults.
      */
     private static final DefaultLocation[] validUntypedDefaultLocations = {
-	DefaultLocation.FIELD,
+        DefaultLocation.FIELD,
         DefaultLocation.PARAMETERS,
-	DefaultLocation.RETURNS,
-	DefaultLocation.UPPER_BOUNDS,
-	DefaultLocation.EXPLICIT_UPPER_BOUNDS,
-	DefaultLocation.IMPLICIT_UPPER_BOUNDS
+        DefaultLocation.RETURNS,
+        DefaultLocation.UPPER_BOUNDS,
+        DefaultLocation.EXPLICIT_UPPER_BOUNDS
     };
 
     /**
@@ -111,7 +110,7 @@ public class QualifierDefaults {
      * it is not possible for local variables to be untyped.
      */
     public static DefaultLocation[] validLocationsForUntyped() {
-	return validUntypedDefaultLocations;
+        return validUntypedDefaultLocations;
     }
 
     /**
@@ -136,24 +135,24 @@ public class QualifierDefaults {
      * Sets the default annotation for untyped elements.
      */
     public void addUntypedDefault(AnnotationMirror untypedDefaultAnno, DefaultLocation location) {
-	checkDuplicates(untypedDefaults, untypedDefaultAnno, location);
-	untypedDefaults.add(new Default(untypedDefaultAnno, location));
+        checkDuplicates(untypedDefaults, untypedDefaultAnno, location);
+        untypedDefaults.add(new Default(untypedDefaultAnno, location));
     }
 
     /**
      * Sets the default annotation for untyped elements, with specific locations.
      */
     public void addUntypedDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
-	for (DefaultLocation location : locations) {
-	    // TODO(danbrotherston): Why no check for duplicates here?
-	    // TODO(danbrotherston): Check for invalid locations for untyped code.
-	    addUntypedDefault(absoluteDefaultAnno, location);
-	}
+        for (DefaultLocation location : locations) {
+            // TODO(danbrotherston): Why no check for duplicates here?
+            // TODO(danbrotherston): Check for invalid locations for untyped code.
+            addUntypedDefault(absoluteDefaultAnno, location);
+        }
     }
 
     public void addAbsoluteDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
         for (DefaultLocation location : locations) {
-	    // TODO(danbrotherston): Why no check duplicates here?
+            // TODO(danbrotherston): Why no check duplicates here?
             addAbsoluteDefault(absoluteDefaultAnno, location);
         }
     }
@@ -333,7 +332,7 @@ public class QualifierDefaults {
         // It works in other places, e.g. see handling of @SubtypeOf.
         // The hack below should probably be added to:
         // Class<? extends Annotation> cls = AnnotationUtils.parseTypeValue(dq, "value");
-	// TODO(danbrotherston): Why is this "Set<Default>" instead of DefaultSet
+        // TODO(danbrotherston): Why is this "Set<Default>" instead of DefaultSet
         Class<? extends Annotation> cls;
         try {
             cls = dq.value();
@@ -446,17 +445,17 @@ public class QualifierDefaults {
         for (Default def : defaults) {
             applier.apply(def);
         }
-	
-	if (untypedDefaults.size() > 0 &&
-	      ElementUtils.isElementFromByteCode(annotationScope)) {
-	    for (Default def : untypedDefaults) {
-		applier.apply(def);
-	    }
-  	}
+        
+        if (untypedDefaults.size() > 0 &&
+              ElementUtils.isElementFromByteCode(annotationScope)) {
+            for (Default def : untypedDefaults) {
+                applier.apply(def);
+            }
+        }
   
-	for (Default def : absoluteDefaults) {
-	    applier.apply(def);
-	}
+        for (Default def : absoluteDefaults) {
+            applier.apply(def);
+        }
     }
 
     public static class DefaultApplierElement {

@@ -466,7 +466,7 @@
         </antcall>
     </target>
 
-    <target name="jtreg-tests" depends="-def-jtreg2,jar,build-tests"
+    <target name="jtreg-tests" depends="-def-jtreg,jar,build-tests"
             description="Run jtreg tests">
         <jtreg-tool2 name="all" tests="."/>
     </target>
@@ -500,7 +500,7 @@
         <check name="jtreg" property="jtreg.home" marker="lib/jtreg.jar"/>
     </target>
 
-    <target name="-def-jtreg2" unless="jtreg.defined2" depends="-check-jtreg.home">
+    <target name="-def-jtreg" unless="jtreg.defined2" depends="-check-jtreg.home">
         <taskdef name="jtreg" classname="com.sun.javatest.regtest.Main$$Ant">
             <classpath>
                 <pathelement location="${jtreg.home}/lib/jtreg.jar"/>

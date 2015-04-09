@@ -346,18 +346,18 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defs = new QualifierDefaults(elements, this);
-	boolean foundDefaultOtherwise = false;
+        boolean foundDefaultOtherwise = false;
 
         // TODO: Verify that only one default per location type is present.
         for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
             if (defaultFor != null) {
                 defs.addAbsoluteDefaults(AnnotationUtils.fromClass(elements,qual),
-                    defaultFor.value());
+                                         defaultFor.value());
 
-		if (Arrays.asList(defaultFor.value()).contains(DefaultLocation.OTHERWISE)) {
-		    foundDefaultOtherwise = true;
-		}
+                if (Arrays.asList(defaultFor.value()).contains(DefaultLocation.OTHERWISE)) {
+                    foundDefaultOtherwise = true;
+                }
             }
 
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
@@ -375,7 +375,7 @@ public abstract class GenericAnnotatedTypeFactory<
             }
 
 	    // Add defaults for untyped code if conservative untyped flag is passed.
-	    if (checker.hasOption("conservativeUntyped")) {
+	    if (!checker.hasOption("unsafeUntyped")) {
 		DefaultForInUntyped defaultForUntyped = qual.getAnnotation(DefaultForInUntyped.class);
 
 		if (defaultForUntyped != null) {
