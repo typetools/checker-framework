@@ -1401,7 +1401,7 @@ public class AnnotatedTypes {
     public static boolean isValidType(QualifierHierarchy qualifierHierarchy,
                                       AnnotatedTypeMirror type) {
         boolean res = isValidType(qualifierHierarchy, type,
-                Collections.<AnnotatedTypeMirror> emptySet());
+                Collections.<AnnotatedTypeMirror>emptySet());
         return res;
     }
 
@@ -1762,7 +1762,13 @@ public class AnnotatedTypes {
         return anno;
     }
 
-    private static Set<AnnotationMirror> glbOfBounds(final AnnotatedIntersectionType isect,
+    /**
+     * Get's the lowest primary annotation of all bounds in the intersection
+     * @param isect
+     * @param qualifierHierarchy
+     * @return
+     */
+    public static Set<AnnotationMirror> glbOfBounds(final AnnotatedIntersectionType isect,
                                                      final QualifierHierarchy qualifierHierarchy) {
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
         for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
@@ -1774,4 +1780,35 @@ public class AnnotatedTypes {
 
         return result;
     }
+
+    //For Wildcards, isSuperBound and isExtendsBound will return true if isUnbound does.
+
+    public static boolean isExplicitlySuperBounded(final AnnotatedWildcardType wildcardType) {
+        return ((Type.WildcardType) wildcardType.getUnderlyingType()).isSuperBound() &&
+              !((Type.WildcardType) wildcardType.getUnderlyingType()).isUnbound();
+    }
+
+    /**
+     * Returns true if wildcard type was explicitly unbounded.
+     */
+    public static boolean isExplicitlyExtendsBounded(final AnnotatedWildcardType wildcardType) {
+        return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound() &&
+              !((Type.WildcardType) wildcardType.getUnderlyingType()).isUnbound();
+    }
+
+    /**
+     * Returns true if this type is super bounded or unbounded.
+     */
+    public static boolean isUnboundedOrSuperBounded(final AnnotatedWildcardType wildcardType) {
+        return ((Type.WildcardType) wildcardType.getUnderlyingType()).isSuperBound();
+    }
+
+    /**
+     * Returns true if this type is extends bounded or unbounded.
+     */
+    public static boolean isUnboundedOrExtendsBounded(final AnnotatedWildcardType wildcardType) {
+        return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound();
+    }
+
+
 }
