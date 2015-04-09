@@ -23,6 +23,7 @@ public abstract class QualifierParameterChecker<Q> extends Checker<QualParams<Q>
                 return new DefaultQualifiedTypeFormatter<>(
                         formatter,
                         getContext().getCheckerAdapter().getTypeMirrorConverter(),
+                        !getContext().getOptionConfiguration().hasOption("printTypeParamDelimiters"),
                         getContext().getOptionConfiguration().hasOption("printAllQualifiers")
                 );
             }
@@ -31,6 +32,7 @@ public abstract class QualifierParameterChecker<Q> extends Checker<QualParams<Q>
         return new PrettyQualifiedTypeFormatter<>(
                 getContext().getCheckerAdapter().getTypeMirrorConverter(),
                 getInvisibleQualifiers(),
+                !getContext().getOptionConfiguration().hasOption("printTypeParamDelimiters"),
                 getContext().getOptionConfiguration().hasOption("printAllQualifiers")
         );
     }
