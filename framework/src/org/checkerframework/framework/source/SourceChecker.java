@@ -177,7 +177,7 @@ import com.sun.tools.javac.util.Log;
     // Whether to use conservative checks for untyped code, these are configured
     // by the specific type checker using Default[For|Qualifier]InUntyped.
     // They may require more annotations or stub files.
-    "conservativeUntyped",
+    "unsafeUntyped",
 
     // Whether to resolve reflective method invocations
     // resolveReflection=debug cause debugging information
