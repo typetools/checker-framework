@@ -117,11 +117,11 @@ public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMi
         }
 
         if (original.supertypes != null) {
-            final List<AnnotatedDeclaredType> copyTypeArgs = new ArrayList<>();
+            final List<AnnotatedDeclaredType> copySupertypes = new ArrayList<>();
             for (final AnnotatedDeclaredType supertype : original.supertypes) {
-                copyTypeArgs.add((AnnotatedDeclaredType) visit(supertype, originalToCopy));
+                copySupertypes.add((AnnotatedDeclaredType) visit(supertype, originalToCopy));
             }
-            copy.supertypes = Collections.unmodifiableList( copyTypeArgs );
+            copy.supertypes = Collections.unmodifiableList( copySupertypes );
         }
 
         return copy;
