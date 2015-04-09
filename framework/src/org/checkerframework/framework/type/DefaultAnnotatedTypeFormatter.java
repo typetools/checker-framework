@@ -26,22 +26,23 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
      * Constructs a DefaultAnnotatedTypeFormatter that does not print invisible annotations by default
      */
     public DefaultAnnotatedTypeFormatter() {
-        this(new DefaultAnnotationFormatter(), false);
+        this(new DefaultAnnotationFormatter(), true, false);
     }
 
     /**
      * @param defaultPrintInvisibleAnnos Whether or not this AnnotatedTypeFormatter should print invisible annotations
      */
-    public DefaultAnnotatedTypeFormatter(boolean defaultPrintInvisibleAnnos) {
-        this(new DefaultAnnotationFormatter(), defaultPrintInvisibleAnnos);
+    public DefaultAnnotatedTypeFormatter(boolean useOldFormat, boolean defaultPrintInvisibleAnnos) {
+        this(new DefaultAnnotationFormatter(), useOldFormat, defaultPrintInvisibleAnnos);
     }
 
     /**
      * @param formatter An object that converts annotation mirrors to strings
      * @param defaultPrintInvisibleAnnos Whether or not this AnnotatedTypeFormatter should print invisible annotations
      */
-    public DefaultAnnotatedTypeFormatter(AnnotationFormatter formatter, boolean defaultPrintInvisibleAnnos) {
-        this(new FormattingVisitor(formatter, defaultPrintInvisibleAnnos));
+    public DefaultAnnotatedTypeFormatter(AnnotationFormatter formatter, boolean useOldFormat,
+                                         boolean defaultPrintInvisibleAnnos) {
+        this(new FormattingVisitor(formatter, useOldFormat, defaultPrintInvisibleAnnos));
     }
 
     /**
@@ -85,8 +86,17 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
          */
         protected boolean currentPrintInvisibleSetting;
 
-        public FormattingVisitor(AnnotationFormatter annoFormatter, boolean defaultInvisiblesSetting) {
+        /**
+         * Prints type variables like they were before the type variable fix.  This is the default
+         * for the framework, it can be difficult to distinguish where one bound ends and another begins
+         * when using this format.
+         */
+        protected boolean useOldFormat;
+
+        public FormattingVisitor(AnnotationFormatter annoFormatter, boolean useOldFormat,
+                                 boolean defaultInvisiblesSetting) {
             this.annoFormatter = annoFormatter;
+            this.useOldFormat = useOldFormat;
             this.defaultInvisiblesSetting = defaultInvisiblesSetting;
             this.currentPrintInvisibleSetting = false;
         }
@@ -111,6 +121,10 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         @SideEffectFree
         protected void printBound(final String keyWord, final AnnotatedTypeMirror field,
                                   final Set<AnnotatedTypeMirror> visiting, final StringBuilder sb) {
+            if (useOldFormat && (field == null || field.getKind() == TypeKind.NULL)) {
+                return;
+            }
+
             sb.append(" ");
             sb.append(keyWord);
             sb.append(" ");
@@ -269,18 +283,24 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         @Override
         public String visitTypeVariable(AnnotatedTypeVariable type, Set<AnnotatedTypeMirror> visiting) {
             StringBuilder sb = new StringBuilder();
-            if (type.isDeclaration()) {
-                sb.append("/*DECL*/ ");
-            }
-
             sb.append(type.actualType);
+
             if (!visiting.contains(type)) {
+                if (type.isDeclaration()) {
+                    sb.append("/*DECL*/ ");
+                }
+
                 try {
                     visiting.add(type);
-                    sb.append("[");
+                    if (!useOldFormat) {
+                        sb.append("[");
+                    }
                     printBound("extends", type.getUpperBoundField(), visiting, sb);
                     printBound("super", type.getLowerBoundField(), visiting, sb);
-                    sb.append("]");
+                    if (!useOldFormat) {
+                        sb.append("]");
+                    }
+
                 } finally {
                     visiting.remove(type);
                 }
@@ -312,12 +332,19 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             sb.append(annoFormatter.formatAnnotationString(type.annotations, currentPrintInvisibleSetting));
             sb.append("?");
             if (!visiting.contains(type)) {
+
                 try {
                     visiting.add(type);
-                    sb.append("[");
+
+                    if (!useOldFormat) {
+                        sb.append("[");
+                    }
                     printBound("extends", type.getExtendsBoundField(), visiting, sb);
                     printBound("super", type.getSuperBoundField(), visiting, sb);
-                    sb.append("]");
+                    if (!useOldFormat) {
+                        sb.append("]");
+                    }
+
                 } finally {
                     visiting.remove(type);
                 }
