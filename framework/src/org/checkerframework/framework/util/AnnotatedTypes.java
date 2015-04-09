@@ -1764,9 +1764,9 @@ public class AnnotatedTypes {
 
     /**
      * Get's the lowest primary annotation of all bounds in the intersection
-     * @param isect
-     * @param qualifierHierarchy
-     * @return
+     * @param isect The intersection for which we are glbing bounds
+     * @param qualifierHierarchy The qualifier used to get the hierarchies in which to glb
+     * @return A set of annotations representing the glb of the intersection's bounds
      */
     public static Set<AnnotationMirror> glbOfBounds(final AnnotatedIntersectionType isect,
                                                      final QualifierHierarchy qualifierHierarchy) {
