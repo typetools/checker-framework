@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="486.06232"
+   height="327.95752"
+   viewBox="328 238 544.94467 344.98492"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="map-key-keyfor.svg">
+  <metadata
+     id="metadata198">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs196" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="978"
+     id="namedview194"
+     showgrid="false"
+     inkscape:zoom="1.2351372"
+     inkscape:cx="90.550785"
+     inkscape:cy="99.683257"
+     inkscape:window-x="0"
+     inkscape:window-y="31"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <g
+     id="g24"
+     transform="translate(-366.86329,-12.350945)">
+    <rect
+       style="fill:#ffffff"
+       x="740"
+       y="240"
+       width="160"
+       height="42"
+       id="rect26" />
+    <rect
+       style="fill:none;stroke:#7f7f7f;stroke-width:2"
+       x="740"
+       y="240"
+       width="160"
+       height="42"
+       id="rect28" />
+    <text
+       font-size="16"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#7f7f7f;font-family:courier new"
+       x="820"
+       y="265.85001"
+       id="text30">
+      <tspan
+         x="820"
+         y="265.85001"
+         id="tspan32">@UnknownKeyFor</tspan>
+    </text>
+  </g>
+  <g
+     id="g66"
+     transform="translate(-366.86329,151.33586)">
+    <rect
+       style="fill:#ffffff"
+       x="740"
+       y="400"
+       width="160"
+       height="42"
+       id="rect68" />
+    <rect
+       style="fill:none;stroke:#7f7f7f;stroke-width:2"
+       x="740"
+       y="400"
+       width="160"
+       height="42"
+       id="rect70" />
+    <text
+       font-size="16"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#7f7f7f;font-family:courier new"
+       x="820"
+       y="425.85001"
+       id="text72">
+      <tspan
+         x="820"
+         y="425.85001"
+         id="tspan74">@KeyForBottom</tspan>
+    </text>
+  </g>
+  <text
+     font-size="12.8"
+     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
+     x="453.13672"
+     y="425.78732"
+     id="text76">
+    <tspan
+       x="453.13672"
+       y="425.78732"
+       id="tspan78" />
+  </text>
+  <text
+     font-size="12.8"
+     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
+     x="42.334709"
+     y="505.84366"
+     id="text80">
+    <tspan
+       x="42.334709"
+       y="505.84366"
+       id="tspan82" />
+  </text>
+  <text
+     font-size="12.8"
+     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
+     x="213.10667"
+     y="505.7457"
+     id="text94">
+    <tspan
+       x="213.10667"
+       y="505.7457"
+       id="tspan96" />
+  </text>
+  <g
+     id="g98"
+     transform="translate(-366.86329,-12.350945)">
+    <rect
+       style="fill:#ffffff"
+       x="739.44598"
+       y="320.09201"
+       width="160"
+       height="41.732498"
+       id="rect100" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="739.44598"
+       y="320.09201"
+       width="160"
+       height="41.732498"
+       id="rect102" />
+    <text
+       font-size="16"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       x="819.44598"
+       y="345.80801"
+       id="text104">
+      <tspan
+         x="819.44598"
+         y="345.80801"
+         id="tspan106">@KeyFor(map1)</tspan>
+    </text>
+  </g>
+  <text
+     font-size="12.8"
+     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
+     x="452.5827"
+     y="505.7457"
+     id="text108">
+    <tspan
+       x="452.5827"
+       y="505.7457"
+       id="tspan110" />
+  </text>
+  <g
+     id="g120"
+     transform="translate(-366.86329,-12.350945)">
+    <line
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x1="819.44598"
+       y1="320.09201"
+       x2="819.70203"
+       y2="292.73599"
+       id="line122" />
+    <polygon
+       style="fill:#000000"
+       points="819.702,292.736 814.679,295.189 819.773,285.237 824.679,295.283 "
+       id="polygon124" />
+    <polygon
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="819.702,292.736 814.679,295.189 819.773,285.237 824.679,295.283 "
+       id="polygon126" />
+  </g>
+  <g
+     id="g136"
+     transform="translate(-366.86329,-12.350945)">
+    <line
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x1="820"
+       y1="400"
+       x2="819.58698"
+       y2="371.55899"
+       id="line138" />
+    <polygon
+       style="fill:#000000"
+       points="819.587,371.559 814.624,374.131 819.478,364.06 824.623,373.986 "
+       id="polygon140" />
+    <polygon
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="819.587,371.559 814.624,374.131 819.478,364.06 824.623,373.986 "
+       id="polygon142" />
+  </g>
+  <text
+     font-size="12.8"
+     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
+     x="42.334709"
+     y="505.84366"
+     id="text144">
+    <tspan
+       x="42.334709"
+       y="505.84366"
+       id="tspan146" />
+  </text>
+  <g
+     id="g168"
+     transform="translate(-366.86329,-12.350945)">
+    <rect
+       style="fill:#ffffff"
+       x="910.43402"
+       y="320.57199"
+       width="160"
+       height="41.732498"
+       id="rect170" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x="910.43402"
+       y="320.57199"
+       width="160"
+       height="41.732498"
+       id="rect172" />
+    <text
+       font-size="16"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       x="990.43402"
+       y="346.28799"
+       id="text174">
+      <tspan
+         x="990.43402"
+         y="346.28799"
+         id="tspan176">@KeyFor(map2)</tspan>
+    </text>
+  </g>
+  <g
+     id="g178"
+     transform="translate(-366.86329,-12.350945)">
+    <line
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x1="990.43402"
+       y1="320.57199"
+       x2="892.14697"
+       y2="286.21701"
+       id="line180" />
+    <polygon
+       style="fill:#000000"
+       points="892.147,286.217 892.857,291.762 885.067,283.743 896.156,282.322 "
+       id="polygon182" />
+    <polygon
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="892.147,286.217 892.857,291.762 885.067,283.743 896.156,282.322 "
+       id="polygon184" />
+  </g>
+  <g
+     id="g186"
+     transform="translate(-366.86329,-12.350945)">
+    <line
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x1="820"
+       y1="400"
+       x2="980.92798"
+       y2="364.40701"
+       id="line188" />
+    <polygon
+       style="fill:#000000"
+       points="980.928,364.407 977.407,360.064 988.251,362.787 979.566,369.828 "
+       id="polygon190" />
+    <polygon
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="980.928,364.407 977.407,360.064 988.251,362.787 979.566,369.828 "
+       id="polygon192" />
+  </g>
+  <flowRoot
+     xml:space="preserve"
+     id="flowRoot3179"
+     style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+     transform="matrix(1.1211416,0,0,1.1211416,-38.86329,396.0448)"><flowRegion
+       id="flowRegion3181"><rect
+         id="rect3183"
+         width="4.0481334"
+         height="59.102745"
+         x="289.84634"
+         y="196.50114" /></flowRegion><flowPara
+       id="flowPara3185" /></flowRoot>  <flowRoot
+     xml:space="preserve"
+     id="flowRoot3191"
+     style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+     transform="matrix(1.1211416,0,0,1.1211416,-38.86329,396.0448)"><flowRegion
+       id="flowRegion3193"><rect
+         id="rect3195"
+         width="8.9058933"
+         height="51.816105"
+         x="344.90094"
+         y="190.83377" /></flowRegion><flowPara
+       id="flowPara3197" /></flowRoot>  <g
+     id="g98-5"
+     transform="translate(-365.8469,69.315941)">
+    <rect
+       style="fill:#ffffff"
+       x="739.44598"
+       y="320.09201"
+       width="160"
+       height="41.732498"
+       id="rect100-1" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2.16861057"
+       x="724.09924"
+       y="320.17633"
+       width="188.87798"
+       height="41.563892"
+       id="rect102-9" />
+    <text
+       font-size="16"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       x="819.44598"
+       y="345.80801"
+       id="text104-8">
+      <tspan
+         x="819.44598"
+         y="345.80801"
+         id="tspan106-1">@KeyFor({map1,map2})</tspan>
+    </text>
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2.17365456"
+       x="1047.9241"
+       y="319.38879"
+       width="189.78065"
+       height="41.558849"
+       id="rect102-9-2" />
+    <text
+       font-size="16"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       x="1144.176"
+       y="345.01794"
+       id="text104-8-9">
+      <tspan
+         x="1144.176"
+         y="345.01794"
+         id="tspan106-1-6">@KeyFor({map2,map3})</tspan>
+    </text>
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2.46929455"
+       x="695.08154"
+       y="401.81403"
+       width="246.67049"
+       height="41.26321"
+       id="rect102-9-4" />
+    <text
+       font-size="16"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       x="819.32452"
+       y="427.29538"
+       id="text104-8-4">
+      <tspan
+         x="819.32452"
+         y="427.29538"
+         id="tspan106-1-8">@KeyFor({map1,...,mapn})</tspan>
+    </text>
+  </g>
+  <g
+     id="g186-1"
+     transform="matrix(-0.90403164,0,0,1,1516.6664,-11.183754)">
+    <line
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x1="820"
+       y1="400"
+       x2="980.92798"
+       y2="364.40701"
+       id="line188-5" />
+    <polygon
+       style="fill:#000000"
+       points="979.566,369.828 980.928,364.407 977.407,360.064 988.251,362.787 "
+       id="polygon190-6" />
+    <polygon
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="979.566,369.828 980.928,364.407 977.407,360.064 988.251,362.787 "
+       id="polygon192-1" />
+  </g>
+  <g
+     id="g136-0"
+     transform="translate(-367.31755,70.455944)">
+    <line
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x1="820"
+       y1="400"
+       x2="819.58698"
+       y2="371.55899"
+       id="line138-2" />
+    <polygon
+       style="fill:#000000"
+       points="819.587,371.559 814.624,374.131 819.478,364.06 824.623,373.986 "
+       id="polygon140-0" />
+    <polygon
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="819.587,371.559 814.624,374.131 819.478,364.06 824.623,373.986 "
+       id="polygon142-8" />
+  </g>
+  <g
+     id="g186-9"
+     transform="matrix(0.97043543,0,0,1.0399962,-343.08706,91.731906)">
+    <g
+       transform="matrix(0.79311177,0,0,1,170.11759,-35.829237)"
+       id="g58">
+      <line
+         style="fill:none;stroke:#000000;stroke-width:2"
+         x1="820"
+         y1="400"
+         x2="1229.63"
+         y2="363.33701"
+         id="line60" />
+      <polygon
+         style="fill:#000000"
+         points="1243.58,362.089 1229.01,356.365 1230.26,370.309 "
+         id="polygon62" />
+      <polygon
+         style="fill:none;stroke:#000000;stroke-width:2"
+         points="1243.58,362.089 1229.01,356.365 1230.26,370.309 "
+         id="polygon64" />
+    </g>
+  </g>
+  <g
+     id="g136-0-6"
+     transform="translate(-366.51009,151.74623)">
+    <line
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x1="820"
+       y1="400"
+       x2="819.58698"
+       y2="371.55899"
+       id="line138-2-6" />
+    <polygon
+       style="fill:#000000"
+       points="824.623,373.986 819.587,371.559 814.624,374.131 819.478,364.06 "
+       id="polygon140-0-9" />
+    <polygon
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="824.623,373.986 819.587,371.559 814.624,374.131 819.478,364.06 "
+       id="polygon142-8-4" />
+  </g>
+</svg>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Checker Framework Tutorial - Security Error - Command Line</title>
+
+<link href="bootstrap/css/bootstrap.css" rel="stylesheet" />
+<script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+
+<link href="css/main.css" rel="stylesheet" />
+<link rel="icon" type="image/png"	href="http://types.cs.washington.edu/checker-framework/favicon-checkerframework.png" />
+
+</head>
+
+<body>
+
+ <div class="top_liner"></div>
+ <div class="navbar navbar-inverse navbar-fixed-top" style="border-bottom: 1px solid #66d;">
+  <div class="navbar-inner">
+   <div class="contained">
+    <ul class="nav">
+     <li class="heading">Checker Framework:
+      </h4>
+     </li>
+     <li><a href="http://checkerframework.org/">Main Site</a></li>
+     <li><a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">Manual</a></li>
+     <li><a href="https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">Discussion List</a></li>
+     <li><a href="http://code.google.com/p/checker-framework/issues/list">Issue Tracker</a></li>
+     <li><a href="http://code.google.com/p/checker-framework/source/checkout">Source Code</a></li>
+     <li><a href="http://types.cs.washington.edu/checker-framework/eclipse/">Eclipse Plugin</a></li>
+     <li class="active"><a href="http://types.cs.washington.edu/checker-framework/tutorial/">Tutorial</a></li>
+    </ul>
+   </div>
+  </div>
+ </div>
+	<img src="CFLogo.png" alt="Checker Framework logo" />
+	<div class="page-header short"
+		style="border-bottom: 1px solid #EEE; border-top: none;">
+		<h1>Checker Framework Tutorial</h1>
+		<h2>
+			<small>Previous <a href="user-input-cmd.html">Validating
+					User Input</a></small>
+		</h2>
+	</div>
+
+	<section id="introduction">
+		<div class="page-header short" style="border-top: none;">
+
+			<h2>Finding a Security Error</h2>
+		</div>
+
+		<p>
+			This example uses the <a href="../src/personalblog-demo/">personalblog-demo</a>
+			project and uses the Tainting Checker to verify that user input does
+			not contain SQL statements to avoid SQL injection. (If you have not
+			already done so, download <a href="../sourcefiles.zip"> the
+				tutorial sourcefiles.)</a>
+		<p>
+		<div class="well">
+			<h5>Outline</h5>
+			<ol>
+				<li><a href="#run1">Run the Tainting Checker using the Ant
+						buildfile</a></li>
+				<li><a href="#error1">Correct the error</a></li>
+				<li><a href="#run2">Run the Tainting Checker--a new error
+						is found</a></li>
+				<li><a href="#error2">Correct the new error</a></li>
+				<li><a href="#run3">Run the Tainting Checker--no errors</a></li>
+			</ol>
+		</div>
+		<section id="run1">
+			<h4>1. Build with provided Ant buildfile.</h4>
+			<p>
+				Please see the <a
+					href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#ant-task">
+					manual</a> for a complete discussion of using the Checker Framework and
+				the Ant build tool. Below is the output of the buildfile
+			</p>
+
+			<pre>
+$ ant
+Buildfile: .../personalblog-demo/build.xml
+
+clean:
+
+check-tainting:
+    [mkdir] Created dir: .../personalblog-demo/bin
+[jsr308.javac] Compiling 2 source files to .../personalblog-demo/bin
+[jsr308.javac] javac 1.8.0-jsr308-1.8.11
+[jsr308.javac] .../personalblog-demo/src/net/eyde/personalblog/service/PersonalBlogService.java:175: error: incompatible types in argument.
+[jsr308.javac]                     "where post.category like '%", category,
+[jsr308.javac]                                                    ^
+[jsr308.javac]   found   : @Tainted String
+[jsr308.javac]   required: @Untainted String
+[jsr308.javac] 1 error
+
+BUILD FAILED
+.../personalblog-demo/build.xml:35: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+
+</pre>
+
+			<p>
+				The checker issues an error for
+				<code>.getPostsByCategory()</code>
+				because a possibly tainted string category is used in the query
+				construction.
+			</p>
+		</section>
+
+		<section id="error1">
+			<h4>2. Correct the Error</h4>
+
+			<p>
+				To correct this, <b> add <code>@Untainted</code>
+				</b> to category parameter declaration.
+			<pre>
+     public List&lt;?&gt; getPostsByCategory(@Untainted String category) throws ServiceException {
+</pre>
+
+			This forces clients to pass an @Untainted value, which was the
+			intention of the designer of the getPostsByCategory method.
+			</p>
+		</section>
+
+		<section id="run2">
+			<h4>3. Rebuild with Ant</h4>
+			<pre>
+$ ant
+Buildfile: .../personalblog-demo/build.xml
+
+clean:
+   [delete] Deleting directory .../personalblog-demo/bin
+
+check-tainting:
+    [mkdir] Created dir: .../personalblog-demo/bin
+[jsr308.javac] Compiling 2 source files to .../personalblog-demo/bin
+[jsr308.javac] javac 1.8.0-jsr308-1.8.11
+[jsr308.javac] .../personalblog-demo/src/net/eyde/personalblog/struts/action/ReadAction.java:58: error: incompatible types in argument.
+[jsr308.javac]                   	pblog.getPostsByCategory(reqCategory));
+[jsr308.javac]                   	                         ^
+[jsr308.javac]   found   : @Tainted String
+[jsr308.javac]   required: @Untainted String
+[jsr308.javac] 1 error
+
+BUILD FAILED
+.../personalblog-demo/build.xml:35: Compile failed; see the compiler error output for details.
+
+Total time: 2 seconds
+
+</pre>
+
+			<p>
+				There is an error in
+				<code>ReadAction.executeSub()</code>
+				, which is a client of
+				<code>getPostsByCategory</code>
+				. The
+				<code>reqCategory</code>
+				is accepted from t he user (from request object) without validation.
+			</p>
+		</section>
+
+		<section id="error2">
+			<h4>3. Correct the Error</h4>
+
+			To correct, <b> use the <code> validate</code> method
+			</b> as shown below.
+			</p>
+			<pre>
+    String reqCategory = <b>validate</b>(cleanNull(request.getParameter("cat")));
+</pre>
+		</section>
+
+		<section id="run3">
+			<h4>4. Rebuild with Ant</h4>
+
+			There should be no errors.
+			<pre>
+$ ant
+Buildfile: .../personalblog-demo/build.xml
+
+clean:
+   [delete] Deleting directory .../personalblog-demo/bin
+
+check-tainting:
+    [mkdir] Created dir: .../personalblog-demo/bin
+[jsr308.javac] Compiling 2 source files to .../personalblog-demo/bin
+[jsr308.javac] javac 1.8.0-jsr308-1.8.11
+
+BUILD SUCCESSFUL
+Total time: 2 seconds
+</pre>
+
+		</section>
+		<section id="installation">
+			<div class="page-header short">
+				<h2>
+					<small> Next, try <a href="encryption-checker-cmd.html">
+							Writing an Encryption Checker</a> or return to the <a
+						href="../index.html">main page</a> of the Tutorial.
+					</small>
+				</h2>
+			</div>
+
+		</section>
+		<!--
+<div class="bottom_liner well">
+    <a href="#">Top</a>
+</div>
+-->
+</body>
+</html>
+
+<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath
+ -->
+<!--  LocalWords:  NullnessChecker plugin's hg
+ -->
