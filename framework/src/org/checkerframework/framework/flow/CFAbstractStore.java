@@ -1017,13 +1017,23 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         return result.toString();
     }
 
+
+    protected String escapeDoubleQuotes(final String str) {
+        return str.replace("\"", "\\\"");
+    }
+
+
+    protected String toStringEscapeDoubleQuotes(final Object obj) {
+        return escapeDoubleQuotes(String.valueOf(obj));
+    }
+
     /**
      * Adds a DOT representation of the internal information of this store to
      * {@code result}.
      */
     protected void internalDotOutput(StringBuilder result) {
         for (Entry<Element, V> entry : localVariableValues.entrySet()) {
-            result.append("  " + entry.getKey() + " > " + entry.getValue()
+            result.append("  " + entry.getKey() + " > " + toStringEscapeDoubleQuotes(entry.getValue())
                     + "\\n");
         }
         if (thisValue != null) {
@@ -1032,12 +1042,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
         for (Entry<FlowExpressions.FieldAccess, V> entry : fieldValues
                 .entrySet()) {
-            result.append("  " + entry.getKey() + " > " + entry.getValue()
+            result.append("  " + entry.getKey() + " > " + toStringEscapeDoubleQuotes(entry.getValue())
                     + "\\n");
         }
         for (Entry<FlowExpressions.ArrayAccess, V> entry : arrayValues
                 .entrySet()) {
-            result.append("  " + entry.getKey() + " > " + entry.getValue()
+            result.append("  " + entry.getKey() + " > " + toStringEscapeDoubleQuotes(entry.getValue())
                     + "\\n");
         }
         for (Entry<PureMethodCall, V> entry : methodValues.entrySet()) {
@@ -1046,7 +1056,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
         for (Entry<FlowExpressions.ClassName, V> entry : classValues
                 .entrySet()) {
-            result.append("  " + entry.getKey() + " > " + entry.getValue()
+            result.append("  " + entry.getKey() + " > " + toStringEscapeDoubleQuotes(entry.getValue())
                     + "\\n");
         }
     }

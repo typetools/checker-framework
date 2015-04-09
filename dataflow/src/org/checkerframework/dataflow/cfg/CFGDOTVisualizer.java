@@ -290,9 +290,9 @@ public class CFGDOTVisualizer {
         A value = analysis.getValue(t);
         String valueInfo = "";
         if (value != null) {
-            valueInfo = "    > " + value.toString();
+            valueInfo = "    > " + prepareString(value.toString());
         }
-        return t.toString() + "   [ " + visualizeType(t) + " ]" + valueInfo;
+        return prepareString(t.toString()) + "   [ " + visualizeType(t) + " ]" + valueInfo;
     }
 
     protected static String visualizeType(Node t) {
