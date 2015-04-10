@@ -38,6 +38,8 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.TreePathCacher;
+import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
+import org.checkerframework.framework.util.typeinference.TypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -187,6 +189,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected TypeVariableSubstitutor typeVarSubstitutor;
 
+    /**
+     * Provides utility method to infer type arguments
+     */
+    protected TypeArgumentInference typeArgumentInference;
+
     /** To cache the supported type qualifiers. */
     private final Set<Class<? extends Annotation>> supportedQuals;
 
@@ -300,6 +307,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         this.typeHierarchy = createTypeHierarchy();
         this.typeVarSubstitutor = createTypeVariableSubstitutor();
+        this.typeArgumentInference = createTypeArgumentInference();
 
         // TODO: is this the best location for declaring this alias?
         addAliasedDeclAnnotation(org.jmlspecs.annotation.Pure.class,
@@ -499,6 +507,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     public TypeVariableSubstitutor getTypeVarSubstitutor() {
         return typeVarSubstitutor;
+    }
+
+    /**
+     * TypeArgumentInference infers the method type arguments when
+     * they are not explicitly written.
+     */
+    protected TypeArgumentInference createTypeArgumentInference() {
+        return new DefaultTypeArgumentInference();
+    }
+
+    public TypeArgumentInference getTypeArgumentInference() {
+        return typeArgumentInference;
     }
 
     /**

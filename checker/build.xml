@@ -1118,7 +1118,7 @@
             </or>
         </condition>
 
-        <fail message="No jdk jars were found in the jdk directory.  At least one annotated JDK (jdk/jdk[678].jar) must be built!"
+        <fail message="No jdk jars were found in the jdk directory.  At least one annotated JDK (jdk/jdk7.jar or jdk/jdk8.jar) must be built!"
               unless="an.annotated.jdk.exists"/>
     </target>
 

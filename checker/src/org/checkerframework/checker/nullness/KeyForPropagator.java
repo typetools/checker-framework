@@ -7,6 +7,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.TypeArgumentMapper;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 
 import java.util.List;
@@ -82,9 +83,20 @@ public class KeyForPropagator {
         final TypeElement supertypeElement = (TypeElement) supertype.getUnderlyingType().asElement();
         final Types types = typeFactory.getProcessingEnv().getTypeUtils();
 
+        //Note: The right hand side of this or expression will cover raw types
         if (subtype.getTypeArguments().isEmpty()) {
             return;
+        } //else
+
+        //this can happen for two reasons:
+        // 1) the subclass introduced NEW type arguments when the superclass had none
+        // 2) the supertype was RAW.
+        //In either case, there is no reason to propagate
+        if (supertype.getTypeArguments().isEmpty()) {
+            return;
         }
+
+
 
         Set<Pair<Integer, Integer>> typeParamMappings =
              TypeArgumentMapper.mapTypeArgumentIndices(subtypeElement, supertypeElement, types);

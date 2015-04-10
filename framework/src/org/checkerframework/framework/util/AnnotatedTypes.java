@@ -19,7 +19,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
-import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -650,6 +649,8 @@ public class AnnotatedTypes {
                       final ExpressionTree expr,
                       final ExecutableElement elt,
                       final AnnotatedExecutableType preType) {
+        //TODO: TEMPORARY KLUDGE
+        atypeFactory.getTypeArgumentInference().adaptMethodType(atypeFactory, expr, preType);
 
         // Is the method a generic method?
         if (elt.getTypeParameters().isEmpty()) {
@@ -686,9 +687,7 @@ public class AnnotatedTypes {
             }
             return typeArguments;
         } else {
-            final DefaultTypeArgumentInference inference = new DefaultTypeArgumentInference();
-            Map<TypeVariable, AnnotatedTypeMirror> typeArguments = inference.inferTypeArgs(atypeFactory, expr, elt, preType);
-            return typeArguments;
+            return atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, expr, elt, preType);
         }
     }
 
@@ -1217,6 +1216,31 @@ public class AnnotatedTypes {
         return parameters;
     }
 
+    public static List<AnnotatedTypeMirror> expandVarArgsFromTypes(AnnotatedExecutableType method,
+                                                                   List<AnnotatedTypeMirror> args) {
+        List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
+        if (!method.getElement().isVarArgs()) {
+            return parameters;
+        }
+
+        AnnotatedArrayType varargs = (AnnotatedArrayType)parameters.get(parameters.size() - 1);
+
+        if (parameters.size() == args.size()) {
+            // Check if one sent an element or an array
+            AnnotatedTypeMirror lastArg = args.get(args.size() - 1);
+            if (lastArg.getKind() == TypeKind.ARRAY &&
+                    getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType)lastArg)) {
+                return parameters;
+            }
+        }
+
+        parameters = new ArrayList<>(parameters.subList(0, parameters.size() - 1));
+        for (int i = args.size() - parameters.size(); i > 0; --i)
+            parameters.add(varargs.getComponentType());
+
+        return parameters;
+    }
+
     /**
      * Return a list of the AnnotatedTypeMirror of the passed
      * expression trees, in the same order as the trees.
@@ -1377,7 +1401,7 @@ public class AnnotatedTypes {
     public static boolean isValidType(QualifierHierarchy qualifierHierarchy,
                                       AnnotatedTypeMirror type) {
         boolean res = isValidType(qualifierHierarchy, type,
-                Collections.<AnnotatedTypeMirror> emptySet());
+                Collections.<AnnotatedTypeMirror>emptySet());
         return res;
     }
 
@@ -1738,7 +1762,13 @@ public class AnnotatedTypes {
         return anno;
     }
 
-    private static Set<AnnotationMirror> glbOfBounds(final AnnotatedIntersectionType isect,
+    /**
+     * Get's the lowest primary annotation of all bounds in the intersection
+     * @param isect The intersection for which we are glbing bounds
+     * @param qualifierHierarchy The qualifier used to get the hierarchies in which to glb
+     * @return A set of annotations representing the glb of the intersection's bounds
+     */
+    public static Set<AnnotationMirror> glbOfBounds(final AnnotatedIntersectionType isect,
                                                      final QualifierHierarchy qualifierHierarchy) {
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
         for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
@@ -1750,4 +1780,35 @@ public class AnnotatedTypes {
 
         return result;
     }
+
+    //For Wildcards, isSuperBound and isExtendsBound will return true if isUnbound does.
+
+    public static boolean isExplicitlySuperBounded(final AnnotatedWildcardType wildcardType) {
+        return ((Type.WildcardType) wildcardType.getUnderlyingType()).isSuperBound() &&
+              !((Type.WildcardType) wildcardType.getUnderlyingType()).isUnbound();
+    }
+
+    /**
+     * Returns true if wildcard type was explicitly unbounded.
+     */
+    public static boolean isExplicitlyExtendsBounded(final AnnotatedWildcardType wildcardType) {
+        return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound() &&
+              !((Type.WildcardType) wildcardType.getUnderlyingType()).isUnbound();
+    }
+
+    /**
+     * Returns true if this type is super bounded or unbounded.
+     */
+    public static boolean isUnboundedOrSuperBounded(final AnnotatedWildcardType wildcardType) {
+        return ((Type.WildcardType) wildcardType.getUnderlyingType()).isSuperBound();
+    }
+
+    /**
+     * Returns true if this type is extends bounded or unbounded.
+     */
+    public static boolean isUnboundedOrExtendsBounded(final AnnotatedWildcardType wildcardType) {
+        return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound();
+    }
+
+
 }

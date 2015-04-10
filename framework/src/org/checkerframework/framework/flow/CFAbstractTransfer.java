@@ -812,8 +812,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 continue;
             }
             if (flowExprContext == null) {
-                flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(n, analysis.checker.getContext());
+               flowExprContext = FlowExpressionParseUtil
+                            .buildFlowExprContextForUse(n, analysis.checker.getContext());
             }
 
             try {
@@ -852,9 +852,23 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                     }
                 }
 
-                r = FlowExpressionParseUtil.parse(
-                        s, flowExprContext,
-                        analysis.atypeFactory.getPath(tree));
+
+                Tree methodDecl = flowExprContext.checkerContext.getTreeUtils().getTree(methodElement);
+
+                /*TODO: This just preserve the old behavior in the cases we don't have the tree
+                 *TODO: (i.e. in byte code and different compilation units).  The symbols
+                 *TODO: should instead be searched for in the element API (in fact for both cases
+                 *TODO: we likely want to do this)
+                 */
+                if (methodDecl == null) {
+                    r = FlowExpressionParseUtil.parse(
+                            s, flowExprContext,
+                            analysis.atypeFactory.getPath(tree));
+                } else {
+                    r = FlowExpressionParseUtil.parse(
+                            s, flowExprContext,
+                            analysis.atypeFactory.getPath(methodDecl));
+                }
                 store.insertValue(r, anno);
             } catch (FlowExpressionParseException e) {
                 // these errors are reported at the declaration, ignore here
