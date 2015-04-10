@@ -1,6 +1,8 @@
 // Test case for Issue 427:
 // https://code.google.com/p/checker-framework/issues/detail?id=427
 
+// @skip-test
+
 import org.checkerframework.checker.nullness.qual.*;
 
 import java.util.*;
