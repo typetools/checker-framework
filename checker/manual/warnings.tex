@@ -102,6 +102,13 @@ It would have been \emph{illegal} to write
 because Java does not permit annotations (such as \<@SuppressWarnings>) on
 assignments or other statements or expressions.
 
+In this example, the cast was expressed as an assignment to a new variable.
+It not possible to suppress a warning on a cast directly, because Java does
+not permit the \<@SuppressWarnings> annotation to be written on an
+expression.  If you want to use a cast expression, you need to write the
+\<@SuppressWarnings> annotation on a statement, method, or class that
+contains the cast expression.
+
 
 % TODO: improve description
 
