@@ -1,6 +1,6 @@
 package org.checkerframework.framework.util.typeinference;
 
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
@@ -10,6 +10,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.TypeVariableSubstitutor;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
@@ -113,30 +115,6 @@ public class TypeArgInferenceUtil {
     }
 
     /**
-     * Returns true if this type is super bounded or unbounded.
-     */
-    public static boolean isUnboundedOrSuperBounded(final AnnotatedWildcardType wildcardType) {
-        return ((Type.WildcardType) wildcardType.getUnderlyingType()).isSuperBound();
-    }
-
-    /**
-     * Returns true if wildcard type was explicitly unbounded.
-     */
-    public static boolean isExplicitlyExtendsBounded(final AnnotatedWildcardType wildcardType) {
-        return !isUnboundedOrSuperBounded(wildcardType);
-    }
-
-    /**
-     *
-     */
-    /**
-     * Returns true if this type is super bounded or unbounded.
-     */
-    public static boolean isUnboundedOrExtendsBounded(final AnnotatedWildcardType wildcardType) {
-        return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound();
-    }
-
-    /**
      * Returns the annotated type that the leaf of path is assigned to, if it
      * is within an assignment context.
      * Returns the annotated type that the method invocation at the leaf
@@ -173,9 +151,6 @@ public class TypeArgInferenceUtil {
                 }
             }
 
-            assert treeIndex != -1 :  "Could not find path in method invocation."
-                                    + "treePath=" + path.toString() + "\n"
-                                    + "methodInvocation=" + methodInvocation;
             if (treeIndex == -1) {
                 return null;
             }
@@ -193,11 +168,16 @@ public class TypeArgInferenceUtil {
 
             return paramType;
         } else if (assignmentContext instanceof NewArrayTree) {
+            //TODO: I left the previous implementation below, it definitely caused infinite loops if you
+            //TODO: called it from places like the TreeAnnotator
+            return null;
+
             // FIXME: This may cause infinite loop
-            AnnotatedTypeMirror type =
-                    atypeFactory.getAnnotatedType((NewArrayTree)assignmentContext);
-            type = AnnotatedTypes.innerMostType(type);
-            return type;
+//            AnnotatedTypeMirror type =
+//                    atypeFactory.getAnnotatedType((NewArrayTree)assignmentContext);
+//            type = AnnotatedTypes.innerMostType(type);
+//            return type;
+
         } else if (assignmentContext instanceof NewClassTree) {
             // This need to be basically like MethodTree
             NewClassTree newClassTree = (NewClassTree) assignmentContext;
@@ -257,6 +237,21 @@ public class TypeArgInferenceUtil {
         //note NULL values creep in because the underlying visitor uses them in various places
         final Boolean result = type.accept(new TypeVariableFinder(), typeVars);
         return result != null && result;
+    }
+
+    /**
+     * Take a set of annotations and separate them into a mapping of ({@code hierarchy top -> annotations in hierarchy})
+     */
+    public static Map<AnnotationMirror, AnnotationMirror> createHierarchyMap(final Set<AnnotationMirror> annos,
+                                                                             final QualifierHierarchy qualifierHierarchy) {
+        Map<AnnotationMirror, AnnotationMirror> result = AnnotationUtils.createAnnotationMap();
+
+
+        for (AnnotationMirror anno : annos) {
+            result.put(qualifierHierarchy.getTopAnnotation(anno), anno);
+        }
+
+        return result;
     }
 
     /**

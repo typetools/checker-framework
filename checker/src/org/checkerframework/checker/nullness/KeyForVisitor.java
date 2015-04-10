@@ -4,6 +4,7 @@ package org.checkerframework.checker.nullness;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 */
 
+import com.sun.source.tree.NewClassTree;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -12,6 +13,7 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 import java.util.List;
@@ -111,4 +113,19 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
           return super.visitArray(type, p);
         }
         */
-    }}
+    }
+
+
+    /**
+     * The constructor type will have its flow expressions parsed and its KeyFor values
+     * canonicalized before this point (in constructorFromUse).  However, the expectedReturnType
+     * will not.  Canonicalize it now.
+     */
+    protected boolean checkConstructorInvocation(AnnotatedDeclaredType expectedReturnType,
+                                                 AnnotatedExecutableType constructor, Tree src) {
+
+        NewClassTree invocation = (NewClassTree) src;
+        atypeFactory.canonicalizeForViewpointAdaptation(invocation, expectedReturnType);
+        return super.checkConstructorInvocation(expectedReturnType, constructor, invocation);
+    }
+}

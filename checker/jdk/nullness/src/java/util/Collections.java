@@ -11,7 +11,7 @@ public class Collections {
   @SuppressWarnings("rawtypes")
   public final static Map EMPTY_MAP = new HashMap();
   public static <T extends Comparable<? super T>> void sort(List<T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> void sort(List<T> a1, @Nullable Comparator<? super T> a2) { throw new RuntimeException("skeleton method"); }
+  public static <T extends @Nullable Object> void sort(List<T> a1, @Nullable Comparator<? super T> a2) { throw new RuntimeException("skeleton method"); }
   public static <T> int binarySearch(List<? extends Comparable<? super T>> a2, T a3) { throw new RuntimeException("skeleton method"); }
   public static <T> int binarySearch(List<? extends T> a1, T a2, @Nullable Comparator<? super T> a3) { throw new RuntimeException("skeleton method"); }
   public static void reverse(List<?> a1) { throw new RuntimeException("skeleton method"); }

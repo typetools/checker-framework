@@ -1,6 +1,9 @@
 package org.checkerframework.checker.nullness;
 
+
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
@@ -44,10 +47,10 @@ public class KeyForTransfer extends
     }
 
     /*
-     * Provided that m is of a type that implements interface java.util.Map:
-     * -Given a call m.containsKey(k), ensures that k is @KeyFor("m") in the thenStore of the transfer result.
-     * -Given a call m.put(k, ...), ensures that k is @KeyFor("m") in the thenStore and elseStore of the transfer result.
-     */
+         * Provided that m is of a type that implements interface java.util.Map:
+         * -Given a call m.containsKey(k), ensures that k is @KeyFor("m") in the thenStore of the transfer result.
+         * -Given a call m.put(k, ...), ensures that k is @KeyFor("m") in the thenStore and elseStore of the transfer result.
+         */
     @Override
     public TransferResult<CFValue, CFStore> visitMethodInvocation(MethodInvocationNode node,
             TransferInput<CFValue, CFStore> in) {
@@ -80,7 +83,20 @@ public class KeyForTransfer extends
                 Receiver keyReceiver = flowExprContext.arguments.get(0);
 
                 KeyForAnnotatedTypeFactory atypeFactory = (KeyForAnnotatedTypeFactory) analysis.getTypeFactory();
-                AnnotationMirror am = atypeFactory.createKeyForAnnotationMirrorWithValue(mapName); // @KeyFor(mapName)
+
+                LinkedHashSet<String> keyForMaps = new LinkedHashSet<>();
+                keyForMaps.add(mapName);
+
+                final CFValue previousKeyValue = in.getValueOfSubNode(node.getArgument(0));
+                if (previousKeyValue != null) {
+                    final AnnotationMirror prevAm = previousKeyValue.getType().getAnnotationInHierarchy(KEYFOR);
+                    if (prevAm != null && AnnotationUtils.areSameByClass(prevAm, KeyFor.class)) {
+                        keyForMaps.addAll(getKeys(prevAm));
+                    }
+                }
+
+                AnnotationMirror am = atypeFactory.createKeyForAnnotationMirrorWithValue(keyForMaps);
+
 
                 if (containsKey) {
                     ConditionalTransferResult<CFValue, CFStore> conditionalResult = (ConditionalTransferResult<CFValue, CFStore>) result;
@@ -93,5 +109,16 @@ public class KeyForTransfer extends
         }
 
         return result;
+    }
+
+    /**
+     * @return The String value of a KeyFor, this will throw an exception
+     */
+    private Set<String> getKeys(final AnnotationMirror keyFor) {
+        if (keyFor.getElementValues().size() == 0) {
+            return new LinkedHashSet<>();
+        }
+
+        return new LinkedHashSet<>(AnnotationUtils.getElementValueArray(keyFor, "value", String.class, true));
     }
 }

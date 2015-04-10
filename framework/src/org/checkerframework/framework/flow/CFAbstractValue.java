@@ -271,14 +271,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
 
             if (resultKind == TypeKind.WILDCARD) {
                 AnnotatedWildcardType wResult = (AnnotatedWildcardType) result;
-                AnnotatedTypeMirror extendsBound = wResult.getExtendsBound();
-                extendsBound.clearAnnotations();
                 Collection<AnnotationMirror> extendsBound1 = getUpperBound(a);
                 Collection<AnnotationMirror> extendsBound2 = getUpperBound(b);
-                extendsBound.addAnnotations(mostSpecific(qualHierarchy,
-                        extendsBound1, extendsBound2));
-
-                //TODO: LOWER BOUND?
+                wResult.addAnnotations(mostSpecific(qualHierarchy, extendsBound1, extendsBound2));
 
             } else if (a.getKind() == TypeKind.ARRAY
                     && b.getKind() == TypeKind.ARRAY) {
@@ -352,13 +347,33 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
            (AnnotatedTypeVariable) typeFactory.getAnnotatedType(result.getUnderlyingType().asElement());
         AnnotatedTypeMerger.merge(declaredType, result);
 
+
+        //see issue422: Intersections can happen when we have a
+        // if( T instanceof String && T instanceof Integer )
+        AnnotatedTypeMirror fixedType1;
+        if (type1.getKind() == TypeKind.INTERSECTION) {
+            fixedType1  = result.deepCopy();
+            fixedType1.addAnnotations(AnnotatedTypes.glbOfBounds((AnnotatedIntersectionType) type1, qualifierHierarchy));
+        } else {
+            fixedType1 = type1;
+        }
+
+        AnnotatedTypeMirror fixedType2;
+        if (type2.getKind() == TypeKind.INTERSECTION) {
+            fixedType2  = result.deepCopy();
+            fixedType2.addAnnotations(AnnotatedTypes.glbOfBounds((AnnotatedIntersectionType) type2, qualifierHierarchy));
+        } else {
+            fixedType2 = type2;
+        }
+
+
         boolean annotated = true;
         for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-            if (typeHierarchy.isSubtype(type1, type2, top)) {
-                annotateTypeVarResult(qualifierHierarchy, types, result, type1, top);
+            if (typeHierarchy.isSubtype(fixedType1, fixedType2, top)) {
+                annotateTypeVarResult(qualifierHierarchy, types, result, fixedType1, top);
 
-            } else if (typeHierarchy.isSubtype(type2, type1, top)) {
-                annotateTypeVarResult(qualifierHierarchy, types, result, type2, top);
+            } else if (typeHierarchy.isSubtype(fixedType2, fixedType1, top)) {
+                annotateTypeVarResult(qualifierHierarchy, types, result, fixedType2, top);
 
             } else {
                 if (backup != null) {
