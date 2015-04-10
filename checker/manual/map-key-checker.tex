@@ -1,0 +1,195 @@
+\htmlhr
+\chapter{Map Key Checker\label{map-key-checker}}
+
+The Map Key Checker tracks which values are keys for which maps.  If variable
+\code{v} has type \code{@KeyFor("m")...}, then the value of \code{v} is a key
+in Map \code{m}.  That is, the expression \code{m.containsKey(v)} evaluates to
+\code{true}.
+
+Section~\ref{map-key-qualifiers} describes how \code{@KeyFor} annotations
+enable the
+Nullness Checker (\chapterpageref{nullness-checker}) to treat calls to
+\sunjavadoc{java/util/Map.html\#get(java.lang.Object)}{\code{Map.get}}
+more precisely by refining its result to \<@NonNull> in some cases.
+
+You will not typically run the Map Key Checker.  It is automatically run by
+other checkers, in particular the Nullness Checker.
+
+You can suppress warnings related to map keys with
+\<@SuppressWarnings("keyfor")>; see \chapterpageref{suppressing-warnings}.
+
+\section{Map key annotations\label{map-key-annotations}}
+
+These qualifiers are part of the Map Key type system:
+
+\begin{description}
+
+\item[\refqualclasswithparams{checker/nullness/qual}{KeyFor}{String[] maps}]
+  indicates that the value assigned to the annotated variable is a key for at
+  least the given maps.
+
+\item[\refqualclass{checker/nullness/qual}{UnknownKeyFor}]
+  is used internally by the type system but should never be written by a
+  programmer.  It indicates that the value assigned to the annotated
+  variable is not known to be a key for any map.  It is the default type
+  qualifier.
+  
+\item[\refqualclass{checker/nullness/qual}{KeyForBottom}]
+  is used internally by the type system but should never be written by a
+  programmer.  
+
+\end{description}  
+
+\begin{figure}
+\includeimage{map-key-keyfor}{5cm}
+\caption{The subtyping relationship of the Map Key Checker's qualifiers.
+\<@KeyFor(A)> is a supertype of \<@KeyFor(B)> if and only if \<A> is a subset of
+\<B>.  Qualifiers in gray are used internally by the type system but should
+never be written by a programmer.}
+\label{fig-map-key-keyfor-hierarchy}
+\end{figure}
+
+\section{Examples\label{map-key-examples}}
+
+The Map Key Checker keeps track of which variables reference keys to
+which maps.  A variable annotated with \<@KeyFor(\emph{mapSet})> can only
+contain a value that is a key for all the maps in \emph{mapSet}.  For example:
+
+\begin{verbatim}
+Map<String,Date> m, n;
+@KeyFor("m") String km;
+@KeyFor("n") String kn;
+@KeyFor({"m", "n"}) String kmn;
+km = kmn;   // OK - a key for maps m and n is also a key for map m
+km = kn;    // error: a key for map n is not necessarily a key for map m
+\end{verbatim}
+
+
+As with any annotation, use of the \<@KeyFor> annotation may force you to
+slightly refactor your code.  For example, this would be illegal:
+
+\begin{verbatim}
+Map<String,Object> m;
+Collection<@KeyFor("m") String> coll;
+coll.add(x);   // error:  coll's element type is @KeyFor("m") String, but x does not have that type
+m.put(x, ...);
+\end{verbatim}
+
+\noindent
+The example type-checks if you reorder the two calls:
+
+\begin{verbatim}
+Map<String,Object> m;
+Collection<@KeyFor("m") String> coll;
+m.put(x, ...);    // after this statement, x has type @KeyFor("m") String
+coll.add(x);      // OK
+\end{verbatim}
+
+
+
+\section{Inference of @KeyFor annotations\label{map-key-annotations-inference}}
+
+Within a method body, you usually do not have to write \<@KeyFor> explicitly,
+because the checker infers it based on usage patterns.  When the Map Key
+Checker encounters a run-time check for map keys, such as
+``\<if (m.containsKey(k)) ...>'', then the Map Key Checker refines the type of
+\<k> to \<@KeyFor("m")> within the scope of the test (or until \<k> is
+side-effected within that scope).  The Map Key Checker also infers \<@KeyFor>
+annotations based on iteration over a map's
+\sunjavadoc{java/util/Map.html\#keySet()}{\textrm{key set}} or calls to
+\sunjavadoc{java/util/Map.html\#put(K, V)}{put}
+or
+\sunjavadoc{java/util/Map.html\#containsKey(java.lang.Object)}{containsKey}.
+For more details about type refinement, see Section~\ref{type-refinement}.
+
+Suppose we have these declarations:
+
+\begin{verbatim}
+Map<String,Date> m = new Map<String,Date>();
+String k = "key";
+@KeyFor("m") String km;
+\end{verbatim}
+
+Ordinarily, the following assignment does not type-check:
+
+\begin{verbatim}
+km = k;   // Error since k is not known to be a key for map m.
+\end{verbatim}
+
+The following examples show cases where the Map Key Checker
+infers a \<@KeyFor> annotation for variable \<k> based on usage patterns,
+enabling the \<km = k> assignment to type-check.
+
+
+\begin{verbatim}
+m.put(k, ...);
+// At this point, the type of k is refined to @KeyFor("m") String.
+km = k;   // OK
+
+
+if (m.containsKey(k)) {
+    // At this point, the type of k is refined to @KeyFor("m") String.
+    km = k;   // OK
+    ...
+}
+else {
+    km = k;   // Error since k is not known to be a key for map m.
+    ...
+}
+\end{verbatim}
+
+
+The following example shows a case where the Map Key Checker resets its
+assumption about the type of a field used as a key because that field may have
+been side-effected.
+
+\begin{verbatim}
+class MyClass {
+    private Map<String,Object> m;
+    private String k;   // The type of k defaults to @UnknownKeyFor String
+    private @KeyFor("m") String km;
+
+    public void myMethod() {
+        if (m.containsKey(k)){
+            km = k;   // OK: the type of k is refined to @KeyFor("m") String
+
+            sideEffectFreeMethod();
+            km = k;   // OK: the type of k is not affected by the method call and remains @KeyFor("m") String
+
+            otherMethod();
+            km = k;   // error: At this point, the type of k is once again
+                      // @UnknownKeyFor String, because otherMethod might have
+                      // side-effected k such that it is no longer a key for map m.
+        }
+    }
+
+    @SideEffectFree
+    private void sideEffectFreeMethod() { ... }
+
+    private void otherMethod() { ... }
+}
+\end{verbatim}
+
+
+\subsection{When local variable inference is not possible\label{map-key-annotations-inference-exceptions}}
+
+One usage pattern where you \emph{do} have to write \<@KeyFor> is for a
+user-managed collection that is a subset of the key set:
+
+\begin{verbatim}
+Map<String, String> dict;   // English dictionary. Maps words to their definitions.
+...
+for (@KeyFor("dict") String noun : nounSubset(dict.keySet())) {
+  ...
+}
+...
+// This method's declaration uses no @KeyFor annotations
+// because in addition to being used by the dictionary feature,
+// it is also used by a spell checker that only stores sets of words
+// and does not use the notions of dictionaries, maps or keys.
+Set<String> nounSubset(Set<String> words) { ... }
+\end{verbatim}
+
+
+%%  LocalWords:  KeyFor containsKey java keyfor UnknownKeyFor KeyForBottom
+%%  LocalWords:  2cm mapSet keySet km threeLetterWordSubset JT

@@ -1,0 +1,1094 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+    <title>JSR 308 langtools:  README for maintainers</title>
+
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet"/>
+    <script type="text/javascript" src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+    <style type="text/css">
+        #content {
+        border-right: 1px solid #CCCCCC;
+        }
+
+        .page-header {
+        padding-left: 10px;
+        margin-left: 10px;
+        }
+
+        .container {
+        padding-left: 10px;
+        margin-left: 10px;
+        }
+
+        #right-nav {
+        }
+
+        #right-nav li a {
+        padding-bottom: 5px;
+        padding-top: 5px;
+        }
+
+        #right-nav li ul.nav a {
+        padding-left: 40px;
+        }
+
+        .toc_header {
+        border-bottom: 1px solid #CCCCCC;
+        }
+
+        .file_layout_table th {
+        background: #EFEFEF;
+        }
+
+        ul.step_list li {
+        margin-top: 10px;
+        }
+
+        ul#backing_out_steps li {
+        padding-bottom: 10px;
+        }
+
+    </style>
+</head>
+
+<body>
+<div class="page-header">
+    <h1>Release Process: <small>JSR308, Annotation File Utilities, Checker Framework</small></h1>
+</div>
+
+<div class="container">
+<div class="row"  style="width: 1170px;">
+<div class="col-md-9 col-md-offset" id="content">
+<p>
+    This document explains how to make a release of the Checker Framework, the Type Annotations Compiler,
+    and the Annotation File Utilities.  In general the process consists of 4 steps:
+</p>
+<ol>
+    <li>Log into Buffalo.</li>
+    <li>Download the release scripts.</li>
+    <li>Run the build script.</li>
+    <li>Run the push script.</li>
+</ol>
+<p>
+    The two scripts mentioned above are mostly self-explanatory but if this is the first time you have
+    run the release script you probably want to look through this guide.
+</p>
+<p>
+    Together, the release_build/release_push scripts probably take 1.5 hours (including manual steps).
+    However, the most lengthy steps are automatic so you will be able to work on other tasks.
+</p>
+<div class="alert alert-success">
+    <strong>Note:</strong> If you have already read this document and just want to perform a release, skip
+    to the section <a href="#step_by_step">Step by Step</a>
+</div>
+
+<section id="pre_release_checklist">
+    <h2>Pre-release Checklist</h2>
+    <p>If you have not performed a release before you must follow these steps.</p>
+    <table class="table">
+        <tr>
+            <td>1.</td>
+            <td><strong>Ensure you are a member of the types_www and pl_gang groups</strong><br/>
+                Run the command "groups" on the file system (perhaps on Buffalo).
+                If the group types_www or pl_gang do not appear in the list, email the appropriate
+                person to be added (currently Michael Ernst and Werner Dietl for types_www and
+                Michael Ernst for pl_gang).
+            </td>
+        </tr>
+        <tr>
+            <td>2.</td>
+            <td><strong>Import the Checker Framework signing key for PGP</strong><br/>
+                SSH into Buffalo and run the following command:<br/>
+                <code>gpg --allow-secret-key-import --import /projects/swlab1/checker-framework/release-private.key<br/><br/></code>
+                Note:  The password for this key is located in the file<br/>
+                <code>/projects/swlab1/checker-framework/release-private.password<br/></code><br/>
+                You will need this password when staging the Maven artifacts in the Central Repository.<br/>
+
+            </td>
+        <tr>
+            <td>3.</td>
+            <td><strong>Sign up for a Sonatypes Account</strong><br/>
+                You will likely want to do this a few days in advance.
+                Directions can be found <a href="https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-2.Signup">here</a>.
+                Remember to be asked to be added to the org.checkerframework repository by creating
+                a ticket (see the note at the bottom of
+                <a href="https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-3.CreateaJIRAticket">section 3</a>).
+                You may be able to sign up but then not sign in.  If that happens, instead of creating a ticket, Jonathan Burke or Javier Thaine can add you to the existing ticket.
+            </td>
+        </tr>
+        <tr>
+            <td>4.</td>
+            <td><strong>Add your account information to settings.xml in your home directory.</strong><br/>
+                You will need to create a ~/.m2/settings.xml file similar to the one found
+                <a href="https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-Changesto%EF%BB%BF%7B%7Bsettings.xml%7D%7D">here</a>
+                using the information you just created for your Sonatypes Account on Buffalo or other
+                network host.
+            </td>
+        </tr>
+        <tr>
+            <td>5.</td>
+            <td><strong>Copy login related settings from your .hgrc file to a .hgrc in your home directory
+                    in Buffalo.</strong><br/>
+                On your local machine, you probably have an .hgrc file in your home directory
+                with login information for Mercurial. Copy the login related parts of this file to
+                your home directory on Buffalo. Copying the entire file may lead to path issues.<br/>
+            </td>
+        </tr>
+        <tr>
+            <td>6.</td>
+            <td><strong>Install Eclipse with RCP</strong><br/>
+                On your local machine, you will need a copy of Eclipse with support for
+                developing Rich Client Platform (RCP) applications.<br/>
+                I downloaded a version of Eclipse that includes RCP at:<br/>
+                <a href="http://www.eclipse.org/downloads/">http://www.eclipse.org/downloads/</a>
+            </td>
+        </tr>
+        <tr>
+            <td>7.</td>	
+            <td><strong>Get edit privileges for Checker Framework, JSR308, Annotation Tools</strong><br/>
+                Once a release has been completed, you will be prompted to update issues in the Google Code
+                issue tracker for each project that has been released.
+                You will need to be a "developer" for each project so that you have update privileges for
+                the issue trackers.
+            </td>
+        </tr>
+    </table>
+</section>
+
+<section id="release_process_overview">
+    <h2>Release Process Overview</h2>
+    <p>The release process consists of running two scripts, release_build.py and release_push.py,
+        and a few manual steps (prompted by the release scripts).  However, before releasing, it would be beneficial
+        to first understand the structure of the projects on disk on Buffalo.</p>
+
+    <section id="file_layout">
+        <h3>File Layout</h3>
+        <table class="table table-bordered file_layout_table">
+            <tr><th colspan="4">Release Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
+            <tr>
+                <td colspan="3" class="top_file">/scratch/jsr308-release</td>
+                <td>Contains repositories and scripts to perform a release</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="2">build</td>
+                <td>Contains repositories for:
+                    annotation-tools, checker-framework, jsr308-langtools, plume-bib, plume-lib<br/>
+                    These repositories are used to build the Checker Framework and its dependencies.
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="2">interm</td>
+                <td>Contains repositories for:
+                    annotation-tools, checker-framework, jsr308-langtools, plume-bib, plume-lib<br/>
+                    The repositories in build are clones of repositories in interm.  The repositories
+                    in interm are clones of the Google code repositories.  This is so that
+                    we can test and push the release to the interm repositories then check the
+                    release before we have made any irreversible changes.  Then, when the release
+                    is validated, all we do is run &quot;hg push&quot; on all of the repos in interm.
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="2">sanity</td>
+                <td>Directory used by the release_push script to do sanity checks.
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="2">scripts</td>
+                <td>The directory to which we copy the release scripts and run them.  This is useful
+                    in case you would like to make small tweaks to the release script before running them.
+                    They won't be located in any directory under version control so those changes won't
+                    be committed when the release is committed.
+                </td>
+            </tr>
+
+        </table>
+        <table class="table table-bordered file_layout_table">
+            <tr><th colspan="4">Jenkins Tools Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
+
+            <tr>
+                <td colspan="3" class="top_file">/scratch/secs-jenkins</td>
+                <td>Contains files used to run Jenkins including versions of Java.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="2">java</td>
+                <td>Contains the versions of Java used to build the release.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="2">tools</td>
+                <td>Contains the Heavea library and some TEXINPUTS for the release.</td>
+            </tr>
+
+        </table>
+        <table class="table table-bordered file_layout_table">
+            <tr><th colspan="4">Live Website Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
+
+            <tr>
+                <td colspan="3" class="top_file">/cse/www2/types</td>
+                <td>The file system location of the website: <br/><a href="http://types.cs.washington.edu/">http://types.cs.washington.edu/</a>.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="2">&lt;project&gt;/current</td>
+                <td>A symlink to the location of the latest release of the given project.  Each project subdirectory contains a releases directory.
+                    These directories contain the current/past releases.  The manual/website of the Checker Framework is written with references to
+                    the file:<br/><a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html</a>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="2">m2-repo</td>
+                <td>The location of the in-house Maven repository.  It is accessed through URL: <br/>
+                    <a href="http://types.cs.washington.edu/m2-repo">http://types.cs.washington.edu/m2-repo</a>
+                </td>
+            </tr>
+
+        </table>
+        <table class="table table-bordered file_layout_table">
+            <tr><th colspan="4">Staging (Development) Website Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
+
+            <tr>
+                <td colspan="3" class="top_file">/cse/www2/types/dev</td>
+                <td>The file system location of the development staging website: <br/><a href="http://types.cs.washington.edu/">http://types.cs.washington.edu/dev</a>.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="2">&lt;project&gt;/current</td>
+                <td>The staging analogue to /cse/www2/types/&lt;project&gt;/current directory.  The latest release is copied from this directory
+                    to the /cse/www2/types/&lt;project&gt;/current by the release_push script after a prompt.
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="2">m2-repo</td>
+                <td>The location of the in-house staging version of the Maven repository.  It is accessed through URL: <br/>
+                    <a href="http://types.cs.washington.edu/dev/m2-repo">http://types.cs.washington.edu/dev/m2-repo</a>
+                </td>
+            </tr>
+        </table>
+    </section>
+
+    <section id="release_scripts">
+        <h3>Release Scripts</h3>
+        <p>As mentioned above, in order to release the Checker Framework you must run two scripts,
+            release_build.py and release_push.py but there are supportings scripts and files in the
+            release directory.  Some of these files are described below.
+        </p>
+
+        <table class="table table-bordered">
+            <tr>
+                <td>release_build.py</td>
+                <td>Reverts the build/interm repositories to the state of their master repositories in Google code.
+                    It then builds the projects and all their artifacts and then stages a development
+                    version of all websites to
+                    <a href="http://types.cs.washington.edu/dev/">http://types.cs.washington.edu/dev/</a>
+                </td>
+            </tr>
+            <tr>
+                <td>release_push.py</td>
+                <td>Verifies the release at
+                    <a href="http://types.cs.washington.edu/dev/">http://types.cs.washington.edu/dev/</a>
+                    is correct through scripts and Manual steps.  When the user is satisfied the website
+                    is correct it deploys the website to the live website:
+                    <a href="http://types.cs.washington.edu/">http://types.cs.washington.edu/</a>
+                    It also pushes Maven artifacts to our types.cs.washington.edu repo and Maven central.
+                    Furthermore, there are a number of prompts to manually build the Eclipse plugin and
+                    test various components.
+                </td>
+            </tr>
+            <tr>
+                <td>release_utils.py</td>
+                <td>Utility methods used in both release_push and release_build.</td>
+            </tr>
+            <tr>
+                <td>sanity_checks.py</td>
+                <td>Contains methods to run various sanity checks.  These methods are called from release_push.py
+                </td>
+            </tr>
+            <tr>
+                <td>release_vars.py</td>
+                <td>Global variables used in release_push, release_build, and sanity_checks.  These should NOT
+                    be used in release_utils as release_utils is supposed to consist of self-contained
+                    reusable methods.  These variables are tailored for running the scripts on
+                    buffalo.cs.washington.edu
+                </td>
+            </tr>
+            <tr>
+                <td>release.xml</td>
+                <td>The previous release script used Ant to do a number of tasks.  Rather than
+                    reinvent the wheel, we still use the targets from this script.
+                    They are called from release_push and release_build.
+                </td>
+            </tr>
+        </table>
+    </section>
+
+</section>
+<section id="step_by_step">
+<h2>Step by Step</h2>
+
+<p> A brief description of the release steps is given below. For the most part you should just
+    be able to run the commands below manually and follow the prompts.
+</p>
+
+<p>If you've run the scripts before you really just need to remember:</p>
+<p class="well">
+    <code>
+        scp -r $CF/release/* &lt;your-username&gt;@buffalo.cs.washington.edu:///scratch/jsr308-release/scripts<br/>
+        ssh &lt;your-username&gt;@buffalo.cs.washington.edu<br/>
+        cd /scratch/jsr308-release/scripts<br/>
+        export HGUSER=yourHgUserName<br/>
+        python release_build.py all<br/>
+        python release_push.py<br/>
+    </code>
+
+    <br/>
+</p>
+<p>If you have not run the scripts before, please review the steps below.</p>
+
+<ul>
+    <li><span class="glyphicon glyphicon-eye-open"></span>- Indicates a manual step </li>
+    <li><span class="glyphicon glyphicon-eye-close"></span>- Indicates a mostly automated step with possible prompts.  Most of these steps become fully-automated when --auto is used. </li>
+    <li><span class="glyphicon glyphicon-hdd"></span>- Indicates the step is fully-automated.</li>
+</ul>
+
+<b>Note that many prompts will cause scripts to exit if you say 'no'.</b> This will require you to re-run
+the script from the beginning, which may take a long time.  It is better to say 'yes' to
+the script prompts and follow the indicated steps even if they are redundant/you have done them
+already. Also, be sure to carefully read all instructions on the command-line before typing yes.
+This is because the scripts do not ask you to say 'yes' after each step, so you may
+miss a step if you only read the paragraph asking you to say 'yes'.
+
+<table class="table">
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-open"></span>
+            <strong>Copy latest release scripts to the scripts directory</strong><br/>
+            Until the improvement <a href="#fi_auto-copy_release_scripts">Auto-copy Release Scripts</a>
+            is handled, you need to copy the latest version of the release scripts to the jsr308-release/scripts
+            directory.  Assuming $CF points to a checkout of the latest Checker Framework repo run: <br/>
+            <code>scp -r $CF/release/* &lt;your-username&gt;@buffalo.cs.washington.edu:///scratch/jsr308-release/scripts<br/><br/></code>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-open"></span>
+            <strong>Log into Buffalo</strong>
+            Run the following commands:<br/>
+            <code>ssh &lt;your-username&gt;@buffalo.cs.washington.edu<br/></code>
+            <code>cd /scratch/jsr308-release/scripts<br/></code>
+        </td>
+    </tr>
+</table>
+<h3 id="release_build_steps">Release Build Steps</h3>
+<table class="table">
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-open"></span>
+            <strong>Build Step 0: Run release_build</strong><br/>
+            Ensure the HGUSER is set. For example: <br />
+            <code>export HGUSER=yourHgUserName<br/><br /></code>
+            Run the following command: <br/>
+            <code>python release_build.py all<br/><br/></code>
+            <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
+            There has been some work done in order to select only specific projects (jsr308, AFU, Checker Framework)
+            to be built but more work still needs to be done.  Just pass &quot;all&quot; for now.
+            See also <a href="#fi_buffalo_integeration">Buffalo Integration</a> for more information
+            on the option &quot;--auto&quot;
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <strong>Build Step 1: Clean and update the build and intermediate repositories.</strong>
+            <ul class="step_list">
+                <li>
+                    <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
+                    <strong>1a: Clean Repositories</strong><br/>
+                    Recall that there are 3 relevant sets of repositories
+                    for the release:<br/>
+                    <ul>
+                        <li>build repository - repository where the project is built for release</li>
+                        <li>intermediate repository - repository to which release related changes are pushed after the project is built</li>
+                        <li>release repository - Google code repositories, the central repository.</li>
+                    </ul>
+                    <br/>
+                    Every time we run release_build, changes are committed to the intermediate repository
+                    from build but NOT to the release repositories.  If we are running the build script multiple
+                    times without actually committing the release then these changes need to be cleaned before we run the release_build script again.
+                    We therefore run hg strip, hg purge, and hg revert on ALL repositories. <br/> <br/>
+                    <p class="alert alert-danger"><strong>Note:</strong> See <a href="#fi_bug_fixes">Bug Fixes</a> for
+                        errors you might experience at this step.
+                    </p>
+                </li>
+
+                <li>
+                    <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
+                    <strong>1b: Update repositories</strong><br/>
+                    The repositories that were cleaned of changes in the previous step need to be updated to
+                    the latest revision.  The intermediate repos pull from the release repos and the build repos
+                    pull from the intermediate. All repos are then updated.
+                </li>
+
+                <li>
+                    <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
+                    <strong>1c: Verify repositories.</strong><br/>
+                    This step ensures the previous 2 steps work.  It checks to see if we have any modified files,
+                    untracked files, or outgoing changesets.  If so, it fails.
+                </li>
+
+                <li>
+                    <span style="float: right;" class="glyphicon glyphicon-eye-open"></span>
+                    <strong>1d: Optionally replace files.</strong><br/>
+                    You may wish to experiment with the build (for instance testing changes before
+                    committing them to the repository).  The above 3 steps will revert any of those
+                    changes you previously wrote to the build repositories.  At this step, the script
+                    pauses to allow you to replace any files you wish before actually executing the build.<br /><br />
+                    
+                    Note that any changes you make in this step are lost if you restart the <code>release_build</code> process
+                    and instruct it to clean the repositories (which you should say yes to). That's why it's
+                    a good idea to keep copies of the work you do here readily available in your home directory.
+                </li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-hdd"></span>
+            <strong>Build Step 2: Check tools.</strong><br/>
+            The release script requires a number of common tools (Ant, Maven, make, etc...).
+            This step checks to make sure all tools are available on the command line in order
+            to avoid wasting time in the event a tool is missing late in execution.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
+            <strong>Build Step 3: Determine release versions.</strong><br/>
+            Usually we increment the release by 0.0.1 per release unless there is a major
+            change.  The release script will read the current version of the Checker Framework/Annotation File Utilities
+            from the release website and then suggest the next release version 0.0.1 higher
+            than the current version.  You can also manually specify a version higher than
+            the current version.  Lower or equivalent versions are not possible and
+            will be rejected when you try to push the release.
+            <br/> <br/>
+            The jsr308-langtools version ALWAYS matches the Checker Framework version.
+            <br/>
+            <br/>
+            <p class="alert alert-warning"><strong>Note:</strong> If you pass --auto on the command
+                line then the next logical version will be chosen automatically</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
+            <strong>Build Step 4: Verify changelogs.</strong><br/>
+            All changelogs should be up-to-date before releasing.  However, we manually verify this
+            during the build process.  This step extracts the changesets that have occurred
+            since the last release and writes them to a file.  Please look through these changesets and
+            ensure we have not missed any relevant messages in the changelog.  The release script will
+            indicate what changelog you should edit in case there are missing changes.  These changes
+            will be committed when you run the release_push.py script.
+            <br/><br/>
+            Verify that all changelog messages follow the guidelines found in:<b>
+            <a href="#changelog_guide">Changelog Guidelines</a></b>
+            <br /><br />
+            Finally, ensure that the changelog ends with a line like
+            <pre>Resolved issues:  200, 300, 332, 336, 357, 359, 373, 374</pre>
+            You can compute the relevant numbers by visiting these two URLs:<br/>
+            <a href="https://code.google.com/p/checker-framework/issues/list?q=status%3APushed">https://code.google.com/p/checker-framework/issues/list?q=status%3APushed</a><br/>
+            <a href="https://code.google.com/p/checker-framework/issues/list?can=1&q=closed-after%3A2014%2F09%2F25">https://code.google.com/p/checker-framework/issues/list?can=1&q=closed-after%3A2014%2F09%2F25</a><br/>
+            though you will need to adjust the date in the latter URL to be the date of the previous release.
+            <br/><br/>
+
+            If <code>release_build</code> fails later on and you need to restart it, I recommend you make copies of
+            the changelogs you modified on your local machine, push the changes to those changelogs,
+            and then restart the build process saying "yes" to cleaning the repositories. However, this
+            really should not happen because the changelogs need to have been updated immediately after
+            code freeze, days in advance of the release day, and you should not need to update the logs
+            again here.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
+            <strong>Build Step 5: Verify manual changes.</strong><br/>
+            This step will write out all of the changes that happened to the individual projects'
+            manuals to a temporary file.  Please review these changes for errors.  You can edit them
+            in the build repository and they will be committed by the release_push.py script.<br /><br />
+
+            <mark>Please verify that the lists of checkers in these Checker Framework chapter sections
+            are up to date:
+            <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#introduction">Introduction</a>,
+            <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#type-refinement-runtime-tests">Run-time tests and type refinement</a>
+            </mark><br /><br />
+
+            It's a good idea to build the manual on your local machine's enlistment and verify
+            that the PDF does not have lines that are longer than the page width (some lines
+            go beyond the right margin - this is acceptable), except for lines containing command lines
+            or code - some of these inevitably are longer than the page width.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-hdd"></span>
+            <strong>Build Step 6: Build Projects.</strong><br/>
+            The projects are built in the following order: JSR308-Langtools, Annotation File Utilities,
+            and Checker Framework.  Furthermore, their manuals and websites are also built and placed in their
+            relevant locations at <a href="http://types.cs.washington.edu/dev/">http://types.cs.washington.edu/dev/</a>
+            This is the most time consuming piece of the release.  There are no prompts from this
+            step forward; you might want to get a cup of coffee and do something else until it is done.
+        </td>
+    </tr>
+
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-hdd"></span>
+            <strong>Build Step 7: Commit projects to intermediate repos.</strong><br/>
+            Each project has a set of files that are updated for release.  Usually these updates
+            include new release date and version information.  All changed files are committed and
+            pushed to the intermediate repositories.  Keep this in mind if you have any
+            changed files from steps 1d, 4, or 5.  Edits to the scripts in the jsr308-release/script
+            directory will never be checked in.
+        </td>
+    </tr>
+
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-hdd"></span>
+            <strong>Build Step 8: Add permissions to websites.</strong><br/>
+            Adds read/write/execute group permissions to all of the new dev website directories
+            under <a href="http://types.cs.washington.edu/dev/">http://types.cs.washington.edu/dev/</a>
+            These directories need group read/execute permissions in order for them to be served.
+        </td>
+    </tr>
+</table>
+
+<h3 id="release_push_steps">Release Push Steps</h3>
+<table class="table">
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-open"></span>
+            <strong>Push Step 0: Run release_push</strong><br/>
+            Run the following command:<br/>
+            <code>python release_push.py release</code><br/><br/>
+            <div class="alert alert-danger">
+                <strong>Note:</strong> The &quot;<strong>release</strong>&quot; argument states that you intend
+                to do an actual release.  If you just want to test the script, leave &quot;release&quot;
+                off and the script will run but not update anything.
+            </div>
+            
+            <mark>If you get an obscure error about permissions, try running the release_push script several timse
+            in a row. This will sometimes update the repository permissions such that the script can proceed
+            further each time.</mark>
+
+        </td>
+    </tr>
+
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
+            <strong>Push Step 1: Check release versions</strong><br/>
+            The release script checks that the new release version is greater than the previous release version.
+        </td>
+    </tr>
+
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
+            <strong>Push Step 2: Check links on development site</strong><br/>
+            Runs the link the checker on all websites at:<br/>
+            <a href="http://types.cs.washington.edu/dev/">http://types.cs.washington.edu/dev/</a><br/>
+            The output of the link checker is written to files in the /tmp directory whose locations
+            will be output at the command prompt.
+            <br/><br/>
+            It is ok for there to be broken links in JSR308 referring to ../../specification. These links
+            are broken because there is no specification in the dev website (the specification is released separately).
+            If there are any other broken links, fix them.  In rare instances (such as when a link is correct
+            but the link checker is unable to check it), you may add a suppression to the
+            <tt>checklink-args.txt</tt> file.  In extremely rare instances (such as when a website 
+            happens to be down at the time you ran the link checker), you may ignore an error.<br/>
+        </td>
+    </tr>
+
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
+            <strong>Push Step 3: Run development sanity tests.</strong><br/>
+            Runs sanity tests on the development release.  Later, we will run a smaller set of sanity
+            tests on the live release to ensure no errors occurred when promoting the release.
+
+            <p class="alert alert-success"><strong>Note:</strong> In this step you will also be
+                prompted to build and manually test the Eclipse plugin.</p>
+        </td>
+    </tr>
+
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
+            <strong>Push Step 4: Stage Maven artifacts in Central.</strong><br/>
+            The Central repository is a repository of build artifacts for build programs like
+            Maven and Ivy.  This step stages (but doesn't release) the Checker Framework's
+            Maven artifacts in the Sonatypes Central Repository.<br/>
+            Once staging is complete, there are manual steps to log into Sonatypes Central
+            and &quot;close&quot; the staging repository.  Closing allows us to test the
+            artifacts. <br/><br/>
+
+            This step deploys the artifacts to the Central repository and prompts the user to
+            close the artifacts.  Later, you will be prompted to release the staged artifacts after we commit
+            the release to our Google Code repositories. <br/><br/>
+            For more information on deploying to the Central Repository see:</br>
+            <a href="https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide">https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide</a>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
+            <strong>Push Step 5. Push dev website to live website</strong><br/>
+
+            This step copies the development release directories to the live release directories.  It then adds
+            the appropriate permissions to the release.  Symlinks need to be updated to point to the live
+            website rather than the development website.  A straight copy of the directory will NOT update the
+            symlinks.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
+            <strong>Push Step 6: Check links on live site</strong><br/>
+            Runs the link the checker on all websites at:<br/>
+            <a href="http://types.cs.washington.edu/">http://types.cs.washington.edu/</a><br/>
+            The output of the link checker is written to files in the /tmp directory whose locations
+            will be output at the command prompt.  Review the link checker output.<br/> <br/>
+
+            The set of broken links that is displayed by this check will differ from those in
+            push step 2 because the Checker Framework manual and website uses a mix of absolute and
+            relative links.  Therefore, some links from the development site actually point to the
+            live site (the previous release).  After step 5, these links point to the current release
+            and may be broken.<br/>
+
+            <div class="alert alert-warning">
+                <strong>Note:</strong> There will be many broken links within the jdk-api directory
+                see <a href="#fi_jdk-api_fixup">Open JDK/JSR308 Javadoc</a>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
+            <strong>Push Step 7: Run javac sanity test on the live release.</strong><br/>
+            This step downloads the checker-framework.zip file of the newly live release and
+            ensures we can run the Nullness Checker.  If this step fails, you should backout the release.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-open"></span>
+            <strong>Push Step 8: Deploy the Eclipse Plugin to the live site.</strong><br/>
+            You must manually deploy the Eclipse plugin.  Follow the instructions at the prompt.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
+            <strong>Push Step 9. Commit changes to repositories.</strong><br/>
+            This step pushes the changes committed to the interm repositories to the Google Code repositories.
+            This is the first irreversible change.  After this point, you can no longer backout changes and
+            should do another release in case of critical errors.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-open"></span>
+            <strong>Push Step 10. Release staged artifacts in Central repository.</strong><br/>
+            This is a manual step that releases the staged Maven artifacts to the actual Central repository.
+            This is also an irreversible step.  Once you have released these artifacts they will be forever
+            available to the Java community through the Central repository.  Follow the prompts.
+            The Maven artifacts (such as checker-qual.jar) are still needed, but the Maven plug-in
+            is no longer maintained. <mark>Before releasing the staged artifacts, make sure that the
+            Checker Framework maven plug-in directory (and only that directory) is removed from
+            the staged artifacts before releasing them.</mark> Later we will fix this so that this directory
+            is not included in the first place.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-open"></span>
+            <strong>Push Step 11. Update pushed issues.</strong><br/>
+            When a developer pushes a commit that fixes an issue,
+            they should mark those issues as 'pushed'.  When a release occurs, these
+            issues should be changed to 'fixed'.  Select all of the issues at each of the following URLs and change their status from 'pushed' to 'fixed':<br/>
+            <a href="https://code.google.com/p/checker-framework/issues/list?q=status%3APushed">https://code.google.com/p/checker-framework/issues/list?q=status%3APushed</a><br/>
+            <a href="https://code.google.com/p/annotation-tools/issues/list?q=status%3APushed">https://code.google.com/p/annotation-tools/issues/list?q=status%3APushed</a>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-open"></span>
+            <strong>Push Step 12. Announce the release.</strong><br/>
+            A prompt describes the email you should send to all relevant mailing lists.  Please
+            fill out the email and announce the release.
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <span style="float: right;" class="glyphicon glyphicon-eye-open"></span>
+            <strong>Push Step 13. Push Eclipse plugin files.</strong><br/>
+            If you built the Eclipse plugin on your local machine, there are
+            a few changed files with version number changes that need to be pushed.
+            Do <b>not</b> push the
+            <code>.classpath</code> file. The following files should be pushed:
+            <code>checker-framework-eclipse-feature/feature.xml</code>,
+            <code>checker-framework-eclipse-plugin/META-INF/MANIFEST.MF</code> and
+            <code>checker-framework-eclipse-update-site/site.xml</code>
+        </td>
+    </tr>
+
+
+</table>
+
+</section>
+<section id="changelog_guide">
+    <h2>Changelog Guidelines</h2>
+    <p> Each developer is responsible for updating project changelogs to reflect changes they
+        have made each month.  The changelogs should be updated by "feature freeze" though at the
+        latest this should be done before "code freeze".  Before releasing, the person performing
+        the release will be asked to verify the changelogs (see Build Step 4).  Please check that
+        there aren't typos (i.e. missing release date/version information, spelling errors, etc...).
+        Also check that the changelog obeys the guidelines below.
+    </p>
+
+    <section id="content_guidelines">
+        <h3>Content Guidelines</h3>
+        <ul>
+            <li>Only (and all) changes that affect users go into the changelog.
+                If a change is breaking, no matter how small, mention it.</li>
+            <li>List all issues (in Google Code issue trackers) resolved in this release.  There is a step
+                in the release that asks you to change all &quot;Pushed&quot; issues to &quot;Fixed&quot;; these
+                issues should all be included in the changelog.  Search for the word &quot;issues&quot; in the
+                changelog to see an example. Here is an example
+<a href="https://code.google.com/p/checker-framework/issues/list?can=1&q=status%3Apushed&sort=-closed&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary+Closed&cells=tiles">query</a>
+                to help find these issues for the Checker Framework only. It is a good idea to ask the core
+                team of developers if they have any issues they have pushed but have not marked as pushed,
+                and generally if they have any changes they would like to be listed in the changelog that
+                they have not done so.
+            </li>
+
+            <li>You may need to be aware of projects for which we don't want an announcement.  For instance,
+                the GuiEffectsChecker was added a few months before we finished writing a manual section for it.
+                We did not announce it until this section was written.  If you have questions, ask the relevant
+                developer whether or not something should be mentioned.
+            </li>
+        </ul>
+    </section>
+    <section id="style_guidelines">
+        <h3>Style Guidelines</h3>
+        <ul>
+            <li>Changes are written from the user's perspective.  Don't include implementation details that users
+                don't care about.
+            </li>
+            <li>To be consistent, write in the past tense (e.g. &quot;Added option for verbose error messages&quot;).</li>
+            <li>Don't exceed the 80 character limit.</li>
+            <li>Break the different programs into their own sections.  See notes on release 1.7.0 and 1.5.0 for an
+                example.  Things like the Eclipse plugin and Maven plugin should have their own section within the
+                Checker Framework release notes (excluding issue fixes from the issue tracker).
+            </li>
+            <li>Be specific.  Don't write something like "added a few options to Eclipse plugin".  Do write "added
+                options to the Eclipse plugin to include stub files, ignore warnings, and show verbose output."
+            </li>
+        </ul>
+    </section>
+
+</section>
+<section id="backing_out">
+    <h2>Backing Out an Uncommitted Release</h2>
+    <p>At the time of this writing, there are 2 steps that cannot be reverted.</p>
+    <ol>
+        <li>The push from the interm repositories to the Google Code (release) repositories</li>
+        <li>The release of the staged Maven artifacts</li>
+    </ol>
+    <p> If you have executed either of these steps and then realized there is a breaking error, you should do another
+        release.  The release script will allow you to do a point release like &quot;1.8.0.1&quot; when a version
+        &quot;1.8.0&quot; already exists.<br/>
+        <br/>
+        If you have NOT committed an irreversible step then you can
+        follow the steps below to point the live release to a previous release.  You can then redo the original
+        release.  Make sure to say &quot;yes&quot; when the release script asks you to delete the old directories.
+    </p>
+    <h3>Manual Steps to Back Out a Release</h3>
+    <ul id="backing_out_steps">
+        <li><strong>Point symlinks to old release</strong><br/>
+            For each project (JSR308, Annotation File Utilities, Checker Framework), find the
+            version for the previous release. <br/>
+            In each project's top-level website directory: (e.g. /cse/www2/types/checker-framework )
+            delete the symlink &quot;current&quot; (or use the force option of ln) and point it to the
+            release directory of the previous release.  E.g.<br/>
+            <code>ln -sf /cse/www2/types/checker-framework/releases/1.7.5 /cse/www2/types/checker-framework/current</code>
+        </li>
+        <li><strong>Drop the artifacts from Central</strong><br/>
+            You may have staged and then closed the artifacts in the Sonatypes Central repository.  Drop (do NOT release)
+            these artifacts.  See
+            <a href="https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-DroppingaStagingRepository%28i.e.WhattoDoifYourStagingRepositoryHasErrors%29">
+                the Sonatypes OSS Repository Usage Guidelines.
+            </a>
+        </li>
+        <li><strong>Drop the Maven Artifacts from our Maven repo *** currently unneeded ***</strong>
+            <p class="alert alert-warning"><strong>Note:</strong> The procedure below is NOT recommended
+                by the Maven developers guide.  However, if done carefully and quickly no harm will likely
+                come.  If people end up with out-of-date artifacts, recommend to them that they use the -U option
+                in Maven 3.  Never follow these instructions if the plugin release has been publicized or
+                existed for a while.
+            </p>
+
+            At the moment, we have decided to drop the user of our local Maven repository in favor of using
+            the Central repository exclusively.  This may not be the case in the future.  If we do have a
+            local repository, you need to go into the repositories directory (usually an m2-repo directory) and
+            manually delete the versions of the Maven artifacts.  For instance, for the artifacts checker and compiler
+            using version 0.9.8, I would delete the directories:
+            <ul>
+                <li>.../m2-repo/org/checkerframework/checker/0.9.8</li>
+                <li>.../m2-repo/org/checkerframework/compiler/0.9.8</li>
+            </ul>
+            Furthermore, I would grep the files in the parents of these directories and ensure the version number
+            does not appear in any metadata.  If so, fix up the metadata.
+        </li>
+    </ul>
+
+    <p class="alert alert-danger"><strong>Note:</strong> You may find yourself copying release directories for some
+        reason or other.  It is important to remember that the symlinks may be absolute.  You should check any
+        symlinks that may be affected by the move and ensure they point to the new location and not the old one.
+    </p>
+</section>
+
+<section id="future_improvements">
+    <h2>Future Improvements</h2>
+    <p>Below is a roughly priority-ordered list of future improvements.  In a perfect world we would do
+        all of these.  At the moment, I believe only the first 3 (Bug Fixes, Open JDK Javadoc Fixes,
+        and More Sanity Checks) should have any appreciable priority.
+    </p>
+
+    <section id="fi_bug_fixes">
+        <h3>Bug Fixes</h3>
+        A known bug at the moment is a failed 'hg strip' that happens once in a while when the script is
+        cleaning the build/interm repositories.  Running the script a few times clears this.  It happens at the
+        beginning of the script so this doesn't take long but it would be good to figure out why the command
+        fails and fix it up.
+
+        The cause seems to be the following:
+        <ol>
+            <li>A release_build is performed but not pushed to Google code.  Lets say the number for the parent
+            commit of this release is 1 and the commit for the release itself is 2a.
+            </li>
+            <li>One or more pushes are made to the Google Code repositories.  That makes the Google code have
+                a commit 2b which is a child of 1.
+            </li>
+            <li>When we try to strip the changeset 2a, for some reason it works but outputs NO text to
+                standard out and has a return status of 0.  Perhaps we should just expect this behavior as
+                one of the valid outputs of strip.  We check to make sure there are no outgoing or uncommitted
+                changes before building anyways.
+            </li>
+        </ol>
+        <code><pre>
+Traceback (most recent call last):
+File &quot;release_build.py&quot;, line 313, in &lt;module&gt;
+sys.exit(main(sys.argv))
+File &quot;release_build.py&quot;, line 235, in main
+clean_repos( INTERM_REPOS,  not auto )
+File &quot;/scratch/jsr308-release/scripts/release_utils.py&quot;, line 455, in clean_repos
+clean_repo(repo, False)
+File &quot;/scratch/jsr308-release/scripts/release_utils.py&quot;, line 446, in clean_repo
+strip(repo)
+File &quot;/scratch/jsr308-release/scripts/release_utils.py&quot;, line 426, in strip
+raise Exception(&quot;Could not recognize strip output: (%s, %s, %s)&quot; % (process.returncode, out, err))
+Exception: Could not recognize strip output: (0, , )
+        </pre></code>
+
+        <h4>Tasks:</h4>
+        <ul>
+            <li>Test the release script.  Perhaps add some local commits/changes to the build repositories.</li>
+            <li>Once you can get the clean tasks to fail, figure out why they fail and fix the script.</li>
+            <li>Remove this section from this document.</li>
+        </ul>
+    </section>
+    <section id="fi_jdk-api_fixup">
+        <h3>Open JDK/JSR308 Javadoc</h3>
+        Generating the Javadocs for the entire JDK is not simple.  We have previously generated these but have
+        not updated them in a while.  They can be found here:<br/>
+        <a href="http://types.cs.washington.edu/checker-framework/jdk-api/">http://types.cs.washington.edu/checker-framework/jdk-api/</a><br/>
+        When we generate javadoc for the Type Annotations Compiler and Checker Framework we link against these docs.
+        But because they were generated in a faulty manner in the first place, there are many broken links related to
+        package summaries of the jdk-api docs.  It is highly unlikely that users will ever run into these links, since
+        they occur in pages like Swing's package summary, but nonetheless it would be good to build these docs
+        in the proper manner with no broken links.
+        <h4>Tasks:</h4>
+        <ul>
+            <li>Figure out the best way to build the Open JDK Javadoc.</li>
+            <li>Add a release script step to build the Open JDK Javadoc.</li>
+            <li>Add a release script step to copy this javadoc to /cse/www2/types/checker-framework/jdk-api.</li>
+            <li>We may also want to put jdk-api into the release directory instead of overwriting it during each release.</li>
+            <li>Update this document to reflect the new steps.</li>
+        </ul>
+    </section>
+    <section id="fi_more_sanity_checks">
+        <h3>More Sanity Checks</h3>
+        There are likely more sanity checks we might want to run during the release process.  One such example
+        would be running the tutorial from the command line.  Another would be running the maven plugin using
+        the released artifacts rather than the staged artifacts.
+        <h4>Tasks:</h4>
+        <ul>
+            <li>Implement one of the sanity checks mentioned in this section.</li>
+            <li>Add your sanity check to the appropriate location in the release_push script.</li>
+            <li>Update this document to reflect the new steps.</li>
+        </ul>
+        <h4>Sanity Checks:</h4>
+        <ul>
+            <li>Maven plugin using the released Central repository.</li>
+            <li>Run tutorial sanity check automatically via command line.</li>
+            <li>Eclipse auto-sanity check see <a href="#fi_automate_eclipse_build">Automate the Eclipse Build.</a></li>
+        </ul>
+    </section>
+    <section id="fi_buffalo_integeration">
+        <h3>Buffalo Integration</h3>
+        If we could have Buffalo run the release_build script nightly, we could head off broken links and other
+        release related errors.  There is an &quot;--auto&quot; option for this specific reason but a number of
+        errors start happening when we run the script from Buffalo.
+        <h4>Tasks:</h4>
+        <ul>
+            <li>Create a Buffalo task to run the release_buld script using the &quot;--auto&quot; option.</li>
+            <li>Observe the output of this task and identify possible errors.</li>
+            <li>Fix up all observed errors until the release_build script runs without error.</li>
+            <li>We probably want to move the link checking of the development site to the release_build script and
+                write it out to disk.  This will allow the developer releasing the framework to consult pre-made
+                link-checking results rather than waiting for the link checker to execute in the push script.
+            </li>
+        </ul>
+    </section>
+    <section id="fi_auto-copy_release_scripts">
+        <h3>Auto-copy Release Scripts</h3>
+        The first step in running the release process, after the pre-release checklist, is to copy the
+        release scripts into the jsr308-release directory.  We could automate this.
+        <h4>Tasks:</h4>
+        <ul>
+            <li>Create a read-only script in jsr308-release/scripts.</li>
+            <li>Edit the script so that it downloads all release scripts into the jsr308-release directory.</li>
+            <li>Update this document to reflect this new process.</li>
+        </ul>
+    </section>
+    <section id="fi_option_parsing">
+        <h3>Option Parsing</h3>
+        There is currently some primitive option parsing written into the release scripts.  We should use
+        Python's built-in option parsing library.  There are multiple built-in libraries.  Please use the latest one.
+        <h4>Tasks:</h4>
+        <ul>
+            <li>Look up the latest Python parsing library.</li>
+            <li>Replace the option parsing in the release_build.py and release_push.py scripts with library calls.</li>
+        </ul>
+    </section>
+    <section id="fi_option_projects">
+        <h3>Optional Projects</h3>
+        A user might want to test the release_build script only on a specific project.  Some work has gone into
+        the ability to select a project to build.  However, this currently doesn't take into consideration of dependencies.
+        It might be more hassle than it's worth to implement this feature.  We should either complete the implementation
+        or remove the partial implementation that already exists.  See <a href="#fi_repl_mode">REPL Mode</a>.
+        <h4>Tasks:</h4>
+        <ul>
+            <li>Improve option parsing to allow the user to select only certain projects to build.</li>
+            <li>Improve scripts to resolve dependencies between projects and only build the selected projects and
+                their dependencies.
+            </li>
+        </ul>
+    </section>
+    <section id="fi_repl_mode">
+        <h3>REPL Mode</h3>
+        The current script is built in an imperative style with little use of object orientation.  This improvement
+        would create methods or objects that further encapsulate the current set of steps.  We could then provide
+        an easy way to execute these steps from the Python REPL.  This would allow the user to execute individual steps
+        in whatever order they saw fit from the Python REPL.  This could also be used to
+        automatically back out the current release or the ability to edit/debug the release steps more easily.
+        <h4>Tasks:</h4>
+        <ul>
+            <li>Further separate the steps of the release process.</li>
+            <li>Provide a default parameterization for these steps to make them easily runnable from the
+                command line. </li>
+            <li>Provide a script to launch Python with these commands on its path.</li>
+            <li>Update this README to document the new functionality.</li>
+        </ul>
+    </section>
+    <section id="fi_automate_eclipse_build">
+        <h3>Automate the Eclipse Build</h3>
+        The Checker Framework Eclipse plugin is the cause of the most burdensome manual steps in the release
+        process.  There exist ways to automate the plugin build and tests.  However, the process is complicated and
+        would take a while to perfect.  It may or may not be worth it.
+        <h4>Tasks:</h4>
+        <ul>
+            <li>Use Ant or other methods to automate the Eclipse build.</li>
+            <li>Add to the release script targets for updating version numbers and other relevant fields
+                of the Eclipse plugin for the release.
+            </li>
+            <li>Add a step(s) to build/test the Eclipse plugin from the command line to the release script.</li>
+            <li>Update this README to include the new steps.</li>
+        </ul>
+    </section>
+</section>
+</div>
+<div class="col-md-3">
+    <div class="bs-docs-sidebar hidden-print affix">
+        <ul class="nav bs-docs-sidenav" id="right-nav">
+            <li class="toc_header"><a href="#"><strong>Table Of Contents</strong></a></li>
+            <li><a href="#pre_release_checklist">Pre-release checklist</a></li>
+            <li><a href="#release_process_overview">Release Process Overview</a>
+                <ul class="nav">
+                    <li><a href="#file_layout">File Layout</a></li>
+                    <li><a href="#release_scripts">Release Scripts</a></li>
+                </ul>
+            </li>
+            <li><a href="#step_by_step">Step by Step</a>
+                <ul class="nav">
+                    <li><a href="#release_build_steps">Release Build Steps</a></li>
+                    <li><a href="#release_push_steps">Release Push Steps</a></li>
+                </ul>
+            </li>
+            <li><a href="#changelog_guide">Changelog Guidelines</a>
+                <ul class="nav">
+                    <li><a href="#content_guidelines">Content Guide</a></li>
+                    <li><a href="#style_guidelines">Style Guide</a></li>
+                </ul>
+            </li>
+
+            <li><a href="#backing_out">Backing Out an Uncommitted Release</a></li>
+            <li><a href="#future_improvements">Future Improvements</a>
+                <ul class="nav">
+                    <li><a href="#fi_bug_fixes">Bug Fixes</a></li>
+                    <li><a href="#fi_jdk-api_fixup">Open JDK/JSR308 Javadoc</a></li>
+                    <li><a href="#fi_buffalo_integeration">Buffalo Integration</a></li>
+                    <li><a href="#fi_more_sanity_checks">More Sanity Checks</a></li>
+                    <li><a href="#fi_auto-copy_release_scripts">Auto-copy Release Scripts</a></li>
+                    <li><a href="#fi_option_parsing">Option Parsing</a></li>
+                    <li><a href="#fi_option_projects">Optional Projects</a></li>
+                    <li><a href="#fi_repl_mode">REPL Mode</a></li>
+                    <li><a href="#fi_automate_eclipse_build">Automate Eclipse Build</a></li>
+                </ul>
+
+            </li>
+        </ul>
+    </div>
+</div>
+</div>
+</div>
+
+</body>
+</html>
+
+<!--  LocalWords:  JSR langtools serif px pre CCC JDK AFS PAG mkdir cd svn co
+ -->
+<!--  LocalWords:  xml ver dev yyyyMMDD URL url diff hg INV buildfile
+ -->
