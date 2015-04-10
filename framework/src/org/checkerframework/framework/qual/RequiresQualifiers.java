@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A meta annotation to allow multiple precondition annotations.
+ * A meta-annotation to allow multiple precondition annotations.
  *
  * @author Stefan Heule
  * @see RequiresQualifier
