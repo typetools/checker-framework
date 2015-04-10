@@ -5,7 +5,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.*;
 import tests.util.*;
 
-// various tests for the meta annotations for contracts
+// Tests for the meta-annotations for contracts.
 class MetaPrecondition {
 
     String f1, f2, f3;
