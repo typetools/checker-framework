@@ -1,0 +1,54 @@
+package java.util.concurrent.locks;
+
+import org.checkerframework.checker.lock.qual.*;
+
+public class ReentrantLock {
+
+    @EnsuresLockHeld("this")
+    void lock();
+
+    @EnsuresLockHeld("this")
+    void lockInterruptibly();
+
+    @EnsuresLockHeldIf(expression="this", result=true)
+    boolean tryLock();
+
+    @EnsuresLockHeldIf(expression="this", result=true)
+    boolean tryLock(long timeout, TimeUnit unit);
+
+    @EnsuresLockHeldIf(expression="this", result=true)
+    boolean isHeldByCurrentThread();
+}
+
+public class ReentrantReadWriteLock$ReadLock {
+
+    @EnsuresLockHeld("this")
+    void lock();
+
+    @EnsuresLockHeld("this")
+    void lockInterruptibly();
+
+    @EnsuresLockHeldIf(expression="this", result=true)
+    boolean tryLock();
+
+    @EnsuresLockHeldIf(expression="this", result=true)
+    boolean tryLock(long timeout, TimeUnit unit);
+}
+
+public class ReentrantReadWriteLock$WriteLock {
+
+    @EnsuresLockHeld("this")
+    void lock();
+
+    @EnsuresLockHeld("this")
+    void lockInterruptibly();
+
+    @EnsuresLockHeldIf(expression="this", result=true)
+    boolean tryLock();
+
+    @EnsuresLockHeldIf(expression="this", result=true)
+    boolean tryLock(long timeout, TimeUnit unit);
+
+    @EnsuresLockHeldIf(expression="this", result=true)
+    boolean isHeldByCurrentThread();
+}

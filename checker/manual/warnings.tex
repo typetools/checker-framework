@@ -1,0 +1,914 @@
+\htmlhr
+\chapter{Suppressing warnings\label{suppressing-warnings}}
+
+%% This feels redundant.
+% The Checker Framework is sound:  whenever your code contains an error, the
+% Checker Framework will warn you about the error.  The Checker Framework is
+% conservative:  it may issue warnings when your code is safe and never
+% misbehaves at run time.
+
+You may wish to suppress checker warnings because of unannotated libraries
+or un-annotated portions of your own code, because of application
+invariants that are beyond the capabilities of the type system, because of
+checker limitations, because you are interested in only some of the
+guarantees provided by a checker, or for other reasons.
+Suppressing a warning is similar to writing a cast in a Java
+program:  the programmer knows more about the type than the type system does
+and uses the warning suppression or cast to convey that information to the
+type system.
+
+You can suppress a single warning message (or those in a single method or
+class) by using the following mechanisms:
+
+\newcounter{lastsinglesuppression}
+\begin{itemize}
+\item
+  the \code{@SuppressWarnings} annotation
+  (Section~\ref{suppresswarnings-annotation}), or
+\item
+  the \code{@AssumeAssertion} string in an \<assert> message (Section~\ref{assumeassertion}).
+\end{itemize}
+
+You can suppress warnings throughout the codebase by using the following mechanisms:
+
+\begin{itemize}
+\item
+  the \code{-AsuppressWarnings} command-line option (Section~\ref{suppresswarnings-command-line}),
+\item
+  the \code{-AskipUses} and \code{-AonlyUses} command-line options (Section~\ref{askipuses}),
+\item
+  the \code{-AskipDefs} and \code{-AonlyDefs} command-line options (Section~\ref{askipdefs}),
+\item
+  the \code{-Alint} command-line option (Section~\ref{alint}), or
+\item
+  not using the \code{-processor} command-line option
+  (Section~\ref{no-processor}).
+\end{itemize}
+
+Some type checkers can suppress warnings via
+\begin{itemize}
+\item
+  checker-specific mechanisms (Section~\ref{checker-specific-suppression}).
+\end{itemize}
+
+\noindent
+We now explain these mechanisms in turn.
+
+% See the @SuppressWarningsKey annotation and the getSuppressWarningsKey method.
+
+\section{\code{@SuppressWarnings} annotation\label{suppresswarnings-annotation}}
+
+You can suppress specific errors and warnings by use of the
+\code{@SuppressWarnings("\emph{checkername}")} annotation, for example
+\code{@SuppressWarnings("interning")} or \code{@SuppressWarnings("nullness")}.
+The argument \emph{checkername} is in lower case and is derived from the
+way you invoke the checker; for example, if you invoke a checker as
+\code{javac -processor MyNiftyChecker ...}, then you would suppress its
+error messages with \code{@SuppressWarnings("mynifty")}.  (An exception is
+the Subtyping Checker, for which you use the annotation name; see
+Section~\ref{subtyping-using}).
+
+While not recommended, using \code{@SuppressWarnings("all")} will
+suppress warnings for all checkers.
+
+A \sunjavadocanno{java/lang/SuppressWarnings.html}{SuppressWarnings}
+annotation may be placed on program declarations such as a local
+variable declaration, a method, or a class.  It suppresses all warnings
+related to the given checker, for that program element.
+\<@SuppressWarnings> is a declaration annotation, and it cannot be used on
+statements, expressions, or types.
+
+For instance, one common use is
+to suppress warnings at a cast that you know is safe.  Here is an example
+that uses the Tainting Checker (Section~\ref{tainting-checker}); assume
+that \<expr> has type \<@Tainted String>:
+
+\begin{Verbatim}
+  @SuppressWarnings("tainting") // Explain why the suppression is sound.
+  @Untainted String myvar = expr;
+\end{Verbatim}
+
+\noindent
+It would have been \emph{illegal} to write
+
+\begin{Verbatim}
+  @Untainted String myvar;
+  // This does not work; @SuppressWarnings goes on a declaration, not a statement
+  @SuppressWarnings("tainting") // Explain why the suppression is sound.
+  myvar = expr;
+\end{Verbatim}
+
+\noindent
+because Java does not permit annotations (such as \<@SuppressWarnings>) on
+assignments or other statements or expressions.
+
+
+% TODO: improve description
+
+Each warning from the compiler also issues the most concrete
+suppression key that can be used to suppress that warning.
+Additionally, the \code{-AshowSuppressWarningKeys} command-line option
+can be used to show all applicable suppression keys.
+
+
+\subsection{Good practices when suppressing warnings\label{suppresswarnings-best-practices}}
+
+\subsubsection{Suppress warnings in the smallest possible scope\label{suppresswarnings-best-practices-smallest-scope}}
+
+If a particular expression causes a
+false positive warning, you should extract that expression into a local variable
+and place a \code{@SuppressWarnings} annotation on the variable
+declaration, rather than suppressing warnings for a larger expression or an
+entire method body.
+
+%% I'm not sure how this is related to the smallest possible scope.
+% As another example, if you have annotated the signatures but not the bodies
+% of the methods in a class or package, put a \code{@SuppressWarnings}
+% annotation on the class declaration or on the package's
+% \code{package-info.java} file.
+
+\subsubsection{Justify why the warning is a false positive\label{suppresswarnings-best-practices-justification}}
+
+A \<@SuppressWarnings> annotation asserts that the code is actually
+correct, even though the type system is unable to prove that the code is
+correct.
+
+Whenever you write a \<@SuppressWarnings> annotation, you should also
+write, typically on the same line or on the preceding line, a code comment
+explaining why the code is actually correct.  In some cases you might also
+justify why the code cannot be rewritten in a simpler way that would be
+amenable to type-checking.
+
+This documentation will help you and others to understand the reason for
+the \<@SuppressWarnings> annotation.  It will also help if you decide to
+audit your code to verify all the warning suppressions.
+
+\subsubsection{Use a specific argument to \code{@SuppressWarnings}\label{suppresswarnings-best-practices-specific-argument}}
+
+\label{compiler-message-keys}
+
+The \<@SuppressWarnings> argument string can be of the form
+\emph{checkername} or
+or \emph{checkername:messagekey}.  The \emph{checkername} part is as
+described above.  The \emph{messagekey} part suppresses only
+errors/warnings relating to the given message key.  For example,
+\code{cast.unsafe} is the key for warnings about an unsafe cast, and
+\code{cast.redundant} to the key for warnings about a redundant cast.
+
+Thus, the above example could have been written as any one of the
+following, which would have suppressed the specific error:
+
+\begin{Verbatim}
+  @SuppressWarnings("tainting")              // suppresses all tainting-related warnings
+  @SuppressWarnings("tainting:cast.unsafe")  // suppresses tainting warnings about unsafe casts
+  @SuppressWarnings("tainting:cast")         // suppresses tainting warnings about casts
+\end{Verbatim}
+
+\noindent
+For a list of the message keys, 
+see the \code{messages.properties} files in 
+%BEGIN LATEX
+\\
+%END LATEX
+\code{checker-framework/checker/src/org/checkerframework/checker/\emph{checkername}/messages.properties}.
+Each checker is built on the \code{basetype} checker and inherits its
+properties.  Thus, to find all the error keys for a checker, you usually
+need to examine its own \code{messages.properties} file and that of
+\code{basetype}.
+
+If a checker produces a warning/error and you want to determine its message
+key, you can re-run the checker, passing the the \code{-Anomsgtext}
+command-line option (Section~\ref{debugging-options}).
+
+
+\section{\code{@AssumeAssertion} string in an \<assert> message\label{assumeassertion}}
+
+\begin{sloppypar}
+You can suppress a warning by \<assert>ing that some property is true, and
+placing the string \<@AssumeAssertion(\emph{warningkey})> in the assertion
+message.
+\end{sloppypar}
+
+For example, in this code:
+
+\begin{Verbatim}
+  assert x != null : "@AssumeAssertion(nullness)";
+  ... x.f ...
+\end{Verbatim}
+
+\noindent
+the Nullness Checker assumes that \<x> is non-null from the \<assert>
+statement forward, and so the expression \<x.f> cannot throw a null pointer
+exception.
+
+The \<assert> expression must be an expression that would affect flow-sensitive
+type qualifier refinement (Section~\ref{type-refinement}), if the
+expression appeared in a conditional test.  Each type system has its own
+rules about what type refinement it performs.
+
+The warning key is exactly as in the \<@SuppressWarnings> annotation
+(Section~\ref{suppresswarnings-annotation}).  The same good practices apply
+as for \<@SuppressWarnings> annotations, such as writing a comment
+justifying why the assumption is safe
+(Section~\ref{suppresswarnings-best-practices}).
+
+The \<-AassumeAssertionsAreEnabled> and \<-AassumeAssertionsAreDisabled>
+command-line options (Section~\ref{type-refinement-assertions}) do not
+affect processing of \<assert> statements that have \<@AssumeAssertion> in
+their message.  Writing \<@AssumeAssertion> means that the assertion would
+succeed if it were executed, and the Checker Framework makes use of that
+information regardless of the \<-AassumeAssertionsAreEnabled> and
+\<-AassumeAssertionsAreDisabled> command-line options.
+
+
+%% Redundant.
+% If the string \<@AssumeAssertion(\emph{warningkey})> does not appear in the
+% assertion message, then the Checker Framework treats the assertion as
+% being used for defensive programming.  That is, the programmer believes
+% that the assertion might fail at run time, so the Checker Framework should
+% not make any inference, which would not be justified.
+
+%% Users should never see assertions anyway -- they are for programmers.
+% A downside of putting the string in the assertion message is that if the
+% assertion ever fails, then a user might see the string and be confused.
+% This should never be a problem, since
+% the programmer should write the string should only if the programmer has
+% reasoned that the
+% assertion can never fail.
+
+% (Another way of stating the Nullness Checker's use of assertions is as an
+% additional caveat to the guarantees provided by a checker
+% (Section~\ref{checker-guarantees}).  The Nullness Checker prevents null
+% pointer errors in your code under the assumption that assertions are
+% enabled, and it does not guarantee that all of your assertions succeed.)
+
+
+\subsection{Suppressing warnings and defensive programming\label{defensive-programming}}
+
+This section explains the distinction between two different uses for
+assertions (and for related methods like JUnit's \<Assert.assertNotNull>).
+
+Assertions are commonly used for two distinct purposes:  documenting how
+the program works and debugging the program when it does not work
+correctly.  By default, the Checker Framework assumes that each assertion
+is used for debugging:  the assertion might fail at run time, and the programmer
+wishes to be informed at compile time about such run-time errors.  On the
+other hand, if you write the \<@AssumeAssertion> string in the \<assert>
+message, then the Checker Framework assumes that you have used some other
+technique to verify that the assertion can never fail at run time, so the
+checker assumes the assertion passes and does not issue a warning.
+
+Distinguishing the purpose of each assertion is important for precise
+type-checking.  
+% In particular, the Checker Framework would miss many errors
+% if it assumed that every assertion succeeds at run time.
+Suppose that a
+programmer encounters a failing test, adds an assertion to aid debugging, and fixes the
+test.  The programmer leaves the assertion in the program if the programmer
+is worried that the program might fail in a similar way in the future.  
+% The assertion indicates the potential for failure at this point in the code.
+The Checker Framework should not assume that the assertion succeeds ---
+doing so would defeat the very purpose of the Checker Framework, which is
+to detect errors at compile time and prevent them from occurring at run
+time.
+
+On the other hand, assertions sometimes document facts that a programmer
+has independently verified to be true, and the Checker Framework can
+leverage these assertions in order to avoid issuing false positive
+warnings.  The programmer marks such assertions with the \<@AssumeAssertion>
+string in the \<assert> message.  Only do so if you are sure
+that the assertion always succeeds at run time.
+
+
+% In each case, the assertion or method indicates an application invariant --- a
+% fact that should always be true.  There are two distinct reasons a
+% programmer may have written the invariant, depending on whether the
+% programmer is 100\% sure that the application invariant holds.
+% 
+% \begin{enumerate}
+% \item
+%   A programmer might write it as \textbf{defensive programming}.  This causes
+%   the program to throw an exception, which is useful for debugging because
+%   it gives an earlier run-time indication of the error.
+%   A programmer would use an assertion in this way if the programmer is not
+%   100\% sure that the application invariant holds.
+% 
+%   % , or even to document what the program
+%   % is intended to do.
+% 
+% \item
+%   A programmer might write it to \textbf{suppress} false positive
+%   \textbf{warning messages} from a checker.  A programmer would use an
+%   assertion this way if the programmer is 100\% sure that the application
+%   invariant holds, and the reference can never be null at run time.
+% 
+% \end{enumerate}
+
+
+Sometimes methods such as
+\refmethod{checker/nullness}{NullnessUtils}{castNonNull}{-T-} are used
+instead of assertions.  Just as for assertions, you can treat them as
+debugging aids or as documentation.
+If you know that a particular codebase uses
+a nullness-checking method not for defensive programming but to indicate
+facts that are guaranteed to be true (that is, these assertions will never
+fail at run time), then you can suppress
+warnings related to it.
+Annotate its definition just as
+\refmethod{checker/nullness}{NullnessUtils}{castNonNull}{-T-} is annotated (see the
+source code for the Checker Framework).
+% TODO:
+% For an assert statement, XXXXX.
+Also, be sure to document the intention in the method's Javadoc, so that
+programmers do not
+accidentally misuse it for defensive programming.
+
+
+If you are annotating a codebase that already contains precondition checks,
+such as:
+
+\begin{Verbatim}
+  public String get(String key, String def) {
+    checkNotNull(key, "key"); //NOI18N
+    ...
+  }
+\end{Verbatim}
+
+\noindent
+then you should mark the appropriate parameter as \<@NonNull> (which is the
+default).  This will prevent the checker from issuing a warning about the
+\<checkNotNull> call.
+
+
+
+\section{\code{-AsuppressWarnings} command-line option\label{suppresswarnings-command-line}}
+
+Supplying the \<-AsuppressWarnings> command-line option is equivalent to
+writing a \<@SuppressWarnings> annotation on every class that the compiler
+type-checks.  The argument to \<-AsuppressWarnings> is a comma-separated
+list of warning suppression keys, as in
+\<-AsuppressWarnings=purity,uninitialized>.
+
+When possible, it is better to write a \<@SuppressWarnings> annotation with a
+smaller scope, rather than using the \<-AsuppressWarnings> command-line option.
+
+
+\section{\code{-AskipUses} and \code{-AonlyUses} command-line options\label{askipuses}}
+
+You can suppress all errors and warnings at all \emph{uses} of a given
+class, or suppress all errors and warnings except those at uses of a given
+class.  (The class itself is still type-checked, unless you also use
+the \code{-AskipDefs} or \code{-AonlyDefs} command-line option, see~\ref{askipdefs}).
+
+Set the \code{-AskipUses} command-line option to a
+regular expression that matches class names (not file names) for which warnings and errors
+should be suppressed.
+Or, set the \code{-AonlyUses} command-line option to a
+regular expression that matches class names (not file names) for which warnings and errors
+should be emitted; warnings about uses of all other classes will be suppressed.
+
+For example, suppose that you use
+``{\codesize\verb|-AskipUses=^java\.|}'' on the command line
+(with appropriate quoting) when invoking
+\code{javac}.  Then the checkers will suppress all warnings related to
+classes whose fully-qualified name starts with \codesize\verb|java.|, such
+as all warnings relating to invalid arguments and all warnings relating to
+incorrect use of the return value.
+
+To suppress all errors and warnings related to multiple classes, you can use
+the regular expression alternative operator ``\code{|}'', as in
+``{\codesize\verb+-AskipUses="java\.lang\.|java\.util\."+}'' to suppress
+all warnings related to uses of classes belong to the \code{java.lang} or
+\code{java.util} packages.
+
+You can supply both \code{-AskipUses} and \code{-AonlyUses}, in which case
+the \code{-AskipUses} argument takes precedence, and \code{-AonlyUses} does
+further filtering but does not add anything that \code{-AskipUses} removed.
+
+Warning:  Use the \code{-AonlyUses} command-line option with care,
+because it can have unexpected results.  For example, if the
+given regular expression does not match classes in the JDK, then the
+Checker Framework will suppress every warning that involves a JDK class
+such as \<Object> or \<String>.  The meaning of \code{-AonlyUses} may be
+refined in the future.  Oftentimes \code{-AskipUses} is more useful.
+
+% The desired meaning of -AonlyUses is tricky, because what is a "use"?
+% Maybe only check calls of methods on the class (though don't check
+% argument expressions) and field accesses, but nothing else (such as
+% extends clauses that happen to use the class).  But then we would also
+% want to suppress warnings related to assignments where a method use or
+% field access is the right-hand side.  I'm going to punt on this for now.
+
+
+\section{\code{-AskipDefs} and \code{-AonlyDefs} command-line options\label{askipdefs}}
+
+You can suppress all errors and warnings in the \emph{definition} of a given
+class, or suppress all errors and warnings except those in the definition
+of a given class.  (Uses of the class are still type-checked, unless you also use
+the \code{-AskipUses} or \code{-AonlyUses} command-line option,
+see~\ref{askipuses}).
+
+Set the \code{-AskipDefs} command-line option to a
+regular expression that matches class names (not file names) in whose definition warnings and errors
+should be suppressed.
+Or, set the \code{-AonlyDefs} command-line option to a
+regular expression that matches class names (not file names) whose
+definitions should be type-checked.
+
+For example, if you use
+``{\codesize\verb|-AskipDefs=^mypackage\.|}'' on the command line
+(with appropriate quoting) when invoking
+\code{javac}, then the definitions of 
+classes whose fully-qualified name starts with \codesize\verb|mypackage.|
+will not be checked.
+
+If you supply both \code{-AskipDefs} and \code{-AonlyDefs}, then
+\code{-AskipDefs} takes precedence.
+
+Another way not to type-check a file is not to pass it on the compiler
+command-line:  the Checker Framework type-checks only files that are passed
+to the compiler on the command line, and does not type-check any file that
+is not passed to the compiler.  The \code{-AskipDefs} and \code{-AonlyDefs}
+command-line options
+are intended for situations in which the build system is hard to understand
+or change.  In such a situation, a programmer may find it easier to supply
+an extra command-line argument, than to change the set of files that is
+compiled.
+
+A common scenario for using the arguments is when you are starting out by
+type-checking only part of a legacy codebase.  After you have verified the
+most important parts, you can incrementally check more classes until you
+are type-checking the whole thing.
+
+
+\section{\code{-Alint} command-line option\label{alint}}
+
+\label{lint-options}
+
+The \code{-Alint} option enables or disables optional checks, analogously to
+javac's \code{-Xlint} option.
+Each of the distributed checkers supports at least the following lint options:
+
+% For the current list of lint options supported by all checkers, see
+% method BaseTypeChecker.getSupportedLintOptions().
+
+% For the per-checker list, search for "@SupportedLintOptions" in the
+% checker implementations.
+
+
+\begin{itemize}
+
+\item
+  \code{cast:unsafe} (default: on) warn about unsafe casts that are not
+  checked at run time, as in \code{((@NonNull String) myref)}.  Such casts
+  are generally not necessary when flow-sensitive local type refinement is
+  enabled.
+
+\item
+  \code{cast:redundant} (default: on) warn about redundant
+  casts that are guaranteed to succeed at run time,
+  as in \code{((@NonNull String) "m")}.  Such casts are not necessary,
+  because the target expression of the cast already has the given type
+  qualifier.
+
+\item
+  \code{cast} Enable or disable all cast-related warnings.
+
+\item
+\begin{sloppypar}
+  \code{all} Enable or disable all lint warnings, including
+  checker-specific ones if any.  Examples include \code{redundantNullComparison} for the
+  Nullness Checker (see Section~\ref{lint-nulltest-section}) and \<dotequals> for
+  the Interning Checker (see Section~\ref{lint-dotequals}).  This option
+  does not enable/disable the checker's standard checks, just its optional
+  ones.
+\end{sloppypar}
+
+\item
+  \code{none} The inverse of \<all>:  disable or enable all lint warnings,
+  including checker-specific ones if any.
+
+\end{itemize}
+
+% This syntax is different from -Xlint that uses a colon instead of an
+% equals sign, because javac forces the use of the equals sign.
+
+\noindent
+To activate a lint option, write \code{-Alint=} followed by a
+comma-delimited list of check names.  If the option is preceded by a
+hyphen (\code{-}), the warning is disabled.  For example, to disable all
+lint options except redundant casts, you can pass
+\code{-Alint=-all,cast:redundant} on the command line.
+
+Only the last \code{-Alint} option is used; all previous \code{-Alint}
+options are silently ignored.  In particular, this means that \<-Alint=all
+-Alint=cast:redundant> is \emph{not} equivalent to
+\code{-Alint=-all,cast:redundant}.
+
+
+\section{No \code{-processor} command-line option\label{no-processor}}
+
+You can also compile parts of your code without use of the
+\code{-processor} switch to \code{javac}.  No checking is done during
+such compilations.
+
+\section{Checker-specific mechanisms\label{checker-specific-suppression}}
+
+Finally, some checkers have special rules.  For example, the Nullness
+checker (Chapter~\ref{nullness-checker}) uses
+the special \<castNonNull> method to suppress warnings
+(Section~\ref{suppressing-warnings-with-assertions}).
+This manual also explains special mechanisms for
+suppressing warnings issued by the Fenum Checker
+(Section~\ref{fenum-suppressing}) and the Units Checker
+(Section~\ref{units-suppressing}).
+
+
+
+\htmlhr
+\chapter{Handling legacy code\label{legacy-code}}
+
+Section~\ref{get-started-with-legacy-code} describes a methodology for
+applying annotations to legacy code.  This chapter tells you what to do if,
+for some reason, you cannot change your code in such a way as to eliminate
+a checker warning.
+
+Also recall that you can convert checker errors into warnings via the
+\code{-Awarns} command-line option; see Section~\ref{checker-options}.
+
+
+\section{Checking partially-annotated programs:  handling unannotated code\label{unannotated-code}}
+
+Sometimes, you wish to type-check only part of your program.
+You might focus on the most mission-critical or error-prone part of your
+code.  When you start to use a checker, you may not wish to annotate
+your entire program right away.
+% Not having source code is *not* a reason.
+You may not have
+enough knowledge to annotate poorly-documented libraries that your program uses.
+
+If annotated code uses unannotated code, then the checker may issue
+warnings.  For example, the Nullness Checker (Chapter~\ref{nullness-checker}) will
+warn whenever an unannotated method result is used in a non-null context:
+
+\begin{Verbatim}
+  @NonNull myvar = unannotated_method();   // WARNING: unannotated_method may return null
+\end{Verbatim}
+
+If the call \emph{can} return null, you should fix the bug in your program by
+removing the \refqualclass{checker/nullness/qual}{NonNull} annotation in your own program.
+
+If the library call \emph{never} returns null,
+there are several ways to eliminate the compiler warnings.
+\begin{enumerate}
+\item Annotate \code{unannotated\_method} in full.  This approach provides
+  the strongest guarantees, but may require you to annotate additional
+  methods that \code{unannotated\_method} calls.  See
+  Chapter~\ref{annotating-libraries} for a discussion of how to annotate
+  libraries for which you have no source code.
+\item Annotate only the signature of \code{unannotated\_method}, and
+  suppress warnings in its body.  Two ways to suppress the warnings are via a
+  \code{@SuppressWarnings} annotation or by not running the checker on that
+  file (see Section~\ref{suppressing-warnings}).
+\item Suppress all warnings related to uses of \code{unannotated\_method}
+  via the \code{skipUses} processor option
+  (see Section~\ref{askipuses}).
+  Since this can suppress more warnings than you may expect,
+  it is usually better to annotate at least the method's signature.  If you
+  choose the boundary between the annotated and unannotated code wisely,
+  then you only have to annotate the signatures of a limited number of
+  classes/methods
+  (e.g., the public interface to a library or package).
+
+\end{enumerate}
+
+Chapter~\ref{annotating-libraries} discusses adding annotations to
+signatures when you do not have source code available.
+Section~\ref{suppressing-warnings} discusses suppressing warnings.
+
+
+If you annotate a third-party library, please share it with us so that we
+can distribute the annotations with the Checker Framework; see
+Section~\ref{reporting-bugs}.
+
+
+\section{Backward compatibility with earlier versions of Java\label{backward-compatibility}}
+
+Sometimes, your code needs to be \emph{compiled} by people who are using a
+Java 5/6/7 compiler, which does not support type annotations.
+You can handle this situation by writing annotations in comments (Sections~\ref{annotations-in-comments}--\ref{uncommenting-annotations}).
+
+If your code just needs to be \emph{run} by people who are not using a Java
+8 JVM, supply an appropriate \<-target> command-line option to javac.  As
+discussed in Section~\ref{no-modular-type-checking-java7-jvm}, the
+disadvantage is that this makes it more difficult for clients of your
+library to use pluggable type-checking to verify their own code against the
+\<.class> or \<.jar> files that you supply;
+Section~\ref{declaration-annotations-for-java7} gives a partial solution.
+
+
+\subsection{Annotations in comments\label{annotations-in-comments}}
+
+A Java 4 compiler does not permit use of
+annotations.
+A Java 5/6/7 compiler only permits annotations on
+declarations --- it does not permit annotations on generic arguments,
+casts, \<extends> clauses, method receivers, etc.
+
+So that your code can be compiled by any Java compiler (for any version of
+the Java language), you may write any single annotation inside a
+\code{/*}\ldots\code{*/} Java comment, as in \code{List</*@NonNull*/ String>}.
+The Checker Framework compiler treats the code exactly as if you had not written the
+\code{/*} and \code{*/}.
+In other words, the Checker Framework compiler will recognize the
+annotation (when it is targeting a Java 8 or later JVM),
+but your code will still compile with any Java compiler.
+
+%% This is true, but obvious and not important enough to take up space in
+%% the manual.
+% In a single program, you may write some annotations in comments, and others
+% outside of comments.  There is not much point in doing so, however.
+
+By default, the Checker Framework compiler ignores any comment that contains spaces at the
+beginning or end, or between the \code{@} and the annotation name.
+In other words, it reads \code{/*@NonNull*/} as an annotation but ignores
+\code{/* @NonNull*/} and \code{/*@ NonNull*/} and \code{/*@NonNull */}.
+This
+feature enables backward compatibility with code that contains comments
+that start with \code{@} but are not annotations.  (The
+ESC/Java~\cite{FlanaganLLNSS02}, JML~\cite{LeavensBR2006:JML}, and
+Splint~\cite{Evans96} tools all use ``\code{/*@}'' or ``\code{/*~@}'' as a
+comment marker.)
+Compiler flag
+\code{-XDTA:spacesincomments} causes the compiler to parse annotation comments
+even when they contain spaces.  You may need to use
+\code{-XDTA:spacesincomments} if you use Eclipse's ``Source $>$ Correct
+Indentation'' command, since it inserts space in comments.  But the
+annotation comments are less readable with spaces, so it's even better to disable
+inserting spaces:  in the Formatter preferences, in the Comments tab,
+unselect the ``enable block comment formatting'' checkbox.
+
+Compiler flag \code{-XDTA:noannotationsincomments} causes the compiler
+to ignore annotation comments.  With this compiler flag, the 
+Checker Framework compiler behaves like a standard Java 8 compiler that does
+not support annotations in comments.  If your code already contains
+comments of the form \</*@...*/> that look like type annotations, and
+you want the Checker Framework compiler not to try to interpret them,
+then you can either selectively add spaces to the comments or use
+\code{-XDTA:noannotationsincomments} to turn off all annotation
+comments.
+
+\textbf{Note:} Annotations in comments is a feature of the javac compiler
+that is
+distributed along with the Checker Framework.  It is \emph{not}
+supported by the mainline OpenJDK javac.  This is the key
+difference between the Checker Framework compiler and the OpenJDK compiler.
+
+
+\subsubsection{Annotations in comments do not appear in Java 5/6/7 \code{.class} files\label{annotations-in-java7-class-files}}
+
+The Checker Framework compiler ignores annotations in comments when
+targeting a Java 5/6/7 JVM, for example when the \<-target 7> command-line
+option is supplied.
+
+It would be possible for the Checker Framework compiler to read the
+annotations in comments and place them in the Java 5/6/7 \<.class> file so
+that they are available when type-checking client code.  However, this
+would have two problems.  First, it would only be use useful to the Checker
+Framework compiler, because a standard Java 8 compiler will not look for
+type annotations in Java 5/6/7 bytecode.  Second, the type annotations
+make reference to parts of the Java 8 JDK, such as
+\sunjavadoc{java/lang/annotation/ElementType.html\#TYPE\_USE}{ElementType.TYPE\_USE}.
+% What are the exact consequences?  A warning or a crash?
+Therefore, trying to run the \<.class> file on a Java 5/6/7 JVM
+would cause warnings or crashes.
+
+
+\subsection{Import statements and receiver parameters in comments\label{receivers-and-imports-in-comments}}
+
+There is a more powerful mechanism that permits arbitrary code to be
+written in a comment.  Format the comment as ``\code{/*>>>}\ldots\code{*/}'',
+with the first three characters of the comment being greater-than signs. As
+with annotations in comments, the commented code is ignored by ordinary
+compilers but is treated like code by the
+Checker Framework compiler.
+
+This mechanism is intended for two purposes.
+First, it supports the receiver (\<this> parameter) syntax.  For example,
+to specify a method that does not modify its receiver:
+
+\begin{Verbatim}
+public boolean method1(/*>>> @ReadOnly MyClass this*/) { ... }
+public boolean method2(/*>>> @ReadOnly MyClass this, */ String argument) { ... }
+\end{Verbatim}
+
+Second, it can be used for import statements:
+
+\begin{Verbatim}
+/*>>>
+import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.checker.regex.qual.*;
+*/
+\end{Verbatim}
+
+\noindent
+If the import statements are \emph{not} commented out, then when compiling
+it is necessary to have the annotation definitions (e.g., the
+\code{checker.jar} or \code{checker-qual.jar} file) on the classpath.
+Commenting out the import statements also eliminates Eclipse
+warnings about unused import statements, if all uses of the imported
+qualifier are themselves in comments and thus invisible to Eclipse.
+
+A third use is for writing multiple annotations inside one
+comment, as in \code{/*>>> @NonNull @Interned */ String s;}.
+However, it is better style to write multiple annotations each
+inside its own comment, as in \</*@NonNull*/ /*@Interned*/ String s;>.
+
+It would be possible to abuse the \code{/*>>>...*/} mechanism to inject
+code only when using
+the Checker Framework compiler.  Doing so is not a sanctioned use of the
+mechanism.
+
+
+\subsection{Migrating away from annotations in comments\label{uncommenting-annotations}}
+
+Suppose that your codebase currently uses annotations in comments, but you
+wish to remove the comment characters around your annotations, because in
+the future you will use only compilers that support type annotations and
+your code will only run on Java 8 or later JVMs.
+This Unix command removes
+the comment characters, for all Java files in the current
+working directory or any subdirectory.
+
+\begin{Verbatim}
+   find . -type f -name '*.java' -print \
+     | xargs grep -l -P '/\*\s*@([^ */]+)\s*\*/' \
+     | xargs perl -pi.bak -e 's|/\*\s*@([^ */]+)\s*\*/|@\1|g'
+\end{Verbatim}
+
+You can customize this command:
+\begin{itemize}
+\item
+To process comments with embedded spaces and asterisks, change
+two instances of ``\verb|[^ */]|'' to ``\verb|[^/]|''.
+\item
+To ignore comments with leading or trailing spaces, remove the four
+instances of ``\verb|\s*|''.
+\item
+  To not make backups, remove ``\verb|.bak|''.
+\end{itemize}
+
+% TODO: adapt it to do so.
+The command does not handle the \code{>>>} comments; you will need to
+adapt the above command to do so, or remove them in another way.
+
+
+\subsection{No modular type-checking when targeting Java 5/6/7\label{no-modular-type-checking-java7-jvm}}
+
+The Checker Framework's type annotations utilize a Java 8 feature that
+allows them to be placed on any type use, including generic type parameters
+as in \code{List<@NonNull String>}.  A downside is that use of these type
+annotations creates a dependency on Java 8, which means that the compiled
+program requires a Java 8 or later JDK at run time. 
+
+To ensure that your program can run on a Java 5/6/7 JVM, use a command-line
+option such as \<-target 7> when doing normal compilation to produce
+classfiles.  Before doing so, you will do pluggable typechecking, using the
+\<-target 8> command-line option (or no \<-target> command-line option) to
+javac; you may wish to supply the \<-proc:only> command-line argument so
+that the type-checking step does not overwrite existing classfiles.
+
+Here are the disadvantages of this approach:
+
+\begin{itemize}
+\item
+It produces classfiles that contain no trace of your type annotations.
+This means that modular typechecking (also known as separate compilation)
+is not possible.
+
+You need to compile your entire application every time you
+do pluggable type-checking, rather than just compiling a subset of the
+files.  Furthermore, clients of your code cannot do pluggable
+type-checking to verify that they are using your code correctly, unless
+they re-compile your code (or at least all the interfaces that they use)
+every time that they compile their own.
+
+\item
+It makes pluggable type-checking a
+different step than ``real'' compilation, rather than both happening at the
+same time.  You will do pluggable type-checking first, and when it works or
+when you want to create a binary to distribute to others, you will compile
+with an ordinary Java compiler.
+\end{itemize}
+
+One way to enable clients to do pluggable type-checking is to provide a
+version of your library compiled for Java 8 or later, with the type
+annotations.  Clients will do type-checking against this version of the
+library, but will do normal compilation and execution using the Java 5, 6,
+or 7 version of your library.
+
+Section~\ref{declaration-annotations-for-java7} gives an alternative
+approach with its own advantages and disadvantages.
+
+
+\subsection{Distributing declaration annotations instead of type annotations\label{declaration-annotations-for-java7}}
+
+If it is important to you to distribute Java 5/6/7 classfiles against which
+clients can do some type-checking, this section gives a way to do so.
+
+The idea is to 
+use annotations that are Java 7 declaration annotations.
+This approach requires you to use annotations that are declared in
+different packages than usual and that have slightly different names.
+
+\begin{itemize}
+\item
+At code locations that are legal for both declaration and type
+annotations (such as for fields, method returns, and method parameters),
+write annotations normally (not in comments).
+\item
+At locations where a declaration annotation is not permitted
+(such as generic type parameters and \<extends> clauses), write
+annotations in comments.
+\end{itemize}
+
+Here are some disadvantages of this approach:
+
+\begin{itemize}
+\item
+  You need to use nonstandard names for
+  some annotations, and to remember which annotations to write in comments
+  and which to write normally.
+\item
+  It produces classfiles that contain only some of your type annotations
+  --- the ones that were not written in comments.
+  If your code uses type annotations at 
+  locations such as generic type parameters and \<extends> clauses, then
+  modular type-checking will not observe them;
+  the implications of that were described above.
+\end{itemize}
+
+
+Here are more details about the approach.
+Suppose you wish to run the Nullness Checker using Java 6 or 7
+declaration annotations rather than type annotations.  You have two options.
+
+\begin{enumerate}
+\item
+At locations where declaration annotations are possible,
+use aliased annotations from other projects.  For example, the aliased
+annotations for the Nullness Checker are listed in
+Section~\ref{nullness-related-work}.
+
+At locations where only type annotations are possible, use the
+``\<*Type>'' compatibility annotations from package
+\<org.checkerframework.checker.nullness.compatqual>
+in comments.  For example, the Nullness Checker
+declares these declaration annotations:
+\refqualclass{checker/nullness/compatqual}{NullableType},
+\refqualclass{checker/nullness/compatqual}{NonNullType},
+\refqualclass{checker/nullness/compatqual}{PolyNullType},
+\refqualclass{checker/nullness/compatqual}{MonotonicNonNullType}, and
+\refqualclass{checker/nullness/compatqual}{KeyForType}.
+
+\item
+At locations where declaration annotations are possible,
+use ``\<*Decl>'' compatibility annotations from package
+\<org.checkerframework.checker.nullness.compatqual>.
+For example, the Nullness Checker
+declares these declaration annotations:
+\refqualclass{checker/nullness/compatqual}{NullableDecl},
+\refqualclass{checker/nullness/compatqual}{NonNullDecl},
+\refqualclass{checker/nullness/compatqual}{PolyNullDecl},
+\refqualclass{checker/nullness/compatqual}{MonotonicNonNullDecl}, and
+\refqualclass{checker/nullness/compatqual}{KeyForDecl}.
+
+At locations where only type annotations are possible, use the regular
+Checker Framework type annotations in comments.
+\end{enumerate}
+
+Notice that in each case, the declaration annotations and type annotations
+have distinct names.  This enables a programmer to import both sets of
+annotations without a name conflict.  But, you must remember to use the
+correct name, depending on where the annotations are written.
+
+Eventually, when backward compatibility with Java 7 and earlier is not important,
+you should refactor your codebase to use only the regular Checker Framework
+annotations, and not to write them in comments.
+
+
+
+
+% LocalWords:  quals skipUses un AskipUses Alint annotationname javac's Awarns
+% LocalWords:  Xlint dotequals castNonNull XDTA spacesincomments Formatter jsr
+% LocalWords:  unselect checkbox classpath Djsr bak Nullness nullness java lang
+% LocalWords:  checkername util myref nulltest html ESC buildfile mynifty Fenum
+% LocalWords:  MyNiftyChecker messagekey basetype uncommenting Anomsgtext '
+% LocalWords:  AskipDefs mypackage jsr308 Djsr308 Makefile PLXCOMP expr '
+%  LocalWords:  TODO AsuppressWarnings AssumeAssertion AonlyUses AonlyDefs
+%  LocalWords:  ing warningkey redundantNullComparison ' ' qual proc Decl
+%  LocalWords:  noannotationsincomments lastsinglesuppression classfiles
+%%  LocalWords:  AshowSuppressWarningKeys NullableType NonNullType
+%%  LocalWords:  PolyNullType MonotonicNonNullType KeyForType NullableDecl
+%%  LocalWords:  NonNullDecl PolyNullDecl MonotonicNonNullDecl KeyForDecl
+%%  LocalWords:  refactored
