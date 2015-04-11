@@ -5,6 +5,10 @@ If you supply the -AresolveReflection command-line option, the Checker
 Framework attempts to resolve reflection.  This reduces the number of false
 positive warnings caused by reflection.
 
+The Map Key Checker has been rewritten to support dataflow analysis.
+Please see the section on "Dataflow: enhancing flow-sensitive type
+qualifier inference" in the manual for more details.
+
 The documentation for the Map Key Checker has been moved into its own
 chapter in the manual.
 
