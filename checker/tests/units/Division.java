@@ -2,8 +2,7 @@ import org.checkerframework.checker.units.qual.*;
 import org.checkerframework.checker.units.*;
 
 public class Division {
-    void d()
-    {
+    void d() {
         // Basic division of same units, no units constraint on x
         @m int am = 6 * UnitsTools.m, bm = 3 * UnitsTools.m;
         int x = am / bm;
@@ -75,8 +74,7 @@ public class Division {
         times2 = kmPERh / mPERs2;
     }
 
-    void SpeedOfSoundTests()
-    {
+    void SpeedOfSoundTests() {
         @mPERs double speedOfSound = (340.29 * UnitsTools.m) / (UnitsTools.s);
 
         @s double tenSeconds = 10.0 * UnitsTools.s;
