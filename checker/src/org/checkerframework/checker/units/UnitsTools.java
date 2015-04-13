@@ -13,6 +13,7 @@ import org.checkerframework.checker.units.qual.kmPERh;
 import org.checkerframework.checker.units.qual.m;
 import org.checkerframework.checker.units.qual.m2;
 import org.checkerframework.checker.units.qual.mPERs;
+import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.min;
 import org.checkerframework.checker.units.qual.mm;
 import org.checkerframework.checker.units.qual.mm2;
@@ -56,7 +57,7 @@ public class UnitsTools {
     public static final @kmPERh int kmPERh = 1;
 
     // Acceleration
-    public static final @mPERs int mPERs2 = 1;
+    public static final @mPERs2 int mPERs2 = 1;
 
     // Current
     public static final @A int A = 1;
