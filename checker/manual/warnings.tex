@@ -59,56 +59,124 @@ We now explain these mechanisms in turn.
 \section{\code{@SuppressWarnings} annotation\label{suppresswarnings-annotation}}
 
 You can suppress specific errors and warnings by use of the
-\code{@SuppressWarnings("\emph{checkername}")} annotation, for example
+\code{@SuppressWarnings} annotation, for example
 \code{@SuppressWarnings("interning")} or \code{@SuppressWarnings("nullness")}.
-The argument \emph{checkername} is in lower case and is derived from the
-way you invoke the checker; for example, if you invoke a checker as
-\code{javac -processor MyNiftyChecker ...}, then you would suppress its
-error messages with \code{@SuppressWarnings("mynifty")}.  (An exception is
-the Subtyping Checker, for which you use the annotation name; see
-Section~\ref{subtyping-using}).
-
-While not recommended, using \code{@SuppressWarnings("all")} will
-suppress warnings for all checkers.
+Section~\ref{suppresswarnings-annotation-syntax} explains the syntax of the
+argument string.
 
 A \sunjavadocanno{java/lang/SuppressWarnings.html}{SuppressWarnings}
 annotation may be placed on program declarations such as a local
 variable declaration, a method, or a class.  It suppresses all warnings
 related to the given checker, for that program element.
-\<@SuppressWarnings> is a declaration annotation, and it cannot be used on
-statements, expressions, or types.
+Section~\ref{suppresswarnings-annotation-locations} discusses where the
+annotation may be written in source code.
 
-For instance, one common use is
-to suppress warnings at a cast that you know is safe.  Here is an example
-that uses the Tainting Checker (Section~\ref{tainting-checker}); assume
-that \<expr> has type \<@Tainted String>:
+Section~\ref{suppresswarnings-best-practices} gives best practices for
+writing \<@SuppressWarnings> annotations.
 
+
+\subsection{\code{@SuppressWarnings} syntax\label{suppresswarnings-annotation-syntax}}
+
+The \code{@SuppressWarnings} annotation takes a string argument.
+
+The most common usage is \code{@SuppressWarnings("\emph{checkername}")}, as
+in \code{@SuppressWarnings("interning")} or
+\code{@SuppressWarnings("nullness")}.  The argument \emph{checkername} is
+in lower case and is derived from the way you invoke the checker.  For
+example, if you invoke a checker as
+\code{javac -processor MyNiftyChecker ...},
+then you would suppress its error messages with
+\code{@SuppressWarnings("mynifty")}.  (An exception is the Subtyping
+Checker, for which you use the annotation name; see
+Section~\ref{subtyping-using}).  While not recommended, using
+\code{@SuppressWarnings("all")} will suppress all warnings for all
+checkers.
+
+The \<@SuppressWarnings> argument string can also  be of the form
+\emph{checkername:messagekey}, in which case only
+errors/warnings relating to the given message key are suppressed.  For example,
+\code{cast.unsafe} is the messagekey for warnings about an unsafe cast, and
+\code{cast.redundant} is the messagekey for warnings about a redundant cast.
+
+Each warning from the compiler gives the most specefic
+suppression key that can be used to suppress that warning.
+An example is \<dereference.of.nullable> in 
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
-  @SuppressWarnings("tainting") // Explain why the suppression is sound.
+MyFile.java:107: error: [dereference.of.nullable] dereference of possibly-null reference myList
+          myList.add(elt);
+          ^
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\noindent
+With the \code{-AshowSuppressWarningKeys} command-line option,
+the compiler lists every key that would suppress the warning,
+not just the most specific one.
+
+%% This is true, but relevant mostly to developers, not users.
+% For a list of all message keys for a given checker, see two files:
+% \begin{enumerate}
+% \item \code{checker-framework/checker/src/org/checkerframework/checker/\emph{checkername}/messages.properties}
+% \item \code{checker-framework/framework/src/org/checkerframework/common/basetype/messages.properties}
+% \end{enumerate}
+% 
+% \noindent
+% You need to check the latter file because 
+% each checker is built on the \code{basetype} checker and inherits its
+% properties.
+
+
+\subsection{Where \code{@SuppressWarnings} can be written\label{suppresswarnings-annotation-locations}}
+
+\<@SuppressWarnings> is a declaration annotation, so it may be placed on
+program declarations such as a local variable declaration, a method, or a
+class.  It cannot be used on statements, expressions, or types.  To reduce
+the scope of a \<@SuppressWarnings> annotation, it is sometimes desirable
+to extract part of an expression into a local variable, so that warnings
+can be suppressed just for that local variable's initializer expression.
+
+As an example, consider suppressing a warnings at a cast that you know is safe.  Here is an example
+that uses the Tainting Checker (Section~\ref{tainting-checker}); assume
+that \<expr> has compile-time (declared) type \<@Tainted String>, but you
+know that the run-time value of \<expr> is untainted.
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  @SuppressWarnings("tainting:cast.unsafe") // expr is untainted because ... [explanation goes here]
   @Untainted String myvar = expr;
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 \noindent
 It would have been \emph{illegal} to write
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
   @Untainted String myvar;
-  // This does not work; @SuppressWarnings goes on a declaration, not a statement
-  @SuppressWarnings("tainting") // Explain why the suppression is sound.
+  ...
+  @SuppressWarnings("tainting:cast.unsafe") // expr is untainted because ...
   myvar = expr;
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 \noindent
-because Java does not permit annotations (such as \<@SuppressWarnings>) on
+This does not work because
+Java does not permit annotations (such as \<@SuppressWarnings>) on
 assignments or other statements or expressions.
-
-
-% TODO: improve description
-
-Each warning from the compiler also issues the most concrete
-suppression key that can be used to suppress that warning.
-Additionally, the \code{-AshowSuppressWarningKeys} command-line option
-can be used to show all applicable suppression keys.
 
 
 \subsection{Good practices when suppressing warnings\label{suppresswarnings-best-practices}}
@@ -119,7 +187,7 @@ If a particular expression causes a
 false positive warning, you should extract that expression into a local variable
 and place a \code{@SuppressWarnings} annotation on the variable
 declaration, rather than suppressing warnings for a larger expression or an
-entire method body.
+entire method body.  See Section~\ref{suppresswarnings-annotation-locations}.
 
 %% I'm not sure how this is related to the smallest possible scope.
 % As another example, if you have annotated the signatures but not the bodies
@@ -127,14 +195,40 @@ entire method body.
 % annotation on the class declaration or on the package's
 % \code{package-info.java} file.
 
+
+\subsubsection{Use a specific argument to \code{@SuppressWarnings}\label{suppresswarnings-best-practices-specific-argument}}
+
+
+\label{compiler-message-keys}
+
+It is best to use the most specific possible message key to suppress just a
+specific error that you know to be a false positive.  The checker outputs
+this message key when it issues an error.  If you use a broader
+\<@SuppressWarnings> annotation, then it may mask other errors that you
+needed to know about.
+
+The example of Section~\ref{suppresswarnings-annotation-locations} could
+have been written as any one of the following, with the last one being the
+best style:
+
+\begin{Verbatim}
+  @SuppressWarnings("tainting")              // suppresses all tainting-related warnings
+  @SuppressWarnings("tainting:cast")         // suppresses tainting warnings about casts
+  @SuppressWarnings("tainting:cast.unsafe")  // suppresses tainting warnings about unsafe casts
+\end{Verbatim}
+
+
+
+
+
 \subsubsection{Justify why the warning is a false positive\label{suppresswarnings-best-practices-justification}}
 
 A \<@SuppressWarnings> annotation asserts that the code is actually
-correct, even though the type system is unable to prove that the code is
-correct.
+correct or safe (that is, no undesired behavior will occur), even though
+the type system is unable to prove that the code is correct or safe.
 
 Whenever you write a \<@SuppressWarnings> annotation, you should also
-write, typically on the same line or on the preceding line, a code comment
+write, typically on the same line, a code comment
 explaining why the code is actually correct.  In some cases you might also
 justify why the code cannot be rewritten in a simpler way that would be
 amenable to type-checking.
@@ -142,43 +236,6 @@ amenable to type-checking.
 This documentation will help you and others to understand the reason for
 the \<@SuppressWarnings> annotation.  It will also help if you decide to
 audit your code to verify all the warning suppressions.
-
-\subsubsection{Use a specific argument to \code{@SuppressWarnings}\label{suppresswarnings-best-practices-specific-argument}}
-
-\label{compiler-message-keys}
-
-The \<@SuppressWarnings> argument string can be of the form
-\emph{checkername} or
-or \emph{checkername:messagekey}.  The \emph{checkername} part is as
-described above.  The \emph{messagekey} part suppresses only
-errors/warnings relating to the given message key.  For example,
-\code{cast.unsafe} is the key for warnings about an unsafe cast, and
-\code{cast.redundant} to the key for warnings about a redundant cast.
-
-Thus, the above example could have been written as any one of the
-following, which would have suppressed the specific error:
-
-\begin{Verbatim}
-  @SuppressWarnings("tainting")              // suppresses all tainting-related warnings
-  @SuppressWarnings("tainting:cast.unsafe")  // suppresses tainting warnings about unsafe casts
-  @SuppressWarnings("tainting:cast")         // suppresses tainting warnings about casts
-\end{Verbatim}
-
-\noindent
-For a list of the message keys, 
-see the \code{messages.properties} files in 
-%BEGIN LATEX
-\\
-%END LATEX
-\code{checker-framework/checker/src/org/checkerframework/checker/\emph{checkername}/messages.properties}.
-Each checker is built on the \code{basetype} checker and inherits its
-properties.  Thus, to find all the error keys for a checker, you usually
-need to examine its own \code{messages.properties} file and that of
-\code{basetype}.
-
-If a checker produces a warning/error and you want to determine its message
-key, you can re-run the checker, passing the the \code{-Anomsgtext}
-command-line option (Section~\ref{debugging-options}).
 
 
 \section{\code{@AssumeAssertion} string in an \<assert> message\label{assumeassertion}}

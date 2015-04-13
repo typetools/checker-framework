@@ -288,6 +288,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      *         otherwise
      */
     // TODO: handle != comparisons too!
+    // TODO: handle more methods, such as early return from addAll when this == arg
     private boolean suppressInsideComparison(final BinaryTree node) {
         // Only handle == binary trees
         if (node.getKind() != Tree.Kind.EQUAL_TO)
@@ -315,7 +316,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         final Element rhs = TreeUtils.elementFromUse((IdentifierTree)right);
 
         //Matcher to check for if statement that returns zero
-        Heuristics.Matcher matcher = new Heuristics.Matcher() {
+        Heuristics.Matcher matcherIfReturnsZero = new Heuristics.Matcher() {
 
                 @Override
                 public Boolean visitIf (IfTree tree, Void p) {
@@ -343,7 +344,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         if (overrides(enclosing, Comparator.class, "compare")) {
             final boolean returnsZero =
                 Heuristics.Matchers.withIn(
-                        Heuristics.Matchers.ofKind(Tree.Kind.IF, matcher)).match(getCurrentPath());
+                        Heuristics.Matchers.ofKind(Tree.Kind.IF, matcherIfReturnsZero)).match(getCurrentPath());
 
             if (!returnsZero)
                 return false;
@@ -366,7 +367,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
             final boolean returnsZero =
                 Heuristics.Matchers.withIn(
-                        Heuristics.Matchers.ofKind(Tree.Kind.IF, matcher)).match(getCurrentPath());
+                        Heuristics.Matchers.ofKind(Tree.Kind.IF, matcherIfReturnsZero)).match(getCurrentPath());
 
             if (!returnsZero) {
                 return false;
@@ -417,7 +418,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         final ExpressionTree right = unparenthesize(node.getRightOperand());
 
         // looking for ((a == b || a.equals(b))
-        Heuristics.Matcher matcher = new Heuristics.Matcher() {
+        Heuristics.Matcher matcherEqOrEquals = new Heuristics.Matcher() {
 
                 // Returns true if e is either "e1 != null" or "e2 != null"
                 private boolean isNeqNull(ExpressionTree e, ExpressionTree e1, ExpressionTree e2) {
@@ -515,7 +516,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             };
 
         boolean okay = Heuristics.Matchers.withIn(
-                Heuristics.Matchers.ofKind(Tree.Kind.CONDITIONAL_OR, matcher)).match(getCurrentPath());
+                Heuristics.Matchers.ofKind(Tree.Kind.CONDITIONAL_OR, matcherEqOrEquals)).match(getCurrentPath());
         return okay;
     }
 
@@ -545,7 +546,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         final Element rhs = TreeUtils.elementFromUse((IdentifierTree)right);
 
         // looking for ((a == b || a.compareTo(b) == 0)
-        Heuristics.Matcher matcher = new Heuristics.Matcher() {
+        Heuristics.Matcher matcherEqOrCompareTo = new Heuristics.Matcher() {
 
                 @Override
                 public Boolean visitBinary(BinaryTree tree, Void p) {
@@ -612,7 +613,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             };
 
         boolean okay = Heuristics.Matchers.withIn(
-                Heuristics.Matchers.ofKind(Tree.Kind.CONDITIONAL_OR, matcher)).match(getCurrentPath());
+                Heuristics.Matchers.ofKind(Tree.Kind.CONDITIONAL_OR, matcherEqOrCompareTo)).match(getCurrentPath());
         return okay;
     }
 

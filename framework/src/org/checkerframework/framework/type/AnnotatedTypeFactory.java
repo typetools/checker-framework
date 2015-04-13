@@ -183,7 +183,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final AnnotationFormatter annotationFormatter;
 
     /**
-     * Provides utility method to substitute arguments for their type variables
+     * Provides utility method to substitute arguments for their type variables.
+     * Field should be final, but can only be set in postInit, because subtypes
+     * might need other state to be initialized first.
      */
     protected TypeVariableSubstitutor typeVarSubstitutor;
 
@@ -1525,12 +1527,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             AnnotatedTypes.findTypeArguments(processingEnv, this, tree, methodElt, methodType);
 
         if (!typeVarMapping.isEmpty()) {
-
-
             for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
-                // TODO: call to getTypeParmaeterDeclaration should not be needed, as
-                // methodType should only contain declarations.
-
                 if (typeVarMapping.get(tv.getUnderlyingType()) == null) {
                     ErrorReporter.errorAbort("AnnotatedTypeFactory.methodFromUse:" +
                             "mismatch between declared method type variables and the inferred method type arguments! " +
@@ -1542,8 +1539,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             methodType = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeVarMapping, methodType);
         }
 
-        if (tree.getKind() == Tree.Kind.METHOD_INVOCATION
-         && TreeUtils.isGetClassInvocation((MethodInvocationTree) tree, processingEnv)) {
+        if (tree.getKind() == Tree.Kind.METHOD_INVOCATION &&
+                TreeUtils.isGetClassInvocation((MethodInvocationTree) tree, processingEnv)) {
             adaptGetClassReturnTypeToReceiver(methodType, receiverType);
         }
 
@@ -2511,7 +2508,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param element
      *            The element for which to determine annotations.
      * @param metaAnnotation
-     *            The meta annotation that needs to be present.
+     *            The meta-annotation that needs to be present.
      * @return A list of pairs {@code (anno, metaAnno)} where {@code anno} is
      *         the annotation mirror at {@code element}, and {@code metaAnno} is
      *         the annotation mirror used to annotate {@code anno}.
@@ -2553,7 +2550,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param element
      *            The element at which to look for annotations.
      * @param metaAnnotation
-     *            The meta annotation that needs to be present.
+     *            The meta-annotation that needs to be present.
      * @return A list of pairs {@code (anno, metaAnno)} where {@code anno} is
      *         the annotation mirror at {@code element}, and {@code metaAnno} is
      *         the annotation mirror used to annotate {@code anno}.

@@ -110,7 +110,7 @@ import com.sun.source.tree.TypeCastTree;
  * <li value="10">any remaining unqualified types (i.e. Mutable is the default)
  * </ol>
  *
- * Implementation detail:  (*) cases are handled with a meta annotation
+ * Implementation detail:  (*) cases are handled with a meta-annotation
  * rather than in this class.
  * <p>
  *
