@@ -4,6 +4,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.CFGBuilder;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -70,20 +71,32 @@ public class CFCFGBuilder extends CFGBuilder {
         return phase3result;
     }
 
+    /*
+     * Given a SourceChecker and an AssertTree, returns whether the AssertTree
+     * uses an @AssumeAssertion string that is relevant to the SourceChecker.
+     */
+    public static boolean assumeAssertionsActivatedForAssertTree(SourceChecker checker, AssertTree tree) {
+        ExpressionTree detail = tree.getDetail();
+        if (detail != null) {
+            String msg = detail.toString();
+            Collection<String> warningKeys = checker.getSuppressWarningsKeys();
+            for (String warningKey : warningKeys) {
+                String key = "@AssumeAssertion(" + warningKey + ")";
+                if (msg.contains(key)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public class CFCFGTranslationPhaseOne extends CFGTranslationPhaseOne {
 
         @Override
         protected boolean assumeAssertionsEnabledFor(AssertTree tree) {
-            ExpressionTree detail = tree.getDetail();
-            if (detail != null) {
-                String msg = detail.toString();
-                Collection<String> warningKeys = checker.getSuppressWarningsKeys();
-                for (String warningKey : warningKeys) {
-                    String key = "@AssumeAssertion(" + warningKey + ")";
-                    if (msg.contains(key)) {
-                        return true;
-                    }
-                }
+            if (assumeAssertionsActivatedForAssertTree(checker, tree)) {
+                return true;
             }
             return super.assumeAssertionsEnabledFor(tree);
         }
