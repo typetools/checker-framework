@@ -1,13 +1,13 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class TestAssumeAssertionsAreDisabled {
+class TestAssumeAssertionsAreEnabled {
 
   void foo(@Nullable String s1, @Nullable String s2) {
-
-    // If assertions are disabled, then this cannot throw a NullPointerException
+    //:: error: (dereference.of.nullable)
     assert s2.equals(s1);
+  }
 
-    // However, even with assertions disabled, @AssumeAssertion is still respected
+  void bar(@Nullable String s1, @Nullable String s2) {
     //:: error: (dereference.of.nullable)
     assert s2.equals(s1) : "@AssumeAssertion(nullness)";
   }
