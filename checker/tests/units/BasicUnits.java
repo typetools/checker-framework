@@ -16,7 +16,7 @@ public class BasicUnits {
 
         // this is allowed, unqualified is a supertype of all units
         int bad = m / s;
-        
+
         @mPERs int good = m / s;
 
         //:: error: (assignment.type.incompatible)
@@ -24,6 +24,20 @@ public class BasicUnits {
 
         //:: error: (assignment.type.incompatible)
         @mPERs int b2 = m * s;
+
+        @mPERs2 int goodaccel = m / s / s;
+
+        //:: error: (assignment.type.incompatible)
+        @mPERs2 int badaccel1 = s / m / s;
+
+        //:: error: (assignment.type.incompatible)
+        @mPERs2 int badaccel2 = s / s / m;
+
+        //:: error: (assignment.type.incompatible)
+        @mPERs2 int badaccel3 = s * s / m;
+
+        //:: error: (assignment.type.incompatible)
+        @mPERs2 int badaccel4 = m * s * s;
 
         @Area int ae = m * m;
         @m2 int gae = m * m;
