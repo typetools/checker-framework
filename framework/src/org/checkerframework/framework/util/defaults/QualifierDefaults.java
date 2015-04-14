@@ -447,7 +447,8 @@ public class QualifierDefaults {
         }
         
         if (untypedDefaults.size() > 0 &&
-              ElementUtils.isElementFromByteCode(annotationScope)) {
+              ElementUtils.isElementFromByteCode(annotationScope) &&
+              atypeFactory.declarationFromElement(annotationScope) == null) {
             for (Default def : untypedDefaults) {
                 applier.apply(def);
             }
