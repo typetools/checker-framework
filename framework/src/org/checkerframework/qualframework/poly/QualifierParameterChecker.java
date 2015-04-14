@@ -6,6 +6,7 @@ import org.checkerframework.qualframework.base.format.DefaultQualifiedTypeFormat
 import org.checkerframework.qualframework.base.format.QualifiedTypeFormatter;
 import org.checkerframework.qualframework.poly.format.SurfaceSyntaxFormatterConfiguration;
 import org.checkerframework.qualframework.poly.format.SurfaceSyntaxQualParamsFormatter;
+import org.checkerframework.qualframework.util.QualifierContext;
 
 /**
  * QualifierParameterChecker extends Checker to configure QualifiedTypeFormatters
@@ -16,22 +17,29 @@ public abstract class QualifierParameterChecker<Q> extends Checker<QualParams<Q>
     @Override
     public QualifiedTypeFormatter<QualParams<Q>> createQualifiedTypeFormatter() {
 
-        if (getContext().getOptionConfiguration().hasOption("printQualifierParametersAsAnnotations")) {
+        QualifierContext<QualParams<Q>> context = getContext();
+
+        boolean printVerboseGenerics = context.getOptionConfiguration().hasOption("printVerboseGenerics");
+        boolean printAllQualifiers   = context.getOptionConfiguration().hasOption("printAllQualifiers");
+
+        if (context.getOptionConfiguration().hasOption("printQualifierParametersAsAnnotations")) {
             SurfaceSyntaxFormatterConfiguration<Q> config = createSurfaceSyntaxFormatterConfiguration();
             if (config != null) {
                 SurfaceSyntaxQualParamsFormatter<Q> formatter = new SurfaceSyntaxQualParamsFormatter<Q>(config);
                 return new DefaultQualifiedTypeFormatter<>(
                         formatter,
-                        getContext().getCheckerAdapter().getTypeMirrorConverter(),
-                        getContext().getOptionConfiguration().hasOption("printAllQualifiers")
+                        context.getCheckerAdapter().getTypeMirrorConverter(),
+                        printVerboseGenerics,
+                        printAllQualifiers
                 );
             }
         }
 
         return new PrettyQualifiedTypeFormatter<>(
-                getContext().getCheckerAdapter().getTypeMirrorConverter(),
+                context.getCheckerAdapter().getTypeMirrorConverter(),
                 getInvisibleQualifiers(),
-                getContext().getOptionConfiguration().hasOption("printAllQualifiers")
+                printVerboseGenerics,
+                printAllQualifiers
         );
     }
 
