@@ -26,22 +26,25 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
      * Constructs a DefaultAnnotatedTypeFormatter that does not print invisible annotations by default
      */
     public DefaultAnnotatedTypeFormatter() {
-        this(new DefaultAnnotationFormatter(), false);
+        this(new DefaultAnnotationFormatter(), true, false);
     }
 
     /**
+     * @param printVerboseGenerics For type parameters, their uses, and wildcards, print more information
      * @param defaultPrintInvisibleAnnos Whether or not this AnnotatedTypeFormatter should print invisible annotations
      */
-    public DefaultAnnotatedTypeFormatter(boolean defaultPrintInvisibleAnnos) {
-        this(new DefaultAnnotationFormatter(), defaultPrintInvisibleAnnos);
+    public DefaultAnnotatedTypeFormatter(boolean printVerboseGenerics, boolean defaultPrintInvisibleAnnos) {
+        this(new DefaultAnnotationFormatter(), printVerboseGenerics, defaultPrintInvisibleAnnos);
     }
 
     /**
      * @param formatter An object that converts annotation mirrors to strings
+     * @param printVerboseGenerics For type parameters, their uses, and wildcards, print more information
      * @param defaultPrintInvisibleAnnos Whether or not this AnnotatedTypeFormatter should print invisible annotations
      */
-    public DefaultAnnotatedTypeFormatter(AnnotationFormatter formatter, boolean defaultPrintInvisibleAnnos) {
-        this(new FormattingVisitor(formatter, defaultPrintInvisibleAnnos));
+    public DefaultAnnotatedTypeFormatter(AnnotationFormatter formatter, boolean printVerboseGenerics,
+                                         boolean defaultPrintInvisibleAnnos) {
+        this(new FormattingVisitor(formatter, printVerboseGenerics, defaultPrintInvisibleAnnos));
     }
 
     /**
@@ -85,8 +88,16 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
          */
         protected boolean currentPrintInvisibleSetting;
 
-        public FormattingVisitor(AnnotationFormatter annoFormatter, boolean defaultInvisiblesSetting) {
+        /**
+         * Prints type variables in a less ambiguous manner using [] to delimit them.
+         * Always prints both bounds even if they lower bound is an AnnotatedNull type.
+         */
+        protected boolean printVerboseGenerics;
+
+        public FormattingVisitor(AnnotationFormatter annoFormatter, boolean printVerboseGenerics,
+                                 boolean defaultInvisiblesSetting) {
             this.annoFormatter = annoFormatter;
+            this.printVerboseGenerics = printVerboseGenerics;
             this.defaultInvisiblesSetting = defaultInvisiblesSetting;
             this.currentPrintInvisibleSetting = false;
         }
@@ -111,6 +122,10 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         @SideEffectFree
         protected void printBound(final String keyWord, final AnnotatedTypeMirror field,
                                   final Set<AnnotatedTypeMirror> visiting, final StringBuilder sb) {
+            if (!printVerboseGenerics && (field == null || field.getKind() == TypeKind.NULL)) {
+                return;
+            }
+
             sb.append(" ");
             sb.append(keyWord);
             sb.append(" ");
@@ -139,7 +154,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         @Override
         public String visitDeclared(AnnotatedDeclaredType type, Set<AnnotatedTypeMirror> visiting) {
             StringBuilder sb = new StringBuilder();
-            if (type.isDeclaration()) {
+            if (type.isDeclaration() && currentPrintInvisibleSetting) {
                 sb.append("/*DECL*/ ");
             }
             final Element typeElt = type.getUnderlyingType().asElement();
@@ -269,18 +284,24 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         @Override
         public String visitTypeVariable(AnnotatedTypeVariable type, Set<AnnotatedTypeMirror> visiting) {
             StringBuilder sb = new StringBuilder();
-            if (type.isDeclaration()) {
-                sb.append("/*DECL*/ ");
-            }
-
             sb.append(type.actualType);
+
             if (!visiting.contains(type)) {
+                if (type.isDeclaration() && currentPrintInvisibleSetting) {
+                    sb.append("/*DECL*/ ");
+                }
+
                 try {
                     visiting.add(type);
-                    sb.append("[");
+                    if (printVerboseGenerics) {
+                        sb.append("[");
+                    }
                     printBound("extends", type.getUpperBoundField(), visiting, sb);
                     printBound("super", type.getLowerBoundField(), visiting, sb);
-                    sb.append("]");
+                    if (printVerboseGenerics) {
+                        sb.append("]");
+                    }
+
                 } finally {
                     visiting.remove(type);
                 }
@@ -312,12 +333,19 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             sb.append(annoFormatter.formatAnnotationString(type.annotations, currentPrintInvisibleSetting));
             sb.append("?");
             if (!visiting.contains(type)) {
+
                 try {
                     visiting.add(type);
-                    sb.append("[");
+
+                    if (printVerboseGenerics) {
+                        sb.append("[");
+                    }
                     printBound("extends", type.getExtendsBoundField(), visiting, sb);
                     printBound("super", type.getSuperBoundField(), visiting, sb);
-                    sb.append("]");
+                    if (printVerboseGenerics) {
+                        sb.append("]");
+                    }
+
                 } finally {
                     visiting.remove(type);
                 }
