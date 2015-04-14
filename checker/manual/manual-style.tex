@@ -1,0 +1,154 @@
+\usepackage[T1]{fontenc}
+\usepackage{pslatex}
+\usepackage{microtype}
+
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage{hevea}
+\usepackage{url}
+\usepackage{color}
+\usepackage{hyperref}
+% Not supported by Hevea, so don't bother: \usepackage{minitoc}
+\usepackage{proof}
+
+\usepackage{relsize}
+% \def\codesize{\smaller}
+\def\codesize{\relax}           % for "pslatex"
+%HEVEA \def\codesize{\relax}
+
+%%BEGIN LATEX
+\newcommand{\code}[1]{\ifmmode{\mbox{\codesize\ttfamily{#1}}}\else{\codesize\ttfamily #1}\fi}
+%\DeclareRobustCommand{\code}[1]{\codesize{\path{#1}}}
+%%END LATEX
+%%HEVEA \newcommand{\code}[1]{\codesize{\texttt{#1}}}
+\def\<#1>{\code{#1}}
+
+% This can't handle a URL with an embedded "#" -- at least at UW CSE
+\newcommand{\myurl}[1]{{\codesize\url{#1}}}
+%HEVEA \def\myurl{\url}
+% A command that shows the URL in the printed manual.
+% make a URL visible in PDF the but just be attached to anchor text in HTML:
+%BEGIN LATEX
+\newcommand{\ahreforurl}[2]{#2 (\url{#1})}
+%END LATEX
+%HEVEA \newcommand{\ahreforurl}[2]{\href{#1}{#2}}
+
+\usepackage{listings}
+\usepackage{alltt}
+\usepackage{fancyvrb}
+%BEGIN LATEX
+\RecustomVerbatimEnvironment{Verbatim}{Verbatim}{fontsize=\codesize}
+%END LATEX
+
+%HEVEA \footerfalse    % Disable hevea advertisement in footer
+
+\newcommand{\htmlhr}{\relax}
+%HEVEA \renewcommand{\htmlhr}{\@hr{}{}}
+
+% Problem with using "\newcommand" or "\renewcommand": Hevea writes this
+% into manual.image.tex, and invokes LaTeX on it.  Sometimes running "make"
+% leads to an error as a result, sometimes not.  I don't know the pattern
+% of the failures, though running "make clean" and then "make" seems to
+% work.  So maybe there's a problem with an auxiliary file.  Solve it by
+% always defining \discretionary, so that \renewcommand works.
+%HEVEA \def\discretionary{\relax}\renewcommand{\discretionary}[3]{\relax}
+
+%HEVEA \newstyle{.lstframe}{margin:auto;margin-bottom:2em}
+
+% Make images larger and thus less pixelated.  This is not really a solution.
+%HEVEA\@addimagenopt{-mag 2000}
+% This avoids Hevea's built in conversion.
+% The argument is the HEIGHT, not the width.
+\newcommand{\includeimage}[2]{%
+\begin{center}
+\includeimagenocentering{#1}{#2}%
+%BEGIN LATEX
+\vspace{-1.5\baselineskip}
+%END LATEX
+\end{center}}
+
+% The argument is the HEIGHT, not the width.
+\newcommand{\includeimagenocentering}[2]{%
+\ifhevea\imgsrc{#1.svg}\else%
+\resizebox{!}{#2}{\includegraphics{figures/#1}}\fi}
+
+
+% At least 80% of every float page must be taken up by
+% floats; there will be no page with more than 20% white space.
+\def\topfraction{.8}
+\def\dbltopfraction{\topfraction}
+\def\floatpagefraction{\topfraction}     % default .5
+\def\dblfloatpagefraction{\topfraction}  % default .5
+\def\textfraction{.2}
+
+
+% Left and right curly braces and backslash, in tt font
+\newcommand{\ttlcb}{\texttt{\char "7B}}
+\newcommand{\ttrcb}{\texttt{\char "7D}}
+\newcommand{\ttbs}{\texttt{\char "5C}}
+
+
+%BEGIN LATEX
+  %% Bring items closer together in list environments
+  % Prevent infinite loops
+  \let\Itemize =\itemize
+  \let\Enumerate =\enumerate
+  \let\Description =\description
+  % Zero the vertical spacing parameters
+  \def\Nospacing{\itemsep=0pt\topsep=0pt\partopsep=0pt\parskip=0pt\parsep=0pt}
+  % Redefine the environments in terms of the original values
+  \renewenvironment{itemize}{\Itemize\Nospacing}{\endlist}
+  \renewenvironment{enumerate}{\Enumerate\Nospacing}{\endlist}
+  \renewenvironment{description}{\Description\Nospacing}{\endlist}
+
+  % Add line between figure and text
+  \makeatletter
+  \def\topfigrule{\kern3\p@ \hrule \kern -3.4\p@} % the \hrule is .4pt high
+  \def\botfigrule{\kern-3\p@ \hrule \kern 2.6\p@} % the \hrule is .4pt high
+  \def\dblfigrule{\kern3\p@ \hrule \kern -3.4\p@} % the \hrule is .4pt high
+  \makeatother
+%END LATEX
+
+
+% Reference to Checker Framework Javadoc for a class (not a method, etc.).
+% Arg 1: directory under checker/, including internal "/", but no leading
+% or trailing "/".
+% Arg 2: class name.
+% In the printed version, only the base class name appears.
+% In the HTML version, it's a link to the Javadoc.
+\newcommand{\refclass}[2]{\href{api/org/checkerframework/#1/#2.html}{\<#2>}}
+
+% Reference to Checker Framework Javadoc for a type qualifier/annotation class
+% (not a method, etc.).  This prepends an @ to the qualifier name.
+\newcommand{\refqualclass}[2]{\href{api/org/checkerframework/#1/#2.html}{\<@#2>}}
+
+% Reference to Checker Framework Javadoc for a type qualifier/annotation class
+% (not a method, etc.) that takes parameters.  This prepends an @ to the
+% qualifier name and includes parentheses around the parameters.
+\newcommand{\refqualclasswithparams}[3]{\href{api/org/checkerframework/#1/#2.html}{\<@#2>}\<(#3)>}
+
+% Reference to Checker Framework Javadoc for a method or field.).
+% Arg 1: package name using "/" as a separator, with no leading or trailing "/".
+%  example: "checker/nullness/quals"
+% Arg 2: class name.
+% Arg 3: method name.
+% Arg 4: fully-qualified arguments.  Example: "(T)"
+% In the printed version, only "class.method" appears.
+% In the HTML version, it's a link to the Javadoc.
+\newcommand{\refmethod}[4]{\href{api/org/checkerframework/#1/#2.html\##3#4}{\<#2.#3>}}
+% Reference to Sun Javadoc.
+% Arg 1: .html reference, without the .../api/ prefix
+% Arg 2: What will appear in the formatted manual.
+% Do not use \url in the body of any macro
+\newcommand{\sunjavadoc}[2]{\href{http://types.cs.washington.edu/checker-framework/jdk-api/jdk/#1}{\<#2>}}
+% Like \sunjavadoc, but for annotations and prepends "@".
+\newcommand{\sunjavadocanno}[2]{\href{http://types.cs.washington.edu/checker-framework/jdk-api/jdk/#1}{\<@#2>}}
+
+
+\newcommand{\refwithpage}[1]{\ref{#1}, page~\pageref{#1}}
+%HEVEA \renewcommand{\refwithpage}[1]{\ref{#1}}
+\newcommand{\refwithpageparen}[1]{\ref{#1} (page~\pageref{#1})}
+%HEVEA \renewcommand{\refwithpageparen}[1]{\ref{#1}}
+\newcommand{\chapterpageref}[1]{Chapter~\refwithpage{#1}}
+
+%  LocalWords:  fontsize 0pt
