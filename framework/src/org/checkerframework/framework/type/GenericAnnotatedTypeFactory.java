@@ -748,8 +748,14 @@ public abstract class GenericAnnotatedTypeFactory<
         }
 
         if (checker.hasOption("flowdotdir")) {
+
+            String checkerName = checker.getClass().getSimpleName();
+            if (checkerName.endsWith("Checker") || checkerName.endsWith("checker")) {
+                checkerName = checkerName.substring(0, checkerName.length() - "checker".length());
+            }
+
             String dotfilename = checker.getOption("flowdotdir") + "/"
-                    + dotOutputFileName(ast) + ".dot";
+                    + dotOutputFileName(ast) + "_" + checkerName + ".dot";
             // make path safe for Windows
             dotfilename = dotfilename.replace("<", "_").replace(">", "");
             System.err.println("Output to DOT file: " + dotfilename);
