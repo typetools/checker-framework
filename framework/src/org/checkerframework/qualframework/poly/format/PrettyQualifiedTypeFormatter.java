@@ -50,9 +50,9 @@ public class PrettyQualifiedTypeFormatter<Q> extends DefaultQualifiedTypeFormatt
                 TypeMirrorConverter<QualParams<Q>> converter,
                 QualParamsFormatter<Q> formatter,
                 org.checkerframework.framework.util.AnnotationFormatter annoFormatter,
-                boolean useOldFormat,
+                boolean printVerboseGenerics,
                 boolean defaultPrintInvisibleQualifier) {
-            super(new FormattingVisitor<Q>(converter, annoFormatter, formatter, useOldFormat, defaultPrintInvisibleQualifier));
+            super(new FormattingVisitor<Q>(converter, annoFormatter, formatter, printVerboseGenerics, defaultPrintInvisibleQualifier));
         }
 
         protected static class FormattingVisitor<Q> extends DefaultAnnotatedTypeFormatter.FormattingVisitor {
@@ -64,10 +64,10 @@ public class PrettyQualifiedTypeFormatter<Q> extends DefaultQualifiedTypeFormatt
                     TypeMirrorConverter<QualParams<Q>> converter,
                     org.checkerframework.framework.util.AnnotationFormatter annoFormatter,
                     QualParamsFormatter<Q>  formatter,
-                    boolean useOldFormat,
+                    boolean printVerboseGenerics,
                     boolean defaultInvisiblesSetting) {
 
-                super(annoFormatter, useOldFormat, defaultInvisiblesSetting);
+                super(annoFormatter, printVerboseGenerics, defaultInvisiblesSetting);
                 this.converter = converter;
                 this.formatter = formatter;
             }
