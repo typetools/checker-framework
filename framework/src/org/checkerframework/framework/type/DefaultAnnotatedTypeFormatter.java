@@ -30,19 +30,21 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     }
 
     /**
+     * @param printVerboseGenerics For type parameters, their uses, and wildcards, print more information
      * @param defaultPrintInvisibleAnnos Whether or not this AnnotatedTypeFormatter should print invisible annotations
      */
-    public DefaultAnnotatedTypeFormatter(boolean useOldFormat, boolean defaultPrintInvisibleAnnos) {
-        this(new DefaultAnnotationFormatter(), useOldFormat, defaultPrintInvisibleAnnos);
+    public DefaultAnnotatedTypeFormatter(boolean printVerboseGenerics, boolean defaultPrintInvisibleAnnos) {
+        this(new DefaultAnnotationFormatter(), printVerboseGenerics, defaultPrintInvisibleAnnos);
     }
 
     /**
      * @param formatter An object that converts annotation mirrors to strings
+     * @param printVerboseGenerics For type parameters, their uses, and wildcards, print more information
      * @param defaultPrintInvisibleAnnos Whether or not this AnnotatedTypeFormatter should print invisible annotations
      */
-    public DefaultAnnotatedTypeFormatter(AnnotationFormatter formatter, boolean useOldFormat,
+    public DefaultAnnotatedTypeFormatter(AnnotationFormatter formatter, boolean printVerboseGenerics,
                                          boolean defaultPrintInvisibleAnnos) {
-        this(new FormattingVisitor(formatter, useOldFormat, defaultPrintInvisibleAnnos));
+        this(new FormattingVisitor(formatter, printVerboseGenerics, defaultPrintInvisibleAnnos));
     }
 
     /**
@@ -87,16 +89,15 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         protected boolean currentPrintInvisibleSetting;
 
         /**
-         * Prints type variables like they were before the type variable fix.  This is the default
-         * for the framework, it can be difficult to distinguish where one bound ends and another begins
-         * when using this format.
+         * Prints type variables in a less ambiguous manner using [] to delimit them.
+         * Always prints both bounds even if they lower bound is an AnnotatedNull type.
          */
-        protected boolean useOldFormat;
+        protected boolean printVerboseGenerics;
 
-        public FormattingVisitor(AnnotationFormatter annoFormatter, boolean useOldFormat,
+        public FormattingVisitor(AnnotationFormatter annoFormatter, boolean printVerboseGenerics,
                                  boolean defaultInvisiblesSetting) {
             this.annoFormatter = annoFormatter;
-            this.useOldFormat = useOldFormat;
+            this.printVerboseGenerics = printVerboseGenerics;
             this.defaultInvisiblesSetting = defaultInvisiblesSetting;
             this.currentPrintInvisibleSetting = false;
         }
@@ -121,7 +122,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         @SideEffectFree
         protected void printBound(final String keyWord, final AnnotatedTypeMirror field,
                                   final Set<AnnotatedTypeMirror> visiting, final StringBuilder sb) {
-            if (useOldFormat && (field == null || field.getKind() == TypeKind.NULL)) {
+            if (!printVerboseGenerics && (field == null || field.getKind() == TypeKind.NULL)) {
                 return;
             }
 
@@ -153,7 +154,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         @Override
         public String visitDeclared(AnnotatedDeclaredType type, Set<AnnotatedTypeMirror> visiting) {
             StringBuilder sb = new StringBuilder();
-            if (type.isDeclaration()) {
+            if (type.isDeclaration() && currentPrintInvisibleSetting) {
                 sb.append("/*DECL*/ ");
             }
             final Element typeElt = type.getUnderlyingType().asElement();
@@ -286,18 +287,18 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             sb.append(type.actualType);
 
             if (!visiting.contains(type)) {
-                if (type.isDeclaration()) {
+                if (type.isDeclaration() && currentPrintInvisibleSetting) {
                     sb.append("/*DECL*/ ");
                 }
 
                 try {
                     visiting.add(type);
-                    if (!useOldFormat) {
+                    if (printVerboseGenerics) {
                         sb.append("[");
                     }
                     printBound("extends", type.getUpperBoundField(), visiting, sb);
                     printBound("super", type.getLowerBoundField(), visiting, sb);
-                    if (!useOldFormat) {
+                    if (printVerboseGenerics) {
                         sb.append("]");
                     }
 
@@ -336,12 +337,12 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
                 try {
                     visiting.add(type);
 
-                    if (!useOldFormat) {
+                    if (printVerboseGenerics) {
                         sb.append("[");
                     }
                     printBound("extends", type.getExtendsBoundField(), visiting, sb);
                     printBound("super", type.getSuperBoundField(), visiting, sb);
-                    if (!useOldFormat) {
+                    if (printVerboseGenerics) {
                         sb.append("]");
                     }
 

@@ -103,7 +103,7 @@ public abstract class Checker<Q> implements QualifierContext<Q> {
         return new DefaultQualifiedTypeFormatter<>(
                 new DefaultQualFormatter<Q>(getInvisibleQualifiers()),
                 getContext().getCheckerAdapter().getTypeMirrorConverter(),
-                !getContext().getOptionConfiguration().hasOption("printTypeParamDelimiters"),
+                getContext().getOptionConfiguration().hasOption("printVerboseGenerics"),
                 getContext().getOptionConfiguration().hasOption("printAllQualifiers")
         );
     }
