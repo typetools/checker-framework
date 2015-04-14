@@ -21,8 +21,6 @@ public class UncheckedWarning {
   public static void main(String[] args) {
     Test<Integer> ti = new Test<Integer>();
     List<Integer> ls = ti.foo();
-    if (ls != null) {
-      Integer i = ls.get(0);
-    }
+    Integer i = ls.get(0);
   }
 }
