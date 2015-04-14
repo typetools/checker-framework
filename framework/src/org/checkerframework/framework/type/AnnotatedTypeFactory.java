@@ -2508,7 +2508,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param element
      *            The element for which to determine annotations.
      * @param metaAnnotation
-     *            The meta annotation that needs to be present.
+     *            The meta-annotation that needs to be present.
      * @return A list of pairs {@code (anno, metaAnno)} where {@code anno} is
      *         the annotation mirror at {@code element}, and {@code metaAnno} is
      *         the annotation mirror used to annotate {@code anno}.
@@ -2550,7 +2550,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param element
      *            The element at which to look for annotations.
      * @param metaAnnotation
-     *            The meta annotation that needs to be present.
+     *            The meta-annotation that needs to be present.
      * @return A list of pairs {@code (anno, metaAnno)} where {@code anno} is
      *         the annotation mirror at {@code element}, and {@code metaAnno} is
      *         the annotation mirror used to annotate {@code anno}.

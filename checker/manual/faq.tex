@@ -850,11 +850,12 @@ Any subclass of \<ArrayList> must also support null elements.
 \paragraph{Suppressing warnings\label{faq-list-map-nonnull-typeargs-suppressing-warnings}}
 
 Suppose your program has a list variable, and you know that any list referenced
-by that variable will definitely support null.  Then, you can suppress the
+by that variable will definitely support null elements.  Then, you can suppress the
 warning:
 
 \begin{Verbatim}
-  @SuppressWarnings("nullness:generic.argument")
+  @SuppressWarnings("nullness:generic.argument") // any list passed to this
+  method will support null elements
   static void addNull(List l) {
     l.add(null);
   }

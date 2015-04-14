@@ -4,6 +4,7 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.initialization.InitializationVisitor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.flow.CFCFGBuilder;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -310,13 +311,27 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
 
     @Override
     public Void visitAssert(AssertTree node, Void p) {
-        if (checker.hasOption("assumeAssertionsAreDisabled")) {
-            // If the assert is assumed to be disabled, don't check anything in it.
-            return null;
-        } else {
+        // See also org.checkerframework.dataflow.cfg.CFGBuilder.CFGTranslationPhaseOne.visitAssert
+
+        // In cases where neither assumeAssertionsAreEnabled nor assumeAssertionsAreDisabled are turned on
+        // and @AssumeAssertions is not used, checkForNullability is still called since the CFGBuilder will have
+        // generated one branch for which asserts are assumed to be enabled.
+
+        boolean doVisitAssert = true;
+
+        if (checker.hasOption("assumeAssertionsAreEnabled") || CFCFGBuilder.assumeAssertionsActivatedForAssertTree(checker, node)) {
+            doVisitAssert = true;
+        }
+        else if (checker.hasOption("assumeAssertionsAreDisabled")) {
+            doVisitAssert = false;
+        }
+
+        if (doVisitAssert) {
             checkForNullability(node.getCondition(), CONDITION_NULLABLE);
             return super.visitAssert(node, p);
         }
+
+        return null;
     }
 
     @Override
