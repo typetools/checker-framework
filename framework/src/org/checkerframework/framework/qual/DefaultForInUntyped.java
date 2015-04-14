@@ -9,8 +9,8 @@ import java.lang.annotation.Target;
 /**
  * Applied to the declaration of a type qualifier specifies that
  * the given annotation should be the default for a particular location,
- * only when the symbol is from untyped code, and only when the
- * conservative untyped checking is turned on.
+ * only when the symbol is from untyped code, this qualifier will not 
+ * apply if unsafeUntyped command line parameter is passed.
  *
  * TODO: Document use relative to the other annotations.
  * This qualifier is for type system developers, not end-users.
