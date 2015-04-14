@@ -1,6 +1,9 @@
 // Test case for Issue 427:
 // https://code.google.com/p/checker-framework/issues/detail?id=427
 
+//We need to add a warning when an @AssumeAssertion is missing
+//its @ symbol (as below)
+
 // @skip-test
 
 import org.checkerframework.checker.nullness.qual.*;
