@@ -1,25 +1,22 @@
 Version 1.9.0, XX April 2015
 
-Improvements to generics:
-   * The qualifier in front of a type parameter (e.g. <@HERE T> ) only
-     applies to the lower bound of that type parameter.  Previously it
-     would also overwrite the upper bound.  Please consult the
-     Checker Framework manual chapter 21 for more information on
-     annotating type parameters.
-   * Manual chapter 21 "Generics and polymorphism" has been expanded.
-   * Added command-line option -AprintVerboseGenerics to print more
-     information about type parameters and wildcards when they appear
-     in warning messages.
-   * A new warning, "bound.type.incompatible", will appear if the
-     lower bound of a type parameter or wildcard is a supertype of its
-     upper bound.
-     e.g.  <@Nullable T extends @NonNull Object>
-     The above qualifiers are incompatible.
-   * Method type argument inference has been improved. Fewer warnings
-     should be issued when method invocations omit type arguments.
+Bug fixes for generics, especially type parameters:
+   * Manual chapter 21 "Generics and polymorphism" has been expanded,
+     and it gives more information on annotating type parameters.
+   * The qualifier on a type parameter (e.g. <@HERE T> ) only applies 
+     to the lower bound of that type parameter.  Previously it also
+     applied to the upper bound.  
    * Unannotated, unbounded wildcards are now qualified with the
      annotations of the type parameter to which they are an argument.
      See the new manual section 23.3.4 for more details.
+   * Warning "bound.type.incompatible" is issued if the lower bound of
+     a type parameter or wildcard is a supertype of its upper bound,
+     e.g.  <@Nullable T extends @NonNull Object>
+   * Method type argument inference has been improved. Fewer warnings
+     should be issued when method invocations omit type arguments.
+   * Added command-line option -AprintVerboseGenerics to print more
+     information about type parameters and wildcards when they appear
+     in warning messages.
 
 Reflection resolution:
 If you supply the -AresolveReflection command-line option, the Checker
