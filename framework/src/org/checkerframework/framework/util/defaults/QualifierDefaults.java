@@ -100,8 +100,7 @@ public class QualifierDefaults {
         DefaultLocation.FIELD,
         DefaultLocation.PARAMETERS,
         DefaultLocation.RETURNS,
-        DefaultLocation.UPPER_BOUNDS,
-        DefaultLocation.EXPLICIT_UPPER_BOUNDS
+        DefaultLocation.UPPER_BOUNDS
     };
 
     /**
