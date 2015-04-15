@@ -1,0 +1,150 @@
+\htmlhr
+\chapter{Javari immutability checker\label{javari-checker}}
+
+\textbf{Note:} The Javari type-checker has some known bugs and limitations.
+Nonetheless, it may still be useful to you.
+
+Javari~\cite{TschantzE2005,QuinonezTE2008} is a Java language extension that helps programmers to avoid mutation
+errors that result from unintended side effects.
+If the Javari Checker issues no warnings for a given program, then that
+program will never change objects that should not be changed.  This
+guarantee enables a programmer to detect and prevent mutation-related
+errors.  (See Section~\ref{checker-guarantees} for caveats to the guarantee.)
+The Javari webpage (\myurl{http://types.cs.washington.edu/javari/}) contains
+papers that explain the Javari language and type system.
+By contrast to those papers, the Javari Checker uses an annotation-based
+dialect of the Javari language.
+
+The Javarifier tool infers Javari types for an existing program; see
+Section~\ref{javari-inference}.
+
+Also consider the IGJ Checker (Chapter~\ref{igj-checker}).  The IGJ type
+system is more expressive than that of Javari, and the IGJ Checker is a bit
+more robust.  However, IGJ lacks a type inference tool such as Javarifier.
+
+To run the Javari Checker, supply the
+\code{-processor org.checkerframework.checker.javari.JavariChecker}
+command-line option to javac.  For examples, see Section~\ref{javari-examples}.
+
+
+
+\begin{figure}
+\includeimage{javari}{3.5cm}
+\caption{Type hierarchy for Javari's ReadOnly type qualifier.}
+\label{fig-javari-hierarchy}
+\end{figure}
+
+
+\section{Javari annotations\label{javari-annotations}}
+
+The following six annotations make up the Javari type system.
+
+\begin{description}
+
+\item[\refqualclass{checker/javari/qual}{ReadOnly}]
+  indicates a type that provides only read-only access.  A reference of
+  this type may not be used to modify its referent, but aliasing references
+  to that object might change it.
+
+\item[\refqualclass{checker/javari/qual}{Mutable}]
+  indicates a mutable type.
+  
+\item[\refqualclass{checker/javari/qual}{Assignable}]
+  is a field annotation, not a type qualifier.  It indicates that the given
+  field may always be assigned, no matter what the type of the reference
+  used to access the field.
+  
+\item[\refqualclass{checker/javari/qual}{QReadOnly}]
+  corresponds to Javari's ``\code{?\ readonly}'' for wildcard types.  An
+  example of its use is \code{List<@QReadOnly Date>}.  It allows only the
+  operations which are allowed for both readonly and mutable types.
+
+\item[\refqualclass{checker/javari/qual}{PolyRead}]
+  (previously named \code{@RoMaybe}) specifies polymorphism over
+  mutability; it simulates mutability overloading.  It can be applied to
+  methods and parameters.  See Section~\ref{qualifier-polymorphism} and the
+  \refqualclass{checker/javari/qual}{PolyRead} Javadoc for more details.
+
+\item[\refqualclass{checker/javari/qual}{ThisMutable}]
+  means that the mutability of the field is the same as that of the
+  reference that contains it.  \code{@ThisMutable} is the default on
+  fields, and does not make sense to write elsewhere.  Therefore,
+  \code{@ThisMutable} should never appear in a program.
+
+\end{description}
+
+
+\section{Writing Javari annotations\label{writing-javari-annotations}}
+
+
+\subsection{Implicit qualifiers\label{javari-implicit-qualifiers}}
+
+As described in Section~\ref{effective-qualifier}, the Javari Checker
+adds implicit qualifiers, reducing the number of annotations that must
+appear in your code.
+% For example, ...
+
+For a complete description of all implicit Javari qualifiers, see the
+Javadoc for \refclass{checker/javari}{JavariAnnotatedTypeFactory}.
+
+
+\subsection{Inference of Javari annotations\label{javari-inference}}
+
+It can be tedious to write annotations in your code.  The Javarifier tool
+(\myurl{http://types.cs.washington.edu/javari/javarifier/}) infers 
+Javari types for an existing program.  It 
+automatically inserts Javari annotations in your Java program or
+in \code{.class} files.
+
+This has two benefits:  it relieves the programmer of the tedium of writing
+annotations (though the programmer can always refine the inferred
+annotations), and it annotates libraries, permitting checking of programs
+that use those libraries.
+
+
+
+\section{What the Javari Checker checks\label{javari-checks}}
+
+The checker issues an error whenever mutation happens through a readonly
+reference, when fields of a readonly reference which are not explicitly
+marked with \refqualclass{checker/javari/qual}{Assignable} are reassigned, or
+when a readonly expression is assigned to a mutable variable.  The checker
+also emits a warning when casts increase the mutability access of a
+reference.
+
+% There is no Javadoc as of 2/2009.
+% For a complete description of all checks performed by
+% the Nullness Checker, see the Javadoc for
+% \refclass{checker/javari}{JavariVisitor}.
+
+
+\section{Iterators and their abstract state\label{javari-library-annotations}}
+
+For an explanation of why the receiver of \<Iterator.next()> is annotated
+as \<@ReadOnly>, see Section~\ref{igj-library-annotations}.
+
+
+\section{Examples\label{javari-examples}}
+
+To try the Javari Checker on a source file that uses the Javari
+qualifier, use the following command (where \code{javac} is the Checker
+Framework compiler that
+is distributed with the Checker Framework).  Alternately, you may
+specify just one of the test files.
+
+\begin{Verbatim}
+  javac -processor org.checkerframework.checker.javari.JavariChecker tests/javari/*.java
+\end{Verbatim}
+
+\noindent
+The compiler should issue the errors and warnings (if any) specified in the
+\code{.out} files with same name.
+
+To run the test suite for the Javari Checker, use \code{ant javari-tests}.
+
+The Javari Checker itself is also annotated with Javari annotations.
+
+
+% LocalWords:  PolyRead javari cp plugin ReadOnly QReadOnly romaybe Javarifier
+% LocalWords:  readonly wildcard Javadoc javac RoMaybe qual IGJ ThisMutable
+% LocalWords:  JavariAnnotatedTypeFactory 5cm
