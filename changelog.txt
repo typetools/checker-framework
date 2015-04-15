@@ -1,16 +1,34 @@
-Version 1.8.12, 31 March 2015
+Version 1.9.0, XX April 2015
+
+Bug fixes for generics, especially type parameters:
+   * Manual chapter 21 "Generics and polymorphism" has been expanded,
+     and it gives more information on annotating type parameters.
+   * The qualifier on a type parameter (e.g. <@HERE T> ) only applies 
+     to the lower bound of that type parameter.  Previously it also
+     applied to the upper bound.  
+   * Unannotated, unbounded wildcards are now qualified with the
+     annotations of the type parameter to which they are an argument.
+     See the new manual section 23.3.4 for more details.
+   * Warning "bound.type.incompatible" is issued if the lower bound of
+     a type parameter or wildcard is a supertype of its upper bound,
+     e.g.  <@Nullable T extends @NonNull Object>
+   * Method type argument inference has been improved. Fewer warnings
+     should be issued when method invocations omit type arguments.
+   * Added command-line option -AprintVerboseGenerics to print more
+     information about type parameters and wildcards when they appear
+     in warning messages.
 
 Reflection resolution:
 If you supply the -AresolveReflection command-line option, the Checker
-Framework attempts to resolve reflection.  This reduces the number of false
-positive warnings caused by reflection.
-
-The Map Key Checker has been rewritten to support dataflow analysis.
-Please see the section on "Dataflow: enhancing flow-sensitive type
-qualifier inference" in the manual for more details.
+Framework attempts to resolve reflection.  This reduces the number of
+false positive warnings caused by reflection.
 
 The documentation for the Map Key Checker has been moved into its own
 chapter in the manual.
+
+Fixed issues: 221, 241, 313, 314, 328, 335, 337, 338, 339, 355, 369,
+              376, 378, 386, 388, 389, 393, 403, 404, 414, 415, 417,
+              418, 420, 421, 422
 
 ----------------------------------------------------------------------
 
