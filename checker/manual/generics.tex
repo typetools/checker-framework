@@ -71,16 +71,26 @@ were inferred for a raw type.
 \subsection{Restricting instantiation of a generic class\label{generics-instantiation}}
 
 When you define a generic class in Java, the \<extends> or \<super> clause
-of the generic type parameter restricts
-how the class may be instantiated.  For example, given the definition
+of the generic type parameter (known as the ``bound'') restricts
+how the class may be instantiated.
+Both the Java type and the type parameter restrict 
+For example, given the definition
 \verb|class G<T extends Number> {...}|,
-a client can instantiate it as \code{G<Integer>} but not \code{G<Date>}.
-Similarly, type qualifiers on the generic type parameters can restrict on
+the upper bound is \<Number>
+and a client can instantiate it as \code{G<Integer>} but not \code{G<Date>}.
+Similarly, type qualifiers on the bound can restrict
 how the class may be instantiated.  For example, a generic list class might
-indicate that it can hold only non-null values.  Similarly, a generic map
-class might indicate it requires an immutable key type, but that it
-supports both nullable and non-null value types.
+be declared 
+\verb|class MyList<T extends @NonNull Object> {...}|
+to indicate that it can hold only non-null values:
+% Similarly, a generic map
+% class might indicate it requires an immutable key type, but that it
+% supports both nullable and non-null value types.
 
+\begin{Verbatim}
+  MyList<@NonNull String> m1;       // OK
+  MyList<@Nullable String> m2;      // error
+\end{Verbatim}
 
 There are two ways to restrict the type qualifiers that may be used on
 the actual type argument when instantiating a generic class.
@@ -89,12 +99,6 @@ The first technique is the standard Java approach of using the
 \code{extends} or \code{super} clause to supply an upper or lower bound.
 For example:
 
-\begin{Verbatim}
-  MyClass<T extends @NonNull Object> { ... }
-
-  MyClass<@NonNull String> m1;       // OK
-  MyClass<@Nullable String> m2;      // error
-\end{Verbatim}
 
 The second technique is to write a type annotation on the declaration of a
 generic type parameter, which specifies the exact annotation that is
