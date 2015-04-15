@@ -237,7 +237,7 @@ public class NullnessAnnotatedTypeFactory
      */
     @Override
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
-        return new NullnessAnnotatedTypeFormatter(checker.hasOption("printAllQualifiers"));
+        return new NullnessAnnotatedTypeFormatter(checker.hasOption("printVerboseGenerics"), checker.hasOption("printAllQualifiers"));
     }
 
     @Override

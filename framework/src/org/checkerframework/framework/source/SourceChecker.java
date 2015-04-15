@@ -205,6 +205,13 @@ import com.sun.tools.javac.util.Log;
     // Print qualifier parameters using annotations instead of the <<Q>> format.
     "printQualifierParametersAsAnnotations",
 
+    // Whether to print [] around a set of type parameters in order to clearly see where they end
+    // e.g.  <E extends F, F extends Object>
+    // without this option the E is printed as:   E extends F extends Object
+    // with this option:                          E [ extends F [ extends Object super Void ] super Void ]
+    // when multiple type variables are used this becomes useful very quickly
+    "printVerboseGenerics",
+
     // Output detailed message in simple-to-parse format, useful
     // for tools parsing Checker Framework output.
     // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)

@@ -28,15 +28,16 @@ public class PrettyQualifiedTypeFormatter<Q> extends DefaultQualifiedTypeFormatt
     public PrettyQualifiedTypeFormatter(
             TypeMirrorConverter<QualParams<Q>> converter,
             Set<?> invisibleQualifiers,
+            boolean useOldFormat,
             boolean defaultPrintInvisibleQualifiers) {
 
-        super(new PrettyQualParamsFormatter<Q>(invisibleQualifiers), converter, defaultPrintInvisibleQualifiers);
+        super(new PrettyQualParamsFormatter<Q>(invisibleQualifiers), converter, useOldFormat, defaultPrintInvisibleQualifiers);
     }
 
     @Override
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter(AnnotationFormatter annotationFormatter) {
         return new QualParamsAnnoTypeFormatter<Q>(converter, qualFormatter,
-                annotationFormatter, defaultPrintInvisibleQualifiers);
+                annotationFormatter, useOldFormat, defaultPrintInvisibleQualifiers);
     }
 
     /**
@@ -49,8 +50,9 @@ public class PrettyQualifiedTypeFormatter<Q> extends DefaultQualifiedTypeFormatt
                 TypeMirrorConverter<QualParams<Q>> converter,
                 QualParamsFormatter<Q> formatter,
                 org.checkerframework.framework.util.AnnotationFormatter annoFormatter,
+                boolean printVerboseGenerics,
                 boolean defaultPrintInvisibleQualifier) {
-            super(new FormattingVisitor<Q>(converter, annoFormatter, formatter, defaultPrintInvisibleQualifier));
+            super(new FormattingVisitor<Q>(converter, annoFormatter, formatter, printVerboseGenerics, defaultPrintInvisibleQualifier));
         }
 
         protected static class FormattingVisitor<Q> extends DefaultAnnotatedTypeFormatter.FormattingVisitor {
@@ -62,9 +64,10 @@ public class PrettyQualifiedTypeFormatter<Q> extends DefaultQualifiedTypeFormatt
                     TypeMirrorConverter<QualParams<Q>> converter,
                     org.checkerframework.framework.util.AnnotationFormatter annoFormatter,
                     QualParamsFormatter<Q>  formatter,
+                    boolean printVerboseGenerics,
                     boolean defaultInvisiblesSetting) {
 
-                super(annoFormatter, defaultInvisiblesSetting);
+                super(annoFormatter, printVerboseGenerics, defaultInvisiblesSetting);
                 this.converter = converter;
                 this.formatter = formatter;
             }
