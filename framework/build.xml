@@ -80,6 +80,7 @@
         <delete dir="${api.doc}"/>
         <delete dir="${temp.dir}"/>
         <delete dir="dist" />
+        <delete dir="${tests.build}" />
 
         <delete file="${framework.lib}"/>
     </target>
