@@ -190,7 +190,6 @@ public class SupertypesSolver {
      * For each target, lub all of the types/annotations in its supertypes constraints and return the lubs
      * @param remainingTargets Targets that do not already have an inferred type argument
      * @param constraintMap The set of constraints for all targets.
-     * @param typeFactory
      * @return The lub determined for each target that has at least 1 supertype constraint
      */
     private Lubs targetToTypeLubs(Set<TypeVariable> remainingTargets,

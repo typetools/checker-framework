@@ -189,10 +189,6 @@ public class ElementAnnotationUtil {
             this.isUnbounded = AnnotatedTypes.hasNoExplicitBound(wildcard);
         }
 
-        /**
-         *
-         * @param anno
-         */
         void addAnnotation(final TypeCompound anno) {
             //if the typepath entry ends in Wildcard then the annotation should go on a bound
             //otherwise, the annotation is in front of the wildcard
@@ -423,10 +419,6 @@ public class ElementAnnotationUtil {
         return cnt;
     }
 
-    /**
-     * @param type
-     * @return co
-     */
     private static int countEnclosing(AnnotatedDeclaredType type) {
         int cnt = 0;
         while (type.getEnclosingType() != null) {

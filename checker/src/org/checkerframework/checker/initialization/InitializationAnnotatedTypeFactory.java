@@ -552,8 +552,6 @@ public abstract class InitializationAnnotatedTypeFactory<
      *            Annotations on the element.
      * @param receiverType
      *            Inferred annotations of the receiver.
-     * @param fieldAnnotations
-     * @param element
      */
     private void computeFieldAccessType(AnnotatedTypeMirror type,
             Collection<? extends AnnotationMirror> declaredFieldAnnotations,

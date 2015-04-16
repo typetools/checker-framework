@@ -311,10 +311,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * and a2 are not the same type of Value annotation they may still be
          * mergeable because some values can be implicitly cast as others. If a1
          * and a2 are both in {DoubleVal, IntVal} then they will be converted
-         * upwards: IntVal -> DoubleVal to arrive at a common annotation type.
-         *
-         * @param a1
-         * @param a2
+         * upwards: IntVal &rarr; DoubleVal to arrive at a common annotation type.
          *
          * @return the least upper bound of a1 and a2
          */
@@ -383,9 +380,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Computes subtyping as per the subtyping in the qualifier hierarchy
          * structure unless both annotations are Value. In this case, rhs is a
          * subtype of lhs iff lhs contains at least every element of rhs
-         *
-         * @param rhs
-         * @param lhs
          *
          * @return true if rhs is a subtype of lhs, false otherwise
          */

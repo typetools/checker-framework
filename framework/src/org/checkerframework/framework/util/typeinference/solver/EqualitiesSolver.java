@@ -89,7 +89,6 @@ public class EqualitiesSolver {
      *
      * @param target The target for which we have inferred a concrete type argument
      * @param type the type inferred
-     * @param constraints
      */
     private void rewriteWithInferredType(final TypeVariable target, final AnnotatedTypeMirror type, final ConstraintMap constraints) {
 
@@ -163,7 +162,6 @@ public class EqualitiesSolver {
      *
      * @param target The target for which we know another target is exactly equal to this target
      * @param inferredTarget the other target inferred to be equal
-     * @param constraints
      */
     private void rewriteWithInferredTarget(final TypeVariable target, final TypeVariable inferredTarget, final ConstraintMap constraints,
                                           final AnnotatedTypeFactory typeFactory) {

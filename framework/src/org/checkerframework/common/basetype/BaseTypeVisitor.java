@@ -2725,7 +2725,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Takes a set of contracts identified by their expression and annotation
      * strings and resolves them to the correct {@link Receiver} and
      * {@link AnnotationMirror}.
-     * @param method
      */
     private Set<Pair<Receiver, AnnotationMirror>> resolveContracts(
             Set<Pair<String, String>> contractSet, AnnotatedExecutableType method) {
