@@ -96,14 +96,14 @@ Brian Goetz, Tim Peierls, Joshua Bloch, Joseph Bowbeer, David Holmes, and Doug
 Wei Huang, Werner Dietl, Ana Milanova, and Michael~D. Ernst.
 \newblock Inference and checking of object ownership.
 \newblock In {\em ECOOP 2012 --- Object-Oriented Programming, 26th European
-  Conference}, pages 181--206, Bejing, China, June~14--16, 2012.
+  Conference}, pages 181--206, Beijing, China, June~14--16, 2012.
 
 \bibitem[HMDE12]{HuangMDE2012}
 Wei Huang, Ana Milanova, Werner Dietl, and Michael~D. Ernst.
 \newblock {ReIm} \& {ReImInfer}: Checking and inference of reference
   immutability and method purity.
 \newblock In {\em Object-Oriented Programming Systems, Languages, and
-  Applications (OOPSLA 2012)}, pages 879--896, Tucson, AZ, USA, October~23-25,
+  Applications (OOPSLA 2012)}, pages 879--896, Tucson, AZ, USA, October~23--25,
   2012.
 
 \bibitem[HP04]{HovemeyerP2004}
@@ -161,7 +161,7 @@ Alexander~J. Summers and Peter M{\"u}ller.
   initialisation.
 \newblock In {\em Object-Oriented Programming Systems, Languages, and
   Applications (OOPSLA 2011)}, pages 1013--1032, Portland, OR, USA,
-  October~25-27, 2011.
+  October~25--27, 2011.
 
 \bibitem[TE05]{TschantzE2005}
 Matthew~S. Tschantz and Michael~D. Ernst.
