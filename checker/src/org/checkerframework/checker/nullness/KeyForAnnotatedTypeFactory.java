@@ -19,7 +19,6 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.TypeQualifiers;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -47,18 +46,14 @@ import org.checkerframework.javacutil.TreeUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeVariable;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -81,9 +76,6 @@ public class KeyForAnnotatedTypeFactory extends
     private final KeyForCanonicalizer keyForCanonicalizer = new KeyForCanonicalizer();
 
     protected final Class<? extends Annotation> checkerKeyForClass = org.checkerframework.checker.nullness.qual.KeyFor.class;
-
-    protected final /*@CompilerMessageKey*/ String KEYFOR_VALUE_PARAMETER_VARIABLE_NAME = "keyfor.value.parameter.variable.name";
-    protected final /*@CompilerMessageKey*/ String KEYFOR_VALUE_PARAMETER_VARIABLE_NAME_FORMAL_PARAM_NUM = "keyfor.value.parameter.variable.name.formal.param.num";
 
     /** Regular expression for an identifier */
     protected final String identifierRegex = "[a-zA-Z_$][a-zA-Z_$0-9]*";
@@ -558,73 +550,6 @@ public class KeyForAnnotatedTypeFactory extends
       }
   }
 
-  /* Deal with the special case where parameters were specified as
-     variable names. This is a problem because those variable names are
-     ambiguous and could refer to different variables at the call sites.
-     Issue a warning to the user if the variable name is a plain identifier
-     (with no preceding this. or classname.) */
-  private void keyForIssueWarningIfArgumentValuesContainVariableName(List<Receiver> arguments, Tree t, Name methodName, Node node) {
-
-      assert(node instanceof MethodInvocationNode || node instanceof ObjectCreationNode);
-
-      ArrayList<String> formalParamNames = null;
-      boolean formalParamNamesAreValid = true;
-
-      for (int i = 0; i < arguments.size(); i++) {
-          Receiver argument = arguments.get(i);
-
-          List<? extends AnnotationMirror> keyForAnnos = argument.getType().getAnnotationMirrors();
-          if (keyForAnnos != null) {
-              for (AnnotationMirror anno : keyForAnnos) {
-                  if (AnnotationUtils.areSameByClass(anno, checkerKeyForClass)) {
-                      List<String> values = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
-                      for (String s: values) {
-                          Matcher identifierMatcher = identifierPattern.matcher(s);
-
-                          if (identifierMatcher.matches()) {
-                              if (formalParamNames == null) { // Lazy initialization
-                                  formalParamNames = new ArrayList<String>();
-                                  ExecutableElement el =
-                                      node instanceof MethodInvocationNode ?
-                                      TreeUtils.elementFromUse(((MethodInvocationNode)node).getTree()) :
-                                      TreeUtils.elementFromUse(((ObjectCreationNode)node).getTree());
-                                  List<? extends VariableElement> varels = el.getParameters();
-                                  for (VariableElement varel : varels) {
-                                      String formalParamName = varel.getSimpleName().toString();
-
-                                      // Heuristic: if the formal parameter name appears to be synthesized, and not the
-                                      // original name, don't bother adding any parameter names to the list.
-                                      if (formalParamName.equals("p0") || formalParamName.equals("arg0")) {
-                                          formalParamNamesAreValid = false;
-                                          break;
-                                      }
-
-                                      formalParamNames.add(formalParamName);
-                                  }
-                              }
-
-                              int formalParamNum = -1;
-                              if (formalParamNamesAreValid) {
-                                  formalParamNum = formalParamNames.indexOf(s);
-                              }
-
-                              String paramNumString = Integer.toString(i + 1);
-
-                              if (formalParamNum == -1) {
-                                  checker.report(Result.warning(KEYFOR_VALUE_PARAMETER_VARIABLE_NAME, s, paramNumString, methodName), t);
-                              } else {
-                                  String formalParamNumString = Integer.toString(formalParamNum + 1);
-
-                                  checker.report(Result.warning(KEYFOR_VALUE_PARAMETER_VARIABLE_NAME_FORMAL_PARAM_NUM, s, paramNumString, methodName, formalParamNumString), t);
-                              }
-                          }
-                      }
-                  }
-              }
-          }
-      }
-  }
-
   private void keyForCanonicalizeValuesForMethodCall(AnnotatedTypeMirror varType,
           AnnotatedTypeMirror valueType,
           Tree t,
@@ -729,8 +654,6 @@ public class KeyForAnnotatedTypeFactory extends
               // Create the Flow Expression context in terms of the receiver and parameters.
 
               flowExprContextValueType = new FlowExpressionContext(internalReceiver, internalArguments, getContext());
-
-              keyForIssueWarningIfArgumentValuesContainVariableName(flowExprContextValueType.arguments, t, enclosingMethod.getName(), node);
           }
           else {
 

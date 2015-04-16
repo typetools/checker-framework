@@ -47,8 +47,8 @@ class Test3 {
     @MonotonicNonNull
     private String x;
 
-    @EnsuresNonNull("x")
-    void setX(String x) {
+    @EnsuresNonNull("#1")
+    void setX(final String x) {
         this.x = x;
     }
 }
