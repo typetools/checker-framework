@@ -190,8 +190,7 @@ public class ControlFlowGraph {
 
     /**
      * Get a list of all successor Blocks for cur
-     * @param cur
-     * @return A Deque of successor Blocks
+     * @return a Deque of successor Blocks
      */
     private Deque<Block> getSuccessors(Block cur) {
         Deque<Block> succs = new LinkedList<>();

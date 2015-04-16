@@ -669,9 +669,6 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
     /**
      * Finds all the super qualifiers for a qualifier.
-     *
-     * @param anno
-     * @param supertypesMap
      */
     private static Set<AnnotationMirror>
     findAllSupers(AnnotationMirror anno,

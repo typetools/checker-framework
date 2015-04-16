@@ -506,9 +506,6 @@ public class StubParser {
 
     /**
      * Adds a declAnnotation to every method in the stub file.
-     *
-     * @param declAnnos
-     * @param elt
      */
     private void addDeclAnnotations(
             Map<String, Set<AnnotationMirror>> declAnnos, Element elt) {
@@ -889,7 +886,6 @@ public class StubParser {
 
     /**
      * Issues a warning even if -AstubWarnIfNotFound or -AstubDebugs options are not passed.
-     * @param warning
      */
     private void stubAlwaysWarn(String warning) {
         if (warnings.add(warning)) {

@@ -405,7 +405,6 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * </pre>
      * Returns true iff the given node fits this pattern.
      *
-     * @param node
      * @return true iff the node fits the pattern (a == b || a.equals(b))
      */
     private boolean suppressEarlyEquals(final BinaryTree node) {
@@ -525,7 +524,6 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * {@code (a == b || a.compareTo(b) == 0)}. Returns true iff
      * the given node fits this pattern.
      *
-     * @param node
      * @return true iff the node fits the pattern (a == b || a.compareTo(b) == 0)
      */
     private boolean suppressEarlyCompareTo(final BinaryTree node) {
