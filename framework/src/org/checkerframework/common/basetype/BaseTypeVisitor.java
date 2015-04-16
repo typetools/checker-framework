@@ -84,6 +84,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
@@ -2641,7 +2642,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
                                 overrider.getReceiverType(),
                                 overridden.getReceiverType()),
-                                overriderTree);
+                        overriderTree);
                 return false;
             }
             return true;
@@ -2700,13 +2701,36 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             boolean success = true;
             // Check the return value.
             if ((overridingReturnType.getKind() != TypeKind.VOID)) {
-                success = atypeFactory.getTypeHierarchy().isSubtype(overridingReturnType, overriddenReturnType);
+                final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
+                success = typeHierarchy.isSubtype(overridingReturnType, overriddenReturnType);
 
                 //If both the overridden method have type variables as return types and both types were
                 //defined in their respective methods then, they can be covariant or invariant
                 //use super/subtypes for the overrides locations
                 if (!success) {
                     success = testTypevarContainment(overridingReturnType, overriddenReturnType);
+
+                    //sometimes when using a Java 8 compiler (not JSR308) the overridden return type of a method reference
+                    //becomes a captured type.  This leads to defaulting that often makes the overriding return type
+                    //invalid.  We ignore these.  This happens in Issue403/Issue404 when running without JSR308 Langtools
+                    if (!success && methodReference) {
+
+                        boolean isCaptureConverted =
+                                (overriddenReturnType.getKind() == TypeKind.TYPEVAR) &&
+                                InternalUtils.isCaptured((TypeVariable) overriddenReturnType.getUnderlyingType());
+
+                        if (methodReference && isCaptureConverted) {
+                            ExecutableElement overridenMethod = overridden.getElement();
+                            boolean isFunctionApply =
+                                    overridenMethod.getSimpleName().toString().equals("apply") &&
+                                    overridenMethod.getEnclosingElement().toString().equals("java.util.function.Function");
+
+                            if (isFunctionApply) {
+                                AnnotatedTypeMirror overridingUpperBound = ((AnnotatedTypeVariable) overriddenReturnType).getUpperBound();
+                                success = typeHierarchy.isSubtype(overridingReturnType, overridingUpperBound);
+                            }
+                        }
+                    }
                 }
 
                 checkReturnMsg(success);
