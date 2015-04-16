@@ -198,6 +198,12 @@ void outputAllNounDefinitions() {
 }
 \end{verbatim}
 
+For this pattern, it would be preferable to annotate the parameter and return
+values of \<nounSubset> with \<@PolyAll> (Section~\ref{polyall}) instead.
+The Checker Framework does not currently support \<@PolyAll> for the
+Map Key Checker and the Checker Framework developers are working to
+correct this --- it is tracked by
+\href{http://code.google.com/p/checker-framework/issues/detail?id=429}{Issue 429}.
 
 %%  LocalWords:  KeyFor containsKey java keyfor UnknownKeyFor KeyForBottom
 %%  LocalWords:  2cm mapSet keySet km threeLetterWordSubset JT
