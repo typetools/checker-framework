@@ -32,15 +32,16 @@ class KeyForShadowing {
         getMap4(m0,m1,k).toString();
     }
 
+    //:: warning: (method.declaration.expression.parameter.name)
     public static @NonNull Integer getMap1(
             Map<String, Integer> m1,  // m1,m0 flipped
             Map<String, Integer> m0,
             @KeyFor("m0") String k)
     {
-        //:: warning: (keyfor.value.parameter.variable.name)
         return m0.get(k);
     }
 
+    //:: warning: (method.declaration.expression.parameter.name)
     public static @NonNull Integer getMap2(
             Map<String, Integer> m1,  // m1,m0 flipped
             Map<String, Integer> m0,
@@ -49,7 +50,7 @@ class KeyForShadowing {
         // This method body is incorrect.
         // We expect this error because we are indicating that
         // the key is for m1, so m0.get(k) is @Nullable.
-        //:: warning: (keyfor.value.parameter.variable.name) :: error: (return.type.incompatible)
+        //:: error: (return.type.incompatible)
         return m0.get(k);
     }
 

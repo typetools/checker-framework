@@ -25,6 +25,7 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.DefaultQualifier;
+import org.checkerframework.framework.qual.FieldIsExpression;
 import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceVisitor;
@@ -304,6 +305,55 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     protected void checkDefaultConstructor(ClassTree node) { }
 
+    private static boolean isFieldIsExpressionQualifier(AnnotationMirror anno) {
+        return ((TypeElement)anno.getAnnotationType().asElement()).getAnnotation(FieldIsExpression.class) != null;
+    }
+
+    /*
+     * Verifies that annotations relevant to the current checker on formal parameters
+     * do not use formal parameter names as expressions. Issues a warning if they do.
+     *
+     * Returns the list of formal parameter names.
+     * Returns null if the method has no formal parameters.
+     */
+    private List<String> verifyParameterAnnotationsForParameterNames(MethodTree node) {
+         List<? extends VariableTree> parameters = node.getParameters();
+
+        if (parameters != null && !parameters.isEmpty()) {
+            ArrayList<String> formalParamNames = new ArrayList<String>();
+            for (VariableTree param : parameters) {
+                formalParamNames.add(param.getName().toString());
+            }
+
+            for (VariableTree param : parameters) {
+                AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(param);
+
+                if (atm != null) {
+                    Set<AnnotationMirror> annotationMirrors = atm.getAnnotations();
+
+                    if (annotationMirrors != null) {
+                        for(AnnotationMirror anno : annotationMirrors) {
+                            if (isFieldIsExpressionQualifier(anno) && atypeFactory.isSupportedQualifier(anno)) {
+                                List<String> expressions = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+
+                                for(String expression : expressions) {
+                                    if (formalParamNames.contains(expression)) {
+                                        checker.report(Result.warning("method.declaration.expression.parameter.name", param.getName().toString(),
+                                                node.getName().toString(), expression, formalParamNames.indexOf(expression) + 1, expression), node);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return formalParamNames;
+        }
+
+        return null;
+    }
+
     /**
      * Performs pseudo-assignment check: checks that the method obeys override
      * and subtype rules to all overridden methods.
@@ -440,9 +490,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             // check well-formedness of pre/postcondition
-            checkPreconditionsConsistency(node, methodElement);
-            checkPostconditionsConsistency(node, methodElement);
-            checkConditionalPostconditionsConsistency(node, methodElement);
+            List<String> formalParamNames = verifyParameterAnnotationsForParameterNames(node);
+
+            checkPreconditionsConsistency(node, methodElement, formalParamNames);
+            checkPostconditionsConsistency(node, methodElement, formalParamNames);
+            checkConditionalPostconditionsConsistency(node, methodElement, formalParamNames);
 
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
@@ -551,7 +603,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * with element {@code methodElement} for consistency.
      */
     protected void checkPostconditionsConsistency(MethodTree node,
-            ExecutableElement methodElement) {
+            ExecutableElement methodElement, List<String> formalParamNames) {
         FlowExpressionContext flowExprContext = null;
         Set<Pair<String, String>> postconditions = contractsUtils
                 .getPostconditions(methodElement);
@@ -571,6 +623,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!atypeFactory.isSupportedQualifier(annotation)) {
                 continue;
             }
+
+            if (formalParamNames != null && formalParamNames.contains(expression)) {
+                checker.report(Result.warning("contracts.postcondition.expression.parameter.name", node.getName().toString(),
+                        expression, formalParamNames.indexOf(expression) + 1, expression), node);
+            }
+
             try {
                 FlowExpressionParseUtil.parse(expression,
                         flowExprContext, getCurrentPath());
@@ -679,7 +737,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * {@code methodElement} for consistency.
      */
     protected void checkConditionalPostconditionsConsistency(MethodTree node,
-            ExecutableElement methodElement) {
+            ExecutableElement methodElement, List<String> formalParamNames) {
         FlowExpressionContext flowExprContext = null;
         Set<Pair<String, Pair<Boolean, String>>> conditionalPostconditions = contractsUtils
                 .getConditionalPostconditions(methodElement);
@@ -699,6 +757,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!atypeFactory.isSupportedQualifier(annotation)) {
                 continue;
             }
+
+            if (formalParamNames != null && formalParamNames.contains(expression)) {
+                checker.report(Result.warning("contracts.conditional.postcondition.expression.parameter.name", node.getName().toString(),
+                        expression, formalParamNames.indexOf(expression) + 1, expression), node);
+            }
+
             try {
                 FlowExpressionParseUtil.parse(expression,
                         flowExprContext, getCurrentPath());
@@ -1000,7 +1064,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * {@code methodElement} for consistency.
      */
     protected void checkPreconditionsConsistency(MethodTree node,
-            ExecutableElement methodElement) {
+            ExecutableElement methodElement, List<String> formalParamNames) {
         FlowExpressionContext flowExprContext = null;
         Set<Pair<String, String>> preconditions = contractsUtils
                 .getPreconditions(methodElement);
@@ -1020,6 +1084,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!atypeFactory.isSupportedQualifier(anno)) {
                 return;
             }
+
+            if (formalParamNames != null && formalParamNames.contains(expression)) {
+                checker.report(Result.warning("contracts.precondition.expression.parameter.name", node.getName().toString(),
+                        expression, formalParamNames.indexOf(expression) + 1, expression), node);
+            }
+
             try {
                 FlowExpressionParseUtil.parse(expression, flowExprContext,
                         getCurrentPath());
