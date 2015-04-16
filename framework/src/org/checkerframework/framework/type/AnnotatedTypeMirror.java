@@ -1031,8 +1031,6 @@ public abstract class AnnotatedTypeMirror {
 
         /**
          * Sets the enclosing type
-         *
-         * @param enclosingType
          */
         /*default-visibility*/ void setEnclosingType(AnnotatedDeclaredType enclosingType) {
             this.enclosingType = enclosingType;
@@ -1501,7 +1499,6 @@ public abstract class AnnotatedTypeMirror {
 
         /**
          * Sets the lower bound of this type variable without calling asUse (and therefore making a copy)
-         * @param type
          */
         void setLowerBoundField(AnnotatedTypeMirror type) {
             this.lowerBound = type;

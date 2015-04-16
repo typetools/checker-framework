@@ -178,8 +178,6 @@ public class StubGenerator {
 
     /**
      * helper method that outputs the index for the provided class.
-     *
-     * @param typeElement
      */
     private void printClass(TypeElement typeElement) {
         printClass(typeElement, null);
@@ -187,8 +185,6 @@ public class StubGenerator {
 
     /**
      * helper method that outputs the index for the provided class.
-     *
-     * @param typeElement
      */
     private void printClass(TypeElement typeElement, String outerClass) {
         List<TypeElement> innerClass = new ArrayList<TypeElement>();
@@ -250,7 +246,6 @@ public class StubGenerator {
      * a class.
      *
      * @param members list of the class members
-     * @param innerClass
      */
     private void printTypeMembers(List<? extends Element> members, List<TypeElement> innerClass) {
         for (Element element : members) {
@@ -261,7 +256,6 @@ public class StubGenerator {
 
     /**
      * Helper method that outputs the declaration of the member
-     * @param innerClass
      */
     private void printMember(Element member, List<TypeElement> innerClass) {
         if (member.getKind().isField())

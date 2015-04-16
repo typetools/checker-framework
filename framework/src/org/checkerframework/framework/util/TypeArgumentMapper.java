@@ -175,12 +175,6 @@ public class TypeArgumentMapper {
         return result;
     }
 
-    /**
-     *
-     * @param elements
-     * @param map
-     * @return
-     */
     private static Set<TypeParameterElement> flattenPath(Set<TypeParameterElement> elements,
                                                          Map<TypeParameterElement, Set<TypeParameterElement>> map) {
 
