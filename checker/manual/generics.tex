@@ -121,7 +121,7 @@ Figure~\refwithpage{regex-checker}) in which
 
   MyRegexes<@Regex(0) String> mu;   // error - @Regex(0) is not a subtype of @Regex(1)
   MyRegexes<@Regex(1) String> m1;   // OK
-  MyRegexes<@Regex(3) String> m1;   // OK
+  MyRegexes<@Regex(3) String> m3;   // OK
   MyRegexes<@Regex(5) String> m5;   // OK
   MyRegexes<@Regex(6) String> m6;   // error - @Regex(6) is not a supertype of @Regex(5)
 \end{Verbatim}
@@ -171,7 +171,7 @@ are equivalent:
 \end{Verbatim}
 
 \noindent
-they may specify type different qualifiers on the upper bound, depending on
+they may specify different type qualifiers on the upper bound, depending on
 the type system's defaulting rules.
 % Cross-reference to the justification for this?
 
