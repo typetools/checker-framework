@@ -1,4 +1,4 @@
-Version 1.9.0, XX April 2015
+Version 1.9.0, 17 April 2015
 
 Bug fixes for generics, especially type parameters:
    * Manual chapter 21 "Generics and polymorphism" has been expanded,
@@ -27,8 +27,8 @@ The documentation for the Map Key Checker has been moved into its own
 chapter in the manual.
 
 Fixed issues: 221, 241, 313, 314, 328, 335, 337, 338, 339, 355, 369,
-              376, 378, 386, 388, 389, 393, 403, 404, 414, 415, 417,
-              418, 420, 421, 422, 426
+              376, 378, 386, 388, 389, 393, 403, 404, 413, 414, 415,
+              417, 418, 420, 421, 422, 426.
 
 ----------------------------------------------------------------------
 
