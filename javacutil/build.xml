@@ -1,0 +1,137 @@
+<!--
+  This is an Ant build file for compiling shared javac utilities.
+-->
+<project name="javacutil" default="dist" basedir=".">
+
+    <description>
+        Builds a library of utilities shared by sub-projects in the Checker Framework.
+    </description>
+
+    <property file="build.${os.name}.properties"/>
+    <property file="build.properties"/>
+    <property file="${basedir}/../build-common.properties"/>
+
+    <import file="${basedir}/../build-common.xml"/>
+
+
+    <!-- If adding dependencies to other projects, ensure
+         the Javadoc dependencies are also updated accordingly
+         (and vice versa). -->
+    <target name="prep" depends="prep-all"
+            description="Create required directories">
+        <mkdir dir="${build}"/>
+        <mkdir dir="${tmpdir}" />
+    </target>
+
+    <target name="clean" description="Remove generated files">
+        <delete dir="${build}"/>
+        <delete file="${javacutil.lib}"/>
+        <delete dir="dist"/>
+        <delete dir="${api.doc}"/>
+        <delete dir="${tmpdir}"/>
+        <delete dir="${temp.dir}"/>
+    </target>
+
+    <target name="build.check.uptodate"
+            description="Set properties: filesets and build.uptodate">
+        <fileset id="src.files" dir="${src}">
+            <include name="**/*.java"/>
+        </fileset>
+
+        <uptodate property="src.files.uptodate" targetfile="${build}">
+            <srcfiles refid="src.files"/>
+            <mapper type="glob" from="*.java" to="${build}/*.class"/>
+        </uptodate>
+    </target>
+
+    <target name="build" depends="prep,build.check.uptodate"
+            unless="build.uptodate"
+            description="Compile files.  Does not update any jars">
+        <pathconvert pathsep=" " property="src.files.spaceseparated_jc">
+            <path>
+                <fileset dir="${src}">
+                    <include name="**/*.java"/>
+		    <!-- ManualTaglet should probably be somewhere else rather than in this directory. -->
+                    <exclude name="**/javacutil/dist/**"/>
+                </fileset>
+            </path>
+        </pathconvert>
+
+        <echo message="${src.files.spaceseparated_jc}" file="${tmpdir}/srcfiles-javacutil.txt"/>
+        <java fork="true"
+              failonerror="true"
+              classpath="${javac.lib}"
+              classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <arg value="-g"/>
+            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
+            <arg value="-source"/>
+            <arg value="7"/>
+            <arg value="-target"/>
+            <arg value="7"/>
+            <!-- To not get a warning about bootstrap classpath -->
+            <arg value="-Xlint:-options"/>
+            <arg line="-sourcepath ${src}"/>
+            <arg line="-d ${build}"/>
+            <arg line="@${tmpdir}/srcfiles-javacutil.txt"/>
+            <arg line="-version"/>
+            <arg line="-XDTA:noannotationsincomments"/>
+            <arg line="-Xlint"/>
+            <arg line="-Werror"/>
+        </java>
+        <delete file="${tmpdir}/srcfiles-javacutil.txt"/>
+
+        <!--
+        Touch doesn't work on a directory, so can't do:
+           <touch file="${build}"/>
+        Instead, create and remove a file, which modifies the directory.
+        -->
+        <touch file="${build}/.timestamp"/>
+        <delete file="${build}/.timestamp"/>
+    </target>
+
+    <!-- TODO: add a type-checking target that doesn't use
+         -XDTA:noannotations in comments. -->
+
+    <target name="dist" depends="build" description="Create jar file">
+        <mkdir dir="dist" />
+        <jar destfile="${javacutil.lib}" basedir="${build}"/>
+    </target>
+
+    <target name="sources-jar">
+        <jar destfile="${javacutil.sources.lib}" basedir="${src}"/>
+    </target>
+
+    <target name="javadoc-jar" depends="javadoc">
+        <jar destfile="${javacutil.javadoc.lib}" basedir="${api.doc}" includes="**"/>
+    </target>
+
+    <!--
+    This target seems to only work if tools.jar is already in the
+    classpath (despite the attempt in the body to add tools.jar to the
+    classpath).  Also, ${java.home} is the jre/ directory.
+    -->
+    <!-- If adding a Javadoc dependency to another project,
+         there is likely also a build dependency to that project.
+         Please add it as well and keep both in sync. -->
+    <target name="javadoc" depends="prep,prep-ManualTaglet"
+            description="Create Javadoc documentation">
+
+        <!-- This relative path is wrong; running "ant -find" from a
+        subdirectory fails. -->
+        <javadoc sourcepath="${src}" destdir="${api.doc}"
+                 additionalParam="-Xdoclint:all,-missing"
+                 failonerror="true" failonwarning="true"
+                 executable="${javadoc.bin}"
+                 classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
+                 bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
+            <package name="org.checkerframework.javacutil.*"/>
+
+            <link href="http://docs.oracle.com/javase/8/docs/api/"/>
+            <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
+            <taglet name="org.checkerframework.javacutil.dist.ManualTaglet" path="${build}"/>
+            <arg line="-XDTA:noannotationsincomments"/>
+        </javadoc>
+    </target>
+
+</project>

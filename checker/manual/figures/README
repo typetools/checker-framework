@@ -1,0 +1,26 @@
+This directory contains the SVG files used for the diagrams in the Checker
+Framework manual.
+
+SVG can be edited using a variety of tools, such as Inkscape, Visio and
+OpenOffice. The HTML manual uses the SVGs directly. The PDF manual uses
+PDF conversions of each SVG.
+
+Most modern browsers support SVG. Here is a list of browsers that support it:
+http://caniuse.com/#feat=svg
+
+To include an image in your chapter, use for example:
+
+\includeimage{formatter-hierarchy}{3.5cm}
+or
+\includeimagenocentering{value-subtyping}{2.75cm}
+
+Note the absence of the SVG extension. Note that the size parameter is the
+*vertical* size for the PDF only, not the HTML. To affect the size of an
+image in HTML, please edit the image size in the SVG directly.
+
+To create a new image, please copy an existing SVG and make modifications
+to it, so that the boxes and arrows you create have the same size and font
+as in other SVGs. Please edit the Makefile accordingly for your new image.
+
+Please do not add any PNG files to this directory as they will be deleted
+by the Makefile.
