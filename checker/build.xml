@@ -336,7 +336,7 @@
         subdirectory fails. -->
         <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}" destdir="${api.doc}"
                  additionalParam="-Xdoclint:all,-missing"
-                 failonerror="true" failonwarning="true"
+                 failonerror="true"
                  executable="${javadoc.bin}"
                  classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"

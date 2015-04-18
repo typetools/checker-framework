@@ -121,7 +121,7 @@
         subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${api.doc}"
                  additionalParam="-Xdoclint:all,-missing"
-                 failonerror="true" failonwarning="true"
+                 failonerror="true"
                  executable="${javadoc.bin}"
                  classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
