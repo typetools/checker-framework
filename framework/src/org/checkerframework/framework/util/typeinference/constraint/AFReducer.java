@@ -6,7 +6,6 @@ import java.util.Set;
  * AFReducer implementations reduce AFConstraints into one or more "simpler" AFConstraints until these
  * constraints are irreducible
  * @see org.checkerframework.framework.util.typeinference.constraint.AFConstraint#isIrreducible(java.util.Set)
- * @see org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference#reduceAfConstraints(org.checkerframework.framework.type.AnnotatedTypeFactory, java.util.Set, java.util.Queue, java.util.Set)
  *
  * There is one AFReducer for each type of AFConstraint.
  */

@@ -19,7 +19,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * and { className[i], methodName[i], params[i] } represents one of the
  * <tt>Method</tt> or <tt>Constructor</tt> values in the set.
  *
- * @checker_framework.manual #methodval-checker MethodVal Checker
+ * @checker_framework.manual #methodval-and-classval-checkers MethodVal Checker
  */
 @TypeQualifier
 @SubtypeOf({ UnknownMethod.class })

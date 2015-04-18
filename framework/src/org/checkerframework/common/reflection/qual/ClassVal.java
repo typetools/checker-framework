@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * one argument is given, then the exact value of T is known.  If more than
  * one argument is given, then the value of T is one of those classes.
  *
- * @checker_framework.manual #classval-checker ClassVal Checker
+ * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
  */
 @TypeQualifier
 @SubtypeOf({ UnknownClass.class })
