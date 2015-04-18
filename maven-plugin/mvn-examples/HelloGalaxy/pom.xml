@@ -25,7 +25,7 @@
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-      <version><!-- checker-framework-version -->1.8.11<!-- /checker-framework-version --></version>
+      <version><!-- checker-framework-version -->1.9.0<!-- /checker-framework-version --></version>
     </dependency>
 
     <dependency>
@@ -47,7 +47,7 @@
       <plugin>
         <groupId>org.checkerframework</groupId>
         <artifactId>checkerframework-maven-plugin</artifactId>
-        <version><!-- checker-framework-version -->1.8.11<!-- /checker-framework-version --></version>
+        <version><!-- checker-framework-version -->1.9.0<!-- /checker-framework-version --></version>
         <executions>
            <execution>
              <!-- run the checkers after compilation; this can also be any later phase -->
@@ -64,7 +64,7 @@
               <processor>org.checkerframework.checker.nullness.NullnessChecker</processor>
           </processors>
 
-            <checkerFrameworkVersion><!-- checker-framework-version -->1.8.11<!-- /checker-framework-version --></checkerFrameworkVersion>
+            <checkerFrameworkVersion><!-- checker-framework-version -->1.9.0<!-- /checker-framework-version --></checkerFrameworkVersion>
 
           <!-- setting procOnly to false will result in actual generation of class files -->
           <procOnly>false</procOnly>
