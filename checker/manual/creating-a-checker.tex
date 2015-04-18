@@ -360,7 +360,7 @@ files that the checker reads.
 \begin{sloppypar}
 Alternately, the type system designer may specify a default procedurally,
 by calling the
-\href{api/org/checkerframework/framework/util/QualifierDefaults.html#addAbsoluteDefault-javax.lang.model.element.AnnotationMirror-org.checkerframework.framework.qual.DefaultLocation-}{\<QualifierDefaults.addAbsoluteDefault>}
+\href{api/org/checkerframework/framework/util/defaults/QualifierDefaults.html#addAbsoluteDefault-javax.lang.model.element.AnnotationMirror-org.checkerframework.framework.qual.DefaultLocation-}{\<QualifierDefaults.addAbsoluteDefault>}
 method.  You may do this even if you have declaratively defined the
 qualifier hierarchy; see the Nullness Checker's implementation for an
 example.
@@ -676,7 +676,7 @@ be included on the classpath like other components of your checker.
   overriding superclass methods.
 
   The Regex Checker's extended \refclass{framework/flow}{CFAbstractTransfer} is
-  \refclass{checker/regex}{RegexTransfer}.
+  \refclass{checker/regex/classic}{RegexTransfer}.
 
 \item \textbf{Create a class that extends
     \refclass{framework/flow}{CFAbstractAnalysis} and uses the extended
@@ -690,9 +690,9 @@ be included on the classpath like other components of your checker.
   extended \refclass{framework/flow}{CFAbstractTransfer}.
 
   The Regex Checker's extended \refclass{framework/flow}{CFAbstractAnalysis} is
-  \refclass{checker/regex}{RegexAnalysis}, which overrides the
+  \refclass{checker/regex/classic}{RegexAnalysis}, which overrides the
   \code{createTransferFunction} to return a new
-  \refclass{checker/regex}{RegexTransfer} instance:
+  \refclass{checker/regex/classic}{RegexTransfer} instance:
 
 %BEGIN LATEX
 \begin{smaller}
@@ -762,7 +762,7 @@ The \refclass{dataflow/cfg/node}{Node} subclasses can be found in the
 \refclass{dataflow/cfg/node}{VariableDeclarationNode}.
 
 The Regex Checker refines the type of a run-time test method call, so
-\refclass{checker/regex}{RegexTransfer} overrides the method that handles
+\refclass{checker/regex/classic}{RegexTransfer} overrides the method that handles
 \refclass{dataflow/cfg/node}{MethodInvocationNode}s,
 \code{visitMethodInvocation}.
 
@@ -810,7 +810,7 @@ visited.  (Remember that \refclass{common/basetype}{BaseTypeVisitor} uses the
 \refTreeclass{tree}{Tree}, and then performs checks on types of one or more
 \refTreeclass{tree}{Tree}s).
 
-When \refclass{checker/regex}{RegexTransfer} evaluates a
+When \refclass{checker/regex/classic}{RegexTransfer} evaluates a
 \code{RegexUtils.asRegex} invocation, it updates the
 \refclass{dataflow/analysis}{TransferResult}'s result type. This changes the
 type of the \code{RegexUtils.asRegex} invocation when it's
@@ -859,7 +859,7 @@ instances of that \refclass{dataflow/cfg/node}{Node} kind in the program, so the
 \refclass{dataflow/cfg/node}{Node} must be inspected to determine if it is an
 instance of the desired run-time test or operation. For example,
 \code{visitMethodInvocation} is called when dataflow processes any method
-invocation, but the \refclass{checker/regex}{RegexTransfer} should only refine
+invocation, but the \refclass{checker/regex/classic}{RegexTransfer} should only refine
 the result of \code{RegexUtils.asRegex} invocations:
 
 %BEGIN LATEX
@@ -897,7 +897,7 @@ on the parts of run-time test or operation itself, such as arguments passed to
 it.
 
 For example, the refined type of \code{RegexUtils.asRegex} is dependent on the
-integer argument to the method call. The \refclass{checker/regex}{RegexTransfer}
+integer argument to the method call. The \refclass{checker/regex/classic}{RegexTransfer}
 uses this argument to build the resulting type \code{@Regex(i)}, where \code{i}
 is the value of the integer argument.  Note that currently this code only uses
 the value of the integer argument if the argument was an integer literal.  It
@@ -922,7 +922,7 @@ constant or was inferred at compile time by another analysis, such as the
 %END LATEX
 
 If the integer argument was not a literal integer, the
-\refclass{checker/regex}{RegexTransfer} falls back to refining the type to just
+\refclass{checker/regex/classic}{RegexTransfer} falls back to refining the type to just
 \code{@Regex(0)}.
 
 %BEGIN LATEX
@@ -943,7 +943,7 @@ If the integer argument was not a literal integer, the
 As discussed in section \ref{dataflow-determine-expressions}, the type of an
 expression is refined by modifying the
 \refclass{dataflow/analysis}{TransferResult}.  Since the
-\refclass{checker/regex}{RegexTransfer} is updating the type of the run-time
+\refclass{checker/regex/classic}{RegexTransfer} is updating the type of the run-time
 test itself, it will update the result type and not the
 \refclass{dataflow/analysis}{Store}.
 
@@ -1712,7 +1712,7 @@ The compiler and the Checker Framework use the visitor pattern
 extensively. For example, visitors are used to traverse the source tree
 (\refclass{common/basetype}{BaseTypeVisitor} extends
 \refTreeclass{util}{TreePathScanner}) and for type
-checking (\refclass{framework/type}{TreeAnnotator} implements
+checking (\refclass{framework/type/treeannotator}{TreeAnnotator} implements
 \refTreeclass{tree}{TreeVisitor}).
 
 \emph{Utility classes}:
