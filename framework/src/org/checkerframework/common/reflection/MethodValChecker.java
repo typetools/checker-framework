@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.TypeQualifiers;
  * The MethodVal Checker provides a sound estimate of the signature of Method
  * objects
  * 
- * @checker_framework.manual #methodval-checker MethodVal Checker
+ * @checker_framework.manual #methodval-and-classval-checkers MethodVal Checker
  */
 
 @TypeQualifiers({MethodVal.class, MethodValBottom.class, UnknownMethod.class})

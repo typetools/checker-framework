@@ -1051,7 +1051,7 @@ the checker that an annotation belongs to.
 
 
 \begin{description}
-\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{ClassTaintingParam}]
+\item[\refqualclass{checker/tainting/qual}{ClassTaintingParam}]
 Declares a qualifier parameter for a class.
 
 \begin{alltt}
@@ -1072,7 +1072,7 @@ Declares a qualifier parameter for a class.
 
 \end{alltt}
 
-\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{MethodTaintingParam}]
+\item[\refqualclass{checker/tainting/qual}{MethodTaintingParam}]
 Declares a qualifier parameter for a method.
 
 Qualifier arguments to a method are never specified explicitly; they are
@@ -1096,7 +1096,7 @@ method qualifier parameters on an invocation.
 
 \end{alltt}
 
-\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{Var}] Declares a use
+\item[\refqualclass{checker/tainting/qual}{Var}] Declares a use
 of a qualifier parameter. The \code{arg} field
 specifies which qualifier parameter in the surrounding scope the type should
 get its value from. For example:
@@ -1155,7 +1155,7 @@ to another qualifier type. For example:
 
 \end{alltt}
 
-\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{Tainted}]
+\item[\refqualclass{checker/tainting/qual}{Tainted}]
 When the \code{param} field is not set, this annotation behaves as described in
 Chapter~\ref{tainting-checker} and indicates that the value is tainted.
 For example:
@@ -1197,10 +1197,10 @@ parameters to act like wildcards.
 
 \end{alltt}
 
-\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{Untainted}]
+\item[\refqualclass{checker/tainting/qual}{Untainted}]
 \code{@Untainted} behaves the same as \code{@Tainted} but for untainted values.
 
-\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{Wild}] Declares
+\item[\refqualclass{checker/tainting/qual}{Wild}] Declares
 that a class has an unknown qualifier parameter. This is useful in cases
 where the qualifier parameter in the class is not used or is used in very
 limited ways.
@@ -1217,7 +1217,7 @@ limited ways.
 
 \end{alltt}
 
-\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{PolyTainted}]
+\item[\refqualclass{checker/tainting/qual}{PolyTainted}]
 Enables method qualifier polymorphism. When the field \code{param} is not set,
 \code{@PolyTainted} behaves as described
 Section~\ref{qualifier-polymorphism}. For example:

@@ -17,7 +17,7 @@ import com.sun.source.tree.Tree;
  * This annotation may not be written in source code; it is an implementation
  * detail of the checker.
  *
- * @checker_framework.manual #classval-checker ClassVal Checker
+ * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
  */
 @TypeQualifier
 @InvisibleQualifier
