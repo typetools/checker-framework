@@ -444,15 +444,15 @@ public class QualifierDefaults {
         for (Default def : defaults) {
             applier.apply(def);
         }
-        
+
         if (untypedDefaults.size() > 0 &&
-              ElementUtils.isElementFromByteCode(annotationScope) &&
-              atypeFactory.declarationFromElement(annotationScope) == null) {
+                ElementUtils.isElementFromByteCode(annotationScope) &&
+                atypeFactory.declarationFromElement(annotationScope) == null) {
             for (Default def : untypedDefaults) {
                 applier.apply(def);
             }
         }
-  
+
         for (Default def : absoluteDefaults) {
             applier.apply(def);
         }
