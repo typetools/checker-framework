@@ -16,6 +16,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -77,18 +78,39 @@ public class QualifierDefaults {
     private final AnnotatedTypeFactory atypeFactory;
 
     private final DefaultSet absoluteDefaults = new DefaultSet();
+    private final DefaultSet untypedDefaults = new DefaultSet();
 
     /** Mapping from an Element to the source Tree of the declaration. */
     private static final int CACHE_SIZE = 300;
     protected static final Map<Element, BoundType> elementToBoundType  = AnnotatedTypeFactory.createLRUCache(CACHE_SIZE);
 
 
-    /** Defaults that apply for a certain Element.
+    /** 
+     * Defaults that apply for a certain Element.
      * On the one hand this is used for caching (an earlier name for the field was
      * "qualifierCache". It can also be used by type systems to set defaults for
      * certain Elements.
      */
     private final Map<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
+
+    /**
+     * List of DefaultLocations which are valid for untyped code defaults.
+     */
+    private static final DefaultLocation[] validUntypedDefaultLocations = {
+        DefaultLocation.FIELD,
+        DefaultLocation.PARAMETERS,
+        DefaultLocation.RETURNS,
+        DefaultLocation.UPPER_BOUNDS
+    };
+
+    /**
+     * Returns an array of locations which are valid for the untyped value
+     * defaults.  These are simply by syntax, since an entire file is typechecked,
+     * it is not possible for local variables to be untyped.
+     */
+    public static DefaultLocation[] validLocationsForUntyped() {
+        return validUntypedDefaultLocations;
+    }
 
     /**
      * @param elements interface to Element data in the current processing environment
@@ -108,8 +130,28 @@ public class QualifierDefaults {
         absoluteDefaults.add(new Default(absoluteDefaultAnno, location));
     }
 
+    /**
+     * Sets the default annotation for untyped elements.
+     */
+    public void addUntypedDefault(AnnotationMirror untypedDefaultAnno, DefaultLocation location) {
+        checkDuplicates(untypedDefaults, untypedDefaultAnno, location);
+        untypedDefaults.add(new Default(untypedDefaultAnno, location));
+    }
+
+    /**
+     * Sets the default annotation for untyped elements, with specific locations.
+     */
+    public void addUntypedDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
+        for (DefaultLocation location : locations) {
+            // TODO(danbrotherston): Why no check for duplicates here?
+            // TODO(danbrotherston): Check for invalid locations for untyped code.
+            addUntypedDefault(absoluteDefaultAnno, location);
+        }
+    }
+
     public void addAbsoluteDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
         for (DefaultLocation location : locations) {
+            // TODO(danbrotherston): Why no check duplicates here?
             addAbsoluteDefault(absoluteDefaultAnno, location);
         }
     }
@@ -289,6 +331,7 @@ public class QualifierDefaults {
         // It works in other places, e.g. see handling of @SubtypeOf.
         // The hack below should probably be added to:
         // Class<? extends Annotation> cls = AnnotationUtils.parseTypeValue(dq, "value");
+        // TODO(danbrotherston): Why is this "Set<Default>" instead of DefaultSet
         Class<? extends Annotation> cls;
         try {
             cls = dq.value();
@@ -401,7 +444,15 @@ public class QualifierDefaults {
         for (Default def : defaults) {
             applier.apply(def);
         }
-
+        
+        if (untypedDefaults.size() > 0 &&
+              ElementUtils.isElementFromByteCode(annotationScope) &&
+              atypeFactory.declarationFromElement(annotationScope) == null) {
+            for (Default def : untypedDefaults) {
+                applier.apply(def);
+            }
+        }
+  
         for (Default def : absoluteDefaults) {
             applier.apply(def);
         }
