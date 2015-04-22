@@ -102,7 +102,7 @@ public class CheckerPlugin extends AbstractUIPlugin
             String what = (severity == IStatus.ERROR) ? (e != null ? "Exception"
                     : "Error")
                     : "Warning";
-            System.out.println(what + " in JSR 308 plugin: " + message);
+            System.out.println(what + " in Checker Framework plugin: " + message);
             if (e != null)
             {
                 e.printStackTrace();
