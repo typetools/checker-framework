@@ -370,34 +370,34 @@ public abstract class GenericAnnotatedTypeFactory<
                 } else {
                     defs.addAbsoluteDefault(AnnotationUtils.fromClass(elements, qual),
                         DefaultLocation.OTHERWISE);
-		    foundDefaultOtherwise = true;
+                    foundDefaultOtherwise = true;
                 }
             }
 
-	    // Add defaults for untyped code if conservative untyped flag is passed.
-	    if (!checker.hasOption("unsafeUntyped")) {
-		DefaultForInUntyped defaultForUntyped = qual.getAnnotation(DefaultForInUntyped.class);
+            // Add defaults for untyped code if conservative untyped flag is passed.
+            if (!checker.hasOption("unsafeUntyped")) {
+                DefaultForInUntyped defaultForUntyped = qual.getAnnotation(DefaultForInUntyped.class);
 
-		if (defaultForUntyped != null) {
-		    defs.addUntypedDefaults(AnnotationUtils.fromClass(elements, qual),
-			defaultForUntyped.value());
-		}
+                if (defaultForUntyped != null) {
+                    defs.addUntypedDefaults(AnnotationUtils.fromClass(elements, qual),
+                            defaultForUntyped.value());
+                }
 
-		if (qual.getAnnotation(DefaultQualifierInUntyped.class) != null) {
-		    if (defaultForUntyped != null) {
-			// A type qualifier should either have a DefaultForInUntyped or
-			// a DefaultQualifierInUntyped annotation.
-			ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
-			    "qualifier has both @DefaultForInUntyped and @DefaultQualifierInUntyped annotations: " +
-   			    qual.getCanonicalName());
-		    } else {
-			for (DefaultLocation location : QualifierDefaults.validLocationsForUntyped()) {
-  			    defs.addUntypedDefault(AnnotationUtils.fromClass(elements, qual),
-			        location);
-			}
-		    }
-	      	}
-	    }
+                if (qual.getAnnotation(DefaultQualifierInUntyped.class) != null) {
+                    if (defaultForUntyped != null) {
+                        // A type qualifier should either have a DefaultForInUntyped or
+                        // a DefaultQualifierInUntyped annotation.
+                        ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
+                                "qualifier has both @DefaultForInUntyped and @DefaultQualifierInUntyped annotations: " +
+                                qual.getCanonicalName());
+                    } else {
+                        for (DefaultLocation location : QualifierDefaults.validLocationsForUntyped()) {
+                            defs.addUntypedDefault(AnnotationUtils.fromClass(elements, qual),
+                                    location);
+                        }
+                    }
+                }
+            }
         }
 
         // If Unqualified is a supported qualifier, make it the default.
