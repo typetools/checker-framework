@@ -66,8 +66,8 @@ public class ElementAnnotationUtil {
     /**
      * For backwards-compatibility: treat declaration annotations
      * as type annotations, if we now understand them as type annotations.
-     * In particular, this allows the transition from JSR 305 declaration
-     * annotations to JSR 308 type annotations.
+     * In particular, this allows the transition from Java 5 declaration
+     * annotations to Java 8 type annotations.
      *
      * There are some caveats to this: the interpretation for declaration
      * and type annotations differs, in particular for arrays and inner
