@@ -27,7 +27,7 @@ public final class MarkerUtil {
 		// This triggers resource update on IResourceChangeListener's
 		// (BugTreeView)
 		if (CheckerPlugin.DEBUG) {
-			System.out.println("Removing JSR 308 markers in "
+			System.out.println("Removing Checker Framework markers in "
 					+ res.getLocation());
 		}
 		res.deleteMarkers(MarkerReporter.NAME, true, IResource.DEPTH_INFINITE);
