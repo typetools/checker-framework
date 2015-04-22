@@ -372,10 +372,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     /**
      * The qual framework's tree and type annotators behave differently than the
      * checker frameworks. The default of the checker framework also does not apply.
-     *
-     * @param tree
-     * @param type
-     * @param iUseFlow
      */
     @Override
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {

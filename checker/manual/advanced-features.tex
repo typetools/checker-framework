@@ -337,7 +337,7 @@ does not provide runtime checks.
 \item
 Instanceof types are defaulted to top for a similar reason:  so that
 programmers do not need to write annotations on them.  If the
-\<instanceof>'s quaifier is top, then the Checker Framework will never
+\<instanceof>'s qualifier is top, then the Checker Framework will never
 issue an error that the \<instanceof> qualifier is not compatible with the
 argument.
 
@@ -365,9 +365,8 @@ and \code{class C<T extends Date>}.
 Implicit \emph{lower} bounds are defaulted to the bottom type, again to allow
 maximal instantiation.  Note that Java does not allow a programmer to
 express both the upper and lower bounds of a type, but the Checker
-Framework tracks both of them separately and allows the programmer to
-specify both by using a declaration on a wildcard or type variable name;
-see Section~\ref{type-parameter-rationale}.
+Framework allows the programmer to specify either or both;
+see Section~\ref{generics-defaults}.
 
 \end{itemize}
 
@@ -421,6 +420,47 @@ feature.  Here are more detailed justifications:
 If these issues can be resolved, then the feature may be added in the
 future.  Or, it may be added optionally, and each type-checker
 implementation can enable it if desired.
+
+
+\subsection{Inherited Wildcard Annotations\label{inherited-wildcard-annotations}}
+
+If a wildcard is unbounded and has no annotation (e.g. \code{List<?>}),
+the annotations on the wildcard's bounds are copied from the type parameter
+to which the wildcard is an argument.  For example, the two wildcards in
+the declarations below are equivalent.
+
+\begin{Verbatim}
+class MyList<@Nullable T extends @Nullable Object> {}
+
+MyList<?> listOfNullables;
+MyList<@Nullable ? extends @Nullable Object> listOfNullables;
+\end{Verbatim}
+
+We copy these annotations because wildcards must be within the bounds of their
+corresponding type parameter.  Therefore, there would be many false positive
+\code{type.argument.type.incompatible} warnings if the bounds of a wildcard
+were defaulted differently from the bounds of its corresponding type parameter.
+Here is another example:
+
+\begin{Verbatim}
+class MyList<@Regex(5) T extends @Regex(1) Object> {}
+
+MyList<?> listOfRegexes;
+MyList<@Regex(5) ? extends @Regex(1) Object> listOfRegexes;
+\end{Verbatim}
+
+Note, this applies only to unbounded wildcards.  The two wildcards in the
+following example are equivalent.
+
+\begin{Verbatim}
+class MyList<@Nullable T extends @Nullable Object> {}
+
+List<? extends Object> listOfNonNulls;
+List<@NonNull ? extends @NonNull Object> listOfNonNulls2;
+\end{Verbatim}
+
+Note, the upper bound of the wildcard \code{? extends Object} is defaulted to
+\code{@NonNull} using the climb to the top rule (see Section~\ref{climb-to-top}).
 
 
 \iffalse TODO
@@ -1298,4 +1338,6 @@ class @Marsupial-Animal {
 %  LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
 %  LocalWords:  fenum igj javari i18n RequiresQualifier EnsuresQualifier
 %  LocalWords:  EnsuresQualifierIf AsuppressWarnings AinvariantArrays asts
-%  LocalWords:  formatter ocals nstanceof plicit ounds
+%  LocalWords:  formatter ocals nstanceof plicit ounds wildcard's da
+%%  LocalWords:  wildcards guieffect AassumeAssertionsAreDisabled
+%%  LocalWords:  AssumeAssertion

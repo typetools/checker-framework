@@ -813,8 +813,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Adds @FromByteCode to methods, constructors, and fields declared in class files
      * that are not already annotated with @FromStubFile
-     *
-     * @param elt
      */
     private void addFromByteCode(Element elt) {
         if (indexDeclAnnos == null) { // || trees.getTree(elt) != null) {
@@ -2206,7 +2204,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Used for asserting that a type is valid for converting to an annotated
      * type.
      *
-     * @param type
      * @return true if {@code type} can be converted to an annotated type, false
      *         otherwise
      */

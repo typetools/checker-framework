@@ -29,6 +29,7 @@ import org.checkerframework.framework.qual.*;
 @TypeQualifier
 @SubtypeOf(UnknownKeyFor.class)
 @Documented
+@FieldIsExpression
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface KeyFor {

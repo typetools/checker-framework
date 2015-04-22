@@ -1,5 +1,6 @@
-import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.*;
+
+import java.util.Map;
 
 public class ParameterExpression {
   public void m1(@Nullable Object o, @Nullable Object o1, @Nullable Object o2, @Nullable Object o3) {
@@ -33,4 +34,53 @@ public class ParameterExpression {
   public void m4(@Nullable Object x1, @Nullable Object x2, final @Nullable Object x3) {
   }
 
+  // Formal parameter names should not be used on pre/postcondition, conditional postcondition
+  // and formal parameter annotations in the same method declaration as the formal parameter
+  // being referred. In this case, "#paramNum" should be used. This is because
+  // the parameter names are not saved in bytecode.
+
+  @Nullable Object field = null;
+
+  // Postconditions
+  @EnsuresNonNull("field") // OK
+  public void m5() { field = new Object(); }
+
+  @EnsuresNonNull("param")
+  //:: warning: (contracts.postcondition.expression.parameter.name)
+  public void m6(Object param){ param = new Object(); }
+
+  @EnsuresNonNull("field") // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
+  // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant the field.
+  //:: warning: (contracts.postcondition.expression.parameter.name)
+  public void m7(Object field){ field = new Object(); }
+
+  // Preconditions
+  @RequiresNonNull("field") // OK
+  public void m8() { }
+
+  @RequiresNonNull("param")
+  //:: warning: (contracts.precondition.expression.parameter.name)
+  public void m9(Object param){ }
+
+  @RequiresNonNull("field") // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
+  // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant the field.
+  //:: warning: (contracts.precondition.expression.parameter.name)
+  public void m10(Object field){ }
+
+  // Conditional postconditions
+  @EnsuresNonNullIf(result=true, expression="field") // OK
+  public boolean m11() { field = new Object(); return true; }
+
+  @EnsuresNonNullIf(result=true, expression="param")
+  //:: warning: (contracts.conditional.postcondition.expression.parameter.name)
+  public boolean m12(Object param){ param = new Object(); return true; }
+
+  @EnsuresNonNullIf(result=true, expression="field") // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
+  // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant the field.
+  //:: warning: (contracts.conditional.postcondition.expression.parameter.name)
+  public boolean m13(Object field){ field = new Object(); return true; }
+
+  // Annotations on formal parameters referring to a formal parameter of the same method.
+  //:: warning: (method.declaration.expression.parameter.name)
+  public void m14(@KeyFor("param2") Object param1, Map<Object,Object> param2){ }
 }

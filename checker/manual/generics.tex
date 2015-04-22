@@ -70,182 +70,113 @@ were inferred for a raw type.
 
 \subsection{Restricting instantiation of a generic class\label{generics-instantiation}}
 
-When you define a generic class in Java, the \<extends> or \<super> clause
-of the generic type parameter restricts
-how the class may be instantiated.  For example, given the definition
+When you define a generic class in Java, the \<extends> clause
+of the generic type parameter (known as the ``upper bound'') requires that
+the corresponding type argument must be a subtype of the bound.
+For example, given the definition
 \verb|class G<T extends Number> {...}|,
-a client can instantiate it as \code{G<Integer>} but not \code{G<Date>}.
-Similarly, type qualifiers on the generic type parameters can restrict on
-how the class may be instantiated.  For example, a generic list class might
-indicate that it can hold only non-null values.  Similarly, a generic map
-class might indicate it requires an immutable key type, but that it
-supports both nullable and non-null value types.
+the upper bound is \<Number>
+and a client can instantiate it as \code{G<Number>} or \code{G<Integer>}
+but not \code{G<Date>}.
 
-
-There are two ways to restrict the type qualifiers that may be used on
-the actual type argument when instantiating a generic class.
-
-The first technique is the standard Java approach of using the
-\code{extends} or \code{super} clause to supply an upper or lower bound.
-For example:
+You can write a type qualifier on the \<extends> clause to make the upper
+bound a qualified type.  For example, you can declare that a generic list class can hold only non-null values:
+% Similarly, a generic map
+% class might indicate it requires an immutable key type, but that it
+% supports both nullable and non-null value types.
 
 \begin{Verbatim}
-  MyClass<T extends @NonNull Object> { ... }
+  class MyList<T extends @NonNull Object> {...}
 
-  MyClass<@NonNull String> m1;       // OK
-  MyClass<@Nullable String> m2;      // error
+  MyList<@NonNull String> m1;       // OK
+  MyList<@Nullable String> m2;      // error
 \end{Verbatim}
 
-The second technique is to write a type annotation on the declaration of a
-generic type parameter, which specifies the exact annotation that is
-required on the actual type argument, rather than just a bound.  For example:
+That is, in the above example, all
+arguments that replace \code{T} in \code{MyList<T>} must be subtypes of
+\code{@NonNull Object}.
+
+Conceptually, each generic type parameter has two bounds --- a lower bound
+and an upper bound --- and at instantiation, the type argument must be
+within the bounds.  Java only allows you to specify the upper bound; the
+lower bound is implicitly the bottom type \<void>.  The Checker Framework
+gives you more power:  you can specify both an upper and lower bound for
+type parameters and wildcards.  For the upper bound, write a type qualifier
+on the \<extends> clause, and for the lower bound, write a type qualifier
+on the type variable.
 
 \begin{Verbatim}
-  class MyClassNN<@NonNull T> { ... }
-  class MyClassNble<@Nullable T> { ... }
-
-  MyClassNN<@NonNull Number> v1;     // OK
-  MyClassNN<@Nullable Number> v2;    // error
-  MyClassNble<@NonNull Number> v4;   // error
-  MyClassNble<@Nullable Number> v3;  // OK
+  class MyList<@LowerBound T extends @UpperBound Object> { ... }
 \end{Verbatim}
 
-\subsection{A qualifier on a type parameter declaration is like two bounds\label{qualifier-is-like-two-bounds}}
-
-A type annotation on a generic type parameter declaration can be thought of
-as syntactic sugar for writing the annotation on both the \<extends> and the
-\<super> clauses of the declaration.
-
-Suppose that a type parameter declaration or a wildcard is annotated.  Then
-the annotation applies to all bounds that have no explicit annotation.  In
-other words, the
-annotation applies to both the upper and lower bounds, except that any
-explicitly-written bound annotation takes precedence.
-
-\subsubsection{Type parameter declaration annotation examples\label{type-parameter-examples}}
-
-For example, the following pairs of declarations have the same meaning
-(except that the second declaration in each pair is not legal syntax).
+For a concrete example, recall the type system of the Regex Checker (see
+Figure~\refwithpage{regex-checker}) in which
+ \<@Regex(0)> :>
+ \<@Regex(1)> :>
+ \<@Regex(2)> :>
+ \<@Regex(3)> :> \ldots.
 
 \begin{Verbatim}
-  class MyClass<@A T> { ... }
-  class MyClass<T extends @A Object super @A void> { ... }
+  class MyRegexes<@Regex(5) T extends @Regex(1) String> { ... }
 
-  class MyClass<@A T extends Number> { ... }
-  class MyClass<T extends @A Number super @A void> { ... }
+  MyRegexes<@Regex(0) String> mu;   // error - @Regex(0) is not a subtype of @Regex(1)
+  MyRegexes<@Regex(1) String> m1;   // OK
+  MyRegexes<@Regex(3) String> m3;   // OK
+  MyRegexes<@Regex(5) String> m5;   // OK
+  MyRegexes<@Regex(6) String> m6;   // error - @Regex(6) is not a supertype of @Regex(5)
+\end{Verbatim}
 
-  class MyClass<@A T extends @B Number> { ... }
-  class MyClass<T extends @B Number super @A void> { ... }
+The above declaration states that the upper bound of the type variable
+is \<@Regex(1) String> and the lower bound is \<@Regex(5) void>.  That is,
+arguments that replace \code{T} in \code{MyList<T>} must be subtypes of
+\code{@Regex(1) String} and supertypes of \code{@Regex(5) void}.
+Since \<void> cannot be used to instantiate a generic class, \<MyList> may
+be instantiated with \<@Regex(1) String> through \<@Regex(5) String>.
 
-  class MyClass<@A T super Number> { ... }
-  class MyClass<T extends @A Object super @A Number> { ... }
 
-  class MyClass<@A T super @B Number> { ... }
-  class MyClass<T extends @A Object super @B Number> { ... }
+To specify an exact bound, place the same annotation on both bounds.  For example:
+
+\begin{Verbatim}
+  class MyListOfNonNulls<@NonNull T extends @NonNull Object> { ... }
+  class MyListOfNullables<@Nullable T extends @Nullable Object> { ... }
+
+  MyListOfNonNulls<@NonNull Number> v1;      // OK
+  MyListOfNonNulls<@Nullable Number> v2;     // error
+  MyListOfNullables<@NonNull Number> v4;     // error
+  MyListOfNullables<@Nullable Number> v3;    // OK
+\end{Verbatim}
+
+It is an error if the lower bound is not a subtype of the upper bound.
+
+\begin{Verbatim}
+  class MyClass<@Nullable T extends @NonNull Object>  // error @Nullable is not a supertype of @NonNull
 \end{Verbatim}
 
 
-\subsubsection{Type parameter declaration annotation rationale\label{type-parameter-rationale}}
+\subsubsection{Defaults\label{generics-defaults}}
+If the \<extends> clause is omitted,
+then the upper bound defaults to \<@\emph{TopType} Object>.
+If no type annotation is written on the type parameter name,
+then the lower bound defaults to \<@\emph{BottomType} void>.
+If the \<extends> clause is written but contains no type qualifier,
+then the normal defaulting rules apply to the type in the \<extends>
+clause (see Section~\ref{climb-to-top}).
 
-It is desirable to be able to constrain both the upper and the lower bound
-of a type, as in
-
-\begin{Verbatim}
-  class MyClass<T extends @C MyUpperBound super @D void> { ... }
-\end{Verbatim}
-
-However, doing so is not possible due to two limitations of Java's syntax.
-First, it is illegal to specify both the upper and the lower bound of a
-type parameter or wildcard.
-Second, it is impossible to specify a type annotation for a lower
-bound without also specifying a type (use of \<void> is illegal).
-
-Thus, when you wish to specify both bounds, you write one of them
-explicitly, and you write the other one in front of the type variable name
-or \<?>.  When you wish to specify two identical bounds, you write a
-single annotation in front of the type variable name or \<?>.
-
-
-\subsection{Examples of qualifiers on a type parameter\label{type-parameter-qualifier-examples}}
-
-Recall that \<@Nullable \emph{X}> is a supertype of \<@NonNull \emph{X}>,
-for any \emph{X}\@.
-We can see from Section~\ref{qualifier-is-like-two-bounds} that almost all
-of the following types mean
-different things:
+These rules mean that even though in Java the following two declarations
+are equivalent:
 
 \begin{Verbatim}
-  class MyList1<@Nullable T> { ... }
-  class MyList2<@NonNull T> { ... }
-  class MyList3<T extends @Nullable Object> { ... }
-  class MyList4<T extends @NonNull Object> { ... } // same as MyList2
-\end{Verbatim}
-
-\<MyList1> must be instantiated with a nullable type. 
-The implementation must be able to consume (store) a null
-value and produce (retrieve) a null value.
-
-\<MyList2> and \<MyList4> must be instantiated with non-null type.
-The implementation has to account for only non-null values --- it
-does not have to account for consuming or producing null.
-
-\<MyList3> may be instantiated either way:
-with a nullable type or a non-null type.  The implementation must consider
-that it may be instantiated either way --- flexible enough to support either
-instantiation, yet rigorous enough to impose the correct constraints of the
-specific instantiation.  It must also itself comply with the constraints of
-the potential instantiations.
-
-One way to express the difference
-among \<MyList1>, \<MyList2>, \<MyList3>, and \<MyList4>
-is by comparing what expressions are
-legal in the implementation of the list --- that is, what expressions may
-appear in the ellipsis, such as inside a method's body.  Suppose each class
-has, in the ellipsis, these declarations:
-
-\begin{Verbatim}
-  T t;
-  @Nullable T nble;      // Section "Type annotations on a use of a generic type variable", below,
-  @NonNull T nn;         // further explains the meaning of "@Nullable T" and "@NonNull T".
-  void add(T arg) { ... }
-  T get(int i) { ... }
+  class MyClass<T>
+  class MyClass<T extends Object>
 \end{Verbatim}
 
 \noindent
-Then the following expressions would be legal, inside a given implementation.
-(Compilable source code appears as file
-\<checker-framework/checker/tests/nullness/generics/GenericsExample.java>.)
+they may specify different type qualifiers on the upper bound, depending on
+the type system's defaulting rules.
+% Cross-reference to the justification for this?
 
-\begin{tabular}{|l|c|c|c|c|} \hline
-                        & MyList1 & MyList2 & MyList3 & MyList4 \\ \hline
-  t = null;             & OK      & error   & error   & error   \\ \hline
-  t = nble;             & OK      & error   & error   & error   \\ \hline
-  nble = null;          & OK      & OK      & OK      & OK      \\ \hline
-  nn = null;            & error   & error   & error   & error   \\ \hline
-  t = this.get(0);      & OK      & OK      & OK      & OK      \\ \hline
-  nble = this.get(0);   & OK      & OK      & OK      & OK      \\ \hline
-  nn = this.get(0);     & error   & OK      & error   & OK      \\ \hline
-  this.add(t);          & OK      & OK      & OK      & OK      \\ \hline
-  this.add(nble);       & OK      & error   & error   & error   \\ \hline
-  this.add(nn);         & OK      & OK      & OK      & OK      \\ \hline
-\end{tabular}
-
-
-\medskip
-
-%% This text is not very helpful.
-% The
-% implementation of \code{MyList2} may only place non-null objects in the
-% list and may assume that retrieved elements are non-null.  The
-% implementation of \code{MyList3} is similar in that it may only place
-% non-null objects in the list, because it might be instantiated as, say,
-% \code{MyList3<@NonNull Date>}.  When retrieving elements from the list,
-% the implementation of \code{MyList3} must account for the fact that
-% elements of \code{MyList3} may be null, because it might be instantiated
-% as, say, \code{MyList3<@Nullable Date>}.
-The differences are more
-significant when the qualifier hierarchy is more complicated than just
-\<@Nullable> and \<@NonNull>.
+%% Mike is concerned that an exhaustive example here would take too
+%% much space for not enough benefit.
 
 
 \subsection{Type annotations on a use of a generic type variable\label{type-variable-use}}
@@ -289,6 +220,177 @@ In \code{MyClass2<@Interned String>},
 % \code{T}, \code{@Nullable T} is not (necessarily) the same type as
 % \code{T}.
 
+
+\subsection{Annotations on Wildcards\label{annotations-on-wildcards}}
+At an instantiation of a generic type, a Java wildcard indicates that some
+constraints are known on the type argument, but the type argument is not known
+exactly.  
+For example, you can indicate that the type parameter for variable \<ls> is
+some unknown subtype of \<CharSequence>:
+
+\begin{Verbatim}
+  List<? extends CharSequence> ls;
+  ls = new ArrayList<String>();      // OK
+  ls = new ArrayList<Integer>();     // error - Integer is not a subtype of CharSequence
+\end{Verbatim}
+
+For more details about wildcards, see the
+\href{https://docs.oracle.com/javase/tutorial/java/generics/wildcards.html}{Java
+  tutorial on wildcards} or
+\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.5.1}{JLS
+  \S 4.5.1}.
+
+You can write a type annotation on the bound of a wildcard:
+
+\begin{Verbatim}
+  List<? extends @NonNull CharSequence> ls;
+  ls = new ArrayList<@NonNull String>();      // OK
+  ls = new ArrayList<@Nullable String>();     // error - @Nullable is not a subtype of @NonNull
+\end{Verbatim}
+
+Conceptually, every wildcard has two bounds --- an upper bound and a lower
+bound.  Java only permits you to write the upper bound (with
+\code{<?\ extends SomeType>}) or the lower bound (with \code{<?\ super
+  OtherType>}), but not both; the the unspecified bound is implicitly the
+top type
+\<Object> or the bottom type \<void>.  The Checker Framework is more
+flexible:  it lets you simultaneously write annotations on both the top and
+the bottom type.  To annotate the implicit bound, write the type annotation
+before the \<?>.  For example:
+
+\begin{Verbatim}
+  List<@LowerBound ? extends @UpperBound CharSequence> lo;
+  List<@UpperBound ? super @NonNull Number> ls;
+\end{Verbatim}
+
+For an unbounded wildcard (\code{<?>}, with neither
+bound specified), the annotation in front of a wildcard applies
+to both bounds.  The following three declarations are equivalent (except
+that you cannot write the bottom type \<void>; note that
+\sunjavadoc{java/lang/Void.html}{Void} does not denote the bottom type):
+
+\begin{Verbatim}
+  List<@NonNull ?> lnn;
+  List<@NonNull ? extends @NonNull Object> lnn;
+  List<@NonNull ? super @NonNull void> lnn;
+\end{Verbatim}
+
+\noindent
+Note that the annotation in front of a type parameter always applies to its
+lower bound, because type parameters can only be written with \<extends>
+and never \<super>.
+
+
+% Defaults are as for type variables (see Section~\ref{generics-defaults}),
+% with one exception.
+
+The defaulting rules for
+wildcards also differ from those of type parameters (see
+Section~\ref{inherited-wildcard-annotations}).
+
+
+%% Mike isn't sure that this section pulls its weight, especially since it
+%% doesn't justify why it is desirable to be able to constrain both the
+%% upper and the lower bound of a type.  If readers believe that, they will
+%% be OK with the syntax.
+% \subsubsection{Type parameter declaration annotation rationale\label{type-parameter-rationale}}
+% 
+% It is desirable to be able to constrain both the upper and the lower bound
+% of a type, as in
+% 
+% \begin{Verbatim}
+%   class MyClass<T extends @C MyUpperBound super @D void> { ... }
+% \end{Verbatim}
+% 
+% However, doing so is not possible due to two limitations of Java's syntax.
+% First, it is illegal to specify both the upper and the lower bound of a
+% type parameter or wildcard.
+% Second, it is impossible to specify a type annotation for a lower
+% bound without also specifying a type (use of \<void> is illegal).
+% 
+% Thus, when you wish to specify both bounds, you write one of them
+% explicitly, and you write the other one in front of the type variable name
+% or \<?>.  When you wish to specify two identical bounds, you write a
+% single annotation in front of the type variable name or \<?>.
+
+
+\subsection{Examples of qualifiers on a type parameter\label{type-parameter-qualifier-examples}}
+
+Recall that \<@Nullable \emph{X}> is a supertype of \<@NonNull \emph{X}>,
+for any \emph{X}\@.
+Most of of the following types mean different things:
+
+\begin{Verbatim}
+  class MyList1<@Nullable T> { ... }
+  class MyList1a<@Nullable T extends @Nullable Object> { ... } // same as MyList1
+  class MyList2<@NonNull T extends @NonNull Object> { ... }
+  class MyList2a<T extends @NonNull Object> { ... } // same as MyList2
+  class MyList3<T extends @Nullable Object> { ... }
+\end{Verbatim}
+
+\<MyList1> and \<MyList1a> must be instantiated with a nullable type.
+The implementation of \<MyList1> must be able to consume (store) a null
+value and produce (retrieve) a null value.
+
+\<MyList2> and \<MyList2a> must be instantiated with non-null type.
+The implementation of \<MyList2> has to account for only non-null values --- it
+does not have to account for consuming or producing null.
+
+\<MyList3> may be instantiated either way:
+with a nullable type or a non-null type.  The implementation of \<MyList3> must consider
+that it may be instantiated either way --- flexible enough to support either
+instantiation, yet rigorous enough to impose the correct constraints of the
+specific instantiation.  It must also itself comply with the constraints of
+the potential instantiations.
+
+One way to express the difference among \<MyList1>, \<MyList2>, and
+\<MyList3> is by comparing what expressions are legal in the implementation
+of the list --- that is, what expressions may appear in the ellipsis in the
+declarations above, such as inside a method's body.  Suppose each class
+has, in the ellipsis, these declarations:
+
+\begin{Verbatim}
+  T t;
+  @Nullable T nble;      // Section "Type annotations on a use of a generic type variable", below,
+  @NonNull T nn;         // further explains the meaning of "@Nullable T" and "@NonNull T".
+  void add(T arg) { }
+  T get(int i) { }
+\end{Verbatim}
+
+\noindent
+Then the following expressions would be legal, inside a given
+implementation --- that is, also within the ellipses.
+(Compilable source code appears as file
+\<checker-framework/checker/tests/nullness/generics/GenericsExample.java>.)
+
+\begin{tabular}{|l|c|c|c|c|c|} \hline
+                        & MyList1 & MyList2 & MyList3 \\ \hline
+  t = null;             & OK      & error   & error   \\ \hline
+  t = nble;             & OK      & error   & error   \\ \hline
+  nble = null;          & OK      & OK      & OK      \\ \hline
+  nn = null;            & error   & error   & error   \\ \hline
+  t = this.get(0);      & OK      & OK      & OK      \\ \hline
+  nble = this.get(0);   & OK      & OK      & OK      \\ \hline
+  nn = this.get(0);     & error   & OK      & error   \\ \hline
+  this.add(t);          & OK      & OK      & OK      \\ \hline
+  this.add(nble);       & OK      & error   & error   \\ \hline
+  this.add(nn);         & OK      & OK      & OK      \\ \hline
+\end{tabular}
+
+
+%% This text is not very helpful.
+% The
+% implementation of \code{MyList2} may only place non-null objects in the
+% list and may assume that retrieved elements are non-null.  The
+% implementation of \code{MyList3} is similar in that it may only place
+% non-null objects in the list, because it might be instantiated as, say,
+% \code{MyList3<@NonNull Date>}.  When retrieving elements from the list,
+% the implementation of \code{MyList3} must account for the fact that
+% elements of \code{MyList3} may be null, because it might be instantiated
+% as, say, \code{MyList3<@Nullable Date>}.
+The differences are more
+significant when the qualifier hierarchy is more complicated than just
+\<@Nullable> and \<@NonNull>.
 
 \subsection{Covariant type parameters\label{covariant-type-parameters}}
 
@@ -846,9 +948,9 @@ and are more fully explained below.
 Each type system that supports qualifier parameters has its own copy of
 these annotations. The functionality of the annotations is the same, but since
 a java file might be annotated with annotations for multiple type systems, i.e.
-have annotaions for both the Regex and the Tainting checker, there must be a
+have annotations for both the Regex and the Tainting checker, there must be a
 different copy of each annotation so that the Checker Framework can determine
-the checker that an annotaiton belongs to.
+the checker that an annotation belongs to.
 
 \begin{figure}
 \begin{smaller}
@@ -949,7 +1051,7 @@ the checker that an annotaiton belongs to.
 
 
 \begin{description}
-\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{ClassTaintingParam}]
+\item[\refqualclass{checker/tainting/qual}{ClassTaintingParam}]
 Declares a qualifier parameter for a class.
 
 \begin{alltt}
@@ -970,7 +1072,7 @@ Declares a qualifier parameter for a class.
 
 \end{alltt}
 
-\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{MethodTaintingParam}]
+\item[\refqualclass{checker/tainting/qual}{MethodTaintingParam}]
 Declares a qualifier parameter for a method.
 
 Qualifier arguments to a method are never specified explicitly; they are
@@ -994,7 +1096,7 @@ method qualifier parameters on an invocation.
 
 \end{alltt}
 
-\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{Var}] Declares a use
+\item[\refqualclass{checker/tainting/qual}{Var}] Declares a use
 of a qualifier parameter. The \code{arg} field
 specifies which qualifier parameter in the surrounding scope the type should
 get its value from. For example:
@@ -1053,7 +1155,7 @@ to another qualifier type. For example:
 
 \end{alltt}
 
-\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{Tainted}]
+\item[\refqualclass{checker/tainting/qual}{Tainted}]
 When the \code{param} field is not set, this annotation behaves as described in
 Chapter~\ref{tainting-checker} and indicates that the value is tainted.
 For example:
@@ -1095,10 +1197,10 @@ parameters to act like wildcards.
 
 \end{alltt}
 
-\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{Untainted}]
+\item[\refqualclass{checker/tainting/qual}{Untainted}]
 \code{@Untainted} behaves the same as \code{@Tainted} but for untainted values.
 
-\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{Wild}] Declares
+\item[\refqualclass{checker/tainting/qual}{Wild}] Declares
 that a class has an unknown qualifier parameter. This is useful in cases
 where the qualifier parameter in the class is not used or is used in very
 limited ways.
@@ -1115,7 +1217,7 @@ limited ways.
 
 \end{alltt}
 
-\item[\refqualclass{checker/experimental/tainting_qual_poly/qual}{PolyTainted}]
+\item[\refqualclass{checker/tainting/qual}{PolyTainted}]
 Enables method qualifier polymorphism. When the field \code{param} is not set,
 \code{@PolyTainted} behaves as described
 Section~\ref{qualifier-polymorphism}. For example:
@@ -1177,7 +1279,9 @@ is a String with a tainted value and its primary qualifier is \code{@Tainted}.
 % LocalWords:  MyList1 MyList2 MyList4 MyList3 MyClass2 toUpperCase elt
 % LocalWords:  PolyAll arrays' Xlint rawtypes AignoreRawTypeArguments s1
 % LocalWords:  call's Regex taintedHolder untaintedHolder taintedHolder2
-% LocalWords:  wildcards holderExtends holderSuper getTaintedString s2
+% LocalWords:  wildcards holderExtends holderSuper getTaintedString s2 JLS
 % LocalWords:  getUntaintedString Typesystem Param ClassTaintingParam h1
-% LocalWords:  arg param MethodTaintingParam Util meth value1 h2
+% LocalWords:  arg param MethodTaintingParam Util meth value1 h2 TopType
 % LocalWords:  nestedHolder nestedHolder2 extendsHolder PolyTainted
+%%  LocalWords:  BottomType CharSequence SomeType OtherType MyList1a
+%%  LocalWords:  MyList2a

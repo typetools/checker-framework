@@ -96,7 +96,7 @@ import com.sun.tools.javac.util.Log;
  * @see org.checkerframework.framework.qual
  *
 /**
- * @checker_framework.manual ##writing-compiler-interface The checker class
+ * @checker_framework.manual #writing-compiler-interface The checker class
  */
 public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeContext {
 

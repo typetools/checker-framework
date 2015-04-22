@@ -113,18 +113,16 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         //do nothing
     }
 
-    /**
-     * TODO: THIS IS A BIG VIOLATION OF Single Responsibility and SHOULD BE FIXED, IT IS SOLELY HERE
-     * TODO: AS A TEMPORARY KLUDGE BEFORE A RELEASE/SPARTA ENGAGEMENT
-     */
-
-
     protected List<AnnotatedTypeMirror> getArgumentTypes(final ExpressionTree expression,
                                                          final AnnotatedTypeFactory typeFactory) {
         final List<? extends ExpressionTree> argTrees = TypeArgInferenceUtil.expressionToArgTrees(expression);
         return TypeArgInferenceUtil.treesToTypes(argTrees, typeFactory);
     }
+     // TODO: THIS IS A BIG VIOLATION OF Single Responsibility and SHOULD BE FIXED, IT IS SOLELY HERE
+     // TODO: AS A TEMPORARY KLUDGE BEFORE A RELEASE/SPARTA ENGAGEMENT
 
+     
+     
     protected AnnotatedTypeMirror getAssignedTo(ExpressionTree expression, AnnotatedTypeFactory typeFactory ) {
         return TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expression));
     }

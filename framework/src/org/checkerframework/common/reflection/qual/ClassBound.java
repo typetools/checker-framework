@@ -12,7 +12,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * This represents a Class&lt;T&gt; object whose run-time value
  * is equal to or a subtype of one of the arguments.
  *
- * @checker_framework.manual #classval-checker ClassVal Checker
+ * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
  */
 @TypeQualifier
 @SubtypeOf({ UnknownClass.class })

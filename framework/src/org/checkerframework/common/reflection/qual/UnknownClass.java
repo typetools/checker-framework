@@ -15,7 +15,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * This annotation is the default in the hierarchy and may not be written in
  * source code.
  *
- * @checker_framework.manual #classval-checker ClassVal Checker
+ * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
  */
 @TypeQualifier
 @InvisibleQualifier

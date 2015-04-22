@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 /**
  * The method neither aquires nor releases locks -- nor do any of the methods that it calls.
  *
- * @checker_framework.manual #locking-checker Locking Checker
+ * @checker_framework.manual #lock-checker Locking Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

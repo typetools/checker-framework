@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/checker.framework.eclipse.feature_1.8.11.jar" id="checker.framework.eclipse.feature" version="1.8.11">
+   <feature url="features/checker.framework.eclipse.feature_1.9.0.jar" id="checker.framework.eclipse.feature" version="1.9.0">
       <category name="checker.framework.eclipse.update.site.category"/>
    </feature>
    <category-def name="checker.framework.eclipse.update.site.category" label="Pluggable Type-Checking"/>
