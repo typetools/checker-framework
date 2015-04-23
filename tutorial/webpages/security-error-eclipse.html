@@ -38,9 +38,9 @@
 		style="border-bottom: 1px solid #EEE; border-top: none;">
 		<h1>Checker Framework Tutorial</h1>
 		<h2>
-			<small>Previous <a href="user-input-eclipse.html">Validating
-					User Input</a>
-			</small>
+			<small>Previous
+			 <a href="user-input-eclipse.html">Validating
+					User Input</a></small>
 		</h2>
 	</div>
 
@@ -51,15 +51,14 @@
 			<h2>Finding a Security Error</h2>
 		</div>
 		<p>This example uses the Tainting Checker to verify that user
-			input does not contain SQL statements to prevent SQL injection.
+			input does not contain SQL statements, thus preventing SQL injection.
 		<p>
 		<div class="well">
 			<h5>Outline</h5>
 			<ol>
 				<li><a href="#import">Import <strong>
 							personalblog-demo</strong></a></li>
-				<li><a href="#run1">Run the Tainting Checker--1 error found
-				</a></li>
+				<li><a href="#run1">Run the Tainting Checker--1 error found</a></li>
 				<li><a href="#error1">Correct the error</a></li>
 				<li><a href="#run2">Run the Tainting Checker--a new error
 						is found</a></li>
@@ -114,37 +113,36 @@ incompatible types in argument.
   required: @Untainted String	PersonalBlogService.java	
 </pre>
 				<p>
-					The checker issues a warning for
+					The checker issues an error for
 					<code>getPostsByCategory()</code>
-					because a possibly tainted string
+					because a possibly-tainted string
 					<code>category</code>
 					is used in the query construction. This String could contain SQL
 					statements that could taint the database. The programmer must
-					require
+					ensure that
 					<code>category</code>
-					to be untainted.
+					does not contain malicious SQL code.
 				</p>
 			</section>
 
-			<section id="error1">
-				<h4>3. Correct the Error</h4>
+		<section id="error1">
+			<h4>2. Correct the Error</h4>
 
+			<p>
+				To correct this error, <b> add <code>@Untainted</code>
+				</b> to the type of the <code>category</code> parameter.
+			<pre>
+  public List&lt;?&gt; getPostsByCategory(<b>/*@Untainted*/</b> String category) throws ServiceException {
+</pre>
 
-				<p>
-					To correct this, <b> add <code>@Untainted</code>
-					</b> to category parameter declaration. This forces clients to pass an
+				This forces clients to pass an
 					<code>@Untainted</code>
 					value, which was the intention of the designer of the
-					getPostsByCategory method. See the change below.
-				</p>
-
-				<pre>
-  public List&lt;?&gt; getPostsByCategory(<b>/*@Untainted*/ </b>String category) throws ServiceException {
-</pre>
+					<code>getPostsByCategory</code> method.
 			</section>
 
 			<section id="run2">
-				<h4>4. Run the Tainting Checker--a new error is found</h4>
+				<h4>4. Re-run the Tainting Checker--a new error is found</h4>
 
 				<p>
 					Run the Tainting Checker again. There is an error in
@@ -176,7 +174,7 @@ incompatible types in argument.
 			</section>
 
 			<section id="run3">
-				<h4>6. Run the Tainting Checker--no errors</h4>
+				<h4>6. Re-run the Tainting Checker--no errors</h4>
 
 				<p>There should be no errors.</p>
 
@@ -193,7 +191,9 @@ incompatible types in argument.
 		<div class="page-header short">
 			<h2>
 				<small>Next, try <a href="encryption-checker-eclipse.html">
-						Writing an Encryption Checker</a></small>
+						Writing an Encryption Checker</a> or return to the <a
+						href="../index.html">main page</a> of the Tutorial.
+				</small>
 			</h2>
 		</div>
 
