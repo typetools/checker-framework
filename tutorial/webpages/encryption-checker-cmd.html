@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>Checker Framework Tutorial - Writing an Encryption Checker - Commandline</title>
+<title>Checker Framework Tutorial - Writing an Encryption Checker - Command Line</title>
 
 <link href="bootstrap/css/bootstrap.css" rel="stylesheet" />
 <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
@@ -38,7 +38,8 @@
 		<h1>Checker Framework Tutorial</h1>
 		<h2>
 			<small>Previous <a href="security-error-cmd.html">Finding
-					a Security Error</a> , Download <a href="../sourcefiles.zip">
+					a Security Error</a>, Download
+					<a href="../sourcefiles.zip">
 					Example Sources</a></small>
 		</h2>
 	</div>
@@ -61,14 +62,12 @@
 				Although the Checker Framework ships with <a
 					href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#introduction">several
 					checkers</a>, it is often useful to write a custom checker.
-				Perhaps there are other runtime exceptions you wish to prevent or
-				maybe other properties of data that should always hold. In both
-				these cases and others, you you might wish to write your own type
-				checker. This section of the tutorial is for those who are
+				Perhaps there are other runtime exceptions you wish to prevent, or
+				other properties of data that should always hold.
+				In such cases, you can write your own type-checker.
+				This section of the tutorial is for those who are
 				interested in writing their own type-checkers. If you do not wish to
 				write a new type-checker, feel free to skip this section.
-			</p>
-			This example will explain how to do so.
 			</p>
 
 			<p>
@@ -76,18 +75,18 @@
 				the representation of an object (such as a String, CharSequence, or
 				byte[]) is encrypted. This project has three source files: <a
 					href="../src/myqual/Encrypted.java"> Encrypted.java</a> and
-					<a href="../src/myqual/PossibleUnencrypted.java"> PossibleUnencrypted.java</a> , the type
+					<a href="../src/myqual/PossibleUnencrypted.java"> PossibleUnencrypted.java</a>, the type
 				annotation definitions, and <a
-					href="../src/encrypted/EncryptionDemo.java">EncryptedDemo.java</a>
-				, the example program that use the Encrypted checker.
+					href="../src/encrypted/EncryptionDemo.java">EncryptedDemo.java</a>,
+				the example program that use the Encrypted checker.
 			</p>
 		</section>
+
 		<section id="outline">
 			<div class="well">
 				<h5>Outline</h5>
 				<ol>
-					<li><a href="#annotation">Write type annotation
-							definitions</a></li>
+					<li><a href="#annotation">Write type annotation definitions</a></li>
 					<li><a href="#run1">Run the Encryption Checker</a>--2 errors</li>
 					<li><a href="#error1">Suppress the first error</a></li>
 					<li><a href="#run2">Run the Encryption Checker</a>--1 error</li>
@@ -106,8 +105,8 @@
 			<p>This code needs to be compiled with the Checker Framework
 				compiler.</p>
 			<pre>
-$ javacheck myqual/Encrypted.java
-$ javacheck myqual/PossibleUnencrypted.java
+$ <strong>javacheck myqual/Encrypted.java</strong>
+$ <strong>javacheck myqual/PossibleUnencrypted.java<strong>
                 </pre>
 			<p>The resulting .class files should either be on your classpath,
 				or on the processor path (set via the -processorpath command-line
@@ -127,7 +126,7 @@ $ javacheck myqual/PossibleUnencrypted.java
 			</p>
 
 			<pre>
-javacheck  -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myqual.Encrypted,myqual.PossibleUnencrypted encrypted/EncryptionDemo.java
+$ <strong>javacheck  -processor org.checkerframework.common.subtyping.SubtypingChecker</strong> -Aquals=myqual.Encrypted,myqual.PossibleUnencrypted encrypted/EncryptionDemo.java
 encrypted/EncryptionDemo.java:21: error: [assignment.type.incompatible] incompatible types in assignment.
         /*@Encrypted*/ int encryptInt = (character + OFFSET) % Character.MAX_VALUE ;
                                                              ^
@@ -139,29 +138,30 @@ encrypted/EncryptionDemo.java:32: error: [argument.type.incompatible] incompatib
   found   : @PossibleUnencrypted String
   required: @Encrypted String
 2 errors
-                </pre>
+</pre>
 		</section>
 		<section id="error1">
-			<h4>3. Suppress the First Error</h4>
+			<h4>4. Suppress the First Error</h4>
 
 
 			<p>The first error needs to be suppressed, because the string on
 				the left is considered "encrypted" in this encryption scheme. All
-				@SuppressWarnings should have a comment explaining why suppressing
+				<code>@SuppressWarnings</code> should have a comment explaining why suppressing
 				the warning is the correct action. See the correction below.</p>
 
 
 			<pre>
-// The SuppressWarnings is necessary because, the type system is not capable of
+// The SuppressWarnings is necessary because the type system is not capable of
 // validating that the return value is encrypted. -SOM 01/25/2013
 @SuppressWarnings("encrypted")
 private /*@Encrypted*/ char encryptCharacter(char character) {
-                </pre>
+</pre>
 		</section>
-		<section id="run2">
-			<h4>4. Run the Encryption Checker</h4>
 
-			<p>You should just see the following error.</p>
+		<section id="run2">
+			<h4>5. Run the Encryption Checker</h4>
+
+			<p>You will see the following error:</p>
 
 			<pre>
 encrypted/EncryptionDemo.java:34: error: [argument.type.incompatible] incompatible types in argument.
@@ -170,7 +170,7 @@ encrypted/EncryptionDemo.java:34: error: [argument.type.incompatible] incompatib
   found   : @PossibleUnencrypted String
   required: @Encrypted String
 1 error
-                </pre>
+</pre>
 
 			<p>This is a real error, because the programmer is trying to send
 				a password over the internet without encrypting it first.</p>
@@ -181,17 +181,18 @@ encrypted/EncryptionDemo.java:34: error: [argument.type.incompatible] incompatib
 				internet. The correction is below.</p>
 			<pre>
 void sendPassword() {
-   String password = getUserPassword();
-   sendOverInternet(encrypt(password));
+    String password = getUserPassword();
+    sendOverInternet(encrypt(password));
 }
-                </pre>
+</pre>
 		</section>
 
 		<section id="bottom">
 			<div class="page-header short">
 				<h2>
-					The End<small><strong> Return to the <a
-							href="../index.html">main page</a> of the Tutorial</strong></small>.
+					The End of the Checker Framework Tutorial<small><strong>
+							Return to the <a href="../index.html">main page</a> of the
+							Tutorial.</strong></small>
 				</h2>
 			</div>
 
