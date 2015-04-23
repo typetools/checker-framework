@@ -77,28 +77,30 @@
       <h5>Outline</h5>
 
       <ol>
-        <li><a href="#run1">Run the Tainting Checker--1 error
+        <li><a href="#run1">Run the Tainting Checker &mdash; 1 error
         found</a></li>
 
         <li><a href="#error1">Correct the error</a></li>
 
-        <li><a href="#run2">Run the Tainting Checker--a new error is
+        <li><a href="#run2">Re-run the Tainting Checker &mdash; a new error is
         found</a></li>
 
         <li><a href="#error2">Correct the new error</a></li>
 
-        <li><a href="#run3">Run the Tainting Checker--no errors</a></li>
+        <li><a href="#run3">Re-run the Tainting Checker &mdash; no errors</a></li>
       </ol>
     </div>
 
     <div id="run1">
-      <h4>2. Run the Tainting Checker--1 error found</h4>
+      <h4>1. Run the Tainting Checker &mdash; 1 error found</h4>
 
-      <p>Run the buildfile by typing <code>ant</code>: (The Ant buildfile
+      <p>Run the buildfile:
+      <br/> (The Ant buildfile
       makes use of the <a href=
       "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#ant-task">
       Checker Framework support for Ant</a>.)</p>
       <pre>
+$ <b>cd personalblog-demo</b>
 $ <b>ant</b>
 Buildfile: .../personalblog-demo/build.xml
 
@@ -124,7 +126,7 @@ Total time: 2 seconds
 
       <p>The checker issues an error for <code>getPostsByCategory()</code>
       because the possibly-tainted string <code>category</code> is used in
-      the query construction. This String could contain SQL statements
+      the query construction. This string could contain SQL statements
       that could taint the database. The programmer must ensure that
       <code>category</code> does not contain malicious SQL code.</p>
     </div>
@@ -135,14 +137,17 @@ Total time: 2 seconds
       <p>To correct this error, <b>add <code>@Untainted</code></b> to the
       type of the <code>category</code> parameter.</p>
       <pre>
-     public List&lt;?&gt; getPostsByCategory(@Untainted String category) throws ServiceException {
+     public List&lt;?&gt; getPostsByCategory(<b>@Untainted</b> String category) throws ServiceException {
 </pre>This forces clients to pass an <code>@Untainted</code> value, which
 was the intention of the designer of the <code>getPostsByCategory</code>
 method.
     </div>
 
     <div id="run2">
-      <h4>3. Re-run the Tainting Checker--a new error is found</h4>
+      <h4>3. Re-run the Tainting Checker &mdash; a new error is found</h4>
+
+      <p>Run the Tainting Checker again.</p>
+
       <pre>
 $ <strong>ant</strong>
 Buildfile: .../personalblog-demo/build.xml
@@ -175,15 +180,15 @@ Total time: 2 seconds
     </div>
 
     <div id="error2">
-      <h4>5. Correct the New Error</h4>To correct, <b>use the
+      <h4>4. Correct the New Error</h4>To correct, <b>use the
       <code>validate</code> method</b> as shown below.
       <pre>
-    String reqCategory = <b>validate</b>(cleanNull(request.getParameter("cat"))); 
+    String reqCategory = <b>validate(</b>cleanNull(request.getParameter("cat"))<b>)</b>; 
 </pre>
     </div>
 
     <div id="run3">
-      <h4>6. Re-run the Tainting Checker--no errors</h4>
+      <h4>5. Re-run the Tainting Checker &mdash; no errors</h4>
 
       <p>There should be no errors.</p>
       <pre>
@@ -200,6 +205,13 @@ check-tainting:
 
 BUILD SUCCESSFUL
 Total time: 2 seconds
+</pre>
+
+      <p>You are done with the personalblog-demo project, 
+      so return to the parent directory</p>
+
+      <pre>
+$ <strong>cd ..</strong>
 </pre>
 
       <p>For a complete discussion of how to use the Tainting Checker,

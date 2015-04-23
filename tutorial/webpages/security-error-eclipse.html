@@ -74,26 +74,26 @@
       <h5>Outline</h5>
 
       <ol>
-        <li><a href="#import">Import
+        <li value="0"><a href="#import">Import
         <strong>personalblog-demo</strong></a></li>
 
-        <li><a href="#run1">Run the Tainting Checker--1 error
+        <li><a href="#run1">Run the Tainting Checker &mdash; 1 error
         found</a></li>
 
         <li><a href="#error1">Correct the error</a></li>
 
-        <li><a href="#run2">Run the Tainting Checker--a new error is
+        <li><a href="#run2">Re-run the Tainting Checker &mdash; a new error is
         found</a></li>
 
         <li><a href="#error2">Correct the new error</a></li>
 
-        <li><a href="#run3">Run the Tainting Checker--no errors</a></li>
+        <li><a href="#run3">Re-run the Tainting Checker &mdash; no errors</a></li>
       </ol>
     </div>
 
     <div class="section">
       <div id="import">
-        <h4>1. Import <strong>personalblog-demo</strong></h4>
+        <h4>0. Import <strong>personalblog-demo</strong></h4>
 
         <p>To begin, load the <strong>personalblog-demo</strong> project
         into Eclipse. (Download it <a href=
@@ -123,7 +123,7 @@
     </div>
 
     <div id="run1">
-      <h4>2. Run the Tainting Checker--1 error found</h4>
+      <h4>1. Run the Tainting Checker &mdash; 1 error found</h4>
 
       <p>Run the Tainting Checker on the entire <code>src</code> folder.
       The following warning will be produced.</p>
@@ -136,7 +136,7 @@ incompatible types in argument.
 
       <p>The checker issues an error for <code>getPostsByCategory()</code>
       because the possibly-tainted string <code>category</code> is used in
-      the query construction. This String could contain SQL statements
+      the query construction. This string could contain SQL statements
       that could taint the database. The programmer must ensure that
       <code>category</code> does not contain malicious SQL code.</p>
     </div>
@@ -154,9 +154,10 @@ method.
     </div>
 
     <div id="run2">
-      <h4>3. Re-run the Tainting Checker--a new error is found</h4>
+      <h4>3. Re-run the Tainting Checker &mdash; a new error is found</h4>
 
       <p>Run the Tainting Checker again.</p>
+
       <pre>
 incompatible types in argument.
                         pblog.getPostsByCategory(reqCategory));
@@ -171,15 +172,15 @@ incompatible types in argument.
     </div>
 
     <div id="error2">
-      <h4>5. Correct the New Error</h4>To correct, <b>use the
+      <h4>4. Correct the New Error</h4>To correct, <b>use the
       <code>validate</code> method</b> as shown below.
       <pre>
-    String reqCategory = <b>validate</b>(cleanNull(request.getParameter("cat"))); 
+    String reqCategory = <b>validate(</b>cleanNull(request.getParameter("cat"))<b>)</b>; 
 </pre>
     </div>
 
     <div id="run3">
-      <h4>6. Re-run the Tainting Checker--no errors</h4>
+      <h4>5. Re-run the Tainting Checker &mdash; no errors</h4>
 
       <p>There should be no errors.</p>
 
