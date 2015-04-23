@@ -99,9 +99,9 @@
 					, to validate the user input.
 			</section>
 
-			<section id="run1">
+		<section id="run1">
 
-				<h4>2. Run the Tainting Checker--1 error found</h4>
+			<h4>2. Run the Tainting Checker--1 error found</h4>
 
 				<p>Run the Tainting Checker on the entire src folder. The
 					following warning will be produced.</p>
@@ -115,7 +115,7 @@ incompatible types in argument.
 				<p>
 					The checker issues an error for
 					<code>getPostsByCategory()</code>
-					because a possibly-tainted string
+					because the possibly-tainted string
 					<code>category</code>
 					is used in the query construction. This String could contain SQL
 					statements that could taint the database. The programmer must
@@ -145,12 +145,7 @@ incompatible types in argument.
 				<h4>4. Re-run the Tainting Checker--a new error is found</h4>
 
 				<p>
-					Run the Tainting Checker again. There is an error in
-					<code>ReadAction.executeSub()</code>
-					, which is a client of getPostsByCategory. The
-					<code>reqCategory</code>
-					is accepted from the user (from request object) without validation.
-					Below is the warning message.
+					Run the Tainting Checker again.
 				</p>
 
 				<pre>
@@ -159,6 +154,15 @@ incompatible types in argument.
   found   : @Tainted String
   required: @Untainted String	ReadAction.java	
 </pre>
+
+				<p>
+					There is an error in
+					<code>ReadAction.executeSub()</code>,
+					which is a client of <code>getPostsByCategory</code>. The
+					<code>reqCategory</code>
+					is accepted from the user (from request object) without validation.
+				</p>
+
 			</section>
 
 			<section id="error2">
@@ -198,12 +202,17 @@ incompatible types in argument.
 		</div>
 
 	</section>
-	<div class="bottom_liner"></div>
+
+		<!--
+<div class="bottom_liner well">
+    <a href="#">Top</a>
+</div>
+-->
 
 </body>
 </html>
 
-<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath 
+<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath
  -->
 <!--  LocalWords:  NullnessChecker plugin's hg
  -->
