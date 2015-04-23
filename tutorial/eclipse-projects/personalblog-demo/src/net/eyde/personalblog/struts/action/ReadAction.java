@@ -88,7 +88,7 @@ public final class ReadAction extends BlogGeneralAction {
      * @throws IllegalArgumentException  if userInput is not valid
      *
      */
-    @SuppressWarnings("untainted")
+    @SuppressWarnings("tainting")
     /*@Untainted*/ String validate(String userInput) {
         for (int i = 0; i < userInput.length(); ++i) {
             char ch = userInput.charAt(i);
