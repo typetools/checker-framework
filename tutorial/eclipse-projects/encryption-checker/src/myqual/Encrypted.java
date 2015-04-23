@@ -11,6 +11,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * Denotes that the representation of an object is encrypted.
  */
 @TypeQualifier
-@SubtypeOf(PossibleUnencrypted.class)
+@SubtypeOf(PossiblyUnencrypted.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Encrypted {}

@@ -68,17 +68,8 @@
 				In such cases, you can write your own type-checker.
 				This section of the tutorial is for those who are
 				interested in writing their own type-checkers. If you do not wish to
-				write a new type-checker, feel free to skip this section.
+				write a new type-checker, feel free to skip this section of the tutorial.
 			</p>
-
-
-		<section id="encrytionchecker">
-			<div class="page-header short">
-				<h3>Writing Your Own Checker</h3>
-			</div>
-			<div class="section">
-
-				<!--Copied from the manual-->
 
 				<p>Suppose that you wish to only allow encrypted information to
 					be sent over the internet. To do so, you can write an Encryption
@@ -98,6 +89,8 @@
 					<li><a href="#error1">Suppress the first error</a></li>
 					<li><a href="#run2">Run the Encryption Checker</a>--1 error</li>
 					<li><a href="#error2">Correct the second error</a></li>
+					<li><a href="#issue1">Issue 1: "TYPE_USE cannot be resolved or is not a field"</a></li>
+					<li><a href="#issue2">Issue 2: Set the -source and -target levels</a></li>
 				</ol>
 			</div>
 
@@ -109,17 +102,12 @@
 						</h4>
 
 						<p>
-							This project has three source files:
-                            <a href="../src/myqual/Encrypted.java">Encrypted.java</a> and
-                            <a href="../src/myqual/PossibleUnencrypted.java">PossibleUnencrypted.java</a>
-                            are the type qualifier definitions and
-                            <a href="../src/encrypted/EncryptionDemo.java">EncryptedDemo.java</a> is the
-							the example program that use the Encrypted checker. You will need
+							You will need
 							to setup your JRE to use the Checker Framework jars, see <a
 								href="#issue1">Issue 1</a> below. This will fix the "TYPE_USE
 							cannot be resolved or is not a field" error. The <em> import
                             myqual.Encrypted is never used</em> warning should be ignored.
-                            When building the encryption-checker project, set your -source
+                            When building the encryption-checker project, set the -source
                             and -target levels to at least 1.7 (1.8 is recommended).  See <a href="#issue2">Issue 2</a>.
 						</p>
 
@@ -137,16 +125,32 @@
 							<ol>
 								<li>Navigate to Eclipse->Preferences->Checker Framework</li>
 								<li>Under Additional compiler parameters, add <strong
-									class="text-success">-Aquals=myqual.Encrypted,myqual.PossibleUnencrypted </strong></li>
+									class="text-success">-Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted </strong></li>
 								<li>Click Ok</li>
 							</ol>
 						</div>
 					</section>
 
-					<section id="run1">
-						<h4>3. Run the Encrypted Checker</h4>
+		<section id="annotation">
+			<h4>1. Write the type annotation definitions</h4>
+			<p>
+				For this example, the annotation definitions have already been
+				written, Encrypted.java and PossiblyUnencrypted.java. Please see the <a
+					href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#writing-a-checker">
+					manual</a> for further explanation of this file.
+			</p>
 
-						<p>
+		<section id="run1">
+			<h4>2. Run the Encryption Checker</h4>
+
+			<p>
+				The
+				<code>@Encrypted</code>
+				annotations have already been written in EncryptionDemo.java.  The default for types
+				without annotations is <code>@PossiblyUnencrypted</code>.
+			</p>
+
+			<p>
 							Right Click on the <em>src</em> package, select Checker
 							Framework->Run Built-in Checker->Subtyping Checker. You should see the
 							following errors:
@@ -154,11 +158,11 @@
 						<pre>
 incompatible types in assignment.
 		/*@Encrypted*/ int encryptInt = (character + OFFSET) % Character.MAX_VALUE ;
-  found   : @PossibleUnencrypted int
+  found   : @PossiblyUnencrypted int
   required: @Encrypted int	EncryptionDemo.java	/encryption-checker/src/encrypted	
 incompatible types in argument.
 		sendOverInternet(password);
-  found   : @PossibleUnencrypted String
+  found   : @PossiblyUnencrypted String
   required: @Encrypted String	EncryptionDemo.java	/encryption-checker/src/encrypted	
 
 </pre>
@@ -183,19 +187,17 @@ incompatible types in argument.
 @SuppressWarnings("encrypted")
 private /*@Encrypted*/ char encryptCharacter(char character) {
 </pre>
-
-			</section>
+		</section>
 
 			<section id="run2">
 				<h4>5. Run the Encryption Checker</h4>
 
-
-				<p>You will see the following error:</p>
+			<p>You will see the following error:</p>
 
 				<pre>
 incompatible types in argument.
 		sendOverInternet(password);
-  found   : @PossibleUnencrypted String
+  found   : @PossiblyUnencrypted String
   required: @Encrypted String
 </pre>
 
@@ -218,17 +220,19 @@ void sendPassword() {
 </pre>
                     </section>
         </div>
+
 		<section id="issue1">
 			<div class="page-header short">
-				<h4>Issue 1</h4>
+				<h4>Issue 1: "TYPE_USE cannot be resolved or is not a field".</h4>
 			</div>
 			<div class="section">
 
 
 				<p>Writing a Type annotation requires ElementType.TYPE_USE
-					and/or ElementType.TYPE_PARAMETER which are part of Java 8, but not
-					yet supported by Eclipse. This means that Eclipse will give an
-					error: "TYPE_USE cannot be resolved or is not a field."</p>
+					and/or ElementType.TYPE_PARAMETER which are part of Java 8.
+					If you are using a version of Eclipse that does not support Java 8, Eclipse will give an
+					error: "TYPE_USE cannot be resolved or is not a field".
+				</p>
 				<div class="alert alert-warning">
 					<h5>Workaround</h5>
 					<ol>
@@ -249,7 +253,7 @@ void sendPassword() {
 		</section>
         <section id="issue2">
             <div class="page-header short">
-                <h4>Issue 2</h4>
+                <h4>Issue 2: Set the -source and -target levels</h4>
             </div>
             <div class="section">
                 <p>To update your -source and -target levels:</p>
@@ -269,12 +273,13 @@ void sendPassword() {
             </div>
         </section>
 
-        <!--section id="issue2">
+<!--
+        <section id="issue2">
     <div class="page-header short">
 <h4>Issue 2</h4>
 </div>
-<p> Eclipse does not use Java 8 standards with regards to annotation placement.  
-This means that Eclipse will give an error like 
+<p> If you are using an Eclipse that does not support Java 8,
+Eclipse will give an error like 
 <em>The annotation @Encrypted
  is disallowed for this location</em> even if the location is valid.</p>
 <div class="alert alert-warning">
@@ -282,7 +287,8 @@ This means that Eclipse will give an error like
 Place all type annotations in  comments. For example, <code>@Encrypted</code>
 would be commented as <code>/*@Encrypted*/</code> 
 </div>
-</section-->
+</section>
+-->
 		<section id="end">
 			<div class="page-header short">
 				<h2>
