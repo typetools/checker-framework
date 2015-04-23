@@ -136,7 +136,7 @@ Group 1: 24
         string:</p>
         <pre>
 $ <strong>java RegexExample '[01]?[\d-[0123]?\d-\d{4}+' '01-24-2013'</strong>
-Exception in thread "main" java.util.regex.PatternSyntaxException: Unclosed character class near index 21
+Exception in thread "main" java.util.regex.PatternSyntaxException: Unclosed character class near index 24
 [01]?[d-[0123]?d-d{4}+
                      ^
         at java.util.regex.Pattern.error(Pattern.java:1924)
@@ -166,10 +166,15 @@ Exception in thread "main" java.util.regex.PatternSyntaxException: Unclosed char
         You will see the following output:
         </p>
         <pre>
-incompatible types in argument.
-                Pattern pat = Pattern.compile(regex);
+warning: (argument.type.incompatible) incompatible types in argument.
+        Pattern pat = Pattern.compile(regex);
+                                      ^
   found   : String
-  required: @Regex String       RegexExample.java       
+  required: @Regex String
+warning: (group.count.invalid) invalid groups parameter 1. Only 0 groups are guaranteed to exist for mat.
+                System.out.println("Group: " + mat.group(1));
+                                                         ^
+2 errors
 </pre>
 
         <p>The "incompatible types" warning indicates that variable
@@ -225,7 +230,9 @@ import org.checkerframework.checker.regex.RegexUtil;
         prints a user-friendly warning.</p>
         <pre>
 $ <strong>java -cp ".:$CHECKERFRAMEWORK/checker/dist/checker.jar" RegexExample '[01]?[\d-\([0123]?\d\)-\d{4}+' '01-24-2013'</strong>
-Input is not a regular expression "[01]?[d-([0123]?d)-d{4}+": Illegal character range near index 8
+Input is not a regular expression "[01]?[\d-\([0123]?\d\)-\d{4}+": Illegal character range near index 24
+[01]?[\d-\([0123]?\d\)-\d{4}+
+                        ^
 </pre>
 
         <p>For a full discussion of the Regex Checker, please see the <a href=
