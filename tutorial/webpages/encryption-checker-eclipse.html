@@ -78,17 +78,10 @@
 
     <p>Although the Checker Framework ships with <a href=
     "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#introduction">
-    several checkers</a>, it is often useful to write a custom checker.
-    Perhaps there are other runtime exceptions you wish to prevent, or
-    other properties of data that should always hold. In such cases, you
-    can write your own type-checker. This section of the tutorial is for
-    those who are interested in writing their own type-checkers. If you do
+    many checkers</a>, you may wish to write your own checker because
+    there are other run-time problems you wish to prevent.  If you do
     not wish to write a new type-checker, feel free to skip this section
     of the tutorial.</p>
-
-    <p>Suppose that you wish to only allow encrypted information to be
-    sent over the internet. To do so, you can write an Encryption
-    Checker.</p>
   </div>
 
   <div id="outline">
@@ -96,22 +89,32 @@
       <h5>Outline</h5>
 
       <ol>
-        <li><a href="#import">Import <em>encryption-checker</em>
-        project</a></li>
+        <li><a href="#setup">An Encryption Checker</a>
 
-        <li><a href="#setup">Set Up the Subtyping Checker to run the
-        Encryption Checker</a></li>
+	  <ol>
+	    <li><a href="#import">Import <em>encryption-checker</em>
+	    project</a></li>
+
+	    <li><a href="#setup">Set up the Subtyping Checker to run the
+	    Encryption Checker</a></li>
+	  </ol>
+
+        </li>
 
         <li><a href="#annotation">Write type annotation
         definitions</a></li>
 
-        <li><a href="#run1">Run the Encryption Checker--2 errors</a></li>
+        <li><a href="#run1">Run the Encryption Checker &mdash; 2 errors</a></li>
 
         <li><a href="#error1">Suppress the first error</a></li>
 
-        <li><a href="#run2">Run the Encryption Checker--1 error</a></li>
+        <li><a href="#run2">Re-run the Encryption Checker &mdash; 1 error</a></li>
 
         <li><a href="#error2">Correct the second error</a></li>
+
+        <li><a href="#run3">Re-run the Encryption Checker &mdash; no errors</a></li>
+
+        <li><a href="#learnmore">Learn more about writing your own checker</a></li>
 
         <li><a href="#issue1">Issue 1: "TYPE_USE cannot be resolved or is
         not a field"</a></li>
@@ -122,57 +125,65 @@
     </div>
   </div>
 
-  <div id="import">
-    <h4>1. Import <em>encryption-checker</em> project</h4>
+  <div id="annotation">
+    <h4>1. An Encryption Checker</h4>
 
-    <p>You will need to setup your JRE to use the Checker Framework jars,
-    see <a href="#issue1">Issue 1</a> below. This will fix the "TYPE_USE
-    cannot be resolved or is not a field" error. The <em>import
-    myqual.Encrypted is never used</em> warning should be ignored. When
-    building the encryption-checker project, set the -source and -target
-    levels to at least 1.7 (1.8 is recommended). See <a href=
-    "#issue2">Issue 2</a>.</p>
-  </div>
+    <p>As an example, suppose that you wish to only allow encrypted
+    information to be sent over the internet. To do so, you can write an
+    Encryption Checker.</p>
 
-  <div id="setup">
-    <h4>2. Set Up the Subtyping Checker</h4>
+    <p>You need to do some setup to prepare Eclipse.</p>
 
-    <p>The Encryption Checker is built on top of the Subtyping Checker.
-    The Subtyping Checker allows you to enforce a basic type systems by
-    listing its qualifiers when type checking. To set up the Subtyping
-    Checker to use the Encryption Checker's qualifiers, do the
-    following:</p>
+    <div id="import">
+      <h4>1a. Import <em>encryption-checker</em> project</h4>
 
-    <div class="well">
-      <ol>
-        <li>Navigate to Eclipse-&gt;Preferences-&gt;Checker Framework</li>
+      <p>You will need to setup your JRE to use the Checker Framework jars,
+      see <a href="#issue1">Issue 1</a> below. This will fix the "TYPE_USE
+      cannot be resolved or is not a field" error. The <em>import
+      myqual.Encrypted is never used</em> warning should be ignored. When
+      building the encryption-checker project, set the -source and -target
+      levels to at least 1.7 (1.8 is recommended). See <a href=
+      "#issue2">Issue 2</a>.</p>
+    </div>
 
-        <li>Under Additional compiler parameters, add <strong class=
-        "text-success">-Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted</strong></li>
+    <div id="setup">
+      <h4>1b. Set up the Subtyping Checker</h4>
 
-        <li>Click Ok</li>
-      </ol>
+      <p>The Encryption Checker is built on top of the Subtyping Checker.
+      The Subtyping Checker allows you to enforce a basic type systems by
+      listing its qualifiers when type checking. To set up the Subtyping
+      Checker to use the Encryption Checker's qualifiers, do the
+      following:</p>
+
+      <div class="well">
+	<ol>
+	  <li>Navigate to Eclipse-&gt;Preferences-&gt;Checker Framework</li>
+
+	  <li>Under Additional compiler parameters, add <strong class=
+	  "text-success">-Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted</strong></li>
+
+	  <li>Click Ok</li>
+	</ol>
+      </div>
     </div>
   </div>
 
   <div id="annotation">
-    <h4>1. Write the type annotation definitions</h4>
+    <h4>2. Write the type annotation definitions</h4>
 
     <p>For this example, the annotation definitions have already been
-    written, Encrypted.java and PossiblyUnencrypted.java. Please see the
-    <a href=
-    "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#writing-a-checker">
-    manual</a> for further explanation of this file.</p>
+    written for you and appear in files Encrypted.java and PossiblyUnencrypted.java.</p>
   </div>
 
   <div id="run1">
-    <h4>2. Run the Encryption Checker</h4>
+    <h4>3. Run the Encryption Checker</h4>
 
     <p>The <code>@Encrypted</code> annotations have already been written
-    in EncryptionDemo.java. The default for types without annotations is
+    in file EncryptionDemo.java. The default for types without annotations is
     <code>@PossiblyUnencrypted</code>.</p>
 
-    <p>Right Click on the <em>src</em> package, select Checker
+    <p><b>Invoke the compiler</b> with the Subtyping Checker.
+    Right Click on the <em>src</em> package, select Checker
     Framework-&gt;Run Built-in Checker-&gt;Subtyping Checker. You should
     see the following errors:</p>
     <pre>
@@ -184,7 +195,6 @@ incompatible types in argument.
                 sendOverInternet(password);
   found   : @PossiblyUnencrypted String
   required: @Encrypted String   EncryptionDemo.java     /encryption-checker/src/encrypted       
-
 </pre>
   </div>
 
@@ -197,15 +207,13 @@ incompatible types in argument.
     suppressing the warning is the correct action. See the correction
     below.</p>
     <pre>
-// The SuppressWarnings is necessary because the type system is not capable of
-// validating that the return value is encrypted. -SOM 01/25/2013
-@SuppressWarnings("encrypted")
+<b>@SuppressWarnings("encrypted")  // this is the encryption algorithm</b>
 private /*@Encrypted*/ char encryptCharacter(char character) {
 </pre>
   </div>
 
   <div id="run2">
-    <h4>5. Run the Encryption Checker</h4>
+    <h4>5. Re-run the Encryption Checker</h4>
 
     <p>You will see the following error:</p>
     <pre>
@@ -216,20 +224,36 @@ incompatible types in argument.
 </pre>
 
     <p>This is a real error, because the programmer is trying to send a
-    password over the internet without encrypting it first.</p>
+    password over the Internet without encrypting it first.</p>
   </div>
 
   <div id="error2">
     <h4>6. Correct the Second Error</h4>
 
     <p>The password should be encrypted before it is sent over the
-    internet. The correction is below.</p>
+    Internet. The correction is below.</p>
     <pre>
 void sendPassword() {
     String password = getUserPassword();
-    sendOverInternet(encrypt(password));
+    sendOverInternet(<b>encrypt(</b>password<b>)</b>);
 }
 </pre>
+  </div>
+
+  <div id="run3">
+    <h4>7. Re-run the Encryption Checker</h4>
+
+    <p>There should be no errors.</p>
+
+  </div>
+
+  <div id="learnmore">
+    <h4>8. Learn more about writing your own checker</h4>
+
+    <p>For further explanations, see the Checker Framework manual, chapter
+    <a href=
+    "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#writing-a-checker">How
+    to create a new checker</a>.</p>
   </div>
 
   <div id="issue1">
@@ -313,7 +337,7 @@ would be commented as <code>/*@Encrypted*/</code>
 
   <div id="end">
     <div class="page-header short">
-      <h2>The End of the Checker Framework Tutorial <small><strong>Return
+      <h2>The end of the Checker Framework Tutorial <small><strong>Return
       to the <a href="../index.html">main page</a> of the
       Tutorial.</strong></small></h2>
     </div>
