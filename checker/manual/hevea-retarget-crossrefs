@@ -1,0 +1,85 @@
+#!/usr/bin/perl -n
+# hevea-retarget-crossrefs
+# Michael Ernst
+# Last updated: May 20, 2012
+
+# To use:
+#   hevea-retarget-crossrefs < orig.html > new.html
+
+# This script replaces HTML cross-references of the form
+#    <a href="#htoc1">
+# by cross-refenences to named labels, such as
+#    <a href="#introduction">
+
+# It is required that the original .tex source file contained a \label
+# command at the end of each \chapter or \[sub]section command, like so:
+#   \chapter{Introduction\label{introduction}}
+# The given label that will replace the "htoc" one in the .html file.
+
+# Rationale:
+# In the table of contents, Hevea creates HTML cross-references that use
+# Hevea-generated labels of the form "htoc99", even when a \label already
+# exists.  This leads to users following a link from the table of contents,
+# then bookmarking or mentioning that link.  The "htoc99" link may point
+# to a completely different section if the manual is reordered or even if a
+# new section is added.  So, it is better for webpages not to contain the
+# easy-to-misuse "htoc99" cross-references.
+
+
+# This script does not work with in-place editing (perl's -i argument).
+
+# use strict;
+# use English;
+# $WARNING = 1;
+
+$debug = 0;
+# $debug = 1;
+
+# if (scalar(@ARGV) != 1) {
+#   die "Expected exactly 1 argument, got " . scalar(@ARGV);
+# }
+# my $filename = $ARGV[0];
+
+push @lines, $_;
+
+END {
+
+  for (my $i = 0; $i<scalar(@lines); $i++) {
+    # Handle lines *with* htoc, substituting it by the first other anchor and moving others forward.
+    if ($lines[$i] =~ s:<A NAME="(htoc[0-9]+)">(((Chapter&#XA0;)?([0-9]+|[A-Z]))(\.[0-9]+)*)(</A>)(.*?)(<A NAME="(.*?)">)</A>((<A NAME=".*"></A>)*)(</H[0-9]+>):$9$2$7$11$8$13:) {
+      $mapping{$1} = $10;
+      if ($debug) { print STDERR "$1 => $mapping{$1}\n"; }
+    }
+    # Move around the "<A NAME=" for sections *without* htoc (anything not in
+    # tocdepth, which is not in a table of contents).  If the anchor comes
+    # within but at the end of a header, then when going to that URL, some browsers
+    # will position the header off the top of the screen.  Putting the
+    # anchor at the beginning of the header fixes this problem.
+    $lines[$i] =~ s:(<(H[345]) CLASS="((sub)*section|paragraph)">)(.*?)(<A NAME=".*">(</A><A NAME=".*">)*)(</A></\2>):$1$6$5$8:;
+  }
+
+  foreach my $line (@lines) {
+    if ($line =~ /<A HREF="#(htoc[0-9]+)">/) {
+      my $htoc = $1;
+      my $replacement = $mapping{$htoc};
+      if (defined($replacement)) {
+        if ($debug) { print STDERR $line; }
+        # Also remove "Chapter" if present, for brevity
+        $line =~ s/$htoc(">)(Chapter&#XA0;)?/$replacement$1/;
+        if ($debug) { print STDERR $line; }
+      } else {
+        print STDERR "No symbolic name for section $htoc\n";
+      }
+    }
+    $line =~ s/(<IMG SRC="([^"]+\.[^".]+)")>/$1 ALT="$2">/g;
+    print $line;
+  }
+
+}
+
+# Local Variables:
+# time-stamp-start: "^# Last updated: "
+# time-stamp-end: "\\.?$"
+# time-stamp-format: "%:b %:d, %:y"
+# time-stamp-line-limit: 10
+# End:

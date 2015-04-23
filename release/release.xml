@@ -1,0 +1,447 @@
+<project name="jsr-308" basedir="..">
+
+    <description>
+        Ant utilities for releasing JSR308-Langtools and Checker-Framework.  All targets in this file
+        are intended to be run much like method calls (i.e. you must specify a certain set of properties
+        as parameters and they do not depend on any other target.
+    </description>
+
+    <property file="release/release.properties"/>
+    <!-- Todays date -->
+    <tstamp>
+        <format property="release.date" pattern="d MMM yyyy"/>
+    </tstamp>
+
+    <!-- For updating version numbers in files -->
+    <macrodef name="update">
+        <attribute name="file"/>
+        <attribute name="start"/>
+        <attribute name="end" default=""/>
+        <attribute name="with"/>
+        <sequential>
+            <echo level="info" message="updating @{file}"/>
+            <replaceregexp file="@{file}" byline="true"
+                           match="@{start}.*@{end}" replace="@{start}@{with}@{end}"/>
+        </sequential>
+    </macrodef>
+
+    <target name="update-langtools-versions" description="updates version info in Langtool documents and build configs">
+
+        <fail unless="langtools"   message="langtools property is not set!"  />
+        <fail unless="release.ver" message="release.ver property is not set!"/>
+        <fail unless="afu.properties"      message="afu.properties property is not set!"/>
+        <fail unless="afu.release.date"    message="afu.release.date property is not set!"/>
+
+        <property name="jsr308WebPage"   value="${langtools}/doc/jsr308-webpage.html" />
+        <property name="jsr308WebPage"   value="${langtools}/doc/jsr308-webpage.html" />
+        <property name="jsr308Readme"    value="${langtools}/doc/README-jsr308.html"  />
+        <property name="langtools.make"  value="${langtools}/make"                    />
+
+        <!-- for afu.date.0 and afu.date.1 -->
+        <loadproperties srcFile="${afu.properties}"/>
+
+        <update file="${jsr308WebPage}"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}, ${release.date}"/>
+
+        <update file="${jsr308WebPage}"
+                start="${compiler.ver.0}" end="${compiler.ver.1}"
+                with="${release.ver}, ${release.date}"/>
+
+        <update file="${jsr308WebPage}"
+                start="${checkers.date.0}" end="${checkers.date.1}"
+                with="${release.date}"/>
+
+        <update file="${jsr308WebPage}"
+                start="${afu.date.0}" end="${afu.date.1}"
+                with="${afu.release.date}"/>
+
+        <!-- I can only find these in design.tex and they are commented out but
+             for now I will keep these in -->
+        <replaceregexp file="${jsr308WebPage}" byline="true"
+                       flags="g" match="~~" replace="--"/>
+
+        <update file="${langtools.make}/build.properties"
+                start="jsr308.version = " with="${release.ver}"/>
+
+        <update file="${jsr308Readme}"
+                start="${h4.ver.0}" end="${h4.ver.1}"
+                with="Version ${release.ver} (${release.date})"/>
+
+
+        <update file="${langtools}/doc/Makefile-jsr308-install"
+                start="JSR308_BUILD := "
+                with="${release.ver}"/>
+     </target>
+
+    <target name="update-checker-framework-versions" description="updates version info in Checker Framework documents and build configs">
+
+        <fail unless="checker"            message="checker property is not set!"   />
+        <fail unless="release.ver"         message="release.ver property is not set!"/>
+        <fail unless="afu.properties"      message="afu.properties property is not set!"/>
+        <fail unless="afu.release.date"    message="afu.release.date property is not set!"/>
+
+        <property name="checker.manual"      value="${checker}/manual"                       />
+        <property name="checker.eclipse"     value="${checker}/../eclipse"                   />
+        <property name="checker.tutorial"    value="${checker}/../tutorial"                  />
+        <property name="checkerWebPage"      value="${checker.manual}/checker-framework-webpage.html" />
+        <property name="maven.plugin"         value="${checker}/../maven-plugin"             />
+        <property name="checker.binary.poms"  value="${maven.plugin}/poms"                   />
+        <property name="checker.release.poms" value="${maven.plugin}/release/"               />
+        <property name="release.version.regexp" value="\d\.\d\.\d(?:\.\d)"                   />
+
+        <!-- for afu.date.0 and afu.date.1 -->
+        <loadproperties srcFile="${afu.properties}"/>
+
+        <update file="${checkerWebPage}"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}, ${release.date}"/>
+
+        <update file="${checkerWebPage}"
+                start="${compiler.ver.0}" end="${compiler.ver.1}"
+                with="${release.ver}, ${release.date}"/>
+
+        <update file="${checkerWebPage}"
+                start="${checkers.date.0}" end="${checkers.date.1}"
+                with="${release.date}"/>
+
+        <update file="${checkerWebPage}"
+                start="${afu.date.0}" end="${afu.date.1}"
+                with="${afu.release.date}"/>
+
+        <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
+                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
+
+        <replaceregexp file="${checker}/../build-common.properties" byline="true"
+                       match="build.version = ${release.version.regexp}{0,1}" replace="build.version = ${release.ver}"/>
+
+        <replaceregexp file="${checker.tutorial}/tests/testdemo/check-tainting.0.expected" byline="true"
+                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
+
+        <replaceregexp file="${checker.tutorial}/webpages/security-error-cmd.html" byline="true"
+                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
+
+        <update file="${checker}/build.properties"
+                start="build.version = " with="${release.ver}"/>
+
+        <update file="${checker.manual}/manual.tex"
+                start="${release.info.0}" end="${release.info.1}"
+                with="${release.ver} (${release.date})"/>
+
+        <update file="${checker.manual}/manual.tex"
+                start="${release.ver.0}" end="${release.ver.1}"
+                with="${release.ver}"/>
+
+        <!-- Checker Framework Maven artifacts -->
+
+        <!-- checker -->
+        <update file="${checker.binary.poms}/checkerPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/checkerReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <!-- checker-qual -->
+        <update file="${checker.binary.poms}/checkerQualPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/checkerQualReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <!-- checker-qual-compat -->
+        <update file="${checker.binary.poms}/checkerCompatQualPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/checkerCompatQualReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <!-- jsr308 compiler -->
+        <update file="${checker.binary.poms}/compilerPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/compilerReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <!-- jdk7 -->
+        <update file="${checker.binary.poms}/jdk7Pom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/jdk7ReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <!-- jdk8 -->
+        <update file="${checker.binary.poms}/jdk8Pom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/jdk8ReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <!-- compiler plugin -->
+        <update file="${maven.plugin}/pom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/mavenPluginReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <!-- artifacts used in Google's error-prone -->
+        <update file="${checker.binary.poms}/dataflowPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/dataflowReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.binary.poms}/javacutilPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/javacutilReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <!-- examples -->
+        <update file="${maven.plugin}/mvn-examples/HelloGalaxy/pom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+    </target>
+
+    <target name="zip-langtools" description="Creates a zip archive for JSR308-Langtools.">
+
+        <fail unless="checkerframework" message="checkerframework property is not set!"/>
+        <fail unless="langtools"   message="langtools property is not set!" />
+        <fail unless="dest.dir"    message="dest.dir property is not set!"  />
+        <fail unless="file.name"   message="file.name property is not set!" />
+        <fail unless="version"     message="version number is not set!"     />
+
+        <property name="langtools.excludes" value="${checkerframework}/release/langtools-excludes"/>
+        <available file="${langtools.excludes}"  property="langtools.excludes.available"/>
+        <fail unless="${langtools.excludes.available}" message="${langtools.excludes} includes file not available"/>
+        
+        <zip destfile="${dest.dir}/${file.name}">
+            <zipfileset dir="${langtools}" prefix="jsr308-langtools-${version}"
+                        excludesfile="release/langtools-excludes"/>
+
+            <zipfileset dir="${langtools}"
+                        includes="dist/lib/javac.jar"
+                        fullpath="jsr308-langtools/binary/javac.jar"/>
+
+            <zipfileset dir="${langtools}"
+                        includes="dist/lib/javap.jar"
+                        fullpath="jsr308-langtools/binary/javap.jar"/>
+
+            <zipfileset dir="${langtools}" prefix="jsr308-langtools-${version}"
+                        includes="dist/bin/**" filemode="755"/>
+        </zip>
+
+    </target>
+
+    <target name="zip-checker-framework" description="Creates a zip archive for the Checker Framework.">
+
+        <fail unless="checker"     message="checker property is not set!" />
+        <fail unless="dest.dir"    message="dest.dir property is not set!"  />
+        <fail unless="file.name"   message="file.name property is not set!" />
+        <fail unless="version"     message="version number is not set!"     />
+
+        <property name="dest.file" value="${dest.dir}/${file.name}"/>
+        <property name="checkerframework" value="${checker}/.."/>
+
+        <property name="checker.includes" value="${checkerframework}/release/checker-includes"/>
+        <property name="checker.excludes" value="${checkerframework}/release/checker-excludes"/>
+
+        <echo message="${checker.includes}" />
+        <available file="${checker.includes}"  property="checker.includes.available"/>
+        <available file="${checker.excludes}"  property="checker.excludes.available"/>
+
+        <fail unless="${checker.includes.available}" message="${checker.includes} includes file not available"/>
+        <fail unless="${checker.excludes.available}" message="${checker.excludes} excludes file not available"/>
+
+        <chmod file="${checker}/bin/javac" perm="+x"/>
+        <chmod file="${checker}/bin/javac_maven" perm="+x"/>
+
+        <delete file="${dest.file}"/>
+
+        <zip destfile="${dest.file}" update="true">
+            <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
+                        includesfile="${checker.includes}" excludesfile="${checker.excludes}"/>
+
+            <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
+                        includes="checker/bin/javac" filemode="755"/>
+
+            <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
+                        includes="checker/bin/javac_maven" filemode="755"/>
+
+                        <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
+                        includes="changelog.txt README.html LICENSE.txt" excludes="api/**"/>
+
+            <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
+                        includes="tutorial/**"
+                        excludes="tutorial/tests/** tutorial/eclipse-projects/** tutorial/src/** tutorial/test/** tutorial/Makefile tutorial/README"/>
+        </zip>
+
+    </target>
+
+    <target name="zip-tutorial" description="Create a zip archive for the directory tutorial.">
+        <fail unless="checker"    message="checker property is not set!" />
+        <fail unless="dest.dir"   message="dest.dir property is not set!"  />
+
+        <zip destfile="${dest.dir}/$tutorial.zip">
+            <zipfileset dir="${checkerframework}" prefix="tutorial"
+                        includes="tutorial/**"
+                        excludes="tutorial/test/** tutorial/src/** tutorial/Makefile tutorial/README"/>
+        </zip>
+    </target>
+
+    <target name="zip-maven-examples" description="Create a zip archive for the directory maven-plugin/mvn-examples.">
+        <fail unless="checker"    message="checker property is not set!" />
+        <fail unless="dest.dir"    message="dest.dir property is not set!"  />
+        <fail unless="file.name"   message="file.name property is not set!" />
+        <fail unless="version"     message="version is not set!" />
+
+        <zip destfile="${dest.dir}/${file.name}">
+            <zipfileset dir="${checker}/../maven-plugin/mvn-examples" filemode="755" prefix="maven-examples-${version}"/>
+        </zip>
+    </target>
+
+    <target name="jar-maven-extras" description="Create jars with readmes to fill in for required maven artifacts!">
+        <!-- All Maven artifacts should have a sources/javadoc jar in order to be submitted to Maven central.
+             At the moment we only have these for the checker artifact so for now we can create dummies with
+             READMEs in them and pass those to Central.  This is the recommended way of handling this
+             situation.  See: https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide -->
+
+        <fail unless="maven.plugin.dir" message="maven.plugin.dir property is not set!"  />
+        <fail unless="dest.dir"         message="dest.dir property is not set!" />
+
+        <property name="maven.release.dir" value="${maven.plugin.dir}/release"/>
+
+        <jar destfile="${dest.dir}/checker-qual-source.jar"  basedir="${maven.release.dir}" includes="README-checker-qual"/>
+        <jar destfile="${dest.dir}/checker-qual-javadoc.jar" basedir="${maven.release.dir}" includes="README-checker-qual"/>
+
+        <jar destfile="${dest.dir}/checker-compat-qual-source.jar"  basedir="${maven.release.dir}" includes="README-checker-compat-qual"/>
+        <jar destfile="${dest.dir}/checker-compat-qual-javadoc.jar" basedir="${maven.release.dir}" includes="README-checker-compat-qual"/>
+
+        <jar destfile="${dest.dir}/compiler-source.jar"  basedir="${maven.release.dir}" includes="README-compiler"/>
+        <jar destfile="${dest.dir}/compiler-javadoc.jar" basedir="${maven.release.dir}" includes="README-compiler"/>
+
+        <jar destfile="${dest.dir}/jdk7-source.jar"  basedir="${maven.release.dir}" includes="README-jdk"/>
+        <jar destfile="${dest.dir}/jdk7-javadoc.jar" basedir="${maven.release.dir}" includes="README-jdk"/>
+
+        <jar destfile="${dest.dir}/jdk8-source.jar"  basedir="${maven.release.dir}" includes="README-jdk"/>
+        <jar destfile="${dest.dir}/jdk8-javadoc.jar" basedir="${maven.release.dir}" includes="README-jdk"/>
+
+        <jar destfile="${dest.dir}/checkerframework-maven-plugin-javadoc.jar" basedir="${maven.release.dir}" includes="README-plugin"/>
+
+    </target>
+
+    <target name="langtools-website-docs" description="Copies the relevant JSR308 Langtools files to the given directory">
+
+        <fail unless="langtools"  message="langtools property is not set!" />
+        <fail unless="dest.dir"   message="dest.dir property is not set!"  />
+
+        <property name="langtools.doc"   value="${langtools}/doc" />
+        <property name="web.root"        value="${dest.dir}/../.." />
+
+        <copy todir="${dest.dir}" file="${langtools.doc}/README-jsr308.html"      />
+        <copy todir="${dest.dir}" file="${langtools.doc}/jsr308-faq.html"      />
+        <copy todir="${dest.dir}" file="${langtools.doc}/Makefile-jsr308-install" />
+        <copy todir="${dest.dir}" file="${langtools.doc}/changelog-jsr308.txt"    />
+
+        <symlink overwrite="true" link="${web.root}/index.html" resource="${dest.dir}/jsr308-webpage.html"/>
+        <symlink overwrite="true"
+                 link="${web.root}/favicon-jsr308.png" resource="${web.root}/current/favicon-jsr308.png"/>
+
+    </target>
+
+    <!-- TODO: Doc the params -->
+    <target name="checker-framework-website-docs" description="Copies the relevant Checker Framework files to the given directory">
+
+        <!-- The directory in which the Checker Framework has been built -->
+        <fail unless="checker"   message="checker property is not set!" />
+
+        <!-- The properties set by release_build.py -->
+        <fail unless="dest.dir"   message="dest.dir property is not set!" />
+        <fail unless="manual.name"        message="manual.name property is not set!" />
+        <fail unless="dataflow.manual.name" message="dataflow.manual.name property is not set!" />
+        <fail unless="checker.webpage"   message="checker.webpage property is not set!" />
+
+        <!-- //TODO: PERHAPS CHECK THAT THESE FILES EXIST -->
+        <property name="checker.manual"   value="${checker}/manual" />
+        <property name="dataflow.manual"  value="${checker}/../dataflow/manual" />
+        <property name="checker.tutorial" value="${checker}/../tutorial" />
+        <property name="web.root"         value="${dest.dir}/../.." />
+
+        <copy file="${checker.manual}/${checker.webpage}" tofile="${dest.dir}/${checker.webpage}" />
+
+        <copy file="${checker.manual}/manual.html" tofile="${dest.dir}/${manual.name}.html"/>
+        <copy file="${checker.manual}/manual.pdf"  tofile="${dest.dir}/${manual.name}.pdf"/>
+        <copy file="${dataflow.manual}/dataflow.pdf"  tofile="${dest.dir}/${dataflow.manual.name}.pdf"/>
+
+        <copy todir="${dest.dir}" flatten="true">
+            <fileset dir="${checker.manual}">
+                <include name="*.svg"/>
+            </fileset>
+        </copy>
+
+        <copy file="${checker.manual}/logo/Checkmark/CFCheckmark_favicon.png" tofile="${dest.dir}/favicon-checkerframework.png" />
+        <copy file="${checker.manual}/logo/Checkmark/CFCheckmark_favicon.png" tofile="${web.root}/favicon-checkerframework.png" />
+
+        <copy todir="${dest.dir}/tutorial" >
+            <fileset dir="${checker.tutorial}" includes="**"/>
+        </copy>
+
+        <copy todir="${dest.dir}" file="${checker}/../changelog.txt" />
+
+        <copy todir="${dest.dir}/api" flatten="false">
+            <fileset dir="${checker}/api">
+                <include name="**" />
+            </fileset>
+        </copy>
+
+        <symlink overwrite="true" link="${dest.dir}/index.html" resource="${dest.dir}/${checker.webpage}" />
+        <symlink overwrite="true"
+                 link="${web.root}/current/favicon-jsr308.png" resource="${web.root}/favicon-jsr308.png"/>
+
+    </target>
+
+    <target name="update-and-copy-hello-galaxy" description="Update version/repo information of the HelloGalaxy Maven example and copy it do dest.dir">
+
+        <fail unless="dest.dir"   message="dest.dir property is not set!" />
+        <fail unless="checker"    message="checker property is not set!" />
+        <fail unless="version"    message="version is not set!" />
+
+        <property name="maven.plugin"         value="${checker}/../maven-plugin"             />
+
+        <copy todir="${dest.dir}/HelloGalaxy" flatten="false">
+            <fileset dir="${maven.plugin}/mvn-examples/HelloGalaxy">
+                <include name="**" />
+            </fileset>
+        </copy>
+
+        <!-- examples -->
+        <update file="${dest.dir}/HelloGalaxy/pom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${version}"/>
+    </target>
+
+</project>
