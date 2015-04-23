@@ -154,7 +154,7 @@ public class PersonalBlogService {
 
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MONTH, -1);
-        /*@SuppressWarnings("untainted")*/
+        /*@SuppressWarnings("tainting")*/
         String startdate = (/*@Untainted*/ String) qf.format(cal.getTime());
 
         posts = executeQuery(constructQuery(
@@ -184,7 +184,7 @@ public class PersonalBlogService {
      * which cannot detect the type of string concatination, unlike
      * the Tainting Checker.
      */
-    @SuppressWarnings("untainted")
+    @SuppressWarnings("tainting")
     private @Untainted String constructQuery(@Untainted String ...strings) {
         StringBuilder sb = new StringBuilder();
         for (String s : strings)
