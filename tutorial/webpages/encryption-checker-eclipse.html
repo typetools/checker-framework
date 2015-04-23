@@ -39,29 +39,37 @@
 		<h1>Checker Framework Tutorial</h1>
 		<h2>
 			<small>Previous <a href="security-error-eclipse.html">Finding
-					a Security Error</a>, Download <a href="../eclipse-projects.zip">
+					a Security Error</a>, Download
+					<a href="../eclipse-projects.zip">
 					Example Sources</a></small>
 		</h2>
 	</div>
 
-	<section id="introduction">
+	<section id="top">
 		<div class="page-header short" style="border-top: none;">
-
 
 			<h2>
 				Writing an Encryption Checker <small><em> Optional</em></small>
 			</h2>
 		</div>
 
-		<div class="section">
+		<section id="introduction">
+			<p>This section of the tutorial is only for those who are
+				interested in writing their own type-checkers. Please feel free to
+				skip this section.</p>
 
-			<p>Perhaps, there are other runtime exceptions you wish to
-				prevent or maybe other properties of data that should always hold.
-				In both these cases and others, you you might wish to write your own
-				type-checker. This section of the tutorial is for those who are
+			<!--Copied from the manual-->
+			<p>
+				Although the Checker Framework ships with <a
+					href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#introduction">several
+					checkers</a>, it is often useful to write a custom checker.
+				Perhaps there are other runtime exceptions you wish to prevent, or
+				other properties of data that should always hold.
+				In such cases, you can write your own type-checker.
+				This section of the tutorial is for those who are
 				interested in writing their own type-checkers. If you do not wish to
-				write a new type-checker, feel free to skip this section.</p>
-		</div>
+				write a new type-checker, feel free to skip this section.
+			</p>
 
 
 		<section id="encrytionchecker">
@@ -75,20 +83,24 @@
 				<p>Suppose that you wish to only allow encrypted information to
 					be sent over the internet. To do so, you can write an Encryption
 					Checker.</p>
+		</section>
 
-				<div class="well">
-					<h5>Outline</h5>
-					<ol>
-						<li><a href="#import">Import <em>encryption-checker</em>
-								project</a></li>
-						<li><a href="#setup"> Set Up the Subtyping Checker to run the
-								Encryption Checker</a></li>
-						<li><a href="#run1">Run the Encryption Checker</a>--2 errors</li>
-						<li><a href="#error1">Suppress the first error</a></li>
-						<li><a href="#run2">Run the Encryption Checker</a>--1 error</li>
-						<li><a href="#error2">Correct the second error</a></li>
-					</ol>
-				</div>
+		<section id="outline">
+			<div class="well">
+				<h5>Outline</h5>
+				<ol>
+					<li><a href="#import">Import <em>encryption-checker</em>
+							project</a></li>
+					<li><a href="#setup"> Set Up the Subtyping Checker to run the
+							Encryption Checker</a></li>
+					<li><a href="#annotation">Write type annotation definitions</a></li>
+					<li><a href="#run1">Run the Encryption Checker</a>--2 errors</li>
+					<li><a href="#error1">Suppress the first error</a></li>
+					<li><a href="#run2">Run the Encryption Checker</a>--1 error</li>
+					<li><a href="#error2">Correct the second error</a></li>
+				</ol>
+			</div>
+
 				<div class="section">
 
 					<section id="import">
@@ -142,52 +154,49 @@
 						<pre>
 incompatible types in assignment.
 		/*@Encrypted*/ int encryptInt = (character + OFFSET) % Character.MAX_VALUE ;
-  found   : int
+  found   : @PossibleUnencrypted int
   required: @Encrypted int	EncryptionDemo.java	/encryption-checker/src/encrypted	
 incompatible types in argument.
 		sendOverInternet(password);
-  found   : String
+  found   : @PossibleUnencrypted String
   required: @Encrypted String	EncryptionDemo.java	/encryption-checker/src/encrypted	
 
 </pre>
-					</section>
+			</section>
 
-					<section id="error1">
-						<h4>4. Suppress the First Error</h4>
+			<section id="error1">
+				<h4>4. Suppress the First Error</h4>
 
 
-						<p>
-							The first error needs to be suppressed, because the string on the
-							left is considered "encrypted" in this encryption scheme. All
-							<code>@SuppressWarnings</code>
-							should have a comment explaining why suppressing the warning is
-							the correct action. The comment should also be initialed and
-							dated. See the correction below.
-						</p>
+				<p>
+					The first error needs to be suppressed, because the string on the
+					left is considered "encrypted" in this encryption scheme. All
+					<code>@SuppressWarnings</code>
+					should have a comment explaining why suppressing the warning is
+					the correct action.  See the correction below.
+				</p>
 
 
 						<pre>
-// The SuppressWarnings is necessary because, the type system is not capable of
-//validating that the return value is encrypted. -SOM 01/25/2013
+// The SuppressWarnings is necessary because the type system is not capable of
+// validating that the return value is encrypted. -SOM 01/25/2013
 @SuppressWarnings("encrypted")
 private /*@Encrypted*/ char encryptCharacter(char character) {
+</pre>
 
-      </pre>
+			</section>
 
-					</section>
-
-					<section id="run2">
-						<h4>5. Run the Encryption Checker</h4>
+			<section id="run2">
+				<h4>5. Run the Encryption Checker</h4>
 
 
-						<p>You will see the following error:</p>
+				<p>You will see the following error:</p>
 
-						<pre>
+				<pre>
 incompatible types in argument.
 		sendOverInternet(password);
-  found   : String
-  required: @Encrypted String	EncryptionDemo.java	/encryption-checker/src/encrypted
-
+  found   : @PossibleUnencrypted String
+  required: @Encrypted String
 </pre>
 
 						<p>This is a real error, because the programmer is trying to

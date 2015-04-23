@@ -38,7 +38,8 @@
 		style="border-bottom: 1px solid #EEE; border-top: none;">
 		<h1>Checker Framework Tutorial</h1>
 		<h2>
-			<small>Previous <a href="get-started-eclipse.html">
+			<small>Previous
+			 <a href="get-started-eclipse.html">
 					Getting Started </a></small>
 		</h2>
 	</div>
@@ -50,12 +51,10 @@
 
 		</div>
 
+		<p>This part of the tutorial shows how the Checker Framework
+		   can detect and help correct missing input validation.</p>
+
 		<div class="section">
-
-
-			<p>This demo shows how the Checker Framework can detect and help
-				correct missing input validation.</p>
-
 
 			<div class="well">
 				<h5>Outline</h5>
@@ -73,9 +72,10 @@
 			</div>
 
 		</div>
+
 		<div class="section">
 			<section id="runex1">
-				<h4>1. Run the Example</h4>
+				<h4>1. The RegexExample program</h4>
 
 				<p>
 					If you have not already done so, <a href="../eclipse-projects.zip">download
@@ -83,57 +83,63 @@
 					project into your Eclipse workspace.
 				</p>
 
+				<p>
+					The <a href="../src/RegexExample.java">RegexExample.java</a></b>.
+					program is called with two arguments; a regular expression and
+					a string. The program prints the text from the string that matches
+					the first capturing group in the regular expression.
+					<b>Open <a href="../src/RegexExample.java">RegexExample.java</a></b>.</b>
+				</p>
+
+				<h4>1. Run the RegexExample program</h4>
+				<p>
+				<b>Run the program</b>
+					with a <strong class="text-success">valid</strong> regular expression and a matching string:
+				</p>
+<pre>
+$ <strong>java RegexExample '[01]?\d-([0123]?\d)-\d{4}+' '01-24-2013'</strong>
+Group: 2013
+</pre>
 
 				<p>
-					To begin, <b>open <a href="../src/RegexExample.java">RegexExample.java</a></b>.
-					This program is called with two arguments; a regular expression and
-					a string. The program prints the text from the string that matches
-					the first capturing group in the regular expression. <b>Run</b>
-					with a valid regular expression and a matching string such as <strong
-						class="text-success">[01]??\d-([0123]??\d)-\d{4}+
-						01-24-2013 </strong> and then run with an invalid and a matching string one
-					such as <strong class="text-success">[01]??[\d-([0123]??\d)-\d{4}+
-						01-24-2013 </strong>. (For a prompt in Eclipse, select Run
+				<b>Run the program</b> with an invalid regular expression and aany string
+					such as <strong class="text-error">[01]?[\d-([0123]?\d)-\d{4}+
+						01-24-2013 </strong>.
+				</b>(For a prompt in Eclipse, select Run
 					Configurations->Arguments->Variables->string_prompt or Right click
 					on RegexExample.launch->Run As-RegexExample)
 					<!--(RegexExample.launch was created in the common tab in the launch
   configurations)-->
 				</p>
 				<pre>
-Exception in thread "main" java.util.regex.PatternSyntaxException: Illegal character range near index 24
-[01]??[\d-([0123]??\d)-\d{4}+
-                        ^
+$ <strong>java RegexExample '[01]?[\d-[0123]?\d-\d{4}+' '01-24-2013'</strong>
+Exception in thread "main" java.util.regex.PatternSyntaxException: Unclosed character class near index 21
+[01]?[d-[0123]?d-d{4}+
+                     ^
 	at java.util.regex.Pattern.error(Pattern.java:1924)
-	at java.util.regex.Pattern.range(Pattern.java:2594)
-	at java.util.regex.Pattern.clazz(Pattern.java:2507)
+	at java.util.regex.Pattern.clazz(Pattern.java:2493)
 	at java.util.regex.Pattern.sequence(Pattern.java:2030)
 	at java.util.regex.Pattern.expr(Pattern.java:1964)
 	at java.util.regex.Pattern.compile(Pattern.java:1665)
 	at java.util.regex.Pattern.<init>(Pattern.java:1337)
 	at java.util.regex.Pattern.compile(Pattern.java:1022)
 	at RegexExample.main(RegexExample.java:13)
-
-    
 				</pre>
-				<p>The user has made an error by passing in an invalid regular
-					expression; however, good programming style dictates that a user
-					should not see a stack trace.</p>
+
+				<p>Good programming style dictates that the user should not see
+				a stack trace, even if the user supplies invalid output.</p>
 			</section>
 
 			<section id="run1">
-				<h4>2. Run Regex Checker</h4>
 
+				<h4>3. Run the Regex Checker</h4>
 				<p>
 					The Regex Checker prevents, at compile-time, use of syntactically
 					invalid regular expressions and access of invalid capturing groups.
-					So, it can be used to catch an invalid regular expression. Next <b>run
+					In other words, it prevents your code from throwing certain 
+					exceptions at run time. Next <b>run
 						the Regex Checker</b> to see how it could have spotted this issue at
-					compile time. The checker prints out an "incompatible types"
-					warning, because regex is not of type
-					<code>@Regex String</code>
-					which is required for strings passed to
-					<code>Pattern.compile()</code>
-					.
+					compile time.
 				</p>
 
 				<pre>
@@ -142,12 +148,22 @@ incompatible types in argument.
   found   : String
   required: @Regex String	RegexExample.java	
 </pre>
+
+				 The "incompatible types"
+					warning indicates that variable <code>regex</code> is not of type
+					<code>@Regex String</code>
+					which is required for strings passed to
+					<code>Pattern.compile()</code>.
+					The "group.count.invalid" warning indicates that
+					no groups are guaranteed to exist at run time.
+
 			</section>
 			<section id="validate">
-				<h4>3. Fix the Code</h4>
+				<h4>4. Fix the Code</h4>
+
 				<p>
 					To fix, <b>verify the user input</b> using the
-					RegexUtil.isRegex(String) method. You must <b>import
+					RegexUtil.isRegex(String, int) method. You must <b>import
 						org.checkerframework.checker.regex.RegexUtil</b>. Please see the <a
 						href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#annotating-with-regex">
 						Regex chapter</a> in the manual for a full discussion of
@@ -172,16 +188,16 @@ incompatible types in argument.
 </pre>
 			</section>
 			<section id="run2">
-				<h4>4. Run the Regex Checker</h4>
+				<h4>5. Run the Regex Checker</h4>
 				<p>There should be no warnings.</p>
 			</section>
 			<section id="runex2">
-				<h4>5. Run the Example</h4>
+				<h4>6. Run the Example</h4>
 
 				<p>
 					Run the program exactly as before to verify that the program prints
 					a user-friendly warning. The invalid regular expression and
-					matching string used before are <strong class="text-success">[01]??[\d-([0123]??\d)-\d{4}+
+					matching string used before are <strong class="text-success">[01]?[\d-([0123]?\d)-\d{4}+
 						01-24-2013 </strong>.
 				</p>
 				<p>
@@ -189,6 +205,8 @@ incompatible types in argument.
 						href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#regex-checker">
 						Regex Checker section</a> of the manual.
 				</p>
+
+			</section>
 		</div>
 
 	</section>
@@ -197,9 +215,9 @@ incompatible types in argument.
 	<section id="next">
 		<div class="page-header short">
 			<h2>
-				<small>Next, <a href="security-error-eclipse.html">
-						Finding a Security Error</a>, an complex example using the Tainting
-					checker.
+				<small>Next, try
+				<a href="security-error-eclipse.html">
+						Finding a Security Error</a>, an complex example using the Tainting Checker.
 				</small>
 			</h2>
 		</div>
