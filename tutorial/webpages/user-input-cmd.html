@@ -76,6 +76,8 @@
         <h5>Outline</h5>
 
         <ol>
+          <li><a href="#regexexample">The RegexExample program</a></li>
+
           <li><a href="#runex1">Run the example with an invalid regular
           expression</a></li>
 
@@ -94,26 +96,31 @@
     </div>
 
     <div class="section">
-      <div id="runex1">
+      <div id="regexexample">
         <h4>1. The RegexExample program</h4>
 
-        <p>The <a href="../src/RegexExample.java">RegexExample.java</a>.
-        program is called with two arguments; a regular expression and a
+        <p>
+        The <a href="../src/RegexExample.java">RegexExample.java</a>
+        program is called with two arguments: a regular expression and a
         string. The program prints the text from the string that matches
-        the first capturing group in the regular expression. <b>Compile
-        the program</b>:</p>
+        the first capturing group in the regular expression.
+        <br/><b>Compile the program</b>:
+        </p>
         <pre>
 $ <strong>javac RegexExample.java</strong>
 </pre>
+      </div>
 
-        <h4>1. Run the RegexExample program</h4>
+      <div id="runex1">
+        <h4>2. Run the RegexExample program</h4>
 
         <p><b>Run the program</b> with a <strong class=
         "text-success">valid</strong> regular expression and a matching
-        string:</p>
+        string:
+        </p>
         <pre>
 $ <strong>java RegexExample '[01]?\d-([0123]?\d)-\d{4}+' '01-24-2013'</strong>
-Group: 2013
+Group 1: 24
 </pre>
 
         <p><b>Run the program</b> with an <strong class=
@@ -142,12 +149,13 @@ Exception in thread "main" java.util.regex.PatternSyntaxException: Unclosed char
       <div id="run1">
         <h4>3. Run the Regex Checker</h4>
 
-        <p>The Regex Checker prevents, at compile-time, use of
+        <p>The Regex Checker prevents, at compile time, use of
         syntactically invalid regular expressions and access of invalid
-        capturing groups. In other words, it prevents your code from
-        throwing certain exceptions at run time. Next <b>run the Regex
+        capturing groups. In other words, it prevents you from writing code
+        that would throw certain exceptions at run time. Next <b>run the Regex
         Checker</b> to see how it could have spotted this issue at compile
-        time.</p>
+        time.
+        </p>
         <pre>
 $ <strong>javacheck -processor org.checkerframework.checker.regex.RegexChecker RegexExample.java</strong>
 RegexExample.java:13: error: [argument.type.incompatible] incompatible types in argument.
@@ -163,47 +171,52 @@ RegexExample.java:18: error: [group.count.invalid] invalid groups parameter 1. O
 
         <p>The "incompatible types" warning indicates that variable
         <code>regex</code> is not of type <code>@Regex String</code> which
-        is required for strings passed to <code>Pattern.compile()</code>.
-        The "group.count.invalid" warning indicates that no groups are
-        guaranteed to exist at run time.</p>
+        is required for strings passed to <a href="http://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html#compile-java.lang.String-"><code>Pattern.compile()</code></a>.</p>
+
+        <p>The "group.count.invalid" warning indicates that no groups are
+        guaranteed to exist at run time, which is required for a Matcher
+        <code>mat</code> in order to call <a href="http://docs.oracle.com/javase/8/docs/api/java/util/regex/Matcher.html#group-int-"><code>mat.group(1)</code></a>.</p>
       </div>
 
       <div id="validate">
         <h4>4. Fix the Code</h4>
 
-        <p>To fix, <b>verify the user input</b> using the
-        RegexUtil.isRegex(String, int) method. You must <b>import
-        org.checkerframework.checker.regex.RegexUtil</b>. Please see the
-        <a href=
-        "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#annotating-with-regex">
-        Regex chapter</a> in the manual for a full discussion of
-        <code>RegexUtil</code> class. If it is not a valid regular
-        expression, <b>print an error message</b> and do not check for
-        matches. If it is a valid regular expression, preform as before.
-        It is not necessary to add an annotation to regex because the
-        Regex Checker adds <a href=
-        "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#effective-qualifier">
-        implicit qualifiers</a>. Below are all the changes that need to be
-        made to RegexExample.java to correctly handle the user input.</p>
+        <p>The right way to fix the problems is for the code to issue a
+        user-friendly message at run time.  It should <b>verify the user
+        input</b> using the
+        <a href="http://types.cs.washington.edu/checker-framework/current/api/org/checkerframework/checker/regex/RegexUtil.html#isRegex-java.lang.String-"><code>RegexUtil.isRegex(String, int)</code></a> method.
+        If the string is not a valid regular
+        expression, it should <b>print an error message and halt</b>.
+        If it <em>is</em> a valid regular expression, perform as before.
+        </p>
+
+        <p>
+        You need to make two changes to RegexExample.java
+        to correctly handle invalid user input.  At the top of the file, add</p>
         <pre>
-  import org.checkerframework.checker.regex.RegexUtil;
-...
-        if (!RegexUtil.isRegex(regex, 1)) {
-            System.out.println("Input is not a regular expression \"" + regex
-                    + "\": " + RegexUtil.regexException(regex).getMessage());
-            System.exit(1);
-        }
-...
+import org.checkerframework.checker.regex.RegexUtil;
+</pre>
+        <p>
+        After variable <code>regex</code> is defined but before it is
+        used, add</p>
+<pre>
+	if (!RegexUtil.isRegex(regex, 1)) {
+	    System.out.println("Input is not a regular expression \"" + regex
+		    + "\": " + RegexUtil.regexException(regex).getMessage());
+	    System.exit(1);
+	}
 </pre>
       </div>
 
       <div id="run2">
-        <h4>5. Run the Regex Checker</h4>
+        <h4>5. Re-run the Regex Checker</h4>
+
         <pre>
 $ <strong>javacheck -processor org.checkerframework.checker.regex.RegexChecker RegexExample.java</strong>
 </pre>
 
-        <p>There should be no warnings.</p>
+        <p>There should be no warnings.  This shows that the code will not
+        throw a PatternSyntaxException at compile time.</p>
       </div>
 
       <div id="runex2">
@@ -216,9 +229,15 @@ $ <strong>java -cp ".:$CHECKERFRAMEWORK/checker/dist/checker.jar" RegexExample '
 Input is not a regular expression "[01]?[d-([0123]?d)-d{4}+": Illegal character range near index 8
 </pre>
 
-        <p>For a full discussion of this checker, please see the <a href=
+        <p>(If this issues an error</p>
+        <pre>Exception in thread "main" java.lang.UnsupportedClassVersionError: RegexExample : Unsupported major.minor version 52.0</pre>,
+        then <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#javac-installation">change the <tt>javacheck</tt>
+        alias</a> to pass the <tt>-source 7 -target 7</tt> command-line
+        arguments and <a href="#run2">rerun the javacheck command</a>.)</p>
+
+        <p>For a full discussion of the Regex Checker, please see the <a href=
         "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#regex-checker">
-        Regex Checker section</a> of the manual.</p>
+        Regex Checker chapter</a> of the Checker Framework manual.</p>
       </div>
     </div>
   </div>

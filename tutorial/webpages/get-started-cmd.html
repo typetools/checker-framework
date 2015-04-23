@@ -67,7 +67,9 @@
 
     <div class="section">
       <p>This page walks you through a simple example to show how to use a
-      type-checker from the command line. It shows how the Nullness
+      type-checker
+      from the command line.
+      It shows how the Nullness
       Checker can be used to prevent null pointer exceptions.</p>
     </div>
 
@@ -94,8 +96,8 @@
         <a href=
         "../src/NullnessExample.java">NullnessExample.java</a></b>. (If
         you have not already, download <a href="../sourcefiles.zip">the
-        source files</a> for the tutorial.) It is a simple Java program
-        with an obvious null pointer exception.
+        source files</a> for the tutorial.)
+        It is a simple Java program with an obvious null pointer exception.
         <pre>
 public class NullnessExample {
     public static void main(String[] args) {
@@ -115,7 +117,12 @@ public class NullnessExample {
         <p>To run the Nullness Checker, run javac with command-line
         arguments <code>-processor
         org.checkerframework.checker.nullness.NullnessChecker</code>, as
-        follows. (Note: You should have already made
+        follows.</p>
+
+        <p>(Note:  In this tutorial, the commands that you cut-and-paste
+        to run on the command line appear in bold after a <tt>$</tt> prompt.)
+        <br/>
+        (Note: You should have already made
         <code>javacheck</code> <a href=
         "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#installation">
         an alias</a> to the Checker Framework compiler.)</p>
@@ -135,8 +142,8 @@ NullnessExample.java:9: error: [dereference.of.nullable] dereference of possibly
       <div id="error">
         <h4>3. Correct the error</h4>
 
-        <p><b>Initialize <code>myObject</code></b> to some non-null
-        value.</p>
+        <p>Edit the code to <b>initialize the <code>myObject</code> variable</b>
+        to some non-null value.</p>
         <pre>
 public class NullnessExample {
     public static void main(String[] args) {
@@ -150,22 +157,22 @@ public class NullnessExample {
       <div id="run2">
         <h4>4. Re-run the Nullness Checker</h4>
         <pre>
-% <strong>javacheck -processor org.checkerframework.checker.nullness.NullnessChecker NullnessExample.java</strong>
+$ <b>javacheck -processor org.checkerframework.checker.nullness.NullnessChecker NullnessExample.java</b>
 </pre>
 
         <p>No errors should be produced.</p>
       </div>
 
-      <p>This was a very simple example to show how to use the Checker
-      Framework from the command line. The next example is a little more
-      complex.</p>
+      <p>This was a very simple example to show how to use the Checker Framework
+      from the command line.
+      The next example is a little more complex.</p>
     </div>
   </div>
 
   <div id="end">
     <div class="page-header short">
-      <h2><small>Next, try <a href="user-input-cmd.html">Validating User
-      Input</a>, an example using the Regex Checker.</small></h2>
+      <h2><small>Next, try <a href="user-input-cmd.html">Validating
+      User Input</a>, an example using the Regex Checker.</small></h2>
     </div>
   </div><!--
 <div class="bottom_liner well">
