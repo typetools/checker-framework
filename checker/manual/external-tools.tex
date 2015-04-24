@@ -445,9 +445,9 @@ See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-suppor
 
 \section{Eclipse\label{eclipse}}
 
-Eclipse supports type annotations.
-Eclipse does not directly support running the Checker Framework, 
-nor is Eclipse necessary for running the Checker Framework.
+% Eclipse supports type annotations.
+% Eclipse does not directly support running the Checker Framework, 
+% nor is Eclipse necessary for running the Checker Framework.
 
 There are two ways to run a checker from within the Eclipse IDE:  via Ant
 or using an Eclipse plug-in.  These two methods are described below.
@@ -465,10 +465,10 @@ than by supplying the \<-processor> command-line option to the ejc
 compiler.  The reason is that the Checker Framework is built upon javac,
 and ejc represents the Java program differently.  (If both javac and ejc
 implemented JSR 198~\cite{JSR198}, then it would be possible to build
-type-checking plug-ins that work with both compilers.)
+a type-checking plug-in that works with both compilers.)
 
 
-\paragraph{Using an Ant task\label{eclipse-ant}}
+\subsection{Using an Ant task\label{eclipse-ant}}
 
 Add an Ant target as described in Section~\ref{ant-task}.  You can
 run the Ant target by executing the following steps
@@ -495,7 +495,7 @@ run the Ant target by executing the following steps
 
 \end{enumerate}
 
-\paragraph{Eclipse plug-in for the Checker Framework\label{eclipse-plug-in}}
+\subsection{Eclipse plug-in for the Checker Framework\label{eclipse-plug-in}}
 
 The Checker Plugin is an Eclipse plugin that enables the use of the Checker
 Framework.
