@@ -450,7 +450,7 @@ See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-suppor
 % nor is Eclipse necessary for running the Checker Framework.
 
 There are two ways to run a checker from within the Eclipse IDE:  via Ant
-or using an Eclipse plug-in.  These two methods are described below.
+or using an Eclipse plugin.  These two methods are described below.
 
 No matter what method you choose, we suggest that
 all Checker Framework annotations be written in the comments
@@ -495,10 +495,12 @@ run the Ant target by executing the following steps
 
 \end{enumerate}
 
-\subsection{Eclipse plug-in for the Checker Framework\label{eclipse-plug-in}}
 
-The Checker Plugin is an Eclipse plugin that enables the use of the Checker
-Framework.
+\label{eclipse-plug-in}         % previous label for this section
+\subsection{Eclipse plugin for the Checker Framework\label{eclipse-plugin}}
+
+The Checker framework Eclipse Plugin enables the use of the Checker
+Framework within the Eclipse IDE\@.
 Its website (\myurl{http://types.cs.washington.edu/checker-framework/eclipse/}).
 The website contains instructions for installing and using the plugin.
 % The plugin has been substantially improved through a Google Summer of Code 2010 project
@@ -612,7 +614,7 @@ Section~\ref{javari-inference} lists a tool that infers
 annotations for the Javari Checker, which detects mutation errors.
 
 \href{https://github.com/reprogrammer/cascade/}{Cascade}~\cite{VakilianPEJ2014}
-is an Eclipse plug-in that implements interactive type qualifier inference.
+is an Eclipse plugin that implements interactive type qualifier inference.
 Cascade is interactive rather than fully-automated:  it makes it easier for
 a developer to insert annotations.
 Cascade starts with an unannotated program and runs a type-checker.  For each
