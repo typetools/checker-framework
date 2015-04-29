@@ -40,7 +40,7 @@ public class TargetConstraints {
         //Map( hierarchy top -> exact annotation in hierarchy)
         public Map<AnnotationMirror, AnnotationMirror> primaries = new LinkedHashMap<>();
 
-        //Map( type -> hierarchy top for which the primary annotation of type is equal to the primary annotaiton of the target)
+        //Map( type -> hierarchy top for which the primary annotation of type is equal to the primary annotation of the target)
         //note all components and underlying types are EXACTLY equal to the key to this map
         public final Map<AnnotatedTypeMirror, Set<AnnotationMirror>> types = new LinkedHashMap<>();
 

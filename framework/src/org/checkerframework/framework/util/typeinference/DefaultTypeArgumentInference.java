@@ -558,9 +558,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      * Given a set of AFConstraints, remove all constraints that are not relevant to inference and return
      * a set of AFConstraints in which the F is a use of one of the type parameters to infer.
      */
-    private void reduceAfConstraints(final AnnotatedTypeFactory typeFactory,
-                                     final Set<AFConstraint> outgoing, final Queue<AFConstraint> toProcess,
-                                     final Set<TypeVariable> targets) {
+    protected void reduceAfConstraints(final AnnotatedTypeFactory typeFactory,
+                                       final Set<AFConstraint> outgoing, final Queue<AFConstraint> toProcess,
+                                       final Set<TypeVariable> targets) {
 
         final Set<AFConstraint> visited = new HashSet<>();
 
@@ -600,7 +600,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     /**
      * Convert AFConstraints to TUConstraints
      */
-    private Set<TUConstraint> afToTuConstraints(Set<? extends AFConstraint> afConstraints, Set<TypeVariable> targets) {
+    protected Set<TUConstraint> afToTuConstraints(Set<? extends AFConstraint> afConstraints, Set<TypeVariable> targets) {
         final Set<TUConstraint> outgoing = new LinkedHashSet<>();
         for (final AFConstraint afConstraint : afConstraints) {
             if (!afConstraint.isIrreducible(targets)) {
