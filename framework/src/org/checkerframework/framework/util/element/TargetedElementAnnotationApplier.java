@@ -33,7 +33,7 @@ abstract class TargetedElementAnnotationApplier {
     /**
      * Three annotation types that may be encountered when calling getRawTypeAttributes. see sift().
      */
-    public static enum TargetClass {
+    static enum TargetClass {
         TARGETED, VALID, INVALID
     }
 
