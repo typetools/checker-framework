@@ -77,9 +77,8 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
                         grew = true;
                         final AnnotatedTypeMirror type = equivalentType.type.deepCopy();
                         type.replaceAnnotations(currentTarget.additionalAnnotations);
-                        final InferredType newConstraint =
-                                new InferredType(type);
 
+                        final InferredType newConstraint = new InferredType(type);
                         inferredTypes.put(currentTarget.target, newConstraint);
                     }
                 }
