@@ -46,7 +46,7 @@ public abstract class AFConstraint {
     /**
      *
      * @param targets The type parameters whose arguments we are trying to solve for
-     * @return Returns true if this constraint can be broken up into other constraints or further simplified
+     * @return Returns true if this constraint can't be broken up into other constraints or further simplified
      * In general, if either argument or formal parameter is a use of the type parameters we are inferring over
      * then the constraint cannot be reduced further
      */

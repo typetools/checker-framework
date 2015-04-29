@@ -339,8 +339,8 @@ public class EqualitiesSolver {
         } //else
 
 
-        //We did not have enough information to infer a concrete have a "partial solution", one in
-        //which we know the type in some but not all qualifier heirarchies
+        //We did not have enough information to infer an annotation in all hierarchies for one concrete type.
+        //However, we have a "partial solution", one in which we know the type in some but not all qualifier hierarchies
         //Update our set of constraints with this information
         dirty |= updateTargetsWithPartiallyInferredType(equalities, constraintMap, typeFactory);
         inferred = findEqualTarget(equalities, tops);
@@ -348,16 +348,14 @@ public class EqualitiesSolver {
         return inferred;
     }
 
-    // We may have determined that
     //If we determined that this target T1 is equal to a type ATM in hierarchies @A,@B,@C
-    //for each of those hierarchy, if a target is equal to T1 in that hierarchy it is also equal to ATM
+    //for each of those hierarchies, if a target is equal to T1 in that hierarchy it is also equal to ATM
     // e.g.
     //   if : T1 == @A @B @C ATM in only the A,B hierarchies
     //    and T1 == T2 only in @A hierarchy
     //
     //   then T2 == @A @B @C only in the @A hierarchy
     //
-    // add this
     public boolean updateTargetsWithPartiallyInferredType( final Equalities equalities, ConstraintMap constraintMap,
                                                            AnnotatedTypeFactory typeFactory) {
 
@@ -370,6 +368,7 @@ public class EqualitiesSolver {
 
             Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> remainingTypeEquality;
             remainingTypeEquality = equalities.types.entrySet().iterator().next();
+
             final AnnotatedTypeMirror remainingType = remainingTypeEquality.getKey();
             final Set<AnnotationMirror> remainingHierarchies = remainingTypeEquality.getValue();
 
@@ -386,7 +385,7 @@ public class EqualitiesSolver {
 
                 Set<AnnotationMirror> equalHierarchies = otherTargetsEqualTypes.get(remainingType);
                 if (equalHierarchies == null) {
-                    equalHierarchies = new HashSet<>();
+                    equalHierarchies = new HashSet<>(equalTypeHierarchies);
                     otherTargetsEqualTypes.put(remainingType, equalHierarchies);
                     updated = true;
 
@@ -409,8 +408,9 @@ public class EqualitiesSolver {
         for (Map.Entry<TypeVariable, Set<AnnotationMirror>> targetToHierarchies  : equalities.targets.entrySet()) {
             final TypeVariable equalTarget = targetToHierarchies.getKey();
             final Set<AnnotationMirror> hierarchies = targetToHierarchies.getValue();
-            //No see if target is equal to equalTarget in all hierarchies
-            boolean targetIsEqualInAllHierarchies = equalities.targets.get(equalTarget).size() == tops.size();
+
+            //Now see if target is equal to equalTarget in all hierarchies
+            boolean targetIsEqualInAllHierarchies = hierarchies.size() == tops.size();
             if (targetIsEqualInAllHierarchies) {
                 return new InferredTarget(equalTarget, new HashSet<AnnotationMirror>());
 
