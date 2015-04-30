@@ -467,9 +467,9 @@
         </antcall>
     </target>
 
-    <target name="jtreg-tests" depends="-def-jtreg,jar"
+    <target name="jtreg-tests" depends="-def-jtreg,jar,build-tests"
             description="Run jtreg tests">
-        <jtreg-tool name="all" tests="."/>
+        <jtreg-tool2 name="all" tests="."/>
     </target>
 
     <target name="-def-check">
@@ -501,7 +501,7 @@
         <check name="jtreg" property="jtreg.home" marker="lib/jtreg.jar"/>
     </target>
 
-    <target name="-def-jtreg" unless="jtreg.defined" depends="-check-jtreg.home">
+    <target name="-def-jtreg" unless="jtreg.defined2" depends="-check-jtreg.home">
         <taskdef name="jtreg" classname="com.sun.javatest.regtest.Main$$Ant">
             <classpath>
                 <pathelement location="${jtreg.home}/lib/jtreg.jar"/>
@@ -509,7 +509,7 @@
             </classpath>
         </taskdef>
 
-        <macrodef name="jtreg-tool">
+        <macrodef name="jtreg-tool2">
             <attribute name="name"/>
             <attribute name="tests"/>
             <!-- <attribute name="jdk" default="${java.home}"/> -->
@@ -523,7 +523,7 @@
             <sequential>
                 <property name="coverage.options" value=""/>    <!-- default -->
                 <property name="coverage.classpath" value=""/>  <!-- default -->
-                <property name="checkers.classpath" value="${javac.lib}:${javap.lib}:${framework.lib}"/>
+                <property name="checkers.classpath" value="${javac.lib}:${javap.lib}:${framework.lib}:${basedir}/${tests.build}"/>
                 <jtreg
                     dir="jtreg"
                     workDir="${build.jtreg.dir}/@{name}/work"
@@ -545,7 +545,7 @@
                 <property name="jtreg.report" value="${build.jtreg.dir}/@{name}/report"/>
             </sequential>
         </macrodef>
-        <property name="jtreg.defined" value="true"/>
+        <property name="jtreg.defined2" value="true"/>
     </target>
 
     <!-- Type-check the checker implementations -->
