@@ -298,6 +298,15 @@
             <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
                         includes="tutorial/**"
                         excludes="tutorial/tests/** tutorial/eclipse-projects/** tutorial/src/** tutorial/test/** tutorial/Makefile tutorial/README"/>
+
+            <zipfileset dir="${checkerframework}"
+                        includes="checker/manual/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/checker/manual/CFLogo.png"/>
+
+            <zipfileset dir="${checkerframework}"
+                        includes="checker/manual/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/tutorial/CFLogo.png"/>
+
+            <zipfileset dir="${checkerframework}"
+                        includes="checker/manual/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/tutorial/webpages/CFLogo.png"/>
         </zip>
 
     </target>
@@ -310,6 +319,8 @@
             <zipfileset dir="${checkerframework}" prefix="tutorial"
                         includes="tutorial/**"
                         excludes="tutorial/test/** tutorial/src/** tutorial/Makefile tutorial/README"/>
+            <zipfileset dir="${checkerframework}" includes="checker/manual/logo/Logo/CFLogo.png" fullpath="tutorial/CFLogo.png"/>
+            <zipfileset dir="${checkerframework}" includes="checker/manual/logo/Logo/CFLogo.png" fullpath="tutorial/webpages/CFLogo.png"/>
         </zip>
     </target>
 
@@ -400,8 +411,14 @@
         <copy todir="${dest.dir}" flatten="true">
             <fileset dir="${checker.manual}">
                 <include name="*.svg"/>
+                <include name="manual001.png"/>
             </fileset>
         </copy>
+
+        <copy file="${checker.manual}/logo/Logo/CFLogo.png" tofile="${web.root}/current/CFLogo.png" />
+        <copy file="${checker.manual}/logo/Logo/CFLogo.png" tofile="${checker.manual}/CFLogo.png" />
+        <copy file="${checker.manual}/logo/Logo/CFLogo.png" tofile="${checker.tutorial}/CFLogo.png" />
+        <copy file="${checker.manual}/logo/Logo/CFLogo.png" tofile="${checker.tutorial}/webpages/CFLogo.png" />
 
         <copy file="${checker.manual}/logo/Checkmark/CFCheckmark_favicon.png" tofile="${dest.dir}/favicon-checkerframework.png" />
         <copy file="${checker.manual}/logo/Checkmark/CFCheckmark_favicon.png" tofile="${web.root}/favicon-checkerframework.png" />
