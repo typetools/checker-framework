@@ -346,7 +346,7 @@ def find_latest_version( version_dir ):
     return max_version( filter( os.path.isdir, os.listdir(version_dir) ) )
 
 def get_afu_version_from_html( html_file_path ):
-    version_regex = "<!-- afu-version -->(\\d+\\.\\d+\\.?\\d?),.*<!-- /afu-version -->"
+    version_regex = "<!-- afu-version -->(\\d+\\.\\d+\\.?\\d*),.*<!-- /afu-version -->"
     version   = find_first_instance(version_regex, html_file_path, "")
     if version is None:
         raise Exception( "Could not detect Annotation File Utilities version in file " + html_file_path )
