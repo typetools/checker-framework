@@ -901,8 +901,8 @@ def print_step( step ):
 
 def get_announcement_email( version ):
     return """
-    To:  jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroups.com
-    Subject: Release %s of the Checker Framework and Type Annotations compiler
+    To:  checker-framework-discuss@googlegroups.com
+    Subject: Release %s of the Checker Framework
 
     We have released a new version of the Checker Framework
     and the Eclipse plugin for the Checker Framework.
