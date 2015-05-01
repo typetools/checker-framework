@@ -85,7 +85,7 @@ public class QualifierDefaults {
     protected static final Map<Element, BoundType> elementToBoundType  = AnnotatedTypeFactory.createLRUCache(CACHE_SIZE);
 
 
-    /** 
+    /**
      * Defaults that apply for a certain Element.
      * On the one hand this is used for caching (an earlier name for the field was
      * "qualifierCache". It can also be used by type systems to set defaults for
@@ -100,7 +100,8 @@ public class QualifierDefaults {
         DefaultLocation.FIELD,
         DefaultLocation.PARAMETERS,
         DefaultLocation.RETURNS,
-        DefaultLocation.UPPER_BOUNDS
+        DefaultLocation.UPPER_BOUNDS,
+        DefaultLocation.LOWER_BOUNDS
     };
 
     /**
@@ -135,6 +136,8 @@ public class QualifierDefaults {
      */
     public void addUntypedDefault(AnnotationMirror untypedDefaultAnno, DefaultLocation location) {
         checkDuplicates(untypedDefaults, untypedDefaultAnno, location);
+        checkIsValidUntypedLocation(untypedDefaultAnno, location);
+
         untypedDefaults.add(new Default(untypedDefaultAnno, location));
     }
 
@@ -143,15 +146,12 @@ public class QualifierDefaults {
      */
     public void addUntypedDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
         for (DefaultLocation location : locations) {
-            // TODO(danbrotherston): Why no check for duplicates here?
-            // TODO(danbrotherston): Check for invalid locations for untyped code.
             addUntypedDefault(absoluteDefaultAnno, location);
         }
     }
 
     public void addAbsoluteDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
         for (DefaultLocation location : locations) {
-            // TODO(danbrotherston): Why no check duplicates here?
             addAbsoluteDefault(absoluteDefaultAnno, location);
         }
     }
@@ -170,6 +170,22 @@ public class QualifierDefaults {
         elementDefaults.put(elem, prevset);
     }
 
+    private void checkIsValidUntypedLocation(AnnotationMirror untypedDefaultAnno, DefaultLocation location) {
+        boolean isValidUntypeLocation = false;
+        for(DefaultLocation validLoc : validLocationsForUntyped()) {
+            if (location == validLoc) {
+                isValidUntypeLocation = true;
+                break;
+            }
+        }
+
+        if (!isValidUntypeLocation) {
+            ErrorReporter.errorAbort(
+                    "Invalid untyped default location: " + location + " -> " + untypedDefaultAnno );
+        }
+
+    }
+
     private void checkDuplicates(DefaultSet previousDefaults, AnnotationMirror newAnno, DefaultLocation newLoc ) {
         final QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
 
@@ -178,7 +194,7 @@ public class QualifierDefaults {
             if (!newAnno.equals(previous.anno) && previous.location == newLoc) {
                 final AnnotationMirror previousTop = qualHierarchy.getTopAnnotation(previous.anno);
 
-                if (qualHierarchy.isSubtype(previousTop, newAnno)) {
+                if (qualHierarchy.isSubtype(newAnno, previousTop)) {
                     ErrorReporter.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
                                             + previousDefaults + " and new: " + (new Default(newAnno, newLoc)));
                 }
@@ -326,12 +342,11 @@ public class QualifierDefaults {
         }
     }
 
-    private Set<Default> fromDefaultQualifier(DefaultQualifier dq) {
+    private DefaultSet fromDefaultQualifier(DefaultQualifier dq) {
         // TODO: I want to simply write d.value(), but that doesn't work.
         // It works in other places, e.g. see handling of @SubtypeOf.
         // The hack below should probably be added to:
         // Class<? extends Annotation> cls = AnnotationUtils.parseTypeValue(dq, "value");
-        // TODO(danbrotherston): Why is this "Set<Default>" instead of DefaultSet
         Class<? extends Annotation> cls;
         try {
             cls = dq.value();
@@ -358,7 +373,7 @@ public class QualifierDefaults {
 
         if (atypeFactory.isSupportedQualifier(anno)) {
             EnumSet<DefaultLocation> locations = EnumSet.of(dq.locations()[0], dq.locations());
-            Set<Default> ret = new HashSet<>(locations.size());
+            DefaultSet ret = new DefaultSet();
             for (DefaultLocation loc : locations) {
                 ret.add(new Default(anno, loc));
             }
