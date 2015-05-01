@@ -1,0 +1,5 @@
+checker/bin/README
+checker/bin/javac
+checker/bin/javac_maven
+checker/checker/bin-devel/javac
+checker/dist/*.asc

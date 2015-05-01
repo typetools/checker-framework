@@ -1,0 +1,171 @@
+\htmlhr
+\chapter{Subtyping Checker\label{subtyping-checker}}
+
+The Subtyping Checker enforces only subtyping rules.  It operates over
+annotations specified by a user on the command line.  Thus, users can
+create a simple type-checker without writing any code beyond definitions of
+the type qualifier annotations.
+
+The Subtyping Checker can accommodate all of the type system enhancements that
+can be declaratively specified (see Chapter~\ref{writing-a-checker}).
+This includes type introduction rules (implicit
+annotations, e.g., literals are implicitly considered \refqualclass{checker/nullness/qual}{NonNull}) via
+the \refqualclass{framework/qual}{ImplicitFor} meta-annotation, and other features such as
+flow-sensitive type qualifier inference (Section~\ref{type-refinement}) and
+qualifier polymorphism (Section~\ref{qualifier-polymorphism}).
+
+The Subtyping Checker is also useful to type system designers who wish to
+experiment with a checker before writing code; the Subtyping Checker
+demonstrates the functionality that a checker inherits from the Checker
+Framework.
+
+If you need typestate analysis, then you can extend a typestate checker,
+much as you would extend the Subtyping Checker if you do not need typestate
+analysis.  For more details (including a definition of ``typestate''), see
+Chapter~\ref{typestate-checker}.
+See Section~\ref{faq-typestate} for a simpler alternative.
+
+For type systems that require special checks (e.g., warning about
+dereferences of possibly-null values), you will need to write code and
+extend the framework as discussed in Chapter~\ref{writing-a-checker}.
+
+
+\section{Using the Subtyping Checker\label{subtyping-using}}
+
+\begin{sloppypar}
+The Subtyping Checker is used in the same way as other checkers (using the
+\code{-processor org.checkerframework.common.subtyping.SubtypingChecker} option; see Chapter~\ref{using-a-checker}), except that it
+requires an additional annotation processor argument via the standard
+``\code{-A}'' switch:
+\end{sloppypar}
+
+\begin{itemize}
+
+\item
+\code{-Aquals}: this option specifies a comma-no-space-separated list of
+the fully-qualified class
+names of the annotations used as qualifiers in the custom type system.  For
+example,
+
+\begin{alltt}
+  javac -processor org.checkerframework.common.subtyping.SubtypingChecker
+        \textit{-Aquals=myproject.qual.MyQual,myproject.qual.OtherQual} MyFile.java ...
+\end{alltt}
+
+It serves the same purpose as the \refqualclass{framework/qual}{TypeQualifiers}
+annotation used by other checkers (see section
+\ref{writing-compiler-interface}).
+
+The annotations listed in \code{-Aquals} must be accessible to
+the compiler during compilation in the classpath.  In other words, they must
+already be compiled (and, typically, be on the javac bootclasspath)
+before you run the Subtyping Checker with \code{javac}.  It
+is not sufficient to supply their source files on the command line.
+
+\end{itemize}
+
+To suppress a warning issued by the Subtyping Checker, use a 
+\sunjavadocanno{java/lang/SuppressWarnings.html}{SuppressWarnings}
+annotation, with the argument being the unqualified, uncapitalized name of
+any of the annotations passed to \code{-Aquals}.  This will suppress all
+warnings, regardless of which of the annotations is involved in the
+warning.  (As a matter of style, you should choose one of the annotations
+as your \code{@SuppressWarnings} key and stick with it for that entire type
+hierarchy.)
+
+
+\section{Subtyping Checker example\label{subtyping-example}\label{encrypted-example}}
+
+Consider a hypothetical \code{Encrypted} type qualifier, which denotes that the
+representation of an object (such as a \code{String}, \code{CharSequence}, or
+\code{byte[]}) is encrypted. To use the Subtyping Checker for the \code{Encrypted}
+type system, follow three steps.
+
+\begin{enumerate}
+\item
+ Define an annotation for the \code{Encrypted} qualifier:
+
+\begin{Verbatim}
+package myqual;
+
+import java.lang.annotation.Target;
+import java.lang.annotation.ElementType;
+
+import org.checkerframework.framework.qual.*;
+
+/**
+ * Denotes that the representation of an object is encrypted.
+ * ...
+ */
+@TypeQualifier
+@SubtypeOf(Unqualified.class)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+public @interface Encrypted {}
+\end{Verbatim}
+
+Don't forget to compile this class:
+
+\begin{Verbatim}
+$ javac myqual/Encrypted.java
+\end{Verbatim}
+
+The resulting \<.class> file should either be on your classpath, or on the
+processor path (set via the \<-processorpath> command-line option to javac).
+
+\item 
+  Write \code{@Encrypted} annotations in your program (\code{YourProgram.java}):
+
+\begin{Verbatim}
+import myqual.Encrypted;
+
+...
+
+public @Encrypted String encrypt(String text) {
+    // ...
+}
+
+// Only send encrypted data!
+public void sendOverInternet(@Encrypted String msg) {
+    // ...
+}
+
+void sendText() {
+    // ...
+    @Encrypted String ciphertext = encrypt(plaintext);
+    sendOverInternet(ciphertext);
+    // ...
+}
+
+void sendPassword() {
+    String password = getUserPassword();
+    sendOverInternet(password);
+}
+\end{Verbatim}
+
+You may also need to add \code{@SuppressWarnings} annotations to the
+\code{encrypt} and \code{decrypt} methods.  Analyzing them is beyond the
+capability of any realistic type system.
+
+\item
+  Invoke the compiler with the Subtyping Checker, specifying the
+  \code{@Encrypted} annotation using the \code{-Aquals} option.
+  You should add the \code{Encrypted} classfile to the processor classpath:
+
+\begin{Verbatim}
+$ javac -processorpath myqualpath -processor org.checkerframework.common.subtyping.SubtypingChecker \
+        -Aquals=myqual.Encrypted YourProgram.java
+
+YourProgram.java:42: incompatible types.
+found   : java.lang.String
+required: @myqual.Encrypted java.lang.String
+    sendOverInternet(password);
+                     ^
+\end{Verbatim}
+
+\end{enumerate}
+
+
+
+% LocalWords:  TODO ImplicitFor Aquals TypeQualifiers sourcepath java NonNull
+% LocalWords:  CharSequence classpath nullness quals SuppressWarnings classfile
+% LocalWords:  uncapitalized processorpath Warski MyFile YourProgram
