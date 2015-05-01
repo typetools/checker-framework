@@ -76,9 +76,9 @@ the \code{null} literal to be assigned to any type qualified with the
 
 The Regex Checker validates that a legal capturing group number is passed
 to \sunjavadoc{java/util/regex/Matcher.html}{Matcher}'s
-\sunjavadoc{java/util/regex/Matcher.html\#group(int)}{group},
-\sunjavadoc{java/util/regex/Matcher.html\#start(int)}{start} and
-\sunjavadoc{java/util/regex/Matcher.html\#end(int)}{end} methods. To do this,
+\sunjavadoc{java/util/regex/Matcher.html\#group-int-}{group},
+\sunjavadoc{java/util/regex/Matcher.html\#start-int-}{start} and
+\sunjavadoc{java/util/regex/Matcher.html\#end-int-}{end} methods. To do this,
 the type of \<Matcher> must be qualified with a \<@Regex> annotation
 with the number of capturing groups in the regular expression. This is
 handled implicitly by the Regex Checker for local variables (see
