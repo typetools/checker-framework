@@ -9,7 +9,7 @@ in Map \code{m}.  That is, the expression \code{m.containsKey(v)} evaluates to
 Section~\ref{map-key-qualifiers} describes how \code{@KeyFor} annotations
 enable the
 Nullness Checker (\chapterpageref{nullness-checker}) to treat calls to
-\sunjavadoc{java/util/Map.html\#get(java.lang.Object)}{\code{Map.get}}
+\sunjavadoc{java/util/Map.html\#get-java.lang.Object-}{\code{Map.get}}
 more precisely by refining its result to \<@NonNull> in some cases.
 
 You will not typically run the Map Key Checker.  It is automatically run by
@@ -96,10 +96,10 @@ Checker encounters a run-time check for map keys, such as
 \<k> to \<@KeyFor("m")> within the scope of the test (or until \<k> is
 side-effected within that scope).  The Map Key Checker also infers \<@KeyFor>
 annotations based on iteration over a map's
-\sunjavadoc{java/util/Map.html\#keySet()}{\textrm{key set}} or calls to
-\sunjavadoc{java/util/Map.html\#put(K, V)}{put}
+\sunjavadoc{java/util/Map.html\#keySet--}{\textrm{key set}} or calls to
+\sunjavadoc{java/util/Map.html\#put-K-V-}{put}
 or
-\sunjavadoc{java/util/Map.html\#containsKey(java.lang.Object)}{containsKey}.
+\sunjavadoc{java/util/Map.html\#containsKey-java.lang.Object-}{containsKey}.
 For more details about type refinement, see Section~\ref{type-refinement}.
 
 Suppose we have these declarations:
