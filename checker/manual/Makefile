@@ -69,12 +69,17 @@ manual.html: manual.pdf
 export BIBINPUTS = $BIBINPUTS:.:bib
 
 bib:
-	hg clone https://code.google.com/p/plume-bib/ bib
+ifdef PLUMEBIB
+	ln -s ${PLUMEBIB} bib
+else
+	git clone https://github.com/mernst/plume-bib.git bib
+endif
 .PHONY: bib-update
 bib-update: bib
-# To skip running the hg command, invoke make like this:  make NOHG=1 ...
-ifndef NOHG
-	-(cd bib && hg pull -u && make)
+# Even if this command fails, it does not terminate the make job.
+# However, to skip it, invoke make as:  make NOGIT=1 ...
+ifndef NOGIT
+	-(cd bib && git pull && make)
 endif
 
 # Leaves manual.html, and .svg files that it references.
