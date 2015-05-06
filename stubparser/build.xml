@@ -4,7 +4,7 @@
 <project name="stubparser" default="dist" basedir=".">
 
     <description>
-        Builds the java parser for JSR 308 index files.
+        Builds the Java parser for Checker Framework stub files.
     </description>
 
     <property file="build.${os.name}.properties"/>

@@ -15,7 +15,7 @@ public class RegexExample {
 
         if (mat.matches()) {
             if (mat.groupCount() > 0) {
-                System.out.println("Group: " + mat.group(1));
+                System.out.println("Group 1: " + mat.group(1));
             } else {
                 System.out.println("Group: ");
             }

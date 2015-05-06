@@ -79,7 +79,7 @@ public class ClearMarkersAction extends CheckerHandler
                     if (resource == null)
                         continue;
 
-                    pm.subTask("Clearing JSR 308 markers from "
+                    pm.subTask("Clearing Checker Framework markers from "
                             + resource.getName());
                     MarkerUtil.removeMarkers(resource);
                 }

@@ -346,7 +346,7 @@ def find_latest_version( version_dir ):
     return max_version( filter( os.path.isdir, os.listdir(version_dir) ) )
 
 def get_afu_version_from_html( html_file_path ):
-    version_regex = "<!-- afu-version -->(\\d+\\.\\d+\\.?\\d?),.*<!-- /afu-version -->"
+    version_regex = "<!-- afu-version -->(\\d+\\.\\d+\\.?\\d*),.*<!-- /afu-version -->"
     version   = find_first_instance(version_regex, html_file_path, "")
     if version is None:
         raise Exception( "Could not detect Annotation File Utilities version in file " + html_file_path )
@@ -901,23 +901,19 @@ def print_step( step ):
 
 def get_announcement_email( version ):
     return """
-    To:  jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroups.com
-    Subject: Release %s of the Checker Framework and Type Annotations compiler
+    To:  checker-framework-discuss@googlegroups.com
+    Subject: Release %s of the Checker Framework
 
-    We have released a new version of the Type Annotations (JSR 308) compiler, 
-    the Checker Framework, and the Eclipse plugin for the Checker Framework.
+    We have released a new version of the Checker Framework
+    and the Eclipse plugin for the Checker Framework.
 
-    * The Type Annotations compiler supports type annotation syntax.
     * The Checker Framework lets you create and/or run pluggable type checkers,
       in order to detect and prevent bugs in your code.
     * The Eclipse plugin makes it more convenient to run the Checker Framework.
 
     You can find documentation and download links for these projects at:
-    http://types.cs.washington.edu/jsr308/
+    http://CheckerFramework.org/
 
     Changes for the Checker Framework
-    <<Insert latest Checker Framework changelog update, possibly edited for brevity and clarity>>
-
-    Changes for the Type Annotations Compiler
-    <<Insert latest Jsr308-langtool changelog update, possibly edited for brevity and clarity>>
+    <<Insert latest Checker Framework changelog entry>>
     """ % ( version )

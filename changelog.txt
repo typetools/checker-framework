@@ -1,3 +1,10 @@
+Version 1.9.1, 1 May 2015
+
+New FAQ entry:
+  "How does the Checker Framework compare with Eclipse's null analysis?"
+
+----------------------------------------------------------------------
+
 Version 1.9.0, 17 April 2015
 
 Bug fixes for generics, especially type parameters:

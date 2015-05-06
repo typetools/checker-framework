@@ -4,7 +4,7 @@
 <project name="checker" default="dist" basedir=".">
 
     <description>
-        Builds the Checker Framework for the JSR 308 compiler.
+        Builds the Checker Framework.
     </description>
 
     <property file="build.${os.name}.properties"/>

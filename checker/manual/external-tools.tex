@@ -54,13 +54,13 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-1.9.01/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-1.9.1/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.  Now, whenever
     you run \code{javac}, you will use the updated compiler.  If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.01
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.1
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -76,8 +76,23 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.01
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.1
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
+\end{Verbatim}
+
+    If you are using a Java 7 JVM, then add command-line arguments to so
+    indicate:
+
+\begin{Verbatim}
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.1
+  alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac -source 7 -target 7'
+\end{Verbatim}
+
+   If you do not add the \<-source 7 -target 7> command-line arguments, you
+   may get the following error when running a class that was compiled by
+   javacheck:
+\begin{Verbatim}
+UnsupportedClassVersionError: ... : Unsupported major.minor version 52.0
 \end{Verbatim}
 
    \item
@@ -95,13 +110,16 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.01
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.1
   alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.9.01\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.9.1\
   doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
 \end{Verbatim}
+
+   \noindent
+   and add \<-source 7 -target 7> if you use a Java 7 JVM.
 
    (Explanation for advanced users:  More generally, anywhere that you would use \<javac.jar>, you can substitute
    \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>; 
@@ -118,7 +136,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-1.9.0
+  javac 1.8.0-jsr308-1.9.1
 \end{Verbatim}
 
 
@@ -427,12 +445,12 @@ See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-suppor
 
 \section{Eclipse\label{eclipse}}
 
-Eclipse supports type annotations.
-Eclipse does not directly support running the Checker Framework, 
-nor is Eclipse necessary for running the Checker Framework.
+% Eclipse supports type annotations.
+% Eclipse does not directly support running the Checker Framework, 
+% nor is Eclipse necessary for running the Checker Framework.
 
 There are two ways to run a checker from within the Eclipse IDE:  via Ant
-or using an Eclipse plug-in.  These two methods are described below.
+or using an Eclipse plugin.  These two methods are described below.
 
 No matter what method you choose, we suggest that
 all Checker Framework annotations be written in the comments
@@ -447,10 +465,10 @@ than by supplying the \<-processor> command-line option to the ejc
 compiler.  The reason is that the Checker Framework is built upon javac,
 and ejc represents the Java program differently.  (If both javac and ejc
 implemented JSR 198~\cite{JSR198}, then it would be possible to build
-type-checking plug-ins that work with both compilers.)
+a type-checking plug-in that works with both compilers.)
 
 
-\paragraph{Using an Ant task\label{eclipse-ant}}
+\subsection{Using an Ant task\label{eclipse-ant}}
 
 Add an Ant target as described in Section~\ref{ant-task}.  You can
 run the Ant target by executing the following steps
@@ -477,10 +495,12 @@ run the Ant target by executing the following steps
 
 \end{enumerate}
 
-\paragraph{Eclipse plug-in for the Checker Framework\label{eclipse-plug-in}}
 
-The Checker Plugin is an Eclipse plugin that enables the use of the Checker
-Framework.
+\label{eclipse-plug-in}         % previous label for this section
+\subsection{Eclipse plugin for the Checker Framework\label{eclipse-plugin}}
+
+The Checker framework Eclipse Plugin enables the use of the Checker
+Framework within the Eclipse IDE\@.
 Its website (\myurl{http://types.cs.washington.edu/checker-framework/eclipse/}).
 The website contains instructions for installing and using the plugin.
 % The plugin has been substantially improved through a Google Summer of Code 2010 project
@@ -594,7 +614,7 @@ Section~\ref{javari-inference} lists a tool that infers
 annotations for the Javari Checker, which detects mutation errors.
 
 \href{https://github.com/reprogrammer/cascade/}{Cascade}~\cite{VakilianPEJ2014}
-is an Eclipse plug-in that implements interactive type qualifier inference.
+is an Eclipse plugin that implements interactive type qualifier inference.
 Cascade is interactive rather than fully-automated:  it makes it easier for
 a developer to insert annotations.
 Cascade starts with an unannotated program and runs a type-checker.  For each

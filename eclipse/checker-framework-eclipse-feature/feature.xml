@@ -2,21 +2,19 @@
 <feature
       id="checker.framework.eclipse.feature"
       label="Checker Framework Feature"
-      version="1.9.0"
+      version="1.9.1"
       provider-name="Checker Framework Development Team">
 
    <description url="http://types.cs.washington.edu/checker-framework/eclipse">
-      The Type Annotations (JSR 308) language feature
-permits annotations to appear in more places than Java 5 permits;
-one example is generic type arguments (List&lt;@NonNull Object&gt;).
-These enhancements to the annotation system require minor, backward-compatible
-changes to the Java language and classfile format. These changes
-are
-planned to be part of the Java 7 language.
+      The Checker Framework plugin makes it easier to run a pluggable
+      type-checker.  A pluggable type-checker finds bugs at compile time that
+      would ordinarily manifest at run time.  If the pluggable type-checker
+      issues no warnings, then you have a guarantee that the error will not
+      occur at run time.
    </description>
 
-   <copyright url="http://types.cs.washington.edu/jsr308/">
-      Copyright JSR 308 Development Team
+   <copyright url="http://CheckerFramework.org/">
+      Copyright Checker Framework Development Team
    </copyright>
 
    <license url="http://openjdk.java.net/legal/gplv2+ce.html">
@@ -396,6 +394,6 @@ as provided by Sun in the LICENSE file that accompanied this code.&quot;
          id="checker.framework.eclipse.plugin"
          download-size="0"
          install-size="0"
-         version="1.9.0"/>
+         version="1.9.1"/>
 
 </feature>

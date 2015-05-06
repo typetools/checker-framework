@@ -1,128 +1,155 @@
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
 <html lang="en">
 <head>
-<title>Checker Framework Tutorial - Getting Started - Eclipse</title>
+  <meta name="generator" content=
+  "HTML Tidy for Linux (vers 25 March 2009), see www.w3.org">
 
-<link href="bootstrap/css/bootstrap.css" rel="stylesheet" />
-<script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
-
-<link href="css/main.css" rel="stylesheet" />
-<link rel="icon" type="image/png"	href="http://types.cs.washington.edu/checker-framework/favicon-checkerframework.png" />
-
+  <title>Checker Framework Tutorial - Getting Started - Eclipse</title>
+  <link href="bootstrap/css/bootstrap.css" rel="stylesheet" type=
+  "text/css">
+  <script type="text/javascript" src="bootstrap/js/bootstrap.min.js">
+</script>
+  <link href="css/main.css" rel="stylesheet" type="text/css">
+  <link rel="icon" type="image/png" href=
+  "http://types.cs.washington.edu/checker-framework/favicon-checkerframework.png">
 </head>
 
 <body>
+  <div class="top_liner"></div>
 
-	 <div class="top_liner"></div>
- <div class="navbar navbar-inverse navbar-fixed-top" style="border-bottom: 1px solid #66d;">
-  <div class="navbar-inner">
-   <div class="contained">
-    <ul class="nav">
-     <li class="heading">Checker Framework:
-      </h4>
-     </li>
-     <li><a href="http://checkerframework.org/">Main Site</a></li>
-     <li><a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">Manual</a></li>
-     <li><a href="https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">Discussion List</a></li>
-     <li><a href="http://code.google.com/p/checker-framework/issues/list">Issue Tracker</a></li>
-     <li><a href="http://code.google.com/p/checker-framework/source/checkout">Source Code</a></li>
-     <li><a href="http://types.cs.washington.edu/checker-framework/eclipse/">Eclipse Plugin</a></li>
-     <li class="active"><a href="http://types.cs.washington.edu/checker-framework/tutorial/">Tutorial</a></li>
-    </ul>
-   </div>
+  <div class="navbar navbar-inverse navbar-fixed-top" style=
+  "border-bottom: 1px solid #66d;">
+    <div class="navbar-inner">
+      <div class="contained">
+        <ul class="nav">
+          <li class="heading">Checker Framework:</li>
+
+          <li><a href="http://checkerframework.org/">Main Site</a></li>
+
+          <li><a href=
+          "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">
+          Manual</a></li>
+
+          <li><a href=
+          "https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">
+          Discussion List</a></li>
+
+          <li><a href=
+          "http://code.google.com/p/checker-framework/issues/list">Issue
+          Tracker</a></li>
+
+          <li><a href=
+          "http://code.google.com/p/checker-framework/source/checkout">Source
+          Code</a></li>
+
+          <li><a href=
+          "http://types.cs.washington.edu/checker-framework/eclipse/">Eclipse
+          Plugin</a></li>
+
+          <li class="active"><a href=
+          "http://types.cs.washington.edu/checker-framework/tutorial/">Tutorial</a></li>
+        </ul>
+      </div>
+    </div>
+  </div><img src="CFLogo.png" alt="Checker Framework logo">
+
+  <div class="page-header short" style=
+  "border-bottom: 1px solid #EEE; border-top: none;">
+    <h1>Checker Framework Tutorial</h1>
   </div>
- </div>
-	<img src="CFLogo.png" alt="Checker Framework logo" />
-	<div class="page-header short"
-		style="border-bottom: 1px solid #EEE; border-top: none;">
-		<h1>Checker Framework Tutorial</h1>
-	</div>
-	<section id="introduction">
-		<div class="page-header short" style="border-top: none;">
-			<h2>Getting Started</h2>
-		</div>
 
-		<div class="section">
-			<p>This page walks you through a simple example to show how to
-				use a type-checker in the Eclipse plugin. It shows how the Nullness
-				Checker can be used to prevent null pointer exceptions.</p>
-		</div>
-		<div class="section">
-			<h4>Outline</h4>
-			<div class="well">
+  <div id="gettingstarteed">
+    <div class="page-header short" style="border-top: none;">
+      <h2>Getting Started</h2>
+    </div>
 
-				<ol>
-					<li><a href="#import">Import <strong>checker-framework-tutorial</strong>
-							project into Eclipse
-					</a></li>
-					<li><a href="#run1">Run the Nullness Checker to see how it
-							can catch this error</a></li>
-					<li><a href="#error">Correct the error</a></li>
-					<li><a href="#run1">Run the Nullness Checker to verify
-							that there are no more errors</a></li>
-				</ol>
-			</div>
-			<section id="import">
-				<h4>1. Import checker-framework-tutorial</h4>
-				<p>
-					<b></b>If you have not already, <a href="../eclipse-projects.zip">download
-						the Eclipse projects</a>.</small>
-				</h2>
-				Begin by <b>importing the checker-framework-tutorial project</b>
-				into your Eclipse workspace. Select from the menu,
-				File->Import->Existing Project, then browse to the
-				eclipse-projects/checker-framework-tutorial directory.
-				</p>
-				<b>Open <a href="../src/NullnessExample.java">NullnessExample.java</a></b>.
-				It is a simple Java program with an obvious null pointer exception.
-				</p>
+    <div class="section">
+      <p>This page walks you through a simple example to show how to use a
+      type-checker
+      in the Eclipse plugin.
+      It shows how the Nullness
+      Checker can be used to prevent null pointer exceptions.</p>
+    </div>
 
-				<pre>
+    <div class="section">
+      <h4>Outline</h4>
+
+      <div class="well">
+        <ol>
+          <li><a href="#view">Manually spot the null pointer
+          exception</a></li>
+
+          <li><a href="#run1">Run the Nullness Checker to see how it can
+          catch this error</a></li>
+
+          <li><a href="#error">Correct the error</a></li>
+
+          <li><a href="#run2">Run the Nullness Checker to verify that
+          there are no more errors</a></li>
+        </ol>
+      </div>
+
+      <div id="view">
+        <h4>1. Spot the null pointer exception</h4>Begin by <b>importing
+        the checker-framework-tutorial project</b> into your Eclipse
+        workspace. Select from the menu, File-&gt;Import-&gt;Existing
+        Project, then browse to the
+        eclipse-projects/checker-framework-tutorial directory. (If you
+        have not already, download <a href="../sourcefiles.zip">the
+        Eclipse projects for the tutorial.)<br>
+        <br>
+        <b>Open</b></a> <a href=
+        "../src/NullnessExample.java">NullnessExample.java</a>.
+        It is a simple Java program with an obvious null pointer exception.
+        <pre>
 public class NullnessExample {
     public static void main(String[] args) {
-        Object myObject = <code>null</code>;
+        Object myObject = null;
         System.out.println(myObject.toString());
     }
 }
 </pre>
-			</section>
-			<section id="run1">
-				<h4>2. Run the Nullness Checker</h4>
-				<p>
-					<b>Run the Nullness Checker</b> to see how it can warn you about
-					this error, before you run the program.
-				</p>
+      </div>
 
-				<div class="well">
-					<div class="row">
-						<div class="span5">
-							<ol style="float: left">
-								<li>Right-click on NullnessExample.java.</li>
-								<li>Open the "Checker Framework" sub-menu.</li>
-								<li>Open the "Run Built-In Checker" sub-menu.</li>
-								<li>Select "Nullness Checker".</li>
-							</ol>
-						</div>
-						<div class="span6">
-							<img style="display: relative;" src="images/select_nullness.png" />
-						</div>
-					</div>
-				</div>
+      <div id="run1">
+        <h4>2. Run the Nullness Checker</h4>
 
+        <p><b>Run the Nullness Checker</b> to see how it can warn you
+        about this error at compile time.</p>
 
-				<p>The following error will be produced.</p>
+        <div class="well">
+          <div class="row">
+            <div class="span5">
+              <ol style="float: left">
+                <li>Right-click on NullnessExample.java.</li>
 
-				<pre>
+                <li>Open the "Checker Framework" sub-menu.</li>
+
+                <li>Open the "Run Built-In Checker" sub-menu.</li>
+
+                <li>Select "Nullness Checker".</li>
+              </ol>
+            </div>
+
+            <div class="span6"><img style="display: relative;" src=
+            "images/select_nullness.png" alt="menu tree to run the Nullness Checker"></div>
+          </div>
+        </div>
+
+        <p>The following error will be produced.</p>
+        <pre>
 dereference of possibly-null reference myObject
         System.out.println(myObject.toString());
 </pre>
-			</section>
-			<section id="error">
-				<h4>3. Correct the Code</h4>
-				<p>
-					<b>Change <code>myObject</code></b> to some non-null value.
-				</p>
-				<pre>
+      </div>
+
+      <div id="error">
+        <h4>3. Correct the error</h4>
+
+        <p>Edit the code to <b>initialize the <code>myObject</code> variable</b>
+        to some non-null value.</p>
+        <pre>
 public class NullnessExample {
     public static void main(String[] args) {
         Object myObject = <b>new Object()</b>;
@@ -130,39 +157,33 @@ public class NullnessExample {
     }
 }
 </pre>
-			</section>
-			<section id="run2">
-				<h4>4. Re-run the checker</h4>
-				<p>
-					<b>Re-run the checker</b>. No errors should be produced.
-				<p>
-				<p>This was a very simple example to show how to use the Checker
-					Framework in Eclipse. The next example is a little more complex.</p>
-		</div>
-	</section>
-	<section id="end">
-		<div class="page-header short">
-			<h2>
-				<small>Next, try <a href="user-input-eclipse.html">
-						Validating User Input</a>, an example using the Regex Checker
-				</small>
-			</h2>
-		</div>
+      </div>
 
-	</section>
+      <div id="run2">
+        <h4>4. Re-run the Nullness Checker</h4>
 
+        <p>No errors should be produced.</p>
+      </div>
 
+      <p>This was a very simple example to show how to use the Checker Framework
+      in Eclipse.
+      The next example is a little more complex.</p>
+    </div>
+  </div>
 
-	<!--
+  <div id="end">
+    <div class="page-header short">
+      <h2><small>Next, try <a href="user-input-eclipse.html">Validating
+      User Input</a>, an example using the Regex Checker.</small></h2>
+    </div>
+  </div><!--
 <div class="bottom_liner well">
     <a href="#">Top</a>
 </div>
 -->
-
+  <!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath 
+ -->
+  <!--  LocalWords:  NullnessChecker plugin's hg
+ -->
 </body>
 </html>
-
-<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath 
- -->
-<!--  LocalWords:  NullnessChecker plugin's hg
- -->

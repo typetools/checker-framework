@@ -1,210 +1,243 @@
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
 <html lang="en">
 <head>
-<title>Checker Framework Tutorial - Writing an Encryption Checker - Commandline</title>
+  <meta name="generator" content=
+  "HTML Tidy for Linux (vers 25 March 2009), see www.w3.org">
 
-<link href="bootstrap/css/bootstrap.css" rel="stylesheet" />
-<script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
-
-<link href="css/main.css" rel="stylesheet" />
-<link rel="icon" type="image/png" href="http://types.cs.washington.edu/checker-framework/favicon-checkerframework.png" />
-
-</head>
+  <title>Checker Framework Tutorial - Writing an Encryption Checker -
+  Command Line</title>
+  <link href="bootstrap/css/bootstrap.css" rel="stylesheet" type=
+  "text/css">
+  <script type="text/javascript" src="bootstrap/js/bootstrap.min.js">
+</script>
+  <link href="css/main.css" rel="stylesheet" type="text/css">
+  <link rel="icon" type="image/png" href=
+  "http://types.cs.washington.edu/checker-framework/favicon-checkerframework.png">
+  </head>
 
 <body>
+  <div class="top_liner"></div>
 
- <div class="top_liner"></div>
- <div class="navbar navbar-inverse navbar-fixed-top" style="border-bottom: 1px solid #66d;">
-  <div class="navbar-inner">
-   <div class="contained">
-    <ul class="nav">
-     <li class="heading">Checker Framework:
-      </h4>
-     </li>
-     <li><a href="http://checkerframework.org/">Main Site</a></li>
-     <li><a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">Manual</a></li>
-     <li><a href="https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">Discussion List</a></li>
-     <li><a href="http://code.google.com/p/checker-framework/issues/list">Issue Tracker</a></li>
-     <li><a href="http://code.google.com/p/checker-framework/source/checkout">Source Code</a></li>
-     <li><a href="http://types.cs.washington.edu/checker-framework/eclipse/">Eclipse Plugin</a></li>
-     <li class="active"><a href="http://types.cs.washington.edu/checker-framework/tutorial/">Tutorial</a></li>
-    </ul>
-   </div>
+  <div class="navbar navbar-inverse navbar-fixed-top" style=
+  "border-bottom: 1px solid #66d;">
+    <div class="navbar-inner">
+      <div class="contained">
+        <ul class="nav">
+          <li class="heading">Checker Framework:</li>
+
+          <li><a href="http://checkerframework.org/">Main Site</a></li>
+
+          <li><a href=
+          "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">
+          Manual</a></li>
+
+          <li><a href=
+          "https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">
+          Discussion List</a></li>
+
+          <li><a href=
+          "http://code.google.com/p/checker-framework/issues/list">Issue
+          Tracker</a></li>
+
+          <li><a href=
+          "http://code.google.com/p/checker-framework/source/checkout">Source
+          Code</a></li>
+
+          <li><a href=
+          "http://types.cs.washington.edu/checker-framework/eclipse/">Eclipse
+          Plugin</a></li>
+
+          <li class="active"><a href=
+          "http://types.cs.washington.edu/checker-framework/tutorial/">Tutorial</a></li>
+        </ul>
+      </div>
+    </div>
+  </div><img src="CFLogo.png" alt="Checker Framework logo">
+
+  <div class="page-header short" style=
+  "border-bottom: 1px solid #EEE; border-top: none;">
+    <h1>Checker Framework Tutorial</h1>
+
+    <h2><small>Previous <a href="security-error-cmd.html">Finding a
+    Security Error</a>, Download <a href="../sourcefiles.zip">Example
+    Sources</a></small></h2>
   </div>
- </div>
-	<img src="CFLogo.png" alt="Checker Framework logo" />
-	<div class="page-header short"
-		style="border-bottom: 1px solid #EEE; border-top: none;">
-		<h1>Checker Framework Tutorial</h1>
-		<h2>
-			<small>Previous <a href="security-error-cmd.html">Finding
-					a Security Error</a> , Download <a href="../sourcefiles.zip">
-					Example Sources</a></small>
-		</h2>
-	</div>
 
-	<section id="top">
-		<div class="page-header short" style="border-top: none;">
+  <div id="top">
+    <div class="page-header short" style="border-top: none;">
+      <h2>Writing an Encryption Checker
+      <small><em>Optional</em></small></h2>
+    </div>
+  </div>
 
-			<h2>
-				Writing an Encryption Checker <small><em> Optional</em></small>
-			</h2>
-		</div>
+  <div id="introduction">
+    <p>This section of the tutorial is only for those who are interested
+    in writing their own type-checkers. Please feel free to skip this
+    section.</p><!--Copied from the manual-->
 
-		<section id="introduction">
-			<p>This section of the tutorial is only for those who are
-				interested in writing their own type-checkers. Please feel free to
-				skip this section.</p>
+    <p>Although the Checker Framework ships with <a href=
+    "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#introduction">
+    many checkers</a>, you may wish to write your own checker because
+    there are other run-time problems you wish to prevent.  If you do
+    not wish to write a new type-checker, feel free to skip this section
+    of the tutorial.</p>
+  </div>
 
-			<!--Copied from the manual-->
-			<p>
-				Although the Checker Framework ships with <a
-					href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#introduction">several
-					checkers</a>, it is often useful to write a custom checker.
-				Perhaps there are other runtime exceptions you wish to prevent or
-				maybe other properties of data that should always hold. In both
-				these cases and others, you you might wish to write your own type
-				checker. This section of the tutorial is for those who are
-				interested in writing their own type-checkers. If you do not wish to
-				write a new type-checker, feel free to skip this section.
-			</p>
-			This example will explain how to do so.
-			</p>
+  <div id="outline">
+    <div class="well">
+      <h5>Outline</h5>
 
-			<p>
-				Consider a hypothetical Encrypted type qualifier, which denotes that
-				the representation of an object (such as a String, CharSequence, or
-				byte[]) is encrypted. This project has three source files: <a
-					href="../src/myqual/Encrypted.java"> Encrypted.java</a> and
-					<a href="../src/myqual/PossibleUnencrypted.java"> PossibleUnencrypted.java</a> , the type
-				annotation definitions, and <a
-					href="../src/encrypted/EncryptionDemo.java">EncryptedDemo.java</a>
-				, the example program that use the Encrypted checker.
-			</p>
-		</section>
-		<section id="outline">
-			<div class="well">
-				<h5>Outline</h5>
-				<ol>
-					<li><a href="#annotation">Write type annotation
-							definitions</a></li>
-					<li><a href="#run1">Run the Encryption Checker</a>--2 errors</li>
-					<li><a href="#error1">Suppress the first error</a></li>
-					<li><a href="#run2">Run the Encryption Checker</a>--1 error</li>
-					<li><a href="#error2">Correct the second error</a></li>
-				</ol>
-			</div>
-		</section>
-		<section id="annotation">
-			<h4>1. Write the type annotation definitions</h4>
-			<p>
-				For this example, the annotation definitions have already been
-				written, Encrypted.java and PossibleUnencrypted.java. Please see the <a
-					href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#writing-a-checker">
-					manual</a> for further explanation of this file.
-			</p>
-			<p>This code needs to be compiled with the Checker Framework
-				compiler.</p>
-			<pre>
-$ javacheck myqual/Encrypted.java
-$ javacheck myqual/PossibleUnencrypted.java
-                </pre>
-			<p>The resulting .class files should either be on your classpath,
-				or on the processor path (set via the -processorpath command-line
-				option to javac).</p>
-		</section>
-		<section id="run1">
-			<h4>2. Run the Encryption Checker</h4>
+      <ol>
+        <li><a href="#setup">An Encryption Checker</a>
+        </li>
 
-			<p>
-				The
-				<code>@Encrypted</code>
-				annotations have already been written in EncryptionDemo.java.  Types
-				without annotations are defaulted to <code>@PossibleUnencrypted</code>. <b>Invoke
-					the compiler</b> with the Subtyping Checker, specifying the @Encrypted and @PossibleUnencrypted
-				annotations using the -Aquals option. You should add the Encrypted and PossibleUnencrypted
-				classfiles to the processor classpath:
-			</p>
+        <li><a href="#annotation">Write type annotation
+        definitions</a></li>
 
-			<pre>
-javacheck  -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myqual.Encrypted,myqual.PossibleUnencrypted encrypted/EncryptionDemo.java
+        <li><a href="#run1">Run the Encryption Checker &mdash; 2 errors</a></li>
+
+        <li><a href="#error1">Suppress the first error</a></li>
+
+        <li><a href="#run2">Re-run the Encryption Checker &mdash; 1 error</a></li>
+
+        <li><a href="#error2">Correct the second error</a></li>
+
+        <li><a href="#run3">Re-run the Encryption Checker &mdash; no errors</a></li>
+
+        <li><a href="#learnmore">Learn more about writing your own checker</a></li>
+
+      </ol>
+    </div>
+  </div>
+
+  <div id="setup">
+    <h4>1. An Encryption Checker</h4>
+
+    <p>As an example, suppose that you wish to only allow encrypted
+    information to be sent over the internet. To do so, you can write an
+    Encryption Checker.</p>
+  </div>
+
+  <div id="annotation">
+    <h4>2. Write the type annotation definitions</h4>
+
+    <p>For this example, the annotation definitions have already been
+    written for you and appear in files Encrypted.java and PossiblyUnencrypted.java.</p>
+
+    <p><b>Compile the annotation definitions.</b></p>
+    <pre>
+$ <strong>javacheck myqual/Encrypted.java myqual/PossiblyUnencrypted.java</strong>
+</pre>
+  </div>
+
+  <div id="run1">
+    <h4>3. Run the Encryption Checker</h4>
+
+    <p>The <code>@Encrypted</code> annotations have already been written
+    in file EncryptionDemo.java. The default for types without annotations is
+    <code>@PossiblyUnencrypted</code>.</p>
+
+    <p><b>Invoke the compiler</b> with the Subtyping Checker.
+    Specify the @Encrypted and @PossiblyUnencrypted annotations using the -Aquals
+    command-line option, and add the Encrypted and PossiblyUnencrypted
+    classfiles to the processor classpath:</p>
+    <pre>
+$ <strong>javacheck -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted encrypted/EncryptionDemo.java</strong>
 encrypted/EncryptionDemo.java:21: error: [assignment.type.incompatible] incompatible types in assignment.
         /*@Encrypted*/ int encryptInt = (character + OFFSET) % Character.MAX_VALUE ;
                                                              ^
-  found   : @PossibleUnencrypted int
+  found   : @PossiblyUnencrypted int
   required: @Encrypted int
 encrypted/EncryptionDemo.java:32: error: [argument.type.incompatible] incompatible types in argument.
         sendOverInternet(password);
                          ^
-  found   : @PossibleUnencrypted String
+  found   : @PossiblyUnencrypted String
   required: @Encrypted String
 2 errors
-                </pre>
-		</section>
-		<section id="error1">
-			<h4>3. Suppress the First Error</h4>
+</pre>
+  </div>
 
+  <div id="error1">
+    <h4>4. Suppress the First Error</h4>
 
-			<p>The first error needs to be suppressed, because the string on
-				the left is considered "encrypted" in this encryption scheme. All
-				@SuppressWarnings should have a comment explaining why suppressing
-				the warning is the correct action. See the correction below.</p>
-
-
-			<pre>
-// The SuppressWarnings is necessary because, the type system is not capable of
-// validating that the return value is encrypted. -SOM 01/25/2013
-@SuppressWarnings("encrypted")
+    <p>The first error needs to be suppressed, because the string on the
+    left is considered "encrypted" in this encryption scheme. All
+    <code>@SuppressWarnings</code> should have a comment explaining why
+    suppressing the warning is the correct action. See the correction
+    below.</p>
+    <pre>
+<b>@SuppressWarnings("encrypted")  // this is the encryption algorithm</b>
 private /*@Encrypted*/ char encryptCharacter(char character) {
-                </pre>
-		</section>
-		<section id="run2">
-			<h4>4. Run the Encryption Checker</h4>
+</pre>
+  </div>
 
-			<p>You should just see the following error.</p>
+  <div id="run2">
+    <h4>5. Re-run the Encryption Checker</h4>
 
-			<pre>
+    <p>You will see the following error:</p>
+    <pre>
+$ <strong>javacheck -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted encrypted/EncryptionDemo.java</strong>
 encrypted/EncryptionDemo.java:34: error: [argument.type.incompatible] incompatible types in argument.
         sendOverInternet(password);
                          ^
-  found   : @PossibleUnencrypted String
+  found   : @PossiblyUnencrypted String
   required: @Encrypted String
 1 error
-                </pre>
+</pre>
 
-			<p>This is a real error, because the programmer is trying to send
-				a password over the internet without encrypting it first.</p>
-		</section>
-		<section id="error2">
-			<h4>5. Correct the Second Error</h4>
-			<p>The password should be encrypted before it is sent over the
-				internet. The correction is below.</p>
-			<pre>
+    <p>This is a real error, because the programmer is trying to send a
+    password over the Internet without encrypting it first.</p>
+  </div>
+
+  <div id="error2">
+    <h4>6. Correct the Second Error</h4>
+
+    <p>The password should be encrypted before it is sent over the
+    Internet. The correction is below.</p>
+    <pre>
 void sendPassword() {
-   String password = getUserPassword();
-   sendOverInternet(encrypt(password));
+    String password = getUserPassword();
+    sendOverInternet(<b>encrypt(</b>password<b>)</b>);
 }
-                </pre>
-		</section>
+</pre>
+  </div>
 
-		<section id="bottom">
-			<div class="page-header short">
-				<h2>
-					The End<small><strong> Return to the <a
-							href="../index.html">main page</a> of the Tutorial</strong></small>.
-				</h2>
-			</div>
+  <div id="run3">
+    <h4>7. Re-run the Encryption Checker</h4>
 
-		</section>
-		<!--
-             <div class="bottom_liner well">
-             <a href="#">Top</a>
-             </div>
-             -->
+    <pre>
+$ <strong>javacheck -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted encrypted/EncryptionDemo.java</strong>
+</pre>
+
+    <p>There should be no errors.</p>
+
+  </div>
+
+  <div id="learnmore">
+    <h4>8. Learn more about writing your own checker</h4>
+
+    <p>For further explanations, see the Checker Framework manual, chapter
+    <a href=
+    "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#writing-a-checker">How
+    to create a new checker</a>.</p>
+  </div>
+
+  <div id="end">
+    <div class="page-header short">
+      <h2>The end of the Checker Framework Tutorial <small><strong>Return
+      to the <a href="../index.html">main page</a> of the
+      Tutorial.</strong></small></h2>
+    </div>
+  </div>
+<!--
+<div class="bottom_liner well">
+    <a href="#">Top</a>
+</div>
+-->
+  <!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath
+ -->
+  <!--  LocalWords:  NullnessChecker plugin's hg
+ -->
 </body>
 </html>
-
-<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath
- -->
-<!--  LocalWords:  NullnessChecker plugin's hg
- -->

@@ -1,83 +1,107 @@
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
 <html lang="en">
 <head>
-<title>Checker Framework Tutorial - Security Error - Command Line</title>
+  <meta name="generator" content=
+  "HTML Tidy for Linux (vers 25 March 2009), see www.w3.org">
 
-<link href="bootstrap/css/bootstrap.css" rel="stylesheet" />
-<script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
-
-<link href="css/main.css" rel="stylesheet" />
-<link rel="icon" type="image/png"	href="http://types.cs.washington.edu/checker-framework/favicon-checkerframework.png" />
-
-</head>
+  <title>Checker Framework Tutorial - Security Error - Command
+  Line</title>
+  <link href="bootstrap/css/bootstrap.css" rel="stylesheet" type=
+  "text/css">
+  <script type="text/javascript" src="bootstrap/js/bootstrap.min.js">
+</script>
+  <link href="css/main.css" rel="stylesheet" type="text/css">
+  <link rel="icon" type="image/png" href=
+  "http://types.cs.washington.edu/checker-framework/favicon-checkerframework.png">
+  </head>
 
 <body>
+  <div class="top_liner"></div>
 
- <div class="top_liner"></div>
- <div class="navbar navbar-inverse navbar-fixed-top" style="border-bottom: 1px solid #66d;">
-  <div class="navbar-inner">
-   <div class="contained">
-    <ul class="nav">
-     <li class="heading">Checker Framework:
-      </h4>
-     </li>
-     <li><a href="http://checkerframework.org/">Main Site</a></li>
-     <li><a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">Manual</a></li>
-     <li><a href="https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">Discussion List</a></li>
-     <li><a href="http://code.google.com/p/checker-framework/issues/list">Issue Tracker</a></li>
-     <li><a href="http://code.google.com/p/checker-framework/source/checkout">Source Code</a></li>
-     <li><a href="http://types.cs.washington.edu/checker-framework/eclipse/">Eclipse Plugin</a></li>
-     <li class="active"><a href="http://types.cs.washington.edu/checker-framework/tutorial/">Tutorial</a></li>
-    </ul>
-   </div>
+  <div class="navbar navbar-inverse navbar-fixed-top" style=
+  "border-bottom: 1px solid #66d;">
+    <div class="navbar-inner">
+      <div class="contained">
+        <ul class="nav">
+          <li class="heading">Checker Framework:</li>
+
+          <li><a href="http://checkerframework.org/">Main Site</a></li>
+
+          <li><a href=
+          "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">
+          Manual</a></li>
+
+          <li><a href=
+          "https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">
+          Discussion List</a></li>
+
+          <li><a href=
+          "http://code.google.com/p/checker-framework/issues/list">Issue
+          Tracker</a></li>
+
+          <li><a href=
+          "http://code.google.com/p/checker-framework/source/checkout">Source
+          Code</a></li>
+
+          <li><a href=
+          "http://types.cs.washington.edu/checker-framework/eclipse/">Eclipse
+          Plugin</a></li>
+
+          <li class="active"><a href=
+          "http://types.cs.washington.edu/checker-framework/tutorial/">Tutorial</a></li>
+        </ul>
+      </div>
+    </div>
+  </div><img src="CFLogo.png" alt="Checker Framework logo">
+
+  <div class="page-header short" style=
+  "border-bottom: 1px solid #EEE; border-top: none;">
+    <h1>Checker Framework Tutorial</h1>
+
+    <h2><small>Previous <a href="user-input-cmd.html">Validating User
+    Input</a></small></h2>
   </div>
- </div>
-	<img src="CFLogo.png" alt="Checker Framework logo" />
-	<div class="page-header short"
-		style="border-bottom: 1px solid #EEE; border-top: none;">
-		<h1>Checker Framework Tutorial</h1>
-		<h2>
-			<small>Previous <a href="user-input-cmd.html">Validating
-					User Input</a></small>
-		</h2>
-	</div>
 
-	<section id="introduction">
-		<div class="page-header short" style="border-top: none;">
+  <div id="introduction">
+    <div class="page-header short" style="border-top: none;">
+      <h2>Finding a Security Error</h2>
+    </div>
 
-			<h2>Finding a Security Error</h2>
-		</div>
+    <p>This example uses the Tainting Checker to verify that user input
+    does not contain SQL statements, thus preventing SQL injection. (If
+    you have not already done so, download <a href=
+    "../sourcefiles.zip">the tutorial sourcefiles.)</a></p>
 
-		<p>
-			This example uses the <a href="../src/personalblog-demo/">personalblog-demo</a>
-			project and uses the Tainting Checker to verify that user input does
-			not contain SQL statements to avoid SQL injection. (If you have not
-			already done so, download <a href="../sourcefiles.zip"> the
-				tutorial sourcefiles.)</a>
-		<p>
-		<div class="well">
-			<h5>Outline</h5>
-			<ol>
-				<li><a href="#run1">Run the Tainting Checker using the Ant
-						buildfile</a></li>
-				<li><a href="#error1">Correct the error</a></li>
-				<li><a href="#run2">Run the Tainting Checker--a new error
-						is found</a></li>
-				<li><a href="#error2">Correct the new error</a></li>
-				<li><a href="#run3">Run the Tainting Checker--no errors</a></li>
-			</ol>
-		</div>
-		<section id="run1">
-			<h4>1. Build with provided Ant buildfile.</h4>
-			<p>
-				Please see the <a
-					href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#ant-task">
-					manual</a> for a complete discussion of using the Checker Framework and
-				the Ant build tool. Below is the output of the buildfile
-			</p>
+    <div class="well">
+      <h5>Outline</h5>
 
-			<pre>
-$ ant
+      <ol>
+        <li><a href="#run1">Run the Tainting Checker &mdash; 1 error
+        found</a></li>
+
+        <li><a href="#error1">Correct the error</a></li>
+
+        <li><a href="#run2">Re-run the Tainting Checker &mdash; a new error is
+        found</a></li>
+
+        <li><a href="#error2">Correct the new error</a></li>
+
+        <li><a href="#run3">Re-run the Tainting Checker &mdash; no errors</a></li>
+      </ol>
+    </div>
+
+    <div id="run1">
+      <h4>1. Run the Tainting Checker &mdash; 1 error found</h4>
+
+      <p>Run the buildfile:
+      <br/> (The Ant buildfile
+      makes use of the <a href=
+      "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#ant-task">
+      Checker Framework support for Ant</a>.)</p>
+      <pre>
+$ <b>cd personalblog-demo</b>
+$ <b>ant</b>
 Buildfile: .../personalblog-demo/build.xml
 
 clean:
@@ -85,7 +109,7 @@ clean:
 check-tainting:
     [mkdir] Created dir: .../personalblog-demo/bin
 [jsr308.javac] Compiling 2 source files to .../personalblog-demo/bin
-[jsr308.javac] javac 1.8.0-jsr308-1.9.0
+[jsr308.javac] javac 1.8.0-jsr308-1.9.1
 [jsr308.javac] .../personalblog-demo/src/net/eyde/personalblog/service/PersonalBlogService.java:175: error: incompatible types in argument.
 [jsr308.javac]                     "where post.category like '%", category,
 [jsr308.javac]                                                    ^
@@ -100,33 +124,32 @@ Total time: 2 seconds
 
 </pre>
 
-			<p>
-				The checker issues an error for
-				<code>.getPostsByCategory()</code>
-				because a possibly tainted string category is used in the query
-				construction.
-			</p>
-		</section>
+      <p>The checker issues an error for <code>getPostsByCategory()</code>
+      because the possibly-tainted string <code>category</code> is used in
+      the query construction. This string could contain SQL statements
+      that could taint the database. The programmer must ensure that
+      <code>category</code> does not contain malicious SQL code.</p>
+    </div>
 
-		<section id="error1">
-			<h4>2. Correct the Error</h4>
+    <div id="error1">
+      <h4>2. Correct the Error</h4>
 
-			<p>
-				To correct this, <b> add <code>@Untainted</code>
-				</b> to category parameter declaration.
-			<pre>
-     public List&lt;?&gt; getPostsByCategory(@Untainted String category) throws ServiceException {
-</pre>
+      <p>To correct this error, <b>add <code>@Untainted</code></b> to the
+      type of the <code>category</code> parameter.</p>
+      <pre>
+     public List&lt;?&gt; getPostsByCategory(<b>@Untainted</b> String category) throws ServiceException {
+</pre>This forces clients to pass an <code>@Untainted</code> value, which
+was the intention of the designer of the <code>getPostsByCategory</code>
+method.
+    </div>
 
-			This forces clients to pass an @Untainted value, which was the
-			intention of the designer of the getPostsByCategory method.
-			</p>
-		</section>
+    <div id="run2">
+      <h4>3. Re-run the Tainting Checker &mdash; a new error is found</h4>
 
-		<section id="run2">
-			<h4>3. Rebuild with Ant</h4>
-			<pre>
-$ ant
+      <p>Run the Tainting Checker again.</p>
+
+      <pre>
+$ <strong>ant</strong>
 Buildfile: .../personalblog-demo/build.xml
 
 clean:
@@ -135,10 +158,10 @@ clean:
 check-tainting:
     [mkdir] Created dir: .../personalblog-demo/bin
 [jsr308.javac] Compiling 2 source files to .../personalblog-demo/bin
-[jsr308.javac] javac 1.8.0-jsr308-1.9.0
+[jsr308.javac] javac 1.8.0-jsr308-1.9.1
 [jsr308.javac] .../personalblog-demo/src/net/eyde/personalblog/struts/action/ReadAction.java:58: error: incompatible types in argument.
-[jsr308.javac]                   	pblog.getPostsByCategory(reqCategory));
-[jsr308.javac]                   	                         ^
+[jsr308.javac]                          pblog.getPostsByCategory(reqCategory));
+[jsr308.javac]                                                   ^
 [jsr308.javac]   found   : @Tainted String
 [jsr308.javac]   required: @Untainted String
 [jsr308.javac] 1 error
@@ -150,34 +173,26 @@ Total time: 2 seconds
 
 </pre>
 
-			<p>
-				There is an error in
-				<code>ReadAction.executeSub()</code>
-				, which is a client of
-				<code>getPostsByCategory</code>
-				. The
-				<code>reqCategory</code>
-				is accepted from t he user (from request object) without validation.
-			</p>
-		</section>
+      <p>There is an error in <code>ReadAction.executeSub()</code>, which
+      is a client of <code>getPostsByCategory</code>. The
+      <code>reqCategory</code> is accepted from the user (from request
+      object) without validation.</p>
+    </div>
 
-		<section id="error2">
-			<h4>3. Correct the Error</h4>
-
-			To correct, <b> use the <code> validate</code> method
-			</b> as shown below.
-			</p>
-			<pre>
-    String reqCategory = <b>validate</b>(cleanNull(request.getParameter("cat")));
+    <div id="error2">
+      <h4>4. Correct the New Error</h4>To correct, <b>use the
+      <code>validate</code> method</b> as shown below.
+      <pre>
+    String reqCategory = <b>validate(</b>cleanNull(request.getParameter("cat"))<b>)</b>; 
 </pre>
-		</section>
+    </div>
 
-		<section id="run3">
-			<h4>4. Rebuild with Ant</h4>
+    <div id="run3">
+      <h4>5. Re-run the Tainting Checker &mdash; no errors</h4>
 
-			There should be no errors.
-			<pre>
-$ ant
+      <p>There should be no errors.</p>
+      <pre>
+$ <strong>ant</strong>
 Buildfile: .../personalblog-demo/build.xml
 
 clean:
@@ -186,33 +201,40 @@ clean:
 check-tainting:
     [mkdir] Created dir: .../personalblog-demo/bin
 [jsr308.javac] Compiling 2 source files to .../personalblog-demo/bin
-[jsr308.javac] javac 1.8.0-jsr308-1.9.0
+[jsr308.javac] javac 1.8.0-jsr308-1.9.1
 
 BUILD SUCCESSFUL
 Total time: 2 seconds
 </pre>
 
-		</section>
-		<section id="installation">
-			<div class="page-header short">
-				<h2>
-					<small> Next, try <a href="encryption-checker-cmd.html">
-							Writing an Encryption Checker</a> or return to the <a
-						href="../index.html">main page</a> of the Tutorial.
-					</small>
-				</h2>
-			</div>
+      <p>You are done with the personalblog-demo project, 
+      so return to the parent directory</p>
 
-		</section>
-		<!--
+      <pre>
+$ <strong>cd ..</strong>
+</pre>
+
+      <p>For a complete discussion of how to use the Tainting Checker,
+      please read the <a href=
+      "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#tainting-checker">
+      Tainting Checker chapter</a> in the Checker Framework manual.</p>
+    </div>
+  </div>
+
+  <div id="installation">
+    <div class="page-header short">
+      <h2><small>Next, try <a href="encryption-checker-cmd.html">Writing
+      an Encryption Checker</a> or return to the <a href=
+      "../index.html">main page</a> of the Tutorial.</small></h2>
+    </div>
+  </div><!--
 <div class="bottom_liner well">
     <a href="#">Top</a>
 </div>
 -->
+  <!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath
+ -->
+  <!--  LocalWords:  NullnessChecker plugin's hg
+ -->
 </body>
 </html>
-
-<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath
- -->
-<!--  LocalWords:  NullnessChecker plugin's hg
- -->

@@ -64,6 +64,7 @@ the answers, or other questions to include here.
 
 \faqtocpara{\ref{faq-other-tools-section}: Relationship to other tools}
 \\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs)?
+\\ \ref{faq-eclipse}: How does the Checker Framework compare with Eclipse's Null Analysis?
 \\ \ref{faq-jml}: How does pluggable type-checking compare with JML?
 \\ \ref{faq-checker-framework-part-of-java}: Is the Checker Framework an official part of Java?
 \\ \ref{faq-jsr-305}: What is the relationship between the Checker Framework and JSR 305?
@@ -1032,6 +1033,46 @@ details on the comparison, see Section~\ref{other-tools}.  For a case study
 that compared the nullness analysis of FindBugs, Jlint, PMD, and the
 Checker Framework, see section 6 of the paper
 \href{http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008.pdf}{``Practical pluggable types for Java''}~\cite{PapiACPE2008}.
+
+
+\subsection{How does the Checker Framework compare with Eclipse's null analysis?\label{faq-eclipse}}
+
+Eclipse comes with a
+\href{http://help.eclipse.org/luna/index.jsp?topic=\%2Forg.eclipse.jdt.doc.user\%2Ftasks\%2Ftask-using_null_annotations.htm}{null analysis} that
+can detect potential null pointer errors in your code.  Eclipse's built-in
+analysis differs from the Checker Framework in several respects.
+
+The Checker Framework's Nullness Checker
+(see~\chapterpageref{nullness-checker}) is more precise:  it does a deeper
+semantic analysis, so it issues fewer false positives than Eclipse.  For
+example, the Nullness Checker handles initialization and map key checking,
+it supports method pre- and post-conditions, and it includes a powerful
+dataflow analysis.
+
+Eclipse assumes that all code is multi-threaded, which cripples its local
+type inference.  By contrast, the Checker Framework allows the user to
+specify whether code will be run concurrently or not via the
+\<-AconcurrentSemantics> command-line option (see
+Section~\ref{faq-concurrency}).
+
+The Checker Framework is easier to run in integration scripts or in
+environments where not all developers are using Eclipse.
+% It is possible to use ecj as one's compiler:
+% https://wiki.eclipse.org/JDT/FAQ#Can_I_use_JDT_outside_Eclipse_to_compile_Java_code.3F
+
+Eclipse handles only nullness properties and is not extensible, whereas the
+Checker Framework comes with over 20 type-checkers (for a list,
+see~\chapterpageref{introduction}) and is extensible to more properties.
+
+There are also some benefits to Eclipse's Null Analysis.
+It is faster than the Checker Framework, in part because it is less featureful.
+It is built into Eclipse, so you do not have to download and install a
+separate Eclipse plugin as you do for the Checker Framework (see
+Section~\ref{eclipse-plugin}).
+Its IDE integration is tighter and slicker.
+
+(If you know of other differences, please let us know at
+checker-framework-dev@googlegroups.com so we can update the manual.)
 
 
 \subsection{How does pluggable type-checking compare with JML?\label{faq-jml}}

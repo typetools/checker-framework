@@ -506,7 +506,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
             <pre>Resolved issues:  200, 300, 332, 336, 357, 359, 373, 374</pre>
             You can compute the relevant numbers by visiting these two URLs:<br/>
             <a href="https://code.google.com/p/checker-framework/issues/list?q=status%3APushed">https://code.google.com/p/checker-framework/issues/list?q=status%3APushed</a><br/>
-            <a href="https://code.google.com/p/checker-framework/issues/list?can=1&q=closed-after%3A2014%2F09%2F25">https://code.google.com/p/checker-framework/issues/list?can=1&q=closed-after%3A2014%2F09%2F25</a><br/>
+            <a href="https://code.google.com/p/checker-framework/issues/list?can=1&amp;q=closed-after%3A2014%2F09%2F25">https://code.google.com/p/checker-framework/issues/list?can=1&q=closed-after%3A2014%2F09%2F25</a><br/>
             though you will need to adjust the date in the latter URL to be the date of the previous release.
             <br/><br/>
 
@@ -646,7 +646,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
             This step deploys the artifacts to the Central repository and prompts the user to
             close the artifacts.  Later, you will be prompted to release the staged artifacts after we commit
             the release to our Google Code repositories. <br/><br/>
-            For more information on deploying to the Central Repository see:</br>
+            For more information on deploying to the Central Repository see:<br/>
             <a href="https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide">https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide</a>
         </td>
     </tr>
@@ -776,7 +776,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
                 in the release that asks you to change all &quot;Pushed&quot; issues to &quot;Fixed&quot;; these
                 issues should all be included in the changelog.  Search for the word &quot;issues&quot; in the
                 changelog to see an example. Here is an example
-<a href="https://code.google.com/p/checker-framework/issues/list?can=1&q=status%3Apushed&sort=-closed&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary+Closed&cells=tiles">query</a>
+<a href="https://code.google.com/p/checker-framework/issues/list?can=1&q=status%3Apushed&amp;sort=-closed&amp;colspec=ID+Type+Status+Priority+Milestone+Owner+Summary+Closed&amp;cells=tiles">query</a>
                 to help find these issues for the Checker Framework only. It is a good idea to ask the core
                 team of developers if they have any issues they have pushed but have not marked as pushed,
                 and generally if they have any changes they would like to be listed in the changelog that
@@ -897,6 +897,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
                 changes before building anyways.
             </li>
         </ol>
+        <p>
         <code><pre>
 Traceback (most recent call last):
 File &quot;release_build.py&quot;, line 313, in &lt;module&gt;
@@ -911,6 +912,7 @@ File &quot;/scratch/jsr308-release/scripts/release_utils.py&quot;, line 426, in 
 raise Exception(&quot;Could not recognize strip output: (%s, %s, %s)&quot; % (process.returncode, out, err))
 Exception: Could not recognize strip output: (0, , )
         </pre></code>
+        </p>
 
         <h4>Tasks:</h4>
         <ul>
