@@ -1120,11 +1120,18 @@ methods precisely (e.g., \<java.io.BufferedReader.ready()>).
 %% TODO: we may eventually have an @SpecField annotation
 
 (A side note:  The formal parameter syntax \<\#1> is less natural in source code
-than writing the formal parameter name.  This syntax is necessary because
-in the \<.class> file, no parameter name information is available.  Running
-the compiler without a checker should create legal annotations in the
-\<.class> file, so we cannot rely on the checker to translate names to
-indices.)
+than writing the formal parameter name.  This syntax is necessary for
+separate compilation, when an annotated method has already been compiled
+into a \<.class> file and a client of that method is later compiled.
+In the \<.class> file, no formal parameter name information is available,
+so it is necessary to use a number to indicate a formal parameter.)
+%% At some point, we will start assuming that the .class file was created
+%% by the Checker Framework and this justification, and the #n syntax
+%% itself, will not be necessary.
+% Running
+% the compiler without a checker should create legal annotations in the
+% \<.class> file, so we cannot rely on the checker to translate names to
+% indices.
 
 
 \textbf{Limitations:}
