@@ -28,9 +28,7 @@ import com.sun.tools.javac.util.Context;
  *
  * A stub file can be used to add annotations to methods of classes, that
  * are only available in binary or the source of which cannot be edited.
- * For details, see the <a
- * href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#stub-creating-and-using">Checker
- * Framework Manual</a>.
+ * @checker_framework.manual #stub-creating-and-using Using stub classes
  */
 public class StubGenerator {
     /** The indentation for the class */
