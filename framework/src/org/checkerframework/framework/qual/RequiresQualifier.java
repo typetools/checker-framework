@@ -15,9 +15,7 @@ import java.lang.annotation.Target;
  * string. The qualifier is specified by {@code qualifier}.
  *
  * @author Stefan Heule
- * @see <a
- *      href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
- *      of Java expressions</a>
+ * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -26,9 +24,7 @@ public @interface RequiresQualifier {
     /**
      * The Java expressions for which the annotation need to be present.
      *
-     * @see <a
-     *      href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
-     *      of Java expressions</a>
+     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] expression();
 

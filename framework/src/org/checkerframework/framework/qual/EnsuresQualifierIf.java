@@ -19,9 +19,7 @@ import java.lang.annotation.Target;
  * This annotation is only applicable to methods with a boolean return type.
  *
  * @author Stefan Heule
- * @see <a
- *      href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
- *      of Java expressions</a>
+ * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -32,9 +30,7 @@ public @interface EnsuresQualifierIf {
      * The Java expressions for which the qualifier holds if the method
      * terminates with return value {@link #result()}.
      *
-     * @see <a
-     *      href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
-     *      of Java expressions</a>
+     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] expression();
 

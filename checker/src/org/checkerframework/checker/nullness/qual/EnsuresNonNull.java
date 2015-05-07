@@ -32,9 +32,7 @@ public @interface EnsuresNonNull {
      * The Java expressions that are ensured to be {@link NonNull} on successful
      * method termination.
      *
-     * @see <a
-     *      href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
-     *      of Java expressions</a>
+     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] value();
 }
