@@ -178,7 +178,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets path to the the first enclosing class tree, where class is
+     * Gets path to the first enclosing class tree, where class is
      * defined by the classTreeKinds method.
      *
      * @param path  the path defining the tree node
@@ -189,7 +189,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets path to the the first enclosing tree of the specified kind.
+     * Gets path to the first enclosing tree of the specified kind.
      *
      * @param path  the path defining the tree node
      * @param kind  the kind of the desired tree
@@ -200,7 +200,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Gets path to the the first enclosing tree with any one of the specified kinds.
+     * Gets path to the first enclosing tree with any one of the specified kinds.
      *
      * @param path  the path defining the tree node
      * @param kinds  the set of kinds of the desired tree

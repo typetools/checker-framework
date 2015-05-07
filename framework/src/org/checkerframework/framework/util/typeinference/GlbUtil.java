@@ -59,7 +59,7 @@ public class GlbUtil {
 
         final List<AnnotatedTypeMirror> glbTypes = new ArrayList<>();
 
-        //create a copy of all of the the types and apply the glb primary annotation
+        //create a copy of all of the types and apply the glb primary annotation
         final Set<AnnotationMirror> values = new HashSet<>(glbPrimaries.values());
         for (AnnotatedTypeMirror type : typeMirrors.keySet()) {
             if (type.getKind() != TypeKind.TYPEVAR
