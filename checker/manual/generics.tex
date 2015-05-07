@@ -251,7 +251,7 @@ You can write a type annotation on the bound of a wildcard:
 Conceptually, every wildcard has two bounds --- an upper bound and a lower
 bound.  Java only permits you to write the upper bound (with
 \code{<?\ extends SomeType>}) or the lower bound (with \code{<?\ super
-  OtherType>}), but not both; the the unspecified bound is implicitly the
+  OtherType>}), but not both; the unspecified bound is implicitly the
 top type
 \<Object> or the bottom type \<void>.  The Checker Framework is more
 flexible:  it lets you simultaneously write annotations on both the top and

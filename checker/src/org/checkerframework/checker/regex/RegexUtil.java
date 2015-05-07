@@ -279,7 +279,7 @@ public class RegexUtil {
   /**
    * Returns the argument as a {@code @Regex String} if it is a regex,
    * otherwise throws an error. The purpose of this method is to suppress Regex
-   * Checker warnings. Once the the Regex Checker supports flow-sensitivity, it
+   * Checker warnings. Once the Regex Checker supports flow-sensitivity, it
    * should be very rarely needed.
    * @param s string to check for being a regular expression
    * @return its argument

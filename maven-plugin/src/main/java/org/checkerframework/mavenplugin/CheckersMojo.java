@@ -206,7 +206,7 @@ public class CheckersMojo extends AbstractMojo {
 
     /**
      * Main control method for the Checker Maven Plugin.  Scans for sources, resolves classpath, and passes these
-     * arguments to the the checker compiler which is run on the command line.
+     * arguments to the checker compiler which is run on the command line.
      * @throws MojoExecutionException
      * @throws MojoFailureException
      */

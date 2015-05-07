@@ -67,7 +67,7 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
     }
 
     /**
-     * @return The the type_index that should represent supertype
+     * @return The type_index that should represent supertype
      */
     @Override
     public int getElementIndex() {
