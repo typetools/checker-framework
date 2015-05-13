@@ -66,7 +66,7 @@ public class AnnotationUtils {
      * the map are interned Strings, so they can be compared with ==.
      */
     private static final Map<AnnotationMirror, /*@Interned*/ String> annotationMirrorNames
-        = new HashMap<AnnotationMirror, /*@Interned*/ String>();
+        = CollectionUtils.createLRUCache(300);
 
     /**
      * Cache names of classes representing AnnotationMirrors for
