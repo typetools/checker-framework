@@ -5,8 +5,8 @@
 \begin{sloppypar}
 The Format String Checker detects and prevents use of incorrect format strings
 in format methods such as 
-\sunjavadoc{java/io/PrintStream.html\#printf(java.lang.String, java.lang.Object...)}{System.out.printf}
-and \sunjavadoc{java/lang/String.html\#format(java.lang.String, java.lang.Object...)}{String.format}.
+\sunjavadoc{java/io/PrintStream.html\#printf-java.lang.String-java.lang.Object...-}{System.out.printf}
+and \sunjavadoc{java/lang/String.html\#format-java.lang.String-java.lang.Object...-}{String.format}.
 \end{sloppypar}
 
 The Format String Checker warns you if you write an invalid format string,
@@ -18,7 +18,7 @@ Section~\ref{formatter-guarantees} provides more details.
 % BUG FINDER
 % The Format String Checker helps to prevent bugs that are the result of an
 % incorrect use of format methods such as 
-% \sunjavadoc{java/io/PrintStream.html\#printf(java.lang.String,java.lang.Object...)}{System.out.printf}.
+% \sunjavadoc{java/io/PrintStream.html\#printf-java.lang.String-java.lang.Object...-}{System.out.printf}.
 
 % VERIFICATION
 
@@ -59,9 +59,9 @@ The format specifier determines how the format argument is converted to a
 string.
 %% Redundant
 %  The Java standard library provides printf-style formatting in \emph{format methods} such as
-% \sunjavadoc{java/lang/String.html\#format(java.lang.String, java.lang.Object...)}{String.format}
+% \sunjavadoc{java/lang/String.html\#format-java.lang.String-java.lang.Object...-}{String.format}
 % and 
-% \sunjavadoc{java/io/PrintStream.html\#printf(java.lang.String,java.lang.Object...)}{System.out.printf}.
+% \sunjavadoc{java/io/PrintStream.html\#printf-java.lang.String-java.lang.Object...-}{System.out.printf}.
 A format specifier is introduced by a \code{\%} character. For example,
 \code{String.format("The \%s is \%d.","answer",42)} yields
 \code{"The answer is 42."}.  \code{"The \%s is \%d."} is

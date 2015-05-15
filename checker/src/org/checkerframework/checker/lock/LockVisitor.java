@@ -299,7 +299,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * Whether to skip a contract check based on whether the @GuardedBy
      * expression {@code expr} is valid for the tree {@code tree}
      * under the context {@code flowExprContext}
-     * if the the current path is within the expression
+     * if the current path is within the expression
      * of a synchronized block (e.g. bar in
      * synchronized(bar) { ... }
      *

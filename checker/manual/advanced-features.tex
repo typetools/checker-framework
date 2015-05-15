@@ -705,6 +705,16 @@ additional implementation work, are
 \item
   \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
   (see \chapterpageref{lock-checker})
+% This section is supposed to be brief, but for the Checker Framework
+% developers' reference, the two run-time tests that the Lock Checker
+% could support with additional implementation work are:
+% myLock.isHeldByCurrentThread() if myLock is an explicit lock of type
+% ReentrantLock.
+% java.lang.Thread.holdsLock(myLock) if myLock is an implicit lock
+% (acquired via a synchronized statement or method modifier).
+%
+% Note that the java.util.concurrent.locks.Lock interface does not include
+% a run-time test, but ReentrantLock does.
 \item
   \ahrefloc{propkey-checker}{Property File Checker} to ensure that valid
   keys are used for property files and resource bundles (see
@@ -715,7 +725,7 @@ additional implementation work, are
   \chapterpageref{i18n-checker})
 % The Compiler Message Key Checker is neither here nor in the introduction
 % chapter because it is really meant for Checker Framework developers and
-% as sample code, and is not meant for Checker Framework users at large.  
+% as sample code, and is not meant for Checker Framework users at large.
 \item
   \ahrefloc{signature-checker}{Signature String Checker} to ensure that the
   string representation of a type is properly used, for example in
@@ -1120,11 +1130,18 @@ methods precisely (e.g., \<java.io.BufferedReader.ready()>).
 %% TODO: we may eventually have an @SpecField annotation
 
 (A side note:  The formal parameter syntax \<\#1> is less natural in source code
-than writing the formal parameter name.  This syntax is necessary because
-in the \<.class> file, no parameter name information is available.  Running
-the compiler without a checker should create legal annotations in the
-\<.class> file, so we cannot rely on the checker to translate names to
-indices.)
+than writing the formal parameter name.  This syntax is necessary for
+separate compilation, when an annotated method has already been compiled
+into a \<.class> file and a client of that method is later compiled.
+In the \<.class> file, no formal parameter name information is available,
+so it is necessary to use a number to indicate a formal parameter.)
+%% At some point, we will start assuming that the .class file was created
+%% by the Checker Framework and this justification, and the #n syntax
+%% itself, will not be necessary.
+% Running
+% the compiler without a checker should create legal annotations in the
+% \<.class> file, so we cannot rely on the checker to translate names to
+% indices.
 
 
 \textbf{Limitations:}

@@ -49,7 +49,7 @@ public @interface AssertNonNullIfNonNull {
 
     /**
      * Java expression(s) that are non-null after the method returns a non-null vlue.
-     * @see <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax of Java expressions</a>
+     * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] value();
 }

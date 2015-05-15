@@ -115,7 +115,7 @@ imagine there are some interactions with Stuart's code.
 * Add a callback for either generating constraints or enforcing checks in
 either commonAssignmentCheck or QualifierHierarchy.  If this is done through
 QualifierHierarchy, create methods isSubtype and mustBeSubtype to distinguish
-between the the times when isSubtype is used in conditionals rather than to
+between the times when isSubtype is used in conditionals rather than to
 enforce a subtype relationship
 
 * Add a Solve step to the top-level control flow.  Perhaps, as part of the high

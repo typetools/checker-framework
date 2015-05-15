@@ -34,8 +34,8 @@ import com.sun.source.tree.Tree;
  * not convey any information other than that it is not LockHeld.
  *
  * However, there are a number of other annotations used in conjunction with these annotations
- * to enforce proper locking. Consult the Lock Checker documentation at
- * http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#lock-checker"
+ * to enforce proper locking.
+ * @checker_framework.manual #lock-checker Lock Checker
  */
 public class LockAnnotatedTypeFactory
     extends GenericAnnotatedTypeFactory<CFValue, LockStore, LockTransfer, LockAnalysis> {
