@@ -9,7 +9,7 @@ public final class Class {
     @Pure public String getName();
 }
 
-public final class Character implements java.io.Serializable, Comparable<Character> {
+public final class Character {
     @Pure public Character(char value);
     @Pure public static Character valueOf(char c);
     @Pure public char charValue();
@@ -104,7 +104,7 @@ public static class Character$Subset {
    @Pure public final int hashCode();
    @SideEffectFree public final String toString();
 }
-public static final class Character$UnicodeBlock extends Subset {
+public static final class Character$UnicodeBlock {
    @Pure public static UnicodeBlock of(char c);
    @Pure public static UnicodeBlock of(int codePoint);
    @Pure public static final UnicodeBlock forName(String blockName);
@@ -132,7 +132,7 @@ public final class System {
     @TerminatesExecution public static void exit(int status);
 }
 
-public class UnsupportedOperationException extends RuntimeException {
+public class UnsupportedOperationException {
     @Pure public UnsupportedOperationException();
     @Pure public UnsupportedOperationException(String message);
     @Pure public UnsupportedOperationException(String message, Throwable cause);
