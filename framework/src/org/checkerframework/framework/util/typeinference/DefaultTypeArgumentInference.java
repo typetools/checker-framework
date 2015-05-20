@@ -1,9 +1,13 @@
 package org.checkerframework.framework.util.typeinference;
 
-import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.typeinference.constraint.A2F;
@@ -27,9 +31,6 @@ import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
-
-import static org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil.expressionToArgTrees;
-import static org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil.treesToTypes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -121,8 +122,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      // TODO: THIS IS A BIG VIOLATION OF Single Responsibility and SHOULD BE FIXED, IT IS SOLELY HERE
      // TODO: AS A TEMPORARY KLUDGE BEFORE A RELEASE/SPARTA ENGAGEMENT
 
-     
-     
     protected AnnotatedTypeMirror getAssignedTo(ExpressionTree expression, AnnotatedTypeFactory typeFactory ) {
         return TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expression));
     }
