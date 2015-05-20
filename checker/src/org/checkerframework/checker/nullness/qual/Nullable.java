@@ -11,7 +11,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultForInUntyped;
+import org.checkerframework.framework.qual.DefaultForInUncheckedBytecode;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -37,7 +37,7 @@ import com.sun.source.tree.Tree;
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
 @DefaultFor({ DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,
             DefaultLocation.IMPLICIT_UPPER_BOUNDS })
-@DefaultForInUntyped({ DefaultLocation.RETURNS, DefaultLocation.UPPER_BOUNDS })
+@DefaultForInUncheckedBytecode({ DefaultLocation.RETURNS, DefaultLocation.UPPER_BOUNDS })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })

@@ -5,15 +5,16 @@ package tests;
 // This exists to just run the NestedAggregateChecker
 
 import org.checkerframework.framework.test.ParameterizedCheckerTest;
-import org.junit.runners.Parameterized.Parameters;
 
 import java.io.File;
 import java.util.Collection;
 
+import org.junit.runners.Parameterized.Parameters;
+
 public class NestedAggregateCheckerTest extends ParameterizedCheckerTest {
 
     public NestedAggregateCheckerTest(File testFile) {
-        super(testFile, NestedAggregateChecker.class, "", "-Anomsgtext", "-AcheckPurityAnnotations", "-AunsafeUntyped");
+        super(testFile, NestedAggregateChecker.class, "", "-Anomsgtext", "-AcheckPurityAnnotations");
     }
 
     @Parameters
