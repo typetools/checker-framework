@@ -20,7 +20,7 @@ public class NullnessRawnessTest extends ParameterizedCheckerTest {
         super(testFile,
                 org.checkerframework.checker.nullness.NullnessRawnessChecker.class,
                 "nullness",
-                "-AcheckPurityAnnotations", "-AunsafeUntyped",
+                "-AcheckPurityAnnotations",
                 "-Anomsgtext", "-Xlint:deprecation",
                 "-Alint=arrays:forbidnonnullcomponents,"
                         + AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
