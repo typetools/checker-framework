@@ -61,7 +61,7 @@ public class FormatUtil {
     }
 
     /**
-     * Throws an exception if the the format is not syntactically valid.
+     * Throws an exception if the format is not syntactically valid.
      */
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
         String.format(format, (Object[])null);
@@ -71,7 +71,7 @@ public class FormatUtil {
      * Returns a {@link ConversionCategory} for every conversion found in the
      * format string.
      *
-     * Throws an exception if the the format is not syntactically valid.
+     * Throws an exception if the format is not syntactically valid.
      */
     public static ConversionCategory[] formatParameterCategories(String format) throws IllegalFormatException {
         tryFormatSatisfiability(format);

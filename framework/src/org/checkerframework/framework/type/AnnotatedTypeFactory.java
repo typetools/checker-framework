@@ -42,6 +42,7 @@ import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInfe
 import org.checkerframework.framework.util.typeinference.TypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
@@ -609,18 +610,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final static int CACHE_SIZE = 300;
 
     /** Mapping from a Tree to its annotated type; implicits have been applied. */
-    private final Map<Tree, AnnotatedTypeMirror> treeCache = createLRUCache(CACHE_SIZE);
+    private final Map<Tree, AnnotatedTypeMirror> treeCache = CollectionUtils.createLRUCache(CACHE_SIZE);
 
     /** Mapping from a Tree to its annotated type; before implicits are applied,
      * just what the programmer wrote. */
-    protected final Map<Tree, AnnotatedTypeMirror> fromTreeCache = createLRUCache(CACHE_SIZE);
+    protected final Map<Tree, AnnotatedTypeMirror> fromTreeCache = CollectionUtils.createLRUCache(CACHE_SIZE);
 
     /** Mapping from an Element to its annotated type; before implicits are applied,
      * just what the programmer wrote. */
-    private final Map<Element, AnnotatedTypeMirror> elementCache = createLRUCache(CACHE_SIZE);
+    private final Map<Element, AnnotatedTypeMirror> elementCache = CollectionUtils.createLRUCache(CACHE_SIZE);
 
     /** Mapping from an Element to the source Tree of the declaration. */
-    private final Map<Element, Tree> elementToTreeCache  = createLRUCache(CACHE_SIZE);
+    private final Map<Element, Tree> elementToTreeCache  = CollectionUtils.createLRUCache(CACHE_SIZE);
 
     /** Mapping from a Tree to its TreePath **/
     private final TreePathCacher treePathCache = new TreePathCacher();
@@ -2218,22 +2219,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             default:
                 return true;
         }
-    }
-
-    /**
-     * A Utility method for creating LRU cache
-     * @param size  size of the cache
-     * @return  a new cache with the provided size
-     */
-    public static <K, V> Map<K, V> createLRUCache(final int size) {
-        return new LinkedHashMap<K, V>() {
-
-            private static final long serialVersionUID = 5261489276168775084L;
-            @Override
-            protected boolean removeEldestEntry(Map.Entry<K, V> entry) {
-                return size() > size;
-            }
-        };
     }
 
     /** Sets indexTypes and indexDeclAnnos by side effect, just before returning. */

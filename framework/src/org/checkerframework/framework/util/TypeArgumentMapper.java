@@ -43,7 +43,7 @@ import javax.lang.model.util.Types;
  *      Map(O1 -> [M1,M2])
  * }</pre>
  *
- * This utility only maps between corresponding type parameters, so the the following class:
+ * This utility only maps between corresponding type parameters, so the following class:
  * <pre>{@code
  *      class StringMap extends Map<String,String>
  * }</pre>

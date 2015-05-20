@@ -244,35 +244,35 @@ instructions for using a checker appear in Chapter~\ref{using-a-checker}.
 
 \section{Example use:  detecting a null pointer bug\label{example-use}}
 
-This section gives a very simple example of running the Checker Framework
-from the command line.  There is also a \ahreforurl{http://types.cs.washington.edu/checker-framework/tutorial/}{tutorial}
+This section gives a very simple example of running the Checker Framework.
+There is also a \ahreforurl{http://types.cs.washington.edu/checker-framework/tutorial/}{tutorial}
 that gives more extensive instructions for using the Checker Framework in
 Eclipse or on the command line.
 
-
-To run a checker on a source file, just compile as usual, but pass the
-\<-processor> flag to the compiler.
-
-For instance, if you usually run the javac compiler like
-this:
-
-\begin{Verbatim}
-  javac Foo.java Bar.java
-\end{Verbatim}
-
-\noindent
-then you will instead use the command line:
-
-\begin{alltt}
-  javac \textbf{-processor \textit{ProcessorName}} Foo.java Bar.java
-\end{alltt}
-
-\noindent
-but take note that the \code{javac} command must refer to the
-Checker Framework compiler (see Section~\ref{javac-installation}).
-
-If you usually do your coding within an IDE, you will need to configure
-the IDE; see Chapter~\ref{external-tools}.
+% To run a checker on a source file, just compile as usual, but pass the
+% \<-processor> flag to the compiler.
+% 
+% For instance, if you usually run the javac compiler like
+% this:
+% 
+% \begin{Verbatim}
+%   javac Foo.java Bar.java
+% \end{Verbatim}
+% 
+% \noindent
+% then you will instead a command line such as:
+% 
+% \begin{alltt}
+%   javac \textbf{-processor NullnessChecker} Foo.java Bar.java
+%   javac \textbf{-processor RegexChecker} Foo.java Bar.java
+% \end{alltt}
+% 
+% \noindent
+% but take note that the \code{javac} command must refer to the
+% Checker Framework compiler (see Section~\ref{javac-installation}).
+% 
+% If you usually do your coding within an IDE, you will need to configure
+% the IDE; see Chapter~\ref{external-tools}.
 
 
 \begin{enumerate}
@@ -293,15 +293,25 @@ public class GetStarted {
 
 \item
   Run the Nullness Checker on the class.
-  Either run this command:
+  You can do that from the command line or from an IDE:
+
+\begin{enumerate}
+\item
+  From the command line, run this command:
+
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.nullness.NullnessChecker GetStarted.java
 \end{Verbatim}
 
 \noindent
-or compile from within your IDE, which you have customized (see
-Chapter~\ref{external-tools}) to use the
-Checker Framework compiler and to pass the extra arguments.
+where the \code{javac} command refers to the
+Checker Framework compiler (see Section~\ref{javac-installation}).
+
+\item
+  To compile within your IDE, you must have customized it to use the
+  Checker Framework compiler and to pass the extra arguments (see
+  Chapter~\ref{external-tools}).
+\end{enumerate}
 
   The compilation should complete without any errors.
 
@@ -342,7 +352,7 @@ The Checker Framework distribution contains the following notable
 directories and files:
 
 \begin{itemize}
-\item \<changelog-checkerframework.txt> The changelog.
+\item \<changelog.txt> The changelog.
 \item \<checker/bin/javac> A replacement for the \<javac> compiler that
   enables use of the Checker Framework.
 \item \<checker/manual/> A local copy of this manual in PDF and HTML formats.
@@ -1167,4 +1177,6 @@ Also see Chapter~\ref{troubleshooting}, Troubleshooting.
 %  LocalWords:  AprintAllQualifiers Aignorejdkastub AstubDebug Aflowdotdir
 %  LocalWords:  AresourceStats noannotationsincomments jls r78 JDKs i18n
 %  LocalWords:  AinvariantArrays AcheckCastElementType formatter pathname
-%  LocalWords:  typedef
+%  LocalWords:  typedef guieffect Gradle jdk7 jdk8 javadoc MyFile argfiles
+%%  LocalWords:  AshowSuppressWarningKeys AoutputArgsToFile RegexChecker
+%%  LocalWords:  NullnessChecker commandlineargfile

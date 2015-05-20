@@ -66,7 +66,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     }
 
     /**
-     * A scanning visitor that prints the the entire AnnotatedTypeMirror passed to visit.
+     * A scanning visitor that prints the entire AnnotatedTypeMirror passed to visit.
      */
     protected static class FormattingVisitor implements AnnotatedTypeVisitor<String, Set<AnnotatedTypeMirror>> {
 

@@ -4,7 +4,7 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
-    <title>JSR 308 langtools:  README for maintainers</title>
+    <title>Checker Framework release process</title>
 
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
     <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet"/>
@@ -344,8 +344,8 @@
 <p>If you've run the scripts before you really just need to remember:</p>
 <p class="well">
     <code>
-        scp -r $CF/release/* &lt;your-username&gt;@buffalo.cs.washington.edu:///scratch/jsr308-release/scripts<br/>
-        ssh &lt;your-username&gt;@buffalo.cs.washington.edu<br/>
+        scp -r $CHECKERFRAMEWORK/release/* $USER@buffalo.cs.washington.edu:///scratch/jsr308-release/scripts<br/>
+        ssh $USER@buffalo.cs.washington.edu<br/>
         cd /scratch/jsr308-release/scripts<br/>
         export HGUSER=yourHgUserName<br/>
         python release_build.py all<br/>
