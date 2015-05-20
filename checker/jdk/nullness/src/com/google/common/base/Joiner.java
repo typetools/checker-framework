@@ -16,8 +16,10 @@
 
 package com.google.common.base;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.IOException;
 import java.util.AbstractList;
@@ -26,7 +28,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * An object which joins pieces of text (specified as an array, {@link
@@ -99,7 +101,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * previously configured separator between each, to {@code appendable}.
    */
   public final <A extends Appendable> A appendTo(
-						 A appendable, /*@Nullable*/ Object[] parts) throws IOException {
+          A appendable, /*@Nullable*/ Object[] parts) throws IOException {
     return appendTo(appendable, Arrays.asList(parts));
   }
 
@@ -108,7 +110,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * remaining arguments.
    */
   public final <A extends Appendable> A appendTo(A appendable,
-	       @Nullable Object first, @Nullable Object second, /*@Nullable*/ Object... rest)
+          @Nullable Object first, @Nullable Object second, /*@Nullable*/ Object... rest)
       throws IOException {
     return appendTo(appendable, iterable(first, second, rest));
   }
@@ -135,7 +137,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * to {@link #appendTo(Appendable, Iterable)}, except that it does not throw
    * {@link IOException}.
    */
-    public final StringBuilder appendTo(StringBuilder builder, /*@Nullable*/ Object[] parts) {
+  public final StringBuilder appendTo(StringBuilder builder, /*@Nullable*/ Object[] parts) {
     return appendTo(builder, Arrays.asList(parts));
   }
 
@@ -145,7 +147,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * Object, Object[])}, except that it does not throw {@link IOException}.
    */
   public final StringBuilder appendTo(StringBuilder builder,
-	       @Nullable Object first, @Nullable Object second, /*@Nullable*/Object... rest) {
+          @Nullable Object first, @Nullable Object second, /*@Nullable*/Object... rest) {
     return appendTo(builder, iterable(first, second, rest));
   }
 
@@ -170,7 +172,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * using the previously configured separator between each.
    */
   public final String join(
-	 @Nullable Object first, @Nullable Object second, /*@Nullable*/ Object... rest) {
+          @Nullable Object first, @Nullable Object second, /*@Nullable*/ Object... rest) {
     return join(iterable(first, second, rest));
   }
 
@@ -201,8 +203,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    */
   public Joiner skipNulls() {
     return new Joiner(this) {
-      @Override public <A extends Appendable> A appendTo(A appendable, 
-		       Iterable<? extends /*@Nullable*/ Object> parts) throws IOException {
+      @Override public <A extends Appendable> A appendTo(A appendable,
+              Iterable<? extends /*@Nullable*/ Object> parts) throws IOException {
         checkNotNull(appendable, "appendable");
         checkNotNull(parts, "parts");
         Iterator<? extends /*@Nullable*/ Object> iterator = parts.iterator();
@@ -247,8 +249,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * iterables and arrays.
    */
   public static class MapJoiner {
-    private Joiner joiner;
-    private String keyValueSeparator;
+    private final Joiner joiner;
+    private final String keyValueSeparator;
 
     private MapJoiner(Joiner joiner, String keyValueSeparator) {
       this.joiner = joiner;
@@ -321,8 +323,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
   }
 
     private static Iterable</*@Nullable*/ Object> iterable(
-	           final /*@Nullable*/ Object first, final /*@Nullable*/ Object second, 
-		   final /*@Nullable*/ Object[] rest) {
+            final /*@Nullable*/ Object first, final /*@Nullable*/ Object second,
+            final /*@Nullable*/ Object[] rest) {
     checkNotNull(rest);
     return new AbstractList</*@Nullable*/ Object>() {
       @Pure @Override public int size() {

@@ -16,20 +16,20 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 @SuppressWarnings("nullness")
 /** An ordering that tries several comparators in order. */
 @GwtCompatible(serializable = true)
     final class CompoundOrdering<T extends /*@Nullable*/ Object> extends Ordering<T> implements Serializable {
     final /*@Nullable*/ ImmutableList<Comparator<? super T>> comparators = null;
-  
+
   CompoundOrdering(Comparator<? super T> primary,
       Comparator<? super T> secondary) {
       //this.comparators
@@ -45,9 +45,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       //this.comparators = new ImmutableList.Builder<Comparator<? super T>>()
       //   .addAll(comparators).add(lastComparator).build();
   }
-  
- 
-  /*@Pure*/ public int compare(T left, T right) {
+
+
+  /*@Pure*/ @Override
+public int compare(T left, T right) {
     for (Comparator<? super T> comparator : comparators) {
       int result = comparator.compare(left, right);
       if (result != 0) {
@@ -56,7 +57,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     }
     return 0;
   }
-  
+
   @Pure @Override public boolean equals(/*@Nullable*/ Object object) {
     if (object == this) {
       return true;

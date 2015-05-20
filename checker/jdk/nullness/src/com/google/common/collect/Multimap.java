@@ -16,13 +16,14 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * A collection similar to a {@code Map}, but which may associate multiple
@@ -56,8 +57,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 @SuppressWarnings("nullness:generic.argument")
 @GwtCompatible
-    public interface Multimap<K extends /*@Nullable*/ Object, 
-			      V extends /*@Nullable*/ Object> {
+public interface Multimap<K extends /*@Nullable*/ Object,
+    V extends /*@Nullable*/ Object> {
   // Query Operations
 
   /** Returns the number of key-value pairs in the multimap. */
@@ -252,7 +253,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * collections as values. However, any two empty multimaps are equal, because
    * they both have empty {@link #asMap} views.
    */
-  @Pure boolean equals(@Nullable Object obj);
+  @Override
+@Pure boolean equals(@Nullable Object obj);
 
   /**
    * Returns the hash code for this multimap.
@@ -260,5 +262,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * <p>The hash code of a multimap is defined as the hash code of the map view,
    * as returned by {@link Multimap#asMap}.
    */
-  @Pure int hashCode();
+  @Override
+@Pure int hashCode();
 }

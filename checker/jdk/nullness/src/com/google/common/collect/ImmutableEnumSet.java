@@ -16,14 +16,14 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * Implementation of {@link ImmutableSet} backed by a non-empty {@link
@@ -60,7 +60,8 @@ final class ImmutableEnumSet<E /*extends Enum<E>*/> extends ImmutableSet<E> {
     return Iterators.unmodifiableIterator(delegate.iterator());
   }
 
-  @Pure public int size() {
+  @Override
+@Pure public int size() {
     return delegate.size();
   }
 

@@ -16,8 +16,11 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -26,7 +29,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * An immutable {@link Multimap}. Does not permit null keys or values.
@@ -257,7 +260,8 @@ public abstract class ImmutableMultimap<K, V>
    *
    * @throws UnsupportedOperationException always
    */
-  public ImmutableCollection<V> removeAll(/*@Nullable*/ Object key) {
+  @Override
+public ImmutableCollection<V> removeAll(/*@Nullable*/ Object key) {
     throw new UnsupportedOperationException();
   }
 
@@ -266,7 +270,8 @@ public abstract class ImmutableMultimap<K, V>
    *
    * @throws UnsupportedOperationException always
    */
-  public ImmutableCollection<V> replaceValues(K key,
+  @Override
+public ImmutableCollection<V> replaceValues(K key,
       Iterable<? extends V> values) {
     throw new UnsupportedOperationException();
   }
@@ -276,7 +281,8 @@ public abstract class ImmutableMultimap<K, V>
    *
    * @throws UnsupportedOperationException always
    */
-  public void clear() {
+  @Override
+public void clear() {
     throw new UnsupportedOperationException();
   }
 
@@ -286,14 +292,16 @@ public abstract class ImmutableMultimap<K, V>
    * collection is returned. The values are in the same order as the parameters
    * used to build this multimap.
    */
-  public abstract ImmutableCollection<V> get(K key);
+  @Override
+public abstract ImmutableCollection<V> get(K key);
 
   /**
    * Guaranteed to throw an exception and leave the multimap unmodified.
    *
    * @throws UnsupportedOperationException always
    */
-  public boolean put(K key, V value) {
+  @Override
+public boolean put(K key, V value) {
     throw new UnsupportedOperationException();
   }
 
@@ -302,7 +310,8 @@ public abstract class ImmutableMultimap<K, V>
    *
    * @throws UnsupportedOperationException always
    */
-  public boolean putAll(K key, Iterable<? extends V> values) {
+  @Override
+public boolean putAll(K key, Iterable<? extends V> values) {
     throw new UnsupportedOperationException();
   }
 
@@ -311,7 +320,8 @@ public abstract class ImmutableMultimap<K, V>
    *
    * @throws UnsupportedOperationException always
    */
-  public boolean putAll(Multimap<? extends K, ? extends V> multimap) {
+  @Override
+public boolean putAll(Multimap<? extends K, ? extends V> multimap) {
     throw new UnsupportedOperationException();
   }
 
@@ -320,22 +330,26 @@ public abstract class ImmutableMultimap<K, V>
    *
    * @throws UnsupportedOperationException always
    */
-  public boolean remove(/*@Nullable*/ Object key, /*@Nullable*/ Object value) {
+  @Override
+public boolean remove(/*@Nullable*/ Object key, /*@Nullable*/ Object value) {
     throw new UnsupportedOperationException();
   }
 
   // accessors
 
-  @Pure public boolean containsEntry(@Nullable Object key, @Nullable Object value) {
+  @Override
+@Pure public boolean containsEntry(@Nullable Object key, @Nullable Object value) {
     Collection<V> values = map.get(key);
     return values != null && values.contains(value);
   }
 
-  @Pure public boolean containsKey(@Nullable Object key) {
+  @Override
+@Pure public boolean containsKey(@Nullable Object key) {
     return map.containsKey(key);
   }
 
-  @Pure public boolean containsValue(@Nullable Object value) {
+  @Override
+@Pure public boolean containsValue(@Nullable Object value) {
     for (Collection<V> valueCollection : map.values()) {
       if (valueCollection.contains(value)) {
         return true;
@@ -344,11 +358,13 @@ public abstract class ImmutableMultimap<K, V>
     return false;
   }
 
-  @Pure public boolean isEmpty() {
+  @Override
+@Pure public boolean isEmpty() {
     return size == 0;
   }
 
-  @Pure public int size() {
+  @Override
+@Pure public int size() {
     return size;
   }
 
@@ -375,7 +391,8 @@ public abstract class ImmutableMultimap<K, V>
    * are ordered according to when they first appeared during the construction
    * of this multimap.
    */
-  @SideEffectFree public ImmutableSet<K> keySet() {
+  @Override
+@SideEffectFree public ImmutableSet<K> keySet() {
     return map.keySet();
   }
 
@@ -383,7 +400,8 @@ public abstract class ImmutableMultimap<K, V>
    * Returns an immutable map that associates each key with its corresponding
    * values in the multimap.
    */
-  @SuppressWarnings("unchecked") // a widening cast
+  @Override
+@SuppressWarnings("unchecked") // a widening cast
   public ImmutableMap<K, Collection<V>> asMap() {
     return (ImmutableMap) map;
   }
@@ -395,7 +413,8 @@ public abstract class ImmutableMultimap<K, V>
    * iterator traverses the values for the first key, the values for the second
    * key, and so on.
    */
-  @SideEffectFree public ImmutableCollection<Map.Entry<K, V>> entries() {
+  @Override
+@SideEffectFree public ImmutableCollection<Map.Entry<K, V>> entries() {
     ImmutableCollection<Map.Entry<K, V>> result = entries;
     return (result == null)
         ? (entries = new EntryCollection<K, V>(this)) : result;
@@ -417,11 +436,13 @@ public abstract class ImmutableMultimap<K, V>
         K key;
         Iterator<V> valueIterator;
 
+        @Override
         public boolean hasNext() {
           return (key != null && valueIterator.hasNext())
               || mapIterator.hasNext();
         }
 
+        @Override
         public Map.Entry<K, V> next() {
           if (key == null || !valueIterator.hasNext()) {
             Map.Entry<K, ? extends ImmutableCollection<V>> entry
@@ -434,6 +455,7 @@ public abstract class ImmutableMultimap<K, V>
       };
     }
 
+    @Override
     @Pure public int size() {
       return multimap.size();
     }
@@ -457,7 +479,8 @@ public abstract class ImmutableMultimap<K, V>
    * mappings the key has in the multimap. Duplicate keys appear consecutively
    * in the multiset's iteration order.
    */
-  public ImmutableMultiset<K> keys() {
+  @Override
+public ImmutableMultiset<K> keys() {
     ImmutableMultiset<K> result = keys;
     return (result == null) ? (keys = createKeys()) : result;
   }
@@ -478,7 +501,8 @@ public abstract class ImmutableMultimap<K, V>
    * iterator traverses the values for the first key, the values for the second
    * key, and so on.
    */
-  @SideEffectFree public ImmutableCollection<V> values() {
+  @Override
+@SideEffectFree public ImmutableCollection<V> values() {
     ImmutableCollection<V> result = values;
     return (result == null) ? (values = new Values<V>(this)) : result;
   }
@@ -494,15 +518,18 @@ public abstract class ImmutableMultimap<K, V>
       final Iterator<? extends Map.Entry<?, V>> entryIterator
           = multimap.entries().iterator();
       return new UnmodifiableIterator<V>() {
+        @Override
         public boolean hasNext() {
           return entryIterator.hasNext();
         }
+        @Override
         public V next() {
           return entryIterator.next().getValue();
         }
       };
     }
 
+    @Override
     @Pure public int size() {
       return multimap.size();
     }

@@ -16,12 +16,15 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.Serializable;
 
 import javax.annotation.Nullable;
+
+import com.google.common.annotations.GwtCompatible;
 
 /** An ordering that uses the reverse of a given order. */
 @GwtCompatible(serializable = true)
@@ -32,7 +35,8 @@ final class ReverseOrdering<T> extends Ordering<T> implements Serializable {
     this.forwardOrder = checkNotNull(forwardOrder);
   }
 
-  /*@Pure*/ public int compare(T a, T b) {
+  /*@Pure*/ @Override
+public int compare(T a, T b) {
     return forwardOrder.compare(b, a);
   }
 

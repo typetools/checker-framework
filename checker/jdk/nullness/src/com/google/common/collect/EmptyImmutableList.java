@@ -16,23 +16,25 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkElementIndex;
 import static com.google.common.base.Preconditions.checkPositionIndex;
 import static com.google.common.base.Preconditions.checkPositionIndexes;
+
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.checkerframework.dataflow.qual.SideEffectFree;
-
 import javax.annotation.Nullable;
+
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * An empty immutable list.
- * 
+ *
  * @author Kevin Bourrillion
  */
 @GwtCompatible(serializable = true)
@@ -41,7 +43,8 @@ final class EmptyImmutableList extends ImmutableList<Object> {
 
   private EmptyImmutableList() {}
 
-  @Pure public int size() {
+  @Override
+@Pure public int size() {
     return 0;
   }
 
@@ -71,7 +74,8 @@ final class EmptyImmutableList extends ImmutableList<Object> {
     return a;
   }
 
-  public Object get(int index) {
+  @Override
+public Object get(int index) {
     // guaranteed to fail, but at least we get a consistent message
     checkElementIndex(index, 0);
     throw new AssertionError("unreachable");
@@ -90,11 +94,13 @@ final class EmptyImmutableList extends ImmutableList<Object> {
     return this;
   }
 
-  public ListIterator<Object> listIterator() {
+  @Override
+public ListIterator<Object> listIterator() {
     return Collections.emptyList().listIterator();
   }
 
-  public ListIterator<Object> listIterator(int start) {
+  @Override
+public ListIterator<Object> listIterator(int start) {
     checkPositionIndex(start, 0);
     return Collections.emptyList().listIterator();
   }

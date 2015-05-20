@@ -29,18 +29,18 @@ class ClassLoader {
 
 class ClassLoader$SystemClassLoaderAction implements PrivilegedExceptionAction<ClassLoader> {
     public ClassLoader run() throws Exception {
-	@SuppressWarnings("signature")
-	@BinaryName String cls = System.getProperty("java.system.class.loader");
-	if (cls == null) {
-	    return parent;
-	}
+    @SuppressWarnings("signature")
+    @BinaryName String cls = System.getProperty("java.system.class.loader");
+    if (cls == null) {
+        return parent;
+    }
 
-	Constructor ctor = Class.forName(cls, true, parent)
-	    .getDeclaredConstructor(new Class[] { ClassLoader.class });
-	ClassLoader sys = (ClassLoader) ctor.newInstance(
-	    new Object[] { parent });
-	Thread.currentThread().setContextClassLoader(sys);
-	return sys;
+    Constructor ctor = Class.forName(cls, true, parent)
+        .getDeclaredConstructor(new Class[] { ClassLoader.class });
+    ClassLoader sys = (ClassLoader) ctor.newInstance(
+        new Object[] { parent });
+    Thread.currentThread().setContextClassLoader(sys);
+    return sys;
     }
 }
 
@@ -260,32 +260,32 @@ class ResourceBundle {
 
 class ResourceBundle$Control {
     public @BinaryName String toBundleName(@BinaryName String baseName, Locale locale) {
-	if (locale == Locale.ROOT) {
-	    return baseName;
-	}
+    if (locale == Locale.ROOT) {
+        return baseName;
+    }
 
-	String language = locale.getLanguage();
-	String country = locale.getCountry();
-	String variant = locale.getVariant();
+    String language = locale.getLanguage();
+    String country = locale.getCountry();
+    String variant = locale.getVariant();
 
-	if (language == "" && country == "" && variant == "") {
-	    return baseName;
-	}
+    if (language == "" && country == "" && variant == "") {
+        return baseName;
+    }
 
-	StringBuilder sb = new StringBuilder(baseName);
-	sb.append('_');
-	if (variant != "") {
-	    sb.append(language).append('_').append(country).append('_').append(variant);
-	} else if (country != "") {
-	    sb.append(language).append('_').append(country);
-	} else {
-	    sb.append(language);
-	}
-	/*  I have to do this to bypass the annotation of toString() method of
-	    StringBuilder (which would be wrong). */
-	@SuppressWarnings("signature")
-	@BinaryName String result = sb.toString();
-	return result;
+    StringBuilder sb = new StringBuilder(baseName);
+    sb.append('_');
+    if (variant != "") {
+        sb.append(language).append('_').append(country).append('_').append(variant);
+    } else if (country != "") {
+        sb.append(language).append('_').append(country);
+    } else {
+        sb.append(language);
+    }
+    /*  I have to do this to bypass the annotation of toString() method of
+        StringBuilder (which would be wrong). */
+    @SuppressWarnings("signature")
+    @BinaryName String result = sb.toString();
+    return result;
 
     }
 

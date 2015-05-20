@@ -4,10 +4,10 @@
  *
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack Small.java
  *
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack ClientBuilder.java Module.java
+ * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack ClientBuilder.java Module.java -AunsafeUntyped
  *
  * @compile -XDrawDiagnostics ClientBuilder.java
- * @compile/fail/ref=Module-err.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext -AprintErrorStack Module.java
+ * @compile/fail/ref=Module-err.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext -AprintErrorStack Module.java -AunsafeUntyped
  */
 class Module {
   void buildClient() {

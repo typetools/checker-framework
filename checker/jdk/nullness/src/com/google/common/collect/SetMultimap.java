@@ -16,13 +16,14 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * A {@code Multimap} that cannot hold duplicate key-value pairs. Adding a
@@ -45,6 +46,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * method returns a {@link Set}, instead of the {@link java.util.Collection}
    * specified in the {@link Multimap} interface.
    */
+  @Override
   Set<V> get(K key);
 
   /**
@@ -54,6 +56,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * method returns a {@link Set}, instead of the {@link java.util.Collection}
    * specified in the {@link Multimap} interface.
    */
+  @Override
   Set<V> removeAll(@Nullable Object key);
 
   /**
@@ -65,6 +68,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    *
    * <p>Any duplicates in {@code values} will be stored in the multimap once.
    */
+  @Override
   Set<V> replaceValues(K key, Iterable<? extends V> values);
 
   /**
@@ -74,6 +78,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * method returns a {@link Set}, instead of the {@link java.util.Collection}
    * specified in the {@link Multimap} interface.
    */
+  @Override
   Set<Map.Entry<K, V>> entries();
 
   /**
@@ -82,6 +87,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * <p>Though the method signature doesn't say so explicitly, the returned map
    * has {@link Set} values.
    */
+  @Override
   Map<K, Collection<V>> asMap();
 
   /**
@@ -91,5 +97,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * contain the same values. Equality does not depend on the ordering of keys
    * or values.
    */
+  @Override
   @Pure boolean equals(@Nullable Object obj);
 }

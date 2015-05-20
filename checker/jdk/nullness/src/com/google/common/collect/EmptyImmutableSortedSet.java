@@ -16,7 +16,8 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -25,9 +26,11 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.google.common.annotations.GwtCompatible;
+
 /**
  * An empty immutable sorted set.
- * 
+ *
  * @author Jared Levy
  */
 @GwtCompatible(serializable = true)
@@ -37,7 +40,8 @@ class EmptyImmutableSortedSet<E> extends ImmutableSortedSet<E> {
     super(comparator);
   }
 
-  @Pure public int size() {
+  @Override
+@Pure public int size() {
     return 0;
   }
 
@@ -87,11 +91,13 @@ class EmptyImmutableSortedSet<E> extends ImmutableSortedSet<E> {
     return "[]";
   }
 
-  @SideEffectFree public E first() {
+  @Override
+@SideEffectFree public E first() {
     throw new NoSuchElementException();
   }
 
-  @SideEffectFree public E last() {
+  @Override
+@SideEffectFree public E last() {
     throw new NoSuchElementException();
   }
 

@@ -16,9 +16,10 @@
 
 package com.google.common.base;
 
-import com.google.common.annotations.GwtCompatible;
-
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * A transformation from one object to another. For example, a
@@ -40,7 +41,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @author Scott Bonneau
  */
 @GwtCompatible
-    public interface Function<F extends /*@Nullable*/ Object, T extends /*@Nullable*/ Object> {
+public interface Function<F extends /*@Nullable*/ Object, T extends /*@Nullable*/ Object> {
 
   /**
    * Applies the function to an object of type {@code F}, resulting in an object
@@ -63,5 +64,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * <p>Note that it is always safe <em>not</em> to override
    * {@link Object#equals}.
    */
+  @Override
   @Pure boolean equals(@Nullable Object obj);
 }
