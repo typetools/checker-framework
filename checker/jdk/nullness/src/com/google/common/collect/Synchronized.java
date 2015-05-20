@@ -16,9 +16,12 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.annotations.GwtIncompatible;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -33,9 +36,8 @@ import java.util.RandomAccess;
 import java.util.Set;
 import java.util.SortedSet;
 
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.annotations.GwtIncompatible;
 
 /**
  * Synchronized collection views. The returned synchronized collection views are
@@ -133,30 +135,35 @@ final class Synchronized {
       return (Collection<E>) super.delegate();
     }
 
+    @Override
     public boolean add(E e) {
       synchronized (mutex) {
         return delegate().add(e);
       }
     }
 
+    @Override
     public boolean addAll(Collection<? extends E> c) {
       synchronized (mutex) {
         return delegate().addAll(c);
       }
     }
 
+    @Override
     public void clear() {
       synchronized (mutex) {
         delegate().clear();
       }
     }
 
+    @Override
     @Pure public boolean contains(/*@Nullable*/ Object o) {
       synchronized (mutex) {
         return delegate().contains(o);
       }
     }
 
+    @Override
     @SuppressWarnings("nullness")
     @Pure public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
       synchronized (mutex) {
@@ -164,22 +171,26 @@ final class Synchronized {
       }
     }
 
+    @Override
     @Pure public boolean isEmpty() {
       synchronized (mutex) {
         return delegate().isEmpty();
       }
     }
 
+    @Override
     public Iterator<E> iterator() {
       return delegate().iterator(); // manually synchronized
     }
 
+    @Override
     public boolean remove(/*@Nullable*/ Object o) {
       synchronized (mutex) {
         return delegate().remove(o);
       }
     }
 
+    @Override
     @SuppressWarnings("nullness")
     public boolean removeAll(Collection<? extends /*@Nullable*/ Object> c) {
       synchronized (mutex) {
@@ -187,6 +198,7 @@ final class Synchronized {
       }
     }
 
+    @Override
     @SuppressWarnings("nullness")
     public boolean retainAll(Collection<? extends /*@Nullable*/ Object> c) {
       synchronized (mutex) {
@@ -194,20 +206,23 @@ final class Synchronized {
       }
     }
 
+    @Override
     @Pure public int size() {
       synchronized (mutex) {
         return delegate().size();
       }
     }
 
+    @Override
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations on toArray
+    //Suppressed due to annotations on toArray
     public /*@Nullable*/ Object[] toArray() {
       synchronized (mutex) {
         return delegate().toArray();
       }
     }
 
+    @Override
     @SuppressWarnings("nullness")
     public <T extends /*@Nullable*/ Object> T[] toArray(T[] a) {
       synchronized (mutex) {
@@ -314,36 +329,42 @@ final class Synchronized {
       return (SortedSet<E>) super.delegate();
     }
 
+    @Override
     @SideEffectFree public Comparator<? super E> comparator() {
       synchronized (mutex) {
         return delegate().comparator();
       }
     }
 
+    @Override
     @SideEffectFree public SortedSet<E> subSet(E fromElement, E toElement) {
       synchronized (mutex) {
         return sortedSet(delegate().subSet(fromElement, toElement), mutex);
       }
     }
 
+    @Override
     @SideEffectFree public SortedSet<E> headSet(E toElement) {
       synchronized (mutex) {
         return sortedSet(delegate().headSet(toElement), mutex);
       }
     }
 
+    @Override
     @SideEffectFree public SortedSet<E> tailSet(E fromElement) {
       synchronized (mutex) {
         return sortedSet(delegate().tailSet(fromElement), mutex);
       }
     }
 
+    @Override
     @SideEffectFree public E first() {
       synchronized (mutex) {
         return delegate().first();
       }
     }
 
+    @Override
     @SideEffectFree public E last() {
       synchronized (mutex) {
         return delegate().last();
@@ -396,56 +417,66 @@ final class Synchronized {
       return (List<E>) super.delegate();
     }
 
+    @Override
     public void add(int index, E element) {
       synchronized (mutex) {
         delegate().add(index, element);
       }
     }
 
+    @Override
     public boolean addAll(int index, Collection<? extends E> c) {
       synchronized (mutex) {
         return delegate().addAll(index, c);
       }
     }
 
+    @Override
     public E get(int index) {
       synchronized (mutex) {
         return delegate().get(index);
       }
     }
 
+    @Override
     @Pure public int indexOf(/*@Nullable*/ Object o) {
       synchronized (mutex) {
         return delegate().indexOf(o);
       }
     }
 
+    @Override
     @Pure public int lastIndexOf(/*@Nullable*/ Object o) {
       synchronized (mutex) {
         return delegate().lastIndexOf(o);
       }
     }
 
+    @Override
     public ListIterator<E> listIterator() {
       return delegate().listIterator(); // manually synchronized
     }
 
+    @Override
     public ListIterator<E> listIterator(int index) {
       return delegate().listIterator(index); // manually synchronized
     }
 
+    @Override
     public E remove(int index) {
       synchronized (mutex) {
         return delegate().remove(index);
       }
     }
 
+    @Override
     public E set(int index, E element) {
       synchronized (mutex) {
         return delegate().set(index, element);
       }
     }
 
+    @Override
     @GwtIncompatible("List.subList")
     @SideEffectFree public List<E> subList(int fromIndex, int toIndex) {
       synchronized (mutex) {
@@ -523,36 +554,42 @@ final class Synchronized {
       return (Multiset<E>) super.delegate();
     }
 
+    @Override
     public int count(/*@Nullable*/ Object o) {
       synchronized (mutex) {
         return delegate().count(o);
       }
     }
 
+    @Override
     public int add(E e, int n) {
       synchronized (mutex) {
         return delegate().add(e, n);
       }
     }
 
+    @Override
     public int remove(/*@Nullable*/ Object o, int n) {
       synchronized (mutex) {
         return delegate().remove(o, n);
       }
     }
 
+    @Override
     public int setCount(E element, int count) {
       synchronized (mutex) {
         return delegate().setCount(element, count);
       }
     }
 
+    @Override
     public boolean setCount(E element, int oldCount, int newCount) {
       synchronized (mutex) {
         return delegate().setCount(element, oldCount, newCount);
       }
     }
 
+    @Override
     @SideEffectFree public Set<E> elementSet() {
       synchronized (mutex) {
         if (elementSet == null) {
@@ -562,6 +599,7 @@ final class Synchronized {
       }
     }
 
+    @Override
     @SideEffectFree public Set<Entry<E>> entrySet() {
       synchronized (mutex) {
         if (entrySet == null) {
@@ -638,84 +676,98 @@ final class Synchronized {
       super(delegate, mutex);
     }
 
+    @Override
     @Pure public int size() {
       synchronized (mutex) {
         return delegate().size();
       }
     }
 
+    @Override
     @Pure public boolean isEmpty() {
       synchronized (mutex) {
         return delegate().isEmpty();
       }
     }
 
+    @Override
     @Pure public boolean containsKey(/*@Nullable*/ Object key) {
       synchronized (mutex) {
         return delegate().containsKey(key);
       }
     }
 
+    @Override
     @Pure public boolean containsValue(/*@Nullable*/ Object value) {
       synchronized (mutex) {
         return delegate().containsValue(value);
       }
     }
 
+    @Override
     @Pure public boolean containsEntry(/*@Nullable*/ Object key, /*@Nullable*/ Object value) {
       synchronized (mutex) {
         return delegate().containsEntry(key, value);
       }
     }
 
+    @Override
     public Collection<V> get(K key) {
       synchronized (mutex) {
         return typePreservingCollection(delegate().get(key), mutex);
       }
     }
 
+    @Override
     public boolean put(K key, V value) {
       synchronized (mutex) {
         return delegate().put(key, value);
       }
     }
 
+    @Override
     public boolean putAll(K key, Iterable<? extends V> values) {
       synchronized (mutex) {
         return delegate().putAll(key, values);
       }
     }
 
+    @Override
     public boolean putAll(Multimap<? extends K, ? extends V> multimap) {
       synchronized (mutex) {
         return delegate().putAll(multimap);
       }
     }
 
+    @Override
     public Collection<V> replaceValues(K key, Iterable<? extends V> values) {
       synchronized (mutex) {
         return delegate().replaceValues(key, values); // copy not synchronized
       }
     }
 
+    @Override
     public boolean remove(/*@Nullable*/ Object key, /*@Nullable*/ Object value) {
       synchronized (mutex) {
         return delegate().remove(key, value);
       }
     }
 
+    @Override
     public Collection<V> removeAll(/*@Nullable*/ Object key) {
       synchronized (mutex) {
         return delegate().removeAll(key); // copy not synchronized
       }
     }
 
+    @Override
     public void clear() {
       synchronized (mutex) {
         delegate().clear();
       }
     }
 
+    @Override
     @SideEffectFree public Set<K> keySet() {
       synchronized (mutex) {
         if (keySet == null) {
@@ -725,6 +777,7 @@ final class Synchronized {
       }
     }
 
+    @Override
     @SideEffectFree public Collection<V> values() {
       synchronized (mutex) {
         if (valuesCollection == null) {
@@ -734,6 +787,7 @@ final class Synchronized {
       }
     }
 
+    @Override
     @SideEffectFree public Collection<Map.Entry<K, V>> entries() {
       synchronized (mutex) {
         if (entries == null) {
@@ -743,6 +797,7 @@ final class Synchronized {
       }
     }
 
+    @Override
     public Map<K, Collection<V>> asMap() {
       synchronized (mutex) {
         if (asMap == null) {
@@ -752,6 +807,7 @@ final class Synchronized {
       }
     }
 
+    @Override
     public Multiset<K> keys() {
       synchronized (mutex) {
         if (keys == null) {
@@ -914,6 +970,7 @@ final class Synchronized {
         return delegate().replaceValues(key, values); // copy not synchronized
       }
     }
+    @Override
     public /*@Nullable*/ Comparator<? super V> valueComparator() {
       synchronized (mutex) {
         return delegate().valueComparator();
@@ -1032,7 +1089,7 @@ final class Synchronized {
     // See Collections.CheckedMap.CheckedEntrySet for details on attacks.
 
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations on toArray
+    //Suppressed due to annotations on toArray
     @Override public /*@Nullable*/ Object[] toArray() {
       synchronized (mutex) {
         return ObjectArrays.toArrayImpl(delegate());
@@ -1072,13 +1129,13 @@ final class Synchronized {
       }
     }
     @SuppressWarnings("nullness")
-	@Override public boolean removeAll(Collection<? extends /*@Nullable*/ Object> c) {
+    @Override public boolean removeAll(Collection<? extends /*@Nullable*/ Object> c) {
       synchronized (mutex) {
         return Iterators.removeAll(delegate().iterator(), c);
       }
     }
     @SuppressWarnings("nullness")
-	@Override public boolean retainAll(Collection<? extends /*@Nullable*/ Object> c) {
+    @Override public boolean retainAll(Collection<? extends /*@Nullable*/ Object> c) {
       synchronized (mutex) {
         return Iterators.retainAll(delegate().iterator(), c);
       }
@@ -1133,12 +1190,14 @@ final class Synchronized {
       return (Map<K, V>) super.delegate();
     }
 
+    @Override
     public void clear() {
       synchronized (mutex) {
         delegate().clear();
       }
     }
 
+    @Override
     @SuppressWarnings("nullness")
     @Pure public boolean containsKey(/*@Nullable*/ Object key) {
       synchronized (mutex) {
@@ -1146,6 +1205,7 @@ final class Synchronized {
       }
     }
 
+    @Override
     @SuppressWarnings("nullness")
     @Pure public boolean containsValue(/*@Nullable*/ Object value) {
       synchronized (mutex) {
@@ -1153,6 +1213,7 @@ final class Synchronized {
       }
     }
 
+    @Override
     @SideEffectFree public Set<Map.Entry<K, V>> entrySet() {
       synchronized (mutex) {
         if (entrySet == null) {
@@ -1162,6 +1223,7 @@ final class Synchronized {
       }
     }
 
+    @Override
     @SuppressWarnings("nullness")
     public /*@Nullable*/ V get(/*@Nullable*/ Object key) {
       synchronized (mutex) {
@@ -1169,12 +1231,14 @@ final class Synchronized {
       }
     }
 
+    @Override
     @Pure public boolean isEmpty() {
       synchronized (mutex) {
         return delegate().isEmpty();
       }
     }
 
+    @Override
     @SideEffectFree public Set<K> keySet() {
       synchronized (mutex) {
         if (keySet == null) {
@@ -1184,6 +1248,7 @@ final class Synchronized {
       }
     }
 
+    @Override
     @SuppressWarnings("nullness")
     public V put(K key, V value) {
       synchronized (mutex) {
@@ -1191,12 +1256,14 @@ final class Synchronized {
       }
     }
 
+    @Override
     public void putAll(Map<? extends K, ? extends V> map) {
       synchronized (mutex) {
         delegate().putAll(map);
       }
     }
 
+    @Override
     @SuppressWarnings("nullness")
     public /*@Nullable*/ V remove(/*@Nullable*/ Object key) {
       synchronized (mutex) {
@@ -1204,12 +1271,14 @@ final class Synchronized {
       }
     }
 
+    @Override
     @Pure public int size() {
       synchronized (mutex) {
         return delegate().size();
       }
     }
 
+    @Override
     @SideEffectFree public Collection<V> values() {
       synchronized (mutex) {
         if (values == null) {
@@ -1294,12 +1363,14 @@ final class Synchronized {
       }
     }
 
+    @Override
     public V forcePut(K key, V value) {
       synchronized (mutex) {
         return delegate().forcePut(key, value);
       }
     }
 
+    @Override
     public BiMap<V, K> inverse() {
       synchronized (mutex) {
         if (inverse == null) {

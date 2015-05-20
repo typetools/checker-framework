@@ -25,20 +25,20 @@
 
 package java.security;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+
+import sun.misc.JavaSecurityAccess;
 import sun.misc.JavaSecurityProtectionDomainAccess;
-import static sun.misc.JavaSecurityProtectionDomainAccess.ProtectionDomainCache;
+import sun.misc.SharedSecrets;
 import sun.security.util.Debug;
 import sun.security.util.SecurityConstants;
-import sun.misc.JavaSecurityAccess;
-import sun.misc.SharedSecrets;
-
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  *
@@ -66,6 +66,7 @@ public class ProtectionDomain {
         // Set up JavaSecurityAccess in SharedSecrets
         SharedSecrets.setJavaSecurityAccess(
             new JavaSecurityAccess() {
+                @Override
                 public <T> T doIntersectionPrivilege(
                     PrivilegedAction<T> action,
                     final AccessControlContext stack,
@@ -81,6 +82,7 @@ public class ProtectionDomain {
                     );
                 }
 
+                @Override
                 public <T> T doIntersectionPrivilege(
                     PrivilegedAction<T> action,
                     AccessControlContext context)
@@ -93,13 +95,15 @@ public class ProtectionDomain {
     }
 
     /* CodeSource */
-    private @Nullable CodeSource codesource ;
+    private @Nullable
+    final CodeSource codesource ;
 
     /* ClassLoader the protection domain was consed from */
-    private @Nullable ClassLoader classloader;
+    private @Nullable
+    final ClassLoader classloader;
 
     /* Principals running-as within this protection domain */
-    private Principal[] principals;
+    private final Principal[] principals;
 
     /* the rights this protection domain is granted */
     private @Nullable PermissionCollection permissions;
@@ -109,7 +113,7 @@ public class ProtectionDomain {
 
     /* the PermissionCollection is static (pre 1.4 constructor)
        or dynamic (via a policy refresh) */
-    private boolean staticPermissions;
+    private final boolean staticPermissions;
 
     /*
      * An object used as a key when the ProtectionDomain is stored in a Map.
@@ -364,6 +368,7 @@ public class ProtectionDomain {
         PermissionCollection perms =
             java.security.AccessController.doPrivileged
             (new java.security.PrivilegedAction<PermissionCollection>() {
+                    @Override
                     public PermissionCollection run() {
                         Policy p = Policy.getPolicyNoCheck();
                         return p.getPermissions(ProtectionDomain.this);
@@ -454,15 +459,18 @@ public class ProtectionDomain {
     static {
         SharedSecrets.setJavaSecurityProtectionDomainAccess(
             new JavaSecurityProtectionDomainAccess() {
+                @Override
                 public ProtectionDomainCache getProtectionDomainCache() {
                     return new ProtectionDomainCache() {
                         private final Map<Key, PermissionCollection> map =
                             Collections.synchronizedMap
                                 (new WeakHashMap<Key, PermissionCollection>());
+                        @Override
                         public void put(ProtectionDomain pd,
                             PermissionCollection pc) {
                             map.put((pd == null ? null : pd.key), pc);
                         }
+                        @Override
                         public PermissionCollection get(ProtectionDomain pd) {
                             return pd == null ? map.get(null) : map.get(pd.key);
                         }

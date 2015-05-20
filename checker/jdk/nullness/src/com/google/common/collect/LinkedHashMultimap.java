@@ -16,9 +16,8 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -30,7 +29,9 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 
 /**
  * Implementation of {@code Multimap} that does not allow duplicate key-value
@@ -219,13 +220,16 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       return new Iterator<V>() {
         V value;
 
+        @Override
         public boolean hasNext() {
           return delegateIterator.hasNext();
         }
+        @Override
         public V next() {
           value = delegateIterator.next();
           return value;
         }
+        @Override
         public void remove() {
           delegateIterator.remove();
           linkedEntries.remove(createEntry(value));
@@ -289,16 +293,19 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     return new Iterator<Map.Entry<K, V>>() {
       Map.Entry<K, V> entry;
 
-      public boolean hasNext() {
+      @Override
+    public boolean hasNext() {
         return delegateIterator.hasNext();
       }
 
-      public Map.Entry<K, V> next() {
+      @Override
+    public Map.Entry<K, V> next() {
         entry = delegateIterator.next();
         return entry;
       }
 
-      public void remove() {
+      @Override
+    public void remove() {
         // Remove from iterator first to keep iterator valid.
         delegateIterator.remove();
         LinkedHashMultimap.this.remove(entry.getKey(), entry.getValue());

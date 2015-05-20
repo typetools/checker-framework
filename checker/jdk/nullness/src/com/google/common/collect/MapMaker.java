@@ -16,14 +16,7 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.annotations.GwtIncompatible;
-import com.google.common.base.FinalizableReferenceQueue;
-import com.google.common.base.FinalizableSoftReference;
-import com.google.common.base.FinalizableWeakReference;
-import com.google.common.base.Function;
-import com.google.common.collect.CustomConcurrentHashMap.ComputingStrategy;
-import com.google.common.collect.CustomConcurrentHashMap.Internals;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -38,7 +31,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.annotations.GwtIncompatible;
+import com.google.common.base.FinalizableReferenceQueue;
+import com.google.common.base.FinalizableSoftReference;
+import com.google.common.base.FinalizableWeakReference;
+import com.google.common.base.Function;
+import com.google.common.collect.CustomConcurrentHashMap.ComputingStrategy;
+import com.google.common.collect.CustomConcurrentHashMap.Internals;
 
 /**
  * A {@link ConcurrentMap} builder, providing any combination of these
@@ -96,7 +96,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @author Kevin Bourrillion
  */
 @GwtCompatible(emulated = true)
-@SuppressWarnings("nullness:generic.argument") 
+@SuppressWarnings("nullness:generic.argument")
 public final class MapMaker {
   private Strength keyStrength = Strength.STRONG;
   private Strength valueStrength = Strength.STRONG;
@@ -479,7 +479,7 @@ public final class MapMaker {
     }
 
     StrategyImpl(
-		 MapMaker maker, Function<? super K, ? extends V> computer) {
+            MapMaker maker, Function<? super K, ? extends V> computer) {
       this.keyStrength = maker.keyStrength;
       this.valueStrength = maker.valueStrength;
       this.expirationNanos = maker.expirationNanos;
@@ -487,6 +487,7 @@ public final class MapMaker {
       map = maker.builder.buildComputingMap(this, computer);
     }
 
+    @Override
     public void setValue(ReferenceEntry<K, V> entry, V value) {
       setValueReference(
           entry, valueStrength.referenceValue(entry, value));
@@ -519,31 +520,38 @@ public final class MapMaker {
           }, TimeUnit.NANOSECONDS.toMillis(expirationNanos));
     }
 
+    @Override
     @Pure public boolean equalKeys(K a, /*@Nullable*/ Object b) {
       return keyStrength.equal(a, b);
     }
 
+    @Override
     @Pure public boolean equalValues(V a, /*@Nullable*/ Object b) {
       return valueStrength.equal(a, b);
     }
 
+    @Override
     @Pure public int hashKey(Object key) {
       return keyStrength.hash(key);
     }
 
+    @Override
     @Pure public K getKey(ReferenceEntry<K, V> entry) {
       return entry.getKey();
     }
 
+    @Override
     @Pure public int getHash(ReferenceEntry<K, V> entry) {
       return entry.getHash();
     }
 
+    @Override
     public ReferenceEntry<K, V> newEntry(
         K key, int hash, ReferenceEntry<K, V> next) {
       return keyStrength.newEntry(internals, key, hash, next);
     }
 
+    @Override
     public ReferenceEntry<K, V> copyEntry(K key,
         ReferenceEntry<K, V> original, ReferenceEntry<K, V> newNext) {
       ValueReference<K, V> valueReference = original.getValueReference();
@@ -565,6 +573,7 @@ public final class MapMaker {
      * Waits for a computation to complete. Returns the result of the
      * computation or null if none was available.
      */
+    @Override
     public V waitForValue(ReferenceEntry<K, V> entry)
         throws InterruptedException {
       ValueReference<K, V> valueReference = entry.getValueReference();
@@ -583,11 +592,13 @@ public final class MapMaker {
      * Used by CustomConcurrentHashMap to retrieve values. Returns null
      * instead of blocking or throwing an exception.
      */
+    @Override
     public /*@Nullable*/ V getValue(ReferenceEntry<K, V> entry) {
       ValueReference<K, V> valueReference = entry.getValueReference();
       return valueReference.get();
     }
 
+    @Override
     @SuppressWarnings("nullness")
     // Suppressed to override annotations on ComputationExceptionReference
     public V compute(K key, final ReferenceEntry<K, V> entry,
@@ -598,7 +609,7 @@ public final class MapMaker {
       } catch (ComputationException e) {
         // if computer has thrown a computation exception, propagate rather
         // than wrap
-	  setValueReference(entry,
+        setValueReference(entry,
             new ComputationExceptionReference<K, V>(e.getCause()));
         throw e;
       } catch (Throwable t) {
@@ -649,10 +660,11 @@ public final class MapMaker {
         this.newEntry = newEntry;
       }
 
-      public /*@Nullable*/ V get() {
+      @Override
+    public /*@Nullable*/ V get() {
         boolean success = false;
         try {
-	    /*@Nullable*/ V value = original.getValueReference().get();
+          /*@Nullable*/ V value = original.getValueReference().get();
           success = true;
           return value;
         } finally {
@@ -662,11 +674,13 @@ public final class MapMaker {
         }
       }
 
-      public ValueReference<K, V> copyFor(ReferenceEntry<K, V> entry) {
+      @Override
+    public ValueReference<K, V> copyFor(ReferenceEntry<K, V> entry) {
         return new FutureValueReference(original, entry);
       }
 
-      public V waitForValue() throws InterruptedException {
+      @Override
+    public V waitForValue() throws InterruptedException {
         boolean success = false;
         try {
           // assert that key != null
@@ -691,11 +705,13 @@ public final class MapMaker {
       }
     }
 
+    @Override
     public /*@Nullable*/ ReferenceEntry<K, V> getNext(
-	   /*@Nullable*/ ReferenceEntry<K, V> entry) {
-	return (entry != null) ? entry.getNext() : null;
+            /*@Nullable*/ ReferenceEntry<K, V> entry) {
+      return (entry != null) ? entry.getNext() : null;
     }
 
+    @Override
     public void setInternals(
         Internals<K, V, ReferenceEntry<K, V>> internals) {
       this.internals = internals;
@@ -777,13 +793,16 @@ public final class MapMaker {
 
     private static final ValueReference<Object, Object> COMPUTING
       = new ValueReference<Object, Object>() {
+    @Override
     public /*@Nullable*/ Object get() {
       return null;
     }
+    @Override
     public ValueReference<Object, Object> copyFor(
         ReferenceEntry<Object, Object> entry) {
       throw new AssertionError();
     }
+    @Override
     public Object waitForValue() {
       throw new AssertionError();
     }
@@ -805,13 +824,16 @@ public final class MapMaker {
     NullOutputExceptionReference(String message) {
       this.message = message;
     }
+    @Override
     public /*@Nullable*/ V get() {
       return null;
     }
+    @Override
     public ValueReference<K, V> copyFor(
         ReferenceEntry<K, V> entry) {
       return this;
     }
+    @Override
     public V waitForValue() {
       throw new NullOutputException(message);
     }
@@ -824,13 +846,16 @@ public final class MapMaker {
     ComputationExceptionReference(Throwable t) {
       this.t = t;
     }
+    @Override
     public /*@Nullable*/ V get() {
       return null;
     }
+    @Override
     public ValueReference<K, V> copyFor(
         ReferenceEntry<K, V> entry) {
       return this;
     }
+    @Override
     public V waitForValue() {
       throw new AsynchronousComputationException(t);
     }
@@ -889,6 +914,7 @@ public final class MapMaker {
       this.hash = hash;
     }
 
+    @Override
     @Pure public K getKey() {
       return this.key;
     }
@@ -899,19 +925,24 @@ public final class MapMaker {
     final int hash;
     volatile ValueReference<K, V> valueReference = computing();
 
+    @Override
     public ValueReference<K, V> getValueReference() {
       return valueReference;
     }
+    @Override
     public void setValueReference(
         ValueReference<K, V> valueReference) {
       this.valueReference = valueReference;
     }
+    @Override
     public void valueReclaimed() {
       internals.removeEntry(this, null);
     }
+    @Override
     public /*@Nullable*/ ReferenceEntry<K, V> getNext() {
       return null;
     }
+    @Override
     public int getHash() {
       return hash;
     }
@@ -944,10 +975,12 @@ public final class MapMaker {
       this.hash = hash;
     }
 
+    @Override
     @Pure public K getKey() {
       return get();
     }
 
+    @Override
     public void finalizeReferent() {
       internals.removeEntry(this);
     }
@@ -958,19 +991,24 @@ public final class MapMaker {
     final int hash;
     volatile ValueReference<K, V> valueReference = computing();
 
+    @Override
     public ValueReference<K, V> getValueReference() {
       return valueReference;
     }
+    @Override
     public void setValueReference(
         ValueReference<K, V> valueReference) {
       this.valueReference = valueReference;
     }
+    @Override
     public void valueReclaimed() {
       internals.removeEntry(this, null);
     }
+    @Override
     public /*@Nullable*/ ReferenceEntry<K, V> getNext() {
       return null;
     }
+    @Override
     public int getHash() {
       return hash;
     }
@@ -1002,10 +1040,12 @@ public final class MapMaker {
       this.hash = hash;
     }
 
+    @Override
     @Pure public K getKey() {
       return get();
     }
 
+    @Override
     public void finalizeReferent() {
       internals.removeEntry(this);
     }
@@ -1016,19 +1056,24 @@ public final class MapMaker {
     final int hash;
     volatile ValueReference<K, V> valueReference = computing();
 
+    @Override
     public ValueReference<K, V> getValueReference() {
       return valueReference;
     }
+    @Override
     public void setValueReference(
         ValueReference<K, V> valueReference) {
       this.valueReference = valueReference;
     }
+    @Override
     public void valueReclaimed() {
       internals.removeEntry(this, null);
     }
+    @Override
     public /*@Nullable*/ ReferenceEntry<K, V> getNext() {
       return null;
     }
+    @Override
     public int getHash() {
       return hash;
     }
@@ -1059,15 +1104,18 @@ public final class MapMaker {
       this.entry = entry;
     }
 
+    @Override
     public void finalizeReferent() {
       entry.valueReclaimed();
     }
 
+    @Override
     public ValueReference<K, V> copyFor(
         ReferenceEntry<K, V> entry) {
       return new WeakValueReference<K, V>(get(), entry);
     }
 
+    @Override
     public V waitForValue() {
       return get();
     }
@@ -1084,15 +1132,18 @@ public final class MapMaker {
       this.entry = entry;
     }
 
+    @Override
     public void finalizeReferent() {
       entry.valueReclaimed();
     }
 
+    @Override
     public ValueReference<K, V> copyFor(
         ReferenceEntry<K, V> entry) {
       return new SoftValueReference<K, V>(get(), entry);
     }
 
+    @Override
     public V waitForValue() {
       return get();
     }
@@ -1107,15 +1158,18 @@ public final class MapMaker {
       this.referent = referent;
     }
 
+    @Override
     public V get() {
       return referent;
     }
 
+    @Override
     public ValueReference<K, V> copyFor(
         ReferenceEntry<K, V> entry) {
       return this;
     }
 
+    @Override
     public V waitForValue() {
       return get();
     }

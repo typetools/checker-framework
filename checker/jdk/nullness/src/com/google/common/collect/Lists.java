@@ -16,12 +16,12 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkElementIndex;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.Serializable;
 import java.util.AbstractList;
@@ -36,8 +36,9 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.RandomAccess;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
 
 /**
  * Static utility methods pertaining to {@link List} instances. Also see this
@@ -371,42 +372,51 @@ private static class TwoPlusArrayList<E extends /*@Nullable*/ Object> extends Ab
     @Override public ListIterator<T> listIterator(final int index) {
       final ListIterator<F> delegate = fromList.listIterator(index);
       return new ListIterator<T>() {
+        @Override
         public void add(T e) {
           throw new UnsupportedOperationException();
         }
 
+        @Override
         public boolean hasNext() {
           return delegate.hasNext();
         }
 
+        @Override
         public boolean hasPrevious() {
           return delegate.hasPrevious();
         }
 
+        @Override
         @SuppressWarnings("nullness")
-	// Suppressed to override Java.util.ListIterator.next
+        // Suppressed to override Java.util.ListIterator.next
         public T next() {
           return function.apply(delegate.next());
         }
 
+        @Override
         public int nextIndex() {
           return delegate.nextIndex();
         }
 
+        @Override
         @SuppressWarnings("nullness")
-	// Suppressed to override Java.util.ListIterator.previous
+        // Suppressed to override Java.util.ListIterator.previous
         public T previous() {
           return function.apply(delegate.previous());
         }
 
+        @Override
         public int previousIndex() {
           return delegate.previousIndex();
         }
 
+        @Override
         public void remove() {
           delegate.remove();
         }
 
+        @Override
         public void set(T e) {
           throw new UnsupportedOperationException("not supported");
         }

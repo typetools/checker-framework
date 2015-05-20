@@ -16,10 +16,10 @@
 
 package com.google.common.collect;
 
+import org.checkerframework.dataflow.qual.Pure;
+
 import com.google.common.annotations.GwtCompatible;
 import com.google.common.collect.ImmutableSet.ArrayImmutableSet;
-
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Implementation of {@link ImmutableSet} with two or more elements.
@@ -33,10 +33,10 @@ final class RegularImmutableSet<E> extends ArrayImmutableSet<E> {
   private final transient Object[] table;
   // 'and' with an int to get a valid table index.
   private final transient int mask;
-  @Pure private final transient int hashCode;
+  private final transient int hashCode;
 
   RegularImmutableSet(
-      @Pure Object[] elements, int hashCode, Object[] table, int mask) {
+      Object[] elements, int hashCode, Object[] table, int mask) {
     super(elements);
     this.table = table;
     this.mask = mask;

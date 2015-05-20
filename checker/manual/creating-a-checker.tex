@@ -1,9 +1,9 @@
 \htmlhr
 \chapter{How to create a new checker\label{writing-a-checker}}
 
-\newcommand{\TreeAPIBase}{http://types.cs.washington.edu/checker-framework/jdk-api/javac/com/sun/source}
+\newcommand{\TreeAPIBase}{https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/com/sun/source/}
 \newcommand{\refTreeclass}[2]{\href{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
-\newcommand{\ModelAPIBase}{http://types.cs.washington.edu/checker-framework/jdk-api/javac/javax/lang/model}
+\newcommand{\ModelAPIBase}{http://docs.oracle.com/javase/8/docs/api/javax/lang/model/}
 \newcommand{\refModelclass}[2]{\href{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 
 This chapter describes how to create a checker
@@ -992,7 +992,7 @@ The Checker Framework provides a \textit{base visitor class},
 \refclass{common/basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
-\href{http://types.cs.washington.edu/checker-framework/jdk-api/javac/index.html}{Tree
+\href{http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/}{Tree
 API},
 and it issues a warning whenever the type system is violated.
 
@@ -1610,6 +1610,9 @@ Don't forget to write Javadoc for any annotations that the checker uses.
 That is part of the documentation and is the first thing that many users
 may see.  Also ensure that the Javadoc links back to the manual, using the
 \<@checker\_framework.manual> custom Javadoc tag.
+
+You should also integrate your new checker with the Eclipse plugin.
+% TODO: document how to do that.
 
 
 \section{javac implementation survival guide\label{javac-tips}}

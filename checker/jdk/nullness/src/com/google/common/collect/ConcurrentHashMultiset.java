@@ -16,10 +16,12 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.VisibleForTesting;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Multisets.checkNonnegative;
-import com.google.common.collect.Serialization.FieldSetter;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -33,8 +35,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.qual.*;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Serialization.FieldSetter;
 
 /**
  * A multiset that supports concurrent modifications and that provides atomic
@@ -114,7 +116,7 @@ public final class ConcurrentHashMultiset<E> extends AbstractMultiset<E>
    * @param element the element to look for
    * @return the nonnegative number of occurrences of the element
    */
-  @SuppressWarnings("nullness") 
+  @SuppressWarnings("nullness")
   // Suppressed to override the unbox method.
   @Override public int count(@Nullable Object element) {
     try {
@@ -217,7 +219,7 @@ public final class ConcurrentHashMultiset<E> extends AbstractMultiset<E>
    * @return the count of the element before the operation; possibly zero
    * @throws IllegalArgumentException if {@code occurrences} is negative
    */
-  @SuppressWarnings("nullness") 
+  @SuppressWarnings("nullness")
   // Suppressed nullness to override the remove method in Map
   @Override public int remove(@Nullable Object element, int occurrences) {
     if (occurrences == 0) {
@@ -231,12 +233,12 @@ public final class ConcurrentHashMultiset<E> extends AbstractMultiset<E>
         return 0;
       }
       if (occurrences >= current) {
-	if (countMap.remove(element, current)) {
+        if (countMap.remove(element, current)) {
           return current;
         }
       } else {
         // We know it's an "E" because it already exists in the map.
-	@SuppressWarnings({"unchecked","nullness"})
+        @SuppressWarnings({"unchecked","nullness"})
         E casted = (E) element;
 
         if (countMap.replace(casted, current, current - occurrences)) {
@@ -255,7 +257,7 @@ public final class ConcurrentHashMultiset<E> extends AbstractMultiset<E>
    * @param element the element whose occurrences should all be removed
    * @return the number of occurrences successfully removed, possibly zero
    */
-  @SuppressWarnings("nullness") 
+  @SuppressWarnings("nullness")
   // Suppressed to override the remove method in Map.
   private int removeAllOccurrences(@Nullable Object element) {
     try {
@@ -279,7 +281,7 @@ public final class ConcurrentHashMultiset<E> extends AbstractMultiset<E>
    * @return {@code true} if the removal was possible (including if {@code
    *     occurrences} is zero)
    */
-  @SuppressWarnings("nullness") 
+  @SuppressWarnings("nullness")
   // Suppressed to override the remove method in Map.
   public boolean removeExactly(@Nullable Object element, int occurrences) {
     if (occurrences == 0) {
@@ -297,7 +299,7 @@ public final class ConcurrentHashMultiset<E> extends AbstractMultiset<E>
           return true;
         }
       } else {
-	 @SuppressWarnings("unchecked") // it's in the map, must be an "E"
+        @SuppressWarnings("unchecked") // it's in the map, must be an "E"
         E casted = (E) element;
         if (countMap.replace(casted, current, current - occurrences)) {
           return true;
@@ -404,16 +406,19 @@ public final class ConcurrentHashMultiset<E> extends AbstractMultiset<E>
       final Iterator<Map.Entry<E, Integer>> backingIterator
           = countMap.entrySet().iterator();
       return new Iterator<Multiset.Entry<E>>() {
+        @Override
         public boolean hasNext() {
           return backingIterator.hasNext();
         }
 
+        @Override
         public Multiset.Entry<E> next() {
           Map.Entry<E, Integer> backingEntry = backingIterator.next();
           return Multisets.immutableEntry(
               backingEntry.getKey(), backingEntry.getValue());
         }
 
+        @Override
         public void remove() {
           backingIterator.remove();
         }

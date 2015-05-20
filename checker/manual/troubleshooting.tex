@@ -70,7 +70,7 @@ package org.checkerframework.checker.nullness.qual does not exist
   the source code, then perhaps
   \code{jsr308\_imports} is set as a Java system property, a shell
   environment variable, or a command-line option.
-  You should solve this by unsetting the variable/option.
+  You should solve this by unsetting the variable/option, which it is deprecated.
 \end{sloppypar}
 
 If the error is 
@@ -81,7 +81,7 @@ package org.checkerframework.checker.nullness.qual does not exist
 
 \noindent
 (note the extra apostrophe!), then you have probably misused quoting when
-supplying the \code{jsr308\_imports} environment variable.
+supplying the (deprecated) \code{jsr308\_imports} environment variable.
 
 \item
 If you get an error like one of the following,
@@ -243,8 +243,8 @@ If you get an error that contains lines like these:
 
 \begin{Verbatim}
 Caused by: java.util.zip.ZipException: error in opening zip file
-	at java.util.zip.ZipFile.open(Native Method)
-	at java.util.zip.ZipFile.<init>(ZipFile.java:131)
+    at java.util.zip.ZipFile.open(Native Method)
+    at java.util.zip.ZipFile.<init>(ZipFile.java:131)
 \end{Verbatim}
 
 \noindent

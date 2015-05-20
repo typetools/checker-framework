@@ -366,7 +366,8 @@ public abstract class GenericAnnotatedTypeFactory<
                             "qualifier has both @DefaultFor and @DefaultQualifierInHierarchy annotations: " +
                             qual.getCanonicalName());
                 } else {
-                    defs.addAbsoluteDefault(AnnotationUtils.fromClass(elements, qual), DefaultLocation.OTHERWISE);
+                    defs.addAbsoluteDefault(AnnotationUtils.fromClass(elements, qual),
+                            DefaultLocation.OTHERWISE);
                     foundDefaultOtherwise = true;
                 }
             }
@@ -376,7 +377,8 @@ public abstract class GenericAnnotatedTypeFactory<
                 DefaultForInUntyped defaultForUntyped = qual.getAnnotation(DefaultForInUntyped.class);
 
                 if (defaultForUntyped != null) {
-                    defs.addUntypedDefaults(AnnotationUtils.fromClass(elements, qual), defaultForUntyped.value());
+                    defs.addUntypedDefaults(AnnotationUtils.fromClass(elements, qual),
+                            defaultForUntyped.value());
                 }
 
                 if (qual.getAnnotation(DefaultQualifierInUntyped.class) != null) {
@@ -388,7 +390,8 @@ public abstract class GenericAnnotatedTypeFactory<
                                 qual.getCanonicalName());
                     } else {
                         for (DefaultLocation location : QualifierDefaults.validLocationsForUntyped()) {
-                            defs.addUntypedDefault(AnnotationUtils.fromClass(elements, qual), location);
+                            defs.addUntypedDefault(AnnotationUtils.fromClass(elements, qual),
+                                    location);
                         }
                     }
                 }
@@ -461,7 +464,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected IdentityHashMap<Tree, Store> regularExitStores;
 
     /**
-     * A mapping from methods to their a list with all return statements and the
+     * A mapping from methods to a list with all return statements and the
      * corresponding store.
      */
     protected IdentityHashMap<MethodTree, List<Pair<ReturnNode, TransferResult<Value, Store>>>> returnStatementStores;

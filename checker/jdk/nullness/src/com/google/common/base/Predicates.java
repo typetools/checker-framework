@@ -16,9 +16,10 @@
 
 package com.google.common.base;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.annotations.GwtIncompatible;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,7 +28,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.annotations.GwtIncompatible;
 
 /**
  * Contains static factory methods for creating {@code Predicate} instances.
@@ -223,6 +225,7 @@ public final class Predicates {
   enum AlwaysTruePredicate implements Predicate<Object> {
     INSTANCE;
 
+    @Override
     public boolean apply(/*@Nullable*/ Object o) {
       return true;
     }
@@ -236,6 +239,7 @@ public final class Predicates {
   enum AlwaysFalsePredicate implements Predicate<Object> {
     INSTANCE;
 
+    @Override
     public boolean apply(/*@Nullable*/ Object o) {
       return false;
     }
@@ -252,6 +256,7 @@ public final class Predicates {
     private NotPredicate(Predicate<T> predicate) {
       this.predicate = checkNotNull(predicate);
     }
+    @Override
     public boolean apply(T t) {
       return !predicate.apply(t);
     }
@@ -281,10 +286,11 @@ public final class Predicates {
     private AndPredicate(Iterable<? extends Predicate<? super T>> components) {
       this.components = components;
     }
+    @Override
     @SuppressWarnings("nullness")
     // Suppressed due to the type of ?
     public boolean apply(T t) {
-	for (Predicate<? super T> predicate : components) {
+        for (Predicate<? super T> predicate : components) {
         if (!predicate.apply(t)) {
           return false;
         }
@@ -319,6 +325,7 @@ public final class Predicates {
     private OrPredicate(Iterable<? extends Predicate<? super T>> components) {
       this.components = components;
     }
+    @Override
     @SuppressWarnings("nullness")
     // Suppressed due to the type of ?
     public boolean apply(T t) {
@@ -357,11 +364,12 @@ public final class Predicates {
     private IsEqualToPredicate(T target) {
       this.target = target;
     }
+    @Override
     public boolean apply(/*@Nullable*/ T t) {
-	return (target == null) ? t == null : target.equals(t);
+        return (target == null) ? t == null : target.equals(t);
     }
     @Pure @Override public int hashCode() {
-	return (target == null) ? 0 : target.hashCode();
+        return (target == null) ? 0 : target.hashCode();
     }
     @Pure @Override public boolean equals(/*@Nullable*/ Object obj) {
       if (obj instanceof IsEqualToPredicate) {
@@ -384,8 +392,9 @@ public final class Predicates {
     private InstanceOfPredicate(Class<?> clazz) {
       this.clazz = checkNotNull(clazz);
     }
+    @Override
     public boolean apply(Object o) {
-	return Platform.isInstance(clazz, o);
+        return Platform.isInstance(clazz, o);
     }
     @Pure @Override public int hashCode() {
       return clazz.hashCode();
@@ -408,6 +417,7 @@ public final class Predicates {
   private enum IsNullPredicate implements Predicate<Object> {
     INSTANCE;
 
+    @Override
     public boolean apply(/*@Nullable*/ Object o) {
       return o == null;
     }
@@ -421,6 +431,7 @@ public final class Predicates {
   private enum NotNullPredicate implements Predicate<Object> {
     INSTANCE;
 
+    @Override
     public boolean apply(/*@Nullable*/ Object o) {
       return o != null;
     }
@@ -438,6 +449,7 @@ public final class Predicates {
       this.target = checkNotNull(target);
     }
 
+    @Override
     public boolean apply(/*@Nullable*/ T t) {
       try {
         return target.contains(t);
@@ -477,6 +489,7 @@ public final class Predicates {
       this.f = checkNotNull(f);
     }
 
+    @Override
     public boolean apply(A a) {
       return p.apply(f.apply(a));
     }
