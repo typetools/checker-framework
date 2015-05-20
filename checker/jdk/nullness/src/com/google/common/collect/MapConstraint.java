@@ -16,10 +16,10 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-
-import org.checkerframework.checker.nullness.qual.Nullable;
 //import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+
+import com.google.common.annotations.GwtCompatible;
 
 @GwtCompatible
     interface MapConstraint<K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> {
@@ -35,5 +35,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * Returns a brief human readable description of this constraint, such as
    * "Not null".
    */
+  @Override
   @SideEffectFree String toString();
 }

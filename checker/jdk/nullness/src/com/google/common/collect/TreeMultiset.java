@@ -16,7 +16,9 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -28,8 +30,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * Multiset implementation backed by a {@code TreeMap}. The multiset elements
@@ -134,7 +135,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       implements SortedSet<E> {
 
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations on MapBasedElementSet
+    //Suppressed due to annotations on MapBasedElementSet
     SortedMapBasedElementSet(SortedMap<E, AtomicInteger> map) {
       super(map);
     }
@@ -143,27 +144,33 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       return (SortedMap<E, AtomicInteger>) getMap();
     }
 
+    @Override
     @SideEffectFree public Comparator<? super E> comparator() {
       return sortedMap().comparator();
     }
 
+    @Override
     @SideEffectFree public E first() {
       return sortedMap().firstKey();
     }
 
+    @Override
     @SideEffectFree public E last() {
       return sortedMap().lastKey();
     }
 
+    @Override
     @SideEffectFree public SortedSet<E> headSet(E toElement) {
       return new SortedMapBasedElementSet(sortedMap().headMap(toElement));
     }
 
+    @Override
     @SideEffectFree public SortedSet<E> subSet(E fromElement, E toElement) {
       return new SortedMapBasedElementSet(
           sortedMap().subMap(fromElement, toElement));
     }
 
+    @Override
     @SideEffectFree public SortedSet<E> tailSet(E fromElement) {
       return new SortedMapBasedElementSet(sortedMap().tailMap(fromElement));
     }

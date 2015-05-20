@@ -16,11 +16,13 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * A multiset which forwards all its method calls to another multiset.
@@ -38,22 +40,27 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   @Override protected abstract Multiset<E> delegate();
 
+  @Override
   public int count(/*@Nullable*/ Object element) {
     return delegate().count(element);
   }
 
+  @Override
   public int add(E element, int occurrences) {
     return delegate().add(element, occurrences);
   }
 
+  @Override
   public int remove(/*@Nullable*/ Object element, int occurrences) {
     return delegate().remove(element, occurrences);
   }
 
+  @Override
   @SideEffectFree public Set<E> elementSet() {
     return delegate().elementSet();
   }
 
+  @Override
   @SideEffectFree public Set<Entry<E>> entrySet() {
     return delegate().entrySet();
   }
@@ -66,10 +73,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     return delegate().hashCode();
   }
 
+  @Override
   public int setCount(E element, int count) {
     return delegate().setCount(element, count);
   }
 
+  @Override
   public boolean setCount(E element, int oldCount, int newCount) {
     return delegate().setCount(element, oldCount, newCount);
   }

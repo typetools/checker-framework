@@ -1,9 +1,6 @@
 package java.io;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-
-
-public abstract interface ObjectStreamConstants{
+public interface ObjectStreamConstants{
   public final static short STREAM_MAGIC = -21267;
   public final static short STREAM_VERSION = 5;
   public final static byte TC_BASE = 112;

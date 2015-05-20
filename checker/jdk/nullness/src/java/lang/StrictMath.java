@@ -1,8 +1,5 @@
 package java.lang;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-
-
 public final class StrictMath{
   protected StrictMath() {}
   public final static double E = 2.718281828459045;

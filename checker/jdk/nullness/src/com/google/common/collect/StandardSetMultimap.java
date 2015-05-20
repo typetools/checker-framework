@@ -16,14 +16,16 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * Basic implementation of the {@link SetMultimap} interface. It's a wrapper
@@ -34,7 +36,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 @SuppressWarnings("nullness:generic.argument")
 @GwtCompatible
-    abstract class StandardSetMultimap<K extends /*@Nullable*/ Object, 
+    abstract class StandardSetMultimap<K extends /*@Nullable*/ Object,
                                        V extends /*@Nullable*/ Object>
     extends StandardMultimap<K, V> implements SetMultimap<K, V> {
   /**

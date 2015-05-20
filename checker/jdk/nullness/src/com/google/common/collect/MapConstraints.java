@@ -16,8 +16,12 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -26,8 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * Factory and utilities pertaining to the {@code MapConstraint} interface.
@@ -126,8 +129,8 @@ final class MapConstraints {
       }
       return entrySet;
     }
-    
-    @SuppressWarnings("nullness") 
+
+    @SuppressWarnings("nullness")
     //Suppressed due to typing of checkKeyValue
     @Override public V put(K key, V value) {
       constraint.checkKeyValue(key, value);
@@ -176,14 +179,14 @@ final class MapConstraints {
     @Override public <T> T[] toArray(T[] array) {
       return ObjectArrays.toArrayImpl(this, array);
     }
-    
+
     @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       return Maps.containsEntryImpl(delegate(), o);
     }
     @Pure @Override public boolean containsAll(Collection<?> c) {
       return Collections2.containsAll(this, c);
     }
-    
+
     @Override public boolean remove(/*@Nullable*/ Object o) {
       return Maps.removeEntryImpl(delegate(), o);
     }

@@ -1,8 +1,5 @@
 package java.lang;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-
-
 public class SecurityManager{
   public boolean getInCheck() { throw new RuntimeException("skeleton method"); }
   public SecurityManager() { throw new RuntimeException("skeleton method"); }
