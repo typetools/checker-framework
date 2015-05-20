@@ -16,11 +16,12 @@
 
 package com.google.common.collect;
 
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+
 import com.google.common.annotations.GwtCompatible;
 import com.google.common.collect.ImmutableSet.ArrayImmutableSet;
 import com.google.common.collect.ImmutableSet.TransformedImmutableSet;
-
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Implementation of {@link ImmutableMap} with two or more entries.
@@ -88,6 +89,7 @@ final class RegularImmutableMap<K, V> extends ImmutableMap<K, V> {
     }
   }
 
+  @Override
   @Pure public int size() {
     return entries.length;
   }
@@ -112,7 +114,7 @@ final class RegularImmutableMap<K, V> extends ImmutableMap<K, V> {
   // deserialization should call entrySet(), keySet(), or values() on the
   // deserialized map. The views are serializable since the Immutable* classes
   // are.
-  
+
   private transient ImmutableSet<Entry<K, V>> entrySet;
 
   @SideEffectFree @Override public ImmutableSet<Entry<K, V>> entrySet() {
@@ -175,11 +177,12 @@ final class RegularImmutableMap<K, V> extends ImmutableMap<K, V> {
   @SuppressWarnings("serial") // uses writeReplace(), not default serialization
   private static class Values<V> extends ImmutableCollection<V> {
     final RegularImmutableMap<?, V> map;
-    
+
     Values(RegularImmutableMap<?, V> map) {
       this.map = map;
     }
 
+    @Override
     @Pure public int size() {
       return map.entries.length;
     }

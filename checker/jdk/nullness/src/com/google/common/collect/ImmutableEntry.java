@@ -16,12 +16,12 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.Serializable;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * @see com.google.common.collect.Maps#immutableEntry(Object,Object)

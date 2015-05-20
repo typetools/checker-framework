@@ -16,12 +16,13 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.base.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.util.Map.Entry;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.base.Objects;
 
 /**
  * Implementation of the {@code equals}, {@code hashCode}, and {@code toString}
@@ -33,11 +34,14 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     @SuppressWarnings("nullness:generic.argument")
     abstract class AbstractMapEntry<K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> implements Entry<K, V> {
 
-  @Pure public abstract K getKey();
+  @Override
+@Pure public abstract K getKey();
 
-  @Pure public abstract V getValue();
+  @Override
+@Pure public abstract V getValue();
 
-  public V setValue(V value) {
+  @Override
+public V setValue(V value) {
     throw new UnsupportedOperationException();
   }
 

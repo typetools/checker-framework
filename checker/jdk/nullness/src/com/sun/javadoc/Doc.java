@@ -3,7 +3,7 @@ package com.sun.javadoc;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
-public abstract interface Doc extends java.lang.Comparable<java.lang.Object> {
+public interface Doc extends java.lang.Comparable<java.lang.Object> {
   public abstract java.lang.String commentText();
   public abstract com.sun.javadoc.Tag [] tags();
   public abstract com.sun.javadoc.Tag [] tags(java.lang.String a1);

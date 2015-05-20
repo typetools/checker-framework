@@ -16,7 +16,8 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -26,10 +27,12 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.google.common.annotations.GwtCompatible;
+
 /**
  * An empty immutable sorted set with one or more elements.
  * TODO: Consider creating a separate class for a single-element sorted set.
- * 
+ *
  * @author Jared Levy
  */
 @GwtCompatible(serializable = true)
@@ -76,6 +79,7 @@ final class RegularImmutableSortedSet<E>
     return false;
   }
 
+  @Override
   @Pure public int size() {
     return toIndex - fromIndex;
   }
@@ -209,13 +213,15 @@ final class RegularImmutableSortedSet<E>
   }
 
   // The factory methods ensure that every element is an E.
-  @SuppressWarnings("unchecked")
+  @Override
+@SuppressWarnings("unchecked")
   @SideEffectFree public E first() {
     return (E) elements[fromIndex];
   }
 
   // The factory methods ensure that every element is an E.
-  @SuppressWarnings("unchecked")
+  @Override
+@SuppressWarnings("unchecked")
   @SideEffectFree public E last() {
     return (E) elements[toIndex - 1];
   }
