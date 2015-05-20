@@ -16,9 +16,11 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.Serializable;
+
+import com.google.common.annotations.GwtCompatible;
 
 /** An ordering that uses the reverse of the natural order of the values. */
 @GwtCompatible(serializable = true)
@@ -26,7 +28,8 @@ final class UsingToStringOrdering
     extends Ordering<Object> implements Serializable {
   static final UsingToStringOrdering INSTANCE = new UsingToStringOrdering();
 
-  /*@Pure*/ public int compare(Object left, Object right) {
+  @Pure @Override
+  public int compare(Object left, Object right) {
     return left.toString().compareTo(right.toString());
   }
 

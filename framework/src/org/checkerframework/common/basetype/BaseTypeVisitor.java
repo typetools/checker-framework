@@ -88,7 +88,33 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.ThrowTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
@@ -480,7 +506,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             return super.visitMethod(node, p);
         } finally {
-            boolean abstractMethod = methodElement.getModifiers().contains(Modifier.ABSTRACT);
+            boolean abstractMethod = methodElement.getModifiers().contains(Modifier.ABSTRACT) ||
+                    methodElement.getModifiers().contains(Modifier.NATIVE);
 
             if (!abstractMethod) {
                 // check postcondition annotations
@@ -677,9 +704,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         flowExprContext, getCurrentPath());
 
                 // check return type of method
-                boolean booleanReturnType = TypesUtils
-                        .isBooleanType(InternalUtils.typeOf(node
-                                .getReturnType()));
+                boolean booleanReturnType = TypesUtils.isBooleanType(InternalUtils.typeOf(node.getReturnType()));
                 if (!booleanReturnType) {
                     checker.report(
                             Result.failure("contracts.conditional.postcondition.invalid.returntype"),
@@ -689,8 +714,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     continue;
                 }
 
-                List<?> returnStatements = atypeFactory
-                        .getReturnStatementStores(node);
+                List<?> returnStatements = atypeFactory.getReturnStatementStores(node);
                 for (Object rt : returnStatements) {
                     @SuppressWarnings("unchecked")
                     Pair<ReturnNode, TransferResult<? extends CFAbstractValue<?>, ? extends CFAbstractStore<?, ?>>> r = (Pair<ReturnNode, TransferResult<? extends CFAbstractValue<?>, ? extends CFAbstractStore<?, ?>>>) rt;

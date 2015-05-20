@@ -16,14 +16,13 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Joiner.MapJoiner;
-import com.google.common.base.Preconditions;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import com.google.common.base.Supplier;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -42,8 +41,12 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedSet;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Joiner.MapJoiner;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 
 /**
  * Provides static methods acting on or generating a {@code Multimap}.
@@ -344,7 +347,8 @@ public final class Multimaps {
       return factory.get();
     }
 
-    /*@Override*/ public Comparator<? super V> valueComparator() {
+    @Override
+    public Comparator<? super V> valueComparator() {
       return valueComparator;
     }
 
@@ -485,7 +489,7 @@ public final class Multimaps {
           }
 
           @SuppressWarnings("nullness")
-	  //Suppressed due to the annotations on Java.util.Map.get
+          //Suppressed due to the annotations on Java.util.Map.get
           @Override public /*@Nullable*/ Collection<V> get(/*@Nullable*/ Object key) {
             Collection<V> collection = unmodifiableMap.get(key);
             return (collection == null)
@@ -584,19 +588,22 @@ public final class Multimaps {
     @Override public Iterator<Collection<V>> iterator() {
       final Iterator<Collection<V>> iterator = delegate.iterator();
       return new Iterator<Collection<V>>() {
+        @Override
         public boolean hasNext() {
           return iterator.hasNext();
         }
+        @Override
         public Collection<V> next() {
           return unmodifiableValueCollection(iterator.next());
         }
+        @Override
         public void remove() {
           throw new UnsupportedOperationException();
         }
       };
     }
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations on toArray
+    //Suppressed due to annotations on toArray
     @Override public /*@Nullable*/ Object[] toArray() {
       return ObjectArrays.toArrayImpl(this);
     }
@@ -641,7 +648,7 @@ public final class Multimaps {
       return (SetMultimap<K, V>) super.delegate();
     }
     @SuppressWarnings("nullness")
-	//Suppressed to override the annotations on Java.util.SetMultimap
+    //Suppressed to override the annotations on Java.util.SetMultimap
     @Override public Set<V> get(/*@Nullable*/ K key) {
       /*
        * Note that this doesn't return a SortedSet when delegate is a
@@ -680,6 +687,7 @@ public final class Multimaps {
         K key, @SuppressWarnings("hiding") Iterable<? extends V> values) {
       throw new UnsupportedOperationException();
     }
+    @Override
     public /*@Nullable*/ Comparator<? super V> valueComparator() {
       return delegate().valueComparator();
     }
@@ -907,7 +915,7 @@ public final class Multimaps {
     }
 
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations on toArray
+    //Suppressed due to annotations on toArray
     @Override public /*@Nullable*/ Object[] toArray() {
       return ObjectArrays.toArrayImpl(this);
     }
@@ -960,44 +968,52 @@ public final class Multimaps {
       this.map = checkNotNull(map);
     }
 
+    @Override
     @Pure public int size() {
       return map.size();
     }
 
+    @Override
     @Pure public boolean isEmpty() {
       return map.isEmpty();
     }
 
+    @Override
     @SuppressWarnings("nullness")
-	//Suppressed to override annotations on Java.util.map.containsKey
+    //Suppressed to override annotations on Java.util.map.containsKey
     @Pure public boolean containsKey(/*@Nullable*/ Object key) {
       return map.containsKey(key);
     }
 
+    @Override
     @SuppressWarnings("nullness")
-	//Suppressed to override annotations on Java.util.map.containsValue
+    //Suppressed to override annotations on Java.util.map.containsValue
     @Pure public boolean containsValue(/*@Nullable*/ Object value) {
       return map.containsValue(value);
     }
 
+    @Override
     @Pure public boolean containsEntry(/*@Nullable*/ Object key, /*@Nullable*/ Object value) {
       return map.entrySet().contains(Maps.immutableEntry(key, value));
     }
 
+    @Override
     public Set<V> get(final K key) {
       return new AbstractSet<V>() {
         @Override public Iterator<V> iterator() {
           return new Iterator<V>() {
             int i;
 
-	    @SuppressWarnings("nullness")
-		//Suppressed due to annotations on Java.util.Map.containsKey
+            @Override
+            @SuppressWarnings("nullness")
+            //Suppressed due to annotations on Java.util.Map.containsKey
             public boolean hasNext() {
               return (i == 0) && map.containsKey(key);
             }
 
-	    @SuppressWarnings("nullness")
-		//Suppressed due to annotations on Java.util.Map.get
+            @Override
+            @SuppressWarnings("nullness")
+            //Suppressed due to annotations on Java.util.Map.get
             public V next() {
               if (!hasNext()) {
                 throw new NoSuchElementException();
@@ -1006,9 +1022,10 @@ public final class Multimaps {
               return map.get(key);
             }
 
+            @Override
             @SuppressWarnings("nullness")
-		//Suppressed due to annotations on Java.util.Map.remove
-	    public void remove() {
+            //Suppressed due to annotations on Java.util.Map.remove
+            public void remove() {
               checkState(i == 1);
               i = -1;
               map.remove(key);
@@ -1017,33 +1034,39 @@ public final class Multimaps {
         }
 
         @SuppressWarnings("nullness")
-	    //Suppressed due to annotations on Java.util.Map.containsKey
+        //Suppressed due to annotations on Java.util.Map.containsKey
         @Pure @Override public int size() {
           return map.containsKey(key) ? 1 : 0;
         }
       };
     }
 
+    @Override
     public boolean put(K key, V value) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public boolean putAll(K key, Iterable<? extends V> values) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public boolean putAll(Multimap<? extends K, ? extends V> multimap) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public Set<V> replaceValues(K key, Iterable<? extends V> values) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public boolean remove(/*@Nullable*/ Object key, /*@Nullable*/ Object value) {
       return map.entrySet().remove(Maps.immutableEntry(key, value));
     }
 
+    @Override
     @SuppressWarnings("nullness")
     //Suppressed due to annotations on Map
     public Set<V> removeAll(/*@Nullable*/ Object key) {
@@ -1055,26 +1078,32 @@ public final class Multimaps {
       return values;
     }
 
+    @Override
     public void clear() {
       map.clear();
     }
 
+    @Override
     @SideEffectFree public Set<K> keySet() {
       return map.keySet();
     }
 
+    @Override
     public Multiset<K> keys() {
       return Multisets.forSet(map.keySet());
     }
 
+    @Override
     @SideEffectFree public Collection<V> values() {
       return map.values();
     }
 
+    @Override
     @SideEffectFree public Set<Entry<K, V>> entries() {
       return map.entrySet();
     }
 
+    @Override
     public Map<K, Collection<V>> asMap() {
       if (asMap == null) {
         asMap = new AsMap();
@@ -1119,10 +1148,12 @@ public final class Multimaps {
         return new Iterator<Entry<K, Collection<V>>>() {
           final Iterator<K> keys = map.keySet().iterator();
 
-          public boolean hasNext() {
+          @Override
+        public boolean hasNext() {
             return keys.hasNext();
           }
-          public Entry<K, Collection<V>> next() {
+          @Override
+        public Entry<K, Collection<V>> next() {
             final K key = keys.next();
             return new AbstractMapEntry<K, Collection<V>>() {
               @Pure @Override public K getKey() {
@@ -1133,7 +1164,8 @@ public final class Multimaps {
               }
             };
           }
-          public void remove() {
+          @Override
+        public void remove() {
             keys.remove();
           }
         };
@@ -1176,13 +1208,13 @@ public final class Multimaps {
       // The following methods are included for performance.
 
       @SuppressWarnings("nullness")
-	  //Suppressed to override annotations on Java.util.Map.containsKey
+      //Suppressed to override annotations on Java.util.Map.containsKey
       @Pure @Override public boolean containsKey(/*@Nullable*/ Object key) {
         return map.containsKey(key);
       }
 
       @SuppressWarnings({"unchecked","nullness"})
-	  //Suppressed to override annotations in AbstractMap
+      //Suppressed to override annotations in AbstractMap
       @Override public /*@Nullable*/ Collection<V> get(/*@Nullable*/ Object key) {
         Collection<V> collection = MapMultimap.this.get((K) key);
         return collection.isEmpty() ? null : collection;

@@ -16,11 +16,13 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.Map;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * An immutable {@link BiMap} with reliable user-specified iteration order. Does
@@ -188,7 +190,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    */
 
   public static <K, V> ImmutableBiMap<K, V> copyOf(
-	   Map<? extends K, ? extends V> map) {
+          Map<? extends K, ? extends V> map) {
     if (map instanceof ImmutableBiMap) {
       @SuppressWarnings("unchecked") // safe since map is not writable
       ImmutableBiMap<K, V> bimap = (ImmutableBiMap<K, V>) map;
@@ -213,6 +215,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * <p>The inverse of an {@code ImmutableBiMap} is another
    * {@code ImmutableBiMap}.
    */
+  @Override
   public abstract ImmutableBiMap<V, K> inverse();
 
   @Pure @Override public boolean containsKey(@Nullable Object key) {
@@ -226,7 +229,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
   @SideEffectFree @Override public ImmutableSet<Entry<K, V>> entrySet() {
     return delegate().entrySet();
   }
-  
+
   @Override public /*@Nullable*/ V get(@Nullable Object key) {
     return delegate().get(key);
   }
@@ -248,7 +251,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    *
    * @throws UnsupportedOperationException always
    */
-  public V forcePut(K key, V value) {
+  @Override
+public V forcePut(K key, V value) {
     throw new UnsupportedOperationException();
   }
 
@@ -256,7 +260,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     return delegate().isEmpty();
   }
 
-  @Pure public int size() {
+  @Override
+@Pure public int size() {
     return delegate().size();
   }
 

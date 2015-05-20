@@ -16,12 +16,13 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Multisets.checkNonnegative;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
@@ -34,8 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.qual.*;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * Basic implementation of {@code Multiset<E>} backed by an instance of {@code
@@ -101,26 +101,30 @@ import org.checkerframework.dataflow.qual.*;
       final Iterator<Map.Entry<E, AtomicInteger>> backingEntries
           = backingMap.entrySet().iterator();
       return new Iterator<Multiset.Entry<E>>() {
-	  /*@Nullable*/ Map.Entry<E, AtomicInteger> toRemove;
+          /*@Nullable*/ Map.Entry<E, AtomicInteger> toRemove;
 
+        @Override
         public boolean hasNext() {
           return backingEntries.hasNext();
         }
 
+        @Override
         public Multiset.Entry<E> next() {
           final Map.Entry<E, AtomicInteger> mapEntry = backingEntries.next();
           toRemove = mapEntry;
           return new Multisets.AbstractEntry<E>() {
+            @Override
             public E getElement() {
               return mapEntry.getKey();
             }
+            @Override
             @SuppressWarnings("nullness")
-	    // Suppressed because Map in Java.util doesn't allow null elements
-	    // in get by default
+            // Suppressed because Map in Java.util doesn't allow null elements
+            // in get by default
             public int getCount() {
               int count = mapEntry.getValue().get();
               if (count == 0) {
-		/*@Nullable*/ AtomicInteger frequency = backingMap.get(getElement());
+                /*@Nullable*/ AtomicInteger frequency = backingMap.get(getElement());
                 if (frequency != null) {
                   count = frequency.get();
                 }
@@ -130,9 +134,10 @@ import org.checkerframework.dataflow.qual.*;
           };
         }
 
+        @Override
         @SuppressWarnings("nullness")
-	// Suppressed, as toRemove is gauranteed to be nonNull after a call
-	// on checkState.
+        // Suppressed, as toRemove is gauranteed to be nonNull after a call
+        // on checkState.
         public void remove() {
           checkState(toRemove != null,
               "no calls to next() since the last call to remove()");
@@ -205,10 +210,12 @@ import org.checkerframework.dataflow.qual.*;
       this.entryIterator = backingMap.entrySet().iterator();
     }
 
+    @Override
     public boolean hasNext() {
       return occurrencesLeft > 0 || entryIterator.hasNext();
     }
 
+    @Override
     public E next() {
       if (occurrencesLeft == 0) {
         currentEntry = entryIterator.next();
@@ -219,6 +226,7 @@ import org.checkerframework.dataflow.qual.*;
       return currentEntry.getKey();
     }
 
+    @Override
     public void remove() {
       checkState(canRemove,
           "no calls to next() since the last call to remove()");
@@ -380,20 +388,23 @@ import org.checkerframework.dataflow.qual.*;
       final Iterator<Map.Entry<E, AtomicInteger>> entries
           = map.entrySet().iterator();
       return new Iterator<E>() {
-	  /*@Nullable*/ Map.Entry<E, AtomicInteger> toRemove;
+          /*@Nullable*/ Map.Entry<E, AtomicInteger> toRemove;
 
+        @Override
         public boolean hasNext() {
           return entries.hasNext();
         }
 
+        @Override
         public E next() {
           toRemove = entries.next();
           return toRemove.getKey();
         }
 
+        @Override
         @SuppressWarnings("nullness")
-	// Suppressed because toRemove is guarenteed to not be null
-	// after a call on checkState
+        // Suppressed because toRemove is guarenteed to not be null
+        // after a call on checkState
         public void remove() {
           checkState(toRemove != null,
               "no calls to next() since the last call to remove()");
@@ -438,6 +449,6 @@ import org.checkerframework.dataflow.qual.*;
   private void readObjectNoData() throws ObjectStreamException {
     throw new InvalidObjectException("Stream data required");
   }
-  
-  private static final long serialVersionUID = -2250766705698539974L;  
+
+  private static final long serialVersionUID = -2250766705698539974L;
 }

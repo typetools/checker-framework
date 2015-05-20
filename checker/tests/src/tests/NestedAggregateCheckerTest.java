@@ -13,7 +13,7 @@ import java.util.Collection;
 public class NestedAggregateCheckerTest extends ParameterizedCheckerTest {
 
     public NestedAggregateCheckerTest(File testFile) {
-        super(testFile, NestedAggregateChecker.class, "", "-Anomsgtext", "-AcheckPurityAnnotations");
+        super(testFile, NestedAggregateChecker.class, "", "-Anomsgtext", "-AcheckPurityAnnotations", "-AunsafeUntyped");
     }
 
     @Parameters

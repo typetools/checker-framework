@@ -16,14 +16,17 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.base.Function;
-import com.google.common.base.Objects;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.Serializable;
 
 import javax.annotation.Nullable;
+
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.base.Function;
+import com.google.common.base.Objects;
 
 /**
  * An ordering that orders elements by applying an order to the result of a
@@ -41,7 +44,8 @@ final class ByFunctionOrdering<F, T>
     this.ordering = checkNotNull(ordering);
   }
 
-  /*@Pure*/ public int compare(F left, F right) {
+  /*@Pure*/ @Override
+public int compare(F left, F right) {
     return ordering.compare(function.apply(left), function.apply(right));
   }
 

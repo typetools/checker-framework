@@ -16,11 +16,13 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.Serializable;
 
 import javax.annotation.Nullable;
+
+import com.google.common.annotations.GwtCompatible;
 
 /** An ordering that treats {@code null} as less than all other values. */
 @SuppressWarnings("nullness:generic.argument")
@@ -32,7 +34,8 @@ import javax.annotation.Nullable;
     this.ordering = ordering;
   }
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
     /*@Pure*/ public int compare(T left, T right) {
     if (left == right) {
       return 0;

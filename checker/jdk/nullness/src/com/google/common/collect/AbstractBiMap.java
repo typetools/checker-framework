@@ -16,10 +16,11 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.base.Objects;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -30,9 +31,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
-import org.checkerframework.dataflow.qual.*;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.base.Objects;
 
 /**
  * A general-purpose bimap implementation using any two backing {@code Map}
@@ -97,7 +97,8 @@ import org.checkerframework.dataflow.qual.*;
     return putInBothMaps(key, value, false);
   }
 
-  public V forcePut(K key, V value) {
+  @Override
+public V forcePut(K key, V value) {
     return putInBothMaps(key, value, true);
   }
 
@@ -155,7 +156,8 @@ import org.checkerframework.dataflow.qual.*;
 
   // Views
 
-  public BiMap<V, K> inverse() {
+  @Override
+public BiMap<V, K> inverse() {
     return inverse;
   }
 
@@ -196,13 +198,16 @@ import org.checkerframework.dataflow.qual.*;
       return new Iterator<K>() {
         Entry<K, V> entry;
 
+        @Override
         public boolean hasNext() {
           return iterator.hasNext();
         }
+        @Override
         public K next() {
           entry = iterator.next();
           return entry.getKey();
         }
+        @Override
         public void remove() {
           checkState(entry != null);
           V value = entry.getValue();
@@ -236,15 +241,18 @@ import org.checkerframework.dataflow.qual.*;
       return new Iterator<V>() {
         V valueToRemove;
 
-        /*@Override*/ public boolean hasNext() {
+        /*@Override*/ @Override
+        public boolean hasNext() {
           return iterator.hasNext();
         }
 
-        /*@Override*/ public V next() {
+        /*@Override*/ @Override
+        public V next() {
           return valueToRemove = iterator.next();
         }
 
-        /*@Override*/ public void remove() {
+        /*@Override*/ @Override
+        public void remove() {
           iterator.remove();
           removeFromInverseMap(valueToRemove);
         }
@@ -299,11 +307,13 @@ import org.checkerframework.dataflow.qual.*;
       return new Iterator<Entry<K, V>>() {
         Entry<K, V> entry;
 
-        /*@Override*/ public boolean hasNext() {
+        /*@Override*/ @Override
+        public boolean hasNext() {
           return iterator.hasNext();
         }
 
-        /*@Override*/ public Entry<K, V> next() {
+        /*@Override*/ @Override
+        public Entry<K, V> next() {
           entry = iterator.next();
           final Entry<K, V> finalEntry = entry;
 
@@ -312,8 +322,8 @@ import org.checkerframework.dataflow.qual.*;
               return finalEntry;
             }
 
-	    @SuppressWarnings("nullness")
-		//Suppressed, but the ternary guarantees null.toString will not be called
+            @SuppressWarnings("nullness")
+            //Suppressed, but the ternary guarantees null.toString will not be called
             @Override public V setValue(V value) {
               // Preconditions keep the map and inverse consistent.
               checkState(contains(this), "entry no longer in map");
@@ -322,7 +332,7 @@ import org.checkerframework.dataflow.qual.*;
                 return value;
               }
               checkArgument(!containsValue(value),
-			    "value already present: %s", (value == null ? "null" : value));
+                      "value already present: %s", (value == null ? "null" : value));
               V oldValue = finalEntry.setValue(value);
               checkState(Objects.equal(value, get(getKey())),
                   "entry no longer in map");
@@ -332,7 +342,8 @@ import org.checkerframework.dataflow.qual.*;
           };
         }
 
-        /*@Override*/ public void remove() {
+        /*@Override*/ @Override
+        public void remove() {
           checkState(entry != null);
           V value = entry.getValue();
           iterator.remove();
