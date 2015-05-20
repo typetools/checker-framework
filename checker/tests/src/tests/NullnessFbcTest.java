@@ -22,7 +22,7 @@ public class NullnessFbcTest extends ParameterizedCheckerTest {
         super(testFile,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
-                "-AcheckPurityAnnotations", "-AunsafeUntyped",
+                "-AcheckPurityAnnotations",
                 "-Anomsgtext", "-Xlint:deprecation",
                 "-Alint=arrays:forbidnonnullcomponents,"
                         + AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
