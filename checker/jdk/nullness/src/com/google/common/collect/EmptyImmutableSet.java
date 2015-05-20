@@ -16,16 +16,18 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.util.Collection;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.google.common.annotations.GwtCompatible;
+
 /**
  * An empty immutable set.
- * 
+ *
  * @author Kevin Bourrillion
  */
 @GwtCompatible(serializable = true)
@@ -34,7 +36,8 @@ final class EmptyImmutableSet extends ImmutableSet<Object> {
 
   private EmptyImmutableSet() {}
 
-  @Pure public int size() {
+  @Override
+@Pure public int size() {
     return 0;
   }
 

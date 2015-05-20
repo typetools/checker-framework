@@ -16,8 +16,10 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;
@@ -28,7 +30,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * An immutable {@link SetMultimap} with reliable user-specified key and value

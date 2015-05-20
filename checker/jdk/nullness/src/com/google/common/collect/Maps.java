@@ -16,14 +16,13 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.base.Function;
-import com.google.common.base.Joiner.MapJoiner;
-import com.google.common.base.Objects;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.Serializable;
 import java.util.AbstractCollection;
@@ -45,8 +44,12 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner.MapJoiner;
+import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 
 /**
  * Static utility methods pertaining to {@link Map} instances. Also see this
@@ -191,7 +194,7 @@ public final class Maps {
    * comparator.
    *
    * <p><b>Note:</b> if mutability is not required, use {@code
-   * ImmutableSortedMap.orderedBy(comparator).build()} instead. 
+   * ImmutableSortedMap.orderedBy(comparator).build()} instead.
    *
    * @param comparator the comparator to sort the keys with
    * @return a new, empty {@code TreeMap}
@@ -340,22 +343,27 @@ public final class Maps {
       this.differences = Collections.unmodifiableMap(differences);
     }
 
+    @Override
     public boolean areEqual() {
       return areEqual;
     }
 
+    @Override
     public Map<K, V> entriesOnlyOnLeft() {
       return onlyOnLeft;
     }
 
+    @Override
     public Map<K, V> entriesOnlyOnRight() {
       return onlyOnRight;
     }
 
+    @Override
     public Map<K, V> entriesInCommon() {
       return onBoth;
     }
 
+    @Override
     public Map<K, ValueDifference<V>> entriesDiffering() {
       return differences;
     }
@@ -409,10 +417,12 @@ public final class Maps {
       this.right = right;
     }
 
+    @Override
     public V leftValue() {
       return left;
     }
 
+    @Override
     public V rightValue() {
       return right;
     }
@@ -477,7 +487,7 @@ public final class Maps {
    * @throws NullPointerException if any key or value in {@code Properties} is
    *     null.
    */
-    @SuppressWarnings("nullness") 
+    @SuppressWarnings("nullness")
     // Suppressed to override the annotations on Properties
     public static ImmutableMap<String, String>
       fromProperties(Properties properties) {
@@ -577,7 +587,7 @@ public final class Maps {
     @Override public <T> T[] toArray(T[] array) {
       return ObjectArrays.toArrayImpl(this, array);
     }
-    
+
     @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       return containsEntryImpl(delegate(), o);
     }
@@ -644,10 +654,12 @@ public final class Maps {
       return unmodifiableMap;
     }
 
+    @Override
     public V forcePut(K key, V value) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public BiMap<V, K> inverse() {
       BiMap<V, K> result = inverse;
       return (result == null)
@@ -882,25 +894,28 @@ public final class Maps {
             = fromMap.entrySet().iterator();
 
         return new Iterator<Entry<K, V2>>() {
-          public boolean hasNext() {
+          @Override
+        public boolean hasNext() {
             return mapIterator.hasNext();
           }
 
-          public Entry<K, V2> next() {
+          @Override
+        public Entry<K, V2> next() {
             final Entry<K, V1> entry = mapIterator.next();
             return new AbstractMapEntry<K, V2>() {
               @Pure @Override public K getKey() {
                 return entry.getKey();
               }
               @SuppressWarnings("nullness")
-	      //Suppressed due to annotations on function.apply
+              //Suppressed due to annotations on function.apply
               @Pure @Override public V2 getValue() {
                 return function.apply(entry.getValue());
               }
             };
           }
 
-          public void remove() {
+          @Override
+        public void remove() {
             mapIterator.remove();
           }
         };
@@ -924,7 +939,7 @@ public final class Maps {
         return entryValue == null && containsKey(entryKey);
       }
 
-      @SuppressWarnings("nullness") 
+      @SuppressWarnings("nullness")
       // Suppressed, as entry cannot be null, as the Map cannot contain
       // a null entry.
       @Override public boolean remove(/*@Nullable*/ Object o) {
@@ -937,7 +952,7 @@ public final class Maps {
         return false;
       }
     }
-  } 
+  }
 
   /**
    * Returns a map containing the mappings in {@code unfiltered} whose keys
@@ -963,12 +978,13 @@ public final class Maps {
    * which satisfy the filter. When a live view is <i>not</i> needed, it may be
    * faster to copy the filtered map and use the copy.
    */
-    
+
 public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> Map<K, V> filterKeys(
       Map<K, V> unfiltered, final Predicate<? super K> keyPredicate) {
     checkNotNull(keyPredicate);
     Predicate<Entry<K, V>> entryPredicate = new Predicate<Entry<K, V>>() {
-      @SuppressWarnings("nullness")
+      @Override
+    @SuppressWarnings("nullness")
       // Suppressed due to annotations on keyPredicate
       public boolean apply(Entry<K, V> input) {
         return keyPredicate.apply(input.getKey());
@@ -978,7 +994,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
         ? filterFiltered((AbstractFilteredMap<K, V>) unfiltered, entryPredicate)
         : new FilteredKeyMap<K, V>(
             checkNotNull(unfiltered), keyPredicate, entryPredicate);
-  } 
+  }
 
   private static abstract class AbstractFilteredMap<K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object>
       extends AbstractMap<K, V> {
@@ -1010,13 +1026,13 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
     }
 
     @SuppressWarnings("nullness")
-	//Suppressed to override annotations on Map.containsKey
+    //Suppressed to override annotations on Map.containsKey
     @Pure @Override public boolean containsKey(/*@Nullable*/ Object key) {
       return unfiltered.containsKey(key) && apply(key, unfiltered.get(key));
     }
 
     @SuppressWarnings("nullness")
-	//Suppressed to override annotations on Map.get
+    //Suppressed to override annotations on Map.get
     @Override public /*@Nullable*/ V get(/*@Nullable*/ Object key) {
       V value = unfiltered.get(key);
       return ((value != null) && apply(key, value)) ? value : null;
@@ -1027,7 +1043,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
     }
 
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations on Map.remove.
+    //Suppressed due to annotations on Map.remove.
     @Override public /*@Nullable*/ V remove(/*@Nullable*/ Object key) {
       return containsKey(key) ? unfiltered.remove(key) : null;
     }
@@ -1039,16 +1055,18 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
       return (result == null) ? values = new Values() : values;
     }
 
-    @SuppressWarnings("nullness") 
-	//Suppressed to override the annotations on Set
+    @SuppressWarnings("nullness")
+    //Suppressed to override the annotations on Set
     class Values extends AbstractCollection<V> {
       @Override public Iterator<V> iterator() {
         final Iterator<Entry<K, V>> entryIterator = entrySet().iterator();
         return new UnmodifiableIterator<V>() {
-          public boolean hasNext() {
+          @Override
+        public boolean hasNext() {
             return entryIterator.hasNext();
           }
-          public /*@Nullable*/ V next() {
+          @Override
+        public /*@Nullable*/ V next() {
             return entryIterator.next().getValue();
           }
         };
@@ -1146,7 +1164,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
     }
 
     @SuppressWarnings({"unchecked","nullness"})
-	//Suppressed to override annotations on Java.util.Map
+    //Suppressed to override annotations on Java.util.Map
     @Pure @Override public boolean containsKey(/*@Nullable*/ Object key) {
       return unfiltered.containsKey(key) && keyPredicate.apply((K) key);
     }
@@ -1182,10 +1200,12 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
       @Override public Iterator<Entry<K, V>> iterator() {
         final Iterator<Entry<K, V>> iterator = filteredEntrySet.iterator();
         return new UnmodifiableIterator<Entry<K,V>>() {
-          public boolean hasNext() {
+          @Override
+        public boolean hasNext() {
             return iterator.hasNext();
           }
-          public Entry<K, V> next() {
+          @Override
+        public Entry<K, V> next() {
             final Entry<K, V> entry = iterator.next();
             return new ForwardingMapEntry<K, V>() {
               @Override protected Entry<K, V> delegate() {
@@ -1212,10 +1232,12 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
       @Override public Iterator<K> iterator() {
         final Iterator<Entry<K, V>> iterator = filteredEntrySet.iterator();
         return new UnmodifiableIterator<K>() {
-          public boolean hasNext() {
+          @Override
+        public boolean hasNext() {
             return iterator.hasNext();
           }
-          public K next() {
+          @Override
+        public K next() {
             return iterator.next().getKey();
           }
         };
@@ -1234,7 +1256,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
       }
 
       @SuppressWarnings("nullness")
-	  //Suppressed due to annotations on Java.util.Map
+      //Suppressed due to annotations on Java.util.Map
       @Override public boolean remove(/*@Nullable*/ Object o) {
         if (containsKey(o)) {
           unfiltered.remove(o);
@@ -1256,7 +1278,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
         checkNotNull(collection); // for GWT
         boolean changed = false;
         Iterator<Entry<K, V>> iterator = unfiltered.entrySet().iterator();
-	while (iterator.hasNext()) {
+        while (iterator.hasNext()) {
           Entry<K, V> entry = iterator.next();
           if (!collection.contains(entry.getKey()) && predicate.apply(entry)) {
             iterator.remove();
@@ -1267,7 +1289,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
       }
 
       @SuppressWarnings("nullness")
-	  //Suppressed due to annotations on toArray
+      //Suppressed due to annotations on toArray
       @Override public Object[] toArray() {
         // creating an ArrayList so filtering happens once
         return Lists.newArrayList(iterator()).toArray();
@@ -1288,7 +1310,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
       AbstractFilteredMap<K, V> map,
       Predicate<? super Entry<K, V>> entryPredicate) {
     Predicate<Entry<K, V>> predicate
-        = Predicates.and(map.predicate, entryPredicate);
+        = Predicates.and(map.predicate, null /*was entryPredicate*/);
     return new FilteredEntryMap<K, V>(map.unfiltered, predicate);
   }
 

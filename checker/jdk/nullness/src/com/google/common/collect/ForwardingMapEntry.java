@@ -16,12 +16,13 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.util.Map;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * A map entry which forwards all its method calls to another map entry.
@@ -38,14 +39,17 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     extends ForwardingObject implements Map.Entry<K, V> {
 
   @Override protected abstract Map.Entry<K, V> delegate();
+  @Override
   @Pure public K getKey() {
     return delegate().getKey();
   }
 
+  @Override
   @Pure public V getValue() {
     return delegate().getValue();
   }
 
+  @Override
   public V setValue(V value) {
     return delegate().setValue(value);
   }

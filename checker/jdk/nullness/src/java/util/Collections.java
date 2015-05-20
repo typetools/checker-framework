@@ -1,7 +1,6 @@
 package java.util;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 public class Collections {
   protected Collections() {}
@@ -48,8 +47,7 @@ public class Collections {
   public static <K, V> Map<K, V> checkedMap(Map<K, V> a1, Class<K> a2, Class<V> a3) { throw new RuntimeException("skeleton method"); }
   public static <K, V> SortedMap<K, V> checkedSortedMap(SortedMap<K, V> a1, Class<K> a2, Class<V> a3) { throw new RuntimeException("skeleton method"); }
   public final static <T> Set<T> emptySet() { throw new RuntimeException("skeleton method"); }
-  // TODO: remove @NonNull - it should be the default.
-  public final static <T> @NonNull List<T> emptyList() { throw new RuntimeException("skeleton method"); }
+  public final static <T> List<T> emptyList() { throw new RuntimeException("skeleton method"); }
   public final static <K,V> Map<K, V> emptyMap() { throw new RuntimeException("skeleton method"); }
   public static <T extends @Nullable Object> Set<T> singleton(T a1) { throw new RuntimeException("skeleton method"); }
   public static <T> List<T> singletonList(T a1) { throw new RuntimeException("skeleton method"); }

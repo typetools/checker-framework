@@ -16,7 +16,9 @@
 
 package com.google.common.collect;
 
-import com.google.common.base.Function;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -35,8 +37,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.qual.*;
+import com.google.common.base.Function;
 
 /**
  * A framework for concurrent hash map implementations. The
@@ -141,10 +142,10 @@ final class CustomConcurrentHashMap {
   static final class Builder {
     private static final int DEFAULT_INITIAL_CAPACITY = 16;
     private static final int DEFAULT_CONCURRENCY_LEVEL = 16;
-    
+
     private static final int UNSET_INITIAL_CAPACITY = -1;
     private static final int UNSET_CONCURRENCY_LEVEL = -1;
-    
+
     int initialCapacity = UNSET_INITIAL_CAPACITY;
     int concurrencyLevel = UNSET_CONCURRENCY_LEVEL;
 
@@ -263,7 +264,7 @@ final class CustomConcurrentHashMap {
 
       return new ComputingImpl<K, V, E>(strategy, this, computer);
     }
-    
+
     int getInitialCapacity() {
       return (initialCapacity == UNSET_INITIAL_CAPACITY)
           ? DEFAULT_INITIAL_CAPACITY : initialCapacity;
@@ -645,7 +646,8 @@ final class CustomConcurrentHashMap {
 
       static final long serialVersionUID = 0;
 
-      @SuppressWarnings("nullness")
+      @Override
+    @SuppressWarnings("nullness")
       //Suppressed due to annotations on getEntry
       public E getEntry(/*@Nullable*/ K key) {
         if (key == null) {
@@ -655,7 +657,8 @@ final class CustomConcurrentHashMap {
         return segmentFor(hash).getEntry(key, hash);
       }
 
-      public boolean removeEntry(E entry, /*@Nullable*/ V value) {
+      @Override
+    public boolean removeEntry(E entry, /*@Nullable*/ V value) {
         if (entry == null) {
           throw new NullPointerException("entry");
         }
@@ -663,7 +666,8 @@ final class CustomConcurrentHashMap {
         return segmentFor(hash).removeEntry(entry, hash, value);
       }
 
-      public boolean removeEntry(E entry) {
+      @Override
+    public boolean removeEntry(E entry) {
         if (entry == null) {
           throw new NullPointerException("entry");
         }
@@ -764,7 +768,7 @@ final class CustomConcurrentHashMap {
       /**
        * The per-segment table.
        */
-	volatile AtomicReferenceArray<E> table;
+      volatile AtomicReferenceArray<E> table;
 
       Segment(int initialCapacity) {
         setTable(newEntryArray(initialCapacity));
@@ -796,7 +800,7 @@ final class CustomConcurrentHashMap {
       public /*@Nullable*/ E getEntry(/*@Nullable*/ Object key, int hash) {
         Strategy<K, V, E> s = Impl.this.strategy;
         if (count != 0) { // read-volatile
-	    for (/*@Nullable*/ E e = getFirst(hash); e != null; e = s.getNext(e)) {
+          for (/*@Nullable*/ E e = getFirst(hash); e != null; e = s.getNext(e)) {
             if (s.getHash(e) != hash) {
               continue;
             }
@@ -816,7 +820,7 @@ final class CustomConcurrentHashMap {
       }
 
       @SuppressWarnings("nullness")
-	  /*@Nullable*/ V get(/*@Nullable*/ Object key, int hash) {
+      /*@Nullable*/ V get(/*@Nullable*/ Object key, int hash) {
         E entry = getEntry(key, hash);
         if (entry == null) {
           return null;
@@ -825,7 +829,7 @@ final class CustomConcurrentHashMap {
         return strategy.getValue(entry);
       }
 
-	@Pure boolean containsKey(/*@Nullable*/ Object key, int hash) {
+      @Pure boolean containsKey(/*@Nullable*/ Object key, int hash) {
         Strategy<K, V, E> s = Impl.this.strategy;
         if (count != 0) { // read-volatile
           for (/*@Nullable*/ E e = getFirst(hash); e != null; e = s.getNext(e)) {
@@ -848,14 +852,14 @@ final class CustomConcurrentHashMap {
         return false;
       }
 
-	@Pure boolean containsValue(/*@Nullable*/ Object value) {
+      @Pure boolean containsValue(/*@Nullable*/ Object value) {
         Strategy<K, V, E> s = Impl.this.strategy;
         if (count != 0) { // read-volatile
           AtomicReferenceArray<E> table = this.table;
           int length = table.length();
           for (int i = 0; i < length; i++) {
             for (/*@Nullable*/ E e = table.get(i); e != null; e = s.getNext(e)) {
-	      /*@Nullable*/ V entryValue = s.getValue(e);
+              /*@Nullable*/ V entryValue = s.getValue(e);
 
               // If the value disappeared, this entry is partially collected,
               // and we should skip it.
@@ -901,7 +905,7 @@ final class CustomConcurrentHashMap {
         }
       }
 
-	/*@Nullable*/ V replace(K key, int hash, V newValue) {
+      /*@Nullable*/ V replace(K key, int hash, V newValue) {
         Strategy<K, V, E> s = Impl.this.strategy;
         lock();
         try {
@@ -927,7 +931,7 @@ final class CustomConcurrentHashMap {
         }
       }
 
-	/*@Nullable*/ V put(K key, int hash, V value, boolean onlyIfAbsent) {
+      /*@Nullable*/ V put(K key, int hash, V value, boolean onlyIfAbsent) {
         Strategy<K, V, E> s = Impl.this.strategy;
         lock();
         try {
@@ -976,7 +980,7 @@ final class CustomConcurrentHashMap {
        * Expands the table if possible.
        */
       @SuppressWarnings("nullness")
-      // Suppressed warnings due to getHash on line 1032, 
+      // Suppressed warnings due to getHash on line 1032,
       // guaranteed nonNull reference.
       void expand() {
         AtomicReferenceArray<E> oldTable = table;
@@ -1048,9 +1052,9 @@ final class CustomConcurrentHashMap {
         table = newTable;
       }
 
-	@SuppressWarnings("nullness")
-	// Suppressed, as there cannot be a null dereference in the method.
-	/*@Nullable*/ V remove(/*@Nullable*/ Object key, int hash) {
+      @SuppressWarnings("nullness")
+      // Suppressed, as there cannot be a null dereference in the method.
+      /*@Nullable*/ V remove(/*@Nullable*/ Object key, int hash) {
         Strategy<K, V, E> s = Impl.this.strategy;
         lock();
         try {
@@ -1072,7 +1076,7 @@ final class CustomConcurrentHashMap {
               for (/*@Nullable*/ E p = first; p != e; p = s.getNext(p)) {
                 /*@Nullable*/ K pKey = s.getKey(p);
                 if (pKey != null) {
-		    newFirst = s.copyEntry(pKey, p, newFirst);
+                    newFirst = s.copyEntry(pKey, p, newFirst);
                 } else {
                   // Key was reclaimed. Skip entry.
                 }
@@ -1091,7 +1095,7 @@ final class CustomConcurrentHashMap {
 
       @SuppressWarnings("nullness")
       // Suppressed as there cannot be a null dereference.
-	  boolean remove(/*@Nullable*/ Object key, int hash, /*@Nullable*/  Object value) {
+      boolean remove(/*@Nullable*/ Object key, int hash, /*@Nullable*/  Object value) {
         Strategy<K, V, E> s = Impl.this.strategy;
         lock();
         try {
@@ -1134,8 +1138,8 @@ final class CustomConcurrentHashMap {
           unlock();
         }
       }
-      
-      @SuppressWarnings("nullness")  
+
+      @SuppressWarnings("nullness")
       // Suppressed due to line 1139. s.getValue(e) is already in the table, so not null
       public boolean removeEntry(E entry, int hash, /*@Nullable*/  V value) {
         Strategy<K, V, E> s = Impl.this.strategy;
@@ -1150,7 +1154,7 @@ final class CustomConcurrentHashMap {
             if (s.getHash(e) == hash && entry.equals(e)) {
               V entryValue = s.getValue(e);
               if (entryValue == value || (value != null
-		      && s.equalValues(entryValue, value))) {
+                      && s.equalValues(entryValue, value))) {
                 // All entries following removed node can stay
                 // in list, but all preceding ones need to be
                 // cloned.
@@ -1218,9 +1222,9 @@ final class CustomConcurrentHashMap {
         }
       }
 
-        @SuppressWarnings("nullness")
-        // Suppressed to override AtomicReferenceArray.set.
-	void clear() {
+      @SuppressWarnings("nullness")
+      // Suppressed to override AtomicReferenceArray.set.
+      void clear() {
         if (count != 0) {
           lock();
           try {
@@ -1345,7 +1349,7 @@ final class CustomConcurrentHashMap {
      */
     @SuppressWarnings("nullness")
     //Suppressed Warnings, as get in this case does not permit a null parameter.
-	@Override public V get(/*@Nullable*/ Object key) {
+    @Override public V get(/*@Nullable*/ Object key) {
       if (key == null) {
         throw new NullPointerException("key");
       }
@@ -1469,6 +1473,7 @@ final class CustomConcurrentHashMap {
      *         {@code null} if there was no mapping for the key
      * @throws NullPointerException if the specified key or value is null
      */
+    @Override
     @SuppressWarnings("nullness")
     // Suppressed due to annotations on put
     public V putIfAbsent(K key, V value) {
@@ -1519,6 +1524,7 @@ final class CustomConcurrentHashMap {
      *
      * @throws NullPointerException if the specified key is null
      */
+    @Override
     @SuppressWarnings("nullness")
     // Suppressed because this implmentation of remove does not permit null parameters
     public boolean remove(/*@Nullable*/ Object key, /*@Nullable*/ Object value) {
@@ -1534,6 +1540,7 @@ final class CustomConcurrentHashMap {
      *
      * @throws NullPointerException if any of the arguments are null
      */
+    @Override
     public boolean replace(K key, V oldValue, V newValue) {
       if (key == null) {
         throw new NullPointerException("key");
@@ -1555,6 +1562,7 @@ final class CustomConcurrentHashMap {
      *         {@code null} if there was no mapping for the key
      * @throws NullPointerException if the specified key or value is null
      */
+    @Override
     @SuppressWarnings("nullness")
     //Suppressed due to annotations on replace
     public V replace(K key, V value) {
@@ -1651,8 +1659,8 @@ final class CustomConcurrentHashMap {
       int nextTableIndex;
       AtomicReferenceArray<E> currentTable;
       /*@Nullable*/ E nextEntry;
-	/*@Nullable*/ WriteThroughEntry nextExternal;
-	/*@Nullable*/ WriteThroughEntry lastReturned;
+      /*@Nullable*/ WriteThroughEntry nextExternal;
+      /*@Nullable*/ WriteThroughEntry lastReturned;
 
       HashIterator() {
         nextSegmentIndex = segments.length - 1;
@@ -1762,14 +1770,16 @@ final class CustomConcurrentHashMap {
 
     final class KeyIterator extends HashIterator implements Iterator<K> {
 
-      public K next() {
+      @Override
+    public K next() {
         return super.nextEntry().getKey();
       }
     }
 
     final class ValueIterator extends HashIterator implements Iterator<V> {
 
-      public V next() {
+      @Override
+    public V next() {
         return super.nextEntry().getValue();
       }
     }
@@ -1816,7 +1826,8 @@ final class CustomConcurrentHashMap {
     final class EntryIterator extends HashIterator
         implements Iterator<Entry<K, V>> {
 
-      public Entry<K, V> next() {
+      @Override
+    public Entry<K, V> next() {
         return nextEntry();
       }
     }
@@ -2140,39 +2151,50 @@ final class CustomConcurrentHashMap {
    */
   static class SimpleStrategy<K, V>
       implements Strategy<K, V, SimpleInternalEntry<K, V>> {
+    @Override
     public SimpleInternalEntry<K, V> newEntry(
         K key, int hash, SimpleInternalEntry<K, V> next) {
       return new SimpleInternalEntry<K, V>(key, hash, null, next);
     }
+    @Override
     public SimpleInternalEntry<K, V> copyEntry(K key,
         SimpleInternalEntry<K, V> original, SimpleInternalEntry<K, V> next) {
       return new SimpleInternalEntry<K, V>(
           key, original.hash, original.value, next);
     }
+    @Override
     public void setValue(SimpleInternalEntry<K, V> entry, V value) {
       entry.value = value;
     }
+    @Override
     @Pure public /*@Nullable*/ V getValue(SimpleInternalEntry<K, V> entry) {
       return entry.value;
     }
+    @Override
     @Pure public boolean equalKeys(K a, /*@Nullable*/ Object b) {
       return a.equals(b);
     }
+    @Override
     @Pure public boolean equalValues(V a, /*@Nullable*/ Object b) {
       return a.equals(b);
     }
+    @Override
     @Pure public int hashKey(Object key) {
       return key.hashCode();
     }
+    @Override
     @Pure public K getKey(SimpleInternalEntry<K, V> entry) {
       return entry.key;
     }
+    @Override
     public /*@Nullable*/ SimpleInternalEntry<K, V> getNext(/*@Nullable*/ SimpleInternalEntry<K, V> entry) {
-	return (entry == null) ? null : entry.next;
+      return (entry == null) ? null : entry.next;
     }
+    @Override
     public int getHash(SimpleInternalEntry<K, V> entry) {
       return entry.hash;
     }
+    @Override
     public void setInternals(
         Internals<K, V, SimpleInternalEntry<K, V>> internals) {
       // ignore?

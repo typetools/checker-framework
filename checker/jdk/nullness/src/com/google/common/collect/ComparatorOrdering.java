@@ -16,8 +16,9 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -25,6 +26,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.annotation.Nullable;
+
+import com.google.common.annotations.GwtCompatible;
 
 /** An ordering for a pre-existing {@code comparator}. */
 @GwtCompatible(serializable = true)
@@ -35,7 +38,8 @@ final class ComparatorOrdering<T> extends Ordering<T> implements Serializable {
     this.comparator = checkNotNull(comparator);
   }
 
-  /*@Pure*/ public int compare(T a, T b) {
+  /*@Pure*/ @Override
+public int compare(T a, T b) {
     return comparator.compare(a, b);
   }
 

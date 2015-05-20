@@ -16,9 +16,10 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
@@ -31,7 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * An immutable {@code SortedSet} that stores its elements in a sorted array.
@@ -205,8 +206,8 @@ public abstract class ImmutableSortedSet<E>
         for (int i = 0; i < elements.length; i++) {
           array[i] = checkNotNull(elements[i]);
         }
-	sort(array, (Comparator<? super Object>) comparator);
-	array = removeDupes(array, (Comparator<? super Object>) comparator);  
+        sort(array, (Comparator<? super Object>) comparator);
+        array = removeDupes(array, (Comparator<? super Object>) comparator);
         return new RegularImmutableSortedSet<E>(array, comparator);
     }
   }
@@ -268,7 +269,7 @@ public abstract class ImmutableSortedSet<E>
    * @throws ClassCastException if the elements are not mutually comparable
    * @throws NullPointerException if any of {@code elements} is null
    */
-  @SuppressWarnings({"unchecked"}) 
+  @SuppressWarnings({"unchecked"})
   public static <E /*extends Comparable<? super E>*/> ImmutableSortedSet<E> copyOf(
       Iterable<? extends E> elements) {
     /*
@@ -380,8 +381,8 @@ public abstract class ImmutableSortedSet<E>
       checkNotNull(e);
     }
     if (!hasSameComparator) {
-	sort(array, (Comparator<? super Object>) comparator);
-	array = removeDupes(array, (Comparator<? super Object>)comparator);
+      sort(array, (Comparator<? super Object>) comparator);
+      array = removeDupes(array, (Comparator<? super Object>)comparator);
     }
     return new RegularImmutableSortedSet<E>(array, comparator);
   }
@@ -591,7 +592,8 @@ public abstract class ImmutableSortedSet<E>
    * {@link SortedSet#comparator()}, which returns {@code null} to indicate
    * natural ordering.
    */
-  @SideEffectFree public Comparator<? super E> comparator() {
+  @Override
+@SideEffectFree public Comparator<? super E> comparator() {
     return comparator;
   }
 
@@ -606,7 +608,8 @@ public abstract class ImmutableSortedSet<E>
    * method doesn't throw an exception in that situation, but instead keeps the
    * original {@code toElement}.
    */
-  @SideEffectFree public ImmutableSortedSet<E> headSet(E toElement) {
+  @Override
+@SideEffectFree public ImmutableSortedSet<E> headSet(E toElement) {
     return headSetImpl(checkNotNull(toElement));
   }
 
@@ -623,7 +626,8 @@ public abstract class ImmutableSortedSet<E>
    * original {@code toElement}, instead of throwing an exception, if passed a
    * {@code toElement} greater than an earlier {@code toElement}.
    */
-  @SideEffectFree public ImmutableSortedSet<E> subSet(E fromElement, E toElement) {
+  @Override
+@SideEffectFree public ImmutableSortedSet<E> subSet(E fromElement, E toElement) {
     checkNotNull(fromElement);
     checkNotNull(toElement);
     checkArgument(comparator.compare(fromElement, toElement) <= 0);
@@ -641,7 +645,8 @@ public abstract class ImmutableSortedSet<E>
    * this method doesn't throw an exception in that situation, but instead keeps
    * the original {@code fromElement}.
    */
-  @SideEffectFree public ImmutableSortedSet<E> tailSet(E fromElement) {
+  @Override
+@SideEffectFree public ImmutableSortedSet<E> tailSet(E fromElement) {
     return tailSetImpl(checkNotNull(fromElement));
   }
 

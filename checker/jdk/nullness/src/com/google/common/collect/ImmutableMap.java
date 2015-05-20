@@ -16,16 +16,19 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.getOnlyElement;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * An immutable, hash-based {@link Map} with reliable user-specified iteration
@@ -264,7 +267,8 @@ public abstract class ImmutableMap<K, V> implements Map<K, V>, Serializable {
    *
    * @throws UnsupportedOperationException always
    */
-  public final V put(K k, V v) {
+  @Override
+public final V put(K k, V v) {
     throw new UnsupportedOperationException();
   }
 
@@ -273,7 +277,8 @@ public abstract class ImmutableMap<K, V> implements Map<K, V>, Serializable {
    *
    * @throws UnsupportedOperationException always
    */
-  public final V remove(/*@Nullable*/ Object o) {
+  @Override
+public final V remove(/*@Nullable*/ Object o) {
     throw new UnsupportedOperationException();
   }
 
@@ -282,7 +287,8 @@ public abstract class ImmutableMap<K, V> implements Map<K, V>, Serializable {
    *
    * @throws UnsupportedOperationException always
    */
-  public final void putAll(Map<? extends K, ? extends V> map) {
+  @Override
+public final void putAll(Map<? extends K, ? extends V> map) {
     throw new UnsupportedOperationException();
   }
 
@@ -291,15 +297,18 @@ public abstract class ImmutableMap<K, V> implements Map<K, V>, Serializable {
    *
    * @throws UnsupportedOperationException always
    */
-  public final void clear() {
+  @Override
+public final void clear() {
     throw new UnsupportedOperationException();
   }
 
-  @Pure public boolean isEmpty() {
+  @Override
+@Pure public boolean isEmpty() {
     return size() == 0;
   }
 
-  @Pure public boolean containsKey(@Nullable Object key) {
+  @Override
+@Pure public boolean containsKey(@Nullable Object key) {
     return get(key) != null;
   }
 
@@ -313,19 +322,22 @@ public abstract class ImmutableMap<K, V> implements Map<K, V>, Serializable {
    * Returns an immutable set of the mappings in this map. The entries are in
    * the same order as the parameters used to build this map.
    */
-  @SideEffectFree public abstract ImmutableSet<Entry<K, V>> entrySet();
+  @Override
+@SideEffectFree public abstract ImmutableSet<Entry<K, V>> entrySet();
 
   /**
    * Returns an immutable set of the keys in this map. These keys are in
    * the same order as the parameters used to build this map.
    */
-  @SideEffectFree public abstract ImmutableSet<K> keySet();
+  @Override
+@SideEffectFree public abstract ImmutableSet<K> keySet();
 
   /**
    * Returns an immutable collection of the values in this map. The values are
    * in the same order as the parameters used to build this map.
    */
-  @SideEffectFree public abstract ImmutableCollection<V> values();
+  @Override
+@SideEffectFree public abstract ImmutableCollection<V> values();
 
   @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {

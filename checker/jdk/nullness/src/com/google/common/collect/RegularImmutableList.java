@@ -16,15 +16,16 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.base.Preconditions;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.base.Preconditions;
 
 /**
  * Implementation of {@link ImmutableList} with one or more elements.
@@ -48,7 +49,8 @@ final class RegularImmutableList<E> extends ImmutableList<E> {
     this(array, 0, array.length);
   }
 
-  @Pure public int size() {
+  @Override
+@Pure public int size() {
     return size;
   }
 
@@ -72,7 +74,7 @@ final class RegularImmutableList<E> extends ImmutableList<E> {
     return newArray;
   }
 
-  @SuppressWarnings("nullness") 
+  @SuppressWarnings("nullness")
       //Suppressed due to annotations on toArray
   @Override public <T extends /*@Nullable*/ Object> T[] toArray(T[] other) {
     if (other.length < size) {
@@ -85,7 +87,8 @@ final class RegularImmutableList<E> extends ImmutableList<E> {
   }
 
   // The fake cast to E is safe because the creation methods only allow E's
-  @SuppressWarnings("unchecked")
+  @Override
+@SuppressWarnings("unchecked")
   public E get(int index) {
     Preconditions.checkElementIndex(index, size);
     return (E) array[index + offset];
@@ -121,31 +124,38 @@ final class RegularImmutableList<E> extends ImmutableList<E> {
             array, offset + fromIndex, toIndex - fromIndex);
   }
 
-  public ListIterator<E> listIterator() {
+  @Override
+public ListIterator<E> listIterator() {
     return listIterator(0);
   }
 
-  public ListIterator<E> listIterator(final int start) {
+  @Override
+public ListIterator<E> listIterator(final int start) {
     Preconditions.checkPositionIndex(start, size);
 
     return new ListIterator<E>() {
       int index = start;
 
-      public boolean hasNext() {
+      @Override
+    public boolean hasNext() {
         return index < size;
       }
-      public boolean hasPrevious() {
+      @Override
+    public boolean hasPrevious() {
         return index > 0;
       }
 
-      public int nextIndex() {
+      @Override
+    public int nextIndex() {
         return index;
       }
-      public int previousIndex() {
+      @Override
+    public int previousIndex() {
         return index - 1;
       }
 
-      public E next() {
+      @Override
+    public E next() {
         E result;
         try {
           result = get(index);
@@ -155,7 +165,8 @@ final class RegularImmutableList<E> extends ImmutableList<E> {
         index++;
         return result;
       }
-      public E previous() {
+      @Override
+    public E previous() {
         E result;
         try {
           result = get(index - 1);
@@ -166,13 +177,16 @@ final class RegularImmutableList<E> extends ImmutableList<E> {
         return result;
       }
 
-      public void set(E o) {
+      @Override
+    public void set(E o) {
         throw new UnsupportedOperationException();
       }
-      public void add(E o) {
+      @Override
+    public void add(E o) {
         throw new UnsupportedOperationException();
       }
-      public void remove() {
+      @Override
+    public void remove() {
         throw new UnsupportedOperationException();
       }
     };
@@ -212,7 +226,7 @@ final class RegularImmutableList<E> extends ImmutableList<E> {
   @Pure @Override public int hashCode() {
     // not caching hash code since it could change if the elements are mutable
     // in a way that modifies their hash codes
-    @Pure int hashCode = 1;
+    int hashCode = 1;
     for (int i = offset; i < offset + size; i++) {
       hashCode = 31 * hashCode + array[i].hashCode();
     }

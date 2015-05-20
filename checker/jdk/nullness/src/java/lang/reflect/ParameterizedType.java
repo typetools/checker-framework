@@ -3,7 +3,7 @@ package java.lang.reflect;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public abstract interface ParameterizedType extends Type {
+public interface ParameterizedType extends Type {
   public abstract
     @NonNull Type @NonNull [] getActualTypeArguments();
   public abstract @NonNull Type getRawType();

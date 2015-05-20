@@ -16,12 +16,12 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * A collection which forwards all its method calls to another collection.
@@ -39,62 +39,75 @@ public abstract class ForwardingCollection<E extends /*@Nullable*/ Object> exten
 
   @Override protected abstract Collection<E> delegate();
 
+  @Override
   public Iterator<E> iterator() {
     return delegate().iterator();
   }
 
+  @Override
   @Pure public int size() {
     return delegate().size();
   }
 
+  @Override
   public boolean removeAll(Collection<?> collection) {
     return delegate().removeAll(collection);
   }
 
-  @Pure public boolean isEmpty() {
+  @Override
+@Pure public boolean isEmpty() {
     return delegate().isEmpty();
   }
 
-  @Pure public boolean contains(/*@Nullable*/ Object object) {
+  @Override
+@Pure public boolean contains(/*@Nullable*/ Object object) {
     return delegate().contains(object);
   }
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
   // Suppressed due to annotations of toArray
   public /*@Nullable*/ Object[] toArray() {
     return delegate().toArray();
   }
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
   public <T extends /*@Nullable*/ Object> T[] toArray(T[] array) {
     return delegate().toArray(array);
   }
 
-  public boolean add(E element) {
+  @Override
+public boolean add(E element) {
     return delegate().add(element);
   }
 
-  public boolean remove(/*@Nullable*/ Object object) {
+  @Override
+public boolean remove(/*@Nullable*/ Object object) {
     return delegate().remove(object);
   }
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
   // Suppressed due to the containsAll method in Collection
   @Pure public boolean containsAll(Collection<? extends /*@Nullable*/ Object> collection) {
     return delegate().containsAll(collection);
   }
 
-  public boolean addAll(Collection<? extends E> collection) {
+  @Override
+public boolean addAll(Collection<? extends E> collection) {
     return delegate().addAll(collection);
   }
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
   // Suppressed due to the containsAll method in Collection
   public boolean retainAll(Collection<? extends /*@Nullable*/ Object> collection) {
     return delegate().retainAll(collection);
   }
 
-  public void clear() {
+  @Override
+public void clear() {
     delegate().clear();
   }
 }
