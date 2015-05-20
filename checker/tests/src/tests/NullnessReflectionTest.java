@@ -17,7 +17,8 @@ public class NullnessReflectionTest extends ParameterizedCheckerTest {
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
                 "-AresolveReflection",
-                "-Anomsgtext");
+                "-Anomsgtext",
+                "-AunsafeUntyped");
     }
 
     @Parameters

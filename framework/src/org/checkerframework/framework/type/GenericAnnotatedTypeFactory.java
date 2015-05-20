@@ -352,12 +352,10 @@ public abstract class GenericAnnotatedTypeFactory<
         for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
             if (defaultFor != null) {
-                defs.addAbsoluteDefaults(AnnotationUtils.fromClass(elements,qual),
-                                         defaultFor.value());
+                final DefaultLocation [] locations = defaultFor.value();
+                defs.addAbsoluteDefaults(AnnotationUtils.fromClass(elements,qual), locations);
 
-                if (Arrays.asList(defaultFor.value()).contains(DefaultLocation.OTHERWISE)) {
-                    foundDefaultOtherwise = true;
-                }
+                foundDefaultOtherwise = Arrays.asList(locations).contains(DefaultLocation.OTHERWISE);
             }
 
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
@@ -369,7 +367,7 @@ public abstract class GenericAnnotatedTypeFactory<
                             qual.getCanonicalName());
                 } else {
                     defs.addAbsoluteDefault(AnnotationUtils.fromClass(elements, qual),
-                        DefaultLocation.OTHERWISE);
+                            DefaultLocation.OTHERWISE);
                     foundDefaultOtherwise = true;
                 }
             }
