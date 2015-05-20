@@ -5,7 +5,7 @@
 
 # Variables
 CHECKERFRAMEWORK ?= ../../..
-CHECKER_JAR ?= $(CHECKERFRAMEWORK)/checker/dist/checker.jar
+CHECKER_JAVAC ?= $(CHECKERFRAMEWORK)/checker/bin-devel/javac
 
 LANGTOOLS ?= ../../../../jsr308-langtools
 LANGTOOLSDIST ?= $(LANGTOOLS)/dist
@@ -38,12 +38,8 @@ DIFFS = $(patsubst src/%.java,build/%.diff, $(SOURCES))
 classes: $(SOURCES)
 	mkdir -p build
 	@echo "Building the JDK..."
-	@$(JAVAC) -XDignore.symbol.file -cp $(CHECKER_JAR):$(JAVADOCLIB) -d build $?
-
-# This rule does not seem to be used.
-build/%.class: src/%.java
-	mkdir -p build
-	$(JAVAC) -sourcepath src -cp $(CHECKER_JAR):$(JAVADOCLIB) -d build $<
+# TODO: fix all issues and remove -Awarns
+	@$(CHECKER_JAVAC) -XDignore.symbol.file -d build -processor $(JDKDIR) -AprintErrorStack -Awarns $?
 
 build/%.expected: build/%.class
 	$(JAVAP) -cp $(JAVADOCLIB) $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@
