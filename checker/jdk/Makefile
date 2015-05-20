@@ -72,7 +72,7 @@ annotated/%.class:
 	cd $*; $(MAKE) clean
 
 %.classes:
-	cd $*; $(MAKE) classes
+	cd $*; JDKDIR=$* $(MAKE) classes
 
 %.jaifs:
 	cd $*; $(MAKE) jaifs
