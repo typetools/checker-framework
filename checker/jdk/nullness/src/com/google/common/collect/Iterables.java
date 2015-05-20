@@ -16,14 +16,12 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.annotations.GwtIncompatible;
-import com.google.common.base.Function;
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.common.base.Predicate;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,8 +35,12 @@ import java.util.RandomAccess;
 import java.util.Set;
 import java.util.SortedSet;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.annotations.GwtIncompatible;
+import com.google.common.base.Function;
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 
 /**
  * This class contains static utility methods that operate on or return objects
@@ -59,7 +61,8 @@ public final class Iterables {
   {
     checkNotNull(iterable);
     return new Iterable<T>() {
-      public Iterator<T> iterator() {
+      @Override
+    public Iterator<T> iterator() {
         return Iterators.unmodifiableIterator(iterable.iterator());
       }
       @Pure @Override public String toString() {
@@ -297,7 +300,8 @@ public final class Iterables {
   public static <T> Iterable<T> cycle(final Iterable<T> iterable) {
     checkNotNull(iterable);
     return new Iterable<T>() {
-      public Iterator<T> iterator() {
+      @Override
+    public Iterator<T> iterator() {
         return Iterators.cycle(iterable);
       }
       @Pure @Override public String toString() {
@@ -431,14 +435,16 @@ public final class Iterables {
 
     Function<Iterable<? extends T>, Iterator<? extends T>> function
         = new Function<Iterable<? extends T>, Iterator<? extends T>>() {
-      public Iterator<? extends T> apply(Iterable<? extends T> from) {
+      @Override
+    public Iterator<? extends T> apply(Iterable<? extends T> from) {
         return from.iterator();
       }
     };
     final Iterable<Iterator<? extends T>> iterators
         = transform(inputs, function);
     return new IterableWithToString<T>() {
-      public Iterator<T> iterator() {
+      @Override
+    public Iterator<T> iterator() {
         return Iterators.concat(iterators.iterator());
       }
     };
@@ -469,7 +475,8 @@ public final class Iterables {
     checkNotNull(iterable);
     checkArgument(size > 0);
     return new IterableWithToString<List<T>>() {
-      public Iterator<List<T>> iterator() {
+      @Override
+    public Iterator<List<T>> iterator() {
         return Iterators.partition(iterable.iterator(), size);
       }
     };
@@ -497,7 +504,8 @@ public final class Iterables {
     checkNotNull(iterable);
     checkArgument(size > 0);
     return new IterableWithToString<List<T>>() {
-      public Iterator<List<T>> iterator() {
+      @Override
+    public Iterator<List<T>> iterator() {
         return Iterators.paddedPartition(iterable.iterator(), size);
       }
     };
@@ -512,7 +520,8 @@ public final class Iterables {
     checkNotNull(unfiltered);
     checkNotNull(predicate);
     return new IterableWithToString<T>() {
-      public Iterator<T> iterator() {
+      @Override
+    public Iterator<T> iterator() {
         return Iterators.filter(unfiltered.iterator(), predicate);
       }
     };
@@ -535,7 +544,8 @@ public final class Iterables {
     checkNotNull(unfiltered);
     checkNotNull(type);
     return new IterableWithToString<T>() {
-      public Iterator<T> iterator() {
+      @Override
+    public Iterator<T> iterator() {
         return Iterators.filter(unfiltered.iterator(), type);
       }
     };
@@ -586,7 +596,8 @@ public final class Iterables {
     checkNotNull(fromIterable);
     checkNotNull(function);
     return new IterableWithToString<T>() {
-      public Iterator<T> iterator() {
+      @Override
+    public Iterator<T> iterator() {
         return Iterators.transform(fromIterable.iterator(), function);
       }
     };
@@ -665,16 +676,20 @@ public final class Iterables {
   public static <T> Iterable<T> reverse(final List<T> list) {
     checkNotNull(list);
     return new IterableWithToString<T>() {
-      public Iterator<T> iterator() {
+      @Override
+    public Iterator<T> iterator() {
         final ListIterator<T> listIter = list.listIterator(list.size());
         return new Iterator<T>() {
-          public boolean hasNext() {
+          @Override
+        public boolean hasNext() {
             return listIter.hasPrevious();
           }
-          public T next() {
+          @Override
+        public T next() {
             return listIter.previous();
           }
-          public void remove() {
+          @Override
+        public void remove() {
             listIter.remove();
           }
         };

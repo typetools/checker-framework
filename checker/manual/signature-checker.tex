@@ -49,7 +49,7 @@ Figure~\ref{fig-signature-hierarchy} shows how they are related.
 \item[\refqualclass{checker/signature/qual}{ClassGetName}]
 \begin{sloppypar}
   The type representation used by the
-  \href{http://types.cs.washington.edu/checker-framework/jdk-api/jdk/java/lang/Class.html#getName()}{\<Class.getName()>}, \<Class.forName(String)>,
+  \sunjavadoc{java/lang/Class.html\#getName--}{\code{Class.getName()}}, \<Class.forName(String)>,
   and \<Class.forName(String, boolean, ClassLoader)> methods.  This format
   is:  for any non-array type, the binary name; and for any array type, a
   format like the \href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2}{FieldDescriptor field descriptor}, but using

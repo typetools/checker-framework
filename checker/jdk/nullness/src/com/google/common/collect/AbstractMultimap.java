@@ -16,11 +16,12 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.annotations.GwtIncompatible;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.Serializable;
 import java.util.AbstractCollection;
@@ -39,8 +40,10 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
-import org.checkerframework.dataflow.qual.SideEffectFree;
 import javax.annotation.Nullable;
+
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.annotations.GwtIncompatible;
 
 /**
  * Basic implementation of the {@link Multimap} interface. This class represents
@@ -162,20 +165,24 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
 
   // Query Operations
 
-  @Pure public int size() {
+  @Override
+@Pure public int size() {
     return totalSize;
   }
 
-  @Pure public boolean isEmpty() {
+  @Override
+@Pure public boolean isEmpty() {
     return totalSize == 0;
   }
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
   @Pure public boolean containsKey(@Nullable Object key) {
     return map.containsKey(key);
   }
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
   @Pure public boolean containsValue(@Nullable Object value) {
     for (Collection<V> collection : map.values()) {
       if (collection.contains(value)) {
@@ -186,7 +193,8 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
     return false;
   }
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
   @Pure public boolean containsEntry(@Nullable Object key, @Nullable Object value) {
     Collection<V> collection = map.get(key);
     return collection != null && collection.contains(value);
@@ -194,7 +202,8 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
 
   // Modification Operations
 
-  public boolean put(K key, V value) {
+  @Override
+public boolean put(K key, V value) {
     Collection<V> collection = getOrCreateCollection(key);
 
     if (collection.add(value)) {
@@ -214,7 +223,8 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
     return collection;
   }
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
   public boolean remove(@Nullable Object key, @Nullable Object value) {
     Collection<V> collection = map.get(key);
     if (collection == null) {
@@ -233,7 +243,8 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
 
   // Bulk Operations
 
-  public boolean putAll(K key, Iterable<? extends V> values) {
+  @Override
+public boolean putAll(K key, Iterable<? extends V> values) {
     if (!values.iterator().hasNext()) {
       return false;
     }
@@ -255,7 +266,8 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
     return changed;
   }
 
-  public boolean putAll(Multimap<? extends K, ? extends V> multimap) {
+  @Override
+public boolean putAll(Multimap<? extends K, ? extends V> multimap) {
     boolean changed = false;
     for (Map.Entry<? extends K, ? extends V> entry : multimap.entries()) {
       changed |= put(entry.getKey(), entry.getValue());
@@ -268,7 +280,8 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
    *
    * <p>The returned collection is immutable.
    */
-  public Collection<V> replaceValues(
+  @Override
+public Collection<V> replaceValues(
       K key, Iterable<? extends V> values) {
     Iterator<? extends V> iterator = values.iterator();
     if (!iterator.hasNext()) {
@@ -296,7 +309,8 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
    *
    * <p>The returned collection is immutable.
    */
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
   public Collection<V> removeAll(@Nullable Object key) {
     /*@Nullable*/ Collection<V> collection = map.remove(key);
     Collection<V> output = createCollection();
@@ -323,7 +337,8 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
     }
   }
 
-  public void clear() {
+  @Override
+public void clear() {
     // Clear each collection, to make previously returned collections empty.
     for (Collection<V> collection : map.values()) {
       collection.clear();
@@ -339,7 +354,8 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
    *
    * <p>The returned collection is not serializable.
    */
-  public Collection<V> get(@Nullable K key) {
+  @Override
+public Collection<V> get(@Nullable K key) {
     Collection<V> collection = map.get(key);
     if (collection == null) {
       collection = createCollection(key);
@@ -512,17 +528,20 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
         }
       }
 
-      public boolean hasNext() {
+      @Override
+    public boolean hasNext() {
         validateIterator();
         return delegateIterator.hasNext();
       }
 
-      public V next() {
+      @Override
+    public V next() {
         validateIterator();
         return delegateIterator.next();
       }
 
-      public void remove() {
+      @Override
+    public void remove() {
         delegateIterator.remove();
         totalSize--;
         removeIfEmpty();
@@ -654,20 +673,24 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
       return (SortedSet<V>) getDelegate();
     }
 
+    @Override
     @SideEffectFree public Comparator<? super V> comparator() {
       return getSortedSetDelegate().comparator();
     }
 
+    @Override
     @SideEffectFree public V first() {
       refreshIfEmpty();
       return getSortedSetDelegate().first();
     }
 
+    @Override
     @SideEffectFree public V last() {
       refreshIfEmpty();
       return getSortedSetDelegate().last();
     }
 
+    @Override
     @SideEffectFree public SortedSet<V> headSet(V toElement) {
       refreshIfEmpty();
       return new WrappedSortedSet(
@@ -675,6 +698,7 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
           (getAncestor() == null) ? this : getAncestor());
     }
 
+    @Override
     @SideEffectFree public SortedSet<V> subSet(V fromElement, V toElement) {
       refreshIfEmpty();
       return new WrappedSortedSet(
@@ -682,6 +706,7 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
           (getAncestor() == null) ? this : getAncestor());
     }
 
+    @Override
     @SideEffectFree public SortedSet<V> tailSet(V fromElement) {
       refreshIfEmpty();
       return new WrappedSortedSet(
@@ -700,6 +725,7 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
       return (List<V>) getDelegate();
     }
 
+    @Override
     public boolean addAll(int index, Collection<? extends V> c) {
       if (c.isEmpty()) {
         return false;
@@ -716,16 +742,19 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
       return changed;
     }
 
+    @Override
     public V get(int index) {
       refreshIfEmpty();
       return getListDelegate().get(index);
     }
 
+    @Override
     public V set(int index, V element) {
       refreshIfEmpty();
       return getListDelegate().set(index, element);
     }
 
+    @Override
     public void add(int index, V element) {
       refreshIfEmpty();
       boolean wasEmpty = getDelegate().isEmpty();
@@ -736,6 +765,7 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
       }
     }
 
+    @Override
     public V remove(int index) {
       refreshIfEmpty();
       V value = getListDelegate().remove(index);
@@ -744,26 +774,31 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
       return value;
     }
 
+    @Override
     @Pure public int indexOf(/*@Nullable*/ Object o) {
       refreshIfEmpty();
       return getListDelegate().indexOf(o);
     }
 
+    @Override
     @Pure public int lastIndexOf(/*@Nullable*/ Object o) {
       refreshIfEmpty();
       return getListDelegate().lastIndexOf(o);
     }
 
+    @Override
     public ListIterator<V> listIterator() {
       refreshIfEmpty();
       return new WrappedListIterator();
     }
 
+    @Override
     public ListIterator<V> listIterator(int index) {
       refreshIfEmpty();
       return new WrappedListIterator(index);
     }
 
+    @Override
     @GwtIncompatible("List.subList")
     @SideEffectFree public List<V> subList(int fromIndex, int toIndex) {
       refreshIfEmpty();
@@ -785,27 +820,33 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
         return (ListIterator<V>) getDelegateIterator();
       }
 
-      public boolean hasPrevious() {
+      @Override
+    public boolean hasPrevious() {
         return getDelegateListIterator().hasPrevious();
       }
 
-      public V previous() {
+      @Override
+    public V previous() {
         return getDelegateListIterator().previous();
       }
 
-      public int nextIndex() {
+      @Override
+    public int nextIndex() {
         return getDelegateListIterator().nextIndex();
       }
 
-      public int previousIndex() {
+      @Override
+    public int previousIndex() {
         return getDelegateListIterator().previousIndex();
       }
 
-      public void set(V value) {
+      @Override
+    public void set(V value) {
         getDelegateListIterator().set(value);
       }
 
-      public void add(V value) {
+      @Override
+    public void add(V value) {
         boolean wasEmpty = isEmpty();
         getDelegateListIterator().add(value);
         totalSize++;
@@ -830,7 +871,8 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
 
   private transient Set<K> keySet;
 
-  @SideEffectFree public Set<K> keySet() {
+  @Override
+@SideEffectFree public Set<K> keySet() {
     Set<K> result = keySet;
     return (result == null) ? keySet = createKeySet() : result;
   }
@@ -862,13 +904,16 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
             = subMap.entrySet().iterator();
         Map.Entry<K, Collection<V>> entry;
 
+        @Override
         public boolean hasNext() {
           return entryIterator.hasNext();
         }
+        @Override
         public K next() {
           entry = entryIterator.next();
           return entry.getKey();
         }
+        @Override
         public void remove() {
           checkState(entry != null);
           Collection<V> collection = entry.getValue();
@@ -921,26 +966,32 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
       return (SortedMap<K, Collection<V>>) subMap;
     }
 
+    @Override
     @SideEffectFree public Comparator<? super K> comparator() {
       return sortedMap().comparator();
     }
 
+    @Override
     @SideEffectFree public K first() {
       return sortedMap().firstKey();
     }
 
+    @Override
     @SideEffectFree public SortedSet<K> headSet(K toElement) {
       return new SortedKeySet(sortedMap().headMap(toElement));
     }
 
+    @Override
     @SideEffectFree public K last() {
       return sortedMap().lastKey();
     }
 
+    @Override
     @SideEffectFree public SortedSet<K> subSet(K fromElement, K toElement) {
       return new SortedKeySet(sortedMap().subMap(fromElement, toElement));
     }
 
+    @Override
     @SideEffectFree public SortedSet<K> tailSet(K fromElement) {
       return new SortedKeySet(sortedMap().tailMap(fromElement));
     }
@@ -948,7 +999,8 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
 
   private transient Multiset<K> multiset;
 
-  public Multiset<K> keys() {
+  @Override
+public Multiset<K> keys() {
     Multiset<K> result = multiset;
     return (result == null) ? multiset = new MultisetView() : result;
   }
@@ -1025,7 +1077,7 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
       }
 
       @SuppressWarnings("nullness")
-	  //This can only contain Map.Entry<?>, not anything null
+      //This can only contain Map.Entry<?>, not anything null
       @Override public boolean remove(/*@Nullable*/ Object o) {
         return contains(o) &&
             (removeValuesForKey(((Multiset.Entry<?>) o).getElement()) > 0);
@@ -1089,12 +1141,15 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
     final Iterator<Map.Entry<K, Collection<V>>> asMapIterator
         = asMap().entrySet().iterator();
 
+    @Override
     public boolean hasNext() {
       return asMapIterator.hasNext();
     }
+    @Override
     public Multiset.Entry<K> next() {
       return new MultisetEntry(asMapIterator.next());
     }
+    @Override
     public void remove() {
       asMapIterator.remove();
     }
@@ -1106,9 +1161,11 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
     public MultisetEntry(Map.Entry<K, Collection<V>> entry) {
       this.entry = entry;
     }
+    @Override
     public K getElement() {
       return entry.getKey();
     }
+    @Override
     public int getCount() {
       return entry.getValue().size();
     }
@@ -1118,12 +1175,15 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
   private class MultisetKeyIterator implements Iterator<K> {
     final Iterator<Map.Entry<K, V>> entryIterator = entries().iterator();
 
+    @Override
     public boolean hasNext() {
       return entryIterator.hasNext();
     }
+    @Override
     public K next() {
       return entryIterator.next().getKey();
     }
+    @Override
     public void remove() {
       entryIterator.remove();
     }
@@ -1137,7 +1197,8 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
    * <p>The iterator generated by the returned collection traverses the values
    * for one key, followed by the values of a second key, and so on.
    */
-  @SideEffectFree public Collection<V> values() {
+  @Override
+@SideEffectFree public Collection<V> values() {
     Collection<V> result = valuesCollection;
     return (result == null) ? valuesCollection = new Values() : result;
   }
@@ -1165,12 +1226,15 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
   private class ValueIterator implements Iterator<V> {
     final Iterator<Map.Entry<K, V>> entryIterator = createEntryIterator();
 
+    @Override
     public boolean hasNext() {
       return entryIterator.hasNext();
     }
+    @Override
     public V next() {
       return entryIterator.next().getValue();
     }
+    @Override
     public void remove() {
       entryIterator.remove();
     }
@@ -1192,7 +1256,8 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
    * multimap, taken at the time the entry is returned by a method call to the
    * collection or its iterator.
    */
-  @SideEffectFree public Collection<Map.Entry<K, V>> entries() {
+  @Override
+@SideEffectFree public Collection<Map.Entry<K, V>> entries() {
     Collection<Map.Entry<K, V>> result = entries;
     return (entries == null) ? entries = createEntries() : result;
   }
@@ -1269,10 +1334,12 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
       valueIterator = collection.iterator();
     }
 
+    @Override
     public boolean hasNext() {
       return keyIterator.hasNext() || valueIterator.hasNext();
     }
 
+    @Override
     public Map.Entry<K, V> next() {
       if (!valueIterator.hasNext()) {
         findValueIteratorAndKey();
@@ -1280,6 +1347,7 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
       return Maps.immutableEntry(key, valueIterator.next());
     }
 
+    @Override
     public void remove() {
       valueIterator.remove();
       if (collection.isEmpty()) {
@@ -1301,7 +1369,8 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
 
   private transient Map<K, Collection<V>> asMap;
 
-  public Map<K, Collection<V>> asMap() {
+  @Override
+public Map<K, Collection<V>> asMap() {
     Map<K, Collection<V>> result = asMap;
     return (result == null) ? asMap = createAsMap() : result;
   }
@@ -1338,7 +1407,7 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
 
     @SuppressWarnings("nullness")
     @Override public /*@Nullable*/ Collection<V> get(/*@Nullable*/ Object key) {
-	/*@Nullable*/ Collection<V> collection = submap.get(key);
+      /*@Nullable*/ Collection<V> collection = submap.get(key);
       if (collection == null) {
         return null;
       }
@@ -1393,7 +1462,7 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
       }
 
       @SuppressWarnings("nullness")
-	  //Suppressed, as this only contains Entry<>
+      //Suppressed, as this only contains Entry<>
       @Override public boolean remove(/*@Nullable*/ Object o) {
         if (!contains(o)) {
           return false;
@@ -1410,18 +1479,21 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
           = submap.entrySet().iterator();
       Collection<V> collection;
 
-      public boolean hasNext() {
+      @Override
+    public boolean hasNext() {
         return delegateIterator.hasNext();
       }
 
-      public Map.Entry<K, Collection<V>> next() {
+      @Override
+    public Map.Entry<K, Collection<V>> next() {
         Map.Entry<K, Collection<V>> entry = delegateIterator.next();
         K key = entry.getKey();
         collection = entry.getValue();
         return Maps.immutableEntry(key, wrapCollection(key, collection));
       }
 
-      public void remove() {
+      @Override
+    public void remove() {
         delegateIterator.remove();
         totalSize -= collection.size();
         collection.clear();
@@ -1439,26 +1511,32 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
       return (SortedMap<K, Collection<V>>) submap;
     }
 
+    @Override
     @SideEffectFree public Comparator<? super K> comparator() {
       return sortedMap().comparator();
     }
 
+    @Override
     public K firstKey() {
       return sortedMap().firstKey();
     }
 
+    @Override
     public K lastKey() {
       return sortedMap().lastKey();
     }
 
+    @Override
     public SortedMap<K, Collection<V>> headMap(K toKey) {
       return new SortedAsMap(sortedMap().headMap(toKey));
     }
 
+    @Override
     public SortedMap<K, Collection<V>> subMap(K fromKey, K toKey) {
       return new SortedAsMap(sortedMap().subMap(fromKey, toKey));
     }
 
+    @Override
     public SortedMap<K, Collection<V>> tailMap(K fromKey) {
       return new SortedAsMap(sortedMap().tailMap(fromKey));
     }
@@ -1508,6 +1586,6 @@ abstract class AbstractMultimap<K, V> implements Multimap<K, V>, Serializable {
   @Pure @Override public String toString() {
     return map.toString();
   }
-  
-  private static final long serialVersionUID = 2447537837011683357L; 
+
+  private static final long serialVersionUID = 2447537837011683357L;
 }

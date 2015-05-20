@@ -76,9 +76,9 @@ the \code{null} literal to be assigned to any type qualified with the
 
 The Regex Checker validates that a legal capturing group number is passed
 to \sunjavadoc{java/util/regex/Matcher.html}{Matcher}'s
-\sunjavadoc{java/util/regex/Matcher.html\#group(int)}{group},
-\sunjavadoc{java/util/regex/Matcher.html\#start(int)}{start} and
-\sunjavadoc{java/util/regex/Matcher.html\#end(int)}{end} methods. To do this,
+\sunjavadoc{java/util/regex/Matcher.html\#group-int-}{group},
+\sunjavadoc{java/util/regex/Matcher.html\#start-int-}{start} and
+\sunjavadoc{java/util/regex/Matcher.html\#end-int-}{end} methods. To do this,
 the type of \<Matcher> must be qualified with a \<@Regex> annotation
 with the number of capturing groups in the regular expression. This is
 handled implicitly by the Regex Checker for local variables (see
@@ -131,7 +131,7 @@ example of the intended use of the \code{RegexUtil} methods.
 \item[\refmethod{checker/regex}{RegexUtil}{regexException}{-java.lang.String-}]
   returns the
   \sunjavadoc{java/util/regex/PatternSyntaxException.html}{Pattern\-Syntax\-Exception}
-  that \sunjavadoc{java/util/regex/Pattern.html\#compile(java.lang.String)}{Pattern.compile(String)}
+  that \sunjavadoc{java/util/regex/Pattern.html\#compile-java.lang.String-}{Pattern.compile(String)}
   throws when compiling an invalid regular expression.  It returns \<null>
   if its argument is a valid regular expression.
 

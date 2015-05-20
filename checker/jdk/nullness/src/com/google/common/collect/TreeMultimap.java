@@ -16,8 +16,11 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -30,8 +33,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * Implementation of {@code Multimap} whose keys and values are ordered by their
@@ -166,7 +168,8 @@ public final class TreeMultimap<K extends /*@Nullable*/ Object, V extends /*@Nul
     return keyComparator;
   }
 
-  public /*@Nullable*/ Comparator<? super V> valueComparator() {
+  @Override
+public /*@Nullable*/ Comparator<? super V> valueComparator() {
     return valueComparator;
   }
 

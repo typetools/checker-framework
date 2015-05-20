@@ -16,10 +16,12 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.base.Objects;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.Serializable;
 import java.util.AbstractSet;
@@ -28,7 +30,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.base.Objects;
 
 /**
  * Provides static utility methods for creating and working with {@link
@@ -155,10 +158,12 @@ public final class Multisets {
       @Nullable final E e, final int n) {
     checkArgument(n >= 0);
     return new AbstractEntry<E>() {
-      public E getElement() {
+      @Override
+    public E getElement() {
         return e;
       }
-      public int getCount() {
+      @Override
+    public int getCount() {
         return n;
       }
     };
@@ -198,14 +203,17 @@ public final class Multisets {
       return delegate;
     }
 
+    @Override
     public int count(/*@Nullable*/ Object element) {
       return delegate.contains(element) ? 1 : 0;
     }
 
+    @Override
     public int add(E element, int occurrences) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public int remove(/*@Nullable*/ Object element, int occurrences) {
       if (occurrences == 0) {
         return count(element);
@@ -216,6 +224,7 @@ public final class Multisets {
 
     transient Set<E> elementSet;
 
+    @Override
     @SideEffectFree public Set<E> elementSet() {
       Set<E> es = elementSet;
       return (es == null) ? elementSet = new ElementSet() : es;
@@ -223,6 +232,7 @@ public final class Multisets {
 
     transient Set<Entry<E>> entrySet;
 
+    @Override
     @SideEffectFree public Set<Entry<E>> entrySet() {
       Set<Entry<E>> es = entrySet;
       return (es == null) ? entrySet = new EntrySet() : es;
@@ -236,6 +246,7 @@ public final class Multisets {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public int setCount(E element, int count) {
       checkNonnegative(count, "count");
 
@@ -249,8 +260,9 @@ public final class Multisets {
       }
     }
 
+    @Override
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations on setCountImpl
+    //Suppressed due to annotations on setCountImpl
     public boolean setCount(E element, int oldCount, int newCount) {
       return setCountImpl(this, element, oldCount, newCount);
     }
@@ -295,13 +307,16 @@ public final class Multisets {
         return new Iterator<Entry<E>>() {
           final Iterator<E> elements = delegate.iterator();
 
-          public boolean hasNext() {
+          @Override
+        public boolean hasNext() {
             return elements.hasNext();
           }
-          public Entry<E> next() {
+          @Override
+        public Entry<E> next() {
             return immutableEntry(elements.next(), 1);
           }
-          public void remove() {
+          @Override
+        public void remove() {
             elements.remove();
           }
         };

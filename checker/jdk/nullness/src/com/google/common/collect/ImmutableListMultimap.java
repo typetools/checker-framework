@@ -16,8 +16,6 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
@@ -25,7 +23,7 @@ import java.io.ObjectOutputStream;
 import java.util.Collection;
 import java.util.Map;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 //import javax.annotation.Nullable;
 
 /**
@@ -222,7 +220,7 @@ public class ImmutableListMultimap<K, V>
    *     null
    */
   public static <K, V> ImmutableListMultimap<K, V> copyOf(
-											Multimap<? extends K, ? extends V> multimap) {
+          Multimap<? extends K, ? extends V> multimap) {
     if (multimap.isEmpty()) {
       return of();
     }

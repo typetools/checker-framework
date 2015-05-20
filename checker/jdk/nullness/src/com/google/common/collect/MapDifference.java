@@ -16,12 +16,13 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.util.Map;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * An object representing the differences between two maps.
@@ -68,6 +69,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * #entriesOnlyOnRight()}, {@link #entriesInCommon()} and {@link
    * #entriesDiffering()} of the two instances are equal.
    */
+  @Override
   @Pure boolean equals(@Nullable Object object);
 
   /**
@@ -77,6 +79,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    *   Arrays.asList(entriesOnlyOnLeft(), entriesOnlyOnRight(),
    *       entriesInCommon(), entriesDiffering())}</pre>
    */
+  @Override
   @Pure int hashCode();
 
   /**

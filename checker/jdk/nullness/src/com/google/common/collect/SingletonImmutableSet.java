@@ -16,13 +16,14 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.base.Preconditions;
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.base.Preconditions;
 
 /**
  * Implementation of {@link ImmutableSet} with exactly one element.
@@ -50,7 +51,8 @@ final class SingletonImmutableSet<E> extends ImmutableSet<E> {
     cachedHashCode = hashCode;
   }
 
-  @Pure public int size() {
+  @Override
+@Pure public int size() {
     return 1;
   }
 

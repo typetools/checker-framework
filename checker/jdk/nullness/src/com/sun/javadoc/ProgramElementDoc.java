@@ -3,7 +3,7 @@ package com.sun.javadoc;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
-public abstract interface ProgramElementDoc extends Doc {
+public interface ProgramElementDoc extends Doc {
   public abstract com.sun.javadoc. @Nullable ClassDoc containingClass();
   public abstract com.sun.javadoc.PackageDoc containingPackage();
   public abstract java.lang.String qualifiedName();

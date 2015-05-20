@@ -16,17 +16,19 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.base.Preconditions;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.base.Preconditions;
 
 /**
  * Implementation of {@link ImmutableList} with exactly one element.
@@ -42,7 +44,8 @@ final class SingletonImmutableList<E> extends ImmutableList<E> {
     this.element = checkNotNull(element);
   }
 
-  public E get(int index) {
+  @Override
+public E get(int index) {
     Preconditions.checkElementIndex(index, 1);
     return element;
   }
@@ -59,16 +62,19 @@ final class SingletonImmutableList<E> extends ImmutableList<E> {
     return element.equals(object) ? 0 : -1;
   }
 
-  public ListIterator<E> listIterator() {
+  @Override
+public ListIterator<E> listIterator() {
     return listIterator(0);
   }
 
-  public ListIterator<E> listIterator(final int start) {
+  @Override
+public ListIterator<E> listIterator(final int start) {
     // suboptimal but not worth optimizing.
     return Collections.singletonList(element).listIterator(start);
   }
 
-  @Pure public int size() {
+  @Override
+@Pure public int size() {
     return 1;
   }
 

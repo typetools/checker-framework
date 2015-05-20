@@ -1,10 +1,11 @@
 package tests;
 
+import org.checkerframework.checker.nullness.AbstractNullnessChecker;
+import org.checkerframework.framework.test.ParameterizedCheckerTest;
+
 import java.io.File;
 import java.util.Collection;
 
-import org.checkerframework.checker.nullness.AbstractNullnessChecker;
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
