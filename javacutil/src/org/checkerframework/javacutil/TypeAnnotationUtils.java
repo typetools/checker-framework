@@ -92,9 +92,19 @@ public class TypeAnnotationUtils {
 
     public static boolean isSameTAPositionExceptTreePos(TypeAnnotationPosition p1,
                                            TypeAnnotationPosition p2) {
-        if (p1.isValidOffset == p2.isValidOffset &&
+        boolean eiequal = false;
+        try {
+            Field ei = TypeAnnotationPosition.class.getDeclaredField("exception_index");
+            // TODO: ugly way to get access to field in JDK 9.
+            // isSameTAPositionExceptTreePos also needs JDK 8/9 versions.
+            ei.setAccessible(true);
+            eiequal = ei.getInt(p1) == ei.getInt(p2);
+        } catch (NoSuchFieldException | SecurityException | IllegalAccessException e) {
+            return false;
+        }
+        if (eiequal &&
+                p1.isValidOffset == p2.isValidOffset &&
                 p1.bound_index == p2.bound_index &&
-                p1.exception_index == p2.exception_index &&
                 p1.location.equals(p2.location) &&
                 Arrays.equals(p1.lvarIndex, p2.lvarIndex) &&
                 Arrays.equals(p1.lvarLength, p2.lvarLength) &&
@@ -593,7 +603,8 @@ public class TypeAnnotationUtils {
         TypeAnnotationPosition res = TypeAnnotationPosition.class.newInstance();
         res.isValidOffset = tapos.isValidOffset;
         TypeAnnotationPosition.class.getField("bound_index").set(res, tapos.bound_index);
-        res.exception_index = tapos.exception_index;
+        Field ei = TypeAnnotationPosition.class.getDeclaredField("exception_index");
+        ei.setInt(res, ei.getInt(tapos));
         res.location = List.from(tapos.location);
         if (tapos.lvarIndex != null)
             res.lvarIndex = Arrays.copyOf(tapos.lvarIndex, tapos.lvarIndex.length);
@@ -617,7 +628,12 @@ public class TypeAnnotationUtils {
                 c.newInstance(tapos.type, tapos.pos, tapos.parameter_index,
                         tapos.onLambda, tapos.type_index, tapos.bound_index, List.from(tapos.location));
         res.isValidOffset = tapos.isValidOffset;
-        res.exception_index = tapos.exception_index;
+        Field ei = TypeAnnotationPosition.class.getDeclaredField("exception_index");
+        ei.setAccessible(true);
+        ei.setInt(res, ei.getInt(tapos));
+        // TODO: would be cleaner to use getter/setter, but something is wrong with:
+        // TypeAnnotationPosition.class.getDeclaredMethod("setExceptionIndex", int.class).invoke(res,
+        //         TypeAnnotationPosition.class.getDeclaredMethod("getExceptionIndex").invoke(tapos));
         res.location = List.from(tapos.location);
         if (tapos.lvarIndex != null)
             res.lvarIndex = Arrays.copyOf(tapos.lvarIndex, tapos.lvarIndex.length);
