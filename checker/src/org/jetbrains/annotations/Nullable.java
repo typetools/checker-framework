@@ -9,4 +9,5 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
 @TypeQualifier
 public @interface Nullable {
+  String value() default "";
 }
