@@ -1,6 +1,8 @@
-class ClientBuilder<T extends ClientBuilder<T>> {
+import org.checkerframework.checker.nullness.qual.NonNull;
 
-  static ClientBuilder<?> newBuilder() {
+class ClientBuilder<T extends @NonNull ClientBuilder<T>> {
+
+  static @NonNull ClientBuilder<?> newBuilder() {
     return new BuilderImpl();
   }
 
