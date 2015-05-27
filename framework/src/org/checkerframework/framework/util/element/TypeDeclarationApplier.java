@@ -1,19 +1,5 @@
 package org.checkerframework.framework.util.element;
 
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.applyAllElementAnnotations;
-
-import java.util.List;
-
-import javax.lang.model.element.Element;
-
-import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.TargetType;
-
 import static com.sun.tools.javac.code.TargetType.CAST;
 import static com.sun.tools.javac.code.TargetType.CLASS_EXTENDS;
 import static com.sun.tools.javac.code.TargetType.CLASS_TYPE_PARAMETER;
@@ -28,9 +14,22 @@ import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE;
 import static com.sun.tools.javac.code.TargetType.METHOD_REFERENCE_TYPE_ARGUMENT;
 import static com.sun.tools.javac.code.TargetType.NEW;
 import static com.sun.tools.javac.code.TargetType.RESOURCE_VARIABLE;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.applyAllElementAnnotations;
+
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+
+import java.util.List;
+
+import javax.lang.model.element.Element;
+
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.TargetType;
 
 /**
- * Apply annotations to a declared type based on it's declaration.
+ * Apply annotations to a declared type based on its declaration.
  */
 public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
 

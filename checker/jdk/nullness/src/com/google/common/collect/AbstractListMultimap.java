@@ -16,13 +16,15 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * Basic implementation of the {@link ListMultimap} interface. It's a wrapper
@@ -81,6 +83,6 @@ abstract class AbstractListMultimap<K, V>
   @Pure @Override public boolean equals(@Nullable Object object) {
     return super.equals(object);
   }
-  
-  private static final long serialVersionUID = 6588350623831699109L;  
+
+  private static final long serialVersionUID = 6588350623831699109L;
 }

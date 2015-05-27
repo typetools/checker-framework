@@ -1,8 +1,6 @@
 package java.lang;
 
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
 
 public abstract class Number implements java.io.Serializable {
   public Number() { throw new RuntimeException("skeleton method"); }

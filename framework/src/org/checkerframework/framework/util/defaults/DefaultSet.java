@@ -11,11 +11,17 @@ import java.util.TreeSet;
  */
 @SuppressWarnings("serial")
 class DefaultSet extends TreeSet<Default> {
-    public DefaultSet() {
-        super( new Comparator<Default>() {
+
+    private static final Comparator<Default> comparator =
+        new Comparator<Default>() {
             @Override
-            public int compare(Default d1, Default d2) { return d1.compareTo(d2); }
-        });
+            public int compare(Default d1, Default d2) {
+                return d1.compareTo(d2);
+            }
+        };
+
+    public DefaultSet() {
+        super(comparator);
     }
 
     @Override

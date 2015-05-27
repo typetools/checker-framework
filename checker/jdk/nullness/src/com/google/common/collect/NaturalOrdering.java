@@ -16,12 +16,15 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+
+import com.google.common.annotations.GwtCompatible;
 
 /** An ordering that uses the natural order of the values. */
 @GwtCompatible(serializable = true)
@@ -30,7 +33,8 @@ final class NaturalOrdering
     extends Ordering<Comparable> implements Serializable {
   static final NaturalOrdering INSTANCE = new NaturalOrdering();
 
-  /*@Pure*/ public int compare(Comparable left, Comparable right) {
+  /*@Pure*/ @Override
+public int compare(Comparable left, Comparable right) {
     checkNotNull(right); // left null is caught later
     if (left == right) {
       return 0;

@@ -16,12 +16,12 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.Collections2.FilteredCollection;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -33,7 +33,6 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -42,8 +41,10 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Collections2.FilteredCollection;
 
 /**
  * Static utility methods pertaining to {@link Set} instances. Also see this
@@ -458,7 +459,7 @@ public final class Sets {
       return s.iterator();
     }
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations on toArray
+    //Suppressed due to annotations on toArray
     @Override public /*@Nullable*/ Object[] toArray() {
       return s.toArray();
     }
@@ -571,7 +572,7 @@ public final class Sets {
         return set1.isEmpty() && set2.isEmpty();
       }
       @SuppressWarnings("nullness")
-	  //Suppressed due to Rawness
+      //Suppressed due to Rawness
       @Override public Iterator<E> iterator() {
         return Iterators.unmodifiableIterator(
             Iterators.concat(set1.iterator(), set2minus1.iterator()));
@@ -630,7 +631,7 @@ public final class Sets {
     // TODO: once we have OrderedIterators, check if these are compatible
     // sorted sets and use that instead if so
 
-    @SuppressWarnings("nullness") 
+    @SuppressWarnings("nullness")
     // Suppressed due to Rawness
     final Predicate<@Nullable Object> inSet2 = Predicates.in(set2);
     return new SetView<E>() {
@@ -669,15 +670,15 @@ public final class Sets {
     //CAUSES CHECKER TO CRASH
     /*
     public static <E extends @Nullable Object> SetView<E> difference(
-	    final Set<E> set1, final Set<? extends @Nullable Object> set2) {
+        final Set<E> set1, final Set<? extends @Nullable Object> set2) {
     checkNotNull(set1, "set1");
     checkNotNull(set2, "set2");
 
     // TODO: once we have OrderedIterators, check if these are compatible
     // sorted sets and use that instead if so
 
-    @SuppressWarnings("nullness") 
-	//Suppressed due to Rawness
+    @SuppressWarnings("nullness")
+    //Suppressed due to Rawness
     final Predicate<@Nullable Object> notInSet2 = Predicates.not(Predicates.in(set2));
     return new SetView<E>() {
       @Override public Iterator<E> iterator() {
@@ -735,7 +736,7 @@ public final class Sets {
     private static class FilteredSet<E extends /*@Nullable*/ Object> extends FilteredCollection<E>
       implements Set<E> {
     FilteredSet(Set<E> unfiltered, Predicate<? super E> predicate) {
-	super(unfiltered, predicate);
+        super(unfiltered, predicate);
     }
 
     @Pure @Override public boolean equals(@Nullable Object object) {
@@ -750,8 +751,8 @@ public final class Sets {
   /**
    * Calculates and returns the hash code of {@code s}.
    */
-    @Pure static int hashCodeImpl(Set<? extends /*@Nullable*/ Object> s) {
-    @Pure int hashCode = 0;
+  @Pure static int hashCodeImpl(Set<? extends /*@Nullable*/ Object> s) {
+    int hashCode = 0;
     for (Object o : s) {
       hashCode += o != null ? o.hashCode() : 0;
     }

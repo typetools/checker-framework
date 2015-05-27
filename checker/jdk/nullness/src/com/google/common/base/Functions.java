@@ -16,14 +16,16 @@
 
 package com.google.common.base;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.Serializable;
 import java.util.Map;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * Useful functions.
@@ -53,6 +55,7 @@ public final class Functions {
     private enum ToStringFunction implements Function<Object, String> {
     INSTANCE;
 
+    @Override
     public String apply(Object o) {
       return o.toString();
     }
@@ -74,6 +77,7 @@ public final class Functions {
     private enum IdentityFunction implements Function</*@Nullable*/ Object, /*@Nullable*/ Object> {
     INSTANCE;
 
+    @Override
     public /*@Nullable*/ Object apply(/*@Nullable*/ Object o) {
       return o;
     }
@@ -99,6 +103,7 @@ public final class Functions {
     FunctionForMapNoDefault(Map<K, V> map) {
       this.map = checkNotNull(map);
     }
+    @Override
     @SuppressWarnings("nullness")
     // Nullness suppressed because get allows nullable parameters
     public /*@Nullable*/ V apply(K key) {
@@ -147,6 +152,7 @@ public final class Functions {
       this.map = checkNotNull(map);
       this.defaultValue = defaultValue;
     }
+    @Override
     @SuppressWarnings("nullness")
     // Nullness suppressed because get allows nullable parameters
     public V apply(K key) {
@@ -196,6 +202,7 @@ public final class Functions {
       this.g = checkNotNull(g);
       this.f = checkNotNull(f);
     }
+    @Override
     public C apply(A a) {
       return g.apply(f.apply(a));
     }
@@ -233,6 +240,7 @@ public final class Functions {
       this.predicate = checkNotNull(predicate);
     }
 
+    @Override
     public Boolean apply(T t) {
       return predicate.apply(t);
     }
@@ -269,6 +277,7 @@ public final class Functions {
     public ConstantFunction(@Nullable E value) {
       this.value = value;
     }
+    @Override
     public E apply(Object from) {
       return value;
     }

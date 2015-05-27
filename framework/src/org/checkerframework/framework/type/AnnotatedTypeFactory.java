@@ -59,7 +59,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -224,8 +223,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * A declaration annotation will be inherited if it is in this set,
      * or if it has the meta-annotation @InheritedAnnotation.
      */
-    private final Set<AnnotationMirror> inheritedAnnotations = AnnotationUtils.
-            createAnnotationSet();
+    private final Set<AnnotationMirror> inheritedAnnotations =
+            AnnotationUtils.createAnnotationSet();
 
     /**
      * The checker to use for option handling and resource management.
@@ -717,7 +716,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // No caching otherwise
         }
 
-        if (tree.getKind() == Tree.Kind.CLASS) {
+        if (TreeUtils.isClassTree(tree)) {
             postProcessClassTree((ClassTree) tree);
         }
 
@@ -1964,7 +1963,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param elt   an element
      * @return the tree declaration of the element if found
      */
-    protected final Tree declarationFromElement(Element elt) {
+    public final Tree declarationFromElement(Element elt) {
         // if root is null, we cannot find any declaration
         if (root == null)
             return null;
@@ -2417,8 +2416,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 results.addAll(stubAnnos);
             }
 
-            // Retrieve the annotations from the overridden method's element.
-            inheritOverriddenDeclAnnos(elt, results);
+            if (elt.getKind() == ElementKind.METHOD) {
+                // Retrieve the annotations from the overridden method's element.
+                inheritOverriddenDeclAnnos((ExecutableElement) elt, results);
+            }
 
             // Add the element and its annotations to the cache.
             cacheDeclAnnos.put(elt, results);
@@ -2437,36 +2438,30 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *          {@code elt} local declaration annotations. The ones found
      *          in stub files and in the element itself.
      */
-
-    private void inheritOverriddenDeclAnnos(Element elt,
+    private void inheritOverriddenDeclAnnos(ExecutableElement elt,
             Set<AnnotationMirror> results) {
-        Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods = null;
-        if (elt instanceof ExecutableElement) {
-            overriddenMethods = AnnotatedTypes.overriddenMethods(elements,
-                    this, (ExecutableElement) elt);
-        }
+        Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
+                AnnotatedTypes.overriddenMethods(elements, this, elt);
 
         if (overriddenMethods != null) {
             for (Map.Entry<AnnotatedDeclaredType, ExecutableElement>
                     pair : overriddenMethods.entrySet()) {
                 // Getting annotations from super implementation.
                 AnnotatedDeclaredType overriddenType = pair.getKey();
-                AnnotatedExecutableType overriddenMethod = AnnotatedTypes
-                        .asMemberOf(types, this, overriddenType,pair.getValue());
+                AnnotatedExecutableType overriddenMethod =
+                        AnnotatedTypes.asMemberOf(types, this, overriddenType,pair.getValue());
                 ExecutableElement superElt = overriddenMethod.getElement();
                 Set<AnnotationMirror> superAnnos = getDeclAnnotations(superElt);
 
                 for (AnnotationMirror annotation : superAnnos) {
                     List<? extends AnnotationMirror> annotationsOnAnnotation;
                     try {
-                        annotationsOnAnnotation = annotation
-                                .getAnnotationType().asElement()
-                                .getAnnotationMirrors();
+                        annotationsOnAnnotation =
+                                annotation.getAnnotationType().asElement().getAnnotationMirrors();
                     } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
                         // Fix for Issue 348: If a CompletionFailure occurs,
                         // issue a warning.
-                        checker.message(Kind.WARNING, annotation
-                                .getAnnotationType().asElement(),
+                        checker.message(Kind.WARNING, annotation.getAnnotationType().asElement(),
                                 "annotation.not.completed", ElementUtils
                                         .getVerboseName(elt), annotation);
                         continue;
@@ -2475,10 +2470,36 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             annotationsOnAnnotation, InheritedAnnotation.class)
                             || AnnotationUtils.containsSameIgnoringValues(
                                     inheritedAnnotations, annotation)) {
-                        results.add(annotation);
+                        addOrMerge(results, annotation);
                     }
                 }
             }
+        }
+    }
+
+    private void addOrMerge(Set<AnnotationMirror> results,
+            AnnotationMirror annotation) {
+        if (AnnotationUtils.containsSameIgnoringValues(results, annotation)) {
+            /*
+             * TODO: feature request: figure out a way to merge multiple annotations
+             * of the same kind. For some annotations this might mean merging some
+             * arrays, for others it might mean converting a single annotation into a
+             * container annotation. We should define a protected method for subclasses
+             * to adapt the behavior.
+             * For now, do nothing and just take the first, most concrete, annotation.
+            AnnotationMirror prev = null;
+            for (AnnotationMirror an : results) {
+                if (AnnotationUtils.areSameIgnoringValues(an, annotation)) {
+                    prev = an;
+                    break;
+                }
+            }
+            results.remove(prev);
+            AnnotationMirror merged = ...;
+            results.add(merged);
+            */
+        } else {
+            results.add(annotation);
         }
     }
 

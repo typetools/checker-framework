@@ -1,14 +1,11 @@
 package java.io;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-
-
-public abstract interface ObjectInput extends DataInput {
-  public abstract Object readObject() throws ClassNotFoundException, IOException;
-  public abstract int read() throws IOException;
-  public abstract int read(byte[] a1) throws IOException;
-  public abstract int read(byte[] a1, int a2, int a3) throws IOException;
-  public abstract long skip(long a1) throws IOException;
-  public abstract int available() throws IOException;
-  public abstract void close() throws IOException;
+public interface ObjectInput extends DataInput {
+  Object readObject() throws ClassNotFoundException, IOException;
+  int read() throws IOException;
+  int read(byte[] a1) throws IOException;
+  int read(byte[] a1, int a2, int a3) throws IOException;
+  long skip(long a1) throws IOException;
+  int available() throws IOException;
+  void close() throws IOException;
 }

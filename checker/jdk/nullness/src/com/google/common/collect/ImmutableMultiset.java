@@ -16,9 +16,12 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.common.collect.Serialization.FieldSetter;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;
@@ -29,8 +32,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.collect.Serialization.FieldSetter;
 
 /**
  * An immutable hash-based multiset. Does not permit null elements.
@@ -161,7 +164,8 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
     this.size = size;
   }
 
-  public int count(@Nullable Object element) {
+  @Override
+public int count(@Nullable Object element) {
     Integer value = map.get(element);
     return (value == null) ? 0 : value;
   }
@@ -174,11 +178,13 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
       int remaining;
       E element;
 
-      public boolean hasNext() {
+      @Override
+    public boolean hasNext() {
         return (remaining > 0) || mapIterator.hasNext();
       }
 
-      public E next() {
+      @Override
+    public E next() {
         if (remaining <= 0) {
           Map.Entry<E, Integer> entry = mapIterator.next();
           element = entry.getKey();
@@ -190,7 +196,8 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
     };
   }
 
-  @Pure public int size() {
+  @Override
+@Pure public int size() {
     return size;
   }
 
@@ -203,7 +210,8 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
    *
    * @throws UnsupportedOperationException always
    */
-  public int add(E element, int occurrences) {
+  @Override
+public int add(E element, int occurrences) {
     throw new UnsupportedOperationException();
   }
 
@@ -212,7 +220,8 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
    *
    * @throws UnsupportedOperationException always
    */
-  public int remove(/*@Nullable*/ Object element, int occurrences) {
+  @Override
+public int remove(/*@Nullable*/ Object element, int occurrences) {
     throw new UnsupportedOperationException();
   }
 
@@ -221,7 +230,8 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
    *
    * @throws UnsupportedOperationException always
    */
-  public int setCount(E element, int count) {
+  @Override
+public int setCount(E element, int count) {
     throw new UnsupportedOperationException();
   }
 
@@ -230,7 +240,8 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
    *
    * @throws UnsupportedOperationException always
    */
-  public boolean setCount(E element, int oldCount, int newCount) {
+  @Override
+public boolean setCount(E element, int oldCount, int newCount) {
     throw new UnsupportedOperationException();
   }
 
@@ -266,13 +277,15 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
   // deserialization should call multiset.elementSet(). Then
   // reserialized(multiset).elementSet() == reserialized(multiset.elementSet())
   // Currently, those object references differ.
-  @SideEffectFree public Set<E> elementSet() {
+  @Override
+@SideEffectFree public Set<E> elementSet() {
     return map.keySet();
   }
 
   private transient ImmutableSet<Entry<E>> entrySet;
 
-  @SideEffectFree public Set<Entry<E>> entrySet() {
+  @Override
+@SideEffectFree public Set<Entry<E>> entrySet() {
     ImmutableSet<Entry<E>> es = entrySet;
     return (es == null) ? (entrySet = new EntrySet<E>(this)) : es;
   }
@@ -288,9 +301,11 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
       final Iterator<Map.Entry<E, Integer>> mapIterator
           = multiset.map.entrySet().iterator();
       return new UnmodifiableIterator<Entry<E>>() {
+        @Override
         public boolean hasNext() {
           return mapIterator.hasNext();
         }
+        @Override
         public Entry<E> next() {
           Map.Entry<E, Integer> mapEntry = mapIterator.next();
           return
@@ -299,6 +314,7 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
       };
     }
 
+    @Override
     @Pure public int size() {
       return multiset.map.size();
     }
