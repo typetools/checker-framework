@@ -15,6 +15,7 @@ fenum-checker.tex \
 tainting-checker.tex \
 regex-checker.tex \
 formatter-checker.tex \
+i18n-format-checker.tex \
 propkey-checker.tex \
 signature-checker.tex \
 guieffect-checker.tex \

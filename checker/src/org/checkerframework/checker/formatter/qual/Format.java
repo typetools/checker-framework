@@ -9,13 +9,14 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
- * This annotation, attached to a {@link java.lang.String String} type,
- * indicates that the String may be legally passed to
- * {@link java.util.Formatter#format(String, Object...) Formatter.format}, or
- * similar functions.
+ * This annotation, attached to a String type,
+ * indicates that the String may be passed to
+ * {@link java.util.Formatter#format(String, Object...) Formatter.format} and
+ * similar methods.
+ * <p>
  *
- * The annotation's value represents the valid parameters that may be passed to
- * the format function. For example:
+ * The annotation's value represents the valid arguments that may be passed to
+ * the format method. For example:
  *
  * <blockquote><pre>
  * {@literal @}Format({ConversionCategory.GENERAL, ConversionCategory.INT})
@@ -23,7 +24,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * String.format(f, "Example", 7);
  * </pre></blockquote>
  *
- * The annotation describes that the format string requires any Object as the
+ * The annotation indicates that the format string requires any Object as the
  * first parameter ({@link ConversionCategory#GENERAL}) and an integer as the
  * second parameter ({@link ConversionCategory#INT}). 
  *
@@ -36,5 +37,12 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 public @interface Format {
+    /**
+     * An array of {@link ConversionCategory}, indicating the types of
+     * legal remaining arguments when a value of the annotated type is used
+     * as the first argument to
+     * {@link java.util.Formatter#format(String, Object...) Formatter.format}
+     * and similar methods.
+     */
     ConversionCategory[] value();
 }

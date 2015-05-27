@@ -1,4 +1,4 @@
-package org.checkerframework.checker.formatter.qual;
+package org.checkerframework.checker.i18nformatter.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,27 +11,25 @@ import org.checkerframework.framework.qual.TypeQualifier;
 /**
  * This annotation, attached to a {@link java.lang.String String} type,
  * indicates that if the String is passed to
- * {@link java.util.Formatter#format(String, Object...) Formatter.format} or
- * similar methods,
- * Passing it will lead to the exception message indicated in the annotation's
- * value.
+ * {@link java.text.MessageFormat#format(String, Object...)},
+ * an exception will result.
  * <p>
  *
  * This annotation may not be written in source code; it is an
  * implementation detail of the checker.
  *
- * @checker_framework.manual #formatter-checker Format String Checker
- * @author Konstantin Weitz
+ * @checker_framework.manual #i18n-formatter-checker Internationalization
+ *                           Format String Checker
+ * @author Siwakorn Srisakaokul
  */
 @TypeQualifier
-@SubtypeOf(UnknownFormat.class)
+@SubtypeOf(I18nUnknownFormat.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
-public @interface InvalidFormat {
+public @interface I18nInvalidFormat {
     /**
      * Using a value of the annotated type as the first argument to
-     * {@link java.util.Formatter#format(String, Object...) Formatter.format} or
-     * similar methods
+     * {@link java.text.MessageFormat#format(String, Object...)}
      * will lead to this exception message.
      */
     String value();
