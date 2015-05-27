@@ -16,20 +16,21 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 
 /**
  * Provides static methods for working with {@code Collection} instances.
@@ -128,6 +129,7 @@ public final class Collections2 {
       // .<E> above needed to compile in JDK 5
     }
 
+    @Override
     @SuppressWarnings("nullness")
     // Suppressed due to typing of ?
     public boolean add(E element) {
@@ -135,6 +137,7 @@ public final class Collections2 {
       return unfiltered.add(element);
     }
 
+    @Override
     @SuppressWarnings("nullness")
     // Suppressed due to typing of ?
     public boolean addAll(Collection<? extends E> collection) {
@@ -144,12 +147,14 @@ public final class Collections2 {
       return unfiltered.addAll(collection);
     }
 
+    @Override
     @SuppressWarnings("nullness")
     // Suppressed due to typing of ?
     public void clear() {
       Iterables.removeIf(unfiltered, predicate);
     }
 
+    @Override
     @SuppressWarnings("nullness")
     // Suppressed due to typing of ?
     @Pure public boolean contains(/*@Nullable*/ Object element) {
@@ -166,6 +171,7 @@ public final class Collections2 {
       }
     }
 
+    @Override
     @Pure public boolean containsAll(Collection<? extends /*@Nullable*/ Object> collection) {
       for (Object element : collection) {
         if (!contains(element)) {
@@ -175,14 +181,17 @@ public final class Collections2 {
       return true;
     }
 
+    @Override
     @Pure public boolean isEmpty() {
       return !Iterators.any(unfiltered.iterator(), predicate);
     }
 
+    @Override
     public Iterator<E> iterator() {
       return Iterators.filter(unfiltered.iterator(), predicate);
     }
 
+    @Override
     @SuppressWarnings("nullness")
     // Suppressed due to typing of ?
     public boolean remove(/*@Nullable*/ Object element) {
@@ -199,11 +208,13 @@ public final class Collections2 {
       }
     }
 
+    @Override
     @SuppressWarnings("nullness")
     // Suppressed due to typing of ?
     public boolean removeAll(final Collection<? extends /*@Nullable*/ Object> collection) {
       checkNotNull(collection);
       Predicate<E> combinedPredicate = new Predicate<E>() {
+        @Override
         public boolean apply(E input) {
           return predicate.apply(input) && collection.contains(input);
         }
@@ -211,11 +222,13 @@ public final class Collections2 {
       return Iterables.removeIf(unfiltered, combinedPredicate);
     }
 
+    @Override
     @SuppressWarnings("nullness")
-	//Suppressed due to typing of ?
+    //Suppressed due to typing of ?
     public boolean retainAll(final Collection<? extends /*@Nullable*/ Object> collection) {
       checkNotNull(collection);
       Predicate<E> combinedPredicate = new Predicate<E>() {
+        @Override
         public boolean apply(E input) {
           return predicate.apply(input) && !collection.contains(input);
         }
@@ -223,10 +236,12 @@ public final class Collections2 {
       return Iterables.removeIf(unfiltered, combinedPredicate);
     }
 
+    @Override
     @Pure public int size() {
       return Iterators.size(iterator());
     }
 
+    @Override
     @SuppressWarnings("nullness")
     // Suppressed nullness to override the toArray method
     public Object[] toArray() {
@@ -234,6 +249,7 @@ public final class Collections2 {
       return Lists.newArrayList(iterator()).toArray();
     }
 
+    @Override
     @SuppressWarnings("nullness")
     // Suppressed Warning to override the toArray method
     public <T> T[] toArray(T[] array) {

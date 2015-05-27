@@ -25,8 +25,6 @@
 
 package java.lang;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-
 /**
  * Thrown when an application tries to access an enum constant by name
  * and the enum type contains no constant with the specified name.
@@ -40,12 +38,12 @@ public class EnumConstantNotPresentException extends RuntimeException {
     /**
      * The type of the missing enum constant.
      */
-    private Class<? extends Enum<?>> enumType;
+    private final Class<? extends Enum<?>> enumType;
 
     /**
      * The name of the missing enum constant.
      */
-    private String constantName;
+    private final String constantName;
 
     /**
      * Constructs an <tt>EnumConstantNotPresentException</tt> for the

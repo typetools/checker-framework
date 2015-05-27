@@ -16,14 +16,16 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * A map which forwards all its method calls to another map. Subclasses should
@@ -42,58 +44,70 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   @Override protected abstract Map<K, V> delegate();
 
+  @Override
   @Pure public int size() {
     return delegate().size();
   }
 
+  @Override
   @Pure public boolean isEmpty() {
     return delegate().isEmpty();
   }
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
   // Suppressed due to annotations on remove in Java.Map
       public /*@Nullable*/ V remove(/*@Nullable*/ Object object) {
     return delegate().remove(object);
   }
 
-  public void clear() {
+  @Override
+public void clear() {
     delegate().clear();
   }
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
   // Suppressed due to annotations on containsKey in Java.Map
   @Pure public boolean containsKey(/*@Nullable*/ Object key) {
     return delegate().containsKey(key);
   }
 
+  @Override
   @SuppressWarnings("nullness")
   // Suppressed due to annotations on containsValue in Java.Map
   @Pure public boolean containsValue(/*@Nullable*/ Object value) {
     return delegate().containsValue(value);
   }
 
+  @Override
   @SuppressWarnings("nullness")
   // Suppressed due to annotations on get in Java.Map
   public V get(/*@Nullable*/ Object key) {
     return delegate().get(key);
   }
 
+  @Override
   public V put(K key, V value) {
     return delegate().put(key, value);
   }
 
+  @Override
   public void putAll(Map<? extends K, ? extends V> map) {
     delegate().putAll(map);
   }
 
+  @Override
   @SideEffectFree public Set<K> keySet() {
     return delegate().keySet();
   }
 
+  @Override
   @SideEffectFree public Collection<V> values() {
     return delegate().values();
   }
 
+  @Override
   @SideEffectFree public Set<Entry<K, V>> entrySet() {
     return delegate().entrySet();
   }

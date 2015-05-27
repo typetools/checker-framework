@@ -16,14 +16,16 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * An immutable collection. Does not permit null elements.
@@ -46,16 +48,19 @@ public abstract class ImmutableCollection<E>
   /**
    * Returns an unmodifiable iterator across the elements in this collection.
    */
-  public abstract UnmodifiableIterator<E> iterator();
+  @Override
+public abstract UnmodifiableIterator<E> iterator();
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
   //Suppressed due to annotations on toArray
   public /*@Nullable*/ Object[] toArray() {
     Object[] newArray = new Object[size()];
     return toArray(newArray);
   }
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
   //Suppressed due to annotations of toArray
   public <T> /*@Nullable*/ T[] toArray(T[] other) {
     int size = size();
@@ -74,7 +79,8 @@ public abstract class ImmutableCollection<E>
     return other;
   }
 
-  @Pure public boolean contains(@Nullable Object object) {
+  @Override
+@Pure public boolean contains(@Nullable Object object) {
     if (object == null) {
       return false;
     }
@@ -86,7 +92,8 @@ public abstract class ImmutableCollection<E>
     return false;
   }
 
-  @Pure public boolean containsAll(Collection<?> targets) {
+  @Override
+@Pure public boolean containsAll(Collection<?> targets) {
     for (Object target : targets) {
       if (!contains(target)) {
         return false;
@@ -95,7 +102,8 @@ public abstract class ImmutableCollection<E>
     return true;
   }
 
-  @Pure public boolean isEmpty() {
+  @Override
+@Pure public boolean isEmpty() {
     return size() == 0;
   }
 
@@ -110,7 +118,8 @@ public abstract class ImmutableCollection<E>
    *
    * @throws UnsupportedOperationException always
    */
-  public final boolean add(E e) {
+  @Override
+public final boolean add(E e) {
     throw new UnsupportedOperationException();
   }
 
@@ -119,7 +128,8 @@ public abstract class ImmutableCollection<E>
    *
    * @throws UnsupportedOperationException always
    */
-  public final boolean remove(/*@Nullable*/ Object object) {
+  @Override
+public final boolean remove(/*@Nullable*/ Object object) {
     throw new UnsupportedOperationException();
   }
 
@@ -128,7 +138,8 @@ public abstract class ImmutableCollection<E>
    *
    * @throws UnsupportedOperationException always
    */
-  public final boolean addAll(Collection<? extends E> newElements) {
+  @Override
+public final boolean addAll(Collection<? extends E> newElements) {
     throw new UnsupportedOperationException();
   }
 
@@ -137,7 +148,8 @@ public abstract class ImmutableCollection<E>
    *
    * @throws UnsupportedOperationException always
    */
-  public final boolean removeAll(Collection<?> oldElements) {
+  @Override
+public final boolean removeAll(Collection<?> oldElements) {
     throw new UnsupportedOperationException();
   }
 
@@ -146,7 +158,8 @@ public abstract class ImmutableCollection<E>
    *
    * @throws UnsupportedOperationException always
    */
-  public final boolean retainAll(Collection<?> elementsToKeep) {
+  @Override
+public final boolean retainAll(Collection<?> elementsToKeep) {
     throw new UnsupportedOperationException();
   }
 
@@ -155,12 +168,14 @@ public abstract class ImmutableCollection<E>
    *
    * @throws UnsupportedOperationException always
    */
-  public final void clear() {
+  @Override
+public final void clear() {
     throw new UnsupportedOperationException();
   }
 
   private static class EmptyImmutableCollection
       extends ImmutableCollection<Object> {
+    @Override
     @Pure public int size() {
       return 0;
     }
@@ -203,6 +218,7 @@ public abstract class ImmutableCollection<E>
       this.elements = elements;
     }
 
+    @Override
     @Pure public int size() {
       return elements.length;
     }

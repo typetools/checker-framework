@@ -362,8 +362,7 @@ public class CheckerMain {
         return ExecUtil.execute(args.toArray(new String[args.size()]), System.out, System.err);
     }
 
-    private static void outputArgumentsToFile(String outputFilename, List<String> args)
-    {
+    private static void outputArgumentsToFile(String outputFilename, List<String> args) {
         if (outputFilename != null) {
             String errorMessage = null;
 
@@ -559,15 +558,16 @@ public class CheckerMain {
             while ((entry = checkerJarIs.getNextEntry()) != null) {
                 final String name = entry.getName();
                 if (name.startsWith(CHECKER_BASE_DIR_NAME) && name.endsWith("Checker.class")) {
-                    final String [] checkerPath = name.substring(0, name.length() - ".class".length()).split("/");
-                    final String checkerName = checkerPath[checkerPath.length - 1];
-
-                    final String qualifiedCheckerFrameworkProcessor = PluginUtil.join(".", checkerPath);
+                    final String [] checkerPath = name.substring(0, name.length() - "Checker.class".length()).split("/");
+                    final String checkerNameShort = checkerPath[checkerPath.length - 1];
+                    final String checkerName = checkerNameShort + "Checker";
 
                     for (int i = 0; i < processors.length; i++) {
                         if (unqualified[i]) {
-                            if (processors[i].equals(checkerName)) {
-                                processors[i] = qualifiedCheckerFrameworkProcessor;
+                            if (processors[i].equalsIgnoreCase(checkerName) ||
+                                    processors[i].equalsIgnoreCase(checkerNameShort)) {
+                                final String qualifiedCheckerFrameworkProcessor = PluginUtil.join(".", checkerPath);
+                                processors[i] = qualifiedCheckerFrameworkProcessor + "Checker";
                                 break;
                             }
                         }

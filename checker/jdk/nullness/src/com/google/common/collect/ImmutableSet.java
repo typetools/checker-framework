@@ -16,8 +16,10 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -29,7 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * A high-performance, immutable {@code Set} with reliable, user-specified
@@ -190,7 +192,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    *
    * @throws NullPointerException if any of {@code elements} is null
    */
-  
+
   public static <E> ImmutableSet<E> copyOf(Iterator<? extends E> elements) {
     Collection<E> list = Lists.newArrayList(elements);
     return copyOfInternal(list);
@@ -232,7 +234,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
   }
 
   @Pure @Override public int hashCode() {
-    @Pure int hashCode = 0;
+    int hashCode = 0;
     for (Object o : this) {
       hashCode += o.hashCode();
     }
@@ -255,7 +257,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     int mask = tableSize - 1;
 
     List<E> elements = new ArrayList<E>(count);
-    @Pure int hashCode = 0;
+    int hashCode = 0;
 
     for (E element : iterable) {
       checkNotNull(element); // for GWT
@@ -289,6 +291,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       this.elements = elements;
     }
 
+    @Override
     @Pure public int size() {
       return elements.length;
     }
@@ -346,7 +349,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
   /** such as ImmutableMap.keySet() */
   abstract static class TransformedImmutableSet<D, E> extends ImmutableSet<E> {
     final D[] source;
-    @Pure final int hashCode;
+    final int hashCode;
 
     @Pure TransformedImmutableSet(D[] source, int hashCode) {
       this.source = source;
@@ -355,6 +358,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
     abstract E transform(D element);
 
+    @Override
     @Pure public int size() {
       return source.length;
     }

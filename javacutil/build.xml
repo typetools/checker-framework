@@ -51,7 +51,7 @@
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
-		    <!-- ManualTaglet should probably be somewhere else rather than in this directory. -->
+                    <!-- ManualTaglet should probably be somewhere else rather than in this directory. -->
                     <exclude name="**/javacutil/dist/**"/>
                 </fileset>
             </path>

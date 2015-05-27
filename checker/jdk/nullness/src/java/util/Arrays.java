@@ -1,6 +1,7 @@
 package java.util;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 
@@ -91,7 +92,7 @@ public class Arrays {
   public static boolean[] copyOfRange(boolean[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   // In JDK7, should instead be: @SafeVarargs
   @SuppressWarnings({"varargs","unchecked"})
-  public static <T> List<T> asList(T... a1) { throw new RuntimeException("skeleton method"); }
+  public static <T extends @Nullable Object> @NonNull List<T> asList(T... a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static int hashCode(long @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static int hashCode(int @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static int hashCode(short @Nullable [] a1) { throw new RuntimeException("skeleton method"); }

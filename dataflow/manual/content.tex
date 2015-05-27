@@ -1606,7 +1606,7 @@ For a given node \code{n}
 \subsection{The Checker-Framework Store and Dealing with Aliasing}
 
 \begin{workinprogress}
-	Word of caution: The exact rules of what information is
+    Word of caution: The exact rules of what information is
         retained may or may not be implemented exactly as described
         here.  This is a good starting point in any case, but if very
         precise information is needed, then the source code is very
@@ -1620,15 +1620,15 @@ own implementation.  This implementation of a store tracks the
 following information:
 
 \begin{itemize}
-	\item Abstract values of local variables.
-	\item Abstract values of fields where the receiver is an
+    \item Abstract values of local variables.
+    \item Abstract values of fields where the receiver is an
           access sequence compose of the following:
-	\begin{itemize}
-	\item Field access.
-	\item Local variable.
-	\item Self reference (i.e., \code{this}).
-	\item Pure or non-pure method call.
-	\end{itemize}
+    \begin{itemize}
+    \item Field access.
+    \item Local variable.
+    \item Self reference (i.e., \code{this}).
+    \item Pure or non-pure method call.
+    \end{itemize}
 \end{itemize}
 
 The most challenging part is ensuring that the information about field

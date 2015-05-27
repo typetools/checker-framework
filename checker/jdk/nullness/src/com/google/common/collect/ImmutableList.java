@@ -16,8 +16,10 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
@@ -29,8 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.RandomAccess;
 
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * A high-performance, immutable, random-access {@code List} implementation.
@@ -220,7 +221,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
        * portion of the array into a new array to save space?
        */
       @SuppressWarnings("unchecked") // all supported methods are covariant
-	  ImmutableList<E> list = (ImmutableList<E>) elements;
+      ImmutableList<E> list = (ImmutableList<E>) elements;
       return list;
     } else if (elements instanceof Collection) {
       @SuppressWarnings("unchecked")
@@ -283,8 +284,10 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
 
   // Mark these two methods with @Nullable
 
+  @Override
   @Pure public abstract int indexOf(@Nullable Object object);
 
+  @Override
   @Pure public abstract int lastIndexOf(@Nullable Object object);
 
   // constrain the return type to ImmutableList<E>
@@ -295,6 +298,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
    * fromIndex} and {@code toIndex} are equal, the empty immutable list is
    * returned.)
    */
+  @Override
   public abstract ImmutableList<E> subList(int fromIndex, int toIndex);
 
   /**
@@ -302,7 +306,8 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
    *
    * @throws UnsupportedOperationException always
    */
-  public final boolean addAll(int index, Collection<? extends E> newElements) {
+  @Override
+public final boolean addAll(int index, Collection<? extends E> newElements) {
     throw new UnsupportedOperationException();
   }
 
@@ -311,7 +316,8 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
    *
    * @throws UnsupportedOperationException always
    */
-  public final E set(int index, E element) {
+  @Override
+public final E set(int index, E element) {
     throw new UnsupportedOperationException();
   }
 
@@ -320,6 +326,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
    *
    * @throws UnsupportedOperationException always
    */
+  @Override
   public final void add(int index, E element) {
     throw new UnsupportedOperationException();
   }
@@ -329,6 +336,7 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
    *
    * @throws UnsupportedOperationException always
    */
+  @Override
   public final E remove(int index) {
     throw new UnsupportedOperationException();
   }

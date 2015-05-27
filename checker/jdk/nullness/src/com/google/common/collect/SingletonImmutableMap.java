@@ -16,12 +16,14 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.Map;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * Implementation of {@link ImmutableMap} with exactly one entry.
@@ -58,6 +60,7 @@ final class SingletonImmutableMap<K, V> extends ImmutableMap<K, V> {
     return singleKey.equals(key) ? singleValue : null;
   }
 
+  @Override
   @Pure public int size() {
     return 1;
   }
@@ -111,6 +114,7 @@ final class SingletonImmutableMap<K, V> extends ImmutableMap<K, V> {
       return false;
     }
 
+    @Override
     @Pure public int size() {
       return 1;
     }

@@ -16,12 +16,12 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.Comparator;
 import java.util.SortedSet;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * A sorted set which forwards all its method calls to another sorted set.
@@ -39,27 +39,33 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   @Override protected abstract SortedSet<E> delegate();
 
-  @SideEffectFree public Comparator<? super E> comparator() {
+  @Override
+@SideEffectFree public Comparator<? super E> comparator() {
     return delegate().comparator();
   }
 
-  @SideEffectFree public E first() {
+  @Override
+@SideEffectFree public E first() {
     return delegate().first();
   }
 
-  @SideEffectFree public SortedSet<E> headSet(E toElement) {
+  @Override
+@SideEffectFree public SortedSet<E> headSet(E toElement) {
     return delegate().headSet(toElement);
   }
 
-  @SideEffectFree public E last() {
+  @Override
+@SideEffectFree public E last() {
     return delegate().last();
   }
 
-  @SideEffectFree public SortedSet<E> subSet(E fromElement, E toElement) {
+  @Override
+@SideEffectFree public SortedSet<E> subSet(E fromElement, E toElement) {
     return delegate().subSet(fromElement, toElement);
   }
 
-  @SideEffectFree public SortedSet<E> tailSet(E fromElement) {
+  @Override
+@SideEffectFree public SortedSet<E> tailSet(E fromElement) {
     return delegate().tailSet(fromElement);
   }
 }
