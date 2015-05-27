@@ -825,9 +825,7 @@ There are some limitations to the guarantee.
 \item
   The Checker Framework is, by default, unsound in a few places where a
   conservative analysis would issue too many false positive warnings.
-  These are listed in Section~\ref{unsound-by-default}; as of January 2014,
-  they are: (1) purity annotations are trusted, (2) array types are
-  covariant, and (3) programs are assumed to be single-threaded.
+  These are listed in Section~\ref{unsound-by-default}.
   You can supply a command-line argument to make the Checker Framework
   sound for each of these cases.
 
