@@ -181,26 +181,33 @@ public class TypesIntoElements {
     private static void storeTypeParameters(ProcessingEnvironment processingEnv, Types types,
             AnnotatedTypeFactory atypeFactory,
             java.util.List<? extends TypeParameterTree> tps, Symbol sym) {
-        boolean isClass = sym.getKind().isClass();
+        boolean isClassOrInterface = sym.getKind().isClass() || sym.getKind().isInterface();
         List<Attribute.TypeCompound> tcs = List.nil();
 
         int tpidx = 0;
         for (TypeParameterTree tp : tps) {
-            AnnotatedTypeMirror type = atypeFactory.getAnnotatedTypeFromTypeTree(tp);
+            AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) atypeFactory.getAnnotatedTypeFromTypeTree(tp);
             // System.out.println("The Type for type parameter " + tp + " is " + type);
 
             TypeAnnotationPosition tapos;
             // Note: we use the type parameter pos also for the bounds;
             // the bounds may not be explicit and we couldn't look up separate pos.
-            if (isClass) {
-                tapos = TypeAnnotationUtils.typeParameterTAPosition(tpidx, ((JCTree)tp).pos);
+            if (isClassOrInterface) {
+                tapos = TypeAnnotationUtils.typeParameterTAPosition(tpidx, ((JCTree) tp).pos);
             } else {
-                tapos = TypeAnnotationUtils.methodTypeParameterTAPosition(tpidx, ((JCTree)tp).pos);
+                tapos = TypeAnnotationUtils.methodTypeParameterTAPosition(tpidx, ((JCTree) tp).pos);
             }
 
-            tcs = tcs.appendList(generateTypeCompounds(processingEnv, type, tapos));
+            { //This block is essentially direct annotations, perhaps we should refactor that method out
+                List<Attribute.TypeCompound> res = List.nil();
+                for (AnnotationMirror am : typeVar.getLowerBound().getAnnotations()) {
+                    Attribute.TypeCompound tc = TypeAnnotationUtils.createTypeCompoundFromAnnotationMirror(processingEnv, am, tapos);
+                    res = res.prepend(tc);
+                }
+                tcs = tcs.appendList(res);
+            }
 
-            AnnotatedTypeMirror tpbound = ((AnnotatedTypeMirror.AnnotatedTypeVariable) type).getUpperBound();
+            AnnotatedTypeMirror tpbound = typeVar.getUpperBound();
             java.util.List<? extends AnnotatedTypeMirror> bounds;
             if (tpbound.getKind() == TypeKind.INTERSECTION) {
                 bounds = ((AnnotatedTypeMirror.AnnotatedIntersectionType) tpbound).directSuperTypes();
@@ -215,7 +222,7 @@ public class TypesIntoElements {
                     ++bndidx;
                 }
 
-                if (isClass) {
+                if (isClassOrInterface) {
                     tapos = TypeAnnotationUtils.typeParameterBoundTAPosition(tpidx, bndidx, ((JCTree)tp).pos);
                 } else {
                     tapos = TypeAnnotationUtils.methodTypeParameterBoundTAPosition(tpidx, bndidx, ((JCTree)tp).pos);
@@ -375,7 +382,14 @@ public class TypesIntoElements {
 
         @Override
         public List<TypeCompound> visitWildcard(AnnotatedWildcardType type, TypeAnnotationPosition tapos) {
+            if (this.visitedNodes.containsKey(type)) {
+                return List.nil();
+            }
+            // Hack for termination, otherwise we'll visit one type too far (the same recursive wildcard twice
+            // and generate extra type annos)
+            visitedNodes.put(type, List.<TypeCompound>nil());
             List<Attribute.TypeCompound> res;
+
             //Note: By default, an Unbound wildcard will return true for both isExtendsBound and isSuperBound
             if (((Type.WildcardType)type.getUnderlyingType()).isExtendsBound()) {
                 res = directAnnotations(type.getSuperBound(), tapos);
@@ -396,6 +410,7 @@ public class TypesIntoElements {
                     res = scanAndReduce(sup, newpos, res);
                 }
             }
+            visitedNodes.put(type, res);
             return res;
         }
 
