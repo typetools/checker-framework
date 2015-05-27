@@ -4,6 +4,8 @@ import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.qual.StubFiles;
+import org.checkerframework.framework.source.SupportedLintOptions;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -13,6 +15,18 @@ import java.util.LinkedHashSet;
  * An implementation of the nullness type-system based on an initialization
  * type-system for safe initialization.
  */
+@SupportedLintOptions({
+    AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
+    AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
+    // Temporary option to forbid non-null array component types,
+    // which is allowed by default.
+    // Forbidding is sound and will eventually be the only possibility.
+    // Allowing is unsound, as described in Section 3.3.4, "Nullness and arrays":
+    //     http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#nullness-arrays
+    // It is permitted temporarily, until we gathered more experience
+    // See issues 154, 322, and 433.
+    "forbidnonnullarraycomponents" })
+@StubFiles("astubs/gnu-getopt.astub")
 public abstract class AbstractNullnessChecker extends InitializationChecker {
 
     /**
