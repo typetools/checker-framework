@@ -506,6 +506,27 @@ qualifiers, reducing the number of annotations that must appear in your code.
 The checker implicitly adds the \code{@Format} qualifier with the appropriate
 conversion categories to any String literal that is a valid format string.
 
+
+\section{FormatMethod}
+
+Your project may contain methods that forward their arguments to a format method.
+Consider for example the following \code{log} method:
+
+\begin{Verbatim}
+@FormatMethod
+void log(String format, Object... args) {
+    if (enabled) { 
+        logfile.print(indent_str); 
+        logfile.printf(format , args);
+    } 
+}
+\end{Verbatim}
+
+By attaching a \refqualclass{checker/formatter/qual}{FormatMethod} annotation to
+such a method, you can instruct the Format String Checker to check every 
+invocation of the method. This check is analogous to the check done on 
+every invocation of built in format methods like \code{String.format}.
+
 \section{Testing whether a format string is valid\label{formatter-run-time-tests}}
 
 % Copied from the Regex Checker.
