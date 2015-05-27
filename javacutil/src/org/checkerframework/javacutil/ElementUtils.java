@@ -177,7 +177,8 @@ public class ElementUtils {
      */
     public static String getVerboseName(Element elt) {
         if (elt.getKind() == ElementKind.PACKAGE ||
-                elt.getKind().isClass()) {
+                elt.getKind().isClass() ||
+                elt.getKind().isInterface()) {
             return getQualifiedClassName(elt).toString();
         } else {
             return getQualifiedClassName(elt) + "." + elt.toString();
