@@ -581,6 +581,10 @@ Unsound checking: ignore some errors
   Section~\ref{type-refinement-purity}.
 \item \<-AassumeAssertionsAreEnabled>, \<-AassumeAssertionsAreDisabled>
   Whether to assume that assertions are enabled or disabled; see Section~\ref{type-refinement-assertions}.
+\item \<-AunsafeDefaultsForUncheckedBytecode>
+  Whether unchecked bytecode should use the same defaults as source
+  code (unsound, but might reduce annotation effort); see
+  Section~\ref{defaults-classfile}.
 \end{itemize}
 
 \label{unsound-by-default}
@@ -703,6 +707,9 @@ checker is a type of ``annotation processor''.
   contain spaces; applicable only to the Checker Framework compiler;
   see Section~\ref{annotations-in-comments}
 \item \<-J> Supply an argument to the JVM that is running javac
+\item \<-doe> To ``dump on error'', that is, output a stack trace
+  whenever a compiler warning/error is produced. Useful when debugging
+  the compiler or a checker.
 \end{itemize}
 
 
@@ -745,14 +752,19 @@ annotation processing including all pluggable type-checking.
 %%     unannotated code, and that would be irritating.
 
 \subsection{Shorthand for built-in checkers \label{shorthand-for-checkers}}
+
+% TODO: this feature only works for our javac script, not when using
+% the standard javac. Should this be explained?
+
 The \code{-processor} flag expects fully-qualified class names.
 For checkers that are packaged with the Checker Framework, the fully-qualified
 name can be quite long.  Therefore, when running a built-in checker, you may 
-omit the package name.  The following two commands are equivalent: 
+omit the package name and the \<Checker> suffix.  The following three commands are equivalent: 
 
 \begin{alltt}
   javac -processor \textbf{org.checkerframework.checker.nullness.NullnessChecker} MyFile.java
   javac -processor \textbf{NullnessChecker} MyFile.java
+  javac -processor \textbf{nullness} MyFile.java
 \end{alltt}
 
 This feature will work when multiple checkers are specified.
@@ -760,6 +772,7 @@ For example:
 
 \begin{alltt}
   javac -processor NullnessChecker,RegexChecker MyFile.java
+  javac -processor nullness,regex MyFile.java
 \end{alltt}
 
 This feature does not apply to Javac \href{https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html#commandlineargfile}{@argfiles}.
