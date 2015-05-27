@@ -1,10 +1,11 @@
 package tests;
 
+import org.checkerframework.checker.nullness.AbstractNullnessChecker;
+import org.checkerframework.framework.test.ParameterizedCheckerTest;
+
 import java.io.File;
 import java.util.Collection;
 
-import org.checkerframework.checker.nullness.AbstractNullnessChecker;
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -13,13 +14,13 @@ import org.junit.runners.Parameterized.Parameters;
 public class NullnessTempTest extends ParameterizedCheckerTest {
 
     public NullnessTempTest(File testFile) {
-        // TODO: remove arrays:forbidnonnullcomponents option once it's no
-        // longer needed.  See issues 154 and 322.
+        // TODO: remove forbidnonnullarraycomponents option once it's no
+        // longer needed.  See issues 154, 322, and 433.
         super(testFile,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
                 "-Anomsgtext",
-                "-Alint=arrays:forbidnonnullcomponents,"
+                "-Alint=forbidnonnullarraycomponents,"
                         + AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
     }
 
