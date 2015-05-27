@@ -73,7 +73,7 @@ following two command-line options:
 
   \emph{prop\_file} is the name of a properties file that maps
   keys to values.  The file format is described in
-  the Javadoc for 
+  the Javadoc for
   \sunjavadoc{java/util/Properties.html\#load-java.io.Reader-}{Properties.load()}.
   Multiple files are separated by colons '\code{:}'.
 
@@ -89,9 +89,9 @@ it can be adapted to different languages and locales without needing to change t
 Localization is the process of adapting internationalized software to specific languages
 and locales.
 
-Internationalization is sometimes called i18n (because the word starts with ``i'',
-ends with ``n'', and has 18 characters in between; localization is similarly
-sometimes abbreviated as l10n).
+Internationalization is sometimes called i18n, because the word starts with ``i'',
+ends with ``n'', and has 18 characters in between.  Localization is similarly
+sometimes abbreviated as l10n.
 
 The checker focuses on one aspect of internationalization:  user-visible strings
 should be presented in the user's own language, such as English, French, or
@@ -119,6 +119,13 @@ The Internationalization Checker verifies these two properties:
 
 \end{enumerate}
 
+If you use the Internationalization Checker, you may want to also use the
+Internationalization Format String Checker, or I18n Format String Checker
+(Chapter~\ref{i18n-format-checker}).
+It verifies that internationalization format strings are well-formed and
+used with arguments of the proper type, so that
+\sunjavadoc{java/text/MessageFormat.html\#format-java.lang.String-java.lang.Object...-}{MessageFormat.format}
+does not fail at run time.
 
 \subsection{Internationalization annotations\label{i18n-annotations}}
 
@@ -152,7 +159,7 @@ command:
 You must specify the localization resource, which maps keys to user-visible
 strings.  Like the general Property Key Checker, the Internationalization Checker
 supports two types of localization resource:
-\code{ResourceBundle}s using the 
+\code{ResourceBundle}s using the
 \code{-Abundlenames=\emph{resource\_name}} option
 or property files using the
 \code{-Apropfiles=\emph{prop\_file}} option.
@@ -165,13 +172,13 @@ The Checker Framework uses compiler message keys to output error messages.
 These keys are substituted by localized strings for user-visible error messages.
 Using keys instead of the localized strings in the source code enables easier
 testing, as the expected error keys can stay unchanged while the localized
-strings can still be modified. 
+strings can still be modified.
 We use the Compiler Message Key Checker to ensure that all internal
 keys are correctly localized.
 Instead of using the Property File Checker, we use a specialized checker,
 giving us more precise documentation of the intended use of \code{String}s.
 
-The single annotation used by this checker is 
+The single annotation used by this checker is
 \refqualclass{checker/compilermsgs/qual}{CompilerMessageKey}.
 The Checker Framework is completely annotated;
 for example, class \code{org.checkerframework.framework.source.Result}

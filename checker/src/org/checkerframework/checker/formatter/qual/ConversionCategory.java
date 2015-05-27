@@ -12,18 +12,16 @@ import org.checkerframework.dataflow.qual.Pure;
 
 /**
  * Elements of this enumeration are used in a {@link Format Format} annotation
- * to indicate the valid types that may be passed as a format parameter. For
- * example:
+ * to indicate the valid types that may be passed as a format parameter.
+ * For example:
  *
  * <blockquote>
- * <pre>
- * {@literal @}Format({ConversionCategory.GENERAL, ConversionCategory.INT})
+ * <pre>{@literal @}Format({ConversionCategory.GENERAL, ConversionCategory.INT})
  * String f = "String '%s' has length %d";
- * String.format(f, "Example", 7);
- * </pre>
+ * String.format(f, "Example", 7);</pre>
  * </blockquote>
  *
- * The annotation describes that the format string requires any Object as the
+ * The annotation indicates that the format string requires any Object as the
  * first parameter ({@link ConversionCategory#GENERAL}) and an integer as the
  * second parameter ({@link ConversionCategory#INT}).
  *

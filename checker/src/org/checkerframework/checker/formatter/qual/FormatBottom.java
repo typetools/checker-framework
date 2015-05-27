@@ -7,7 +7,7 @@ import org.checkerframework.framework.qual.*;
 import com.sun.source.tree.Tree;
 
 /**
- * Represents the bottom of the Formatter type hierarchy. 
+ * Represents the bottom of the Format String type hierarchy.
  * <p>
  *
  * This annotation may not be written in source code; it is an
@@ -22,4 +22,5 @@ import com.sun.source.tree.Tree;
 @ImplicitFor(trees = {Tree.Kind.NULL_LITERAL},
   typeNames = {java.lang.Void.class})
 @DefaultFor(value = {DefaultLocation.LOWER_BOUNDS})
-public @interface FormatBottom {}
+public @interface FormatBottom {
+}
