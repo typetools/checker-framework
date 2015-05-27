@@ -115,7 +115,6 @@ abstract class TargetedElementAnnotationApplier {
                     "Targeted annotations: " + PluginUtil.join(", ", annotatedTargets()) +
                     "; Valid annotations: " + PluginUtil.join(", ", validTargets()));
         }
-        //XXX
     }
 
     /**
