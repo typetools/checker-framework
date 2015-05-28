@@ -129,7 +129,8 @@ public class ReferenceInfoUtil {
         if (p1 == null || p2 == null)
             return false;
 
-        return ((p1.type == p2.type)
+        boolean result =
+                   ((p1.type == p2.type)
                 && (p1.location.equals(p2.location))
                 && areEquals(p1.offset, p2.offset)
                 && areEquals(p1.lvarOffset, p2.lvarOffset)
@@ -139,12 +140,30 @@ public class ReferenceInfoUtil {
                 && areEquals(p1.parameter_index, p2.parameter_index)
                 && areEquals(p1.type_index, p2.type_index)
                 && areEquals(p1.exception_index, p2.exception_index));
+        return result;
+    }
+
+    public static String positionCompareStr(TypeAnnotation.Position p1, TypeAnnotation.Position p2) {
+        return "type = " + p1.type + ", " + p2.type + "\n"
+             + "offset = " + p1.offset + ", " + p2.offset + "\n"
+             + "lvarOffset = " + p1.lvarOffset + ", " + p2.lvarOffset + "\n"
+             + "lvarLength = " + p1.lvarLength + ", " + p2.lvarLength + "\n"
+             + "lvarIndex = " + p1.lvarIndex + ", " + p2.lvarIndex + "\n"
+             + "bound_index = " + p1.bound_index + ", " + p2.bound_index + "\n"
+             + "paremeter_index = " + p1.parameter_index + ", " + p2.parameter_index + "\n"
+             + "type_index = " + p1.type_index + ", " + p2.type_index + "\n"
+             + "exception_index = " + p1.exception_index + ", " + p2.exception_index + "\n";
     }
 
     private static TypeAnnotation findAnnotation(String name, TypeAnnotation.Position expected, List<TypeAnnotation> annotations, ClassFile cf) throws InvalidIndex, UnexpectedEntry {
         String properName = "L" + name + ";";
         for (TypeAnnotation anno : annotations) {
             String actualName = cf.constant_pool.getUTF8Value(anno.annotation.type_index);
+
+            if (properName.equals(actualName)) {
+                System.out.println("For Anno: " + actualName);
+            }
+
             if (properName.equals(actualName) &&
                 areEquals(expected, anno.position))
                 return anno;
