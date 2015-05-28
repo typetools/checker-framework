@@ -59,6 +59,10 @@ public class Methods {
     }
 
     @TADescriptions({
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = METHOD_TYPE_PARAMETER, paramIndex=0, boundIndex=0),
+        @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = METHOD_TYPE_PARAMETER, paramIndex=0, boundIndex=0),
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom", type = METHOD_TYPE_PARAMETER, paramIndex=0, boundIndex=0),
+
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/Nullable", type = METHOD_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=0),
         @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = METHOD_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=0),
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor", type = METHOD_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=0),
@@ -68,6 +72,10 @@ public class Methods {
     }
 
     @TADescriptions({
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = METHOD_TYPE_PARAMETER, paramIndex=0, boundIndex=0),
+        @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = METHOD_TYPE_PARAMETER, paramIndex=0, boundIndex=0),
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom", type = METHOD_TYPE_PARAMETER, paramIndex=0, boundIndex=0),
+
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = METHOD_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=0),
         @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = METHOD_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=0),
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor", type = METHOD_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=0),
@@ -77,6 +85,10 @@ public class Methods {
     }
 
     @TADescriptions({
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = METHOD_TYPE_PARAMETER, paramIndex=0, boundIndex=0),
+        @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = METHOD_TYPE_PARAMETER, paramIndex=0, boundIndex=0),
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom", type = METHOD_TYPE_PARAMETER, paramIndex=0, boundIndex=0),
+
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = METHOD_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=1),
         @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = METHOD_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=1),
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor", type = METHOD_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=1),
