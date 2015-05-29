@@ -147,13 +147,13 @@
             style="push">
           </command>
            <command
-            commandId="checkers.eclipse.runsignaturechecker"
-            label="Signature Checker"
+            commandId="checkers.eclipse.runi18n"
+            label="I18n Checker"
             style="push">
            </command>
            <command
-            commandId="checkers.eclipse.runi18n"
-            label="I18n Checker"
+            commandId="checkers.eclipse.runsignaturechecker"
+            label="Signature Checker"
             style="push">
            </command>
            <command
@@ -166,6 +166,11 @@
             label="Units Checker"
             style="push">
            </command>
+          <command
+            commandId="checkers.eclipse.runconstantvaluechecker"
+            label="Constant Value Checker"
+            style="push">
+          </command>
           <command
             commandId="checkers.eclipse.runaliasingchecker"
             label="Aliasing Checker"
@@ -189,11 +194,6 @@
           <command
             commandId="checkers.eclipse.runsubtypingchecker"
             label="Subtyping Checker"
-            style="push">
-          </command>
-          <command
-            commandId="checkers.eclipse.runconstantvaluechecker"
-            label="Constant Value Checker"
             style="push">
           </command>
         </menu>
@@ -229,15 +229,9 @@
     </command>
     <command
       categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$IGJAction"
-      id="checkers.eclipse.runigj"
-      name="Run IGJ Checker">
-    </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$CustomAction"
-      id="checkers.eclipse.runcustom"
-      name="Run Custom Checker(s)">
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$InterningAction"
+      id="checkers.eclipse.runinterning"
+      name="Run Interning Checker">
     </command>
     <command
       categoryId="checkers.eclipse.category"
@@ -247,9 +241,87 @@
     </command>
     <command
       categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$InterningAction"
-      id="checkers.eclipse.runinterning"
-      name="Run Interning Checker">
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$FenumAction"
+      id="checkers.eclipse.runfenum"
+      name="Run Fenum Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$TaintingAction"
+      id="checkers.eclipse.runtainting"
+      name="Run Tainting Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$RegexAction"
+      id="checkers.eclipse.runregex"
+      name="Run Regex Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$FormatterAction"
+      id="checkers.eclipse.runformatstring"
+      name="Run Format String Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$I18nFormatterAction"
+      id="checkers.eclipse.runi18nformatstring"
+      name="Run I18n Format String Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$PropertyFileAction"
+      id="checkers.eclipse.runpropertychecker"
+      name="Run Property File Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$I18nAction"
+      id="checkers.eclipse.runi18n"
+      name="Run I18n Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$SignatureAction"
+      id="checkers.eclipse.runsignaturechecker"
+      name="Run Signature Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$GuiEffectAction"
+      id="checkers.eclipse.runguieffectchecker"
+      name="Run Gui Effect Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$UnitAction"
+      id="checkers.eclipse.rununitchecker"
+      name="Run Units Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$ConstantValueAction"
+      id="checkers.eclipse.runconstantvaluechecker"
+      name="Run Constant Value Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$AliasingAction"
+      id="checkers.eclipse.runaliasingchecker"
+      name="Run Aliasing Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$LinearAction"
+      id="checkers.eclipse.runlinear"
+      name="Run Linear Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$IGJAction"
+      id="checkers.eclipse.runigj"
+      name="Run IGJ Checker">
     </command>
     <command
       categoryId="checkers.eclipse.category"
@@ -257,6 +329,13 @@
       id="checkers.eclipse.runjavari"
       name="Run Javari Checker">
     </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$SubtypingAction"
+      id="checkers.eclipse.runsubtypingchecker"
+      name="Run Subtyping Checker">
+    </command>
+
     <command
       categoryId="checkers.eclipse.category"
       defaultHandler="org.checkerframework.eclipse.actions.ClearMarkersAction"
@@ -277,94 +356,10 @@
     </command>-->
     <command
       categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$LinearAction"
-      id="checkers.eclipse.runlinear"
-      name="Run Linear Checker">
-    </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$I18nAction"
-      id="checkers.eclipse.runi18n"
-      name="Run I18n Checker">
-    </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$RegexAction"
-      id="checkers.eclipse.runregex"
-      name="Run Regex Checker">
-    </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$TaintingAction"
-      id="checkers.eclipse.runtainting"
-      name="Run Tainting Checker">
-    </command>
-    <command
-      categoryId="checkers.eclipse.category"
       defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$CurrentAction"
       id="checkers.eclipse.runselected"
       name="Run Selected Checkers">
-    </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$FenumAction"
-      id="checkers.eclipse.runfenum"
-      name="Run Fenum Checker">
-    </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$FormatterAction"
-      id="checkers.eclipse.runformatstring"
-      name="Run Format String Checker">
-     </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$I18nFormatterAction"
-      id="checkers.eclipse.runi18nformatstring"
-      name="Run I18n Format String Checker">
-     </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$PropertyFileAction"
-      id="checkers.eclipse.runpropertychecker"
-      name="Run Property File Checker">
-     </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$SignatureAction"
-      id="checkers.eclipse.runsignaturechecker"
-      name="Run Signature Checker">
-     </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$GuiEffectAction"
-      id="checkers.eclipse.runguieffectchecker"
-      name="Run Gui Effect Checker">
-    </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$UnitAction"
-      id="checkers.eclipse.rununitchecker"
-      name="Run Units Checker">
-     </command>
-     <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$AliasingAction"
-      id="checkers.eclipse.runaliasingchecker"
-      name="Run Aliasing Checker">
-     </command>
-     <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$SubtypingAction"
-      id="checkers.eclipse.runsubtypingchecker"
-      name="Run Subtyping Checker">
-     </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$ConstantValueAction"
-      id="checkers.eclipse.runconstantvaluechecker"
-      name="Run Constant Value Checker">
-    </command>
+    </command>    
     <command
       categoryId="checkers.eclipse.category"
       defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$SingleCustomAction"
