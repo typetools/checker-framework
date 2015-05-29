@@ -27,27 +27,11 @@ public class CheckerActions
         throw new AssertionError("not to be instantiated");
     }
 
-    public static class CurrentAction extends RunCheckerAction
-    {
-        public CurrentAction()
-        {
-            super();
-        }
-    }
-
     public static class NullnessAction extends RunCheckerAction
     {
         public NullnessAction()
         {
             super(NullnessChecker.class.getCanonicalName());
-        }
-    }
-
-    public static class JavariAction extends RunCheckerAction
-    {
-        public JavariAction()
-        {
-            super(JavariChecker.class.getCanonicalName());
         }
     }
 
@@ -59,11 +43,11 @@ public class CheckerActions
         }
     }
 
-    public static class IGJAction extends RunCheckerAction
+    public static class LockAction extends RunCheckerAction
     {
-        public IGJAction()
+        public LockAction()
         {
-            super(IGJChecker.class.getCanonicalName());
+            super(LockChecker.class.getCanonicalName());
         }
     }
 
@@ -72,6 +56,22 @@ public class CheckerActions
         public FenumAction()
         {
             super(FenumChecker.class.getCanonicalName());
+        }
+    }
+
+    public static class TaintingAction extends RunCheckerAction
+    {
+        public TaintingAction()
+        {
+            super(TaintingChecker.class.getCanonicalName());
+        }
+    }
+
+    public static class RegexAction extends RunCheckerAction
+    {
+        public RegexAction()
+        {
+            super(RegexChecker.class.getCanonicalName());
         }
     }
 
@@ -99,6 +99,14 @@ public class CheckerActions
         }
     }
 
+    public static class I18nAction extends RunCheckerAction
+    {
+        public I18nAction()
+        {
+            super(I18nChecker.class.getCanonicalName());
+        }
+    }
+
     public static class SignatureAction extends RunCheckerAction
     {
         public SignatureAction()
@@ -123,6 +131,14 @@ public class CheckerActions
         }
     }
 
+    public static class ConstantValueAction extends RunCheckerAction
+    {
+        public ConstantValueAction()
+        {
+            super(ValueChecker.class.getCanonicalName());
+        }
+    }
+
     public static class AliasingAction extends RunCheckerAction
     {
         public AliasingAction()
@@ -139,38 +155,22 @@ public class CheckerActions
         }
     }
 
-    public static class LockAction extends RunCheckerAction
+    public static class IGJAction extends RunCheckerAction
     {
-        public LockAction()
+        public IGJAction()
         {
-            super(LockChecker.class.getCanonicalName());
+            super(IGJChecker.class.getCanonicalName());
         }
     }
 
-    public static class TaintingAction extends RunCheckerAction
+    public static class JavariAction extends RunCheckerAction
     {
-        public TaintingAction()
+        public JavariAction()
         {
-            super(TaintingChecker.class.getCanonicalName());
+            super(JavariChecker.class.getCanonicalName());
         }
     }
-
-    public static class I18nAction extends RunCheckerAction
-    {
-        public I18nAction()
-        {
-            super(I18nChecker.class.getCanonicalName());
-        }
-    }
-
-    public static class RegexAction extends RunCheckerAction
-    {
-        public RegexAction()
-        {
-            super(RegexChecker.class.getCanonicalName());
-        }
-    }
-
+    
     public static class SubtypingAction extends RunCheckerAction
     {
         public SubtypingAction()
@@ -178,13 +178,12 @@ public class CheckerActions
             super(SubtypingChecker.class.getCanonicalName());
         }
     }
-
-
-    public static class ConstantValueAction extends RunCheckerAction
+    
+    public static class CurrentAction extends RunCheckerAction
     {
-        public ConstantValueAction()
+        public CurrentAction()
         {
-            super(ValueChecker.class.getCanonicalName());
+            super();
         }
     }
 
