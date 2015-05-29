@@ -403,7 +403,11 @@
                     <li>Select &quot;Run built-in checker&quot;.</li>
                     <li>Verify that the displayed list contains all of the checkers in the Checker Framework manual.</li>
                 </ol>
-                Alternatively, you can verify the list of checkers using the following process:
+                Alternatively, you can verify the list of checkers using the following process.
+                When adding a new checker, ensure that it is in the same relative order
+                to other checkers as the order in the manual's table of contents.  For consistency,
+                please do this even in code where the order is not visible to the user - this will
+                make it easier for the lists to be verified periodically.
 
                 <ol>
                     <li>In your Eclipse with RCP IDE, open the plugin.xml editor.</li>
@@ -411,7 +415,7 @@
                     <li>Search for <strong>commandId=&quot;checkers.eclipse.runnullness&quot;</strong>.</li>
                     <li>For each Checker in the Checker Framework manual, ensure there is
                         an entry in the command list that you found using the previous search.</li>
-                    <li>Search for <strong>defaultHandler= &quot;org.checkerframework.eclipse.actions.CheckerActions$NullnessAction&quot;</strong>.</li>
+                    <li>Search for <strong>defaultHandler=&quot;org.checkerframework.eclipse.actions.CheckerActions$NullnessAction&quot;</strong>.</li>
                     <li>For each command, ensure there is a corresponding handler in the list found
                         by the previous search.
                     </li>
@@ -436,6 +440,9 @@
                 If the build fails for other reason (such as forgetting to update one of the versions),
                 most often no error is reported but no files are created.  In this case, it's as if the button did
                 nothing.  Sometimes errors can be found in the "Problems" or "Errors" view of Eclipse.
+                If the plug-in jar fails to be updated under checker-framework-eclipse-update-site/plugins, try
+                deleting artifacts.jar and content.jar in the checker-framework-eclipse-update-site directory
+                and rebuilding.
             </td>
         </tr>
     </table>
