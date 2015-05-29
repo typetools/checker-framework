@@ -137,6 +137,11 @@
             style="push">
           </command>
           <command
+            commandId="checkers.eclipse.runi18nformatstring"
+            label="I18n Format String Checker"
+            style="push">
+          </command>
+          <command
             commandId="checkers.eclipse.runpropertychecker"
             label="Property File Checker"
             style="push">
@@ -311,6 +316,12 @@
       defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$FormatterAction"
       id="checkers.eclipse.runformatstring"
       name="Run Format String Checker">
+     </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$I18nFormatterAction"
+      id="checkers.eclipse.runi18nformatstring"
+      name="Run I18n Format String Checker">
      </command>
     <command
       categoryId="checkers.eclipse.category"

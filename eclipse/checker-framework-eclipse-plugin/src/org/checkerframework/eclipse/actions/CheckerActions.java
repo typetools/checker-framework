@@ -2,6 +2,7 @@ package org.checkerframework.eclipse.actions;
 
 import org.checkerframework.checker.fenum.FenumChecker;
 import org.checkerframework.checker.formatter.FormatterChecker;
+import org.checkerframework.checker.i18nformatter.I18nFormatterChecker;
 import org.checkerframework.checker.guieffect.GuiEffectChecker;
 import org.checkerframework.checker.i18n.I18nChecker;
 import org.checkerframework.checker.igj.IGJChecker;
@@ -79,6 +80,14 @@ public class CheckerActions
         public FormatterAction()
         {
             super(FormatterChecker.class.getCanonicalName());
+        }
+    }
+
+    public static class I18nFormatterAction extends RunCheckerAction
+    {
+        public I18nFormatterAction()
+        {
+            super(I18nFormatterChecker.class.getCanonicalName());
         }
     }
 
