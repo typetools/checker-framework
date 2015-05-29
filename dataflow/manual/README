@@ -1,0 +1,6 @@
+To create file dataflow.pdf, run:
+  pdflatex dataflow; pdflatex dataflow
+
+This document can be processed with pdflatex, but not with latex.
+
+
