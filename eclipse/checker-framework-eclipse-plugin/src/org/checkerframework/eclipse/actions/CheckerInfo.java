@@ -18,6 +18,7 @@ import java.util.*;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.checker.fenum.FenumChecker;
 import org.checkerframework.checker.formatter.FormatterChecker;
+import org.checkerframework.checker.i18nformatter.I18nFormatterChecker;
 import org.checkerframework.checker.i18n.I18nChecker;
 import org.checkerframework.checker.interning.InterningChecker;
 import org.checkerframework.checker.javari.JavariChecker;
@@ -73,6 +74,7 @@ public class CheckerInfo
                 new CheckerInfo("Regex Checker",     RegexChecker.class),
 
                 new CheckerInfo("Format String Checker", FormatterChecker.class),
+                new CheckerInfo("I18n Format String Checker", I18nFormatterChecker.class),
                 new CheckerInfo("Property File Checker", PropertyKeyChecker.class),
                 new CheckerInfo("Signature Checker",     SignatureChecker.class),
 
