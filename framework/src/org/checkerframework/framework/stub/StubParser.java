@@ -405,7 +405,7 @@ public class StubParser {
                 // the Java 6 specification.
                 // System.out.printf("Dying.  theCompilationUnit=%s%n", theCompilationUnit);
                 if (debugStubParser) {
-                    stubDebug(String.format("parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n  theCompilationUnit=%s%nEnd of Message%n",
+                    stubDebug(String.format("parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n  theCompilationUnit=%s%nEnd of message for parseType:  mismatched sizes for params and args%n",
                                               decl, typeParameters,
                                               elt, elt.getClass(), type, type.getClass(), typeArguments.size(), typeArguments,
                                               theCompilationUnit));
@@ -420,7 +420,7 @@ public class StubParser {
                 // TODO: decide how severe this problem really is; see comment above.
                 // System.out.printf("Dying.  theCompilationUnit=%s%n", theCompilationUnit);
                 if (debugStubParser) {
-                    stubDebug(String.format("parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters (size %d)=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n  theCompilationUnit=%s%nEnd of Message%n",
+                    stubDebug(String.format("parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters (size %d)=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n  theCompilationUnit=%s%nEnd of message for parseType:  mismatched sizes for params and args%n",
                                               decl, typeParameters.size(), typeParameters,
                                               elt, elt.getClass(), type, type.getClass(), typeArguments.size(), typeArguments,
                                               theCompilationUnit));

@@ -112,8 +112,9 @@ equivalent to specifying every file in it whose name ends with
 \code{.astub}.  The stub path entries are delimited by
 \<File.pathSeparator> (`\<:>' for Linux and Mac, `\<;>' for Windows).
 
-A checker automatically reads the stub file \code{jdk.astub}.  (The checker
-author should place it in the same directory as the Checker class, i.e.,
+A checker automatically reads the stub file \code{jdk.astub}, unless
+command-line option \<-Aignorejdkastub> is supplied.  (The checker
+author should place \code{jdk.astub} in the same directory as the Checker class, i.e.,
 the subclass of \code{BaseTypeVisitor}.)  Programmers should only use the
 \<-Astubs> argument for additional stub files they create themselves.
 
