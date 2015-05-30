@@ -1,0 +1,318 @@
+class RawPartial2 {
+  static class A extends Object {
+    void nonRawReceiver() { } // receiver has type "@NonRaw A".
+    void nonRawAReceiver() @NonRaw(A.class) { }
+    // the next two declarations are equivalent
+    void rawAReciever1() @Raw { }
+    void rawAReciever2() @NonRaw(Object.class) { }
+  }
+
+  // Identical annotations as in superclass
+  static  class B1 extends A {
+    void nonRawReceiver() { }
+    void nonRawAReceiver() @NonRaw(A.class) { }
+    void rawAReciever1() @Raw { }
+    void rawAReciever2() @NonRaw(Object.class) { }
+  }
+
+  // Equivalent annotations as in superclass
+  static class B2 extends A {
+    void nonRawReceiver() { }
+    void nonRawAReceiver() Raw { }
+    void rawAReciever1() @NonRaw(Object.class) { }
+    void rawAReciever2() @Raw { }
+  }
+
+  // Weaker annotations than in superclass -- OK.
+  static class B3 extends A {
+    void nonRawReceiver() @Raw { }
+    void nonRawAReceiver() @NonRaw(Object.class) { }
+  }
+
+  static class B extends A {
+
+    // Fields, ordered in terms of decreasing type in the type hierarchy.
+
+    @Raw Object rO;
+    @NonRaw(Object.class) Object nroO;
+    Object o;
+
+    @Raw A rA;
+    @NonRaw(Object.class) A nroA;  // same as "@Raw A"
+    @NonRaw(A.class) A nraA;
+    A a;
+
+    @NonRaw(Object.class) B nroB;
+    @Raw B rB;
+    @NonRaw(A.class) B nraB;  // same as "@Raw B"
+    @NonRaw(B.class) B nrbB;
+    B b;
+
+    void test_rO() {
+// DONE
+      rO = nroO;
+      rO = o;
+      rO = rA;
+      rO = nroA;
+      rO = nraA;
+      rO = a;
+      rO = nroB;
+      rO = rB;
+      rO = nraB;
+      rO = nrbB;
+      rO = b;
+    }
+    void test_nroO() {
+// DONE
+      //:: error
+      nroO = rO;
+      nroO = o;
+      nroO = rA;
+      nroO = nroA;
+      nroO = nraA;
+      nroO = a;
+      nroO = nroB;
+      nroO = rB;
+      nroO = nraB;
+      nroO = nrbB;
+      nroO = b;
+    }
+    void test_o() {
+// DONE
+      //:: error
+      o = rO;
+      //:: error
+      o = nroO;
+      //:: error
+      o = rA;
+      //:: error
+      o = nroA;
+      //:: error
+      o = nraA;
+      o = a;
+      //:: error
+      o = nroB;
+      //:: error
+      o = rB;
+      //:: error
+      o = nraB;
+      //:: error
+      o = nrbB;
+      o = b;
+    }
+    void test_rA() {
+// DONE
+      //:: error
+      rA = rO;
+      //:: error
+      rA = nroO;
+      //:: error
+      rA = o;
+      rA = nroA;
+      rA = nraA;
+      rA = a;
+      rA = nroB;
+      rA = rB;
+      rA = nraB;
+      rA = nrbB;
+      rA = b;
+    }
+    void test_nroA() {
+// DONE
+      //:: error
+      nroA = rO;
+      //:: error
+      nroA = nroO;
+      //:: error
+      nroA = o;
+      nroA = rA;
+      nroA = nraA;
+      nroA = a;
+      nroA = nroB;
+      nroA = rB;
+      nroA = nraB;
+      nroA = nrbB;
+      nroA = b;
+    }
+    void test_nraA() {
+// DONE
+      //:: error
+      nraA = rO;
+      //:: error
+      nraA = nroO;
+      //:: error
+      nraA = o;
+      //:: error
+      nraA = rA;
+      //:: error
+      nraA = nroA;
+      nraA = a;
+      //:: error
+      nraA = nroB;
+      nraA = rB;
+      nraA = nraB;
+      nraA = nrbB;
+      nraA = b;
+    }
+    void test_a() {
+// DONE
+      //:: error
+      a = rO;
+      //:: error
+      a = nroO;
+      //:: error
+      a = o;
+      //:: error
+      a = rA;
+      //:: error
+      a = nroA;
+      //:: error
+      a = nraA;
+      //:: error
+      a = nroB;
+      //:: error
+      a = rB;
+      //:: error
+      a = nraB;
+      //:: error
+      a = nrbB;
+      a = b;
+    }
+    void test_nroB() {
+      //:: error
+      nroB = rO;
+      //:: error
+      nroB = nroO;
+      //:: error
+      nroB = o;
+      //:: error
+      nroB = rA;
+      //:: error
+      nroB = nroA;
+      //:: error
+      nroB = nraA;
+      //:: error
+      nroB = a;
+      nroB = rB;
+      nroB = nraB;
+      nroB = nrbB;
+      nroB = b;
+    }
+    void test_rB() {
+      //:: error
+      rB = rO;
+      //:: error
+      rB = nroO;
+      //:: error
+      rB = o;
+      //:: error
+      rB = rA;
+      //:: error
+      rB = nroA;
+      //:: error
+      rB = nraA;
+      //:: error
+      rB = a;
+      //:: error
+      rB = nroB;
+      rB = nraB;
+      rB = nrbB;
+      rB = b;
+    }
+    void test_nraB() {
+      //:: error
+      nraB = rO;
+      //:: error
+      nraB = nroO;
+      //:: error
+      nraB = o;
+      //:: error
+      nraB = rA;
+      //:: error
+      nraB = nroA;
+      //:: error
+      nraB = nraA;
+      //:: error
+      nraB = a;
+      //:: error
+      nraB = nroB;
+      nraB = rB;
+      nraB = nrbB;
+      nraB = b;
+    }
+    void test_nrbB() {
+      //:: error
+      nrbB = rO;
+      //:: error
+      nrbB = nroO;
+      //:: error
+      nrbB = o;
+      //:: error
+      nrbB = rA;
+      //:: error
+      nrbB = nroA;
+      //:: error
+      nrbB = nraA;
+      //:: error
+      nrbB = a;
+      //:: error
+      nrbB = nroB;
+      //:: error
+      nrbB = rB;
+      //:: error
+      nrbB = nraB;
+      nrbB = b;
+    }
+    void test_b() {
+// DONE
+      //:: error
+      b = rO;
+      //:: error
+      b = nroO;
+      //:: error
+      b = o;
+      //:: error
+      b = rA;
+      //:: error
+      b = nroA;
+      //:: error
+      b = nraA;
+      //:: error
+      b = a;
+      //:: error
+      b = nroB;
+      //:: error
+      b = rB;
+      //:: error
+      b = nraB;
+      //:: error
+      b = nrbB;
+    }
+  }
+
+  //   // TODO: Test overriding and super calls
+  // 
+  //     // Receiver has type "@NonRaw B"; any other rawness annotation would be
+  //     // more restrictive than the declaration in the superclass,
+  //     // which is not permitted by the rules of subtyping.
+  //     void nonrawAReceiver() @NonRaw(Object.class) {
+  //       super.nonRawReceiver();  // Illegal call, because actual receiver is less defined than the callee requires
+  //       super.nonRawAReceiver();  // Illegal call, because actual receiver is less defined than the callee requires
+  //       super.rawAReceiver();  // Legal call, because actual receiver has identical rawness type to what the callee requires
+  //     }
+  //     // Receiver has type "@NonRaw(Object.class) B"; by contrast, writing a receiver
+  //     // annotation of "@Raw" would be more restrictive than the declaration in the superclass,
+  //     // which is not permitted by the rules of subtyping.
+  //     void rawAReceiver() @NonRaw(Object.class) {
+  //       super.nonRawReceiver();  // Illegal call, because actual receiver is less defined than the callee requires
+  //       super.nonRawAReceiver();  // Illegal call, because actual receiver is less defined than the callee requires
+  //       super.rawAReceiver();  // Legal call, because actual receiver has identical rawness type to what the callee requires
+  //     }
+  //     // Receiver has type "@Raw B"; "@NonRaw(A.class)" would be equivalent.
+  //     void rawBReceiver() @Raw {
+  //       super.nonRawReceiver();  // Illegal call, because actual receiver is less defined than the callee requires
+  //       super.nonRawAReceiver();  // Illegal call, because actual receiver is less defined than the callee requires
+  //       super.rawAReceiver();  // Legal call, because actual receiver is more defined than the callee requires
+  //     }
+
+}
