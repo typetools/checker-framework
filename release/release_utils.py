@@ -394,7 +394,7 @@ def commit_tag_and_push(version, path, tag_prefix):
     execute('hg -R %s tag %s%s' % (path, tag_prefix, version))
     execute('hg -R %s push' % path)
     
-# Retrive the changes since the tag (prefix + prev_version)
+# Retrieve the changes since the tag (prefix + prev_version)
 def retrieve_changes(root, prev_version, prefix):
     return execute(
             "hg -R %s log -r %s%s:tip --template ' * {desc}\n'" %
@@ -542,7 +542,7 @@ def wget_file( source_url, destination_dir ):
     execute( "wget %s" % source_url, True, False, destination_dir )
 
 #Note:  This will download the directory into a directory location as follow:
-#Suppose we have a ur:  http://level0/level1/target
+#Suppose we have a url:  http://level0/level1/target
 #It will download the files into the following directory
 #destination_dir/level0/level1/target
 #use wget_dir_flat if you'd like all files to be just output to destination_dir
