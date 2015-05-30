@@ -19,11 +19,12 @@ this process as well.
 If you do create new stub files please share them with us via email at
 checker-framework-dev@googlegroups.com.  Thanks!
 
-Our policy is to only add fully-annotated classes to the JDK, to avoid
-confusion that could result from some methods in a class being correctly
-annotated and other methods not being annotated.  So, it is best if you can
-provide a fully-annotated class (this requires examining all the methods in
-the class).  Otherwise, provide what you can, but the annotations won't be
-added to the Checker Framework distribution until someone else gets a
-chance to examine all the other methods.
+We do not add annatations for single methods.  Our policy is to only add a
+class when it is fully-annotated, with correct annotations for all of its
+methods.  This avoids confusion that could result from some methods in a
+class being correctly annotated and other methods not being annotated.  So,
+it is best if you can provide a fully-annotated class (this requires
+examining all the methods in the class).  Otherwise, provide what you can,
+but the annotations won't be added to the Checker Framework distribution
+until someone else gets a chance to examine all the other methods.
 

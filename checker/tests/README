@@ -8,7 +8,7 @@ instead; see file ../manual/manual.html .
 How to run the tests for the Checker Framework
 ==============================================
 
-  # Warning: this may rebuild the JDK
+  # Warning: this may rebuild the JDK, which takes a long time
   ant -e -find build.xml all-tests
 
 Other ant targets also exist to run a subset of the tests, without
