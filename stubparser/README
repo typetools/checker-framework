@@ -2,7 +2,7 @@ stubparser
 __________
 
 A JSR-308-conforming Java parser with AST generation and visitor support.
-The project is based on javaparser (http://code.google.com/p/javaparser/).
+The project is based on javaparser (http://javaparser.github.io/javaparser/).
 
 The project branched off of javaparser 1.0.7, available at:
   http://code.google.com/p/javaparser/downloads/list
