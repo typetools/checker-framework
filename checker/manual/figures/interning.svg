@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="10.5cm" height="4.5cm" viewBox="639 459 402 165" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="880" y="520" width="160" height="42"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="880" y="520" width="160" height="42"/>
+    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal" x="960" y="545.85">
+      <tspan x="960" y="545.85">Date</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="640" y="520" width="160" height="42"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="640" y="520" width="160" height="42"/>
+    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal" x="720" y="545.85">
+      <tspan x="720" y="545.85">@Interned Object</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="760" y="460" width="160" height="42"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="760" y="460" width="160" height="42"/>
+    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal" x="840" y="485.85">
+      <tspan x="840" y="485.85">Object</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="720" y1="520" x2="825.166" y2="504.225"/>
+    <polygon style="fill: #000000" points="826.204,511.148 839.011,502.148 824.128,497.303 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="826.204,511.148 839.011,502.148 824.128,497.303 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="960" y1="520" x2="854.834" y2="504.225"/>
+    <polygon style="fill: #000000" points="855.872,497.303 840.989,502.148 853.796,511.148 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="855.872,497.303 840.989,502.148 853.796,511.148 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="840" y1="580" x2="734.834" y2="564.225"/>
+    <polygon style="fill: #000000" points="735.872,557.303 720.989,562.148 733.796,571.148 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="735.872,557.303 720.989,562.148 733.796,571.148 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="840" y1="580" x2="945.166" y2="564.225"/>
+    <polygon style="fill: #000000" points="946.204,571.148 959.011,562.148 944.128,557.303 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="946.204,571.148 959.011,562.148 944.128,557.303 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="760" y="580" width="160" height="42"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="760" y="580" width="160" height="42"/>
+    <text font-size="16" style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal" x="840" y="605.85">
+      <tspan x="840" y="605.85">@Interned Date</tspan>
+    </text>
+  </g>
+</svg>
