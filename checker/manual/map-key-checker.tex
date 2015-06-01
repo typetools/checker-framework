@@ -154,7 +154,8 @@ class MyClass {
             km = k;   // OK: the type of k is refined to @KeyFor("m") String
 
             sideEffectFreeMethod();
-            km = k;   // OK: the type of k is not affected by the method call and remains @KeyFor("m") String
+            km = k;   // OK: the type of k is not affected by the method call
+                      // and remains @KeyFor("m") String
 
             otherMethod();
             km = k;   // error: At this point, the type of k is once again
