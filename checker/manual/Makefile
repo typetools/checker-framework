@@ -68,7 +68,6 @@ manual.html: manual.pdf
 #	html-update-toc manual.html
 
 export BIBINPUTS = $BIBINPUTS:.:bib
-
 bib:
 ifdef PLUMEBIB
 	ln -s ${PLUMEBIB} bib
