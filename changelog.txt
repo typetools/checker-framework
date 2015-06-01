@@ -4,7 +4,7 @@ Internationalization Format String Checker:
 This new type-checker prevents use of incorrect internationalization
 format strings.
 
-Fixed issues: .
+Fixed issues: 434.
 
 ----------------------------------------------------------------------
 
