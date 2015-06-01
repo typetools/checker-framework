@@ -17,6 +17,7 @@
 #  * It does not preserve file permissions.
 # This version corrects these issues.
 
+# Also see the html-add-favicon script in plume-lib, which has a similar effect.
 
 patchIt () {
   for f in $1/*.html ; do
