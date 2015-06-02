@@ -23,6 +23,13 @@
     <property name="JAVA_8_HOME" value="${env.JAVA_8_HOME}" />
     <property name="JAVA_9_HOME" value="${env.JAVA_9_HOME}" />
 
+    <!--
+         NOTE LT_BIN IN THE NEXT FEW TARGETS IS SOLELY FOR bin-devel/javac and Jenkins.
+         The original path to the langtools dir does not work on Jenkins.
+         This is here so we get an empty value if it is not set
+    -->
+    <property name="LT_BIN" value=""/>
+
     <condition property="jdkName" value="jdk7.jar">
         <contains string="${java.version}" substring="1.7"/>
     </condition>
@@ -1068,11 +1075,13 @@
         <exec executable="ant" failonerror="true">
             <arg line="jdk.jar"/>
             <env key="JAVA_HOME"  value="${JAVA_7_HOME}"/>
+            <env key="LT_BIN" value="${LT_BIN}"/>
         </exec>
 
         <exec executable="ant" failonerror="true">
             <arg line="jdk.jar"/>
             <env key="JAVA_HOME"  value="${JAVA_8_HOME}"/>
+            <env key="LT_BIN" value="${LT_BIN}"/>
         </exec>
 
         <!--<exec executable="ant" failonerror="true">
@@ -1096,6 +1105,7 @@
          <arg value="CLASSPATH=${basedir}/${build}"/>
          <arg value="-C"/>
          <arg value="jdk"/>
+         <env key="LT_BIN" value="${LT_BIN}"/>
       </exec>
       <move file="jdk/jdk.jar" tofile="jdk/${jdkName}"/>
 
