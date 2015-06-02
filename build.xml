@@ -1,5 +1,5 @@
 <!--
-  This is a configuration file for use by Ant when building the 
+  This is a configuration file for use by Ant when building the
   Checker Framework.
   This top-level build file simply delegates to the subprojects.
   It assumes that the "checker" project is aware of all dependencies

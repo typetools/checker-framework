@@ -1,6 +1,16 @@
 package org.checkerframework.dataflow.analysis;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
+import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ExplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -15,20 +25,10 @@ import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.dataflow.util.PurityUtils;
-
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 
 /**
  * Collection of classes and helper functions to represent Java expressions
@@ -136,6 +136,9 @@ public class FlowExpressions {
         } else if (receiverNode instanceof ValueLiteralNode) {
             ValueLiteralNode vn = (ValueLiteralNode) receiverNode;
             receiver = new ValueLiteral(vn.getType(), vn);
+        } else if (receiverNode instanceof ArrayCreationNode) {
+            ArrayCreationNode an = (ArrayCreationNode)receiverNode;
+            receiver = new ArrayCreation(an.getType(), an.getDimensions(), an.getInitializers());
         } else if (receiverNode instanceof MethodInvocationNode) {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn
@@ -799,6 +802,104 @@ public class FlowExpressions {
             result.append(index.toString());
             result.append("]");
             return result.toString();
+        }
+    }
+
+    public static class ArrayCreation extends Receiver {
+
+        protected List<Node> dimensions;
+        protected List<Node> initializers;
+
+        public ArrayCreation(TypeMirror type, List<Node> dimensions, List<Node> initializers) {
+            super(type);
+            this.dimensions = dimensions;
+            this.initializers = initializers;
+        }
+
+        public List<Node> getDimensions() {
+            return dimensions;
+        }
+
+        public List<Node> getInitializers() {
+            return initializers;
+        }
+
+        @Override
+        public boolean containsOfClass(Class<? extends Receiver> clazz) {
+            for (Node n : dimensions) {
+                if (n.getClass().equals(clazz)) return true;
+            }
+            for (Node n : initializers) {
+                if (n.getClass().equals(clazz)) return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((dimensions == null) ? 0 : dimensions.hashCode());
+            result = prime * result + ((initializers == null) ? 0 : initializers.hashCode());
+            result = prime * result + HashCodeUtils.hash(getType().toString());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || !(obj instanceof ArrayCreation)) {
+                return false;
+            }
+            ArrayCreation other = (ArrayCreation) obj;
+            return this.dimensions.equals(other.getDimensions())
+                    && this.initializers.equals(other.getInitializers())
+                    && getType().toString().equals(other.getType().toString());
+        }
+
+        @Override
+        public boolean syntacticEquals(Receiver other) {
+            return this.equals(other);
+        }
+
+        @Override
+        public boolean containsSyntacticEqualReceiver(Receiver other) {
+            return syntacticEquals(other);
+        }
+
+        @Override
+        public String toString() {
+            StringBuffer sb = new StringBuffer();
+            sb.append("new " + type);
+            if (!dimensions.isEmpty()) {
+                boolean needComma = false;
+                sb.append(" (");
+                for (Node dim : dimensions) {
+                    if (needComma) {
+                        sb.append(", ");
+                    }
+                    sb.append(dim);
+                    needComma = true;
+                }
+                sb.append(")");
+            }
+            if (!initializers.isEmpty()) {
+                boolean needComma = false;
+                sb.append(" = {");
+                for (Node init : initializers) {
+                    if (needComma) {
+                        sb.append(", ");
+                    }
+                    sb.append(init);
+                    needComma = true;
+                }
+                sb.append("}");
+            }
+            return sb.toString();
         }
     }
 }

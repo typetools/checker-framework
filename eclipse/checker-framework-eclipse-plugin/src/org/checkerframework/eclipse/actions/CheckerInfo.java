@@ -10,14 +10,12 @@ import org.checkerframework.common.subtyping.SubtypingChecker;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.eclipse.util.PluginUtil;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.util.*;
 
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.checker.fenum.FenumChecker;
 import org.checkerframework.checker.formatter.FormatterChecker;
+import org.checkerframework.checker.i18nformatter.I18nFormatterChecker;
 import org.checkerframework.checker.i18n.I18nChecker;
 import org.checkerframework.checker.interning.InterningChecker;
 import org.checkerframework.checker.javari.JavariChecker;
@@ -73,19 +71,22 @@ public class CheckerInfo
                 new CheckerInfo("Regex Checker",     RegexChecker.class),
 
                 new CheckerInfo("Format String Checker", FormatterChecker.class),
+                new CheckerInfo("I18n Format String Checker", I18nFormatterChecker.class),
+
                 new CheckerInfo("Property File Checker", PropertyKeyChecker.class),
+                new CheckerInfo("I18n Checker",     I18nChecker.class),
                 new CheckerInfo("Signature Checker",     SignatureChecker.class),
 
                 new CheckerInfo("GUI Effect Checker", GuiEffectChecker.class),
                 new CheckerInfo("Units Checker",      UnitsChecker.class),
+
+                new CheckerInfo("Constant Value Checker", ValueChecker.class),
                 new CheckerInfo("Aliasing Checker",      AliasingChecker.class),
                 new CheckerInfo("Linear Checker",     LinearChecker.class),
 
                 new CheckerInfo("IGJ Immutability Checker",    IGJChecker.class),
                 new CheckerInfo("Javari Immutability Checker", JavariChecker.class),
-                new CheckerInfo("Subtyping Checker",           SubtypingChecker.class, null),
-
-                new CheckerInfo("Constant Value Checker", ValueChecker.class)
+                new CheckerInfo("Subtyping Checker",           SubtypingChecker.class, null)
             );
 
             final Map<String, CheckerInfo> modifiableCheckers = new LinkedHashMap<String, CheckerInfo>();

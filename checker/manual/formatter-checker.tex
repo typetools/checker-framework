@@ -3,33 +3,36 @@
 
 % VERIFICATION
 \begin{sloppypar}
-The Format String Checker detects and prevents use of incorrect format strings
-in format methods such as 
+The Format String Checker
+prevents use of incorrect format strings
+in format methods such as
 \sunjavadoc{java/io/PrintStream.html\#printf-java.lang.String-java.lang.Object...-}{System.out.printf}
 and \sunjavadoc{java/lang/String.html\#format-java.lang.String-java.lang.Object...-}{String.format}.
 \end{sloppypar}
 
 The Format String Checker warns you if you write an invalid format string,
 and it warns you if the other arguments are not consistent with the format
-string (in number of arguments or in their types).  Here are examples of
-errors that the Format String Checker detects at compile time.
+string (in number of arguments or in their types).
+Here are examples of errors that the
+Format String Checker
+detects at compile time.
 Section~\ref{formatter-guarantees} provides more details.
 
 % BUG FINDER
 % The Format String Checker helps to prevent bugs that are the result of an
-% incorrect use of format methods such as 
+% incorrect use of format methods such as
 % \sunjavadoc{java/io/PrintStream.html\#printf-java.lang.String-java.lang.Object...-}{System.out.printf}.
 
 % VERIFICATION
 
 % BUG FINDER
-% The Format String Checker helps to prevent bugs in two ways: 
-% 
+% The Format String Checker helps to prevent bugs in two ways:
+%
 % \begin{itemize}
 % \item An error is issued if a format method would fail to execute at
-%     runtime.  For example, if an invalid format string is passed.  
+%     runtime.  For example, if an invalid format string is passed.
 % \item A warning is issued for possibly legal but likely unintended uses of a
-%     format method. For example, if unused format arguments are passed. 
+%     format method. For example, if unused format arguments are passed.
 % \end{itemize}
 %
 % \noindent
@@ -48,7 +51,7 @@ Section~\ref{formatter-guarantees} provides more details.
 
 
 To run the Format String Checker, supply the
-\code{-processor org.checkerframework.checker.formatter.FormatterChecker} command-line option to javac. 
+\code{-processor org.checkerframework.checker.formatter.FormatterChecker} command-line option to javac.
 
 \section{Formatting terminology\label{formatter-terminology}}
 
@@ -60,7 +63,7 @@ string.
 %% Redundant
 %  The Java standard library provides printf-style formatting in \emph{format methods} such as
 % \sunjavadoc{java/lang/String.html\#format-java.lang.String-java.lang.Object...-}{String.format}
-% and 
+% and
 % \sunjavadoc{java/io/PrintStream.html\#printf-java.lang.String-java.lang.Object...-}{System.out.printf}.
 A format specifier is introduced by a \code{\%} character. For example,
 \code{String.format("The \%s is \%d.","answer",42)} yields
@@ -82,7 +85,7 @@ signatures.
 %% This is premature; it is not discussed here, and it was already
 %% mentioned briefly to introduce readers to the idea, so that isn't
 %% necessary either.
-% Passing a valid format string to a format method does not guarantee that the 
+% Passing a valid format string to a format method does not guarantee that the
 % invocation will succeed. The format method invocation \code{String.format("\%d","hello")}
 % for example, will fail despite the fact that \code{"\%d"} is valid.
 
@@ -101,7 +104,7 @@ String>, expresses that contract.
 \begin{Verbatim}
     void printFloatAndInt(@Format({FLOAT, INT}) String fs) {
         System.out.printf(fs, 3.1415, 42);
-    } 
+    }
 
     printFloatAndInt("Float %f, Number %d");  // OK
     printFloatAndInt("Float %f");             // error
@@ -109,9 +112,13 @@ String>, expresses that contract.
 
 \begin{figure}
 \includeimage{formatter-hierarchy}{3.5cm}
-\caption{The Format String Checker type qualifier hierarchy.  The figure
-  does not show the subtyping rules among different \code{@Format(...)}
-  qualifiers; see Section~\ref{formatter-format-subtyping}.}
+\caption{The
+  Format String Checker type qualifier hierarchy.
+  The figure does not show the subtyping rules among different
+  \code{@Format(...)}
+  qualifiers; see
+  Section~\ref{formatter-format-subtyping}.
+}
 \label{fig-formatter-hierarchy}
 \end{figure}
 
@@ -131,7 +138,7 @@ written a \<@Format> annotation.
 
 Given a format specifier, only certain format arguments are compatible with
 it, depending on its ``conversion'' --- its last, or last two,
-characters.  For example, in in the format specifier \code{"\%d"}, the
+characters.  For example, in the format specifier \code{"\%d"}, the
 conversion \code{d} restricts the corresponding format argument
 to be ``integer-like'':
 
@@ -143,14 +150,14 @@ to be ``integer-like'':
 \noindent Many conversions enforce the same restrictions.  A set of
 restrictions is represented as a \emph{conversion
 category}. The ``integer like'' restriction is for example the conversion
-category INT\@.  The following conversion categories are defined in the
+category \refenum{checker/formatter/qual}{ConversionCategory}{INT}{}\@.  The following conversion categories are defined in the
 \code{\refclass{checker/formatter/qual}{ConversionCategory}} enumeration:
 
 \begin{description}
-\item{GENERAL} imposes no restrictions on a format argument's type. Applicable for
+\item{\refenum{checker/formatter/qual}{ConversionCategory}{GENERAL}{}} imposes no restrictions on a format argument's type. Applicable for
     conversions b, B, h, H, s, S.
 
-\item{CHAR} requires that a format argument represents a Unicode character.
+\item{\refenum{checker/formatter/qual}{ConversionCategory}{CHAR}{}} requires that a format argument represents a Unicode character.
     Specifically, \code{char}, \code{Character}, \code{byte},
     \code{Byte}, \code{short}, and \code{Short} are allowed.
     \code{int} or \code{Integer} are allowed if
@@ -160,25 +167,25 @@ category INT\@.  The following conversion categories are defined in the
     Section~\ref{formatter-missed-alarms}.)
     Applicable for conversions c, C.
 
-\item{INT} requires that a format argument represents an integral type. Specifically,
+\item{\refenum{checker/formatter/qual}{ConversionCategory}{INT}{}} requires that a format argument represents an integral type. Specifically,
     \code{byte}, \code{Byte}, \code{short}, \code{Short},
     \code{int} and \code{Integer}, \code{long},
     \code{Long}, and \code{BigInteger} are allowed. Applicable for
-    conversions d, o, x, X.  
+    conversions d, o, x, X.
 
-\item{FLOAT} requires that a format argument represents a floating-point type.  Specifically,
+\item{\refenum{checker/formatter/qual}{ConversionCategory}{FLOAT}{}} requires that a format argument represents a floating-point type.  Specifically,
     \code{float}, \code{Float}, \code{double},
     \code{Double}, and \code{BigDecimal} are allowed. Surprisingly, integer
     values are not allowed. Applicable for
     conversions e, E, f, g, G, a, A.
- 
-\item{TIME} requires that a format argument represents a date or time.
+
+\item{\refenum{checker/formatter/qual}{ConversionCategory}{TIME}{}} requires that a format argument represents a date or time.
     Specifically, \code{long}, \code{Long}, \code{Calendar}, and
     \code{Date} are allowed.  Applicable for conversions t, T.
 
-\item{UNUSED} imposes no restrictions on a format argument. This is the case if a
+\item{\refenum{checker/formatter/qual}{ConversionCategory}{UNUSED}{}} imposes no restrictions on a format argument. This is the case if a
     format argument is not used as replacement for any format specifier.
-    \code{"\%2\$s"} for example ignores the first format argument. 
+    \code{"\%2\$s"} for example ignores the first format argument.
     % This conversion category is similar to GENERAL, but does allow objects that
     % throw exceptions in \code{toString} and \code{formatTo}.
 \end{description}
@@ -189,14 +196,14 @@ category INT\@.  The following conversion categories are defined in the
 % Objects that implement the \code{Formattable} interface and throw an
 % exception in \code{formatTo} are also not allowed.
 
-The same format argument may serve as a replacement for multiple format specifiers. 
+The same format argument may serve as a replacement for multiple format specifiers.
 Until now, we have assumed that the format specifiers simply consume format arguments left to right.
 But there are two other ways for a format specifier to select a format argument:
 
 \begin{itemize}
 \item $n$\code{\$} specifies a one-based index $n$. In the
     format string \code{"\%2\$s"}, the format specifier selects the
-    second format argument.  
+    second format argument.
 \item The \code{<} \emph{flag} references the format argument
     that was used by the previous format specifier. In the format string
     \code{"\%d \%<d"} for example, both format specifiers select the first
@@ -213,30 +220,31 @@ categories, and can therefore be neither a \code{Character} nor a \code{long}.
     format("Char %1$c, Int %1$d", new Character(42));  // error
     format("Char %1$c, Int %1$d", (long)42);           // error
 \end{Verbatim}
- 
+
 Only three additional conversion categories are needed represent all possible
 intersections of previously-mentioned conversion categories:
 
 \begin{description}
-\item{NULL} is used if no object of any type can be
+\item{\refenum{checker/formatter/qual}{ConversionCategory}{NULL}{}} is used if no object of any type can be
     passed as parameter. In this case, the only legal value is \code{null}.
     The format string \code{"\%1\$f \%1\$c"}, for example requires that the first
     format argument be \code{null}.  Passing a value such as \code{4} or
     \code{4.2} would lead to an exception.
-\item{CHAR\_AND\_INT} is used if a format argument is restricted by a \code{CHAR} and a \code{INT} conversion category (\code{CHAR} $\cap$ \code{INT}).
-\item{INT\_AND\_TIME} is used if a format argument is restricted by an \code{INT} and a \code{TIME} conversion category (\code{INT} $\cap$ \code{TIME}).
+\item{\refenum{checker/formatter/qual}{ConversionCategory}{CHAR\_AND\_INT}{}} is used if a format argument is restricted by a \refenum{checker/formatter/qual}{ConversionCategory}{CHAR}{} and a \refenum{checker/formatter/qual}{ConversionCategory}{INT}{} conversion category (\code{CHAR} $\cap$ \code{INT}).
+\item{\refenum{checker/formatter/qual}{ConversionCategory}{INT\_AND\_TIME}{}} is used if a format argument is restricted by an \refenum{checker/formatter/qual}{ConversionCategory}{INT}{} and a \refenum{checker/formatter/qual}{ConversionCategory}{TIME}{} conversion category (\code{INT} $\cap$ \code{TIME}).
 \end{description}
 
 \noindent All other intersections lead to already existing conversion categories.
-For example, \code{GENERAL} $\cap$ \code{CHAR} $=$ \code{CHAR} and 
+For example, \code{GENERAL} $\cap$ \code{CHAR} $=$ \code{CHAR} and
 \code{UNUSED} $\cap$ \code{GENERAL} $=$ \code{GENERAL}.
 
-Figure~\ref{fig-formatter-cat} summarizes the subset 
+Figure~\ref{fig-formatter-cat} summarizes the subset
 relationship among all conversion categories.
 
 \begin{figure}[thbp]
     \includeimage{formatter-categories}{7.8cm}
-    \caption{The subset relationship among conversion categories.}
+    \caption{The subset relationship
+        among conversion categories.}
     \label{fig-formatter-cat}
 \end{figure}
 
@@ -249,7 +257,7 @@ relationship among all conversion categories.
 % value is assigned bottom for similar reasons. In the following example, this
 % enables us to know that no matter the qualifier of \code{T}, \code{null} can
 % always be assigned to it:
-% 
+%
 % \begin{Verbatim}
 %     <T> T f() {
 %         return null;
@@ -257,18 +265,20 @@ relationship among all conversion categories.
 % \end{Verbatim}
 
 \label{formatter-format-subtyping}
-Here are the subtyping rules among different \code{@Format} qualifiers.
+Here are the subtyping rules among different
+\refqualclass{checker/formatter/qual}{Format}
+qualifiers.
 It is legal to:
 
 \begin{itemize}
 \item use a format string with a weaker (less restrictive) conversion category than required.
-\item use a format string with fewer format specifiers than required, but a warning is issued. 
+\item use a format string with fewer format specifiers than required, but a warning is issued.
 \end{itemize}
 
 The following example shows the subtyping rules in action:
 
 \begin{Verbatim}
-    @Format({FLOAT, INT}) 
+    @Format({FLOAT, INT})
     String f;
 
     f = "%f %d";       // Ok
@@ -289,7 +299,7 @@ If the Format String Checker issues no errors, it provides the following guarant
 \item
 The following guarantees hold for every format method invocation:
 
-\begin{enumerate} 
+\begin{enumerate}
     \item The format method's first parameter (or second if a \sunjavadoc{java/util/Locale.html}{Locale} is provided) is a valid
         format string (or \code{null}).
 
@@ -297,18 +307,18 @@ The following guarantees hold for every format method invocation:
         \label{formatter-unused-category-warning}
     \item None of the format string's conversion categories is \code{NULL}.
         \label{formatter-null-category-error}
-\end{enumerate} 
+\end{enumerate}
 
 \item If the format arguments are passed to the format method as varargs, the
 Format String Checker guarantees the following additional properties:
 
-\begin{enumerate} 
+\begin{enumerate}
 \item No fewer format arguments are passed than required by the format string.
 \item A warning is issued if more format arguments are passed than required by the format string.
 \item Every format argument's type satisfies its conversion category's restrictions.
 \end{enumerate}
 
-\item If the format arguments are passed to the format method as array, 
+\item If the format arguments are passed to the format method as array,
 a warning is issued by the Format String Checker.
         \label{formatter-array-warning}
 \end{enumerate}
@@ -354,7 +364,7 @@ Case \ref{formatter-null-category-error}:
   Format arguments that can only be \code{null}.
   It is legal to write a format string that permits only null arguments and
   throws an exception for any other argument.  An example is
-  \code{String.format("\%1\$d \%1\$f", null)}. 
+  \code{String.format("\%1\$d \%1\$f", null)}.
   The Format String Checker forbids such a format string.
   If you should ever need such a format string, simply replace the problematic
   format specifier with \code{"null"}.  For example, you would replace the
@@ -372,22 +382,22 @@ Case \ref{formatter-array-warning}:
 % Checker performs certain checks. If it issues an \emph{error}, the invocation
 % will definitely fail at runtime. If a \emph{warning} is issued, the Format
 % String Checker detected a common source for errors, and it is very likely that
-% the invocation contains a bug. 
-% 
+% the invocation contains a bug.
+%
 % \noindent I.) The following checks are run for every format method invocation. The checks:
-% 
-% \begin{enumerate} 
+%
+% \begin{enumerate}
 % \item Issue an \emph{error}, if the format method's first format argument (or
 %     second if a \sunjavadoc{java/util\Locale.html}{Locale} is provided) is not a
-%     \code{String} annotated with the \code{@Format} qualifier. 
-% \item Issue a \emph{warning}, if any of the \code{@Format} string's 
+%     \code{String} annotated with the \code{@Format} qualifier.
+% \item Issue a \emph{warning}, if any of the \code{@Format} string's
 %     conversion categories is \code{UNUSED}.
-% \end{enumerate} 
-% 
+% \end{enumerate}
+%
 % \noindent II.) If the format arguments are passed to the format method as varargs, the
 % Format String Checker performs the following additional checks, that:
-% 
-% \begin{enumerate} 
+%
+% \begin{enumerate}
 % \item Issue an \emph{error}, if fewer format arguments are passed than required
 %     by the \code{@Format} qualifier.
 % \item Issue a \emph{warning}, if more format arguments are passed than required
@@ -401,18 +411,18 @@ Case \ref{formatter-array-warning}:
 %             the conversion category's restrictions.
 %     \end{enumerate}
 % \end{enumerate}
-% 
+%
 % \noindent III.) If the format arguments are passed to the format method as array, the
 % Format String Checker performs the following checks instead, that:
-% 
-% \begin{enumerate} 
-% \item Issue a \emph{warning}, if any of the \code{@Format} string's 
+%
+% \begin{enumerate}
+% \item Issue a \emph{warning}, if any of the \code{@Format} string's
 %     conversion categories is \code{NULL} (unless the array is the
 %     null-array literal \code{(Object[])null}).
-% \end{enumerate} 
-% 
+% \end{enumerate}
+%
 % \noindent Following are examples for every check:
-% 
+%
 % \begin{Verbatim}
 %     String.format("%d", 42);                     // ok
 %     String.format(Locale.GERMAN, "%d", 42);      // ok (I 1)
@@ -442,7 +452,7 @@ warnings. These cases are:
 \item A format argument implements the \code{Formattable} interface and throws an
     exception in the \code{formatTo} method.
 \item A format argument's conversion category is \code{CHAR} or \code{CHAR\_AND\_INT},
-    and the passed value is an \code{int} or \code{Integer}, and 
+    and the passed value is an \code{int} or \code{Integer}, and
     \code{Character.isValidCodePoint(argument)} returns \code{false}.
 % VERIFICATION
 % BUG FINDER
@@ -460,7 +470,7 @@ warnings. These cases are:
     }
 
     class B implements Formattable {
-        public void formatTo(Formatter fmt, int f, 
+        public void formatTo(Formatter fmt, int f,
                 int width, int precision) {
             throw new Error();
         }
@@ -481,14 +491,14 @@ warnings. These cases are:
 %             throw new Error();
 %         }
 %     }
-% 
+%
 %     class B implements Formattable {
-%         public void formatTo(Formatter fmt, int f, 
+%         public void formatTo(Formatter fmt, int f,
 %                 int width, int precision) {
 %             throw new Error();
 %         }
 %     }
-% 
+%
 %     // the checker issues no errors or warnings for the
 %     // following illegal invocations of format methods
 %     String.format(null);          // NullPointerException (1)
@@ -496,7 +506,7 @@ warnings. These cases are:
 %     String.format("%s", new B()); // Error (3)
 %     String.format("%d", new Object[]{4.2}); // IllegalFormatConversionException (4)
 %     String.format("%c", (int)-1); // IllegalFormatCodePointException (5)
-% \end{Verbatim} 
+% \end{Verbatim}
 
 
 \section{Implicit qualifiers\label{formatter-implicit}}
@@ -547,13 +557,13 @@ The following code examples may fail at run time, and therefore they do not
 type check.  The type-checking errors are indicated by comments.
 
 \begin{Verbatim}
-    Scanner s = new Scanner(System.in);    
+    Scanner s = new Scanner(System.in);
     String fs = s.next();
     System.out.printf(fs, "hello", 1337);          // error: fs is not known to be a format string
 \end{Verbatim}
 
 \begin{Verbatim}
-    Scanner s = new Scanner(System.in);    
+    Scanner s = new Scanner(System.in);
     @Format({GENERAL, INT}) String fs = s.next();  // error: fs is not known to have the given type
     System.out.printf(fs, "hello", 1337);          // OK
 \end{Verbatim}
@@ -572,7 +582,7 @@ therefore passes the type-checker:
         System.exit(2);
     }
     // fs is now known to be of type: @Format({GENERAL, INT}) String
-    System.out.printf(format,"hello",1337); 
+    System.out.printf(format,"hello",1337);
 \end{Verbatim}
 
 \noindent A potential disadvantage of using the \code{FormatUtil} class is that your code becomes

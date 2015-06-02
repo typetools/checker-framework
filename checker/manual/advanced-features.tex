@@ -365,7 +365,7 @@ This rule means that the upper bound of \code{class C<T>} is defaulted
 differently than the upper bound of \code{class C<T extends Object>}.  It
 would be more confusing for ``\code{Object}'' to be defaulted differently in \code{class C<T extends Object>} and in an
 instantiation \code{C<Object>}, and for the upper bounds to be defaulted
-differently in \code{class C<T extends Object>} 
+differently in \code{class C<T extends Object>}
 and \code{class C<T extends Date>}.
 
 \item
@@ -477,27 +477,26 @@ the compiler.  When the compiler reads a \<.class> file, different
 defaulting rules apply.
 
 If the checker was run during the compiler execution that created the
-\<.class> file, then there is no need for defaults: the \<.class> file
-has an explicit qualifier at each type use.  Furthermore, unless
-warnings were suppressed, those qualifiers are guaranteed to be
-correct.  When you are performing pluggable type-checking, it is best
-to ensure that the compiler only reads such \<.class> files.
+\<.class> file (and the qualifier hierarchy has both a top and a bottom
+qualifier, see Section~\ref{top-qualifier}), then there is no need for
+defaults:  the \<.class> file has an explicit qualifier at each type use.
+Furthermore, unless warnings were suppressed, those qualifiers are
+guaranteed to be correct.
+When you are performing pluggable type-checking,
+it is best to ensure that the compiler only reads such \<.class> files.
 
 If the checker was not run during the compiler execution that created the
 \<.class> file, then the \<.class> file contains only the type qualifiers
-that the programmer wrote explicitly.
-Furthermore, there is no guarantee that these qualifiers are correct,
-since they have not been checked
-We will refer to such \<.class> files as unchecked bytecode.
+that the programmer wrote explicitly.  Furthermore, there is no guarantee
+that these qualifiers are correct, since they have not been checked.
 In this case, the checker must decide what qualifier to use for the
-locations where the programmer did not write an annotation.
-A conservative approach uses:
+locations where the programmer did not write an annotation:
 \begin{itemize}
 \item
-  For method parameter types, use the bottom qualifier (see
+  For method parameters, use the bottom qualifier (see
   Section~\ref{bottom-qualifier}).
 \item
-  For method return types, use the top qualifier (see 
+  For method return values, use the top qualifier (see 
   Section~\ref{top-qualifier}).
 \end{itemize}
 
@@ -529,6 +528,7 @@ possible.
   top qualifier when reading from the field.
 %% TODO: should give rules for other locations, such as type parameters
 %% (which should behave like fields), bounds, etc.
+\end{itemize}
 
 These \<.class> file defaulting rules are very strict.  If your code uses a
 library that was not created when running the checker, then your uses of
@@ -561,7 +561,7 @@ As an example, suppose you write
 
 \noindent
 The Nullness Checker issues a warning whenever a method such as
-\<hashCode()> is called on a possibly-null value, which  may result in a 
+\<hashCode()> is called on a possibly-null value, which  may result in a
 null pointer exception.  The Nullness Checker need not issue a warning in
 this case.  In particular, after the assignment, type-checker
 treats \<myVar> as having type \<@NonNull String>, which is a subtype of its
@@ -674,7 +674,7 @@ type is never inferred to be treated as possibly-null).
 % TODO:  Is NonNull inferred for any parameters or fields, or just for locals?
 
 Type inference is never performed for method parameters of non-private
-methods, nor for non-private fields.  
+methods, nor for non-private fields.
 More generally, the inferred information is never written to the
 \code{.class} file as user-written annotations are.
 If the checker did inference in externally-visible locations and wrote it
@@ -687,7 +687,7 @@ rather than inferred.
 
 
 The \refqualclass{dataflow/qual}{TerminatesExecution} annotation
-indicates that a given method never returns.  This can enable the 
+indicates that a given method never returns.  This can enable the
 flow-sensitive type refinement to be more precise.
 
 
@@ -721,8 +721,11 @@ Type systems that support a run-time test are:
 \item
   \ahrefloc{formatter-checker}{Format String Checker} to ensure that format
   strings have the right number and type of \<\%> directives (see
-  \chapterpageref{formatter-checker}).
-
+  \chapterpageref{formatter-checker})
+\item
+  \ahrefloc{i18n-formatter-checker}{Internationalization Format String Checker}
+  to ensure that i18n format strings have the right number and type of
+  \<\{\}> directives (see \chapterpageref{i18n-formatter-checker})
 \end{itemize}
 
 
@@ -1080,7 +1083,7 @@ Section~\ref{assumeassertion}.
 
 Sometimes, it is necessary to write a Java expression as the argument to an
 annotation.  The annotations that take a Java
-expression as an argument are:
+expression as an argument include:
 
 % TODO: Need to periodically check/update this list.
 \begin{itemize}
@@ -1092,6 +1095,8 @@ expression as an argument are:
 \item \refqualclass{checker/nullness/qual}{EnsuresNonNull}
 \item \refqualclass{checker/nullness/qual}{EnsuresNonNullIf}
 % Not implemented: \refqualclass{checker/nullness/qual}{AssertNonNullIfNonNull}
+\item \refqualclass{checker/nullness/qual}{KeyFor}
+\item \refqualclass{checker/i18nformatter/qual}{I18nFormatFor}
 \end{itemize}
 
 The expression is a subset of legal Java expressions:
@@ -1136,7 +1141,7 @@ The expression is a subset of legal Java expressions:
 
 \end{itemize}
 
-You may optionally omit a leading ``\<this.>'', just as in Java.  Thus, 
+You may optionally omit a leading ``\<this.>'', just as in Java.  Thus,
 \<this.next> and \<next> are equivalent.
 
 One unusual feature is that the method call is allowed to have side
@@ -1239,7 +1244,7 @@ class Marsupial extends Mammal {
 \end{Verbatim}
 
 You can simulate
-the same effect for type qualifiers:  
+the same effect for type qualifiers:
 the \refqualclass{framework/qual}{Unused} annotation
 on a field declares that the field may \emph{not} be accessed via a receiver of
 the given qualified type (or any \emph{super}type).
@@ -1273,17 +1278,17 @@ class @Mammal-Animal { ... }
 class @Marsupial-Animal {
   int pouchSize;  // pouch capacity, in cubic centimeters
   ...
-}  
+}
 \end{Verbatim}
 
 
 % \subsection{Dependent types\label{dependent-types}}
-% 
+%
 % A variable has a \emph{dependent type} if its type depends on some other
 % value or type.
 % %  --- the type is dynamically, not statically, determined.
 % % (Type-safety can still be statically determined, though.)
-% 
+%
 % The Checker Framework supports a form of dependent types, via the
 % \refqualclass{framework/qual}{Dependent} annotation.
 % This annotation changes the type of a reference, based on the
@@ -1291,13 +1296,13 @@ class @Marsupial-Animal {
 % expressive form of polymorphism (see Section~\ref{polymorphism}).  It can
 % also be seen as a way of linking the meanings of two type qualifier
 % hierarchies.
-% 
+%
 % When the \refqualclass{framework/qual}{Unused} annotation is sufficient, you
 % should use it instead of \code{@Dependent}.
-% 
+%
 % Here is a restatement of the example of Section~\ref{unused-fields}, using
 % \refqualclass{framework/qual}{Dependent}:
-% 
+%
 % \begin{Verbatim}
 % @interface Mammal { }
 % @interface Marsupial { }
@@ -1307,20 +1312,20 @@ class @Marsupial-Animal {
 %   @Nullable @Dependent(result=NonNull.class, when=Marsupial.class) Integer getPouchSize;
 %   ...
 % }
-% 
+%
 % @Marsupial Animal joey = ...;
 % ... joey.getPouchSize().intValue() ...    // OK
 % @Mammal Animal mae = ...;
 % ... mae.getPouchSize().intValue() ...    // compile-time error:
 %                                          //   dereference of possibly-null mae.getPouchSize()
 % \end{Verbatim}
-% 
+%
 % Just as writing \<@Unused> is similar to writing multiple classes (but when
 % it is not possible to write real subclasses), \<@Dependent> mimics the
 % effect of multiple classes with overriding definitions of some method or
 % field.
 % The above class declaration is like writing
-% 
+%
 % \begin{Verbatim}
 % class @Mammal-Animal {
 %   // pouch capacity, in cubic centimeters
@@ -1331,39 +1336,39 @@ class @Marsupial-Animal {
 %   // pouch capacity, in cubic centimeters
 %   @NonNull Integer getPouchSize();
 %   ...
-% }  
+% }
 % \end{Verbatim}
-% 
-% 
+%
+%
 % \subsubsection{Limitations of \<@Dependent>\label{dependent-types-limitations}}
-% 
+%
 % It is unsound to write \<@Dependent> on a non-\<final> field.  Consider the
 % following:
-% 
+%
 % \begin{Verbatim}
 % class MyClass {
 %   @Nullable @Dependent(result=NonNull.class, when=Marsupial.class) Integer pouchSize;
 % }
 % \end{Verbatim}
-% 
+%
 % Then it would be possible to write
-% 
+%
 % \begin{Verbatim}
 % @Marsupial Animal a = new @Marsupial Animal();
 % @Mammal Animal b = a;
 % b.pouchSize = null;
 % a.pouchSize.intValue();
 % \end{Verbatim}
-% 
+%
 % \noindent
 % In the last line of the example, \<a.pouchSize> is null, contradicting its
 % declaration and leading to a null pointer exception that would not be
 % caught by the type-checker.
-% 
+%
 % In certain circumstances, it may be desirable to write such an annotation
 % on a \<private> field anyway, manually check all uses, and then suppress
 % the warning.
-% 
+%
 % It is sound to write \<@Dependent> on a \<final> field.  Such a field
 % behaves like a getter method, such as \<getPouchSize()> above.
 

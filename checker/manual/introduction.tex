@@ -42,6 +42,10 @@ The Checker Framework comes with checkers for specific types of errors:
   strings have the right number and type of \<\%> directives (see
   \chapterpageref{formatter-checker})
 \item
+  \ahrefloc{i18n-formatter-checker}{Internationalization Format String Checker}
+  to ensure that i18n format strings have the right number and type of
+  \<\{\}> directives (see \chapterpageref{i18n-formatter-checker})
+\item
   \ahrefloc{propkey-checker}{Property File Checker} to ensure that valid
   keys are used for property files and resource bundles (see
   \chapterpageref{propkey-checker})
@@ -991,17 +995,16 @@ annotation, the checker is able to issue compile-time warnings about
 possible run-time exceptions, which is its purpose.  Marking the parameter
 as \code{@Nullable} would suppress such warnings, which is undesirable.
 
-This paragraph explains additional subtlety regarding unchecked library
-annotations.  You should ignore paragraph the first time you read this manual.
-Library annotations are generally trusted rather than not checked.
-Therefore, it is often a good idea to write conservative library annotations
-that guarantee lack of exceptions.  For example, you could write
-\<@Nullable> on a method parameter to mean the method never throws an
-exception due to the argument being null.  If a method is allowed to take
-\<null> in some circumstances but not in others, then if you annotate it as
-\<@NonNull>, you will be guaranteed to get a warning for every client use
-that has the potential to cause an exception.
-
+% This is only an issue for code with unchecked, trusted annotations such as
+% library methods; if the method is type-checked, then the type-checker
+% warnings will lead you to leave the formal parameter as the default, which
+% means \<@NonNull>.
+If a method can possibly throw exception because its parameter
+is \<null>, then that parameter's type should be \<@NonNull>, which
+guarantees that the type-checker will issue a warning for every client
+use that has the potential to cause an exception.  Don't write
+\<@Nullable> on the parameter just because there exist some executions that
+don't necessarily throw an exception.
 
 % (The note at
 % http://google-collections.googlecode.com/svn/trunk/javadoc/com/google/common/base/Preconditions.html

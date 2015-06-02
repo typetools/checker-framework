@@ -5,7 +5,7 @@ release_build.py
 
 Created by Jonathan Burke on 2013-08-01.
 
-Copyright (c) 2014 University of Washington. All rights reserved.
+Copyright (c) 2015 University of Washington. All rights reserved.
 """
 
 #See README-maintainers.html for more information
@@ -223,6 +223,17 @@ def commit_to_interm_projects(jsr308_version, afu_version, projects_to_release):
         commit_tag_and_push(jsr308_version, CHECKER_FRAMEWORK, "checker-framework-")
 
 def main(argv):
+    # MANUAL Indicates a manual step
+    # SEMIAUTO Indicates a mostly automated step with possible prompts. Most of these steps become fully-automated when --auto is used.
+    # AUTO Indicates the step is fully-automated.
+
+    # Note that many prompts will cause scripts to exit if you say 'no'. This will require you to re-run
+    # the script from the beginning, which may take a long time. It is better to say 'yes' to the script
+    # prompts and follow the indicated steps even if they are redundant/you have done them already. Also,
+    # be sure to carefully read all instructions on the command-line before typing yes. This is because
+    # the scripts do not ask you to say 'yes' after each step, so you may miss a step if you only read
+    # the paragraph asking you to say 'yes'.
+
     set_umask()
 
     projects_to_release = read_projects( argv, print_usage )
@@ -242,29 +253,75 @@ def main(argv):
     print( "Building a new release of Langtools, Annotation Tools, and the Checker Framework!" )
     print( "\nPATH:\n" + os.environ['PATH'] + "\n" )
 
-    print_step("Build Step 1: Clean and update the build and intermediate repositories.")
+    print( "NOTE: Please read all the prompts printed by this script very carefully, as their" )
+    print( "contents may have changed since the last time you ran it." )
+
+    print_step("Build Step 1: Clean and update the build and intermediate repositories.") # SEMIAUTO
 
     print_step("1a: Clean repositories.")
+
+    # Recall that there are 3 relevant sets of repositories for the release:
+    # * build repository - repository where the project is built for release
+    # * intermediate repository - repository to which release related changes are pushed after the project is built
+    # * release repository - Google code repositories, the central repository.
+
+    # Every time we run release_build, changes are committed to the intermediate repository from build but NOT to
+    # the release repositories. If we are running the build script multiple times without actually committing the
+    # release then these changes need to be cleaned before we run the release_build script again. We therefore run
+    # hg strip, hg purge, and hg revert on ALL repositories.
+
+    # NOTE: See README-maintainers.html#fi_bug_fixes for errors you might experience at this step.
+
     clean_repos( INTERM_REPOS,  not auto )
     clean_repos( BUILD_REPOS, not auto )
 
+    # The repositories that were cleaned of changes in the previous step need to be updated to the latest revision.
+    # The intermediate repos pull from the release repos and the build repos pull from the intermediate.
+    # All repos are then updated.
+
     #check we are cloning LIVE -> INTERM, INTERM -> RELEASE
-    print_step("\n1b: Update repositories.")
+    print_step("\n1b: Update repositories.") # SEMIAUTO
     update_repos()
 
-    print_step("1c: Verify repositories.")
+    # This step ensures the previous 2 steps work. It checks to see if we have any modified files, untracked files,
+    # or outgoing changesets. If so, it fails.
+
+    print_step("1c: Verify repositories.") # SEMIAUTO
     check_repos( INTERM_REPOS, False )
     check_repos( BUILD_REPOS,  False )
 
-    print_step("1d: Optionally replace files.")
+    # You may wish to experiment with the build (for instance testing changes before committing them to the
+    # repository). The above 3 steps will revert any of those changes you previously wrote to the build
+    # repositories. At this step, the script pauses to allow you to replace any files you wish before
+    # actually executing the build.
+
+    # Note that any changes you make in this step are lost if you restart the release_build process and
+    # instruct it to clean the repositories (which you should say yes to). That's why it's a good idea
+    # to keep copies of the work you do here readily available in your home directory.
+
+    print_step("1d: Optionally replace files.") # MANUAL
     if not auto:
         if not prompt_yes_no("Replace any files you would like then type yes to continue"):
             raise Exception("No prompt")
 
-    print_step("Build Step 2: Check tools.")
+    # The release script requires a number of common tools (Ant, Maven, make, etc...). This step checks
+    # to make sure all tools are available on the command line in order to avoid wasting time in the
+    # event a tool is missing late in execution.
+
+    print_step("Build Step 2: Check tools.") # AUTO
     check_tools( TOOLS )
 
-    print_step("Build Step 3: Determine release versions.")
+    # Usually we increment the release by 0.0.1 per release unless there is a major change.
+    # The release script will read the current version of the Checker Framework/Annotation File Utilities
+    # from the release website and then suggest the next release version 0.0.1 higher than the current
+    # version. You can also manually specify a version higher than the current version. Lower or equivalent
+    # versions are not possible and will be rejected when you try to push the release. 
+
+    # The jsr308-langtools version ALWAYS matches the Checker Framework version. 
+
+    # NOTE: If you pass --auto on the command line then the next logical version will be chosen automatically
+
+    print_step("Build Step 3: Determine release versions.") # SEMIAUTO
     (old_jsr308_version, jsr308_version) = jsr308_checker_framework_version( auto )
     (old_afu_version, afu_version)       = get_afu_version( auto )
     version_dirs = create_interm_version_dirs( jsr308_version, afu_version, auto )
@@ -272,7 +329,31 @@ def main(argv):
     afu_interm_dir               = version_dirs[1]
     checker_framework_interm_dir = version_dirs[2]
 
-    print_step("Build Step 4: Review changelogs.")
+    # All changelogs should be up-to-date before releasing. However, we manually verify this during
+    # the build process. This step extracts the changesets that have occurred since the last release
+    # and writes them to a file. Please look through these changesets and ensure we have not missed
+    # any relevant messages in the changelog. The release script will indicate what changelog you
+    # should edit in case there are missing changes. These changes will be committed when you run
+    # the release_push.py script. 
+
+    print_step("Build Step 4: Review changelogs.") # SEMIAUTO
+
+    print( "Verify that all changelog messages follow the guidelines found in README-maintainers.html#changelog_guide\n" )
+
+    print( "Finally, ensure that the changelog ends with a line like\n" )
+    print( "Resolved issues:  200, 300, 332, 336, 357, 359, 373, 374\n" )
+
+    print( "You can compute the relevant numbers by visiting these two URLs:\n" )
+    print( "https://code.google.com/p/checker-framework/issues/list?q=status%3APushed\n" )
+    print( "https://code.google.com/p/checker-framework/issues/list?can=1&q=closed-after%3A2014%2F09%2F25\n" )
+    print( "though you will need to adjust the date in the latter URL to be the date of the previous release.\n" )    
+
+    # If release_build fails later on and you need to restart it, I recommend you make copies of the
+    # changelogs you modified on your local machine, push the changes to those changelogs, and then
+    # restart the build process saying "yes" to cleaning the repositories. However, this really should
+    # not happen because the changelogs need to have been updated immediately after code freeze,
+    # and you should not need to update the logs again here.
+
     if not auto:
         if projects_to_release[LT_OPT]:
             propose_changelog_edit( "JSR308 Type Annotations Compiler", JSR308_CHANGELOG, "/tmp/jsr308.changes",
@@ -286,7 +367,20 @@ def main(argv):
             propose_changelog_edit( "Checker Framework", CHECKER_CHANGELOG, "/tmp/checker-framework.changes",
                                     old_jsr308_version, CHECKER_FRAMEWORK, CHECKER_TAG_PREFIXES )
 
-    print_step("Build Step 5: Review manual changes.")
+    # This step will write out all of the changes that happened to the individual projects' manuals
+    # to a temporary file. Please review these changes for errors. You can edit them in the build
+    # repository and they will be committed by the release_push.py script.
+
+    print_step("Build Step 5: Review manual changes.") # SEMIAUTO
+    
+    print("Please verify that the lists of checkers in these Checker Framework chapter sections are\n" )
+    print("up to date: Introduction, Run-time tests and type refinement\n" )
+
+    print("Please also build the manual on your local machine's enlistment and verify that the PDF\n" )
+    print("does not have lines that are longer than the page width (some lines go beyond the right margin -\n")
+    print("this is acceptable), except for lines containing command lines or code - some of these inevitably\n")
+    print("are longer than the page width.\n")
+    
     if not auto:
         if projects_to_release[LT_OPT]:
             propose_change_review( "the JSR308 manual", old_jsr308_version, JSR308_LANGTOOLS,
@@ -300,7 +394,13 @@ def main(argv):
             propose_change_review( "the Checker Framework", old_jsr308_version, CHECKER_FRAMEWORK,
                                    CHECKER_TAG_PREFIXES, CHECKER_MANUAL, "/tmp/checker-framework.manual"  )
 
-    print_step("Build Step 6: Build projects and websites.")
+    # The projects are built in the following order: JSR308-Langtools, Annotation File Utilities,
+    # and Checker Framework. Furthermore, their manuals and websites are also built and placed in
+    # their relevant locations at http://types.cs.washington.edu/dev/ This is the most time consuming
+    # piece of the release. There are no prompts from this step forward; you might want to get a cup
+    # of coffee and do something else until it is done.
+
+    print_step("Build Step 6: Build projects and websites.") # AUTO
     print( projects_to_release )
     if projects_to_release[LT_OPT]:
         print_step("6a: Build Type Annotations Compiler.")
@@ -314,10 +414,19 @@ def main(argv):
         print_step("6c: Build Checker Framework.")
         build_checker_framework_release(auto, jsr308_version, afu_date, checker_framework_interm_dir, jsr308_interm_dir)
 
-    print_step("Build Step 7: Commit projects to intermediate repos.")
+    # Each project has a set of files that are updated for release. Usually these updates include new
+    # release date and version information. All changed files are committed and pushed to the intermediate
+    # repositories. Keep this in mind if you have any changed files from steps 1d, 4, or 5. Edits to the
+    # scripts in the jsr308-release/scripts directory will never be checked in.
+
+    print_step("Build Step 7: Commit projects to intermediate repos.") # AUTO
     commit_to_interm_projects( jsr308_version, afu_version, projects_to_release )
 
-    print_step("\n\n8: Add permissions to websites.")
+    # Adds read/write/execute group permissions to all of the new dev website directories
+    # under http://types.cs.washington.edu/dev/ These directories need group read/execute
+    # permissions in order for them to be served.
+
+    print_step("\n\n8: Add permissions to websites.") # AUTO
     ensure_group_access( jsr308_interm_dir )
     ensure_group_access( afu_interm_dir )
     ensure_group_access( checker_framework_interm_dir )

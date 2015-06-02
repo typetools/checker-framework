@@ -10,6 +10,8 @@ import org.checkerframework.framework.qual.TypeQualifier;
 /**
  * The top qualifier.
  *
+ * A type annotation indicating that the run-time value might or might not
+ * be a valid format string.
  * <p>
  *
  * This annotation may not be written in source code; it is an
@@ -22,4 +24,5 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
 @Target({})
-public @interface UnknownFormat {}
+public @interface UnknownFormat {
+}
