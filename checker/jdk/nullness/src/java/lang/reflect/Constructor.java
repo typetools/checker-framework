@@ -6,7 +6,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public final class Constructor<T extends @Nullable Object> extends AccessibleObject implements GenericDeclaration, Member {
+public final class Constructor<T> extends AccessibleObject implements GenericDeclaration, Member {
     public Class<T> getDeclaringClass() { throw new RuntimeException("skeleton method"); }
     public String getName() { throw new RuntimeException("skeleton method"); }
     public int getModifiers() { throw new RuntimeException("skeleton method"); }
