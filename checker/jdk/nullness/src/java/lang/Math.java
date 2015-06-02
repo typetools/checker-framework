@@ -1,10 +1,8 @@
 package java.lang;
 
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
-
-public final class Math{
+public final class Math {
   public final static double E = 2.718281828459045;
   public final static double PI = 3.141592653589793;
   protected Math() {}

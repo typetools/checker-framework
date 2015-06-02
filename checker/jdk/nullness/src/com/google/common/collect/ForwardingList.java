@@ -16,15 +16,16 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.annotations.GwtIncompatible;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.annotations.GwtIncompatible;
 
 /**
  * A list which forwards all its method calls to another list. Subclasses should
@@ -45,43 +46,53 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   @Override protected abstract List<E> delegate();
 
-  public void add(int index, E element) {
+  @Override
+public void add(int index, E element) {
     delegate().add(index, element);
   }
 
-  public boolean addAll(int index, Collection<? extends E> elements) {
+  @Override
+public boolean addAll(int index, Collection<? extends E> elements) {
     return delegate().addAll(index, elements);
   }
 
-  public E get(int index) {
+  @Override
+public E get(int index) {
     return delegate().get(index);
   }
 
-  @Pure public int indexOf(/*@Nullable*/ Object element) {
+  @Override
+@Pure public int indexOf(/*@Nullable*/ Object element) {
     return delegate().indexOf(element);
   }
 
-  @Pure public int lastIndexOf(/*@Nullable*/ Object element) {
+  @Override
+@Pure public int lastIndexOf(/*@Nullable*/ Object element) {
     return delegate().lastIndexOf(element);
   }
 
-  public ListIterator<E> listIterator() {
+  @Override
+public ListIterator<E> listIterator() {
     return delegate().listIterator();
   }
 
-  public ListIterator<E> listIterator(int index) {
+  @Override
+public ListIterator<E> listIterator(int index) {
     return delegate().listIterator(index);
   }
 
-  public E remove(int index) {
+  @Override
+public E remove(int index) {
     return delegate().remove(index);
   }
 
-  public E set(int index, E element) {
+  @Override
+public E set(int index, E element) {
     return delegate().set(index, element);
   }
 
-  @GwtIncompatible("List.subList")
+  @Override
+@GwtIncompatible("List.subList")
   @SideEffectFree public List<E> subList(int fromIndex, int toIndex) {
     return Platform.subList(delegate(), fromIndex, toIndex);
   }

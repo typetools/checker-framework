@@ -16,10 +16,13 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.checkerframework.dataflow.qual.Pure;
+
 import java.io.Serializable;
+
+import com.google.common.annotations.GwtCompatible;
 
 /** An ordering that uses the reverse of the natural order of the values. */
 @GwtCompatible(serializable = true)
@@ -28,7 +31,8 @@ final class ReverseNaturalOrdering
     extends Ordering<Comparable> implements Serializable {
   static final ReverseNaturalOrdering INSTANCE = new ReverseNaturalOrdering();
 
-  /*@Pure*/ public int compare(Comparable left, Comparable right) {
+  /*@Pure*/ @Override
+public int compare(Comparable left, Comparable right) {
     checkNotNull(left); // right null is caught later
     if (left == right) {
       return 0;
@@ -68,7 +72,7 @@ final class ReverseNaturalOrdering
   @Override public <E extends Comparable> E max(Iterable<E> iterable) {
     return NaturalOrdering.INSTANCE.min(iterable);
   }
-  
+
   // preserving singleton-ness gives equals()/hashCode() for free
   private Object readResolve() {
     return INSTANCE;

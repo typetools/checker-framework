@@ -4,6 +4,10 @@ package org.checkerframework.javacutil;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import static com.sun.tools.javac.code.Flags.ABSTRACT;
+import static com.sun.tools.javac.code.Flags.EFFECTIVELY_FINAL;
+import static com.sun.tools.javac.code.Flags.FINAL;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,10 +32,6 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 
 import com.sun.tools.javac.code.Symbol;
-
-import static com.sun.tools.javac.code.Flags.ABSTRACT;
-import static com.sun.tools.javac.code.Flags.EFFECTIVELY_FINAL;
-import static com.sun.tools.javac.code.Flags.FINAL;
 
 /**
  * A Utility class for analyzing {@code Element}s.
@@ -177,7 +177,8 @@ public class ElementUtils {
      */
     public static String getVerboseName(Element elt) {
         if (elt.getKind() == ElementKind.PACKAGE ||
-                elt.getKind().isClass()) {
+                elt.getKind().isClass() ||
+                elt.getKind().isInterface()) {
             return getQualifiedClassName(elt).toString();
         } else {
             return getQualifiedClassName(elt) + "." + elt.toString();
@@ -278,9 +279,9 @@ public class ElementUtils {
      * @return whether the element requires a receiver for accesses.
      */
     public static boolean hasReceiver(Element element) {
-        return element.getKind() != ElementKind.LOCAL_VARIABLE
-                && element.getKind() != ElementKind.PARAMETER
-                && element.getKind() != ElementKind.PACKAGE
+        return (element.getKind().isField() ||
+                element.getKind() == ElementKind.METHOD ||
+                element.getKind() == ElementKind.CONSTRUCTOR)
                 && !ElementUtils.isStatic(element);
     }
 

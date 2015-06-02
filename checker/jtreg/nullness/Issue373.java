@@ -6,6 +6,7 @@
  * @compile/ref=Issue373-warn.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Alint Issue373.java -Awarns
  */
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Map;

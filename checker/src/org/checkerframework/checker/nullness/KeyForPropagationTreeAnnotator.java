@@ -1,7 +1,5 @@
 package org.checkerframework.checker.nullness;
 
-import com.sun.source.tree.*;
-import com.sun.source.tree.Tree.Kind;
 import org.checkerframework.checker.nullness.KeyForPropagator.PropagationDirection;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -13,6 +11,12 @@ import org.checkerframework.javacutil.TreeUtils;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 
 /**
  * For the following initializations we wish to propagate the annotations from the left-hand side

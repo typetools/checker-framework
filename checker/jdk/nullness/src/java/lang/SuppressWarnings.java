@@ -1,8 +1,5 @@
 package java.lang;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-
-
-public abstract @interface SuppressWarnings{
+public @interface SuppressWarnings{
   public abstract String[] value();
 }

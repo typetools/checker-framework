@@ -16,10 +16,11 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.base.Objects;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -30,7 +31,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.base.Objects;
 
 /**
  * A general-purpose bimap implementation using any two backing {@code Map}
@@ -41,7 +43,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 @GwtCompatible
 @SuppressWarnings("nullness:generic.argument")
-    class StandardBiMap<K extends /*@Nullable*/ Object, 
+    class StandardBiMap<K extends /*@Nullable*/ Object,
                     V extends /*@Nullable*/ Object> extends ForwardingMap<K, V>
     implements BiMap<K, V>, Serializable {
 
@@ -87,11 +89,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     return inverse.containsKey(value);
   }
 
-  // Modification Operations 
+  // Modification Operations
   @Override public V put(K key, V value) {
     return putInBothMaps(key, value, false);
   }
 
+  @Override
   public V forcePut(K key, V value) {
     return putInBothMaps(key, value, true);
   }
@@ -106,7 +109,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     if (force) {
       inverse().remove(value);
     } else {
-	checkArgument(!containsValue(value), "value already present: %s", value);
+        checkArgument(!containsValue(value), "value already present: %s", value);
     }
     V oldValue = delegate.put(key, value);
     updateInverseMap(key, containedKey, oldValue, value);
@@ -152,7 +155,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   // Views
 
-  public BiMap<V, K> inverse() {
+  @Override
+public BiMap<V, K> inverse() {
     return inverse;
   }
 
@@ -193,13 +197,16 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       return new Iterator<K>() {
         Entry<K, V> entry;
 
+        @Override
         public boolean hasNext() {
           return iterator.hasNext();
         }
+        @Override
         public K next() {
           entry = iterator.next();
           return entry.getKey();
         }
+        @Override
         public void remove() {
           iterator.remove();
           removeFromInverseMap(entry.getValue());
@@ -231,15 +238,18 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       return new Iterator<V>() {
         V valueToRemove;
 
-        /*@Override*/ public boolean hasNext() {
+        @Override
+        public boolean hasNext() {
           return iterator.hasNext();
         }
 
-        /*@Override*/ public V next() {
+        @Override
+        public V next() {
           return valueToRemove = iterator.next();
         }
 
-        /*@Override*/ public void remove() {
+        @Override
+        public void remove() {
           iterator.remove();
           removeFromInverseMap(valueToRemove);
         }
@@ -247,7 +257,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     }
 
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations on toArray
+    //Suppressed due to annotations on toArray
     @Override public /*@Nullable*/ Object[] toArray() {
       return ObjectArrays.toArrayImpl(this);
     }
@@ -280,7 +290,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     }
 
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations of Java.util.Map.remove
+    //Suppressed due to annotations of Java.util.Map.remove
     @Override public boolean remove(/*@Nullable*/ Object object) {
       if (!esDelegate.remove(object)) {
         return false;
@@ -290,7 +300,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       return true;
     }
 
-    
+
     @Override public Iterator<Entry<K, V>> iterator() {
       final Iterator<Entry<K, V>> iterator = esDelegate.iterator();
       return new Iterator<Entry<K, V>>() {
@@ -310,7 +320,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
             }
 
             @SuppressWarnings("nullness")
-		//Suppressed due to annotations of checkArgument
+            //Suppressed due to annotations of checkArgument
             @Override public V setValue(V value) {
               // Preconditions keep the map and inverse consistent.
               checkState(contains(this), "entry no longer in map");
@@ -339,7 +349,7 @@ V oldValue = finalEntry.setValue(value);
     // See java.util.Collections.CheckedEntrySet for details on attacks.
 
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations on toArray
+    //Suppressed due to annotations on toArray
     @Override public /*@Nullable*/ Object[] toArray() {
       return ObjectArrays.toArrayImpl(this);
     }

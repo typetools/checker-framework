@@ -105,6 +105,15 @@ command-line option.)
   that fields of \refqualclass{checker/nullness/qual}{NonNull} type are
   initialized --- such initialization is mandatory, not optional.
 
+\item
+  \label{lint-nonnullarraycomponents-item}%
+  If you supply the \code{-Alint=forbidnonnullarraycomponents} command-line
+  option, then the checker warns if it encounters an array creation
+  with a non-null component type.
+  See Section~\ref{nullness-arrays} for a discussion.
+  % TODO: this option is temporary and the sound option
+  % should become the default.
+
 \end{enumerate}
 
 
@@ -348,6 +357,31 @@ rule.
 % %END LATEX
 
 
+\subsection{Default annotations in unchecked \<.class>
+files \label{null-defaults-classfile}}
+
+If the Nullness Checker was not run during the compiler execution that
+created a \<.class> file, then the \<.class> file contains only the
+type qualifiers that the programmer wrote explicitly and defaulting is
+required.
+See Section~\ref{defaults-classfile} for a general discussion.
+
+The Nullness Checker implements conservative defaults for
+unchecked \<.class> files:
+\begin{itemize}
+\item
+  For method parameter types and type parameter lower bounds, use the
+  bottom qualifier \<@NonNull>.
+\item
+  For method return types and type parameter upper bounds, use the top
+  qualifier \<@Nullable>.
+\end{itemize}
+
+The option \<-AunsafeDefaultsForUncheckedBytecode> can be used to
+treat unchecked bytecode like checked source code, which is unsound,
+but might reduce false positives.
+
+
 \subsection{Conditional nullness\label{conditional-nullness}}
 
 The Nullness Checker supports a form of conditional nullness types, via the
@@ -428,6 +462,12 @@ needs to be trusted:  that is, a programmer must verify that it is safe,
 then write a \<@SuppressWarnings> annotation.
 
 % TODO: explain more aspects, give more examples.
+
+You need to supply the \code{-Alint=forbidnonnullarraycomponents}
+command-line option to enable this behavior.
+For backwards-compatibility reasons, the default behavior is currently
+to unsoundly allow non-null array components.
+% TODO: flip the default after collecting more data.
 
 
 \subsection{Run-time checks for nullness\label{nullness-runtime-checks}}

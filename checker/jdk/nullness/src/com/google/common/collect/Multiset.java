@@ -16,7 +16,9 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -25,8 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A collection that supports order-independent equality, like {@link Set}, but
@@ -278,6 +278,7 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
      *      ? (b.getElement() == null) : a.getElement().equals(b.getElement()))
      *    && (a.getCount() == b.getCount())</pre>
      */
+    @Override
     @Pure boolean equals(/*@Nullable*/ Object o);
 
     /**
@@ -288,6 +289,7 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
      *
      * <pre>  (element == null ? 0 : element.hashCode()) ^ count</pre>
      */
+    @Override
     @Pure int hashCode();
 
     /**
@@ -297,6 +299,7 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
      * representation of the element, followed by the three characters {@code
      * " x "} (space, letter x, space), followed by the count.
      */
+    @Override
     @SideEffectFree String toString();
   }
 
@@ -309,7 +312,8 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
    *
    * TODO: caveats about equivalence-relation.
    */
-  @Pure boolean equals(@Nullable Object object);
+  @Override
+@Pure boolean equals(@Nullable Object object);
 
   /**
    * Returns the hash code for this multiset. This is defined as the sum of
@@ -319,7 +323,8 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
    * over all distinct elements in the multiset. It follows that a multiset and
    * its entry set always have the same hash code.
    */
-  @Pure int hashCode();
+  @Override
+@Pure int hashCode();
 
   /**
    * {@inheritDoc}
@@ -331,7 +336,8 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
    *     [a x 3, c, d x 2, e]
    * </pre>
    */
-  @SideEffectFree String toString();
+  @Override
+@SideEffectFree String toString();
 
   // Refined Collection Methods
 
@@ -341,7 +347,8 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
    * <p>Elements that occur multiple times in the multiset will appear
    * multiple times in this iterator, though not necessarily sequentially.
    */
-  Iterator<E> iterator();
+  @Override
+Iterator<E> iterator();
 
   /**
    * Determines whether this multiset contains the specified element.
@@ -354,7 +361,8 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
    * @return {@code true} if this multiset contains at least one occurrence of
    *     the element
    */
-  @Pure boolean contains(/*@Nullable*/ Object element);
+  @Override
+@Pure boolean contains(/*@Nullable*/ Object element);
 
   /**
    * Returns {@code true} if this multiset contains at least one occurrence of
@@ -377,7 +385,8 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
    *     each element contained in {@code elements}
    * @throws NullPointerException if {@code elements} is null
    */
-  @Pure boolean containsAll(Collection<? extends /*@Nullable*/ Object> elements);
+  @Override
+@Pure boolean containsAll(Collection<? extends /*@Nullable*/ Object> elements);
 
   /**
    * Adds a single occurrence of the specified element to this multiset.
@@ -396,7 +405,8 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
    * @throws IllegalArgumentException if {@link Integer#MAX_VALUE} occurrences
    *     of {@code element} are already contained in this multiset
    */
-  boolean add(E element);
+  @Override
+boolean add(E element);
 
   /**
    * Removes a <i>single</i> occurrence of the specified element from this
@@ -409,7 +419,8 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
    * @param element the element to remove one occurrence of
    * @return {@code true} if an occurrence was found and removed
    */
-  boolean remove(/*@Nullable*/ Object element);
+  @Override
+boolean remove(/*@Nullable*/ Object element);
 
   /**
    * {@inheritDoc}
@@ -418,7 +429,8 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
    * it <b>may not</b> throw an exception in response to any of {@code elements}
    * being null or of the wrong type.
    */
-  boolean removeAll(Collection<? extends /*@Nullable*/ Object> c);
+  @Override
+boolean removeAll(Collection<? extends /*@Nullable*/ Object> c);
 
   /**
    * {@inheritDoc}
@@ -427,5 +439,6 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
    * it <b>may not</b> throw an exception in response to any of {@code elements}
    * being null or of the wrong type.
    */
-  boolean retainAll(Collection<? extends /*@Nullable*/ Object> c);
+  @Override
+boolean retainAll(Collection<? extends /*@Nullable*/ Object> c);
 }

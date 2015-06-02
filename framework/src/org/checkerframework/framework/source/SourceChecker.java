@@ -174,6 +174,11 @@ import com.sun.tools.javac.util.Log;
     // org.checkerframework.framework.flow.CFAbstractTransfer.sequentialSemantics
     "concurrentSemantics",
 
+    // Whether to use conservative checks for unchecked bytecode; these are configured
+    // by the specific type checker using Default[For|Qualifier]InUncheckedBytecode.
+    // They may require more annotations or stub files.
+    "unsafeDefaultsForUncheckedBytecode",
+
     // Whether to resolve reflective method invocations
     // resolveReflection=debug cause debugging information
     // to be output.

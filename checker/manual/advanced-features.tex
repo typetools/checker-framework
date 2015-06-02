@@ -102,8 +102,15 @@ In particular, qualifiers in method bodies are extremely rare.
 
 Most of this section is applicable only to source code that is being
 checked by a checker.
-% TODO:  For defaulting rules when the compiler reads a
-% \<.class> file, see Section~\ref{defaults-classfile}.
+%
+When the compiler reads a \<.class> file that was checked by a
+checker, the \<.class> file contains the explicit or defaulted
+annotations from the source code and no defaulting is necessary.
+%
+When the compiler reads a \<.class> file that was not checked by a
+checker, the \<.class> file contains only explicit annotations and
+defaulting might be necessary; see Section~\ref{defaults-classfile}
+for these rules.
 
   The following steps determine the effective
 qualifier on a type --- the qualifier that the checkers treat as being present.
@@ -462,9 +469,8 @@ List<@NonNull ? extends @NonNull Object> listOfNonNulls2;
 Note, the upper bound of the wildcard \code{? extends Object} is defaulted to
 \code{@NonNull} using the climb to the top rule (see Section~\ref{climb-to-top}).
 
-
-\iffalse TODO
-\subsection{Default qualifiers for \<.class> files\label{defaults-classfile}}
+\subsection{Default qualifiers for \<.class>
+files\label{defaults-classfile}}
 
 The defaulting rules presented so far apply to source code that is read by
 the compiler.  When the compiler reads a \<.class> file, different
@@ -490,9 +496,34 @@ locations where the programmer did not write an annotation:
   For method parameters, use the bottom qualifier (see
   Section~\ref{bottom-qualifier}).
 \item
-  For method return values, use the top qualifier (see
+  For method return values, use the top qualifier (see 
   Section~\ref{top-qualifier}).
-\item
+\end{itemize}
+
+However, each checker is responsible for choosing these defaults.
+
+The option \<-AunsafeDefaultsForUncheckedBytecode> can be used to
+treat unchecked bytecode like checked source code, using the same
+defaults as in the corresponding source code location.
+Doing so is generally unsafe, but the option can reduce the initial
+annotation overhead.
+
+% TODO: document
+% the \refqualclass{framework/qual}{DefaultForInUncheckedBytecode}
+% and \refqualclass{framework/qual}{DefaultQualifierInUncheckedBytecode}
+% annotations for type system designers.
+
+
+\iffalse TODO
+\subsection{Default qualifiers for \<.class> files\label{defaults-classfile}}
+
+% TODO: can we set the default for type systems that don't set an
+% explicit default for unchecked bytecode to be conservative?
+% i.e. to pick top/bottom for the right locations automatically.
+
+TODO: separate handling for field read vs. write is currently not
+possible.
+
   For fields, use the bottom qualifier when writing to the field and the
   top qualifier when reading from the field.
 %% TODO: should give rules for other locations, such as type parameters
