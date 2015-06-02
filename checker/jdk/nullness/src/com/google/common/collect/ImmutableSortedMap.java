@@ -16,9 +16,12 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -30,7 +33,7 @@ import java.util.NoSuchElementException;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * An immutable {@link SortedMap}. Does not permit null keys or values.
@@ -247,7 +250,8 @@ public class ImmutableSortedMap<K, V>
   private static void sortEntries(Entry<?, ?>[] entryArray,
       final Comparator<?> comparator) {
     Comparator<Entry<?, ?>> entryComparator = new Comparator<Entry<?, ?>>() {
-      /*@Pure*/ public int compare(Entry<?, ?> entry1, Entry<?, ?> entry2) {
+      /*@Pure*/ @Override
+    public int compare(Entry<?, ?> entry1, Entry<?, ?> entry2) {
         return ImmutableSortedSet.unsafeCompare(
             comparator, entry1.getKey(), entry2.getKey());
       }
@@ -395,6 +399,7 @@ public class ImmutableSortedMap<K, V>
     this(entries, comparator, 0, entries.length);
   }
 
+  @Override
   @Pure public int size() {
     return toIndex - fromIndex;
   }
@@ -468,6 +473,7 @@ public class ImmutableSortedMap<K, V>
       this.map = map;
     }
 
+    @Override
     @Pure public int size() {
       return map.size();
     }
@@ -545,6 +551,7 @@ public class ImmutableSortedMap<K, V>
       this.map = map;
     }
 
+    @Override
     @Pure public int size() {
       return map.size();
     }
@@ -587,18 +594,21 @@ public class ImmutableSortedMap<K, V>
    * Note that its behavior is not consistent with {@link TreeMap#comparator()},
    * which returns {@code null} to indicate natural ordering.
    */
-  @SideEffectFree public Comparator<? super K> comparator() {
+  @Override
+@SideEffectFree public Comparator<? super K> comparator() {
     return comparator;
   }
 
-  public K firstKey() {
+  @Override
+public K firstKey() {
     if (isEmpty()) {
       throw new NoSuchElementException();
     }
     return entries[fromIndex].getKey();
   }
 
-  public K lastKey() {
+  @Override
+public K lastKey() {
     if (isEmpty()) {
       throw new NoSuchElementException();
     }
@@ -615,7 +625,8 @@ public class ImmutableSortedMap<K, V>
    * an exception in that situation, but instead keeps the original {@code
    * toKey}.
    */
-  public ImmutableSortedMap<K, V> headMap(K toKey) {
+  @Override
+public ImmutableSortedMap<K, V> headMap(K toKey) {
     int newToIndex = findSubmapIndex(checkNotNull(toKey));
     return createSubmap(fromIndex, newToIndex);
   }
@@ -633,7 +644,8 @@ public class ImmutableSortedMap<K, V>
    * of throwing an exception, if passed a {@code toKey} greater than an earlier
    * {@code toKey}.
    */
-  public ImmutableSortedMap<K, V> subMap(K fromKey, K toKey) {
+  @Override
+public ImmutableSortedMap<K, V> subMap(K fromKey, K toKey) {
     checkNotNull(fromKey);
     checkNotNull(toKey);
     checkArgument(comparator.compare(fromKey, toKey) <= 0);
@@ -652,7 +664,8 @@ public class ImmutableSortedMap<K, V>
    * throw an exception in that situation, but instead keeps the original {@code
    * fromKey}.
    */
-  public ImmutableSortedMap<K, V> tailMap(K fromKey) {
+  @Override
+public ImmutableSortedMap<K, V> tailMap(K fromKey) {
     int newFromIndex = findSubmapIndex(checkNotNull(fromKey));
     return createSubmap(newFromIndex, toIndex);
   }

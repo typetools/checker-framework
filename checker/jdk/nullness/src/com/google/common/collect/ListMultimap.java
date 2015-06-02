@@ -16,13 +16,14 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * A {@code Multimap} that can hold duplicate key-value pairs and that maintains
@@ -44,7 +45,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * insertion ordering, this method returns a {@link List}, instead of the
    * {@link java.util.Collection} specified in the {@link Multimap} interface.
    */
-  List<V> get(K key);
+  @Override
+List<V> get(K key);
 
   /**
    * {@inheritDoc}
@@ -53,7 +55,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * insertion ordering, this method returns a {@link List}, instead of the
    * {@link java.util.Collection} specified in the {@link Multimap} interface.
    */
-  List<V> removeAll(/*@Nullable*/ Object key);
+  @Override
+List<V> removeAll(/*@Nullable*/ Object key);
 
   /**
    * {@inheritDoc}
@@ -62,7 +65,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * insertion ordering, this method returns a {@link List}, instead of the
    * {@link java.util.Collection} specified in the {@link Multimap} interface.
    */
-  List<V> replaceValues(K key, Iterable<? extends V> values);
+  @Override
+List<V> replaceValues(K key, Iterable<? extends V> values);
 
   /**
    * {@inheritDoc}
@@ -70,7 +74,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * <p>Though the method signature doesn't say so explicitly, the returned map
    * has {@link List} values.
    */
-  Map<K, Collection<V>> asMap();
+  @Override
+Map<K, Collection<V>> asMap();
 
   /**
    * Compares the specified object to this multimap for equality.
@@ -79,5 +84,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * contain the same values in the same order. If the value orderings disagree,
    * the multimaps will not be considered equal.
    */
-  @Pure boolean equals(@Nullable Object obj);
+  @Override
+@Pure boolean equals(@Nullable Object obj);
 }

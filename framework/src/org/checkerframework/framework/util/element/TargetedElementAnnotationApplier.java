@@ -4,10 +4,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.ErrorReporter;
 
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.contains;
-
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +53,7 @@ abstract class TargetedElementAnnotationApplier {
 
     /**
      * @return The TargetTypes that identify annotations that are valid but we wish to ignore.  Any annotations
-     * that have these target types will be passed to handleInvalid, providing they aren't also in annotatedTargets.
+     * that have these target types will be passed to handleValid, providing they aren't also in annotatedTargets.
      */
     protected abstract TargetType [] validTargets();
 
@@ -111,8 +109,11 @@ abstract class TargetedElementAnnotationApplier {
     protected void handleInvalid(List<Attribute.TypeCompound> invalid) {
         if (!invalid.isEmpty()) {
             ErrorReporter.errorAbort(this.getClass().getName() + ".handleInvalid: " +
-                    "Invalid variable and element passed to extractAndApply (" + type + ", " + element +
-                    " Annos ( " + PluginUtil.join(", ", invalid) + " ) ");
+                    "Invalid variable and element passed to extractAndApply; type: " + type + "," +
+                            " element: " + element + " (kind: " + element.getKind() +
+                    "), invalid annotations: " + PluginUtil.join(", ", invalid) + "\n" +
+                    "Targeted annotations: " + PluginUtil.join(", ", annotatedTargets()) +
+                    "; Valid annotations: " + PluginUtil.join(", ", validTargets()));
         }
     }
 
@@ -124,7 +125,7 @@ abstract class TargetedElementAnnotationApplier {
      */
     protected Map<TargetClass, List<Attribute.TypeCompound>> sift(final Iterable<Attribute.TypeCompound> typeCompounds) {
 
-        final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToCompound = new LinkedHashMap<>();
+        final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToCompound = new EnumMap<>(TargetClass.class);
         for (TargetClass targetClass : TargetClass.values()) {
             targetClassToCompound.put(targetClass, new ArrayList<TypeCompound>());
         }
@@ -133,10 +134,10 @@ abstract class TargetedElementAnnotationApplier {
             final TargetType typeCompoundTarget = typeCompound.position.type;
             final List<Attribute.TypeCompound> destList;
 
-            if (contains(typeCompoundTarget, annotatedTargets())) {
+            if (ElementAnnotationUtil.contains(typeCompoundTarget, annotatedTargets())) {
                 destList = targetClassToCompound.get(TargetClass.TARGETED);
 
-            } else if (contains(typeCompoundTarget, validTargets())) {
+            } else if (ElementAnnotationUtil.contains(typeCompoundTarget, validTargets())) {
                 destList = targetClassToCompound.get(TargetClass.VALID);
 
             } else {

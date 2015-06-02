@@ -16,10 +16,12 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.annotations.GwtIncompatible;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.Serializable;
 import java.util.AbstractCollection;
@@ -37,8 +39,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.annotations.GwtIncompatible;
 
 /**
  * Basic implementation of the {@link Multimap} interface. This class represents
@@ -84,8 +86,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 @SuppressWarnings("nullness:generic.argument")
 @GwtCompatible
-    abstract class StandardMultimap<K extends /*@Nullable*/ Object, 
-                                    V extends /*@Nullable*/ Object> 
+    abstract class StandardMultimap<K extends /*@Nullable*/ Object,
+                                    V extends /*@Nullable*/ Object>
                                     implements Multimap<K, V>, Serializable {
   /*
    * Here's an outline of the overall design.
@@ -163,20 +165,24 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   // Query Operations
 
+  @Override
   @Pure public int size() {
     return totalSize;
   }
 
+  @Override
   @Pure public boolean isEmpty() {
     return totalSize == 0;
   }
 
+  @Override
   @SuppressWarnings("nullness")
   @Pure public boolean containsKey(@Nullable Object key) {
     return map.containsKey(key);
   }
 
-  @Pure public boolean containsValue(@Nullable Object value) {
+  @Override
+@Pure public boolean containsValue(@Nullable Object value) {
     for (Collection<V> collection : map.values()) {
       if (collection.contains(value)) {
         return true;
@@ -186,7 +192,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     return false;
   }
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
       //Suppressed due to annotations on Java.util.Map
   @Pure public boolean containsEntry(@Nullable Object key, @Nullable Object value) {
     Collection<V> collection = map.get(key);
@@ -195,7 +202,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   // Modification Operations
 
-  public boolean put(K key, V value) {
+  @Override
+public boolean put(K key, V value) {
     Collection<V> collection = getOrCreateCollection(key);
 
     if (collection.add(value)) {
@@ -217,7 +225,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     return collection;
   }
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
   //Suppressed due to annotations on Java.util.Map
   public boolean remove(@Nullable Object key, @Nullable Object value) {
     Collection<V> collection = map.get(key);
@@ -237,7 +246,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   // Bulk Operations
 
-  public boolean putAll(K key, Iterable<? extends V> values) {
+  @Override
+public boolean putAll(K key, Iterable<? extends V> values) {
     if (!values.iterator().hasNext()) {
       return false;
     }
@@ -259,7 +269,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     return changed;
   }
 
-  public boolean putAll(Multimap<? extends K, ? extends V> multimap) {
+  @Override
+public boolean putAll(Multimap<? extends K, ? extends V> multimap) {
     boolean changed = false;
     for (Map.Entry<? extends K, ? extends V> entry : multimap.entries()) {
       changed |= put(entry.getKey(), entry.getValue());
@@ -267,7 +278,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     return changed;
   }
 
-  public Collection<V> replaceValues(
+  @Override
+public Collection<V> replaceValues(
       K key, Iterable<? extends V> values) {
     Iterator<? extends V> iterator = values.iterator();
     if (!iterator.hasNext()) {
@@ -290,7 +302,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     return oldValues;
   }
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
   //Suppressed due to annotations on Java.util.Map
   public Collection<V> removeAll(@Nullable Object key) {
     Collection<V> collection = map.remove(key);
@@ -305,7 +318,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     return output;
   }
 
-  public void clear() {
+  @Override
+public void clear() {
     // Clear each collection, to make previously returned collections empty.
     for (Collection<V> collection : map.values()) {
       collection.clear();
@@ -321,7 +335,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    *
    * <p>The returned collection is not serializable.
    */
-  public Collection<V> get(@Nullable K key) {
+  @Override
+public Collection<V> get(@Nullable K key) {
     Collection<V> collection = map.get(key);
     if (collection == null) {
       collection = createCollection(key);
@@ -499,17 +514,20 @@ import org.checkerframework.checker.nullness.qual.Nullable;
         }
       }
 
-      public boolean hasNext() {
+      @Override
+    public boolean hasNext() {
         validateIterator();
         return delegateIterator.hasNext();
       }
 
-      public V next() {
+      @Override
+    public V next() {
         validateIterator();
         return delegateIterator.next();
       }
 
-      public void remove() {
+      @Override
+    public void remove() {
         delegateIterator.remove();
         totalSize--;
         removeIfEmpty();
@@ -643,20 +661,24 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       return (SortedSet<V>) getDelegate();
     }
 
+    @Override
     @SideEffectFree public Comparator<? super V> comparator() {
       return getSortedSetDelegate().comparator();
     }
 
+    @Override
     @SideEffectFree public V first() {
       refreshIfEmpty();
       return getSortedSetDelegate().first();
     }
 
+    @Override
     @SideEffectFree public V last() {
       refreshIfEmpty();
       return getSortedSetDelegate().last();
     }
 
+    @Override
     @SideEffectFree public SortedSet<V> headSet(V toElement) {
       refreshIfEmpty();
       return new WrappedSortedSet(
@@ -664,6 +686,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
           (getAncestor() == null) ? this : getAncestor());
     }
 
+    @Override
     @SideEffectFree public SortedSet<V> subSet(V fromElement, V toElement) {
       refreshIfEmpty();
       return new WrappedSortedSet(
@@ -671,6 +694,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
           (getAncestor() == null) ? this : getAncestor());
     }
 
+    @Override
     @SideEffectFree public SortedSet<V> tailSet(V fromElement) {
       refreshIfEmpty();
       return new WrappedSortedSet(
@@ -689,6 +713,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       return (List<V>) getDelegate();
     }
 
+    @Override
     public boolean addAll(int index, Collection<? extends V> c) {
       if (c.isEmpty()) {
         return false;
@@ -705,16 +730,19 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       return changed;
     }
 
+    @Override
     public V get(int index) {
       refreshIfEmpty();
       return getListDelegate().get(index);
     }
 
+    @Override
     public V set(int index, V element) {
       refreshIfEmpty();
       return getListDelegate().set(index, element);
     }
 
+    @Override
     public void add(int index, V element) {
       refreshIfEmpty();
       boolean wasEmpty = getDelegate().isEmpty();
@@ -725,6 +753,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       }
     }
 
+    @Override
     public V remove(int index) {
       refreshIfEmpty();
       V value = getListDelegate().remove(index);
@@ -733,26 +762,31 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       return value;
     }
 
+    @Override
     @Pure public int indexOf(/*@Nullable*/ Object o) {
       refreshIfEmpty();
       return getListDelegate().indexOf(o);
     }
 
+    @Override
     @Pure public int lastIndexOf(/*@Nullable*/ Object o) {
       refreshIfEmpty();
       return getListDelegate().lastIndexOf(o);
     }
 
+    @Override
     public ListIterator<V> listIterator() {
       refreshIfEmpty();
       return new WrappedListIterator();
     }
 
+    @Override
     public ListIterator<V> listIterator(int index) {
       refreshIfEmpty();
       return new WrappedListIterator(index);
     }
 
+    @Override
     @GwtIncompatible("List.subList")
     @SideEffectFree public List<V> subList(int fromIndex, int toIndex) {
       refreshIfEmpty();
@@ -774,27 +808,33 @@ import org.checkerframework.checker.nullness.qual.Nullable;
         return (ListIterator<V>) getDelegateIterator();
       }
 
-      public boolean hasPrevious() {
+      @Override
+    public boolean hasPrevious() {
         return getDelegateListIterator().hasPrevious();
       }
 
-      public V previous() {
+      @Override
+    public V previous() {
         return getDelegateListIterator().previous();
       }
 
-      public int nextIndex() {
+      @Override
+    public int nextIndex() {
         return getDelegateListIterator().nextIndex();
       }
 
-      public int previousIndex() {
+      @Override
+    public int previousIndex() {
         return getDelegateListIterator().previousIndex();
       }
 
-      public void set(V value) {
+      @Override
+    public void set(V value) {
         getDelegateListIterator().set(value);
       }
 
-      public void add(V value) {
+      @Override
+    public void add(V value) {
         boolean wasEmpty = isEmpty();
         getDelegateListIterator().add(value);
         totalSize++;
@@ -819,7 +859,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   private transient Set<K> keySet;
 
-  @SideEffectFree public Set<K> keySet() {
+  @Override
+@SideEffectFree public Set<K> keySet() {
     Set<K> result = keySet;
     return (result == null) ? keySet = createKeySet() : result;
   }
@@ -851,13 +892,16 @@ import org.checkerframework.checker.nullness.qual.Nullable;
             = subMap.entrySet().iterator();
         Map.Entry<K, Collection<V>> entry;
 
+        @Override
         public boolean hasNext() {
           return entryIterator.hasNext();
         }
+        @Override
         public K next() {
           entry = entryIterator.next();
           return entry.getKey();
         }
+        @Override
         public void remove() {
           entryIterator.remove();
           totalSize -= entry.getValue().size();
@@ -910,26 +954,32 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       return (SortedMap<K, Collection<V>>) subMap;
     }
 
+    @Override
     @SideEffectFree public Comparator<? super K> comparator() {
       return sortedMap().comparator();
     }
 
+    @Override
     @SideEffectFree public K first() {
       return sortedMap().firstKey();
     }
 
+    @Override
     @SideEffectFree public SortedSet<K> headSet(K toElement) {
       return new SortedKeySet(sortedMap().headMap(toElement));
     }
 
+    @Override
     @SideEffectFree public K last() {
       return sortedMap().lastKey();
     }
 
+    @Override
     @SideEffectFree public SortedSet<K> subSet(K fromElement, K toElement) {
       return new SortedKeySet(sortedMap().subMap(fromElement, toElement));
     }
 
+    @Override
     @SideEffectFree public SortedSet<K> tailSet(K fromElement) {
       return new SortedKeySet(sortedMap().tailMap(fromElement));
     }
@@ -937,7 +987,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   private transient Multiset<K> multiset;
 
-  public Multiset<K> keys() {
+  @Override
+public Multiset<K> keys() {
     Multiset<K> result = multiset;
     return (result == null) ? multiset = new MultisetView() : result;
   }
@@ -1013,7 +1064,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       @Override public void clear() {
         StandardMultimap.this.clear();
       }
-      @SuppressWarnings("nullness") 
+      @SuppressWarnings("nullness")
       // if contains(o) is true, then o is not null
       @Override public boolean remove(/*@Nullable*/ Object o) {
         return contains(o) &&
@@ -1079,12 +1130,15 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     final Iterator<Map.Entry<K, Collection<V>>> asMapIterator
         = asMap().entrySet().iterator();
 
+    @Override
     public boolean hasNext() {
       return asMapIterator.hasNext();
     }
+    @Override
     public Multiset.Entry<K> next() {
       return new MultisetEntry(asMapIterator.next());
     }
+    @Override
     public void remove() {
       asMapIterator.remove();
     }
@@ -1096,9 +1150,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     public MultisetEntry(Map.Entry<K, Collection<V>> entry) {
       this.entry = entry;
     }
+    @Override
     public K getElement() {
       return entry.getKey();
     }
+    @Override
     public int getCount() {
       return entry.getValue().size();
     }
@@ -1108,12 +1164,15 @@ import org.checkerframework.checker.nullness.qual.Nullable;
   private class MultisetKeyIterator implements Iterator<K> {
     final Iterator<Map.Entry<K, V>> entryIterator = entries().iterator();
 
+    @Override
     public boolean hasNext() {
       return entryIterator.hasNext();
     }
+    @Override
     public K next() {
       return entryIterator.next().getKey();
     }
+    @Override
     public void remove() {
       entryIterator.remove();
     }
@@ -1127,7 +1186,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * <p>The iterator generated by the returned collection traverses the values
    * for one key, followed by the values of a second key, and so on.
    */
-  @SideEffectFree public Collection<V> values() {
+  @Override
+@SideEffectFree public Collection<V> values() {
     Collection<V> result = valuesCollection;
     return (result == null) ? valuesCollection = new Values() : result;
   }
@@ -1155,12 +1215,15 @@ import org.checkerframework.checker.nullness.qual.Nullable;
   private class ValueIterator implements Iterator<V> {
     final Iterator<Map.Entry<K, V>> entryIterator = createEntryIterator();
 
+    @Override
     public boolean hasNext() {
       return entryIterator.hasNext();
     }
+    @Override
     public V next() {
       return entryIterator.next().getValue();
     }
+    @Override
     public void remove() {
       entryIterator.remove();
     }
@@ -1178,7 +1241,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * multimap, taken at the time the entry is returned by a method call to the
    * collection or its iterator.
    */
-  @SideEffectFree public Collection<Map.Entry<K, V>> entries() {
+  @Override
+@SideEffectFree public Collection<Map.Entry<K, V>> entries() {
     Collection<Map.Entry<K, V>> result = entries;
     return (entries == null) ? entries = createEntries() : result;
   }
@@ -1231,14 +1295,14 @@ import org.checkerframework.checker.nullness.qual.Nullable;
   Iterator<Map.Entry<K, V>> createEntryIterator() {
     return new EntryIterator();
   }
-  
+
   /** Iterator across all key-value pairs. */
   private class EntryIterator implements Iterator<Map.Entry<K, V>> {
     final Iterator<Map.Entry<K, Collection<V>>> keyIterator;
     K key;
     Collection<V> collection;
     Iterator<V> valueIterator;
- 
+
     EntryIterator() {
       keyIterator = map.entrySet().iterator();
       if (keyIterator.hasNext()) {
@@ -1255,10 +1319,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       valueIterator = collection.iterator();
     }
 
+    @Override
     public boolean hasNext() {
       return keyIterator.hasNext() || valueIterator.hasNext();
     }
 
+    @Override
     public Map.Entry<K, V> next() {
       if (!valueIterator.hasNext()) {
         findValueIteratorAndKey();
@@ -1266,6 +1332,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       return Maps.immutableEntry(key, valueIterator.next());
     }
 
+    @Override
     public void remove() {
       valueIterator.remove();
       if (collection.isEmpty()) {
@@ -1287,7 +1354,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   private transient Map<K, Collection<V>> asMap;
 
-  public Map<K, Collection<V>> asMap() {
+  @Override
+public Map<K, Collection<V>> asMap() {
     Map<K, Collection<V>> result = asMap;
     return (result == null) ? asMap = createAsMap() : result;
   }
@@ -1318,13 +1386,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     // The following methods are included for performance.
 
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations on Java.util.Map
+    //Suppressed due to annotations on Java.util.Map
     @Pure @Override public boolean containsKey(/*@Nullable*/ Object key) {
       return submap.containsKey(key);
     }
 
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations on Java.util.AbstractMap and Map
+    //Suppressed due to annotations on Java.util.AbstractMap and Map
     @Override public /*@Nullable*/ Collection<V> get(/*@Nullable*/ Object key) {
       Collection<V> collection = submap.get(key);
       if (collection == null) {
@@ -1340,7 +1408,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     }
 
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations on Java.util.Map
+    //Suppressed due to annotations on Java.util.Map
     @Override public /*@Nullable*/ Collection<V> remove(/*@Nullable*/ Object key) {
       Collection<V> collection = submap.remove(key);
       if (collection == null) {
@@ -1381,8 +1449,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
         return submap.entrySet().contains(o);
       }
 
-      @SuppressWarnings("nullness") 
-	  //Suppressed, as if this contains o, then o is not null
+      @SuppressWarnings("nullness")
+      //Suppressed, as if this contains o, then o is not null
       @Override public boolean remove(/*@Nullable*/ Object o) {
         if (!contains(o)) {
           return false;
@@ -1399,18 +1467,21 @@ import org.checkerframework.checker.nullness.qual.Nullable;
           = submap.entrySet().iterator();
       Collection<V> collection;
 
-      public boolean hasNext() {
+      @Override
+    public boolean hasNext() {
         return delegateIterator.hasNext();
       }
 
-      public Map.Entry<K, Collection<V>> next() {
+      @Override
+    public Map.Entry<K, Collection<V>> next() {
         Map.Entry<K, Collection<V>> entry = delegateIterator.next();
         K key = entry.getKey();
         collection = entry.getValue();
         return Maps.immutableEntry(key, wrapCollection(key, collection));
       }
 
-      public void remove() {
+      @Override
+    public void remove() {
         delegateIterator.remove();
         totalSize -= collection.size();
         collection.clear();
@@ -1428,26 +1499,32 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       return (SortedMap<K, Collection<V>>) submap;
     }
 
+    @Override
     @SideEffectFree public Comparator<? super K> comparator() {
       return sortedMap().comparator();
     }
 
+    @Override
     public K firstKey() {
       return sortedMap().firstKey();
     }
 
+    @Override
     public K lastKey() {
       return sortedMap().lastKey();
     }
 
+    @Override
     public SortedMap<K, Collection<V>> headMap(K toKey) {
       return new SortedAsMap(sortedMap().headMap(toKey));
     }
 
+    @Override
     public SortedMap<K, Collection<V>> subMap(K fromKey, K toKey) {
       return new SortedAsMap(sortedMap().subMap(fromKey, toKey));
     }
 
+    @Override
     public SortedMap<K, Collection<V>> tailMap(K fromKey) {
       return new SortedAsMap(sortedMap().tailMap(fromKey));
     }

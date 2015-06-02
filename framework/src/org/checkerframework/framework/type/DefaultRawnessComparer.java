@@ -92,8 +92,8 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
         AnnotatedTypeMirror subtypeUpper   = subtype.getExtendsBound();
         AnnotatedTypeMirror supertypeUpper = supertype.getExtendsBound();
 
-        if (subtypeUpper.getKind() == TypeKind.TYPEVAR
-         && InternalUtils.isCaptured((TypeVariable) supertypeUpper.getUnderlyingType())) {
+        if (supertypeUpper.getKind() == TypeKind.TYPEVAR
+                && InternalUtils.isCaptured((TypeVariable) supertypeUpper.getUnderlyingType())) {
             supertypeUpper = ((AnnotatedTypeVariable) supertypeUpper).getUpperBound();
         }
 

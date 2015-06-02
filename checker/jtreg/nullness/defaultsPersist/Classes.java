@@ -43,6 +43,10 @@ public class Classes {
     */
 
     @TADescriptions({
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = CLASS_TYPE_PARAMETER, paramIndex=0),
+        @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = CLASS_TYPE_PARAMETER, paramIndex=0),
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom", type = CLASS_TYPE_PARAMETER, paramIndex=0),
+
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/Nullable", type = CLASS_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=0),
         @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = CLASS_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=0),
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor", type = CLASS_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=0),
@@ -52,6 +56,10 @@ public class Classes {
     }
 
     @TADescriptions({
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = CLASS_TYPE_PARAMETER, paramIndex=0),
+        @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = CLASS_TYPE_PARAMETER, paramIndex=0),
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom", type = CLASS_TYPE_PARAMETER, paramIndex=0),
+
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = CLASS_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=0),
         @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = CLASS_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=0),
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor", type = CLASS_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=0),
@@ -61,6 +69,10 @@ public class Classes {
     }
 
     @TADescriptions({
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = CLASS_TYPE_PARAMETER, paramIndex=0),
+        @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = CLASS_TYPE_PARAMETER, paramIndex=0),
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom", type = CLASS_TYPE_PARAMETER, paramIndex=0),
+
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = CLASS_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=1),
         @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = CLASS_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=1),
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor", type = CLASS_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=1),
@@ -70,9 +82,18 @@ public class Classes {
     }
 
     @TADescriptions({
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = CLASS_TYPE_PARAMETER, paramIndex=0),
+        @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = CLASS_TYPE_PARAMETER, paramIndex=0),
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom", type = CLASS_TYPE_PARAMETER, paramIndex=0),
+
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/Nullable", type = CLASS_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=0),
         @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = CLASS_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=0),
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor", type = CLASS_TYPE_PARAMETER_BOUND, paramIndex=0, boundIndex=0),
+
+
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = CLASS_TYPE_PARAMETER, paramIndex=1),
+        @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = CLASS_TYPE_PARAMETER, paramIndex=1),
+        @TADescription(annotation = "org/checkerframework/checker/nullness/qual/KeyForBottom", type = CLASS_TYPE_PARAMETER, paramIndex=1),
 
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = CLASS_TYPE_PARAMETER_BOUND, paramIndex=1, boundIndex=1),
         @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = CLASS_TYPE_PARAMETER_BOUND, paramIndex=1, boundIndex=1),

@@ -16,12 +16,14 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.io.Serializable;
 import java.util.List;
 
 import javax.annotation.Nullable;
+
+import com.google.common.annotations.GwtCompatible;
 
 /** An ordering that compares objects according to a given order. */
 @GwtCompatible(serializable = true)
@@ -36,7 +38,8 @@ final class ExplicitOrdering<T> extends Ordering<T> implements Serializable {
     this.rankMap = rankMap;
   }
 
-  /*@Pure*/ public int compare(T left, T right) {
+  /*@Pure*/ @Override
+public int compare(T left, T right) {
     return rank(left) - rank(right); // safe because both are nonnegative
   }
 

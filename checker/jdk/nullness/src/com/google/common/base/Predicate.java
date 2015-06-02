@@ -16,10 +16,11 @@
 
 package com.google.common.base;
 
-import com.google.common.annotations.GwtCompatible;
-
 import org.checkerframework.checker.nullness.qual.Nullable;
 //import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * Determines a true or false value for a given input. For example, a
@@ -59,5 +60,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * <p>Note that it is always safe <i>not</i> to override
    * {@link Object#equals}.
    */
-  @Pure boolean equals(@Nullable Object obj);
+  @Override
+@Pure boolean equals(@Nullable Object obj);
 }

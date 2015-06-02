@@ -17,13 +17,13 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.CollectionUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,18 +78,40 @@ public class QualifierDefaults {
     private final AnnotatedTypeFactory atypeFactory;
 
     private final DefaultSet absoluteDefaults = new DefaultSet();
+    private final DefaultSet untypedDefaults = new DefaultSet();
 
     /** Mapping from an Element to the source Tree of the declaration. */
     private static final int CACHE_SIZE = 300;
     protected static final Map<Element, BoundType> elementToBoundType  = CollectionUtils.createLRUCache(CACHE_SIZE);
 
 
-    /** Defaults that apply for a certain Element.
+    /**
+     * Defaults that apply for a certain Element.
      * On the one hand this is used for caching (an earlier name for the field was
      * "qualifierCache". It can also be used by type systems to set defaults for
      * certain Elements.
      */
     private final Map<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
+
+    /**
+     * List of DefaultLocations which are valid for untyped code defaults.
+     */
+    private static final DefaultLocation[] validUntypedDefaultLocations = {
+        DefaultLocation.FIELD,
+        DefaultLocation.PARAMETERS,
+        DefaultLocation.RETURNS,
+        DefaultLocation.UPPER_BOUNDS,
+        DefaultLocation.LOWER_BOUNDS
+    };
+
+    /**
+     * Returns an array of locations which are valid for the untyped value
+     * defaults.  These are simply by syntax, since an entire file is typechecked,
+     * it is not possible for local variables to be untyped.
+     */
+    public static DefaultLocation[] validLocationsForUntyped() {
+        return validUntypedDefaultLocations;
+    }
 
     /**
      * @param elements interface to Element data in the current processing environment
@@ -107,6 +129,25 @@ public class QualifierDefaults {
     public void addAbsoluteDefault(AnnotationMirror absoluteDefaultAnno, DefaultLocation location) {
         checkDuplicates(absoluteDefaults, absoluteDefaultAnno, location);
         absoluteDefaults.add(new Default(absoluteDefaultAnno, location));
+    }
+
+    /**
+     * Sets the default annotation for untyped elements.
+     */
+    public void addUntypedDefault(AnnotationMirror untypedDefaultAnno, DefaultLocation location) {
+        checkDuplicates(untypedDefaults, untypedDefaultAnno, location);
+        checkIsValidUntypedLocation(untypedDefaultAnno, location);
+
+        untypedDefaults.add(new Default(untypedDefaultAnno, location));
+    }
+
+    /**
+     * Sets the default annotation for untyped elements, with specific locations.
+     */
+    public void addUntypedDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
+        for (DefaultLocation location : locations) {
+            addUntypedDefault(absoluteDefaultAnno, location);
+        }
     }
 
     public void addAbsoluteDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
@@ -129,6 +170,22 @@ public class QualifierDefaults {
         elementDefaults.put(elem, prevset);
     }
 
+    private void checkIsValidUntypedLocation(AnnotationMirror untypedDefaultAnno, DefaultLocation location) {
+        boolean isValidUntypeLocation = false;
+        for(DefaultLocation validLoc : validLocationsForUntyped()) {
+            if (location == validLoc) {
+                isValidUntypeLocation = true;
+                break;
+            }
+        }
+
+        if (!isValidUntypeLocation) {
+            ErrorReporter.errorAbort(
+                    "Invalid untyped default location: " + location + " -> " + untypedDefaultAnno );
+        }
+
+    }
+
     private void checkDuplicates(DefaultSet previousDefaults, AnnotationMirror newAnno, DefaultLocation newLoc ) {
         final QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
 
@@ -137,7 +194,7 @@ public class QualifierDefaults {
             if (!newAnno.equals(previous.anno) && previous.location == newLoc) {
                 final AnnotationMirror previousTop = qualHierarchy.getTopAnnotation(previous.anno);
 
-                if (qualHierarchy.isSubtype(previousTop, newAnno)) {
+                if (qualHierarchy.isSubtype(newAnno, previousTop)) {
                     ErrorReporter.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
                                             + previousDefaults + " and new: " + (new Default(newAnno, newLoc)));
                 }
@@ -285,7 +342,7 @@ public class QualifierDefaults {
         }
     }
 
-    private Set<Default> fromDefaultQualifier(DefaultQualifier dq) {
+    private DefaultSet fromDefaultQualifier(DefaultQualifier dq) {
         // TODO: I want to simply write d.value(), but that doesn't work.
         // It works in other places, e.g. see handling of @SubtypeOf.
         // The hack below should probably be added to:
@@ -316,7 +373,7 @@ public class QualifierDefaults {
 
         if (atypeFactory.isSupportedQualifier(anno)) {
             EnumSet<DefaultLocation> locations = EnumSet.of(dq.locations()[0], dq.locations());
-            Set<Default> ret = new HashSet<>(locations.size());
+            DefaultSet ret = new DefaultSet();
             for (DefaultLocation loc : locations) {
                 ret.add(new Default(anno, loc));
             }
@@ -401,6 +458,14 @@ public class QualifierDefaults {
 
         for (Default def : defaults) {
             applier.apply(def);
+        }
+
+        if (untypedDefaults.size() > 0 &&
+                ElementUtils.isElementFromByteCode(annotationScope) &&
+                atypeFactory.declarationFromElement(annotationScope) == null) {
+            for (Default def : untypedDefaults) {
+                applier.apply(def);
+            }
         }
 
         for (Default def : absoluteDefaults) {

@@ -16,12 +16,12 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.Comparator;
 import java.util.SortedMap;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * A sorted map which forwards all its method calls to another sorted map.
@@ -39,27 +39,33 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   @Override protected abstract SortedMap<K, V> delegate();
 
-  @SideEffectFree public Comparator<? super K> comparator() {
+  @Override
+@SideEffectFree public Comparator<? super K> comparator() {
     return delegate().comparator();
   }
 
-  public K firstKey() {
+  @Override
+public K firstKey() {
     return delegate().firstKey();
   }
 
-  public SortedMap<K, V> headMap(K toKey) {
+  @Override
+public SortedMap<K, V> headMap(K toKey) {
     return delegate().headMap(toKey);
   }
 
-  public K lastKey() {
+  @Override
+public K lastKey() {
     return delegate().lastKey();
   }
 
-  public SortedMap<K, V> subMap(K fromKey, K toKey) {
+  @Override
+public SortedMap<K, V> subMap(K fromKey, K toKey) {
     return delegate().subMap(fromKey, toKey);
   }
 
-  public SortedMap<K, V> tailMap(K fromKey) {
+  @Override
+public SortedMap<K, V> tailMap(K fromKey) {
     return delegate().tailMap(fromKey);
   }
 }

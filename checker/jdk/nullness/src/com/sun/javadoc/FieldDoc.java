@@ -3,7 +3,7 @@ package com.sun.javadoc;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
-public abstract interface FieldDoc extends MemberDoc {
+public interface FieldDoc extends MemberDoc {
   public abstract com.sun.javadoc.Type type();
   @Pure public abstract boolean isTransient();
   @Pure public abstract boolean isVolatile();

@@ -16,12 +16,13 @@
 
 package com.google.common.base;
 
-import com.google.common.annotations.GwtCompatible;
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 import java.util.Arrays;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
 
 /**
  * Helper functions that can operate on any {@code Object}.

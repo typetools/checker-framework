@@ -26,9 +26,11 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultForInUncheckedBytecode;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.DefaultQualifierInUncheckedBytecode;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.Unqualified;
@@ -51,6 +53,7 @@ import org.checkerframework.javacutil.TreeUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -343,38 +346,54 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defs = new QualifierDefaults(elements, this);
-
-        // TODO: this should be per qualifier hierarchy.
         boolean foundDefaultOtherwise = false;
 
+        // TODO: Verify that only one default per location type is present.
         for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
-            boolean hasDefaultFor = false;
             if (defaultFor != null) {
-                defs.addAbsoluteDefaults(AnnotationUtils.fromClass(elements,qual),
-                        defaultFor.value());
-                hasDefaultFor = true;
-                for (DefaultLocation dl : defaultFor.value()) {
-                    if (dl == DefaultLocation.OTHERWISE) {
-                        foundDefaultOtherwise = true;
-                    }
-                }
+                final DefaultLocation [] locations = defaultFor.value();
+                defs.addAbsoluteDefaults(AnnotationUtils.fromClass(elements,qual), locations);
+
+                foundDefaultOtherwise = Arrays.asList(locations).contains(DefaultLocation.OTHERWISE);
             }
 
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
-                if (hasDefaultFor) {
+                if (defaultFor != null) {
                     // A type qualifier should either have a DefaultFor or
                     // a DefaultQualifierInHierarchy annotation
                     ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
                             "qualifier has both @DefaultFor and @DefaultQualifierInHierarchy annotations: " +
                             qual.getCanonicalName());
-                // } else if (foundDefaultOtherwise) {
-                    // TODO: raise an error once we know whether the previous
-                    // occurrence was in the same hierarchy
                 } else {
                     defs.addAbsoluteDefault(AnnotationUtils.fromClass(elements, qual),
                             DefaultLocation.OTHERWISE);
                     foundDefaultOtherwise = true;
+                }
+            }
+
+            // Add defaults for untyped code if conservative untyped flag is passed.
+            if (!checker.hasOption("unsafeDefaultsForUncheckedBytecode")) {
+                DefaultForInUncheckedBytecode defaultForUntyped = qual.getAnnotation(DefaultForInUncheckedBytecode.class);
+
+                if (defaultForUntyped != null) {
+                    defs.addUntypedDefaults(AnnotationUtils.fromClass(elements, qual),
+                            defaultForUntyped.value());
+                }
+
+                if (qual.getAnnotation(DefaultQualifierInUncheckedBytecode.class) != null) {
+                    if (defaultForUntyped != null) {
+                        // A type qualifier should either have a DefaultForInUncheckedBytecode or
+                        // a DefaultQualifierInUncheckedBytecode annotation.
+                        ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
+                                "qualifier has both @DefaultForInUncheckedBytecode and @DefaultQualifierInUncheckedBytecode annotations: " +
+                                qual.getCanonicalName());
+                    } else {
+                        for (DefaultLocation location : QualifierDefaults.validLocationsForUntyped()) {
+                            defs.addUntypedDefault(AnnotationUtils.fromClass(elements, qual),
+                                    location);
+                        }
+                    }
                 }
             }
         }
@@ -445,7 +464,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected IdentityHashMap<Tree, Store> regularExitStores;
 
     /**
-     * A mapping from methods to their a list with all return statements and the
+     * A mapping from methods to a list with all return statements and the
      * corresponding store.
      */
     protected IdentityHashMap<MethodTree, List<Pair<ReturnNode, TransferResult<Value, Store>>>> returnStatementStores;

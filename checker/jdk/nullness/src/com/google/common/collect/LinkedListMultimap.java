@@ -16,12 +16,15 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Multisets.setCountImpl;
+import static java.util.Collections.unmodifiableList;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+//import javax.annotation.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -32,10 +35,8 @@ import java.util.AbstractMap;
 import java.util.AbstractSequentialList;
 import java.util.AbstractSet;
 import java.util.Collection;
-import static java.util.Collections.unmodifiableList;
 import java.util.HashSet;
 import java.util.Iterator;
-
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -43,8 +44,9 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-//import javax.annotation.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 
 /**
  * An implementation of {@code ListMultimap} that supports deterministic
@@ -93,7 +95,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * @author Mike Bostock
  */
-@SuppressWarnings("nullness:generic.argument") 
+@SuppressWarnings("nullness:generic.argument")
 @GwtCompatible(serializable = true)
     public final class LinkedListMultimap<K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object>
     implements ListMultimap<K, V>, Serializable {
@@ -185,7 +187,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
   @SuppressWarnings("nullness")
   // tail.next = node will not dereference, as list is not empty
   private Node<K, V> addNode(
-			     /*@Nullable*/ K key, V value, /*@Nullable*/ Node<K, V> nextSibling) {
+          /*@Nullable*/ K key, V value, /*@Nullable*/ Node<K, V> nextSibling) {
     Node<K, V> node = new Node<K, V>(key, value);
     if (head == null) { // empty list
       head = tail = node;
@@ -279,9 +281,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     /*@Nullable*/ Node<K, V> next = head;
     /*@Nullable*/ Node<K, V> current;
 
+    @Override
     public boolean hasNext() {
       return next != null;
     }
+    @Override
     @SuppressWarnings("nullness")
     // checkElements guarantees next is not null.
     public Node<K, V> next() {
@@ -290,6 +294,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       next = next.next;
       return current;
     }
+    @Override
     @SuppressWarnings("nullness")
     // checkState guarantees current is not null
     public void remove() {
@@ -305,11 +310,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     /*@Nullable*/ Node<K, V> next = head;
     /*@Nullable*/ Node<K, V> current;
 
+    @Override
     public boolean hasNext() {
       return next != null;
     }
+    @Override
     @SuppressWarnings("nullness")
-	// checkElement guarantees next is not null
+    // checkElement guarantees next is not null
     public K next() {
       checkElement(next);
       current = next;
@@ -319,8 +326,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       } while ((next != null) && !seenKeys.add(next.key));
       return current.key;
     }
+    @Override
     @SuppressWarnings("nullness")
-	//checkState guarantees current is not null
+    //checkState guarantees current is not null
     public void remove() {
       checkState(current != null);
       removeAllNodes(current.key);
@@ -338,7 +346,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
     /** Constructs a new iterator over all values for the specified key. */
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations of Java.util.Map
+    //Suppressed due to annotations of Java.util.Map
     ValueForKeyIterator(@Nullable Object key) {
       this.key = key;
       next = keyToKeyHead.get(key);
@@ -354,7 +362,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
      * @throws IndexOutOfBoundsException if index is invalid
      */
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations on Java.util.Map
+    //Suppressed due to annotations on Java.util.Map
     public ValueForKeyIterator(@Nullable Object key, int index) {
       int size = keyCount.count(key);
       Preconditions.checkPositionIndex(index, size);
@@ -374,12 +382,14 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       current = null;
     }
 
+    @Override
     public boolean hasNext() {
       return next != null;
     }
 
+    @Override
     @SuppressWarnings("nullness")
-	//Suppressed as checkElement guarantees next is not null
+    //Suppressed as checkElement guarantees next is not null
     public V next() {
       checkElement(next);
       previous = current = next;
@@ -388,12 +398,14 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       return current.value;
     }
 
+    @Override
     public boolean hasPrevious() {
       return previous != null;
     }
 
+    @Override
     @SuppressWarnings("nullness")
-	//Suppressed as checkElement guarantees previous is not null.
+    //Suppressed as checkElement guarantees previous is not null.
     public V previous() {
       checkElement(previous);
       next = current = previous;
@@ -402,16 +414,19 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       return current.value;
     }
 
+    @Override
     public int nextIndex() {
       return nextIndex;
     }
 
+    @Override
     public int previousIndex() {
       return nextIndex - 1;
     }
 
+    @Override
     @SuppressWarnings("nullness")
-	//checkState guarantees current is not null
+    //checkState guarantees current is not null
     public void remove() {
       checkState(current != null);
       if (current != next) { // removing next element
@@ -424,13 +439,15 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       current = null;
     }
 
+    @Override
     @SuppressWarnings("nullness")
-	//checkState guarantees current is not null
+    //checkState guarantees current is not null
     public void set(V value) {
       checkState(current != null);
       current.value = value;
     }
 
+    @Override
     public void add(V value) {
       previous = addNode((K) key, value, next);
       nextIndex++;
@@ -440,21 +457,25 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   // Query Operations
 
-  @Pure public int size() {
+  @Override
+@Pure public int size() {
     return keyCount.size();
   }
 
-  @Pure public boolean isEmpty() {
+  @Override
+@Pure public boolean isEmpty() {
     return head == null;
   }
 
-  @SuppressWarnings("nullness")
+  @Override
+@SuppressWarnings("nullness")
       //Suppressed due to annotations on Java.util.Map
   @Pure public boolean containsKey(@Nullable Object key) {
     return keyToKeyHead.containsKey(key);
   }
 
-  @Pure public boolean containsValue(@Nullable Object value) {
+  @Override
+@Pure public boolean containsValue(@Nullable Object value) {
     for (Iterator<Node<K, V>> i = new NodeIterator(); i.hasNext();) {
       if (Objects.equal(i.next().value, value)) {
         return true;
@@ -463,7 +484,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     return false;
   }
 
-  @Pure public boolean containsEntry(@Nullable Object key, @Nullable Object value) {
+  @Override
+@Pure public boolean containsEntry(@Nullable Object key, @Nullable Object value) {
     for (Iterator<V> i = new ValueForKeyIterator(key); i.hasNext();) {
       if (Objects.equal(i.next(), value)) {
         return true;
@@ -481,12 +503,14 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * @param value value to store in the multimap
    * @return {@code true} always
    */
-  public boolean put(K key, V value) {
+  @Override
+public boolean put(K key, V value) {
     addNode(key, value, null);
     return true;
   }
 
-  public boolean remove(@Nullable Object key, @Nullable Object value) {
+  @Override
+public boolean remove(@Nullable Object key, @Nullable Object value) {
     Iterator<V> values = new ValueForKeyIterator(key);
     while (values.hasNext()) {
       if (Objects.equal(values.next(), value)) {
@@ -499,7 +523,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   // Bulk Operations
 
-  public boolean putAll(K key, Iterable<? extends V> values) {
+  @Override
+public boolean putAll(K key, Iterable<? extends V> values) {
     boolean changed = false;
     for (V value : values) {
       changed |= put(key, value);
@@ -507,7 +532,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     return changed;
   }
 
-  public boolean putAll(Multimap<? extends K, ? extends V> multimap) {
+  @Override
+public boolean putAll(Multimap<? extends K, ? extends V> multimap) {
     boolean changed = false;
     for (Entry<? extends K, ? extends V> entry : multimap.entries()) {
       changed |= put(entry.getKey(), entry.getValue());
@@ -525,7 +551,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * <p>The returned list is immutable and implements
    * {@link java.util.RandomAccess}.
    */
-  public List<V> replaceValues(K key, Iterable<? extends V> values) {
+  @Override
+public List<V> replaceValues(K key, Iterable<? extends V> values) {
     List<V> oldValues = getCopy(key);
     ListIterator<V> keyValues = new ValueForKeyIterator(key);
     Iterator<? extends V> newValues = values.iterator();
@@ -560,13 +587,15 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * <p>The returned list is immutable and implements
    * {@link java.util.RandomAccess}.
    */
-  public List<V> removeAll(@Nullable Object key) {
+  @Override
+public List<V> removeAll(@Nullable Object key) {
     List<V> oldValues = getCopy(key);
     removeAllNodes(key);
     return oldValues;
   }
 
-  public void clear() {
+  @Override
+public void clear() {
     head = null;
     tail = null;
     keyCount.clear();
@@ -585,7 +614,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    *
    * <p>The returned list is not serializable and does not have random access.
    */
-  public List<V> get(final K key) {
+  @Override
+public List<V> get(final K key) {
     return new AbstractSequentialList<V>() {
       @Pure @Override public int size() {
         return keyCount.count(key);
@@ -604,7 +634,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   private transient volatile Set<K> keySet;
 
-  @SideEffectFree public Set<K> keySet() {
+  @Override
+@SideEffectFree public Set<K> keySet() {
     if (keySet == null) {
       keySet = new AbstractSet<K>() {
         @Pure @Override public int size() {
@@ -623,7 +654,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   private transient volatile Multiset<K> keys;
 
-  public Multiset<K> keys() {
+  @Override
+public Multiset<K> keys() {
     if (keys == null) {
       keys = new MultisetView();
     }
@@ -640,26 +672,32 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     @Override public Iterator<K> iterator() {
       final Iterator<Node<K, V>> nodes = new NodeIterator();
       return new Iterator<K>() {
+        @Override
         public boolean hasNext() {
           return nodes.hasNext();
         }
+        @Override
         public K next() {
           return nodes.next().key;
         }
+        @Override
         public void remove() {
           nodes.remove();
         }
       };
     }
 
+    @Override
     public int count(@Nullable Object key) {
       return keyCount.count(key);
     }
 
+    @Override
     public int add(K key, int occurrences) {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public int remove(@Nullable Object key, int occurrences) {
       checkArgument(occurrences >= 0);
       int oldCount = count(key);
@@ -671,10 +709,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       return oldCount;
     }
 
+    @Override
     public int setCount(K element, int count) {
       return setCountImpl(this, element, count);
     }
 
+    @Override
     public boolean setCount(K element, int oldCount, int newCount) {
       return setCountImpl(this, element, oldCount, newCount);
     }
@@ -687,10 +727,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
       return Iterators.retainAll(iterator(), c);
     }
 
+    @Override
     @SideEffectFree public Set<K> elementSet() {
       return keySet();
     }
 
+    @Override
     @SideEffectFree public Set<Entry<K>> entrySet() {
       return new AbstractSet<Entry<K>>() {
         @Pure @Override public int size() {
@@ -700,20 +742,25 @@ import org.checkerframework.checker.nullness.qual.Nullable;
         @Override public Iterator<Entry<K>> iterator() {
           final Iterator<K> keyIterator = new DistinctKeyIterator();
           return new Iterator<Entry<K>>() {
+            @Override
             public boolean hasNext() {
               return keyIterator.hasNext();
             }
+            @Override
             public Entry<K> next() {
               final K key = keyIterator.next();
               return new Multisets.AbstractEntry<K>() {
+                @Override
                 public K getElement() {
                   return key;
                 }
+                @Override
                 public int getCount() {
                   return keyCount.count(key);
                 }
               };
             }
+            @Override
             public void remove() {
               keyIterator.remove();
             }
@@ -743,7 +790,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * <p>The iterator generated by the returned collection traverses the values
    * in the order they were added to the multimap.
    */
-  @SideEffectFree public Collection<V> values() {
+  @Override
+@SideEffectFree public Collection<V> values() {
     if (valuesCollection == null) {
       valuesCollection = new AbstractCollection<V>() {
         @Pure @Override public int size() {
@@ -752,12 +800,15 @@ import org.checkerframework.checker.nullness.qual.Nullable;
         @Override public Iterator<V> iterator() {
           final Iterator<Node<K, V>> nodes = new NodeIterator();
           return new Iterator<V>() {
+            @Override
             public boolean hasNext() {
               return nodes.hasNext();
             }
+            @Override
             public V next() {
               return nodes.next().value;
             }
+            @Override
             public void remove() {
               nodes.remove();
             }
@@ -785,7 +836,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
    * subsequent {@code setValue()} call won't update the multimap but will lead
    * to a revised value being returned by {@code getValue()}.
    */
-  @SideEffectFree public Collection<Entry<K, V>> entries() {
+  @Override
+@SideEffectFree public Collection<Entry<K, V>> entries() {
     if (entries == null) {
       entries = new AbstractCollection<Entry<K, V>>() {
         @Pure @Override public int size() {
@@ -795,10 +847,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
         @Override public Iterator<Entry<K, V>> iterator() {
           final Iterator<Node<K, V>> nodes = new NodeIterator();
           return new Iterator<Entry<K, V>>() {
+            @Override
             public boolean hasNext() {
               return nodes.hasNext();
             }
 
+            @Override
             public Entry<K, V> next() {
               final Node<K, V> node = nodes.next();
               return new AbstractMapEntry<K, V>() {
@@ -816,6 +870,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
               };
             }
 
+            @Override
             public void remove() {
               nodes.remove();
             }
@@ -837,10 +892,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
     @Override public Iterator<Entry<K, Collection<V>>> iterator() {
       final Iterator<K> keyIterator = new DistinctKeyIterator();
       return new Iterator<Entry<K, Collection<V>>>() {
+        @Override
         public boolean hasNext() {
           return keyIterator.hasNext();
         }
 
+        @Override
         public Entry<K, Collection<V>> next() {
           final K key = keyIterator.next();
           return new AbstractMapEntry<K, Collection<V>>() {
@@ -854,6 +911,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
           };
         }
 
+        @Override
         public void remove() {
           keyIterator.remove();
         }
@@ -863,7 +921,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
   private transient volatile Map<K, Collection<V>> map;
 
-  public Map<K, Collection<V>> asMap() {
+  @Override
+public Map<K, Collection<V>> asMap() {
     if (map == null) {
       map = new AbstractMap<K, Collection<V>>() {
         volatile Set<Entry<K, Collection<V>>> entrySet;
@@ -882,7 +941,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
         }
 
         @SuppressWarnings({"unchecked","nullness"})
-	// Suppressed to override Java.util.Map.get
+        // Suppressed to override Java.util.Map.get
         @Override public /*@Nullable*/ Collection<V> get(@Nullable Object key) {
           Collection<V> collection = LinkedListMultimap.this.get((K) key);
           return collection.isEmpty() ? null : collection;

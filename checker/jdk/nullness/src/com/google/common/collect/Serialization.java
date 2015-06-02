@@ -16,9 +16,6 @@
 
 package com.google.common.collect;
 
-import com.google.common.annotations.GwtCompatible;
-import com.google.common.annotations.GwtIncompatible;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -26,7 +23,8 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.annotations.GwtIncompatible;
 
 /**
  * Provides static methods for serializing collection classes.
@@ -243,7 +241,7 @@ final class Serialization {
     }
 
     @SuppressWarnings("nullness")
-	//Suppressed due to annotations on Field
+    //Suppressed due to annotations on Field
     @GwtIncompatible("java.lang.reflect.Field")
     void set(T instance, Object value) {
       try {

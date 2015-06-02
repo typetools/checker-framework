@@ -1,18 +1,17 @@
 package java.lang;
 
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.Raw;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.checker.initialization.qual.*;
-
-import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 
 public class Thread implements Runnable {
   public enum State {
       NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING,TERMINATED;
   }
-  public static abstract interface UncaughtExceptionHandler{
+  public static interface UncaughtExceptionHandler{
     public abstract void uncaughtException(Thread a1, Throwable a2);
   }
   public final static int MIN_PRIORITY = 1;
@@ -31,7 +30,8 @@ public class Thread implements Runnable {
   public static void sleep(long a1) throws InterruptedException { throw new RuntimeException("skeleton method"); }
   public static void sleep(long a1, int a2) throws InterruptedException { throw new RuntimeException("skeleton method"); }
   public synchronized void start() { throw new RuntimeException("skeleton method"); }
-  public void run() { throw new RuntimeException("skeleton method"); }
+  @Override
+public void run() { throw new RuntimeException("skeleton method"); }
   public final void stop() { throw new RuntimeException("skeleton method"); }
   public final synchronized void stop(Throwable a1) { throw new RuntimeException("skeleton method"); }
   public void interrupt() { throw new RuntimeException("skeleton method"); }
@@ -54,6 +54,7 @@ public class Thread implements Runnable {
   public final void setDaemon(@UnknownInitialization @Raw Thread this, boolean a1) { throw new RuntimeException("skeleton method"); }
   @Pure public final boolean isDaemon() { throw new RuntimeException("skeleton method"); }
   public final void checkAccess() { throw new RuntimeException("skeleton method"); }
+  @Override
   @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   public @Nullable ClassLoader getContextClassLoader() { throw new RuntimeException("skeleton method"); }
   public void setContextClassLoader(@Nullable ClassLoader a1) { throw new RuntimeException("skeleton method"); }
