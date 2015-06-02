@@ -1,0 +1,30 @@
+// Test case for Issue 314:
+// https://code.google.com/p/checker-framework/issues/detail?id=314
+
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.List;
+
+class Issue314 {
+    <T extends @NonNull Object> List<T> m1(List<@NonNull T> l1) {
+        return l1;
+    }
+
+    <T extends @Nullable Object> List<T> m2(List<@NonNull T> l1) {
+        //:: error: (return.type.incompatible)
+        return l1;
+    }
+
+    class Also<S extends @NonNull Object> {
+        S f1;
+        @NonNull S f2;
+
+        {
+            //:: error: (assignment.type.incompatible)
+            f1 = f2;
+            //:: error: (assignment.type.incompatible)
+            f2 = f1;
+        }
+    }
+}
