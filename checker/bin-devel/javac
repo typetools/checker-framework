@@ -20,7 +20,12 @@ esac
 binaryDir="${mydir}"/../dist
 
 #Langtools bin dir
-ltBinDir="${mydir}"/../../../jsr308-langtools/build/classes
+if [ -z "$LT_BIN" ]; then
+  ltBinDir="${mydir}"/../../../jsr308-langtools/build/classes
+else
+  ltBinDir="$LT_BIN"
+fi
+
 jdkPaths="${mydir}"/../jdk/annotated
 
 cfDir="${mydir}"/../..
