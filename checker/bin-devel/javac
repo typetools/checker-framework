@@ -23,7 +23,11 @@ binaryDir="${mydir}"/../dist
 if [ -z "$LT_BIN" ]; then
   ltBinDir="${mydir}"/../../../jsr308-langtools/build/classes
 else
-  ltBinDir="$LT_BIN"
+  if [ "$LT_BIN" = "" ]; then
+     ltBinDir="${mydir}"/../../../jsr308-langtools/build/classes
+  else
+     ltBinDir="$LT_BIN"
+  fi
 fi
 
 jdkPaths="${mydir}"/../jdk/annotated
