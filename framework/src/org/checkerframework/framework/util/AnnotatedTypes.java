@@ -971,7 +971,20 @@ public class AnnotatedTypes {
                         }
                     }
                 }
-                addAnnotationsImpl(elements, atypeFactory, adtArg, visited, dTypesArg);
+
+                //TODO: If we have a list of raw types, or null/raw types this code can create an empty set of
+                //TODO: type arguments (dTypesArg) below.  This will then cause an exception.
+                //TODO: To test this: make the conditional always true and run the nullness checker on
+                //TODO: jdk/nullness/src/java/lang/ref/ReferenceQueue.java
+                //TODO: I think this will only happen when we "fix-up" the lub type with a wildcard
+                //TODO: in which case, the type annotator will add the annotation from the bound of
+                //TODO: the type parameter for which the wildcard is an argument and we will NOT have an
+                //TODO: unannotated type.  That said, we might want to just call that here to ensure
+                //TODO: that when this is called in places that are not followed by annotate implicit
+                //TODO: the type is fully annotated
+                if (!dTypesArg.isEmpty()) {
+                    addAnnotationsImpl(elements, atypeFactory, adtArg, visited, dTypesArg);
+                }
             }
         } else if (alub.getKind() == TypeKind.ARRAY) {
             AnnotatedArrayType aat = (AnnotatedArrayType) alub;
