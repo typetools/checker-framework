@@ -1,0 +1,29 @@
+package gnu.getopt;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+public class Getopt extends Object {
+    protected @Nullable String optarg;
+    protected @Nullable String nextchar;
+    protected LongOpt @Nullable [] long_options;
+
+    public
+    Getopt(String progname, String[] argv, String optstring,
+       LongOpt @Nullable [] long_options);
+
+    public
+    Getopt(String progname, String[] argv, String optstring,
+       LongOpt @Nullable [] long_options, boolean long_only);
+}
+
+public class LongOpt extends Object {
+
+    protected @Nullable StringBuffer flag;
+
+    public
+    LongOpt(String name, int has_arg,
+        @Nullable StringBuffer flag, int val) throws IllegalArgumentException;
+
+    public
+    @Nullable StringBuffer getFlag();
+}

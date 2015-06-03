@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="9.5cm"
+   height="4.5cm"
+   viewBox="146 238 365 175"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.5 r10040"
+   sodipodi:docname="formatter-hierarchy.svg">
+  <metadata
+     id="metadata104">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs102" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="2560"
+     inkscape:window-height="1551"
+     id="namedview100"
+     showgrid="false"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:zoom="4.1115322"
+     inkscape:cx="127.68962"
+     inkscape:cy="62.182749"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g40" />
+  <g
+     id="g4">
+    <rect
+       style="fill: #ffffff"
+       x="349.452"
+       y="304"
+       width="160"
+       height="42"
+       id="rect6" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x="349.452"
+       y="304"
+       width="160"
+       height="42"
+       id="rect8" />
+    <text
+       font-size="16"
+       style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal"
+       x="429.452"
+       y="329.85"
+       id="text10">
+      <tspan
+         x="429.452"
+         y="329.85"
+         id="tspan12">@InvalidFormat</tspan>
+    </text>
+  </g>
+  <g
+     id="g14">
+    <rect
+       style="fill: #ffffff"
+       x="250.274"
+       y="239.028"
+       width="160"
+       height="42"
+       id="rect16" />
+    <rect
+       style="fill:none;fill-opacity:0;stroke-width:2;stroke:#a2a2a2;stroke-opacity:1"
+       x="250.274"
+       y="239.028"
+       width="160"
+       height="42"
+       id="rect18" />
+    <text
+       font-size="16"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#a2a2a2;font-family:courier new;fill-opacity:1"
+       x="330.27399"
+       y="264.87799"
+       id="text20">
+      <tspan
+         x="330.27399"
+         y="264.87799"
+         id="tspan22"
+         style="fill:#a2a2a2;fill-opacity:1">@UnknownFormat</tspan>
+    </text>
+  </g>
+  <g
+     id="g24">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="429.452"
+       y1="304"
+       x2="393.6"
+       y2="288.104"
+       id="line26" />
+    <polygon
+       style="fill: #000000"
+       points="396.437,281.705 380.801,282.43 390.763,294.504 "
+       id="polygon28" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="396.437,281.705 380.801,282.43 390.763,294.504 "
+       id="polygon30" />
+  </g>
+  <g
+     id="g32">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="227.446"
+       y1="300"
+       x2="259.858"
+       y2="287.4"
+       id="line34" />
+    <polygon
+       style="fill: #000000"
+       points="262.394,293.925 272.907,282.328 257.322,280.876 "
+       id="polygon36" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="262.394,293.925 272.907,282.328 257.322,280.876 "
+       id="polygon38" />
+  </g>
+  <g
+     id="g40">
+    <rect
+       style="fill: #ffffff"
+       x="250"
+       y="369.95"
+       width="160"
+       height="42"
+       id="rect42" />
+    <rect
+       style="fill:none;fill-opacity:0;stroke-width:2;stroke:#a2a2a2;stroke-opacity:1"
+       x="250"
+       y="369.95"
+       width="160"
+       height="42"
+       id="rect44" />
+    <text
+       font-size="16"
+       style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal"
+       x="330"
+       y="395.8"
+       id="text46">
+      <tspan
+         x="330"
+         y="395.8"
+         id="tspan48"
+         style="fill:#a2a2a2;fill-opacity:1">@FormatBottom</tspan>
+    </text>
+  </g>
+  <g
+     id="g50">
+    <rect
+       style="fill: #ffffff"
+       x="155.446"
+       y="308"
+       width="160"
+       height="42"
+       id="rect52" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x="155.446"
+       y="308"
+       width="160"
+       height="42"
+       id="rect54" />
+    <text
+       font-size="16"
+       style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal"
+       x="235.446"
+       y="333.85"
+       id="text56">
+      <tspan
+         x="235.446"
+         y="333.85"
+         id="tspan58" />
+    </text>
+  </g>
+  <g
+     id="g60">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="296.424"
+       y1="368.951"
+       x2="281.569"
+       y2="359.219"
+       id="line62" />
+    <polygon
+       style="fill: #000000"
+       points="285.406,353.364 269.859,351.547 277.733,365.074 "
+       id="polygon64" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="285.406,353.364 269.859,351.547 277.733,365.074 "
+       id="polygon66" />
+  </g>
+  <g
+     id="g68">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="363.179"
+       y1="368.948"
+       x2="383.772"
+       y2="355.292"
+       id="line70" />
+    <polygon
+       style="fill: #000000"
+       points="387.641,361.126 395.44,347.555 379.903,349.458 "
+       id="polygon72" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="387.641,361.126 395.44,347.555 379.903,349.458 "
+       id="polygon74" />
+  </g>
+  <g
+     id="g76">
+    <rect
+       style="fill: #ffffff"
+       x="151.446"
+       y="304"
+       width="160"
+       height="42"
+       id="rect78" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x="151.446"
+       y="304"
+       width="160"
+       height="42"
+       id="rect80" />
+    <text
+       font-size="16"
+       style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal"
+       x="231.446"
+       y="329.85"
+       id="text82">
+      <tspan
+         x="231.446"
+         y="329.85"
+         id="tspan84" />
+    </text>
+  </g>
+  <g
+     id="g86">
+    <rect
+       style="fill: #ffffff"
+       x="147.446"
+       y="300"
+       width="160"
+       height="42"
+       id="rect88" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x="147.446"
+       y="300"
+       width="160"
+       height="42"
+       id="rect90" />
+    <text
+       font-size="16"
+       style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal"
+       x="227.446"
+       y="325.85"
+       id="text92">
+      <tspan
+         x="227.446"
+         y="325.85"
+         id="tspan94">@Format(...,)</tspan>
+    </text>
+  </g>
+  <text
+     font-size="12.8"
+     style="fill: #000000;text-anchor:start;font-family:courier new;font-style:normal;font-weight:normal"
+     x="227.446"
+     y="321"
+     id="text96">
+    <tspan
+       x="227.446"
+       y="321"
+       id="tspan98" />
+  </text>
+</svg>
