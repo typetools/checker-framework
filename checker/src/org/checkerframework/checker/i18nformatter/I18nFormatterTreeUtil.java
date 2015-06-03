@@ -1,22 +1,8 @@
 package org.checkerframework.checker.i18nformatter;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.NullType;
-import javax.lang.model.type.PrimitiveType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.SimpleElementVisitor7;
-import javax.lang.model.util.SimpleTypeVisitor7;
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
 
 import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
@@ -43,6 +29,24 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.NullType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.SimpleElementVisitor7;
+import javax.lang.model.util.SimpleTypeVisitor7;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -156,14 +160,14 @@ public class I18nFormatterTreeUtil {
     /**
      * Reports an error. Takes a {@link Result} to report the location.
      */
-    public final <E> void failure(Result<E> res, /* @CompilerMessageKey */String msg, Object... args) {
+    public final <E> void failure(Result<E> res, /*@CompilerMessageKey*/ String msg, Object... args) {
         checker.report(org.checkerframework.framework.source.Result.failure(msg, args), ((ResultImpl<E>) res).location);
     }
 
     /**
      * Reports an warning. Takes a {@link Result} to report the location.
      */
-    public final <E> void warning(Result<E> res, /* @CompilerMessageKey */String msg, Object... args) {
+    public final <E> void warning(Result<E> res, /*@CompilerMessageKey*/ String msg, Object... args) {
         checker.report(org.checkerframework.framework.source.Result.warning(msg, args), ((ResultImpl<E>) res).location);
     }
 
