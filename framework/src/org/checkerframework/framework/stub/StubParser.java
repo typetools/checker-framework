@@ -357,6 +357,7 @@ public class StubParser {
                     }
                 }
             }
+            warn = warn || debugStubParser;
             if (warn) {
                 stubWarning("Type not found: " + typeName);
             }

@@ -227,9 +227,11 @@ import static sparta.checkers.quals.FlowPermission.*;
 \subsubsection{If you have access to the Java source code\label{stub-creating-with-source}}
 
 Every Java file is a stub file.  If you have access to the Java file, then
-you can use the Java file as the stub file, without removing
-any of the parts that the stub file format permits you to.  Just add
+you can use the Java file as the stub file.  Just add
 annotations to the signatures, leaving the method bodies unchanged.
+The stub file parser silently ignores any annotations that it cannot
+resolve to a type, so don't forget the \<import> statement.
+
 Optionally (but highly recommended!), run the type-checker to verify that
 your annotations are correct.  When you run the type-checker on your
 annotations, there should not be any stub file that also contains
@@ -244,8 +246,9 @@ annotations are in a format that the library maintainers can even
 incorporate.
 
 The downside of this approach is that the stub files are larger.  This can
-slow down parsing.  Furthermore, a programmer must search the stub file
-for a given method rather than just skimming a few pages of method signatures.
+slow down parsing.
+% Furthermore, a programmer must search the stub file
+% for a given method rather than just skimming a few pages of method signatures.
 
 
 \subsubsection{If you do not have access to the Java source code\label{stub-creating-without-source}}
@@ -299,18 +302,34 @@ if an entry could not be found.
 \end{enumerate}
 
 
-Two command-line options can be used to debug the behavior of stub
-files:
-\<-AstubWarnIfNotFound> warns if a stub file entry could not be
-found. Annotations on unknown classes and methods are silently
-ignored. Use this option to ensure that all stub file entries could be
-resolved.
-\<-AstubDebug> outputs debug messages while parsing stub files.
-
-
 \subsection{Troubleshooting stub libraries\label{stub-troubleshooting}}
 
-An error is issued if a stub file has a typo or the API method does not
+
+\subsubsection{Type-checking does not yield the expected results}
+
+By default, the stub parser silently ignores
+annotations on unknown classes and methods.
+The stub parser also silently ignores unknown annotations, so don't forget to
+\<import> any annotations.  
+
+Use command-line option 
+\<-AstubWarnIfNotFound> to warn whenever some element of a stub file cannot
+be found.
+
+The \<@NoStubParserWarning> annotation on a package or type in a stub file
+overrides the \<-AstubWarnIfNotFound> command-line option, and no warning
+will be issued.
+
+Use command-line option \<-AstubDebug> to output debugging messages while
+parsing stub files, including about unknown classes, methods, and
+annotations.  This overrides the \<@NoStubParserWarning> annotation.
+
+
+
+\subsubsection{Problems parsing stub libraries}
+
+When using command-line option \<-AstubWarnIfNotFound>,
+an error is issued if a stub file has a typo or the API method does not
 exist.
 
 Fix this error by removing the extra L in the method name:
