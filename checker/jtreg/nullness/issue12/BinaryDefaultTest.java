@@ -2,6 +2,7 @@
  * @test
  * @summary Test the defaulting mechanism for nullness in binary files.
  *
+ * @ignore
  * @compile -XDrawDiagnostics -Xlint:unchecked BinaryDefaultTestBinary.java
  * @compile/fail/ref=BinaryDefaultTest.out -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker BinaryDefaultTest.java
  */
