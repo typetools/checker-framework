@@ -478,19 +478,21 @@ defaulting rules apply.
 
 If the checker was run during the compiler execution that created the
 \<.class> file (and the qualifier hierarchy has both a top and a bottom
-qualifier, see Section~\ref{top-qualifier}), then there is no need for
+qualifier, see Section~\ref{bottom-and-top-qualifier}), then there is no need for
 defaults:  the \<.class> file has an explicit qualifier at each type use.
-Furthermore, unless warnings were suppressed, those qualifiers are
-guaranteed to be correct.
+(Furthermore, unless warnings were suppressed, those qualifiers are
+guaranteed to be correct.)
 When you are performing pluggable type-checking,
 it is best to ensure that the compiler only reads such \<.class> files.
 
 If the checker was not run during the compiler execution that created the
 \<.class> file, then the \<.class> file contains only the type qualifiers
-that the programmer wrote explicitly.  Furthermore, there is no guarantee
-that these qualifiers are correct, since they have not been checked.
-In this case, the checker must decide what qualifier to use for the
-locations where the programmer did not write an annotation:
+that the programmer wrote explicitly.  (Furthermore, there is no guarantee
+that these qualifiers are correct, since they have not been checked.)
+In this case, each checker decides what qualifier to use for the
+locations where the programmer did not write an annotation.  The typical
+choice is:
+
 \begin{itemize}
 \item
   For method parameters, use the bottom qualifier (see
@@ -500,13 +502,23 @@ locations where the programmer did not write an annotation:
   Section~\ref{top-qualifier}).
 \end{itemize}
 
-However, each checker is responsible for choosing these defaults.
+\noindent
+These choices are conservative.  They are likely to cause many
+false-positive type-checking errors, which will help you to know which
+library methods need annotations.  You can then write those library
+annotations (see Chapter~\ref{annotating-libraries}).
 
-The option \<-AunsafeDefaultsForUncheckedBytecode> can be used to
-treat unchecked bytecode like checked source code, using the same
-defaults as in the corresponding source code location.
-Doing so is generally unsafe, but the option can reduce the initial
-annotation overhead.
+If you supply the command-line option
+\<-AunsafeDefaultsForUncheckedBytecode>,
+then the checker does defaulting for unchecked bytecode like it does for
+checked source code.  In other words, when a type use in a \<.class> file
+has no explicit annotation, it is defaulted using the same rules as for the
+corresponding source code location.  You should only use this command-line
+option as temporary measure, because it is unsafe:  the checker might issue
+no warnings even though the code could violate the type guarantee at run
+time.  However, it can be useful when you are first annotating a codebase,
+to help you focus on errors within the codebase before you have annotated
+external libraries.
 
 % TODO: document
 % the \refqualclass{framework/qual}{DefaultForInUncheckedBytecode}

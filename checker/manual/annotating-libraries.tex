@@ -6,12 +6,12 @@ As described in Section~\ref{unannotated-code}, the best way to correct
 this problem is to add annotations to the library.  (Alternately, you can instead
 suppress all warnings related to an unannotated library by use of the
 \code{-AskipUses} or \code{-AonlyUses} command-line option; see
-Section~\ref{askipuses}.)  If you have source code for the
-library, you can easily add the annotations.
+Section~\ref{askipuses}.)  If you typically build the library from source,
+a good approach is to annotate, typecheck, and compile the library.
 This chapter tells you
-how to add annotations to a library for which you have no source code,
-because the library is distributed only in binary form
-(as \code{.class} files, possibly packaged in a \code{.jar} file).
+how to add annotations to a library that you do not typically build
+(maybe because you do not have its source code)
+or that you do not want to fully annotate.
 This chapter is also useful if you do not wish to edit the
 library's source code.
 
