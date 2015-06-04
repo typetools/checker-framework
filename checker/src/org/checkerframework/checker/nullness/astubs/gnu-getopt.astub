@@ -1,3 +1,7 @@
+// The gnu.getopt classes are not necessarily on the classpath.
+// Use this dummy annotation to let the StubParser know not to
+// issue a warning about it.
+@NoStubParserWarning
 package gnu.getopt;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
