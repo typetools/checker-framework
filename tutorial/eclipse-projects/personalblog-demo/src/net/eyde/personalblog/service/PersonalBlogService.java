@@ -158,9 +158,9 @@ public class PersonalBlogService {
         String startdate = (/*@Untainted*/ String) qf.format(cal.getTime());
 
         posts = executeQuery(
-                    "from post in class net.eyde.personalblog.beans.Post "
-                    + "where post.created > '" + startdate
-                    + "' order by post.created desc");
+                    "from post in class net.eyde.personalblog.beans.Post " +
+                    "where post.created > '" + startdate +
+                    "' order by post.created desc");
 
         return posts;
     }
@@ -169,9 +169,9 @@ public class PersonalBlogService {
         List<?> posts = null;
 
         posts = executeQuery(
-                    "from post in class net.eyde.personalblog.beans.Post "
-                    + "where post.category like '%" + category
-                    + "%' order by post.created desc");
+                    "from post in class net.eyde.personalblog.beans.Post " +
+                    "where post.category like '%" + category +
+                    "%' order by post.created desc");
 
         return posts;
     }
