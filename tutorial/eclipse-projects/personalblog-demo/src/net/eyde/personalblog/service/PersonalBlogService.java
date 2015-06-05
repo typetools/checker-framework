@@ -192,10 +192,10 @@ public class PersonalBlogService {
         return (/*@Untainted*/ String) sb.toString();
     }
 
-    @SuppressWarnings({"unchecked"})
     private <T> List<T> executeQuery(@Untainted String query) {
         try {
             Session session = sf.openSession();
+            @SuppressWarnings({"unchecked"})
             List<T> lst = (List<T>) session.find(query);
             session.close();
             return lst;
