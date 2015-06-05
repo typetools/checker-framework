@@ -54,7 +54,7 @@
   </target>
 
     <target name="tests-nojdk" depends="dist-nojdk"
-            description="Run test cases for all subprojects">
+            description="Run test cases for all subprojects (same as 'tests')">
         <ant dir="checker">
             <target name="all-tests-nojdk"/>
         </ant>
