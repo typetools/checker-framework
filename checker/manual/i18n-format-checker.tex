@@ -1,0 +1,421 @@
+\htmlhr
+\chapter{Internationalization Format String Checker (I18n Format String Checker)\label{i18n-formatter-checker}}
+
+The Internationalization Format String Checker, or I18n Format String Checker,
+prevents use of incorrect i18n format strings.
+
+If the I18n Format String Checker issues no warnings or errors, then
+\sunjavadoc{java/text/MessageFormat.html\#format-java.lang.String-java.lang.Object...-}{MessageFormat.format}
+will raise no error at run time.
+``I18n'' is short for
+``internationalization'' because there are 18 characters between the ``i'' and
+the ``n''.
+
+Here are the examples of errors that the
+I18n Format Checker
+detects at compile time.
+
+\begin{Verbatim}
+  // Warning: the second argument is missing.
+  MessageFormat.format("{0} {1}", 3.1415);
+  // String argument cannot be formatted as Time type.
+  MessageFormat.format("{0, time}", "my string");
+  // Invalid format string: unknown format type: thyme.
+  MessageFormat.format("{0, thyme}", new Date());
+  // Invalid format string: missing the right brace.
+  MessageFormat.format("{0", new Date());
+  // Invalid format string: the argument index is not an integer.
+  MessageFormat.format("{0.2, time}", new Date());
+  // Invalid format string: "#.#.#" subformat is invalid.
+  MessageFormat.format("{0, number, #.#.#}", 3.1415);
+\end{Verbatim}
+
+For instructions on how to run the Internationalization Format String
+Checker, see Section~\ref{i18n-format-running}.
+
+The Internationalization Checker or I18n Checker (\chapterpageref{i18n-checker})
+has a different purpose.  It verifies that your code is properly
+internationalized: any user-visible text should be obtained from a
+localization resource and all keys exist in that resource.
+
+
+\section{Internationalization Format String Checker annotations\label{i18n-format-annotation}}
+
+
+\begin{figure}
+\includeimage{i18n-format-type-hierarchy}{3cm}
+\caption{The
+  Internationalization
+  Format String Checker type qualifier hierarchy.
+  The figure does not show the subtyping rules among different
+  \refqualclass{checker/i18nformatter/qual}{I18nFormat}\code{(...)}
+  qualifiers; see
+  Section~\ref{i18n-format-conversion-catgeories}.
+  All \refqualclass{checker/i18nformatter/qual}{I18nFormatFor} annotations are unrelated by subtyping.
+  The qualifiers in gray are used internally by
+  the checker and should never be written by a programmer.
+}
+\label{i18n-format-type-hierarchy}
+\end{figure}
+
+The \sunjavadoc{java/text/MessageFormat.html}{MessageFormat} documentation
+specifies the syntax of the i18n format string.
+
+These are the qualifiers that make up the I18n Format String type system.
+Figure~\ref{i18n-format-type-hierarchy} shows their subtyping relationships.
+
+\begin{description}
+
+\item[\refqualclass{checker/i18nformatter/qual}{I18nFormat}]
+  represents a valid i18n format string. For example,
+  \code{@I18nFormat(\{GENERAL, NUMBER, UNUSED, DATE\})} is a legal type for
+  \code{"\{0\}\{1, number\} \{3, date\}"}, indicating that when the format
+  string is used,
+  the first argument should be of \code{GENERAL} conversion category,
+  the second argument should be of \code{NUMBER} conversion category, and so on.
+  Conversion categories such as \code{GENERAL} are described in
+  Section~\ref{i18n-format-conversion-catgeories}.
+
+\item[\refqualclass{checker/i18nformatter/qual}{I18nFormatFor}]
+  indicates that the qualified type is a valid i18n format string for use
+  with some array of values.  For example,
+  \code{@I18nFormatFor("\#2")} indicates that the string can be used to
+  format the contents of the second parameter array.
+  The argument is a Java expression whose syntax
+  is explained in Section~\ref{java-expressions-as-arguments}.
+  An example of its use is:
+
+\begin{Verbatim}
+  static void method(@I18nFormatFor("#2") String format, Object... args) {
+    // the body may use the parameters like this:
+    MessageFormat.format(format, args);
+  }
+
+  method("{0, number} {1}", 3.1415, "A string");  // OK
+  // error: The string "hello" cannot be formatted as a Number.
+  method("{0, number} {1}", "hello", "goodbye");
+\end{Verbatim}
+
+\item[\refqualclass{checker/i18nformatter/qual}{I18nInvalidFormat}]
+  represents an invalid i18n format string. Programmers are not allowed to
+  write this annotation. It is only used internally by the type checker.
+
+\item[\refqualclass{checker/i18nformatter/qual}{I18nUnknownFormat}]
+  represents any string.  The string might or might not be a valid i18n
+  format string.  Programmers are not allowed to write this annotation.
+
+\item[\refqualclass{checker/i18nformatter/qual}{I18nFormatBottom}]
+  indicates that the value is definitely \<null>. Programmers are not allowed
+  to write this annotation.
+\end{description}
+
+\section{Conversion categories\label{i18n-format-conversion-catgeories}}
+
+In a message string, the optional second element within the curly braces is
+called a \emph{format type} and must be one of \<number>, \<date>,
+\<time>, and \<choice>. These four format types correspoond to different
+conversion categories. \<date> and \<time> correspond to \emph{DATE} in the
+conversion categories figure. \<choice> corresponds to \emph{NUMBER}.
+The format type restricts what arguments are legal.
+For example, a date argument is not compatible with
+the \<number> format type, i.e., \code{MessageFormat.format("\{0, number\}",
+new Date())} will throw an exception.
+
+The I18n Checker represents the possible arguments via \emph{conversion
+  categories}.  A conversion category defines a set of restrictions or a
+subtyping rule.
+
+Figure~\ref{i18n-format-category} summarizes the subset
+relationship among all conversion categories.
+
+\begin{figure}
+    \includeimage{i18n-format-category}{5cm}
+    \caption{The subset relationship among
+        i18n
+        conversion categories.}
+    \label{i18n-format-category}
+\end{figure}
+
+\label{i18n-formatter-format-subtyping}
+Here are the subtyping rules among different
+\code{@I18nFormat}
+qualifiers.
+It is legal to:
+
+\begin{itemize}
+\item use a format string with a weaker (less restrictive) conversion category than required.
+\item use a format string with fewer format specifiers than required, but a warning is issued.
+\end{itemize}
+
+The following example shows the subtyping rules in action:
+
+\begin{Verbatim}
+  @I18nFormat({NUMBER, NUMBER}) String format;
+  // OK.
+  format = "{0, number, #.#} {1, number}";
+  // OK, GENERAL is weaker (less restrictive) than NUMBER.
+  format = "{0, number} {1}";
+  // Error, the right-hand-side is stronger (more restrictive) than the left-hand-side's type.
+  format = "{0} {1} {2}";
+\end{Verbatim}
+
+The conversion categories are:
+
+\begin{description}
+
+\item[\refenum{checker/i18nformatter/qual}{I18nConversionCategory}{UNUSED}{}]
+indicates an unused argument. For example, in
+\code{MessageFormat.format("\{0, number\} \{2, number\}", 3.14, "Hello", 2.718)}
+, the second argument \code{Hello} is unused. Thus, the conversion
+categories for the format, \code{{0, number} {2, number}}, is
+\code{(NUMBER, UNUSED, NUMBER)}.
+
+\item[\refenum{checker/i18nformatter/qual}{I18nConversionCategory}{GENERAL}{}]
+means that any value can be supplied as an argument.
+
+\item[\refenum{checker/i18nformatter/qual}{I18nConversionCategory}{DATE}{}]
+is applicable for date, time, and number types. An argument needs to be
+of \sunjavadoc{java/sql/Date.html}{Date}, \sunjavadoc{java/sql/Time.html}{Time}, or \sunjavadoc{java/lang/Number.html}{Number} type or a subclass of them,
+including \sunjavadoc{java/sql/Timestamp.html}{Timestamp} and the classes
+listed immediately below.
+
+\item[\refenum{checker/i18nformatter/qual}{I18nConversionCategory}{NUMBER}{}]
+means that the argument needs to be of \code{Number}
+type or a subclass:
+\sunjavadoc{java/lang/Number.html}{Number},
+\sunjavadoc{java/util/concurrent/atomic/AtomicInteger.html}{AtomicInteger},
+\sunjavadoc{java/util/concurrent/atomic/AtomicLong.html}{AtomicLong},
+\sunjavadoc{java/math/BigDecimal.html}{BigDecimal},
+\sunjavadoc{java/math/BigInteger.html}{BigInteger},
+\sunjavadoc{java/lang/Byte.html}{Byte},
+\sunjavadoc{java/lang/Double.html}{Double},
+\sunjavadoc{java/lang/Float.html}{Float},
+\sunjavadoc{java/lang/Integer.html}{Integer},
+\sunjavadoc{java/lang/Long.html}{Long},
+\sunjavadoc{java/lang/Short.html}{Short}.
+
+\end{description}
+
+\section{What the Internationalization Format String Checker checks\label{i18n-format-checks}}
+
+The Internationalization Format String Checker checks calls to the i18n
+formatting method \sunjavadoc{java/text/MessageFormat.html\#format-java.lang.String-java.lang.Object...-}{MessageFormat.format}
+and guarantees the following:
+
+\begin{enumerate}
+  \item{The checker issues a warning for the following cases:}
+    \begin{enumerate}
+      \item There are missing arguments from what is required by the format string.
+
+      \code{MessageFormat.format("\{0, number\} \{1, number\}", 3.14); // Output: 3.14 \{1\}}
+
+      \item More arguments are passed than what is required by the format string.
+
+      \code{MessageFormat.format("\{0, number\}", 1, new Date());}
+
+      \code{MessageFormat.format("\{0, number\} \{0, number\}", 3.14, 3.14);}
+
+      This does not cause an error at run time, but it often indicates a
+      programmer mistake.  If it is intentional, then you should suppress
+      the warning (see Chapter~\ref{suppressing-warnings}).
+
+      \item Some argument is an array of objects.
+
+      \code{MessageFormat.format("\{0, number\} \{1\}", array);}
+
+      The checker cannot verify whether the format string is valid, so
+      the checker conservatively issues a warning.  This is a limitation of
+      the Internationalization Format String Checker.
+
+    \end{enumerate}
+  \item The checker issues an error for the following cases:
+    \begin{enumerate}
+      \item The format string is invalid.
+
+        \begin{itemize}
+          \item Unmatched braces.
+
+          \code{MessageFormat.format("\{0, time", new Date());}
+
+          \item The argument index is not an integer or is negative.
+
+          \code{MessageFormat.format("\{0.2, time\}", new Date());}
+
+          \code{MessageFormat.format("\{-1, time\}", new Date());}
+
+          \item Unknown format type.
+
+          \code{MessageFormat.format("\{0, foo\}", 3.14);}
+
+          \item Missing a format style required for \<choice> format.
+
+          \code{MessageFormat.format("\{0, choice\}", 3.14);}
+
+          \item Wrong format style.
+
+          \code{MessageFormat.format("\{0, time, number\}", 3.14);}
+
+          \item Invalid subformats.
+
+          \code{MessageFormat.format("\{0, number, \#.\#.\#\}", 3.14)}
+        \end{itemize}
+
+      \item Some argument's type doesn't satisfy its conversion category.
+
+      \code{MessageFormat.format("\{0, number\}", new Date());}
+    \end{enumerate}
+\end{enumerate}
+
+The Checker also detects illegal assignments: assigning a non-format-string
+or an incompatible format string to a variable declared as containing a
+specific type of format string. For example,
+
+\begin{Verbatim}
+  @I18nFormat({GENERAL, NUMBER}) String format;
+  // OK.
+  format = "{0} {1, number}";
+  // OK, GENERAL is weaker (less restrictive) than NUMBER.
+  format = "{0} {1}";
+  // OK, it is legal to have fewer arguments than required (less restrictive).
+  // But the warning will be issued instead.
+  format = "{0}";
+
+  // Error, the format string is stronger (more restrictive) than the specifiers.
+  format = "{0} {1} {2}";
+  // Error, the format string is more restrictive. NUMBER is a subtype of GENERAL.
+  format = "{0, number} {1, number}";
+\end{Verbatim}
+
+\section{Resource files\label{i18n-format-resource-files}}
+
+A programmer rarely writes an i18n format string literally. (The examples
+in this chapter show that for simplicity.) Rather, the i18n format strings are
+read from a resource file.  The program chooses a resource file at run time
+depending on the locale (for example, different resource files for English
+and Spanish users).
+
+\noindent For example, suppose that the \<resource1.properties> file contains
+
+\begin{Verbatim}
+  key1 = The number is {0, number}.
+\end{Verbatim}
+
+\noindent Then code such as the following:
+
+\begin{Verbatim}
+  String formatPattern = ResourceBundle.getBundle("resource1").getString("key1");
+  System.out.println(MessageFormat.format(formatPattern, 2.2361));
+\end{Verbatim}
+
+\noindent will output ``The number is 2.2361.''  A different resource file would contain
+\code{key1 = El n\'{u}mero es \{0, number\}.}
+
+When you run the I18n Format String Checker, you need to indicate which resource file it
+should check. If you change the resource file or use a different resource
+file, you should re-run the checker
+to ensure that you did not make an error. The I18n Format String Checker supports two types of
+resource files: ResourceBundles and property files. The example above shows use of
+resource bundles.
+For more about checking property files, see \chapterpageref{propkey-checker}.
+
+
+\section{Running the Internationalization Format Checker\label{i18n-format-running}}
+
+The checker can be invoked by running one of the following commands (with
+the whole command on one line).
+
+\begin{itemize}
+  \item Using ResourceBundles:
+
+    \begin{smaller}
+    \code{javac -processor
+      org.checkerframework.checker.i18nformatter.I18nFormatterChecker
+    -Abundlenames=MyResource MyFile.java}
+    \end{smaller}
+
+  \item Using property files:
+
+    \begin{smaller}
+    \code{javac -processor
+      org.checkerframework.checker.i18nformatter.I18nFormatterChecker
+    -Apropfiles=MyResource.properties MyFile.java}
+    \end{smaller}
+
+  \item Not using a property file.  Use this if the programmer hard-coded the
+  format patterns without loading them from a property file.
+
+    \code{javac -processor org.checkerframework.checker.i18nformatter.I18nFormatterChecker}
+  \code{MyFile.java}
+\end{itemize}
+
+
+\section{Testing whether a string has an i18n format type\label{i18n-format-testing}}
+
+In the case that the checker cannot infer the i18n format type of a string,
+you can use the \refmethod{checker/i18nformatter}{I18nFormatUtil}{hasFormat}{-java.lang.String-org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory...-}
+method to define the type of the string in the scope of a conditional statement.
+
+\begin{description}
+
+\item[\refmethod{checker/i18nformatter}{I18nFormatUtil}{hasFormat}{-java.lang.String-org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory...-}]
+  returns \<true> if the given string has the given i18n format type.
+
+\end{description}
+
+\noindent For an example, see Section~\ref{i18n-format-examples}.
+
+
+\section{Examples of using the Internationalization Format Checker\label{i18n-format-examples}}
+
+\begin{itemize}
+  \item Using \sunjavadoc{java/text/MessageFormat.html\#format-java.lang.String-java.lang.Object...-}{MessageFormat.format}.
+\begin{Verbatim}
+      // suppose the bundle "MyResource" contains:  key1={0, number} {1, date}
+      String value = ResourceBundle.getBundle("MyResource").getString("key1");
+      MessageFormat.format(value, 3.14, new Date());  // OK
+      // error: incompatible types in argument; found String, expected number
+      MessageFormat.format(value, "Text", new Date());
+\end{Verbatim}
+  \item Using the
+    \refmethod{checker/i18nformatter}{I18nFormatUtil}{hasFormat}{-java.lang.String-org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory...-}
+    method to check whether a format
+    string has particular conversion categories.
+\begin{Verbatim}
+      void test1(String format) {
+        if (I18nFormatUtil.hasFormat(format, I18nConversionCategory.GENERAL,
+                                             I18nConversionCategory.NUMBER)) {
+          MessageFormat.format(format, "Hello", 3.14);  // OK
+          // error: incompatible types in argument; found String, expected number
+          MessageFormat.format(format, "Hello", "Bye");
+          // error: missing arguments; expected 2 but 1 given
+          MessageFormat.format(format, "Bye");
+          // error: too many arguments; expected 2 but 3 given
+          MessageFormat.format(format, "A String", 3.14, 3.14);
+        }
+      }
+\end{Verbatim}
+  \item Using \refqualclass{checker/i18nformatter/qual}{I18nFormatFor}
+    to ensure that an argument is a particular type of format string.
+\begin{Verbatim}
+      static void method(@I18nFormatFor("#2") String f, Object... args) {...}
+
+      method("{0, number} {1} {2, choice,0#zero|1#one|1<greater than one}", 3.14, "Hello", 100); // OK, MessageFormat.format(...) would return "3.14 Hello greater than one"
+      // error: incompatible types in argument; found String, expected number
+      method("{0, number} {1}", "Bye", "Bye");
+\end{Verbatim}
+  \item Annotating a string with
+    \refqualclass{checker/i18nformatter/qual}{I18nFormat}.
+\begin{Verbatim}
+      @I18nFormat({I18nConversionCategory.DATE}) String;
+      s1 = "{0}";
+      // error: incompatible types in assignment
+      s1 = "{0, number}";
+\end{Verbatim}
+\end{itemize}
+
+%%  LocalWords:  I18n i18n java MessageFormat 6cm I18nFormat I18nFormatFor
+%%  LocalWords:  arg I18nInvalid I18nUnknownFormat I18nFormatBottom 8cm '
+%%  LocalWords:  Timestamp AtomicInteger AtomicLong BigDecimal BigInteger
+%%  LocalWords:  number' foo subformats resource1 key1 mero Abundlenames
+%%  LocalWords:  ResourceBundles MyResource MyFile Apropfiles hasFormat
+%%  LocalWords:  I18nFormatUtil

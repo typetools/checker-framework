@@ -1,0 +1,9 @@
+Build and style comments for the Checker Framework manual
+
+On a standard Ubuntu 14.10 system, you will need to install the
+following additional packages to build the manual:
+
+sudo apt-get install hevea librsvg2-bin
+
+[TODO: this list was started 2015-03-02 and needs to be
+extended for a clean Ubuntu installation.]
