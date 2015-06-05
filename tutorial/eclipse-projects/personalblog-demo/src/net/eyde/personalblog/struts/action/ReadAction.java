@@ -88,7 +88,6 @@ public final class ReadAction extends BlogGeneralAction {
      * @throws IllegalArgumentException  if userInput is not valid
      *
      */
-    @SuppressWarnings("tainting")
     /*@Untainted*/ String validate(String userInput) {
         for (int i = 0; i < userInput.length(); ++i) {
             char ch = userInput.charAt(i);
@@ -97,7 +96,9 @@ public final class ReadAction extends BlogGeneralAction {
                     && !Character.isWhitespace(ch))
                 throw new IllegalArgumentException("Illegal user input");
         }
-        return (/*@Untainted*/ String) userInput;
+        @SuppressWarnings("tainting")
+        @Untainted String result = userInput;
+        return result;
     }
 }
 
