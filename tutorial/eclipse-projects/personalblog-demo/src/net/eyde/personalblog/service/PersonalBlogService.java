@@ -157,10 +157,10 @@ public class PersonalBlogService {
         /*@SuppressWarnings("tainting")*/
         String startdate = (/*@Untainted*/ String) qf.format(cal.getTime());
 
-        posts = executeQuery(constructQuery(
-                    "from post in class net.eyde.personalblog.beans.Post ",
-                    "where post.created > '", startdate,
-                    "' order by post.created desc"));
+        posts = executeQuery(
+                    "from post in class net.eyde.personalblog.beans.Post "
+                    + "where post.created > '" + startdate
+                    + "' order by post.created desc");
 
         return posts;
     }
@@ -168,28 +168,12 @@ public class PersonalBlogService {
     public List<?> getPostsByCategory(String category) throws ServiceException {
         List<?> posts = null;
 
-        posts = executeQuery(constructQuery(
-                    "from post in class net.eyde.personalblog.beans.Post ",
-                    "where post.category like '%", category,
-                    "%' order by post.created desc"));
+        posts = executeQuery(
+                    "from post in class net.eyde.personalblog.beans.Post "
+                    + "where post.category like '%" + category
+                    + "%' order by post.created desc");
 
         return posts;
-    }
-
-    /**
-     * Constructs an untainted query from untainted strings.
-     * It is a simple concatenation operation.
-     *
-     * This method is helpful only when using the Basic Checker,
-     * which cannot detect the type of string concatination, unlike
-     * the Tainting Checker.
-     */
-    @SuppressWarnings("tainting")
-    private @Untainted String constructQuery(@Untainted String ...strings) {
-        StringBuilder sb = new StringBuilder();
-        for (String s : strings)
-            sb.append(s);
-        return (/*@Untainted*/ String) sb.toString();
     }
 
     private <T> List<T> executeQuery(@Untainted String query) {
