@@ -807,7 +807,7 @@
     </target>
 
     <target name="jtreg-tests-checkers" depends="-def-jtreg,jar"
-            description="Run jtreg tests">
+            description="Run checker jtreg tests">
         <jtreg-tool name="all" tests="."/>
     </target>
 
@@ -820,7 +820,7 @@
 
     <target name="jtreg-tests"
             depends="-def-jtreg,jar,jtreg-tests-checkers,jtreg-tests-framework"
-            description="Run jtreg tests">
+            description="Run all jtreg tests">
     </target>
 
     <target name="-def-check">
