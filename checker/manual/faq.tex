@@ -429,8 +429,9 @@ and prevent certain concurrency errors.
 By default, the Checker Framework assumes that the code that it is checking
 is sequential:  that is, there are no concurrent accesses from another
 thread.  This means that the Checker Framework is unsound for concurrent
-code, in the sense that it may fail to warn about a possible null
-dereference.  For example, the Nullness Checker issues no warning for this
+code, in the sense that it may fail to issue a warning about errors that
+occur only when the code is running in a concurrent setting.
+For example, the Nullness Checker issues no warning for this
 code:
 
 \begin{Verbatim}
