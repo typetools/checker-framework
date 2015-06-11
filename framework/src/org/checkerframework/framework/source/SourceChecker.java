@@ -75,11 +75,11 @@ import com.sun.tools.javac.util.Log;
  * TODO update: Subclasses must implement the following methods:
  *
  * <ul>
- *  <li>{link SourceChecker#getMessages} (for type-qualifier specific error messages)
- *  <li>{link SourceChecker#createSourceVisitor(CompilationUnitTree)} (for a custom {@link SourceVisitor})
- *  <li>{link SourceChecker#createFactory} (for a custom {@link AnnotatedTypeFactory})
- *  <li>{link SourceChecker#getSuppressWarningsKeys} (for honoring
- *      {link SuppressWarnings} annotations)
+ *  <li>{@link SourceChecker#getMessages} (for type-qualifier specific error messages)
+ *  <li>{@link SourceChecker#createSourceVisitor} (for a custom {@link SourceVisitor})
+ *  <!-- <li>{@link SourceChecker#createFactory} (for a custom {@link AnnotatedTypeFactory}) -->
+ *  <li>{@link SourceChecker#getSuppressWarningsKeys} (for honoring
+ *      {@literal @}{link SuppressWarnings} annotations)
  * </ul>
  *
  * Most type-checker plug-ins will want to extend {@link BaseTypeChecker},
@@ -1127,9 +1127,9 @@ public abstract class SourceChecker
      *
      * @param anno  the @SuppressWarnings annotation written by the user
      * @param err   the error key the checker is emitting
-     * @return true if one of {@code annos} is a {@link SuppressWarnings}
-     *         annotation with the key returned by {@link
-     *         SourceChecker#getSuppressWarningsKey}
+     * @return true if one of {@code annos} is a
+     *         {@literal @}{@link SuppressWarnings} annotation with a key
+     *         returned by {@link SourceChecker#getSuppressWarningsKeys}
      */
     private boolean checkSuppressWarnings(/*@Nullable*/ SuppressWarnings anno, String err) {
 
