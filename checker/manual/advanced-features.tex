@@ -159,7 +159,7 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
 
 \item
   If there is no explicit or implicit qualifier on a type, then a default
-  qualifier may be applied; see Section~\ref{defaults}.
+  qualifier is applied; see Section~\ref{defaults}.
 
 %BEGIN LATEX
   % This looks bad in HTML.
@@ -195,7 +195,8 @@ rules are used in order, until one applies.
   this section.
 \item
   Use the default specified by the type system designer
-  (Section~\ref{typesystem-defaults}).
+  (Section~\ref{typesystem-defaults});
+  this is usually CLIMB-to-top (Section~\ref{climb-to-top}).
 \item
   Use \refqualclass{framework/qual}{Unqualified}, which the framework
   inserts to avoid ambiguity and simplify the programming interface for
@@ -312,13 +313,14 @@ location, the Nullness Checker interprets it as \<@Nullable Date> (because
 \refqualclass{checker/nullness/qual}{Nullable} is the top qualifier in the
 hierarchy, see Figure~\ref{fig-nullness-hierarchy}).
 
-%% Users don't care about this detail.
-% The CLIMB-to-top rule is an improvement over a previous defaulting rule,
-% called NNEL for ``non-null except locals''~\cite{PapiACPE2008}.
-
 % TODO:  Add wildcard bounds to the set of type-refined locations?
 % Especially in light of
 % https://code.google.com/p/checker-framework/issues/detail?id=260
+
+The CLIMB-to-top rule is used only for unannotated source code that is
+being processed by a checker.  For unannotated libraries (code read by the
+compiler in in \<.class> or \<.jar> form), the checker uses conservative
+defaults (Section~\ref{defaults-classfile}).
 
 The rest of this section explains the rationale and implementation of
 CLIMB-to-top.
@@ -467,10 +469,9 @@ List<@NonNull ? extends @NonNull Object> listOfNonNulls2;
 \end{Verbatim}
 
 Note, the upper bound of the wildcard \code{? extends Object} is defaulted to
-\code{@NonNull} using the climb to the top rule (see Section~\ref{climb-to-top}).
+\code{@NonNull} using the CLIMB-to-top rule (see Section~\ref{climb-to-top}).
 
-\subsection{Default qualifiers for \<.class>
-files\label{defaults-classfile}}
+\subsection{Default qualifiers for \<.class> files (conservative library defaults)\label{defaults-classfile}}
 
 The defaulting rules presented so far apply to source code that is read by
 the compiler.  When the compiler reads a \<.class> file, different
@@ -484,6 +485,8 @@ defaults:  the \<.class> file has an explicit qualifier at each type use.
 guaranteed to be correct.)
 When you are performing pluggable type-checking,
 it is best to ensure that the compiler only reads such \<.class> files.
+Section~\ref{compiling-libraries} discusses how to create annotated
+libraries, even if the library source code is only partially annotated.
 
 If the checker was not run during the compiler execution that created the
 \<.class> file, then the \<.class> file contains only the type qualifiers
@@ -502,11 +505,19 @@ choice is:
   Section~\ref{top-qualifier}).
 \end{itemize}
 
+%% TODO: The following is even more safe, but separate handling for field
+%% read vs. write is currently not possible.
+%  For fields, use the bottom qualifier when writing to the field and the
+%  top qualifier when reading from the field.
+%% TODO: should give rules for other locations, such as type parameters
+%% (which should behave like fields), bounds, etc.
+
 \noindent
 These choices are conservative.  They are likely to cause many
 false-positive type-checking errors, which will help you to know which
 library methods need annotations.  You can then write those library
-annotations (see Chapter~\ref{annotating-libraries}).
+annotations (see Chapter~\ref{annotating-libraries}) or alternately
+suppress the warnings (see Section~\ref{suppressing-warnings}).
 
 If you supply the command-line option
 \<-AunsafeDefaultsForUncheckedBytecode>,
@@ -524,34 +535,6 @@ external libraries.
 % the \refqualclass{framework/qual}{DefaultForInUncheckedBytecode}
 % and \refqualclass{framework/qual}{DefaultQualifierInUncheckedBytecode}
 % annotations for type system designers.
-
-
-\iffalse TODO
-\subsection{Default qualifiers for \<.class> files\label{defaults-classfile}}
-
-% TODO: can we set the default for type systems that don't set an
-% explicit default for unchecked bytecode to be conservative?
-% i.e. to pick top/bottom for the right locations automatically.
-
-TODO: separate handling for field read vs. write is currently not
-possible.
-
-  For fields, use the bottom qualifier when writing to the field and the
-  top qualifier when reading from the field.
-%% TODO: should give rules for other locations, such as type parameters
-%% (which should behave like fields), bounds, etc.
-\end{itemize}
-
-These \<.class> file defaulting rules are very strict.  If your code uses a
-library that was not created when running the checker, then your uses of
-that library probably will not type-check.  This is intentional --- it is
-better than the type-checker silently permitting such uses.
-To eliminate the errors, you should either re-compile the library while
-running the checker to create new \<.class> and/or \<.jar> files, or you
-should suppress the warnings (see Section~\ref{suppressing-warnings}).
-
-TODO
-\fi
 
 
 \section{Automatic type refinement (flow-sensitive type qualifier inference)\label{type-refinement}}
@@ -1405,4 +1388,5 @@ class @Marsupial-Animal {
 %  LocalWords:  EnsuresQualifierIf AsuppressWarnings AinvariantArrays asts
 %  LocalWords:  formatter ocals nstanceof plicit ounds wildcard's da
 %%  LocalWords:  wildcards guieffect AassumeAssertionsAreDisabled
-%%  LocalWords:  AssumeAssertion
+%%  LocalWords:  AssumeAssertion AunsafeDefaultsForUncheckedBytecode
+%%  LocalWords:  I18nFormatFor
