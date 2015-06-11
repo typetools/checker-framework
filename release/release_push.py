@@ -280,7 +280,7 @@ def main(argv):
     execute("mkdir -p resources/fonts", True, False, dev_afu_website_api_directory)
     execute("touch resources/fonts/dejavu.css", True, False, dev_afu_website_api_directory)
 
-    if prompt_yes_no( "Run link Checker on DEV site?", True ):
+    if prompt_yes_no( "Run link-checker on DEV site?", True ):
         check_all_links( dev_jsr308_website, dev_afu_website, dev_checker_website, "dev" )
 
     # Runs sanity tests on the development release. Later, we will run a smaller set of sanity
