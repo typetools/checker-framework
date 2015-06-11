@@ -1,0 +1,7 @@
+This directory contains annotated versions of libraries.
+During type-checking, put these versions on your classpath,
+to obtain more precise type-checking with fewer false positive warnings.
+
+The source code appears at the following locations:
+
+[[TODO]]
