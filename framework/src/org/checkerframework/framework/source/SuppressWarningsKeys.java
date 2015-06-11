@@ -8,9 +8,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Specifies the argument that this checker recognizes for suppressing warnings
- * via the {@link SuppressWarnings} annotation.  The given argument suppresses
- * all warnings related to the checker.
+ * Specifies the argument(s) that this checker recognizes for suppressing
+ * warnings via the {@link SuppressWarnings} annotation.  Any of the given
+ * arguments suppresses all warnings related to the checker.
  * <p>
  *
  * In order for this annotation to
@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * For the Nullness Checker we add multiple suppression keys along the hierarchy.
  * Should we change the semantics of this annotation to look for it on all
  * classes from the most-concrete class up to SourceChecker?
- * (That would make the behavior consistent with e.g. our SupportedOptions.
+ * That would make the behavior consistent with e.g. our SupportedOptions.
  * Is there ever a reason where that would be unwanted?
  */
 @Inherited
@@ -39,8 +39,9 @@ import java.lang.annotation.Target;
 public @interface SuppressWarningsKeys {
 
     /**
-     * @return the string that causes this checker to suppress a warning when
-     *         passed as the argument of {@link SuppressWarnings}
+     * @return array of strings, any one of which causes this checker to
+     *         suppress a warning when passed as the argument of
+     *         {@literal @}{@link SuppressWarnings}
      */
     String[] value();
 }
