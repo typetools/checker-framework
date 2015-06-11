@@ -10,11 +10,9 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 
 /**
- * Indicates that the value expressions are @LockHeld if the method
+ * Indicates that the value expressions are {@link LockHeld} if the method
  * terminates successfully.
- * <p>
  *
- * @see LockHeld
  * @checker_framework.manual #lock-checker Lock Checker
  */
 @Documented

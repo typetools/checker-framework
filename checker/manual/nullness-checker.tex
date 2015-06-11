@@ -308,7 +308,7 @@ Javadoc for \refclass{checker/nullness}{NullnessAnnotatedTypeFactory}.
 \subsection{Default annotation\label{null-defaults}}
 
 Unannotated references are treated as if they had a default annotation.
-The standard defaulting rule is  ``CLIMB to top'',  described in
+The standard defaulting rule is CLIMB-to-top,  described in
 Section~\ref{climb-to-top}.  Its effect is to default all types to
 \<@NonNull>, except that \<@Nullable> is used for casts, locals,
 instanceof, and implicit bounds.  A user can choose a different defaulting
@@ -355,31 +355,6 @@ rule.
 % %BEGIN LATEX
 % \end{sloppy}
 % %END LATEX
-
-
-\subsection{Default annotations in unchecked \<.class>
-files \label{null-defaults-classfile}}
-
-If the Nullness Checker was not run during the compiler execution that
-created a \<.class> file, then the \<.class> file contains only the
-type qualifiers that the programmer wrote explicitly and defaulting is
-required.
-See Section~\ref{defaults-classfile} for a general discussion.
-
-The Nullness Checker implements conservative defaults for
-unchecked \<.class> files:
-\begin{itemize}
-\item
-  For method parameter types and type parameter lower bounds, use the
-  bottom qualifier \<@NonNull>.
-\item
-  For method return types and type parameter upper bounds, use the top
-  qualifier \<@Nullable>.
-\end{itemize}
-
-The option \<-AunsafeDefaultsForUncheckedBytecode> can be used to
-treat unchecked bytecode like checked source code, which is unsound,
-but might reduce false positives.
 
 
 \subsection{Conditional nullness\label{conditional-nullness}}
