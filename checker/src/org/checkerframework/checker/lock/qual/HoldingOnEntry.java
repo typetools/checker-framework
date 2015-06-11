@@ -24,7 +24,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 @PreconditionAnnotation(qualifier = LockHeld.class)
 public @interface HoldingOnEntry {
     /**
-     * The Java expressions which need to be {@link LockHeld}.
+     * The Java expressions that need to be {@link LockHeld}.
      *
      * @see <a
      *      href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax
