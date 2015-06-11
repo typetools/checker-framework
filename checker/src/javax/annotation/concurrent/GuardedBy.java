@@ -49,7 +49,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 @PostconditionAnnotation(qualifier = LockHeld.class)
 public @interface GuardedBy {
     /**
-     * The Java expressions which need to be {@link LockHeld}.
+     * The Java expressions that need to be {@link LockHeld}.
      *
      * @see <a
      *      href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax
