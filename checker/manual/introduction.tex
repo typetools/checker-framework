@@ -540,6 +540,11 @@ A concrete example (using the Nullness Checker) is:
 \end{smaller}
 %END LATEX
 
+Since the \code{-processor} expects a fully-qualified class name,
+its argument can often be verbose.  There is shorthand for invoking
+checkers that are built into the Checker Framework.
+See Section~\ref{shorthand-for-checkers}.
+
 The checker is run on only the Java files that javac compiles.
 This includes all Java files specified on the command line (or
 created by another annotation processor).  It may also include other of
@@ -550,13 +555,13 @@ the \emph{uses} of those classes in the source code being compiled.
 
 You can always compile the code without the \code{-processor}
 command-line option, but in that case no checking of the type
-annotations is performed.  The annotations are still written to the
-resulting \<.class> files, however.
+annotations is performed.  Furthermore, only explicitly-written annotations
+are written to the \<.class> file; defaulted annotations are not, and this
+will interfere with type-checking of clients that use your code.
+Therefore, it is strongly recommended that whenever you are creating
+\<.class> files that will be distributed or compiled against, you run the
+type-checkers for all the annotations that your have written.
 
-Since the \code{-processor} expects a fully-qualified class name,
-its argument can often be verbose.  There is shorthand for invoking
-checkers that are built into the Checker Framework.
-See Section~\ref{shorthand-for-checkers}.
 
 \subsection{Summary of command-line options\label{checker-options}}
 
@@ -636,12 +641,20 @@ Type-checking modes:  enable/disable functionality
   \<javac> prints at most 100 warnings.
 \end{itemize}
 
-Stub libraries
+Partially-annotated libraries
 \begin{itemize}
+\item \<-AprintUnannotatedMethods>
+  List library methods that need to be annotated; see
+  Section~\ref{annotating-libraries}.
 \item \<-Astubs>
   List of stub files or directories; see Section~\ref{stub-using}.
 \item \<-AstubWarnIfNotFound>
   Warn if a stub file entry could not be found; see Section~\ref{stub-using}.
+\item \<-AuseConservativeDefaultsForUnannotatedCode>
+  Outside the scope of any relevant
+  \refqualclass{framework/qual}{AnnotatedFor} annotation, use conservative
+  default annotations and suppress all type-checking warnings; see
+  Section~\ref{compiling-libraries}.
 \end{itemize}
 
 Debugging
@@ -701,8 +714,9 @@ checker is a type of ``annotation processor''.
   means to skip checking; \<-proc:only> means to do only
   checking, without any subsequent compilation; see
   Section~\ref{checker-auto-discovery}
-\item \<-Xbootclasspath/p:> Indicates where to find the annotated JDK classes;
-  see Section~\ref{skeleton-using}
+%% Users shouldn't need to use this
+% \item \<-Xbootclasspath/p:> Indicates where to find the annotated JDK classes;
+%   see Section~\ref{skeleton-using}
 \item \<-implicit:class> Suppresses warnings about implicitly compiled files
   (not named on the command line); see Section~\ref{ant-task}
 \item \<-XDTA:noannotationsincomments> and \<-XDTA:spacesincomments>
@@ -889,23 +903,18 @@ Annotating an entire existing program may seem like a daunting task.  But,
 if you approach it systematically and do a little bit at a time, you will
 find that it is manageable.
 
-You should start with a property that matters to you, to achieve the best
-benefits.  It is easiest to add annotations if you know the code or the
+Start small, focusing on some specific property that matters to you and 
+on the most mission-critical or error-prone part of your code.
+It is easiest to add annotations if you know the code or the
 code contains documentation; you will find that you spend most of your time
 understanding the code, and very little time actually writing annotations
 or running the checker.
 
-Don't get discouraged if you see many type-checker warnings at first.
-Often, adding just a few missing annotations will eliminate many warnings,
-and you'll be surprised how fast the process goes overall.
-
-It is best to annotate one package at a time,
-% Upcoming fix that applies different defaults to annotated and unannotated
-% code will eliminate this reason.
-and to annotate the entire package so that you don't forget any classes
-(failing to annotate a class can lead to unexpected results).
-Start as close to the leaves of the call tree as possible, such as with
-libraries --- that is,
+Start by annotating just part of your program.  Be systematic, such as
+annotating an entire class at a time (not just some of the methods)
+so that you don't lose track of your work.
+You may find it helpful to start annotating the leaves of the call tree --- 
+that is,
 start with methods/classes/packages that have few dependencies on other
 code or, equivalently, start with code that a lot of your other code
 depends on.  The reason for this is that it is
@@ -915,23 +924,23 @@ annotated.
 For each class, read its Javadoc.  For instance, if you are adding
 annotations for the Nullness Checker (Section~\ref{nullness-checker}), then
 you can search the documentation for ``null'' and then add \<@Nullable>
-anywhere appropriate.  Do not annotate the method bodies yet ---
-first, get the signatures and fields annotated.  The only reason to even
+anywhere appropriate.  Then annotate signatures and fields; there is no
+need to annotate method bodies.  The only reason to even
 \emph{read} the method bodies yet is to determine signature annotations for
 undocumented methods ---
 for example, if the method returns null, you know its return type should be
 annotated \<@Nullable>, and a parameter that is compared against \<null>
-may need to be annotated \<@Nullable>.  If you are only annotating
-signatures (say, for a library you do not maintain and do not wish to
-check), you are now done.
+may need to be annotated \<@Nullable>.
 
-If you wish to check the implementation, then after the signatures are
-annotated, run the checker.  Then, add method body annotations (usually,
-few are necessary), fix bugs in code, and add annotations to signatures
-where necessary.  If signature annotations are necessary, then you may want
-to fix the documentation that did not indicate the property; but this isn't
-strictly necessary, since the annotations that you wrote provide that
-documentation.
+After you have annotated all the signatures, run the checker.
+Then, fix bugs in code and add/modify annotations as necessary.
+% If signature annotations are necessary, then you may want
+% to fix the documentation that did not indicate the property; but this isn't
+% strictly necessary, since the annotations that you wrote provide that
+% documentation.
+Don't get discouraged if you see many type-checker warnings at first.
+Often, adding just a few missing annotations will eliminate many warnings,
+and you'll be surprised how fast the process goes overall.
 
 You may wonder about the effect of adding a given annotation --- how many
 other annotations it will require, or whether it conflicts with other code.
@@ -942,8 +951,9 @@ output after adding the annotation.  This helps you to focus on the
 specific consequences of your change.
 
 Also see Chapter~\ref{suppressing-warnings}, which tells you what to do when
-you are unable to eliminate checker warnings.
-
+you are unable to eliminate checker warnings, and
+Chapter~\ref{annotating-libraries}, which tells you how to annotate
+libraries that your code uses.
 
 
 \subsection{Do not annotate local variables unless necessary\label{tips-local-inference}}
