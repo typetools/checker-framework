@@ -42,7 +42,8 @@ The type-checker
 makes conservative assumptions about unannotated bytecode:  it assumes that
 every method parameter has the bottom type annotation and that every method
 return type has the top type annotation (see
-Section~\ref{defaults-classfile}).  These conservative library
+Section~\ref{defaults-classfile} for details and an example).
+These conservative library
 annotations invariably lead to checker warnings.
 This chapter describes how to eliminate
 the warnings by adding annotations to the library.
@@ -61,7 +62,7 @@ Sections~\ref{askipuses}--\ref{askipdefs}).  Also, recall that the Checker
 Framework analyzes all, and only, the source code that is passed to it.
 The Checker Framework is a plug-in to the javac compiler, and it never
 analyzes code that is not being compiled, though it does look up
-annotations for code that is not being compiled.)
+annotations in the class files for code that is not being compiled.)
 
 You make the library's annotations known to the checkers by writing
 annotations in a copy of the library's source code.
