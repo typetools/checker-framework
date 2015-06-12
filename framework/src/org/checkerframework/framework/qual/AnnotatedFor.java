@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
  * <code>@AnnotatedFor</code>'s arguments are any string that may be passed
  * to the <tt>-processor</tt> command-line argument:  the fully-qualified
  * class name for the checker, or a shorthand for built-in checkers.  Using
- * the annotation with no arguments, such as <code>@AnnotatedFor</code> or
+ * the annotation with no arguments, as in
  * <code>@AnnotatedFor({})</code>, has no effect.
  * 
  * @checker_framework.manual #compiling-libraries Compiling partially-annotated librares
