@@ -373,9 +373,9 @@ public abstract class GenericAnnotatedTypeFactory<
             }
 
             // Add defaults for untyped code if conservative untyped flag is passed.
-            if (!(checker.hasOption("unsafeDefaultsForUncheckedBytecode")
-                  // temporarily use unsafe defaults for bytecode
-                  || true)) {
+            if (// !checker.hasOption("unsafeDefaultsForUncheckedBytecode")
+                    // temporarily use unsafe defaults for bytecode, unless option given
+                    checker.hasOption("safeDefaultsForUncheckedBytecode")) {
                 DefaultForInUncheckedBytecode defaultForUntyped = qual.getAnnotation(DefaultForInUncheckedBytecode.class);
 
                 if (defaultForUntyped != null) {
