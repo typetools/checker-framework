@@ -463,7 +463,7 @@ public final class Image extends Resource implements Drawable {
 @UIPackage package org.eclipse.swt.program;
 @UIPackage package org.eclipse.swt.widgets;
 // These are the only two safe methods in all of SWT according to the docs
-@UIType class Display implements Drawable {
+@UIType class Display extends Device {
     @SafeEffect public void syncExec(@UI Runnable runnable);
     @SafeEffect public void asyncExec(@UI Runnable runnable);
     // Not 100% sure about this one
