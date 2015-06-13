@@ -178,6 +178,8 @@ import com.sun.tools.javac.util.Log;
     // by the specific type checker using Default[For|Qualifier]InUncheckedBytecode.
     // They may require more annotations or stub files.
     "unsafeDefaultsForUncheckedBytecode",
+    // TODO: temporary option to turn on sound behavior.
+    "safeDefaultsForUncheckedBytecode",
 
     // Whether to resolve reflective method invocations
     // resolveReflection=debug cause debugging information
