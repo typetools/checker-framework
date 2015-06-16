@@ -250,10 +250,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Unique ID of the current object; for debugging purposes. */
     public final int uid;
 
-    /**Annotation added to every method defined in a class file
-     * that is not in a stub file
+    /** Annotation added to every method defined in a class file
+     * that is not in a stub file.
      */
     private final AnnotationMirror fromByteCode;
+
+    /** Annotation added to every method defined in a stub file.
+     */
+    private final AnnotationMirror fromStubFile;
 
     /**
      * Object that is used to resolve reflective method calls, if reflection
@@ -287,6 +291,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.supportedQuals = createSupportedTypeQualifiers();
 
         this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
+        this.fromStubFile = AnnotationUtils.fromClass(elements, FromStubFile.class);
 
         this.cacheDeclAnnos = new HashMap<Element, Set<AnnotationMirror>>();
 
@@ -830,8 +835,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     annos = AnnotationUtils.createAnnotationSet();
                     indexDeclAnnos.put(ElementUtils.getVerboseName(elt), annos);
                 }
-                if (!annos.contains(AnnotationUtils.fromClass(elements,
-                        FromStubFile.class))) {
+                if (!AnnotationUtils.containsSameIgnoringValues(annos, fromStubFile)) {
                     annos.add(fromByteCode);
                 }
             }
