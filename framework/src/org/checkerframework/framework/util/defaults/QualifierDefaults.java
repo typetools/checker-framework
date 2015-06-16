@@ -462,7 +462,14 @@ public class QualifierDefaults {
 
         if (untypedDefaults.size() > 0 &&
                 ElementUtils.isElementFromByteCode(annotationScope) &&
-                atypeFactory.declarationFromElement(annotationScope) == null) {
+                atypeFactory.declarationFromElement(annotationScope) == null &&
+                !atypeFactory.isFromStubFile(annotationScope)) {
+                // TODO: I would expect this:
+                //   atypeFactory.isFromByteCode(annotationScope)) {
+                // to work instead of the last three clauses,
+                // but it doesn't work correctly and tests fail.
+                // (That whole @FromStubFile and @FromByteCode annotation
+                // logic should be replaced by something sensible.)
             for (Default def : untypedDefaults) {
                 applier.apply(def);
             }
