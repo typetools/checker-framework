@@ -66,6 +66,12 @@
                 substring="${compiler.version.goal.java9}"/>
         </condition>
 
+        <!-- This file is looked for by Javadoc, this will ensure it always shows up in the api directory
+             regardless of which subproject javadoc you call. -->
+        <property name="dejavuDir" value="${api.doc}/resources/fonts/"/>
+        <mkdir dir="${dejavuDir}"/>
+        <touch file="${dejavuDir}/dejavu.css"/>
+
 	<condition property="compiler.exists">
             <or>
                 <istrue value="${compiler.exists.jsr308}"/>
