@@ -141,6 +141,9 @@ the components of a type system as written using the Checker Framework:
   other than \<null> has a \refqualclass{checker/nullness/qual}{NonNull} type;
   examples of literals include \<"some string"> and \<java.util.Date.class>.
 
+  Optionally, write dataflow rules to enhance flow-sensitive type qualifier
+  inference (Section~\ref{dataflow}).
+
 \item{\ref{extending-visitor}}
   \textbf{Type rules.}  You specify the type system semantics (type
   rules), violation of which yields a type error.  There are two types of
