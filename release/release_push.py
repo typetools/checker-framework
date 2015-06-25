@@ -275,11 +275,6 @@ def main(argv):
 
     print_step( "Push Step 2: Check links on development site" ) # SEMIAUTO
 
-    # Work around broken link to dejavu.css by creating an empty dejavu.css file
-    dev_afu_website_api_directory  = os.path.join( FILE_PATH_TO_DEV_SITE, "checker-framework", "api" )
-    execute("mkdir -p resources/fonts", True, False, dev_afu_website_api_directory)
-    execute("touch resources/fonts/dejavu.css", True, False, dev_afu_website_api_directory)
-
     if prompt_yes_no( "Run link-checker on DEV site?", True ):
         check_all_links( dev_jsr308_website, dev_afu_website, dev_checker_website, "dev" )
 

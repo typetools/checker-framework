@@ -58,6 +58,7 @@ html: manual.html
 manual.html: manual.pdf
 	hevea -fix -exec xxdate.exe manual.tex
 	./add-favicon-to-manual
+	cp logo/Logo/CFLogo.png ./CFLogo.png
 # The following three lines are only necessary when using Hevea before version 2.04
 # With version 2.04 they have no effect but do no harm.
 	\mv -f manual.html manual.html-with-htoc
@@ -87,7 +88,7 @@ clean:
 	@\rm -f doc *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc
 
 very_clean: clean
-	@\rm manual.html
+	@\rm manual.html CFLogo.png
 
 .PHONY: checklink
 checklink:
