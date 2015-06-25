@@ -193,7 +193,8 @@ partially-annotated library.
   compiler, it passes the \<-AuseConservativeDefaultsForUnannotatedCode>
   command-line option and runs every pluggable type-checker for which any
   annotations exist.  The reason to run every type-checker is so that all
-  of the annotations are defaulted properly.
+  of the annotations you wrote are correct, and all other type uses are
+  defaulted properly.
 
 \item Annotate some files.
   You can determine which files need to be annotated by using the
