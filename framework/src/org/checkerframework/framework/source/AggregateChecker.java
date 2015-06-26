@@ -55,6 +55,7 @@ public abstract class AggregateChecker extends SourceChecker {
         for (Class<? extends SourceChecker> checkerClass : checkerClasses) {
             try {
                 SourceChecker instance = checkerClass.newInstance();
+                instance.setParentChecker(this);
                 checkers.add(instance);
             } catch (Exception e) {
                 message(Kind.ERROR, "Couldn't instantiate an instance of " + checkerClass);

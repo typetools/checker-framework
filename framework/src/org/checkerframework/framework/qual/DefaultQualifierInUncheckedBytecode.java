@@ -10,7 +10,7 @@ import java.lang.annotation.*;
  * file which does not have a stub file describing it.  This allows you to set
  * safe defaults for unchecked code.
  *
- * Note, this annotations is analagous to DefaultQualifierInHierarchy but for
+ * Note, this annotations is analogous to DefaultQualifierInHierarchy but for
  * unchecked bytecode.
  * @see DefaultForInUncheckedBytecode
  * <p>

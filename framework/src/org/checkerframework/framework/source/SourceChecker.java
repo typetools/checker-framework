@@ -7,9 +7,11 @@ import org.checkerframework.checker.nullness.qual.*;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.CFContext;
+import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.OptionConfiguration;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
@@ -24,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -180,6 +183,8 @@ import com.sun.tools.javac.util.Log;
     "unsafeDefaultsForUncheckedBytecode",
     // TODO: temporary option to turn on sound behavior.
     "safeDefaultsForUncheckedBytecode",
+
+    "useConservativeDefaultsForUnannotatedSourceCode",
 
     // Whether to resolve reflective method invocations
     // resolveReflection=debug cause debugging information
@@ -373,6 +378,13 @@ public abstract class SourceChecker
     /** The line separator */
     private final static String LINE_SEPARATOR = System.getProperty("line.separator").intern();
 
+    // The checker that called this one, whether that be a BaseTypeChecker (used as a compound checker) or an AggregateChecker.
+    // Null if this is the checker that calls all others.
+    // Note that in the case of a compound checker, the compound checker is the parent, not the checker that was run prior to this one by the compound checker.
+    protected SourceChecker parentChecker = null;
+
+    protected List<String> upstreamCheckerNames = null; // Includes the current checker
+
     @Override
     public final void init(ProcessingEnvironment env) {
         super.init(env);
@@ -393,6 +405,25 @@ public abstract class SourceChecker
     /* This method is protected only to allow the AggregateChecker and BaseTypeChecker to call it. */
     protected void setProcessingEnvironment(ProcessingEnvironment env) {
         this.processingEnv = env;
+    }
+
+    protected void setParentChecker(SourceChecker parentChecker) {
+        this.parentChecker = parentChecker;
+    }
+
+    public List<String> getUpstreamCheckerNames() {
+        if (upstreamCheckerNames == null) {
+            upstreamCheckerNames = new ArrayList<String>();
+
+            SourceChecker checker = this;
+
+            while(checker != null) {
+                upstreamCheckerNames.add(checker.getClass().getName());
+                checker = checker.parentChecker;
+            }
+        }
+
+        return upstreamCheckerNames;
     }
 
     /** @return the {@link CFContext} used by this checker */
@@ -1180,7 +1211,7 @@ public abstract class SourceChecker
      * should be suppressed.  Returns true if the tree is within the scope
      * of a @SuppressWarnings annotation, one of whose values suppresses
      * the checker's warnings.  The list of keys that suppress a checker's
-     * wornings is provided by the {@link
+     * warnings is provided by the {@link
      * SourceChecker#getSuppressWarningsKey} method.
      *
      * @param tree the tree that might be a source of a warning
@@ -1204,12 +1235,31 @@ public abstract class SourceChecker
             return true;
 
         /*@Nullable*/ MethodTree method = TreeUtils.enclosingMethod(path);
-        if (method != null && shouldSuppressWarnings(InternalUtils.symbol(method), err))
-            return true;
+        if (method != null) {
+            /*@Nullable*/ Element elt = InternalUtils.symbol(method);
+
+            if (shouldSuppressWarnings(elt, err))
+                return true;
+
+            if (isAnnotatedForThisCheckerOrUpstreamChecker(elt))
+                return false; // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements, because they may not have an @AnnotatedFor.
+        }
 
         /*@Nullable*/ ClassTree cls = TreeUtils.enclosingClass(path);
-        if (cls != null && shouldSuppressWarnings(InternalUtils.symbol(cls), err))
+        if (cls != null){
+            /*@Nullable*/ Element elt = InternalUtils.symbol(cls);
+
+            if (shouldSuppressWarnings(elt, err))
+                return true;
+
+            if (isAnnotatedForThisCheckerOrUpstreamChecker(elt))
+                return false; // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements, because they may not have an @AnnotatedFor.
+        }
+
+        if (hasOption("useConservativeDefaultsForUnannotatedSourceCode")) {
+            // If we got this far without hitting an @AnnotatedFor and returning false, we DO suppress the warning.
             return true;
+        }
 
         return false;
     }
@@ -1219,10 +1269,36 @@ public abstract class SourceChecker
         if (elt == null)
             return false;
 
-        return checkSuppressWarnings(elt.getAnnotation(SuppressWarnings.class), err)
-                || shouldSuppressWarnings(elt.getEnclosingElement(), err);
+        if (checkSuppressWarnings(elt.getAnnotation(SuppressWarnings.class), err))
+            return true;
+
+        if (isAnnotatedForThisCheckerOrUpstreamChecker(elt))
+            return false; // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements, because they may not have an @AnnotatedFor.
+
+        return shouldSuppressWarnings(elt.getEnclosingElement(), err);
     }
 
+    private boolean isAnnotatedForThisCheckerOrUpstreamChecker(/*@Nullable*/ Element elt) {
+
+        if (elt == null || !hasOption("useConservativeDefaultsForUnannotatedSourceCode"))
+            return false;
+
+        /*@Nullable*/ AnnotatedFor anno = elt.getAnnotation(AnnotatedFor.class);
+
+        String[] userAnnotatedFors = (anno == null ? null : anno.value());
+
+        if (userAnnotatedFors != null) {
+            List<String> upstreamCheckerNames = getUpstreamCheckerNames();
+
+            for(String userAnnotatedFor : userAnnotatedFors) {
+                if (CheckerMain.matchesCheckerOrSubcheckerFromList(userAnnotatedFor, upstreamCheckerNames)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
     /**
      * Reports a result. By default, it prints it to the screen via the
      * compiler's internal messenger if the result is non-success; otherwise,
@@ -1236,7 +1312,6 @@ public abstract class SourceChecker
     public void report(final Result r, final Object src) {
 
         String err = r.getMessageKeys().iterator().next();
-        // TODO: SuppressWarnings checking for Elements
         if (src instanceof Tree && shouldSuppressWarnings((Tree)src, err))
             return;
         if (src instanceof Element && shouldSuppressWarnings((Element)src, err))
