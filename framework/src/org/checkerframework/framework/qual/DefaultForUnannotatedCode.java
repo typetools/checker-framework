@@ -17,13 +17,13 @@ import java.lang.annotation.Target;
  *
  * @see DefaultLocation
  * @see DefaultQualifier
- * @see DefaultQualifierInUncheckedBytecode
+ * @see DefaultQualifierForUnannotatedCode
  * @see ImplicitFor
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
-public @interface DefaultForInUncheckedBytecode {
+public @interface DefaultForUnannotatedCode {
     /**
      * @return the locations to which the annotation should be applied
      */

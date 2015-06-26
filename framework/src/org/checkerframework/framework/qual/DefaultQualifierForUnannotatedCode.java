@@ -12,7 +12,7 @@ import java.lang.annotation.*;
  *
  * Note, this annotations is analogous to DefaultQualifierInHierarchy but for
  * unchecked bytecode.
- * @see DefaultForInUncheckedBytecode
+ * @see DefaultForUnannotatedCode
  * <p>
  *
  * Each type qualifier hierarchy may have at most one qualifier marked as
@@ -21,4 +21,4 @@ import java.lang.annotation.*;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ANNOTATION_TYPE)
-public @interface DefaultQualifierInUncheckedBytecode {}
+public @interface DefaultQualifierForUnannotatedCode {}
