@@ -99,7 +99,7 @@ public class CheckerMain {
     }
 
     /**
-     * For every "-proccessor" argument in args, replace its immediate successor argument using
+     * For every "-processor" argument in args, replace its immediate successor argument using
      * asCheckerFrameworkProcessors
      */
     protected void replaceShorthandProcessor(final List<String> args) {
@@ -107,7 +107,8 @@ public class CheckerMain {
             final int nextIndex = i + 1;
             if (args.size() > nextIndex) {
                 if (args.get(i).equals("-processor")) {
-                    final String replacement = asCheckerFrameworkProcessors(args.get(nextIndex));
+                    final String replacement = asCheckerFrameworkProcessors(args.get(nextIndex),
+                                                   getCheckerClassNames(), false);
                     args.remove(nextIndex);
                     args.add(nextIndex, replacement);
                 }
@@ -522,11 +523,47 @@ public class CheckerMain {
     protected static final String SUBTYPING_CHECKER_NAME =
             org.checkerframework.common.subtyping.SubtypingChecker.class.getSimpleName();
 
+    // Returns true if processorString, once transformed into fully qualified form, is present
+    // in fullyQualifiedCheckerNames.
+    // processorString must be the name of a single processor, not a comma-separated list of processors.
+    public static boolean matchesCheckerOrSubcheckerFromList(final String processorString, List<String> fullyQualifiedCheckerNames) {
+        if (processorString.contains(","))
+            return false; // Do not process strings containing multiple processors.
+
+        return fullyQualifiedCheckerNames.contains(asCheckerFrameworkProcessors(processorString, fullyQualifiedCheckerNames, true));
+    }
+
+    // Returns the list of fully qualified names of the checkers found in checker.jar
+    // This covers only checkers with the name ending in "Checker"
+    // Checkers with a name ending in "Subchecker" are not included in the returned list,
+    // Note however that it is possible for a checker with the name ending in "Checker" to be used as a subchecker.
+    private List<String> getCheckerClassNames() {
+        ArrayList<String> checkerClassNames = new ArrayList<String>();
+        try {
+            final JarInputStream checkerJarIs = new JarInputStream(new FileInputStream(checkersJar));
+            ZipEntry entry;
+            while ((entry = checkerJarIs.getNextEntry()) != null) {
+                final String name = entry.getName();
+                if (name.startsWith(CHECKER_BASE_DIR_NAME) && name.endsWith("Checker.class")) { // Checkers ending in "Subchecker" are not included in this list used by CheckerMain.
+                    checkerClassNames.add(PluginUtil.join(".", name.substring(0, name.length() - ".class".length()).split("/")));
+                }
+            }
+            checkerJarIs.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read checker.jar", e);
+        }
+
+        return checkerClassNames;
+    }
+
     /**
      * Takes a processor string of the form
      * NullnessChecker
+     * or
+     * nullness
      * and returns:
      * org.checkerframework.checker.nullness.NullnessChecker
+     * if the latter is found in the fullyQualifiedCheckerNames list. Also fully qualifies the subtyping checker.
      *
      * asCheckerFrameworkProcessors will handle processor strings with multiple processors, e.g:
      * NullnessChecker,RegexChecker
@@ -536,49 +573,98 @@ public class CheckerMain {
      * Note, a processor entry only gets replaced if it contains NO "." (i.e. is not qualified by the
      * package name) and can be found under the package org.checkerframework.checker in the checker.jar.
      * @param processorsString A string identifying processors
+     * @param fullyQualifiedCheckerNames A list of fully-qualified checker names to match processorsString against.
+     * @param allowSubcheckers Whether to match against fully qualified checker names ending with "Subchecker".
      * @return processorsString where all unqualified references to Checker Framework built-in checkers
      * are replaced with fully-qualified references
      */
-    protected String asCheckerFrameworkProcessors(final String processorsString) {
-
+    protected static String asCheckerFrameworkProcessors(final String processorsString, List<String> fullyQualifiedCheckerNames, boolean allowSubcheckers) {
         final String[] processors = processorsString.split(",");
-        final boolean[] unqualified = new boolean[processors.length];
         for (int i = 0; i < processors.length; i++) {
-            if (processors[i].equals(SUBTYPING_CHECKER_NAME)) {
+            if (processors[i].equals(SUBTYPING_CHECKER_NAME)) { // Allow "subtyping" as well.
                 processors[i] = FULLY_QUALIFIED_SUBTYPING_CHECKER;
-                unqualified[i] = false;
             } else {
-                unqualified[i] = !processors[i].contains(".");
-            }
-        }
-
-        try {
-            final JarInputStream checkerJarIs = new JarInputStream(new FileInputStream(checkersJar));
-            ZipEntry entry;
-            while ((entry = checkerJarIs.getNextEntry()) != null) {
-                final String name = entry.getName();
-                if (name.startsWith(CHECKER_BASE_DIR_NAME) && name.endsWith("Checker.class")) {
-                    final String [] checkerPath = name.substring(0, name.length() - "Checker.class".length()).split("/");
-                    final String checkerNameShort = checkerPath[checkerPath.length - 1];
-                    final String checkerName = checkerNameShort + "Checker";
-
-                    for (int i = 0; i < processors.length; i++) {
-                        if (unqualified[i]) {
-                            if (processors[i].equalsIgnoreCase(checkerName) ||
-                                    processors[i].equalsIgnoreCase(checkerNameShort)) {
-                                final String qualifiedCheckerFrameworkProcessor = PluginUtil.join(".", checkerPath);
-                                processors[i] = qualifiedCheckerFrameworkProcessor + "Checker";
-                                break;
-                            }
-                        }
-                    }
+                if (!processors[i].contains(".")) { // Not already fully qualified
+                    processors[i] = fullyQualifyProcessor(processors[i], fullyQualifiedCheckerNames, allowSubcheckers);
                 }
             }
-            checkerJarIs.close();
-        } catch (IOException e) {
-            throw new RuntimeException("Could not read checker.jar", e);
         }
 
+
         return PluginUtil.join(",", processors);
+    }
+
+    private static String fullyQualifyProcessor(final String processor, List<String> fullyQualifiedCheckerNames, boolean allowSubcheckers) {
+        for(final String name : fullyQualifiedCheckerNames) {
+            boolean tryMatch = false;
+            String [] checkerPath = name.substring(0, name.length() - "Checker".length()).split("\\.");
+            String checkerNameShort = checkerPath[checkerPath.length - 1];
+            String checkerName = checkerNameShort + "Checker";
+
+            if (name.endsWith("Checker")) {
+                checkerPath = name.substring(0, name.length() - "Checker".length()).split("\\.");
+                checkerNameShort = checkerPath[checkerPath.length - 1];
+                checkerName = checkerNameShort + "Checker";
+                tryMatch = true;
+            } else if (allowSubcheckers && name.endsWith("Subchecker")) {
+                checkerPath = name.substring(0, name.length() - "Subchecker".length()).split("\\.");
+                checkerNameShort = checkerPath[checkerPath.length - 1];
+                checkerName = checkerNameShort + "Subchecker";
+                tryMatch = true;
+            }
+
+            if (tryMatch) {
+                if (processor.equalsIgnoreCase(checkerName) ||
+                    processor.equalsIgnoreCase(checkerNameShort)) {
+                    return name;
+                }
+            }
+        }
+
+        return processor; // If not matched, return the input string.
+    }
+
+    /**
+     * Takes a processor string of the form
+     * NullnessChecker
+     * or
+     * nullness
+     * and returns true if
+     * if the latter is found in the fullyQualifiedCheckerNames list. Does not match the subtyping checker.
+     *
+     * Does not match multiple processors - a single processor name must be given.
+     *
+     * @param processorsString A string identifying one processor.
+     * @param fullyQualifiedCheckerNames A list of fully-qualified checker names to match processor against.
+     * @param allowSubcheckers Whether to match against fully qualified checker names ending with "Subchecker".
+     */
+    public static boolean matchesFullyQualifiedProcessor(final String processor, List<String> fullyQualifiedCheckerNames, boolean allowSubcheckers) {
+        for(final String name : fullyQualifiedCheckerNames) {
+            boolean tryMatch = false;
+            String [] checkerPath = name.substring(0, name.length() - "Checker".length()).split("\\.");
+            String checkerNameShort = checkerPath[checkerPath.length - 1];
+            String checkerName = checkerNameShort + "Checker";
+
+            if (name.endsWith("Checker")) {
+                checkerPath = name.substring(0, name.length() - "Checker".length()).split("\\.");
+                checkerNameShort = checkerPath[checkerPath.length - 1];
+                checkerName = checkerNameShort + "Checker";
+                tryMatch = true;
+            } else if (allowSubcheckers && name.endsWith("Subchecker")) {
+                checkerPath = name.substring(0, name.length() - "Subchecker".length()).split("\\.");
+                checkerNameShort = checkerPath[checkerPath.length - 1];
+                checkerName = checkerNameShort + "Subchecker";
+                tryMatch = true;
+            }
+
+            if (tryMatch) {
+                if (processor.equalsIgnoreCase(checkerName) ||
+                    processor.equalsIgnoreCase(checkerNameShort)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

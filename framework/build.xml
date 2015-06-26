@@ -348,6 +348,13 @@
         </antcall>
     </target>
 
+    <target name="annotatedfor-tests" depends="jar,build-tests"
+            description="Run tests for partially annotated libraries">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.AnnotatedForTest"/>
+        </antcall>
+    </target>
+
     <target name="annotation-builder-tests" depends="jar,build-tests"
             description="Run tests for the Checker Framework">
         <antcall target="-run-tests">
