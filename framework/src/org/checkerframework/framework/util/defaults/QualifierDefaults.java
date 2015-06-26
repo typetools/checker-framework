@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util.defaults;
 
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifiers;
@@ -15,6 +16,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -24,6 +26,7 @@ import org.checkerframework.javacutil.TreeUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,6 +79,7 @@ public class QualifierDefaults {
     private boolean applyToTypeVar = false;
     private final Elements elements;
     private final AnnotatedTypeFactory atypeFactory;
+    private final List<String> upstreamCheckerNames;
 
     private final DefaultSet absoluteDefaults = new DefaultSet();
     private final DefaultSet untypedDefaults = new DefaultSet();
@@ -88,10 +92,15 @@ public class QualifierDefaults {
     /**
      * Defaults that apply for a certain Element.
      * On the one hand this is used for caching (an earlier name for the field was
-     * "qualifierCache". It can also be used by type systems to set defaults for
+     * "qualifierCache"). It can also be used by type systems to set defaults for
      * certain Elements.
      */
     private final Map<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
+
+    /**
+     * A mapping of Element -> Whether or not that element is AnnotatedFor this type system.
+     */
+    private final Map<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
 
     /**
      * List of DefaultLocations which are valid for untyped code defaults.
@@ -105,7 +114,7 @@ public class QualifierDefaults {
     };
 
     /**
-     * Returns an array of locations which are valid for the untyped value
+     * Returns an array of locations that are valid for the untyped value
      * defaults.  These are simply by syntax, since an entire file is typechecked,
      * it is not possible for local variables to be untyped.
      */
@@ -120,6 +129,7 @@ public class QualifierDefaults {
     public QualifierDefaults(Elements elements, AnnotatedTypeFactory atypeFactory) {
         this.elements = elements;
         this.atypeFactory = atypeFactory;
+        this.upstreamCheckerNames = atypeFactory.getContext().getChecker().getUpstreamCheckerNames();
     }
 
     /**
@@ -383,6 +393,51 @@ public class QualifierDefaults {
         }
     }
 
+    private boolean isElementAnnotatedForThisChecker(final Element elt) {
+        boolean elementAnnotatedForThisChecker = false;
+
+        if (elt == null) {
+            return false;
+        }
+
+        if (elementAnnotatedFors.containsKey(elt)) {
+            return elementAnnotatedFors.get(elt);
+        }
+
+        {
+            AnnotatedFor af = elt.getAnnotation(AnnotatedFor.class);
+
+            if (af != null) {
+                String[] checkers = af.value();
+
+                if (checkers != null) {
+                    for (String checker : checkers) {
+                        if (CheckerMain.matchesFullyQualifiedProcessor(checker, upstreamCheckerNames, true)) {
+                            elementAnnotatedForThisChecker = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (elementAnnotatedForThisChecker == false) {
+            Element parent;
+            if (elt.getKind() == ElementKind.PACKAGE) // Must NOT look at packages.
+                parent = ((Symbol) elt).owner;
+            else
+                parent = elt.getEnclosingElement();
+
+            if (isElementAnnotatedForThisChecker(parent)) {
+                elementAnnotatedForThisChecker = true;
+            }
+        }
+
+        elementAnnotatedFors.put(elt, elementAnnotatedForThisChecker);
+
+        return elementAnnotatedForThisChecker;
+    }
+
     private DefaultSet defaultsAt(final Element elt) {
         if (elt == null) {
             return DefaultSet.EMPTY;
@@ -454,25 +509,29 @@ public class QualifierDefaults {
      */
     private void applyDefaultsElement(final Element annotationScope, final AnnotatedTypeMirror type) {
         DefaultSet defaults = defaultsAt(annotationScope);
+        boolean annotatedForThisChecker = isElementAnnotatedForThisChecker(annotationScope);
         DefaultApplierElement applier = new DefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
 
         for (Default def : defaults) {
             applier.apply(def);
         }
 
-        if (untypedDefaults.size() > 0 &&
-                ElementUtils.isElementFromByteCode(annotationScope) &&
-                atypeFactory.declarationFromElement(annotationScope) == null &&
-                !atypeFactory.isFromStubFile(annotationScope)) {
+        if (untypedDefaults.size() > 0) {
                 // TODO: I would expect this:
                 //   atypeFactory.isFromByteCode(annotationScope)) {
                 // to work instead of the last three clauses,
                 // but it doesn't work correctly and tests fail.
                 // (That whole @FromStubFile and @FromByteCode annotation
                 // logic should be replaced by something sensible.)
-            for (Default def : untypedDefaults) {
-                applier.apply(def);
-            }
+            if ((ElementUtils.isElementFromByteCode(annotationScope) &&
+                    atypeFactory.declarationFromElement(annotationScope) == null &&
+                    !atypeFactory.isFromStubFile(annotationScope)) ||
+                    !annotatedForThisChecker
+                    ) {
+                     for (Default def : untypedDefaults) {
+                         applier.apply(def);
+                    }
+                }
         }
 
         for (Default def : absoluteDefaults) {

@@ -2,6 +2,7 @@ package org.checkerframework.framework.qual;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.CONSTRUCTOR;
 
 import java.lang.annotation.Target;
 
@@ -12,11 +13,11 @@ import java.lang.annotation.Target;
  * <tt>@Nullable</tt> and <tt>@Regex</tt>.
  * <p>
  *
- * Ordinarily, the <tt>-AuseConservativeDefaultsForUnannotatedCode</tt> command-line argument
+ * Ordinarily, the <tt>-AuseConservativeDefaultsForUnannotatedSourceCode</tt> command-line argument
  * causes unannotated locations to be defaulted using conservative library
  * annotations, and it suppresses all warnings.  The
- * <tt>-AuseConservativeDefaultsForUnannotatedCode</tt> command-line argument has no effect on
- * classes with a relevant <tt>@AnnotatedFor</tt> annotion:  any
+ * <tt>-AuseConservativeDefaultsForUnannotatedSourceCode</tt> command-line argument has no effect on
+ * classes with a relevant <tt>@AnnotatedFor</tt> annotation:  any
  * unannotated location is defaulted normally (typically using the
  * CLIMB-to-top rule), and typechecking warnings are issued.
  * <p>
@@ -26,10 +27,10 @@ import java.lang.annotation.Target;
  * class name for the checker, or a shorthand for built-in checkers.  Using
  * the annotation with no arguments, as in
  * <code>@AnnotatedFor({})</code>, has no effect.
- * 
- * @checker_framework.manual #compiling-libraries Compiling partially-annotated librares
+ *
+ * @checker_framework.manual #compiling-libraries Compiling partially-annotated libraries
  */
-@Target({TYPE, METHOD}) // permitting on PACKAGE would be too error-prone
+@Target({TYPE, METHOD, CONSTRUCTOR}) // permitting on PACKAGE would be too error-prone
 public @interface AnnotatedFor {
     /**
      * @return the type systems for which the class has been annotated.
