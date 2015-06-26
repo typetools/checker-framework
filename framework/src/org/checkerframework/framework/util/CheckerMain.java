@@ -626,15 +626,16 @@ public class CheckerMain {
 
     /**
      * Takes a processor string of the form
-     * NullnessChecker
+     * "NullnessChecker"
      * or
-     * nullness
-     * and returns true if
-     * if the latter is found in the fullyQualifiedCheckerNames list. Does not match the subtyping checker.
+     * "nullness"
+     * and returns true
+     * if it is found in the fullyQualifiedCheckerNames list.
+     * Does not match the subtyping checker.
      *
      * Does not match multiple processors - a single processor name must be given.
      *
-     * @param processorsString A string identifying one processor.
+     * @param processor A string identifying one processor.
      * @param fullyQualifiedCheckerNames A list of fully-qualified checker names to match processor against.
      * @param allowSubcheckers Whether to match against fully qualified checker names ending with "Subchecker".
      */
