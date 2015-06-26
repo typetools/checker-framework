@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util.typeinference;
 
+import com.sun.source.tree.LambdaExpressionTree;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -16,7 +17,9 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -200,8 +203,17 @@ public class TypeArgInferenceUtil {
 
             return constructor.getParameterTypes().get(treeIndex);
         } else if (assignmentContext instanceof ReturnTree) {
-            MethodTree method = TreeUtils.enclosingMethod(path);
-            return (atypeFactory.getAnnotatedType(method)).getReturnType();
+            HashSet<Kind> kinds = new HashSet<>(Arrays.asList(Kind.LAMBDA_EXPRESSION, Kind.METHOD));
+            Tree enclosing = TreeUtils.enclosingOfKind(path, kinds);
+
+            if (enclosing.getKind() == Kind.METHOD) {
+                return (atypeFactory.getAnnotatedType((MethodTree) enclosing)).getReturnType();
+
+            } else {
+                return atypeFactory.getFnInterfaceFromTree((LambdaExpressionTree) enclosing).first;
+
+            }
+
         } else if (assignmentContext instanceof VariableTree) {
             if (atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>) {
                 final GenericAnnotatedTypeFactory<?,?,?,?> gatf = ((GenericAnnotatedTypeFactory<?,?,?,?>) atypeFactory);
