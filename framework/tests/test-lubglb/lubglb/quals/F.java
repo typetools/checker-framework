@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultForInUncheckedBytecode;
+import org.checkerframework.framework.qual.DefaultForUnannotatedCode;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
@@ -17,6 +17,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @DefaultFor({DefaultLocation.LOWER_BOUNDS})
-@DefaultForInUncheckedBytecode({DefaultLocation.RETURNS})
+@DefaultForUnannotatedCode({DefaultLocation.RETURNS})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface F { }

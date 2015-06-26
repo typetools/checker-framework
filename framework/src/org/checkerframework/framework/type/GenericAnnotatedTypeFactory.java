@@ -26,11 +26,11 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultForInUncheckedBytecode;
+import org.checkerframework.framework.qual.DefaultForUnannotatedCode;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
-import org.checkerframework.framework.qual.DefaultQualifierInUncheckedBytecode;
+import org.checkerframework.framework.qual.DefaultQualifierForUnannotatedCode;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.Unqualified;
@@ -378,19 +378,19 @@ public abstract class GenericAnnotatedTypeFactory<
                     checker.hasOption("safeDefaultsForUncheckedBytecode") ||
                     // This block may need to be split after safeDefaults... is reverted to unsafeDefaults...
                     checker.hasOption("useConservativeDefaultsForUnannotatedSourceCode")) {
-                DefaultForInUncheckedBytecode defaultForUntyped = qual.getAnnotation(DefaultForInUncheckedBytecode.class);
+                DefaultForUnannotatedCode defaultForUntyped = qual.getAnnotation(DefaultForUnannotatedCode.class);
 
                 if (defaultForUntyped != null) {
                     defs.addUntypedDefaults(AnnotationUtils.fromClass(elements, qual),
                             defaultForUntyped.value());
                 }
 
-                if (qual.getAnnotation(DefaultQualifierInUncheckedBytecode.class) != null) {
+                if (qual.getAnnotation(DefaultQualifierForUnannotatedCode.class) != null) {
                     if (defaultForUntyped != null) {
-                        // A type qualifier should either have a DefaultForInUncheckedBytecode or
-                        // a DefaultQualifierInUncheckedBytecode annotation.
+                        // A type qualifier should either have a DefaultForUnannotatedCode or
+                        // a DefaultQualifierForUnannotatedCode annotation.
                         ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
-                                "qualifier has both @DefaultForInUncheckedBytecode and @DefaultQualifierInUncheckedBytecode annotations: " +
+                                "qualifier has both @DefaultForUnannotatedCode and @DefaultQualifierForUnannotatedCode annotations: " +
                                 qual.getCanonicalName());
                     } else {
                         for (DefaultLocation location : QualifierDefaults.validLocationsForUntyped()) {
