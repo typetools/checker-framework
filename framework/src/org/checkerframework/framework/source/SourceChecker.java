@@ -75,7 +75,7 @@ import com.sun.tools.javac.util.Log;
  *
  * <p>
  *
- * TODO update: Subclasses must implement the following methods:
+ * Subclasses must implement the following methods: (TODO: update the list)
  *
  * <ul>
  *  <li>{@link SourceChecker#getMessages} (for type-qualifier specific error messages)
