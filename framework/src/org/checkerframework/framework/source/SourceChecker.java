@@ -80,7 +80,6 @@ import com.sun.tools.javac.util.Log;
  * <ul>
  *  <li>{@link SourceChecker#getMessages} (for type-qualifier specific error messages)
  *  <li>{@link SourceChecker#createSourceVisitor} (for a custom {@link SourceVisitor})
- *  <!-- <li>{@link SourceChecker#createFactory} (for a custom {@link AnnotatedTypeFactory}) -->
  *  <li>{@link SourceChecker#getSuppressWarningsKeys} (for honoring
  *      {@literal @}{link SuppressWarnings} annotations)
  * </ul>
