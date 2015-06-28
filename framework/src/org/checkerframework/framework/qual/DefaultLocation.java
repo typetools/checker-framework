@@ -1,0 +1,122 @@
+package org.checkerframework.framework.qual;
+
+/**
+ * Specifies the locations to which a {@link DefaultQualifier} annotation applies.
+ *
+ * The order of enums is important. Defaults are applied in this order.
+ * In particular, this means that OTHERWISE and ALL should be last.
+ *
+ * @see DefaultQualifier
+ * @see javax.lang.model.element.ElementKind
+ */
+// TODO: variable naming is inconsistently singular or plural.
+public enum DefaultLocation {
+
+    /**
+     * Apply default annotations to all unannotated raw types
+     * of fields.
+     */
+    FIELD,
+
+    /**
+     * Apply default annotations to all unannotated raw types
+     * of local variables, casts, and instanceof.
+     * <p>
+     * TODO: should cast/instanceof be separated?
+     */
+    LOCAL_VARIABLE,
+
+    /**
+     * Apply default annotations to all unannotated raw types
+     * of resource variables.
+     */
+    RESOURCE_VARIABLE,
+
+    /**
+     * Apply default annotations to all unannotated raw types
+     * of exception parameters.
+     */
+    EXCEPTION_PARAMETER,
+
+    /**
+     * Apply default annotations to all unannotated raw types
+     * of receiver types.
+     */
+    RECEIVERS,
+
+    /**
+     * Apply default annotations to all unannotated raw types
+     * of formal parameter types.
+     */
+    PARAMETERS,
+
+    /**
+     * Apply default annotations to all unannotated raw types
+     * of return types.
+     */
+    RETURNS,
+
+    /**
+     * Apply default annotations to unannotated lower bounds
+     * for type variables and wildcards both explicit ones in
+     * <tt>extends</tt> clauses, and implicit upper bounds
+     * when no explicit <tt>extends</tt> or <tt>super</tt>
+     * clause is present
+     */
+    LOWER_BOUNDS,
+
+    /**
+     * Apply default annotations to unannotated, but explicit lower bounds:
+     * <code>&lt;? super Object&gt;</code>
+     *
+     */
+    EXPLICIT_LOWER_BOUNDS,
+
+    /**
+     * Apply default annotations to unannotated, but implicit lower bounds:
+     * <code>&lt;T&gt;</code>
+     * <code>&lt;?&gt;</code>
+     */
+    IMPLICIT_LOWER_BOUNDS,
+
+    /**
+     * Apply default annotations to unannotated upper bounds:  both
+     * explicit ones in <tt>extends</tt> clauses, and implicit upper bounds
+     * when no explicit <tt>extends</tt> or <tt>super</tt> clause is
+     * present.
+     *
+     * Especially useful for parametrized classes that provide a lot of
+     * static methods with the same generic parameters as the class.
+     *
+     * TODO: more doc, relation to other UPPER_BOUNDS
+     */
+    UPPER_BOUNDS,
+
+    /**
+     * Apply default annotations to unannotated, but explicit upper bounds:
+     * <code>&lt;T extends Object&gt;</code>
+     *
+     * TODO: more doc, relation to other UPPER_BOUNDS
+     */
+    EXPLICIT_UPPER_BOUNDS,
+
+    /**
+     * Apply default annotations to unannotated type variables:
+     * <code>&lt;T&gt;</code>
+     *
+     * TODO: more doc, relation to other UPPER_BOUNDS
+     */
+    IMPLICIT_UPPER_BOUNDS,
+
+    /**
+     * Apply if nothing more concrete is provided.
+     * TODO: clarify relation to ALL.
+     */
+    OTHERWISE,
+
+    /**
+     * Apply default annotations to all type uses other than uses of type parameters.
+     * Does not allow any of the other constants. Usually you want OTHERWISE.
+     */
+    ALL;
+}
