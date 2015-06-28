@@ -178,8 +178,8 @@ This section describes the typical workflow for creating a
 partially-annotated library.
 
 \begin{enumerate}
-\item Find out whether an annotated version of the library already exists
-  (see file \<checker-framework/checker/lib/README>).
+\item Read file \<checker-framework/checker/lib/README>
+  to find out whether an annotated version of the library already exists.
 %% This adds clutter to the source code, so omit the step from these instructions.
 % \item Optionally, run a script that adds
 %     \<\refqualclass{framework/qual}{AnnotatedFor}(\ttlcb\ttrcb)>
@@ -187,12 +187,18 @@ partially-annotated library.
 %     This step has no semantic effect.  It only saves you the trouble of
 %     typing those 17 characters later.
 
-  If it does not already exist, fork the project (if its license permits forking).
+  If it does not already exist, fork the project (if its license permits
+  forking).  Add a note, perhaps in a README, indicating how to obtain the
+  corresponding upstream version; that will enable others to see exactly
+  what edits you have made.
+
   Adjust the library's
-  build process, such as a Maven or Ant buildfile, so that when running the
+  build process, such as a Maven or Ant buildfile, so that every time it runs the
   compiler, it passes the \<-AuseConservativeDefaultsForUnannotatedCode>
   command-line option and runs every pluggable type-checker for which any
-  annotations exist.  The reason to run every type-checker is so that all
+  annotations exist.  You are not adding a new buld target, but modifying
+  any existing targets.
+  The reason to run every type-checker is so that all
   of the annotations you wrote are correct, and all other type uses are
   defaulted properly.
 
@@ -206,7 +212,7 @@ partially-annotated library.
   When you annotate a file, annotate the whole thing, not just a few of its
   methods.  Once the file is annotated, add an
   \<\refqualclass{framework/qual}{AnnotatedFor}(\ttlcb"\emph{checkername}"\ttrcb)>
-  annotation to its classes, or augment an existing \<@AnnotatedFor>
+  annotation to its class(es), or augment an existing \<@AnnotatedFor>
   annotation.
 
 \item
