@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 
 import javax.annotation.processing.SupportedAnnotationTypes;
 
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.qualframework.base.Checker;
 
