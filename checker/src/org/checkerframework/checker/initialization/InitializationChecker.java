@@ -16,9 +16,10 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
 /**
- * The checker for the freedom-before-commitment type-system. Also supports
- * rawness as a type-system for tracking initialization, though FBC is
- * preferred.
+ * Tracks whether a value is initialized (all its fields are set),
+ * and checks that values are initialized before being used.
+ * Supports two different type systems for initialization:
+ * freedom-before-commitment (which is generally preferred) and rawness.
  *
  * @checker_framework.manual #initialization-checker Initialization Checker
  * @author Stefan Heule

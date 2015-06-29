@@ -55,10 +55,9 @@ manual.pdf: bib-update figures-all
 	while grep "Rerun to get" manual.log; do pdflatex manual.tex; done
 
 html: manual.html
-manual.html: manual.pdf
+manual.html: manual.pdf logo/Logo/CFLogo.png
 	hevea -fix -exec xxdate.exe manual.tex
 	./add-favicon-to-manual
-	cp logo/Logo/CFLogo.png ./CFLogo.png
 # The following three lines are only necessary when using Hevea before version 2.04
 # With version 2.04 they have no effect but do no harm.
 	\mv -f manual.html manual.html-with-htoc
@@ -67,6 +66,9 @@ manual.html: manual.pdf
 # The below is not necessary since Hevea mkes good tables of contents itself.
 #	perl -pi -e 's/(<!--TOC section Introduction-->)/$$1\n\n<p>Contents:<\/p>\n<!-- start toc.  do not edit; run html-update-toc instead -->\n<!-- end toc -->\n\n<br>\n/' manual.html
 #	html-update-toc manual.html
+
+logo/Logo/CFLogo.png: ./CFLogo.png
+	cp -p $@ $<
 
 export BIBINPUTS = $BIBINPUTS:.:bib
 bib:

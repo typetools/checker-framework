@@ -111,15 +111,15 @@
 
 
 % Reference to Checker Framework Javadoc for a class (not a method, etc.).
-% Arg 1: directory under checker/, including internal "/", but no leading
-% or trailing "/".
+% Arg 1: directory under org/checkerframework/, including internal "/", but
+% no leading or trailing "/".
 % Arg 2: class name.
 % In the printed version, only the base class name appears.
 % In the HTML version, it's a link to the Javadoc.
 \newcommand{\refclass}[2]{\href{api/org/checkerframework/#1/#2.html}{\<#2>}}
 
 % Reference to Checker Framework Javadoc for a type qualifier/annotation class
-% (not a method, etc.).  This prepends an @ to the qualifier name.
+% (not a method, etc.).  Like \refclass, but prepends an @ to the qualifier name.
 \newcommand{\refqualclass}[2]{\href{api/org/checkerframework/#1/#2.html}{\<@#2>}}
 
 % Reference to Checker Framework Javadoc for a type qualifier/annotation class
@@ -128,16 +128,17 @@
 \newcommand{\refqualclasswithparams}[3]{\href{api/org/checkerframework/#1/#2.html}{\<@#2>}\<(#3)>}
 
 % Reference to Checker Framework Javadoc for a method or field.).
-% Arg 1: package name using "/" as a separator, with no leading or trailing "/".
-%  example: "checker/nullness/qual"
+% Arg 1: package name under org/checkerframework, using "/" as a separator,
+% with no leading or trailing "/". example: "checker/nullness/qual"
 % Arg 2: class name.
 % Arg 3: method name.
-% Arg 4: fully-qualified arguments.  Example: "(T)"
+% Arg 4: fully-qualified arguments.  Example: "(T)".  For Java 8, may need
+% to use "-T-" with dashes instead of parentheses.
 % In the printed version, only "class.method" appears.
 % In the HTML version, it's a link to the Javadoc.
 \newcommand{\refmethod}[4]{\href{api/org/checkerframework/#1/#2.html\##3#4}{\<#2.#3>}}
-% Like refmethod, but formatted as ``field'' instead of ``Class.field''.
-% The last argument is usually empty {}.
+% Like refmethod, but formatted more concisely as ``field'' instead of
+% ``Class.field''.  The last argument is usually empty {}.
 \newcommand{\refenum}[4]{\href{api/org/checkerframework/#1/#2.html\##3#4}{\<#3>}}
 
 % Reference to Sun Javadoc.
