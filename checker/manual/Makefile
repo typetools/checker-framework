@@ -67,7 +67,7 @@ manual.html: manual.pdf logo/Logo/CFLogo.png
 #	perl -pi -e 's/(<!--TOC section Introduction-->)/$$1\n\n<p>Contents:<\/p>\n<!-- start toc.  do not edit; run html-update-toc instead -->\n<!-- end toc -->\n\n<br>\n/' manual.html
 #	html-update-toc manual.html
 
-logo/Logo/CFLogo.png: ./CFLogo.png
+CFLogo.png: logo/Logo/CFLogo.png
 	cp -p $@ $<
 
 export BIBINPUTS = $BIBINPUTS:.:bib
