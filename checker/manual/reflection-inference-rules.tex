@@ -1,0 +1,56 @@
+\begin{figure}[t!]
+
+% Column definitions to control alignment and width
+%\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+%\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\begin{center}
+\begin{small}
+%BEGIN IMAGE
+\def\ruleHeader#1{\framebox[.4\linewidth]{#1}}
+\def\text#1{\textrm{#1}}
+\def\sym#1{\textit{#1}}
+\newcommand{\inferred}[2][\relax]{\textbf{#2\<(>}#1\textbf{\<)>}}
+\newcommand{\breakabledot}{\discretionary{}{.}{.}}
+
+\newcommand{\const}{\text{ is a compile-time constant string }}
+\newcommand{\condspace}{\quad}
+\newcommand{\halfcondspace}{\ }
+
+\def\forName{\<Class.forName>}
+\def\loadClass{\<ClassLoader.loadClass>}
+
+\begin{tabular}{c}
+%\ruleHeader{Inference of \textbf{\<@ClassVal>}} \\[\gap]
+\infer{\<C.class> : \inferred[bn]{\<@ClassVal>}}
+      {\sym{bn}\text{ is the binary name of }\<C>} \\
+\\
+\infer{\<Class.forName(>s\<)>: \inferred[\nu]{\<@ClassVal>}}
+      {s: \<@StringVal(>\nu\<)>} \\
+\\[4pt]
+%\ruleHeader{Inference of \textbf{\<@ClassBound>}}\\[\gap]
+\infer{e\<.getClass()> : \inferred[bn]{\<@ClassBound>}}
+      {e: \tau \condspace \sym{bn}\text{ is the binary name of }\tau} \\
+\\[4pt]
+%\ruleHeader{Inference of \textbf{\<@MethodVal>}} \\[\gap]
+\infer{e\<.getMethod(>s\<,>p\<)> : \inferred[\<cn=>\nu\<,mn=>\mu\<,np=>\pi]{\<@MethodVal>}}
+      {(e: \<@ClassBound(>\nu\<)> \halfcondspace \vee \halfcondspace e: \<@ClassVal(>\nu\<)>)
+        \\ s:\<@StringVal(>\mu\<)> \condspace p: \<@ArrayLen(>\pi\<)>} \\
+\\
+\infer{e\<.getConstructor(>p\<)> : \inferred[\<cn=>\nu,mn=\code{"<init>"},np=\pi]{\<@MethodVal>}}
+      {e: \<@ClassVal(>\nu\<)> \condspace p: \<@ArrayLen(>\pi\<)>} \\
+
+\end{tabular}
+%END IMAGE
+%HEVEA\imageflush[height="300" width="505"]
+\end{small}
+\end{center}
+\caption{\label{fig:reflection-inference}%
+Example inference rules for @ClassVal, @ClassBound, and @MethodVal.
+Additional rules exist for expressions with similar semantics but that call
+methods with different names or signatures.
+%\todo{I added more examples and a more detailed description to the section, so
+%    this does not seem to be necessary here: (e.g., @ClassVal is also inferred for
+%calls to \<ClassLoader.loadClass>).}
+}
+\end{figure}

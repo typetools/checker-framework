@@ -1,0 +1,56 @@
+import static org.junit.Assert.assertFalse;
+
+import org.checkerframework.checker.i18nformatter.I18nFormatUtil;
+import org.checkerframework.checker.i18nformatter.qual.I18nFormat;
+import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
+import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
+
+public class ConversionCategory {
+
+    public static void main(String[] args) {
+        @I18nFormat({I18nConversionCategory.GENERAL})String s1 = "{0}";
+
+        @I18nFormat({I18nConversionCategory.DATE}) String s2 = "{0, date}";
+        @I18nFormat({I18nConversionCategory.NUMBER}) String s3 = "{0, number}";
+
+        @I18nFormat({I18nConversionCategory.NUMBER, I18nConversionCategory.NUMBER}) String s4 = "{1} {0, date}";
+        s4 = "{0}";
+
+        @I18nFormat({I18nConversionCategory.GENERAL, I18nConversionCategory.NUMBER}) String s5 = "{0} and {1, number}";
+        @I18nFormat({I18nConversionCategory.UNUSED, I18nConversionCategory.NUMBER}) String s6 = "{1, number}";
+        @I18nFormat({I18nConversionCategory.UNUSED, I18nConversionCategory.DATE}) String s7 = "{1, date}";
+
+        @I18nFormat({I18nConversionCategory.UNUSED, I18nConversionCategory.UNUSED, I18nConversionCategory.NUMBER}) String s8 = "{2}";
+
+        @I18nFormat({I18nConversionCategory.GENERAL, I18nConversionCategory.DATE, I18nConversionCategory.UNUSED, I18nConversionCategory.NUMBER})
+        String s9 = "{3, number} {0} {1, time}";
+
+        @I18nFormat({I18nConversionCategory.GENERAL, I18nConversionCategory.DATE, I18nConversionCategory.DATE, I18nConversionCategory.NUMBER, I18nConversionCategory.UNUSED, I18nConversionCategory.GENERAL})
+        String s10 = "{0} {1, date} {2, time} {3, number} {5}";
+
+        @I18nFormat({I18nConversionCategory.UNUSED, I18nConversionCategory.DATE})
+        String s11 = "{1} {1, date}";
+
+        @I18nFormat({I18nConversionCategory.UNUSED, I18nConversionCategory.NUMBER})
+        String s12 = "{1, number} {1, date}";
+
+        @I18nFormat({I18nConversionCategory.DATE}) String s13 = "{0, date} {0, date}";
+
+        //:: error: (assignment.type.incompatible)
+        @I18nFormat({I18nConversionCategory.GENERAL}) String b1 = "{1}";
+
+        //:: error: (assignment.type.incompatible)
+        @I18nFormat({I18nConversionCategory.DATE}) String b2 = "{0, number}";
+
+        //:: error: (assignment.type.incompatible)
+        @I18nFormat({I18nConversionCategory.GENERAL}) String b3 = "{0, number}";
+
+        //:: error: (assignment.type.incompatible)
+        @I18nFormat({I18nConversionCategory.GENERAL}) String b4 = "{0, date}";
+
+        //:: error: (assignment.type.incompatible)
+        @I18nFormat({I18nConversionCategory.DATE}) String b5 = "{0, date} {1, date}";
+
+        @I18nFormat({I18nConversionCategory.DATE, I18nConversionCategory.DATE}) String b6 = "{0, date}";
+    }
+}

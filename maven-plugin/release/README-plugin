@@ -1,0 +1,8 @@
+This jar is a stand in for either javadoc for Maven plugin
+of the Checker Framework
+
+For Checker Framework information visit:
+http://checkerframework.org/
+
+For information on the Maven plugin:
+http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#maven-plugin
