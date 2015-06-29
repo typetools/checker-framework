@@ -527,13 +527,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * If the checker class is annotated with {@link
+     * If the type factory or checker class is annotated with {@link
      * TypeQualifiers}, return an immutable set with the same set
      * of classes as the annotation.  If the class is not so annotated,
      * return an empty set.
+     * <p>
      *
      * Subclasses may override this method to return an immutable set
-     * of their supported type qualifiers.
+     * of their supported type qualifiers, in which case their checker
+     * class needs no <tt>@TypeQualifiers</tt> annotation.
+     * <p>
+     *
+     * Subclasses should not call this method; they should call
+     * {@link #getSupportedTypeQualifiers getSupportedTypeQualifiers}
+     * instead.
      *
      * @return the type qualifiers supported this processor, or an empty
      * set if none
@@ -587,14 +594,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns an immutable set of the type qualifiers supported by this
      * checker.
      *
+     * <p>
+     * Subclasses cannot override this method; they should override
+     * {@link #createSupportedTypeQualifiers createSupportedTypeQualifiers} instead.
+
      * @see #createSupportedTypeQualifiers()
      *
      * @return the type qualifiers supported this processor, or an empty
      * set if none
      */
     public final Set<Class<? extends Annotation>> getSupportedTypeQualifiers() {
-        //if (supportedQuals == null)
-        //    supportedQuals = createSupportedTypeQualifiers();
         return supportedQuals;
     }
 

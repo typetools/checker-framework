@@ -91,8 +91,6 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return super.aliasedAnnotation(a);
     }
 
-    /** Copied from SubtypingChecker and adapted "quals" to "units".
-     */
     @Override
     @SuppressWarnings("unchecked")
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {

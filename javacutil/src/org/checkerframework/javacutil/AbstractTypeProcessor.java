@@ -145,8 +145,8 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
     public void typeProcessingStart() {}
 
     /**
-     * Processes a fully analyzed class that contains a supported annotation
-     * (look {@link #getSupportedAnnotationTypes()}).
+     * Processes a fully-analyzed class that contains a supported annotation
+     * (see {@link #getSupportedAnnotationTypes()}).
      *
      * <p>The passed class is always valid type-checked Java code.
      *

@@ -84,7 +84,7 @@ import com.sun.tools.javac.util.Log;
  *
  * Subclasses must specify the set of type qualifiers they support either by
  * annotating the subclass with {@link TypeQualifiers} or by overriding the
- * {@link BaseAnnotatedTypeFactory#getSupportedTypeQualifiers()} method.
+ * {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()} method.
  *
  * <p>
  *
