@@ -1,21 +1,19 @@
 Version 1.9.3, 30 June 2015
 
-Added a command-line option -AsafeDefaultsForUncheckedBytecode to
-allow sound type-checking of client uses of classes and methods
-found in unchecked bytecode with respect to a given checker
-(i.e. bytecode not resulting from a compiler execution that ran
-the given checker).
-See the manual section on "Default qualifiers for .class files
-(conservative library defaults)" for more details.
+New command-line options:
+ * -AsafeDefaultsForUncheckedBytecode causes a checker to use conservative
+   defaults for .class files that were compiled without running the given
+   checker.  Without this option, type-checking is unsound (that is, there
+   might be errors at run time even though the checker issues no warnings).
+ * -AuseConservativeDefaultsForUnannotatedSourceCode adds conservative
+   annotations for unannotated types.  Use this when compiling a library in
+   which some but not all classes are annotated.
 
-Added a command-line option -AuseConservativeDefaultsForUnannotatedSourceCode
-to allow sound type-checking of client uses of classes and methods found in
-partially annotated library source code.  See the updated manual chapter
-on "Annotating libraries" for more details.
+Non-user-visible changes:
+ * checker/bin-devel directory containing a version of the scripts
+   for Checker Framework developers
 
-Added a checker/bin-devel directory containing a version of the scripts
-suitable for development, i.e. they try to additionally use locally compiled
-class files instead of only depending on .jar files.
+Various bug fixes and documentation improvements.
 
 Fixed issues: 436.
 
