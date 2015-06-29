@@ -14,7 +14,7 @@ import tests.compound.CompoundChecker;
  * @author smillst
  *
  */
-public class AggregateOfCompoundChecker extends AggregateChecker{
+public class AggregateOfCompoundChecker extends AggregateChecker {
 
     @Override
     protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {

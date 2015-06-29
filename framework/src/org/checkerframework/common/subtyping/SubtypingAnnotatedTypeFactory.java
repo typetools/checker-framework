@@ -24,7 +24,7 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         String qualNames = checker.getOption("quals");
         if (qualNames == null) {
             checker.userErrorAbort("SubtypingChecker: missing required option: -Aquals");
-            return null; // dead code
+            throw new Error("This can't happen"); // dead code
         }
 
         Set<Class<? extends Annotation>> qualSet =
