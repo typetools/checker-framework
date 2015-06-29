@@ -1,0 +1,280 @@
+package org.apache.bcel;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.NonNull;
+
+package org.apache.bcel.classfile;
+
+public final class ConstantClass extends Constant implements ConstantObject {
+    public ConstantClass(ConstantClass c);
+    ConstantClass(DataInput file) throws IOException;
+    public ConstantClass(int name_index);
+    public void accept( Visitor v );
+    public final void dump( DataOutputStream file ) throws IOException;
+    public final int getNameIndex();
+    public final void setNameIndex( int name_index );
+    public Object getConstantValue( ConstantPool cp );
+    public String getBytes( ConstantPool cp );
+    public final String toString();
+}
+
+public class ConstantPool implements Cloneable, Node, Serializable {
+    private @Nullable Constant @Nullable [] constant_pool;
+    public ConstantPool(Constant[] constant_pool);
+    ConstantPool(DataInput input) throws IOException, ClassFormatException;
+    public void accept( Visitor v );
+    public String constantToString( Constant c ) throws ClassFormatException;
+    private static String escape( String str );
+    public String constantToString( int index, byte tag ) throws ClassFormatException;
+    public void dump( DataOutputStream file ) throws IOException;
+    public Constant getConstant( int index );
+    public Constant getConstant( int index, byte tag ) throws ClassFormatException;
+    public @Nullable Constant @Nullable [] getConstantPool();
+    public String getConstantString( int index, byte tag ) throws ClassFormatException;
+    public int getLength();
+    public void setConstant( int index, Constant constant );
+    public void setConstantPool( Constant[] constant_pool );
+    public String toString();
+    public ConstantPool copy();
+}
+
+public final class ConstantUtf8 extends Constant {
+    private final String bytes;
+    static void printStats();
+    static void clearStats();
+    public static ConstantUtf8 getCachedInstance(String s);
+    public static ConstantUtf8 getInstance(String s);
+    public static ConstantUtf8 getInstance (DataInput input)  throws IOException;
+    public ConstantUtf8(ConstantUtf8 c);
+    ConstantUtf8(DataInput file) throws IOException;
+    public ConstantUtf8(String bytes);
+    public void accept( Visitor v );
+    public final void dump( DataOutputStream file ) throws IOException;
+    public final String getBytes();
+    public final void setBytes( String bytes );
+    public final String toString();
+}
+
+public final class Method extends FieldOrMethod {
+
+    private static final long serialVersionUID = -2013983967283787941L;
+    private static BCELComparator _cmp;;
+
+    // annotations defined on the parameters of a method
+    private ParameterAnnotationEntry[] parameterAnnotationEntries;
+
+    public Method();
+    public Method(Method c);
+    Method(DataInput file, ConstantPool constant_pool) throws IOException,
+            ClassFormatException;
+    public Method(int access_flags, int name_index, int signature_index, Attribute[] attributes,
+            ConstantPool constant_pool);
+    public void accept( Visitor v );
+    public final @Nullable Code getCode();
+    public final @Nullable ExceptionTable getExceptionTable();
+    public final @Nullable LocalVariableTable getLocalVariableTable();
+    public final @Nullable LineNumberTable getLineNumberTable();
+    public final String toString();
+    public final Method copy( ConstantPool _constant_pool );
+    public Type getReturnType() {
+        return Type.getReturnType(getSignature());
+    }
+    public Type[] getArgumentTypes() {
+        return Type.getArgumentTypes(getSignature());
+    }
+    public static BCELComparator getComparator();
+    public static void setComparator( BCELComparator comparator );
+    public boolean equals( @Nullable Object obj );
+    public int hashCode();
+    public ParameterAnnotationEntry[] getParameterAnnotationEntries();
+}
+
+package org.apache.bcel.generic;
+
+public class ClassGen extends AccessFlags implements Cloneable {
+    private static final long serialVersionUID = 6880879387392827211L;
+    private String class_name, super_class_name;
+    private final String file_name;
+    private int class_name_index = -1, superclass_name_index = -1;
+    private int major = Constants.MAJOR_1_1, minor = Constants.MINOR_1_1;
+    private ConstantPoolGen cp;
+    private final List<Field> field_vec = new ArrayList<Field>();
+    private final List<Method> method_vec = new ArrayList<Method>();
+    private final List<Attribute> attribute_vec = new ArrayList<Attribute>();
+    private final List<String> interface_vec = new ArrayList<String>();
+    private final List<AnnotationEntryGen> annotation_vec = new ArrayList<AnnotationEntryGen>();
+    private static BCELComparator _cmp;
+    public ClassGen(String class_name, String super_class_name, String file_name, int access_flags,
+            String[] interfaces, ConstantPoolGen cp);
+    public ClassGen(String class_name, String super_class_name, String file_name, int access_flags,
+            String[] interfaces);
+    public ClassGen(JavaClass clazz);
+    private AnnotationEntryGen[] unpackAnnotations(Attribute[] attrs);
+    public JavaClass getJavaClass();
+    public void addInterface( String name );
+    public void removeInterface( String name );
+    public int getMajor();
+    public void setMajor( int major );
+    public void setMinor( int minor );
+    public int getMinor();
+    public void addAttribute( Attribute a );
+    public void addAnnotationEntry(AnnotationEntryGen a);
+    public void addMethod( Method m );
+    public void addEmptyConstructor( int access_flags );
+    public void addField( Field f );
+    public boolean containsField( Field f );
+    public @Nullable Field containsField( String name );
+    public @Nullable Method containsMethod( String name, String signature );
+    public void removeAttribute( Attribute a );
+    public void removeMethod( Method m );
+    public void replaceMethod( Method old, Method new_ );
+    public void replaceField( Field old, Field new_ );
+    public void removeField( Field f );
+    public String getClassName();
+    public String getSuperclassName();
+    public String getFileName();
+    public void setClassName( String name );
+    public void setSuperclassName( String name );
+    public Method[] getMethods();
+    public void setMethods( Method[] methods );
+    public void setMethodAt( Method method, int pos );
+    public Method getMethodAt( int pos );
+    public String[] getInterfaceNames();
+    public int[] getInterfaces();
+    public Field[] getFields();
+    public Attribute[] getAttributes();
+    public AnnotationEntryGen[] getAnnotationEntries();
+    public ConstantPoolGen getConstantPool();
+    public void setConstantPool( ConstantPoolGen constant_pool );
+    public void setClassNameIndex( int class_name_index );
+    public void setSuperclassNameIndex( int superclass_name_index );
+    public int getSuperclassNameIndex();
+    public int getClassNameIndex();
+    private @Nullable List<ClassObserver> observers;
+    public void addObserver( ClassObserver o );
+    public void removeObserver( ClassObserver o );
+    public void update();
+    @Override
+    public Object clone();
+    public static BCELComparator getComparator();
+    public static void setComparator( BCELComparator comparator );
+    public boolean equals( @Nullable Object obj );
+    public int hashCode();
+}
+
+public class ClassGen extends AccessFlags implements Cloneable {
+    private static final long serialVersionUID = 6880879387392827211L;
+    private String class_name, super_class_name;
+    private final String file_name;
+    private int class_name_index = -1, superclass_name_index = -1;
+    private int major = Constants.MAJOR_1_1, minor = Constants.MINOR_1_1;
+    private ConstantPoolGen cp;
+    private final List<Field> field_vec = new ArrayList<Field>();
+    private final List<Method> method_vec = new ArrayList<Method>();
+    private final List<Attribute> attribute_vec = new ArrayList<Attribute>();
+    private final List<String> interface_vec = new ArrayList<String>();
+    private final List<AnnotationEntryGen> annotation_vec = new ArrayList<AnnotationEntryGen>();
+    private static BCELComparator _cmp;
+    public ClassGen(String class_name, String super_class_name, String file_name, int access_flags,
+            String[] interfaces, ConstantPoolGen cp);
+    public ClassGen(String class_name, String super_class_name, String file_name, int access_flags,
+            String[] interfaces);
+    public ClassGen(JavaClass clazz);
+    private AnnotationEntryGen[] unpackAnnotations(Attribute[] attrs);
+    public JavaClass getJavaClass();
+    public void addInterface( String name );
+    public void removeInterface( String name );
+    public int getMajor();
+    public void setMajor( int major );
+    public void setMinor( int minor );
+    public int getMinor();
+    public void addAttribute( Attribute a );
+    public void addAnnotationEntry(AnnotationEntryGen a);
+    public void addMethod( Method m );
+    public void addEmptyConstructor( int access_flags );
+    public void addField( Field f );
+    public boolean containsField( Field f );
+    public Field containsField( String name );
+    public Method containsMethod( String name, String signature );
+    public void removeAttribute( Attribute a );
+    public void removeMethod( Method m );
+    public void replaceMethod( Method old, Method new_ );
+    public void replaceField( Field old, Field new_ );
+    public void removeField( Field f );
+    public String getClassName();
+    public String getSuperclassName();
+    public String getFileName();
+    public void setClassName( String name );
+    public void setSuperclassName( String name );
+    public Method[] getMethods();
+    public void setMethods( Method[] methods );
+    public void setMethodAt( Method method, int pos );
+    public Method getMethodAt( int pos );
+    public String[] getInterfaceNames();
+    public int[] getInterfaces();
+    public Field[] getFields();
+    public Attribute[] getAttributes();
+    public AnnotationEntryGen[] getAnnotationEntries();
+    public ConstantPoolGen getConstantPool();
+    public void setConstantPool( ConstantPoolGen constant_pool );
+    public void setClassNameIndex( int class_name_index );
+    public void setSuperclassNameIndex( int superclass_name_index );
+    public int getSuperclassNameIndex();
+    public int getClassNameIndex();
+    private List<ClassObserver> observers;
+    public void addObserver( ClassObserver o );
+    public void removeObserver( ClassObserver o );
+    public void update();
+    public Object clone();
+    public static BCELComparator getComparator();
+    public static void setComparator( BCELComparator comparator );
+    public boolean equals( @Nullable Object obj );
+    public int hashCode();
+}
+
+public abstract class Type implements java.io.Serializable {
+    private static final long serialVersionUID = -1985077286871826895L;
+    protected byte type;
+    protected String signature;
+    public static final BasicType VOID = new BasicType(Constants.T_VOID);
+    public static final BasicType BOOLEAN = new BasicType(Constants.T_BOOLEAN);
+    public static final BasicType INT = new BasicType(Constants.T_INT);
+    public static final BasicType SHORT = new BasicType(Constants.T_SHORT);
+    public static final BasicType BYTE = new BasicType(Constants.T_BYTE);
+    public static final BasicType LONG = new BasicType(Constants.T_LONG);
+    public static final BasicType DOUBLE = new BasicType(Constants.T_DOUBLE);
+    public static final BasicType FLOAT = new BasicType(Constants.T_FLOAT);
+    public static final BasicType CHAR = new BasicType(Constants.T_CHAR);
+    public static final ObjectType OBJECT = ObjectType.getInstance("java.lang.Object");
+    public static final ObjectType CLASS = ObjectType.getInstance("java.lang.Class");
+    public static final ObjectType STRING = ObjectType.getInstance("java.lang.String");
+    public static final ObjectType STRINGBUFFER = ObjectType.getInstance("java.lang.StringBuffer");
+    public static final ObjectType THROWABLE = ObjectType.getInstance("java.lang.Throwable");
+    public static final Type[] NO_ARGS = new Type[0];
+    public static final ReferenceType NULL;
+    public static final Type UNKNOWN;
+    protected Type(byte t, String s);
+    public int hashCode();
+    public boolean equals(@Nullable Object o);
+    public String getSignature();
+    public byte getType();
+    public Type normalizeForStackOrLocal();
+    public int getSize();
+    public String toString();
+    public static String getMethodSignature( Type return_type, Type[] arg_types );
+    private static final ThreadLocal<Integer> consumed_chars;
+    private static int unwrap( ThreadLocal<Integer> tl );
+    private static void wrap( ThreadLocal<Integer> tl, int value );
+    public static @NonNull Type getType( String signature ) throws StringIndexOutOfBoundsException;
+    public static Type getReturnType( String signature );
+    public static Type[] getArgumentTypes( String signature );
+    public static Type getType( java.lang.Class<?> cl );
+    public static Type[] getTypes( java.lang.Class<?>[] classes );
+    public static String getSignature( java.lang.reflect.Method meth );
+    static int size(int coded);
+    static int consumed(int coded);
+    static int encode(int size, int consumed);
+    static int getArgumentTypesSize( String signature );
+    static int getTypeSize( String signature ) throws StringIndexOutOfBoundsException;
+    static int getReturnTypeSize(String signature);
+}

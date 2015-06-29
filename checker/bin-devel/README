@@ -1,0 +1,4 @@
+This directory contains a version of the scripts suitable for Checker
+Framework developers.  The scripts use locally-compiled .class files in
+preference to .jar files, because just creating .class files leads to a
+faster edit-compile-test cycle than generating .jar files.
