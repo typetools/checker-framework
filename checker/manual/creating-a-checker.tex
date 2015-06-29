@@ -1085,7 +1085,11 @@ type-checking rules.
 
 \section{The checker class:  Compiler interface\label{writing-compiler-interface}}
 
-A checker's entry point is a subclass of \refclass{common/basetype}{BaseTypeChecker}.  This entry
+A checker's entry point is a subclass of
+\refclass{common/basetype}{SourceChecker}, and is usually a direct subclass
+of either \refclass{common/basetype}{BaseTypeChecker} or subclass of either
+\refclass{common/basetype}{AggregateChecker}.
+This entry
 point, which we call the checker class, serves two
 roles:  an interface to the compiler and a factory for constructing
 type-system classes.
@@ -1105,15 +1109,20 @@ checker classes for the Interning Checker and the Nullness Checker:
 \end{Verbatim}
 
 
-The checker class must be annotated by
-\refqualclass{framework/qual}{TypeQualifiers}, which lists the annotations
+The checker class must indicate the annotations
 that make up the type hierarchy for this checker (including
-polymorphic qualifiers), provided as an array of class literals.  Each
-one is a type qualifier whose definition bears the
-\refqualclass{framework/qual}{TypeQualifier} meta-annotation (or is
-returned by the
-\href{http://types.cs.washington.edu/checker-framework/api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#getSupportedTypeQualifiers--}{\<BaseTypeChecker\-.getSupportedTypeQualifiers>}
-method).
+polymorphic qualifiers), either via a
+\refqualclass{framework/qual}{TypeQualifiers} annotation or by overriding
+the
+\refmethod{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{--}
+method.  Each argument to \<@TypeQualifiers> or value returned by
+\<createSupportedTypeQualifiers> is a class literal for a type qualifier
+whose definition bears the
+\refqualclass{framework/qual}{TypeQualifier} meta-annotation.
+An aggregate checker (which extends
+\refclass{framework/source}{AggregateChecker}) does not need to specify its
+type qualifiers, but each of its component subcheckers should do so.
+
 
 The checker class bridges between the compiler and the rest of the checker.  It
 invokes the type-rule check visitor on every Java source file being
@@ -1169,7 +1178,7 @@ multiple checkers.  Extend \refclass{framework/source}{AggregateChecker} and ove
 the \<getSupportedTypeCheckers> method, like the following:
 
 \begin{Verbatim}
-  public class UnitCheckers extends AggregateChecker {
+  public class MyUnitCheckers extends AggregateChecker {
     protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
       return Arrays.asList(DistanceUnitChecker.class, SpeedUnitChecker.class);
     }
@@ -1180,7 +1189,7 @@ the \<getSupportedTypeCheckers> method, like the following:
 Now, a user can pass a single \<-processor> argument on the command line:
 
 \begin{Verbatim}
-  javac -processor UnitCheckers ... files ...
+  javac -processor MyUnitCheckers ... files ...
 \end{Verbatim}
 
 \end{enumerate}
@@ -1810,7 +1819,7 @@ without warnings or errors.
 % LocalWords:  QualifierHierarchy QualifierRoot createQualifierHierarchy util
 % LocalWords:  createTypeHierarchy QReadOnly ImplicitFor treeClasses TypeMirror
 % LocalWords:  LiteralTree ExpressionTree typeClasses annotateImplicit nullable
-% LocalWords:  TypeQualifiers getSupportedTypeQualifiers FooChecker nullness
+% LocalWords:  TypeQualifiers createSupportedTypeQualifiers FooChecker nullness
 % LocalWords:  FooVisitor FooAnnotatedTypeFactory basicstyle InterningVisitor
 % LocalWords:  InterningAnnotatedTypeFactory QualifierDefaults TypeKind getKind
 % LocalWords:  setAbsoluteDefaults PolymorphicQualifier TreeVisitor subnodes

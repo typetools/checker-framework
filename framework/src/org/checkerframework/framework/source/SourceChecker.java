@@ -75,12 +75,11 @@ import com.sun.tools.javac.util.Log;
  *
  * <p>
  *
- * TODO update: Subclasses must implement the following methods:
+ * Subclasses must implement the following methods: (TODO: update the list)
  *
  * <ul>
  *  <li>{@link SourceChecker#getMessages} (for type-qualifier specific error messages)
  *  <li>{@link SourceChecker#createSourceVisitor} (for a custom {@link SourceVisitor})
- *  <!-- <li>{@link SourceChecker#createFactory} (for a custom {@link AnnotatedTypeFactory}) -->
  *  <li>{@link SourceChecker#getSuppressWarningsKeys} (for honoring
  *      {@literal @}{link SuppressWarnings} annotations)
  * </ul>
@@ -1650,10 +1649,14 @@ public abstract class SourceChecker
     }
 
     /**
-     * Always returns a singleton set containing only "*".
+     * Overrides the default implementation to always 
+     * return a singleton set containing only "*".
+     * <p>
      *
-     * This method returns the argument to the {@link
-     * SupportedAnnotationTypes} annotation, so the effect of returning "*"
+     * javac uses this list to determine which classes process; javac only
+     * runs an annotation processor on classes that contain at least one of
+     * the mentioned annotations.
+     * Thus, the effect of returning "*"
      * is as if the checker were annotated by
      * {@code @SupportedAnnotationTypes("*")}:
      * javac runs the checker on every
@@ -1664,7 +1667,7 @@ public abstract class SourceChecker
      * To specify the annotations that a checker recognizes as type qualifiers,
      * use the {@link TypeQualifiers} annotation on the declaration of
      * subclasses of this class or override the
-     * {@link BaseAnnotatedTypeFactory#getSupportedTypeQualifiers()} method.
+     * {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()} method.
      *
      * @throws Error if a subclass is annotated with
      *         {@link SupportedAnnotationTypes}
