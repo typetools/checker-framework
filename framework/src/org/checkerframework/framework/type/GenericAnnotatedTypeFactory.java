@@ -29,8 +29,8 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultForUnannotatedCode;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
-import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.DefaultQualifierForUnannotatedCode;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.Unqualified;
@@ -347,6 +347,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defs = new QualifierDefaults(elements, this);
         boolean foundDefaultOtherwise = false;
+        boolean foundDefaultOtherwiseForUnannotatedCode = false;
 
         // TODO: Verify that only one default per location type is present.
         for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
@@ -355,7 +356,8 @@ public abstract class GenericAnnotatedTypeFactory<
                 final DefaultLocation [] locations = defaultFor.value();
                 defs.addAbsoluteDefaults(AnnotationUtils.fromClass(elements,qual), locations);
 
-                foundDefaultOtherwise = Arrays.asList(locations).contains(DefaultLocation.OTHERWISE);
+                foundDefaultOtherwise = foundDefaultOtherwise ||
+                        Arrays.asList(locations).contains(DefaultLocation.OTHERWISE);
             }
 
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
@@ -381,8 +383,11 @@ public abstract class GenericAnnotatedTypeFactory<
                 DefaultForUnannotatedCode defaultForUntyped = qual.getAnnotation(DefaultForUnannotatedCode.class);
 
                 if (defaultForUntyped != null) {
-                    defs.addUntypedDefaults(AnnotationUtils.fromClass(elements, qual),
-                            defaultForUntyped.value());
+                    final DefaultLocation [] locations = defaultForUntyped.value();
+                    defs.addUntypedDefaults(AnnotationUtils.fromClass(elements, qual), locations);
+                    // TODO: here and for source code above, should ALL also be handled?
+                    foundDefaultOtherwiseForUnannotatedCode = foundDefaultOtherwiseForUnannotatedCode ||
+                            Arrays.asList(locations).contains(DefaultLocation.OTHERWISE);
                 }
 
                 if (qual.getAnnotation(DefaultQualifierForUnannotatedCode.class) != null) {
@@ -393,10 +398,9 @@ public abstract class GenericAnnotatedTypeFactory<
                                 "qualifier has both @DefaultForUnannotatedCode and @DefaultQualifierForUnannotatedCode annotations: " +
                                 qual.getCanonicalName());
                     } else {
-                        for (DefaultLocation location : QualifierDefaults.validLocationsForUntyped()) {
-                            defs.addUntypedDefault(AnnotationUtils.fromClass(elements, qual),
-                                    location);
-                        }
+                        defs.addUntypedDefault(AnnotationUtils.fromClass(elements, qual),
+                                    DefaultLocation.OTHERWISE);
+                        foundDefaultOtherwiseForUnannotatedCode = true;
                     }
                 }
             }
@@ -409,6 +413,25 @@ public abstract class GenericAnnotatedTypeFactory<
                 this.isSupportedQualifier(unqualified)) {
             defs.addAbsoluteDefault(unqualified,
                     DefaultLocation.OTHERWISE);
+        }
+
+        // Add defaults for untyped code if conservative untyped flag is passed and
+        // no defaults were given.
+        if ((// !checker.hasOption("unsafeDefaultsForUncheckedBytecode")
+                // temporarily use unsafe defaults for bytecode, unless option given
+                checker.hasOption("safeDefaultsForUncheckedBytecode") ||
+                // This block may need to be split after safeDefaults... is reverted to unsafeDefaults...
+                checker.hasOption("useConservativeDefaultsForUnannotatedSourceCode")) &&
+                !foundDefaultOtherwiseForUnannotatedCode) {
+            Set<? extends AnnotationMirror> tops = this.qualHierarchy.getTopAnnotations();
+            for (AnnotationMirror top : tops) {
+                defs.addUntypedDefault(top, DefaultLocation.RETURNS);
+                defs.addUntypedDefault(top, DefaultLocation.UPPER_BOUNDS);
+            }
+            Set<? extends AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
+            for (AnnotationMirror bot : bottoms) {
+                defs.addUntypedDefault(bot, DefaultLocation.OTHERWISE);
+            }
         }
 
         return defs;
