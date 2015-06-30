@@ -179,7 +179,7 @@ import com.sun.tools.javac.util.Log;
     // Whether to use conservative checks for unannotated bytecode; these are configured
     // by the specific type checker using @Default[Qualifier]ForUnannotatedCode.
     // They may require more annotations or stub files.
-    "unsafeDefaultsForUnannotatedBytecode",
+    // "unsafeDefaultsForUnannotatedBytecode",
     // TODO: temporary option to turn on sound behavior.
     "safeDefaultsForUnannotatedBytecode",
 
