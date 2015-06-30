@@ -41,25 +41,24 @@ import com.sun.tools.javac.util.Log;
 
 /**
  * An abstract {@link SourceChecker} that provides a simple {@link
- * org.checkerframework.framework.source.SourceVisitor} implementation for typical assignment and
- * pseudo-assignment checking of annotated types.  Pseudo-assignment checks
- * include method overriding checks, parameter passing, and method invocation.
+ * org.checkerframework.framework.source.SourceVisitor} implementation that
+ * type-checks assignments, pseudo-assignments such as parameter passing
+ * and method invocation, and method overriding.
+ * <p>
  *
- * Most type-checker plug-ins will want to extend this class, instead of
- * {@link SourceChecker}.  Checkers that require annotated types but not
- * subtype checking (e.g. for testing purposes)
- * should extend {@link SourceChecker}.
- *
- * Non-type checkers (e.g. checkers to enforce coding
- * styles) should extend {@link SourceChecker} or {@link AbstractTypeProcessor}
- * directly; the Checker Framework is not designed for such checkers.
- *
+ * Most type-checker annotation processor should extend this class, instead of
+ * {@link SourceChecker}.
+ * Checkers that require annotated types but not subtype checking (e.g. for
+ * testing purposes) should extend {@link SourceChecker}.
+ * Non-type checkers (e.g. checkers to enforce coding styles) can extend
+ * {@link SourceChecker} or {@link AbstractTypeProcessor}; the Checker
+ * Framework is not designed for such checkers.
  * <p>
  *
  * It is a convention that, for a type system Foo, the checker, the visitor,
  * and the annotated type factory are named as  <i>FooChecker</i>,
  * <i>FooVisitor</i>, and <i>FooAnnotatedTypeFactory</i>.  Some factory
- * methods uses this convention to construct the appropriate classes
+ * methods use this convention to construct the appropriate classes
  * reflectively.
  *
  * <p>
@@ -95,7 +94,6 @@ import com.sun.tools.javac.util.Log;
  *
  * @see org.checkerframework.framework.qual
  *
-/**
  * @checker_framework.manual #writing-compiler-interface The checker class
  */
 public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeContext {
