@@ -374,31 +374,31 @@ public abstract class GenericAnnotatedTypeFactory<
                 }
             }
 
-            // Add defaults for untyped code if conservative untyped flag is passed.
-            if (// !checker.hasOption("unsafeDefaultsForUncheckedBytecode")
+            // Add defaults for unannotated code if conservative unannotated flag is passed.
+            if (// !checker.hasOption("unsafeDefaultsForUnannotatedBytecode")
                     // temporarily use unsafe defaults for bytecode, unless option given
-                    checker.hasOption("safeDefaultsForUncheckedBytecode") ||
+                    checker.hasOption("safeDefaultsForUnannotatedBytecode") ||
                     // This block may need to be split after safeDefaults... is reverted to unsafeDefaults...
                     checker.hasOption("useConservativeDefaultsForUnannotatedSourceCode")) {
-                DefaultForUnannotatedCode defaultForUntyped = qual.getAnnotation(DefaultForUnannotatedCode.class);
+                DefaultForUnannotatedCode defaultForUnannotated = qual.getAnnotation(DefaultForUnannotatedCode.class);
 
-                if (defaultForUntyped != null) {
-                    final DefaultLocation [] locations = defaultForUntyped.value();
-                    defs.addUntypedDefaults(AnnotationUtils.fromClass(elements, qual), locations);
+                if (defaultForUnannotated != null) {
+                    final DefaultLocation [] locations = defaultForUnannotated.value();
+                    defs.addUnannotatedDefaults(AnnotationUtils.fromClass(elements, qual), locations);
                     // TODO: here and for source code above, should ALL also be handled?
                     foundDefaultOtherwiseForUnannotatedCode = foundDefaultOtherwiseForUnannotatedCode ||
                             Arrays.asList(locations).contains(DefaultLocation.OTHERWISE);
                 }
 
                 if (qual.getAnnotation(DefaultQualifierForUnannotatedCode.class) != null) {
-                    if (defaultForUntyped != null) {
+                    if (defaultForUnannotated != null) {
                         // A type qualifier should either have a DefaultForUnannotatedCode or
                         // a DefaultQualifierForUnannotatedCode annotation.
                         ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
                                 "qualifier has both @DefaultForUnannotatedCode and @DefaultQualifierForUnannotatedCode annotations: " +
                                 qual.getCanonicalName());
                     } else {
-                        defs.addUntypedDefault(AnnotationUtils.fromClass(elements, qual),
+                        defs.addUnannotatedDefault(AnnotationUtils.fromClass(elements, qual),
                                     DefaultLocation.OTHERWISE);
                         foundDefaultOtherwiseForUnannotatedCode = true;
                     }
@@ -415,22 +415,22 @@ public abstract class GenericAnnotatedTypeFactory<
                     DefaultLocation.OTHERWISE);
         }
 
-        // Add defaults for untyped code if conservative untyped flag is passed and
+        // Add defaults for unannotated code if conservative unannotated flag is passed and
         // no defaults were given.
-        if ((// !checker.hasOption("unsafeDefaultsForUncheckedBytecode")
+        if ((// !checker.hasOption("unsafeDefaultsForUnannotatedBytecode")
                 // temporarily use unsafe defaults for bytecode, unless option given
-                checker.hasOption("safeDefaultsForUncheckedBytecode") ||
+                checker.hasOption("safeDefaultsForUnannotatedBytecode") ||
                 // This block may need to be split after safeDefaults... is reverted to unsafeDefaults...
                 checker.hasOption("useConservativeDefaultsForUnannotatedSourceCode")) &&
                 !foundDefaultOtherwiseForUnannotatedCode) {
             Set<? extends AnnotationMirror> tops = this.qualHierarchy.getTopAnnotations();
             for (AnnotationMirror top : tops) {
-                defs.addUntypedDefault(top, DefaultLocation.RETURNS);
-                defs.addUntypedDefault(top, DefaultLocation.UPPER_BOUNDS);
+                defs.addUnannotatedDefault(top, DefaultLocation.RETURNS);
+                defs.addUnannotatedDefault(top, DefaultLocation.UPPER_BOUNDS);
             }
             Set<? extends AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
             for (AnnotationMirror bot : bottoms) {
-                defs.addUntypedDefault(bot, DefaultLocation.OTHERWISE);
+                defs.addUnannotatedDefault(bot, DefaultLocation.OTHERWISE);
             }
         }
 
