@@ -108,6 +108,7 @@ public class QualifierDefaults {
         DefaultLocation.FIELD,
         DefaultLocation.PARAMETERS,
         DefaultLocation.RETURNS,
+        DefaultLocation.RECEIVERS,
         DefaultLocation.UPPER_BOUNDS,
         DefaultLocation.LOWER_BOUNDS,
         DefaultLocation.OTHERWISE,
