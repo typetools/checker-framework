@@ -1,25 +1,28 @@
 \htmlhr
 \chapter{Annotating libraries\label{annotating-libraries}}
 
-The Checker Framework distribution contains annotated versions of popular
-libraries in directory \<checker-framework/checker/lib/>.  These currently
-include
-  \href{https://commons.apache.org/proper/commons-bcel/}{Apache Commons BCEL}
-  and
-  \href{https://github.com/arenn/java-getopt}{GNU getopt Java port}.
-During type-checking you should put the annotated version of the library on
-your classpath.  (This is done automatically for the JDK; you don't have to
-do anything special for it.)
-When running your code, you can use either the annotated
-library or the regular distributed version of the library --- they
-behave identically at run time.
-Some projects, such as
-  \href{http://plse.cs.washington.edu/daikon/}{Daikon}
-  and
-  \href{http://mernst.github.io/plume-lib/}{plume-lib},
-are already distributed in annotated form by their maintainers;
-over time, this should become more common, reducing the need for the
-Checker Framework to include annotated versions of them.
+%% TODO: reinstate this once the checker/lib/ directory contains content. 
+% The Checker Framework distribution contains annotated versions of popular
+% libraries in directory \<checker-framework/checker/lib/>.
+% These currently include
+% % Keep this list in sync with file ../lib/README .
+%   \href{https://commons.apache.org/proper/commons-bcel/}{Apache Commons BCEL}
+%   and
+%   \href{https://github.com/arenn/java-getopt}{GNU getopt Java port}.
+% %% Todo: this should be done automatically for the user.
+% During type-checking you should put the annotated version of the library on
+% your classpath.  (This is done automatically for the JDK; you don't have to
+% do anything special for it.)
+% When running your code, you can use either the annotated
+% library or the regular distributed version of the library --- they
+% behave identically at run time.
+% Some projects, such as
+%   \href{http://plse.cs.washington.edu/daikon/}{Daikon}
+%   and
+%   \href{http://mernst.github.io/plume-lib/}{plume-lib},
+% are already distributed in annotated form by their maintainers;
+% over time, this should become more common, reducing the need for the
+% Checker Framework to include annotated versions of them.
 
 %% Extra detail about the 
 % \section{Using distributed annotated JDKs\label{skeleton-using}\label{skeleton}}
@@ -54,7 +57,7 @@ Section~\ref{askipuses}.)
 
 (Note: This chapter uses ``library'' to refer to code that is provided in
 \<.class> or \<.jar> form.  You should use this approach for parts of your
-own codebase if you typically compile different parts separately.  When
+own codebase if you typically compile different parts separately.  If
 your codebase is typically compiled together and you are type-checking only
 part of it, you can use the approach described in this chapter, or you can
 use command-line arguments such as \<-AskipUses> and \<-AskipDefs> (see
@@ -65,9 +68,8 @@ analyzes code that is not being compiled, though it does look up
 annotations in the class files for code that is not being compiled.)
 
 You make the library's annotations known to the checkers by writing
-annotations in a copy of the library's source code.
-If you do not have access to the source code, you can create and use a ``stub
-file'' instead.
+annotations in a copy of the library's source code (or in a ``stub
+file'' if you do not have access to the source code).
 Given the library annotations, you have two options:
 
 \begin{enumerate}
@@ -87,8 +89,8 @@ Given the library annotations, you have two options:
   % See the Annotation File Utilities documentation for full details.
 
   With this compilation approach, the syntax of the library annotations is
-  validated ahead of time.  This makes the compilation approach less
-  error-prone, and it makes the type-checker run faster.  It gives
+  validated ahead of time.  Thus, this compilation approach is less
+  error-prone, and the type-checker runs faster.  You get
   correctness guarantees about the library in addition to your code.
   Section~\ref{compiling-libraries} describes how to compile a library.
 
@@ -144,11 +146,10 @@ code you have not yet annotated.
 You use \<@AnnotatedFor> to indicate which classes you have annotated.
 
 When compiling a library that is not fully annotated, use command-line
-argument \<-AuseConservativeDefaultsForUnannotatedSourceCode>.  This causes the
-checker to assume that all source files being compiled are unannotated
-libraries, except any classes with a relevant \<@AnnotatedFor> annotation.
-In particular, the checker uses conservative defaults (see
-Section~\ref{defaults-classfile}) for any type use with no explicit
+argument \<-AuseConservativeDefaultsForUnannotatedSourceCode>.  This causes
+the checker to behave normally for classes with a relevant \<@AnnotatedFor>
+annotation.  For all other classes, the checker uses conservative defaults
+(see Section~\ref{defaults-classfile}) for any type use with no explicit
 user-written annotation, and the checker issues no warnings.
 
 The \refqualclass{framework/qual}{AnnotatedFor} annotation, written on a
@@ -198,9 +199,9 @@ partially-annotated library.
   command-line option and runs every pluggable type-checker for which any
   annotations exist.  You are not adding a new buld target, but modifying
   any existing targets.
-  The reason to run every type-checker is so that all
-  of the annotations you wrote are correct, and all other type uses are
-  defaulted properly.
+  The reason to run every type-checker is to verify
+  the annotations you wrote, and to use appropriate defaults for all
+  unnanotated type uses.
 
 \item Annotate some files.
 %  You can determine which files need to be annotated by using the
@@ -232,7 +233,7 @@ partially-annotated library.
     Please inform the Checker Framework developers
     about your new annotated library by opening an issue.
     This will let us include your annotated \<.jar> file in directory
-    \<checker-framework/checker/lib> of the Checker Framework release.
+    \<checker-framework/checker/lib/> of the Checker Framework release.
 
   \item
     Encourage the library's maintainers to accept your annotations into its
