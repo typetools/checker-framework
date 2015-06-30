@@ -521,14 +521,14 @@ choice is:
   Section~\ref{top-qualifier}).
 \end{itemize}
 
-For example, an unnannotated method in a classfile
+For example, an unnannotated method
 
 \begin{Verbatim}
   String concatenate(String p1, String p2)
 \end{Verbatim}
 
 \noindent
-would be interpreted as
+in a classfile would be interpreted as
 
 \begin{Verbatim}
   @Top String concatenate(@Bottom String p1, @Bottom String p2)
