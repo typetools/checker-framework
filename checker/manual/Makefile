@@ -55,7 +55,7 @@ manual.pdf: bib-update figures-all
 	while grep "Rerun to get" manual.log; do pdflatex manual.tex; done
 
 html: manual.html
-manual.html: manual.pdf logo/Logo/CFLogo.png
+manual.html: manual.pdf CFLogo.png
 	hevea -fix -exec xxdate.exe manual.tex
 	./add-favicon-to-manual
 # The following three lines are only necessary when using Hevea before version 2.04
@@ -68,7 +68,7 @@ manual.html: manual.pdf logo/Logo/CFLogo.png
 #	html-update-toc manual.html
 
 CFLogo.png: logo/Logo/CFLogo.png
-	cp -p $@ $<
+	cp -p $< $@
 
 export BIBINPUTS = $BIBINPUTS:.:bib
 bib:
