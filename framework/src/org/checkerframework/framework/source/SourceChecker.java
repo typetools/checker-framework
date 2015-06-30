@@ -183,6 +183,10 @@ import com.sun.tools.javac.util.Log;
     // TODO: temporary option to turn on sound behavior.
     "safeDefaultsForUnannotatedBytecode",
 
+    // Whether to use conservative checks for unannotated source code; these are configured
+    // by the specific type checker using @Default[Qualifier]ForUnannotatedCode
+    // and only apply to source code that is not marked as @AnnotatedFor the checker
+    // that is being executed.
     "useConservativeDefaultsForUnannotatedSourceCode",
 
     // Whether to resolve reflective method invocations
