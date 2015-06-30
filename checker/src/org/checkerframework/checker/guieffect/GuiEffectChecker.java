@@ -10,8 +10,8 @@ import org.checkerframework.framework.source.SupportedLintOptions;
 /**
  * @checker_framework.manual #guieffect-checker GUI Effect Checker
  */
-@SupportedLintOptions({"debugSpew"})
 @TypeQualifiers({
     UI.class, PolyUI.class, AlwaysSafe.class
 })
+@SupportedLintOptions({"debugSpew"})
 public class GuiEffectChecker extends BaseTypeChecker {}

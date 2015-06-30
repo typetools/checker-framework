@@ -675,7 +675,7 @@ style.
 Ordinarily, you have to create a new polymorphic type qualifier for each
 type system you write.  This can be tedious.  More seriously, it can lead
 to an explosion in the number of type annotations, if some method is
-qualifier-polymorphic over multiple type qualifier hierarchies.
+qualifier-polymorphic over every type qualifier hierarchy.
 
 For example, a method that only performs \<==> on array elements will work
 no matter what the array's element types are:
@@ -691,7 +691,9 @@ no matter what the array's element types are:
   }
 \end{Verbatim}
 
-The \<@PolyAll> qualifier takes an optional argument so that you can
+% TODO: As of June 2015, @PolyAll does not take an optional argument.
+
+The \refqualclass{framework/qual}{PolyAll} qualifier takes an optional argument so that you can
 specify multiple, independent polymorphic type qualifiers.  For example,
 the method also works no matter what the type argument on the second
 argument is.  This signature is overly restrictive:
