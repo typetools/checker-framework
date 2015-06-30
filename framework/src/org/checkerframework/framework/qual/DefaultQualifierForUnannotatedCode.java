@@ -13,7 +13,7 @@ import java.lang.annotation.*;
  * <p>
  *
  * This qualifier will only apply to unannotated bytecode if the
- * -AsafeDefaultsForUncheckedBytecode command-line option is passed.
+ * -AsafeDefaultsForUnannotatedBytecode command-line option is passed.
  * It will only apply to unannotated source code if the
  * -AuseConservativeDefaultsForUnannotatedSourceCode command-line
  * option is passed and the source code is not annotated with
