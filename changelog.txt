@@ -9,10 +9,6 @@ New command-line options:
    annotations for unannotated type uses.  Use this when compiling a library in
    which some but not all classes are annotated.
 
-Non-user-visible changes:
- * checker/bin-devel directory containing a version of the scripts
-   for Checker Framework developers
-
 Various bug fixes and documentation improvements.
 
 Fixed issues: 436.
