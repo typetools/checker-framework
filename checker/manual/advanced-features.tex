@@ -478,7 +478,7 @@ Note, the upper bound of the wildcard \code{? extends Object} is defaulted to
 The defaulting rules presented so far apply to source code that is read by
 the compiler.  When the compiler reads a \<.class> file, different
 defaulting rules apply if you supply the command-line option
-\<-AsafeDefaultsForUncheckedBytecode>.
+\<-AsafeDefaultsForUnannotatedBytecode>.
 
 If the checker was run during the compiler execution that created the
 \<.class> file (and the qualifier hierarchy has both a top and a bottom
@@ -499,7 +499,7 @@ In this case, each checker decides what qualifier to use for the
 locations where the programmer did not write an annotation.
 The defaulting rules that apply to source code that is read by
 the compiler are normally used for these locations.  However,
-if you supply the command-line option \<-AsafeDefaultsForUncheckedBytecode>,
+if you supply the command-line option \<-AsafeDefaultsForUnannotatedBytecode>,
 conservative library defaults are used.
 The typical
 choice for the conservative library defaults is:
@@ -549,9 +549,9 @@ annotations (see Chapter~\ref{annotating-libraries}) or alternately
 suppress the warnings (see Section~\ref{suppressing-warnings}).
 
 % If you supply the command-line option
-% \<-AunsafeDefaultsForUncheckedBytecode>,
-% then the checker does defaulting for unchecked bytecode like it does for
-% checked source code.  In other words, when a type use in a \<.class> file
+% \<-AunsafeDefaultsForUnannotatedBytecode>,
+% then the checker does defaulting for unannotated bytecode like it does for
+% annotated source code.  In other words, when a type use in a \<.class> file
 % has no explicit annotation, it is defaulted using the same rules as for the
 % corresponding source code location.  You should only use this command-line
 % option as temporary measure, because it is unsafe:  the checker might issue
@@ -1417,5 +1417,5 @@ class @Marsupial-Animal {
 %  LocalWords:  EnsuresQualifierIf AsuppressWarnings AinvariantArrays asts
 %  LocalWords:  formatter ocals nstanceof plicit ounds wildcard's da
 %%  LocalWords:  wildcards guieffect AassumeAssertionsAreDisabled
-%%  LocalWords:  AssumeAssertion AsafeDefaultsForUncheckedBytecode
+%%  LocalWords:  AssumeAssertion AsafeDefaultsForUnannotatedBytecode
 %%  LocalWords:  I18nFormatFor
