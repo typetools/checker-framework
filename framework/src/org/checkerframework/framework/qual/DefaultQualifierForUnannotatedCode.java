@@ -9,19 +9,20 @@ import java.lang.annotation.*;
  * unannotated type uses (in bytecode or source code).
  * <p>
  *
- * This qualifier will only apply to unannotated type uses in bytecode if the
+ * This qualifier applies to unannotated type uses in bytecode only if the
  * -AsafeDefaultsForUnannotatedBytecode command-line option is passed.
- * It will only apply to unannotated type uses in source code if the
+ * This qualifier applies to unannotated type uses in source code only if the
  * -AuseConservativeDefaultsForUnannotatedSourceCode command-line
- * option is passed and the source code is not annotated with
- * {@link AnnotatedFor} for the checker being executed.
+ * option is passed and the containing class is not annotated with
+ * {@code @}{@link AnnotatedFor} for the checker being executed.
  * <p>
  *
  * Each type qualifier hierarchy may have at most one qualifier marked as
  * {@code DefaultQualifierForUnannotatedCode}.
  * <p>
  *
- * Note, this annotation is analogous to {@link DefaultQualifierInHierarchy} but for
+ * Note, this annotation is analogous to
+ * {@code @}{@link DefaultQualifierInHierarchy} but for
  * unannotated type uses.
  * This qualifier is for type system developers, not end-users.
  * @see AnnotatedFor
