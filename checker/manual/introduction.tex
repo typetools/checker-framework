@@ -590,10 +590,13 @@ Unsound checking: ignore some errors
   Section~\ref{type-refinement-purity}.
 \item \<-AassumeAssertionsAreEnabled>, \<-AassumeAssertionsAreDisabled>
   Whether to assume that assertions are enabled or disabled; see Section~\ref{type-refinement-assertions}.
-\item \<-AunsafeDefaultsForUncheckedBytecode>
-  Whether unchecked bytecode should use the same defaults as source
-  code (unsound, but might reduce annotation effort); see
+\item \<-AsafeDefaultsForUncheckedBytecode>
+  Whether unchecked bytecode should use conservative defaults; see
   Section~\ref{defaults-classfile}.
+% \item \<-AunsafeDefaultsForUncheckedBytecode>
+%   Whether unchecked bytecode should use the same defaults as source
+%   code (unsound, but might reduce annotation effort); see
+%   Section~\ref{defaults-classfile}.
 \end{itemize}
 
 \label{unsound-by-default}
@@ -643,14 +646,14 @@ Type-checking modes:  enable/disable functionality
 
 Partially-annotated libraries
 \begin{itemize}
-\item \<-AprintUnannotatedMethods>
-  List library methods that need to be annotated; see
-  Section~\ref{annotating-libraries}.
+% \item \<-AprintUnannotatedMethods>
+%   List library methods that need to be annotated; see
+%   Section~\ref{annotating-libraries}.
 \item \<-Astubs>
   List of stub files or directories; see Section~\ref{stub-using}.
 \item \<-AstubWarnIfNotFound>
   Warn if a stub file entry could not be found; see Section~\ref{stub-using}.
-\item \<-AuseConservativeDefaultsForUnannotatedCode>
+\item \<-AuseConservativeDefaultsForUnannotatedSourceCode>
   Outside the scope of any relevant
   \refqualclass{framework/qual}{AnnotatedFor} annotation, use conservative
   default annotations and suppress all type-checking warnings; see
