@@ -9,10 +9,10 @@ import tests.util.*;
 // various tests for the checker to automatically suggest pure methods (most methods have been copied from Purity.java)
 //:: warning: (purity.more.sideeffectfree)
 class Test {
-    
+
     String f1, f2, f3;
     String[] a;
-    
+
     // class with a (potentially) non-pure constructor
     private static class NonPureClass {
         String t;
@@ -20,40 +20,40 @@ class Test {
             t = "";
         }
     }
-    
+
     // class with a pure constructor
     private static class PureClass {
         //:: warning: (purity.more.sideeffectfree)
         public PureClass() {
         }
     }
-    
+
     //:: warning: (purity.more.pure)
     void nonpure() {
     }
-    
+
     @Pure
     String pure() {
         return "";
     }
-    
+
     String t3() {
       nonpure();
       return "";
     }
-    
+
     //:: warning: (purity.more.pure)
     String t4() {
         pure();
         return "";
     }
-    
+
     //:: warning: (purity.more.pure)
     int t5() {
         int i = 1;
         return i;
     }
-    
+
     //:: warning: (purity.more.pure)
     int t6() {
         int j = 0;
@@ -62,7 +62,7 @@ class Test {
         }
         return j;
     }
-    
+
     //:: warning: (purity.more.pure)
     String t7() {
         if (true) {
@@ -70,61 +70,61 @@ class Test {
         }
         return "";
     }
-    
+
     //:: warning: (purity.more.pure)
     int t8() {
         return 1 - 2 / 3 * 2 % 2;
     }
-    
+
     //:: warning: (purity.more.pure)
     String t9() {
         return "b" + "a";
     }
-    
+
     String t10() {
         f1 = "";
         f2 = "";
         return "";
     }
-    
+
     String t11(Test l) {
         l.a[0] = "";
         return "";
     }
-    
+
     String t12(String[] s) {
         s[0] = "";
         return "";
     }
-    
+
     String t13() {
         PureClass p = new PureClass();
         return "";
     }
-    
+
     String t13b() {
         PureClass p = new PureClass();
         return "";
     }
-    
+
     String t13c() {
         PureClass p = new PureClass();
         return "";
     }
-    
+
     //:: warning: (purity.more.pure)
     String t14() {
         String i = "";
         i = "a";
         return i;
     }
-    
+
     //:: warning: (purity.more.pure)
     String t15() {
         String[] s = new String[1];
         return s[0];
     }
-    
+
     //:: warning: (purity.more.sideeffectfree)
     String t16() {
         try {
@@ -134,7 +134,7 @@ class Test {
         }
         return "";
     }
-    
+
     //:: warning: (purity.more.sideeffectfree)
     String t16b() {
         try {
@@ -144,7 +144,7 @@ class Test {
         }
         return "";
     }
-    
+
     //:: warning: (purity.more.sideeffectfree)
     String t16c() {
         try {
@@ -154,12 +154,12 @@ class Test {
         }
         return "";
     }
-    
+
     //:: warning: (purity.more.pure)
     String t17() {
         return "";
     }
-    
+
     String t12() {
         NonPureClass p = new NonPureClass();
         return "";

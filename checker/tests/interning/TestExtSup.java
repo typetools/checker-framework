@@ -4,7 +4,7 @@ import java.util.*;
 
 interface A<T> {
   public abstract int transform(List<? super T> function);
-} 
+}
 
 class B implements A<Object> {
   @Override

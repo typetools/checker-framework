@@ -34,9 +34,9 @@ class NNOEMoreTests {
       p.test1();
     }
   }
-  
+
   @Nullable Object field1;
-  
+
   @RequiresNonNull("field1")
   void methWithIf1() {
       if (5 < 99) {
@@ -44,5 +44,5 @@ class NNOEMoreTests {
           field1.hashCode();
       }
   }
-  
+
 }

@@ -195,7 +195,7 @@ class Purity {
          @Pure int m3(int arg) { return 0; }
          int m4(int arg) { return 0; }
      }
- 
+
      class MyClass extends Object {
          public int hashCode() { return 42; }
      }

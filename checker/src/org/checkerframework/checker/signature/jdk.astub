@@ -16,7 +16,7 @@ class ClassLoader {
     protected Class<?> loadClass(@BinaryName String name, boolean resolve) throws ClassNotFoundException;
     Class<?> loadClass(@BinaryName String name) throws ClassNotFoundException;
     protected Class<?> findClass(@BinaryName String name) throws ClassNotFoundException;
-    @SuppressWarnings("signature")    
+    @SuppressWarnings("signature")
     protected Class<?> defineClass(byte[] b, int off, int len) throws ClassFormatError;
     protected Class<?> defineClass(@BinaryName String name, byte[] b, int off, int len) throws ClassFormatError;
     protected Class<?> defineClass(@BinaryName String name, byte[] b, int off, int len, ProtectionDomain protectionDomain) throws ClassFormatError;
@@ -51,7 +51,7 @@ class Package implements AnnotatedElement {
 
 class StackTraceElement {
     public StackTraceElement(@FullyQualifiedName String declaringClass, String methodName, String fileName, int lineNumber);
-    public @FullyQualifiedName String getClassName(); 
+    public @FullyQualifiedName String getClassName();
 }
 
 class String {

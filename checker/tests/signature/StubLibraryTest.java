@@ -13,5 +13,5 @@ public class StubLibraryTest {
 //     @ClassGetName String cgn = cg.getClassName();
 //     @BinaryName String bn = cg.getClassName();
 //   }
-  
+
 }

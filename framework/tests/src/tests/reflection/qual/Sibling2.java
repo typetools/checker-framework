@@ -7,7 +7,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
- * Toy type system for testing reflection resolution.  
+ * Toy type system for testing reflection resolution.
  * Uses org.checkerframework.framework.qual.Bottom as bottom
  * @see Top, Sibling1,
  */

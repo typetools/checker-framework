@@ -1,5 +1,5 @@
 package org.checkerframework.eclipse.ui;
- 
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,12 +18,12 @@ import org.eclipse.ui.handlers.IHandlerService;
 
 import org.checkerframework.eclipse.CheckerPlugin;
 import org.checkerframework.eclipse.prefs.CheckerPreferences;
- 
+
 public class CustomCheckersMenu extends ContributionItem {
- 
+
 	public CustomCheckersMenu() {
 	}
- 
+
 	public CustomCheckersMenu(String id) {
 		super(id);
 	}
@@ -32,7 +32,7 @@ public class CustomCheckersMenu extends ContributionItem {
 	public boolean isDynamic() {
 		return true;
 	}
- 
+
 	@Override
 	public void fill(Menu menu, int index) {
 		String customClasses = CheckerPlugin.getDefault()
@@ -42,7 +42,7 @@ public class CustomCheckersMenu extends ContributionItem {
 		
 		//Here you could get selection and decide what to do
 		//You can also simply return if you do not want to show a menu
- 
+
 		//create the menu item
 		MenuItem menuItem = new MenuItem(menu, SWT.CASCADE, index);
 		menuItem.setText("Run Custom Checker");
@@ -68,8 +68,8 @@ public class CustomCheckersMenu extends ContributionItem {
 				runCustomChecker.setText(checkerInfo.getLabel());
 				runCustomChecker.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(SelectionEvent e) {
-						final IHandlerService handlerService = (IHandlerService) PlatformUI 
-                                .getWorkbench().getService(IHandlerService.class); 
+						final IHandlerService handlerService = (IHandlerService) PlatformUI
+                                .getWorkbench().getService(IHandlerService.class);
                         try {
                         	ICommandService service = (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
                         	Command command = service.getCommand("checkers.eclipse.singlecustom");
@@ -83,7 +83,7 @@ public class CustomCheckersMenu extends ContributionItem {
 							//handlerService.executeCommand("checkers.eclipse.runnullness", new Event() );
 						} catch (Exception e1) {
 							throw new RuntimeException(e1);
-						} 
+						}
 						
 						//what to do when menu is subsequently selected.
 						System.err.println("Dynamic menu selected");

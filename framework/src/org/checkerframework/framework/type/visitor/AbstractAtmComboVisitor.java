@@ -114,25 +114,25 @@ public abstract class AbstractAtmComboVisitor<RETURN_TYPE, PARAM> implements Atm
     @Override
     public RETURN_TYPE visitDeclared_None(AnnotatedDeclaredType type1, AnnotatedNoType type2, PARAM param) {
         return defaultAction(type1, type2, param);
-        
+
     }
 
     @Override
     public RETURN_TYPE visitDeclared_Null(AnnotatedDeclaredType type1, AnnotatedNullType type2, PARAM param) {
         return defaultAction(type1, type2, param);
-        
+
     }
 
     @Override
     public RETURN_TYPE visitDeclared_Primitive(AnnotatedDeclaredType type1, AnnotatedPrimitiveType type2, PARAM param) {
         return defaultAction(type1, type2, param);
-        
+
     }
 
     @Override
     public RETURN_TYPE visitDeclared_Typevar(AnnotatedDeclaredType type1, AnnotatedTypeVariable type2, PARAM param) {
         return defaultAction(type1, type2, param);
-        
+
     }
 
     @Override
@@ -168,13 +168,13 @@ public abstract class AbstractAtmComboVisitor<RETURN_TYPE, PARAM> implements Atm
     @Override
     public RETURN_TYPE visitExecutable_None(AnnotatedExecutableType type1, AnnotatedNoType type2, PARAM param) {
         return defaultAction(type1, type2, param);
-        
+
     }
 
     @Override
     public RETURN_TYPE visitExecutable_Null(AnnotatedExecutableType type1, AnnotatedNullType type2, PARAM param) {
         return defaultAction(type1, type2, param);
-        
+
     }
 
     @Override
@@ -195,7 +195,7 @@ public abstract class AbstractAtmComboVisitor<RETURN_TYPE, PARAM> implements Atm
     @Override
     public RETURN_TYPE visitExecutable_Wildcard(AnnotatedExecutableType type1, AnnotatedWildcardType type2, PARAM param) {
         return defaultAction(type1, type2, param);
-        
+
     }
 
     @Override
@@ -371,7 +371,7 @@ public abstract class AbstractAtmComboVisitor<RETURN_TYPE, PARAM> implements Atm
     @Override
     public RETURN_TYPE visitPrimitive_Null(AnnotatedPrimitiveType type1, AnnotatedNullType type2, PARAM param) {
         return defaultAction(type1, type2, param);
-        
+
     }
 
     @Override

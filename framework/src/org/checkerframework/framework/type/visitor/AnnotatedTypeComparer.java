@@ -15,15 +15,15 @@ import org.checkerframework.javacutil.ErrorReporter;
  */
 public abstract class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, AnnotatedTypeMirror> {
     /**
-     * Compares two annotated type mirrors. 
+     * Compares two annotated type mirrors.
      */
     protected abstract R compare(AnnotatedTypeMirror type, AnnotatedTypeMirror p);
-    
+
     /**
      * Supplies the logic to reduce on how to combine two R objects
      */
     protected abstract R combineRs(R r1, R r2);
-    
+
     protected R scan(Iterable<? extends AnnotatedTypeMirror> types,
                      Iterable<? extends AnnotatedTypeMirror> p) {
         if (types == null)

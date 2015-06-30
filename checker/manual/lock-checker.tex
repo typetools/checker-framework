@@ -84,7 +84,7 @@ method itself rather than to some particular type.
   It is especially useful for annotating library methods, including JDK methods.
   Since \code{@SideEffectFree} implies \code{@LockingFree}, if both
   are applicable then you should only write \code{@SideEffectFree}.
-  
+
   \textbf{It is critical not to use this annotation
   for any method that uses synchronization/locking,
   directly or indirectly.}  This is because even methods that are guaranteed
@@ -123,7 +123,7 @@ supports both.
   inter-procedurally.
 
   In Java, it is always legal to re-acquire a lock that is already held,
-  and the re-acquisition always works.  Thus, whenever you write 
+  and the re-acquisition always works.  Thus, whenever you write
 
 \begin{Verbatim}
   @Holding("myLock")
@@ -228,15 +228,15 @@ for annotating JDK locking methods, as in:
 
 \begin{Verbatim}
 package java.util.concurrent.locks;
- 
+
 class ReentrantLock {
- 
+
     @EnsuresLockHeld("this")
     public void lock();
- 
+
     @EnsuresLockHeldIf (expression="this", result=true)
     public boolean tryLock();
- 
+
 [...]
 }
 \end{Verbatim}
@@ -246,16 +246,16 @@ higher-level lock constructs such as a Monitor, as in this simplified example:
 
 \begin{Verbatim}
 public class Monitor {
- 
+
     private ReentrantLock lock; // Initialized in the constructor
- 
+
 [...]
- 
+
     @EnsuresLockHeld("lock")
     public void enter() {
            lock.lock();
     }
- 
+
 [...]
 }
 \end{Verbatim}
@@ -272,9 +272,9 @@ you should only write \code{@SideEffectFree}.
 private Object myField;
 private ReentrantLock lock; // Initialized in the constructor
 private @GuardedBy("lock") Object x; // Initialized in the constructor
- 
+
 [...]
- 
+
 @LockingFree
 // This method does not use locks or synchronization but cannot
 // be annotated as @SideEffectFree since it alters myField.
@@ -381,7 +381,7 @@ The book \href{http://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goet
 \end{itemize}
 
 The Lock Checker renames the method annotation to
-\refqualclass{checker/lock/qual}{Holding}, and it generalizes the 
+\refqualclass{checker/lock/qual}{Holding}, and it generalizes the
 \refqualclass{checker/lock/qual}{GuardedBy} annotation into a type annotation
 that can apply not just to a field but to an arbitrary type (including the
 type of a parameter, return value, local variable, generic type parameter,
@@ -420,7 +420,7 @@ deadlock.
 Not-holding:  Specify that a method must not be called if any of the listed
 locks are held.
 
-These features are supported by 
+These features are supported by
 \href{http://clang.llvm.org/docs/ThreadSafetyAnalysis.html}{Clang's
   thread-safety analysis}.
 

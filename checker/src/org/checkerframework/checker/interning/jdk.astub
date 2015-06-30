@@ -1851,7 +1851,7 @@ public final @UsesObjectEquals class Currency implements Serializable {}
 final @UsesObjectEquals class DualPivotQuicksort {}
 // TODO: EventListenerProxy got a new type parameter in Java 7.
 // This unfortunately causes the StubParser to trip on a Java 6 environment.
-// We should investigate how to support both platforms at the same time. 
+// We should investigate how to support both platforms at the same time.
 public abstract @UsesObjectEquals class EventListenerProxy // <T extends EventListener>
         implements EventListener {}
 public @UsesObjectEquals class EventObject implements java.io.Serializable {}

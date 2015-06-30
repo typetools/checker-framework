@@ -5,11 +5,11 @@ import tests.util.*;
 // Method type argument substitution needs to consider arrays correctly.
 public class GenericTest5 {
   interface Foo { <T> T[] id(T[] a); }
- 
+
   public <U> void test(Foo foo, U[] a) {
     U[] array = foo.id(a);
   }
-  
+
   public <T> void test1(Foo foo, T[] a) {
     T[] array = foo.id(a);
   }

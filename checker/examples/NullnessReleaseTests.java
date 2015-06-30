@@ -4,7 +4,7 @@ import java.util.*;
 /**
  * This class is based on NullnessExample.
  * This version contains additional tests to ensure that a build
- * works correctly. 
+ * works correctly.
  */
 public class NullnessReleaseTests {
 

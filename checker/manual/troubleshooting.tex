@@ -73,7 +73,7 @@ package org.checkerframework.checker.nullness.qual does not exist
   You should solve this by unsetting the variable/option, which it is deprecated.
 \end{sloppypar}
 
-If the error is 
+If the error is
 
 \begin{Verbatim}
 package org.checkerframework.checker.nullness.qual does not exist
@@ -418,7 +418,7 @@ typical way to address this is to write the meta-annotation
 bottom type qualifier.
 
 \item
-An error such as 
+An error such as
 
 \begin{Verbatim}
 MyFile.java:123: error: incompatible types in argument.
@@ -478,7 +478,7 @@ indicates that you are compiling using a Java 6 or 7 JDK, but your code
 references an enum constant that is only defined in the Java 8 JDK.  The
 problem might be that your code uses a library that references the enum
 constant.  In particular, the type annotations shipped with the Checker
-Framework reference 
+Framework reference
 \sunjavadoc{java/lang/annotation/ElementType.html\#TYPE\_USE}{ElementType.TYPE\_USE}.  You can use the Checker
 Framework, but still compile and run your code in a Java 6 or 7 JVM, by
 following the instructions in Section~\ref{backward-compatibility}.
@@ -555,7 +555,7 @@ compiler reads these annotations in Java 7, and other compilers ignore them.
 \section{How to report problems (bug reporting)\label{reporting-bugs}}
 
 If you have a problem with any checker, or with the Checker Framework,
-please file a bug at 
+please file a bug at
 \url{http://code.google.com/p/checker-framework/issues/list}.
 (First, check whether there is an existing bug report for that issue.)
 
@@ -653,7 +653,7 @@ adds annotated JDKs and the Checker Framework jars to the classpath.
 % the need to set it?  It's used for:
 %  * the location of tools.jar, below.
 %  * the default location of RTJAR, in checker/jdk/Makefile.
-Set the \<JAVA\_HOME> environment variable to the location of your JDK 
+Set the \<JAVA\_HOME> environment variable to the location of your JDK
 7 or 8 installation (not the JRE installation, and not JDK 6 or earlier).
 This needs to be an Oracle JDK.
 (The \<JAVA\_HOME> environment
@@ -801,19 +801,19 @@ Run \code{make} in the \code{checker/manual} directory to build both the PDF and
 % % alternative: \urldef{\JsrInstallingUrl}{\url}{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}
 % {\codesize\url{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}}.
 % This creates a \code{jsr308-langtools} directory.
-% 
+%
 % \item Download the Checker Framework distribution zipfile from
 % \myurl{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip},
 % and unzip it to create a \code{checkers} directory.  We recommend that the
 % \code{checkers} directory and the \code{jsr308-langtools} directory be siblings.
 % Example commands:
-% 
+%
 % \begin{Verbatim}
 %   cd $JSR308
 %   wget http://types.cs.washington.edu/checker-framework/current/checker-framework.zip
 %   unzip checker-framework.zip
 % \end{Verbatim}
-% 
+%
 % You will also need to adjust the path to \<javac> in any Ant buildfiles,
 % etc.
 
@@ -827,40 +827,40 @@ Run \code{make} in the \code{checker/manual} directory to build both the PDF and
 % standard mechanisms such as JSR 269 annotation processing, but also
 % accesses the compiler's AST. In the long run, a checker built using the
 % Checker Framework should not be dependent on any compiler specifics.)
-% If you do not place the annotations in 
+% If you do not place the annotations in
 % then you should also disable Eclipse's on-the-fly syntax checking.
 
 
 
 
 % \subsection{TO DO:  The short instructions (for Linux only)}
-% 
+%
 % %%% This comment does not seem to be correct any longer.
 % %% This text is identically reproduced at ../../jsr308-langtools/README-jsr308.html
 % %% so if you change either one, change the other also!
-% 
+%
 % The following commands install
 % the JSR 308 \code{javac} compiler and the Checker
 % Framework, or update an existing installation.
 % It currently works only on \textbf{Linux}.
-% For more details, or if anything goes wrong, see the comments in the 
+% For more details, or if anything goes wrong, see the comments in the
 % \code{Makefile-jsr308-install} file.
-% 
+%
 % \begin{enumerate}
-% 
+%
 % \item
 %   Execute the following commands:
-% 
+%
 % \begin{Verbatim}
 %   cd
 %   wget -nv -N http://types.cs.washington.edu/jsr308/Makefile-jsr308-install
 %   make -f Makefile-jsr308-install
 % \end{Verbatim}
-% 
+%
 % \item
 % Set some environment variables according to the instructions at the top of file
 % \code{Makefile-jsr308-install}.
-% 
+%
 % \end{enumerate}
 
 
@@ -947,7 +947,7 @@ For further case studies, also see the ISSTA 2008 paper about the Checker
 Framework, described above.
 
 \item[Thread locality (Section~\ref{loci-thread-locality-checker})]
-``Loci: Simple thread-locality for Java''~\cite{WrigstadPMZV2009} (ECOOP 2009, 
+``Loci: Simple thread-locality for Java''~\cite{WrigstadPMZV2009} (ECOOP 2009,
 \myurl{http://janvitek.github.io/pubs/ecoop09.pdf})
 
 \item[\href{https://ece.uwaterloo.ca/~wdietl/ownership/}{Generic Universe
@@ -979,7 +979,7 @@ Most educational use of the Checker
 Framework is never published, and most commercial use of the Checker
 Framework is never discussed publicly.
 
-(If you know of a paper or other use that is not listed here, please inform 
+(If you know of a paper or other use that is not listed here, please inform
 the Checker Framework developers so we can add it.)
 
 
@@ -1050,7 +1050,7 @@ grateful.
 %% Not so accurate, since Mahmood is really an author of the nullness and
 %% interned checkers too, and since then they have been essentially
 %% rewritten from scratch.
-% The Checker Framework was implemented by 
+% The Checker Framework was implemented by
 % The Nullness Checker was implemented by Matthew M. Papi.
 % The Interning Checker was implemented by Matthew M. Papi.
 % The Javari Checker was implemented by Telmo Correa.

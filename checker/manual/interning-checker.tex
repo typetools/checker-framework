@@ -13,7 +13,7 @@ pattern.
 Interning has two benefits:  it can save memory, and it can speed up testing for
 equality by permitting use of \code{==}.
 
-The Interning Checker prevents two types of errors in your code.  First, 
+The Interning Checker prevents two types of errors in your code.  First,
 \code{==} should be used
 only on interned values; using \code{==} on
 non-interned values can result in subtle bugs.  For example:
@@ -26,7 +26,7 @@ non-interned values can result in subtle bugs.  For example:
 
 \noindent
 The Interning Checker helps programmers to prevent such bugs.
-Second, 
+Second,
 the Interning Checker also helps to prevent performance problems that result
 from failure to use interning.
 (See Section~\ref{checker-guarantees} for caveats to the checker's guarantees.)

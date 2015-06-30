@@ -45,7 +45,7 @@ public class ResourceUtils {
     /**
      * Returns a list of all files in a resource delta. This is of help when
      * performing an incremental build.
-     * 
+     *
      * @return Collection A list of all files to be built.
      */
     public static List<IResource> collectIncremental(IResourceDelta delta) {
@@ -97,7 +97,7 @@ public class ResourceUtils {
 
     /**
      * Convenient method to get resources from adaptables
-     * 
+     *
      * @param element
      *            an IAdaptable object which may provide an adapter for
      *            IResource
@@ -128,7 +128,7 @@ public class ResourceUtils {
      * The children from selected parents are not resolved, so that the return
      * value contains the 'highest' possible hierarchical elements without
      * children.
-     * 
+     *
      * @param structuredSelection
      * @return a map with the project as a key and selected resources as value.
      *         If project itself was selected, then key is the same as value.
@@ -234,7 +234,7 @@ public class ResourceUtils {
 
     /**
      * Get the specified project file as an Eclipse resource.
-     * 
+     *
      * Returns null if the file isn't found.
      */
     public static IResource getFile(IJavaProject jProject, File file) {

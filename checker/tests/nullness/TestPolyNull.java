@@ -6,7 +6,7 @@ class TestPolyNull {
    void test2() { identity((@Nullable String) null); }
 
    public static @PolyNull String[] typeArray(@PolyNull Object[] seq, @Nullable String nullable) {
-    @SuppressWarnings("nullness") // ignore array initialization here. 
+    @SuppressWarnings("nullness") // ignore array initialization here.
     @PolyNull String[] retval = new @Nullable String[seq.length];
     for (int i = 0 ; i < seq.length ; i++) {
       if (seq[i] == null) {

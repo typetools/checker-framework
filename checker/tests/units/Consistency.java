@@ -6,7 +6,7 @@ import org.checkerframework.checker.units.*;
  * for consistency of arguments.
  * This is not implemented yet; send us a message if you think this would
  * help you!
- * 
+ *
  * @skip-test
  */
 public class Consistency {

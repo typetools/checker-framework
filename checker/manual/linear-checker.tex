@@ -54,9 +54,9 @@ void print(@Linear Object arg) {
 
 @Linear Object m(Object o, @Linear Pair lp) {
   @Linear Object lo2 = o;         // ERROR: aliases may exist
-  @Linear Pair lp3 = lp;          
+  @Linear Pair lp3 = lp;
   @Linear Pair lp4 = lp;          // ERROR: reference lp was already used
-  lp3.a;                            
+  lp3.a;
   lp3.b;                          // OK: field dereferencing does not use up the reference
   print(lp3);
   print(lp3);                     // ERROR: reference lp3 was already used

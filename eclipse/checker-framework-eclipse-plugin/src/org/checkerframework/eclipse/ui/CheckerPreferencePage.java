@@ -88,7 +88,7 @@ public class CheckerPreferencePage extends PreferencePage implements
         // UI/Eclipse options
         final Group uiGroup = new Group(tableComposite, SWT.None);
         uiGroup.setText("Eclipse options");
-        
+
         final FillLayout uiLayout = new FillLayout(SWT.VERTICAL);
         uiLayout.marginWidth = uiLayout.marginHeight = 5;
         uiGroup.setLayout(uiLayout);
@@ -109,7 +109,7 @@ public class CheckerPreferencePage extends PreferencePage implements
         // JDK options
         final Group jdkGroup = new Group(tableComposite, SWT.None);
         jdkGroup.setText("JDK options");
-        
+
         final FormLayout jdkLayout = new FormLayout();
         jdkLayout.marginWidth = jdkLayout.marginHeight = 5;
         jdkGroup.setLayout(jdkLayout);
@@ -117,7 +117,7 @@ public class CheckerPreferencePage extends PreferencePage implements
         final Label jdkFolderLabel = new Label(jdkGroup, SWT.None);
         jdkFolderLabel.setText("Java Home Directory:");
         optJDKPath = new Text(jdkGroup, SWT.SINGLE | SWT.BORDER);
-        
+
         final Button browseButton = new Button(jdkGroup, SWT.PUSH);
         browseButton.setText("Browse...");
         browseButton.addSelectionListener(new SelectionListener() {
@@ -412,7 +412,7 @@ public class CheckerPreferencePage extends PreferencePage implements
         for(final int index : indices) {
             final TableItem ti = procTable.getItem(index);
             if(! ti.getText(SOURCE.ordinal()).equals(CUSTOM_LABEL) ) {
-                throw new IllegalArgumentException("Cannot remove built-in checker " + ti.getText(LABEL.ordinal()));    
+                throw new IllegalArgumentException("Cannot remove built-in checker " + ti.getText(LABEL.ordinal()));
             }
         }
         procTable.remove(indices);

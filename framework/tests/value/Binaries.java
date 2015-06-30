@@ -87,7 +87,7 @@ class Binaries {
         }
 
         @IntVal({ '2', '4' }) char f = (char) (e * 2);
-        
+
         @DoubleVal(0.75) float g = 1 * 0.75f;
 
     }
@@ -111,7 +111,7 @@ class Binaries {
         }
 
         @IntVal({ '0', '1' }) char f = (char) (e / 2);
-        
+
         @IntVal(0) int g = 2/3;
         @IntVal(0)  int h = (Integer.MAX_VALUE-1)/Integer.MAX_VALUE;
         @IntVal(0) long l = (Long.MAX_VALUE-1)/Long.MAX_VALUE;
@@ -215,7 +215,7 @@ class Binaries {
         @BoolVal({ true }) boolean b = false || true;
 
     }
-    
+
     public void conditionals() {
         @BoolVal({ false }) boolean a = 1.0f == '1';
         @BoolVal({ true }) boolean b = 1 != 2.0;
@@ -227,16 +227,16 @@ class Binaries {
         @BoolVal(true) boolean g = (BANG == '!');
         char bangChar = '!';
         @BoolVal(true) boolean h =(BANG == bangChar);
-        
+
         Character bang = '!';
         //Reference equalitiy is used
         //:: error: (assignment.type.incompatible)
         @BoolVal(false) boolean i =(BANG == bang);
-        
+
 
     }
-    
-    
+
+
     public void loop() throws InterruptedException {
         int spurious_count = 0;
         while (true) {
@@ -293,18 +293,18 @@ class Binaries {
         //:: error: (assignment.type.incompatible)
     @BoolVal(true) boolean b = (s != null);
     }
-   
+
     public void conditionalComparisions(){
         @BoolVal(true) boolean a1 = true || false;
         @BoolVal(true) boolean a2 = true || true;
         @BoolVal(false) boolean a3 = false || false;
         @BoolVal(true) boolean a4 = false || true;
-        
+
         @BoolVal(false) boolean a5 = true && false;
         @BoolVal(true) boolean a6 = true && true;
         @BoolVal(false) boolean a7 = false && false;
         @BoolVal(false) boolean a8 = false && true;
-        
+
         boolean unknown = flag?true:false;
         @BoolVal(true) boolean a9 = true || unknown;
         @BoolVal(true) boolean a11 = unknown || true;
@@ -312,7 +312,7 @@ class Binaries {
         @BoolVal(false) boolean a12 = unknown || false;
         //:: error: (assignment.type.incompatible)
         @BoolVal(true) boolean a13 = false || unknown;
-        
+
         //:: error: (assignment.type.incompatible)
         @BoolVal(true) boolean a14 = true && unknown;
         //:: error: (assignment.type.incompatible)
@@ -320,5 +320,5 @@ class Binaries {
         @BoolVal(false) boolean a16 = unknown && false;
         @BoolVal(false) boolean a17 = false && unknown;
     }
-    
+
 }

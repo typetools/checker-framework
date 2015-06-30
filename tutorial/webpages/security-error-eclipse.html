@@ -131,7 +131,7 @@
 incompatible types in argument.
                     "where post.category like '%", category,
   found   : @Tainted String
-  required: @Untainted String   PersonalBlogService.java        
+  required: @Untainted String   PersonalBlogService.java
 </pre>
 
       <p>The checker issues an error for <code>getPostsByCategory()</code>
@@ -162,7 +162,7 @@ method.
 incompatible types in argument.
                         pblog.getPostsByCategory(reqCategory));
   found   : @Tainted String
-  required: @Untainted String   ReadAction.java 
+  required: @Untainted String   ReadAction.java
 </pre>
 
       <p>There is an error in <code>ReadAction.executeSub()</code>, which
@@ -175,7 +175,7 @@ incompatible types in argument.
       <h4>4. Correct the New Error</h4>To correct, <b>use the
       <code>validate</code> method</b> as shown below.
       <pre>
-    String reqCategory = <b>validate(</b>cleanNull(request.getParameter("cat"))<b>)</b>; 
+    String reqCategory = <b>validate(</b>cleanNull(request.getParameter("cat"))<b>)</b>;
 </pre>
     </div>
 

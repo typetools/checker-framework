@@ -28,7 +28,7 @@ public class DoubleMath extends NumberMath<Double> {
         }
         throw new UnsupportedOperationException();
     }
-    
+
     @Override
     public Number minus(Number right) {
         if (right instanceof Byte) {

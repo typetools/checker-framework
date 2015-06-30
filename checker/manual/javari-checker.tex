@@ -48,12 +48,12 @@ The following six annotations make up the Javari type system.
 
 \item[\refqualclass{checker/javari/qual}{Mutable}]
   indicates a mutable type.
-  
+
 \item[\refqualclass{checker/javari/qual}{Assignable}]
   is a field annotation, not a type qualifier.  It indicates that the given
   field may always be assigned, no matter what the type of the reference
   used to access the field.
-  
+
 \item[\refqualclass{checker/javari/qual}{QReadOnly}]
   corresponds to Javari's ``\code{?\ readonly}'' for wildcard types.  An
   example of its use is \code{List<@QReadOnly Date>}.  It allows only the
@@ -91,8 +91,8 @@ Javadoc for \refclass{checker/javari}{JavariAnnotatedTypeFactory}.
 \subsection{Inference of Javari annotations\label{javari-inference}}
 
 It can be tedious to write annotations in your code.  The Javarifier tool
-(\myurl{http://types.cs.washington.edu/javari/javarifier/}) infers 
-Javari types for an existing program.  It 
+(\myurl{http://types.cs.washington.edu/javari/javarifier/}) infers
+Javari types for an existing program.  It
 automatically inserts Javari annotations in your Java program or
 in \code{.class} files.
 

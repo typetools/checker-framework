@@ -13,7 +13,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * If an expression's type has this annotation, then at run time, the
  * expression evaluates to an array whose length is one of the annotation's
  * arguments.
- * 
+ *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @TypeQualifier

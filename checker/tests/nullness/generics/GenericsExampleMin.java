@@ -41,7 +41,7 @@ class GenericsExampleMin {
         nble = this.get(0);
     }
   }
-  
+
   class MyList2<@NonNull T> {
       T t;
       @Nullable T nble;
@@ -58,7 +58,7 @@ class GenericsExampleMin {
       T t;
       @Nullable T nble;
       @NonNull T nn;
-      
+
       public MyList3(T t, @Nullable T nble, @NonNull T nn) {
           //:: error: (assignment.type.incompatible)
           this.t = nble;

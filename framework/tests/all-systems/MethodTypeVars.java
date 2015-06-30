@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 
 class MethodTypeVars {
     private <T> void addToBindingList(Map<T, List<String>> map, T key, String value) {}
-    
+
     void call1() {
         LinkedHashMap<Object, List<String>> multiMap = new LinkedHashMap<Object, List<String>>();
         String s = "s";

@@ -13,7 +13,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * Represents the bottom of the Constant Value qualifier hierarchy.  It means that
  * the value always has the value null or that the expression is dead code.
  * <p>
- * 
+ *
  * This annotation may not be written in source code; it is an implementation
  * detail of the Constant Value Checker.
  *

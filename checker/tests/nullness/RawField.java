@@ -64,14 +64,14 @@ class MultiVersionControl {
 // class HasStaticUnknownInitializationField {
 //     static @UnknownInitialization @Raw Object f;
 // }
-// 
+//
 // class UseUnknownInitializationField {
-// 
+//
 //     Object f;
-// 
+//
 //     public UseUnknownInitializationField() {
 //         //:: (initialization.invalid.field.write.in.constructor)
 //         f = HasStaticUnknownInitializationField.f;
 //     }
-// 
+//
 // }

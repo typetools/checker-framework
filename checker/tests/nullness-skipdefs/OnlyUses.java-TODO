@@ -19,7 +19,7 @@ public class OnlyUses {
 
   static class Client {
     void m1(@NonNull Object nn, @Nullable Object nble) {
-      @NonNull Object x; 
+      @NonNull Object x;
 
       OnlyMyUses omu = new OnlyMyUses();
       omu.foo(nn);
@@ -33,9 +33,9 @@ public class OnlyUses {
       omu.foo2(omuNble);
       omuX = omu.foo2(omuNn);
     }
-    
+
     void m2(@NonNull Object nn, @Nullable Object nble) {
-      @NonNull Object x; 
+      @NonNull Object x;
 
       OnlyMyUses.bar(nn);
       OnlyMyUses.bar(nble);
@@ -49,18 +49,18 @@ public class OnlyUses {
       OnlyMyUses.bar2(omuNble);
       omuX = OnlyMyUses.bar2(omuNn);
     }
-    
+
     void m3(@NonNull Object nn, @Nullable Object nble) {
-      @NonNull Object x; 
+      @NonNull Object x;
 
       NotMyUses nmu = new NotMyUses();
       nmu.foo(nn);
       nmu.foo(nble);
       x = nmu.foo(nn);
     }
-    
+
     void m4(@NonNull Object nn, @Nullable Object nble) {
-      @NonNull Object x; 
+      @NonNull Object x;
 
       NotMyUses.bar(nn);
       NotMyUses.bar(nble);

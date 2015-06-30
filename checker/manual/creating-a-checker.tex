@@ -93,7 +93,7 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 \centering Tainting \par Checker &
 \centering \ldots &
 \centering Your \par Checker &
-\multicolumn{2}{c}{} 
+\multicolumn{2}{c}{}
 \\ \hline
 \multicolumn{6}{|p{6\bw}|}{\centering Base Checker \par (enforces subtyping rules)} &
 \centering Type \par inference &
@@ -101,7 +101,7 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 Other \par tools
 \\ \hline
 \multicolumn{6}{|p{6\bw}|}{\centering Checker Framework \par (enables creation of pluggable type-checkers)} &
-\multicolumn{2}{p{3\bw}|}{\centering \href{http://types.cs.washington.edu/annotation-file-utilities/}{Annotation File Utilities} \par (\code{.java} $\leftrightarrow$ \code{.class} files)} 
+\multicolumn{2}{p{3\bw}|}{\centering \href{http://types.cs.washington.edu/annotation-file-utilities/}{Annotation File Utilities} \par (\code{.java} $\leftrightarrow$ \code{.class} files)}
 \\ \hline
 \multicolumn{8}{|p{8.5\bw}|}{\centering
   \href{http://types.cs.washington.edu/jsr308/}{Type Annotations} syntax
@@ -451,7 +451,7 @@ uses \<@Unqualified>, which is shared across multiple type systems:
 
 % \noindent
 % The interning type system of Section~\ref{interning-checker} also lacks a
-% top qualifier; there is no \<@Uninterned> qualifier that is a supertype of 
+% top qualifier; there is no \<@Uninterned> qualifier that is a supertype of
 % \refqualclass{checker/interning/qual}{Interned}.
 
 \noindent
@@ -1457,11 +1457,11 @@ java -jar $CHECKERFRAMEWORK/framework/dist/framework.jar \
 % TODO: show example -AprintErrorStack usage. Update text above to
 % refer to it.
 
-% $ javac -processor org.checkerframework.checker.fenum.FenumChecker IdentityArrayList.java 
+% $ javac -processor org.checkerframework.checker.fenum.FenumChecker IdentityArrayList.java
 % error: GraphQualifierHierarchy found an unqualified type.  Please ensure that your implicit rules cover all cases and/or use a @DefaulQualifierInHierarchy annotation.
 % 1 error
 
-% $ javac -processor org.checkerframework.checker.fenum.FenumChecker -AprintErrorStack IdentityArrayList.java 
+% $ javac -processor org.checkerframework.checker.fenum.FenumChecker -AprintErrorStack IdentityArrayList.java
 %% error: GraphQualifierHierarchy found an unqualified type.  Please ensure that your implicit rules cover all cases and/or use a @DefaulQualifierInHierarchy annotation.
 %%   checkers.util.GraphQualifierHierarchy.checkAnnoInGraph(GraphQualifierHierarchy.java:253)
 %%   checkers.util.GraphQualifierHierarchy.isSubtype(GraphQualifierHierarchy.java:243)
@@ -1606,7 +1606,7 @@ Section~\ref{type-refinement-runtime-tests} (both of these lists appear in
 the same order as the manual chapters, to help us notice if anything is
 missing).
 
-Every chapter and (sub)*section should have a label defined \emph{within} the 
+Every chapter and (sub)*section should have a label defined \emph{within} the
 \verb|\section| command.  Section labels should start with the checker
 name (as in \verb|\label{bellyrub-examples}|) and not with ``\<sec:>''.
 These conventions are for the benefit of the Hevea program that produces
@@ -1770,7 +1770,7 @@ newcomer, and its documentation is a bit sparse. The Checker Framework
 aims to abstract a lot of these complexities.
 You do not have to understand the implementation of javac to
 build powerful and useful checkers.
-Beyond this document, 
+Beyond this document,
 other useful resources include the Java Infrastructure
 Developer's guide at
 \url{http://wiki.netbeans.org/Java_DevelopersGuide} and the compiler

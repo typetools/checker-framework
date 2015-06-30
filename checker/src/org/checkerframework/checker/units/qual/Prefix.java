@@ -1,7 +1,7 @@
 package org.checkerframework.checker.units.qual;
 
 /* From http://en.wikipedia.org/wiki/SI_prefix:
-    
+
 yotta   Y   1000^8     10^24    1000000000000000000000000   Septillion      Quadrillion     1991
 zetta   Z   1000^7     10^21    1000000000000000000000      Sextillion      Trilliard       1991
 exa     E   1000^6     10^18    1000000000000000000         Quintillion     Trillion        1975

@@ -46,14 +46,14 @@ public class Bug103 extends HR {
   void m1( CC o, Object u ) {
     String cc = m2(o);
     String dd = m2(o);
-  } 
- 
+  }
+
 
   String m2( final CC c) {
      return "a";
   }
 
-  //Crazy: remove ids.length and it compiles 
+  //Crazy: remove ids.length and it compiles
   // replace return type List with ArrayList and it compiles
   List<CC> m3( CC c ) {
       ArrayList<CC> lc = new ArrayList<CC>(ids.length);

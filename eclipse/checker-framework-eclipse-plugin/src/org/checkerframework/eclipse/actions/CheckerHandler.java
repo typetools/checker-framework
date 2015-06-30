@@ -79,7 +79,7 @@ public abstract class CheckerHandler extends AbstractHandler {
     /**
      * Retrieve the selection from the menu or otherwise when called from
      * elsewhere
-     * 
+     *
      * @param event
      * @return the current selection
      */

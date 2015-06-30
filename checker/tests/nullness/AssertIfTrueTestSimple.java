@@ -38,7 +38,7 @@ public class AssertIfTrueTestSimple {
         @NonNull Object y = values;
     }
     */
-    
+
     if (s.repNulled()) {
         //:: error: (dereference.of.nullable)
         s.values.hashCode();

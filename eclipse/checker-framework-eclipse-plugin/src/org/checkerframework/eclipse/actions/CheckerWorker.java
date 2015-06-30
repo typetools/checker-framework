@@ -42,7 +42,7 @@ public class CheckerWorker extends Job {
 	/**
 	 * This constructor is intended for use from an incremental builder that has
 	 * a list of updated source files to check
-	 * 
+	 *
 	 * @param project
 	 * @param sourceFiles
 	 * @param checkerNames
@@ -141,7 +141,7 @@ public class CheckerWorker extends Job {
 
 	/**
 	 * Mark errors for this project in the appropriate files
-	 * 
+	 *
 	 * @param project
 	 */
 
@@ -212,7 +212,7 @@ public class CheckerWorker extends Job {
 
 	/**
 	 * Returns the project's classpath in a format suitable for javac
-	 * 
+	 *
 	 * @param project
 	 * @return the project's classpath as a string
 	 * @throws JavaModelException

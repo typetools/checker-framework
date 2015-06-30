@@ -8,12 +8,12 @@ class ArrayInit {
                 {{1,2,3,4,5,6,7}},
                 {{1},{1},{1,1,1,1}}
                 };
-        
+
         int @ArrayLen(4)[] @ArrayLen({1,2,3})[] a = {{1,1},{1,1,1},{1},{1}};
         int @ArrayLen(4)[] @ArrayLen({1,2})[] b =  {{1},{1},{1},{1,1}};
         int @ArrayLen(1)[] @ArrayLen(7)[] c = {{1,2,3,4,5,6,7}};
         int @ArrayLen(3)[] @ArrayLen({1,4})[] d =  {{1},{1},{1,1,1,1}};
-        
+
         int @ArrayLen(4) []@ArrayLen({1,3,4})[]@ArrayLen({1,2,3,4,7})[] beta = {a,b,c,d};
     }
 
@@ -35,10 +35,10 @@ class ArrayInit {
         int j = 3;
         int @ArrayLen({2})[] @ArrayLen({3})[] a = new int[2][3];
         int @ArrayLen({2})[] @ArrayLen({3})[] b = new int[i][j];
-        
+
         int @ArrayLen({2}) [][] c = new int[][] {{2},{3}};
     }
-    
+
     public void initilizer(){
         int @ArrayLen(3) [] ints = new int[]{2,2,2};
         byte @StringVal("d%")[] bytes = new byte[]{100,'%'};

@@ -1,4 +1,4 @@
-@SuppressWarnings("nullness") // Don't want to depend on @Nullable 
+@SuppressWarnings("nullness") // Don't want to depend on @Nullable
 class GenericTest12b {
     class Cell<T1 extends Object> {}
 

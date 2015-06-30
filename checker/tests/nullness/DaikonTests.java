@@ -80,7 +80,7 @@ public class DaikonTests {
             o.hashCode();
         }
     }
- 
+
     // Based on problem found in PrintInvariants.
     // Not yet able to reproduce the problem :-(
 

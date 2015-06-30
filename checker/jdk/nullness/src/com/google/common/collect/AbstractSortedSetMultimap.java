@@ -72,6 +72,6 @@ import org.checkerframework.dataflow.qual.*;
   @SideEffectFree @Override public Collection<V> values() {
     return super.values();
   }
-  
-  private static final long serialVersionUID = 430848587173315748L;  
+
+  private static final long serialVersionUID = 430848587173315748L;
 }

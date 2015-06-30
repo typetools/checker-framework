@@ -82,7 +82,7 @@ public class ObjectInputStream
     public static abstract class GetField {
         public abstract ObjectStreamClass getObjectStreamClass(@ReadOnly GetField this);
         public abstract boolean defaulted(@ReadOnly GetField this, String name) throws IOException;
-        public abstract boolean get(@ReadOnly GetField this, String name, boolean val) throws IOException; 
+        public abstract boolean get(@ReadOnly GetField this, String name, boolean val) throws IOException;
         public abstract byte get(@ReadOnly GetField this, String name, byte val) throws IOException;
         public abstract char get(@ReadOnly GetField this, String name, char val) throws IOException;
         public abstract short get(@ReadOnly GetField this, String name, short val) throws IOException;

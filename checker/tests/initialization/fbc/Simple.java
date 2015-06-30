@@ -8,7 +8,7 @@ public class Simple {
 
     Simple f;
     @NotOnlyInitialized Simple g;
-    
+
     @Pure int pure() {
         return 1;
     }

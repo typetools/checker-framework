@@ -22,7 +22,7 @@ with \refclass{framework/qual}{PolymorphicQualifier}.
 
 Section~\ref{qualifier-parameters} describes the qualifier parameters
 scheme, in which qualifier parameters are specified for classes and methods
-similarly to Java generics.  
+similarly to Java generics.
 The qualifier
 parameter scheme is more powerful than the original approach, but is
 currently (as of February 2015)
@@ -62,7 +62,7 @@ If your code uses raw types, then the Checker Framework will do its best to
 infer the Java type parameters and the type qualifiers.  If it infers
 imprecise types that lead to type-checking warnings elsewhere, then you have
 two options.  You can convert the raw types such as \code{List} to
-parameterized types such as \code{List<String>}, or you can supply the 
+parameterized types such as \code{List<String>}, or you can supply the
 \<-AignoreRawTypeArguments> command-line option.  That option causes the
 Checker Framework to ignore all subtype tests for type arguments that
 were inferred for a raw type.
@@ -224,7 +224,7 @@ In \code{MyClass2<@Interned String>},
 \subsection{Annotations on Wildcards\label{annotations-on-wildcards}}
 At an instantiation of a generic type, a Java wildcard indicates that some
 constraints are known on the type argument, but the type argument is not known
-exactly.  
+exactly.
 For example, you can indicate that the type parameter for variable \<ls> is
 some unknown subtype of \<CharSequence>:
 
@@ -294,20 +294,20 @@ Section~\ref{inherited-wildcard-annotations}).
 %% upper and the lower bound of a type.  If readers believe that, they will
 %% be OK with the syntax.
 % \subsubsection{Type parameter declaration annotation rationale\label{type-parameter-rationale}}
-% 
+%
 % It is desirable to be able to constrain both the upper and the lower bound
 % of a type, as in
-% 
+%
 % \begin{Verbatim}
 %   class MyClass<T extends @C MyUpperBound super @D void> { ... }
 % \end{Verbatim}
-% 
+%
 % However, doing so is not possible due to two limitations of Java's syntax.
 % First, it is illegal to specify both the upper and the lower bound of a
 % type parameter or wildcard.
 % Second, it is impossible to specify a type annotation for a lower
 % bound without also specifying a type (use of \<void> is illegal).
-% 
+%
 % Thus, when you wish to specify both bounds, you write one of them
 % explicitly, and you write the other one in front of the type variable name
 % or \<?>.  When you wish to specify two identical bounds, you write a
@@ -417,7 +417,7 @@ written, so \code{Iterator<@Nullable String>} can be a subtype of
 Therefore, its type parameter is annotated with \<@Covariant>.
 The first type parameter of \<Map.Entry> is also covariant.
 Another example would be the type parameter of a hypothetical class
-\<ImmutableList>. 
+\<ImmutableList>.
 
 The \<@Covariant> annotation is trusted but not checked.
 If you incorrectly specify as covariant a type parameter that that can be
@@ -738,7 +738,7 @@ which no explicit qualifier is written.  For example, a declaration like
 had used \<elt.equals(a[i])> instead of \<elt == a[i]>.
 
 
-% Suppose that some type system has two qualifiers, such as 
+% Suppose that some type system has two qualifiers, such as
 % \<@Nullable> and \<@NonNull>.  When a polymorphic type qualifier such
 % as \<@PolyNull> is used in a method, then the method conceptually
 % has two different versions:  one in which every instance of
@@ -943,7 +943,7 @@ but supply a \<param> argument, as in \<@Tainted("main")> which means that
 \<@Tainted> is the argument to the parameter named \<main>.
 \end{itemize}
 
-These annotations are summarized in 
+These annotations are summarized in
 Figure~\ref{fig-qualifier-parameter-syntax}
 and are more fully explained below.
 

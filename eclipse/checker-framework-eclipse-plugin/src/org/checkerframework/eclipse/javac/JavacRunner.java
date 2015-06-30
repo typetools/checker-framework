@@ -31,7 +31,7 @@ import com.sun.tools.javac.file.JavacFileManager;
 /**
  * This class is used to run the checker from the Sun Compiler API rather than
  * using the commandline.
- * 
+ *
  * @author asumu
  */
 public class JavacRunner implements CheckersRunner
@@ -60,7 +60,7 @@ public class JavacRunner implements CheckersRunner
 
     /**
      * Runs the compiler on the selected files using the given processor
-     * 
+     *
      * @param fileNames
      *            files that need to be type-checked
      * @param processors
@@ -141,7 +141,7 @@ public class JavacRunner implements CheckersRunner
 
     /**
      * Add options for type processing from the preferences
-     * 
+     *
      * @param opts
      */
     private void addProcessorOptions(List<String> opts)

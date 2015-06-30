@@ -28,9 +28,9 @@ import org.checkerframework.checker.tainting.TaintingChecker;
 /**
  * Stores information that describes a particular checker such as its label, the
  * class to run, or the quals path that is associate with it.
- * 
+ *
  * @author asumu
- * 
+ *
  */
 public class CheckerInfo
 {
@@ -127,7 +127,7 @@ public class CheckerInfo
 
     /**
      * Sets the name and processor accordingly.
-     * 
+     *
      * @param label
      * @param checker
      */
@@ -152,7 +152,7 @@ public class CheckerInfo
 
     /**
      * Gets the canonical class name for running the checker.
-     * 
+     *
      * @return the class name
      */
     public String getClassPath()
@@ -162,7 +162,7 @@ public class CheckerInfo
 
     /**
      * Get the label for this checker.
-     * 
+     *
      * @return the label name
      */
     public String getLabel()
@@ -172,7 +172,7 @@ public class CheckerInfo
 
     /**
      * Get the quals path for this checker.
-     * 
+     *
      * @return the quals path
      */
     public String getQualsPath() {
