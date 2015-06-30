@@ -11,8 +11,8 @@ import tests.compound.qual.CCBottom;
 import tests.compound.qual.CCTop;
 /**
  *  Used to test the compound checker design pattern.
- *  Alasing Checker and Annother Compound Checker are subcheckers of this checker
- *  Annother Compound Checker relies on the Alaising Checker, too.
+ *  AliasingChecker and AnotherCompoundChecker are subcheckers of this checker
+ *  AnotherCompoundChecker relies on the Alaising Checker, too.
  *  This is so that the order of subcheckers is tested.
  **/
 
