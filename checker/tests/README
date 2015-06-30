@@ -129,9 +129,9 @@ Essentially, just copy an existing checker, analogously to creating a new
 test directory for testing different command-line arguments, as described
 above.
 
-You will thus create a new file such as 
+You will thus create a new file such as
   checker-framework/checker/tests/src/tests/MyTypeSystemTest.java
-and a new directory such as 
+and a new directory such as
   checker-framework/checker/tests/mytypesystem/
 
 

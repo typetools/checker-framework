@@ -190,11 +190,11 @@
 incompatible types in assignment.
                 /*@Encrypted*/ int encryptInt = (character + OFFSET) % Character.MAX_VALUE ;
   found   : @PossiblyUnencrypted int
-  required: @Encrypted int      EncryptionDemo.java     /encryption-checker/src/encrypted       
+  required: @Encrypted int      EncryptionDemo.java     /encryption-checker/src/encrypted
 incompatible types in argument.
                 sendOverInternet(password);
   found   : @PossiblyUnencrypted String
-  required: @Encrypted String   EncryptionDemo.java     /encryption-checker/src/encrypted       
+  required: @Encrypted String   EncryptionDemo.java     /encryption-checker/src/encrypted
 </pre>
   </div>
 
@@ -324,13 +324,13 @@ void sendPassword() {
 <h4>Issue 2</h4>
 </div>
 <p> If you are using an Eclipse that does not support Java 8,
-Eclipse will give an error like 
+Eclipse will give an error like
 <em>The annotation @Encrypted
  is disallowed for this location</em> even if the location is valid.</p>
 <div class="alert alert-warning">
 <h5>Workaround</h5>
 Place all type annotations in  comments. For example, <code>@Encrypted</code>
-would be commented as <code>/*@Encrypted*/</code> 
+would be commented as <code>/*@Encrypted*/</code>
 </div>
 </div>
 -->

@@ -7,7 +7,7 @@ public class ConversionNull {
 
         f.format("%d %s", 0, null);
         f.format("%s", (Object)null);
-        
+
         //:: error: (argument.type.incompatible)
         f.format("%d %c", 0, null);
         f.format("%c", (Character)null);

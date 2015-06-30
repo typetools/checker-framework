@@ -5,7 +5,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 
 /**
  * Checker for a simple type system to test reflection resolution.
- * 
+ *
  * @author rjust
  */
 public class ReflectionTestChecker extends BaseTypeChecker {

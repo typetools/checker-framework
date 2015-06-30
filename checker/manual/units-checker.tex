@@ -164,7 +164,7 @@ Most annotation definitions do not have a \<@UnitsMultiple> meta-annotation.
 To take full advantage of the additional unit qualifier, you need to
 do two additional steps.
 (1)~Provide constants that convert from unqualified types to types that use
-the new unit.  
+the new unit.
 See class \code{UnitsTools} for examples (you will need to suppress a
 checker warning in just those few locations).
 (2)~Put the new unit in relation to existing units.
@@ -180,7 +180,7 @@ implementation of \code{UnitsRelations} to enforce it.
 
 \section{What the Units Checker checks\label{units-checks}}
 
-The Units Checker ensures that unrelated types are not mixed. 
+The Units Checker ensures that unrelated types are not mixed.
 
 All types with a particular unit annotation are
 disjoint from all unannotated types, from all types with a different unit
@@ -224,7 +224,7 @@ framework, simply invoke the checker:
   javac -processor org.checkerframework.checker.units.UnitsChecker MyFile.java ...
 \end{Verbatim}
 
-\item 
+\item
 If you define your own units, provide the name of the annotations using the
 \code{-Aunits} option:
 

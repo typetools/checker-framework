@@ -20,7 +20,7 @@ import com.google.common.annotations.GwtCompatible;
 
 /**
  * Bimap with one or more mappings.
- * 
+ *
  * @author Jared Levy
  */
 @GwtCompatible(serializable = true)

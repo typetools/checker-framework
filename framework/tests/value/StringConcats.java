@@ -16,7 +16,7 @@ class Test{
        @StringVal("123.0") String science = ""+1.23e2;
 
     }
-    
+
     void compoundStringAssignement(){
         String s = "";
         s+="hello";
@@ -33,6 +33,6 @@ class Test{
         //compound assignments have not been implemented.
         //:: error: (assignment.type.incompatible)
         @StringVal("helloa11.01.020truenull2626") String all = s;
-        
+
     }
 }

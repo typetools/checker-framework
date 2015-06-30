@@ -203,7 +203,7 @@ abstract class AbstractMultiset<E extends /*@Nullable*/ Object> extends Abstract
     }
     return modified;
   }
-  
+
   @Override public void clear() {
     entrySet().clear();
   }

@@ -8,7 +8,7 @@ public class Issue160 {
         }
         System.out.println(s.toString());
     }
-    
+
     public static void t2() {
         String s = null;
         if (s != null) {
@@ -17,7 +17,7 @@ public class Issue160 {
         }
         System.out.println(s.toString());
     }
-    
+
     public static void t3() {
         String s = null;
         if (s != null) {
@@ -26,7 +26,7 @@ public class Issue160 {
         }
         System.out.println(s.toString());
     }
-    
+
     public static void t1b() {
         String s = null;
         if (s == null) {
@@ -36,7 +36,7 @@ public class Issue160 {
         //:: error: (dereference.of.nullable)
         System.out.println(s.toString());
     }
-    
+
     public static void t2b() {
         String s = null;
         if (s == null) {
@@ -46,7 +46,7 @@ public class Issue160 {
         //:: error: (dereference.of.nullable)
         System.out.println(s.toString());
     }
-    
+
     public static void t3b() {
         String s = null;
         if (s == null) {

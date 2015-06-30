@@ -208,7 +208,7 @@ public class JavacError {
 
 	/**
 	 * Handle special error output cases for the compiler.
-	 * 
+	 *
 	 * @return true if no errors are present, false otherwise
 	 */
 	private static boolean handleErrors(String line) {

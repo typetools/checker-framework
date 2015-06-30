@@ -31,6 +31,6 @@ class GenericArgs2 {
     this.filter_map1 = filter_map1;
     this.filter_map2 = filter_map2;
   }
-  
+
   class MyMap<K extends @Nullable Object, V extends @Nullable Object> {}
 }

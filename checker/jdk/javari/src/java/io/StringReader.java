@@ -23,7 +23,7 @@ public class StringReader extends Reader {
     }
 
     public boolean markSupported(@ReadOnly StringReader this) {
-        throw new RuntimeException("skeleton method"); 
+        throw new RuntimeException("skeleton method");
     }
 
     public void mark(int readAheadLimit) throws IOException {

@@ -8,11 +8,11 @@ import java.lang.reflect.Method;
 public class AnonymousClassTest {
     /**
      * To build/run outside of the JUnit tests:
-     * 
+     *
      * Build with $CHECKERFRAMEWOKR/framework/tests/build/ on the classpath.
      * Need to either use Java 8 or the langtools compiler,
      * because annotations on cast are used.
-     * 
+     *
      * java AnonymousClassTest
      * MyClass$1.getSib1()
      * MyClass$1.setSib1()
@@ -31,8 +31,8 @@ public class AnonymousClassTest {
 
     @Sibling1 int sibling1;
     @Sibling2 int sibling2;
-    
-    public void returnTypePass() {        
+
+    public void returnTypePass() {
         try {
             Class<?> c = Class.forName("AnonymousClassTest$1");
             Method m = c.getMethod("getSib1", new Class[] {});
@@ -44,7 +44,7 @@ public class AnonymousClassTest {
         }
     }
 
- 
+
     public void argumentTypePass() {
         String str = "setSib1";
         @Sibling1 int val1 = sibling1;
@@ -63,7 +63,7 @@ public class AnonymousClassTest {
 
         }
     }
-    
+
     public void argumentTypeFail() {
         String str = "setSib2";
         @Sibling1 int val1 = sibling1;
@@ -80,8 +80,8 @@ public class AnonymousClassTest {
 
         }
     }
-    
-    public void returnTypeFail() {        
+
+    public void returnTypeFail() {
         try {
             Class<?> c = Class.forName("AnonymousClassTest$1");
             Method m = c.getMethod("getSib2", new Class[] {});
@@ -92,7 +92,7 @@ public class AnonymousClassTest {
         }
     }
 
-  
+
 
 
     public @ReflectBottom MyClass anonymous = new @ReflectBottom MyClass() {

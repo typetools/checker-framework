@@ -14,9 +14,9 @@ import org.checkerframework.eclipse.CheckerPlugin;
 /**
  * This class manages the current checkers that can be run. Also keeps track of
  * custom checkers that are made by the user.
- * 
+ *
  * @author asumu
- * 
+ *
  */
 public class CheckerManager {
 
@@ -33,7 +33,7 @@ public class CheckerManager {
     /**
      * For each processor in processors, check to see if we recognize that processor and
      * add its implicit imports to the "selected" list.  Return selected.
-     * 
+     *
      * @return a list of quals paths to use as imports
      */
     public static List<String> getSelectedQuals(final String [] processors) {

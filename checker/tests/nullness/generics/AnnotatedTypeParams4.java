@@ -1,12 +1,12 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 class Test {
-    
+
     class Test1<CONTENT extends @Nullable Object> {
         CONTENT a;
         // To prevent the warning about un-initialized fields.
         Test1(CONTENT p1) { a = p1; }
-  
+
         public CONTENT get() {
             return a;
         }
@@ -20,7 +20,7 @@ class Test {
         @NonNull CONTENT a;
         // To prevent the warning about un-initialized fields.
         Test2(@NonNull CONTENT p1) { a = p1; }
-  
+
         public @NonNull CONTENT get() {
             return a;
         }
@@ -47,7 +47,7 @@ class Test {
     class Test4<CONTENT extends @Nullable Object> {
         private Pair<CONTENT, CONTENT> userObject;
         Test4(Pair<CONTENT, CONTENT> p) { userObject = p; }
-        
+
         @org.checkerframework.dataflow.qual.Pure
         public CONTENT getUserLeft() {
           return userObject.a;

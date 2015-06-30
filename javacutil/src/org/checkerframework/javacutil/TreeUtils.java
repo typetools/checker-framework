@@ -712,7 +712,7 @@ public final class TreeUtils {
      * <pre>
      *   <em>Object</em> . <em>class</em>
      * </pre>
-     * 
+     *
      * @return true iff if tree is a class literal
      */
     public static boolean isClassLiteral(Tree tree) {

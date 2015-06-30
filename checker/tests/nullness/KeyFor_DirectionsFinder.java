@@ -8,15 +8,15 @@ public class KeyFor_DirectionsFinder {
     class GeoPoint {}
 
     class StreetSegment {}
-    
+
     class Graph {
         public void addEdge(StreetSegment endSeg, StreetSegment beginSeg) {}
     }
 
     public void buildGraph(List<StreetSegment> segs) {
-        Map<GeoPoint, Set<StreetSegment>> endMap = new 
+        Map<GeoPoint, Set<StreetSegment>> endMap = new
             HashMap<GeoPoint, Set<StreetSegment>>();
-        Map<@KeyFor("endMap") GeoPoint, Set<StreetSegment>> beginMap = new 
+        Map<@KeyFor("endMap") GeoPoint, Set<StreetSegment>> beginMap = new
             HashMap<@KeyFor("endMap") GeoPoint, Set<StreetSegment>>();
         Graph graph = new Graph();
 

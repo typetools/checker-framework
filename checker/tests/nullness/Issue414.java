@@ -11,7 +11,7 @@ class Issue414 {
     mymap.put(s, 1);
     @KeyFor("mymap") String s2 = s;
   }
-    
+
 
   Map<String,Integer> someField = new HashMap<String,Integer>();
 
@@ -41,7 +41,7 @@ class Issue414 {
   <T> void dominators(Map<T,List<T>> preds) {
 
     Map<T,Integer> dom = new HashMap<T,Integer>();
-    
+
     /*@KeyFor({"preds","dom"})*/ T root;
 
     List</*@KeyFor({"preds","dom"})*/ T> roots = new ArrayList<T>();

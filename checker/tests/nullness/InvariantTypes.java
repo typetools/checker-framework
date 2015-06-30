@@ -20,7 +20,7 @@ public class InvariantTypes {
     // Type for array creation is propagated from LHS
     @PolyNull Object[] po = new Object[5];
 
-    void testDecl(@MonotonicNonNull Object[] p) {} 
+    void testDecl(@MonotonicNonNull Object[] p) {}
     void testCall() {
         // Type for array creation is propaged from parameter type
         testDecl(new Object[5]);

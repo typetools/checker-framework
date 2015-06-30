@@ -14,7 +14,7 @@ public class Generics2 {
     void m1(Map<String, List<int[]>> map) {
         // OK
         m2s(map, new int[0]);
-        
+
         // This used to crash at
         // org.checkerframework.framework.util.GraphQualifierHierarchy.checkAnnoInGraph(GraphQualifierHierarchy.java:244)
         // Primitive types were not annotated in all cases.
@@ -28,11 +28,11 @@ public class Generics2 {
     <V> Map<String, List<int[]>> m2s(Map<String, List<int[]>> map, V val) {
         return map;
     }
-    
+
     Map<String, List<int[]>> m3(Map<String, List<int[]>> map) {
         return map;
     }
-    
+
     Map<String, List<int[]>> m3b() {
         return new HashMap<String, List<int[]>>();
     }

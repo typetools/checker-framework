@@ -19,7 +19,7 @@ class ContractsOverriding {
         @RequiresOdd("g")
         void m3() {
         }
-        
+
         @RequiresOdd("g")
         void m3b() {
         }
@@ -50,7 +50,7 @@ class ContractsOverriding {
         //:: error: (contracts.precondition.override.invalid)
         void m3() {
         }
-        
+
         @Override
         @RequiresOdd("super.g")
         void m3b() {
@@ -63,7 +63,7 @@ class ContractsOverriding {
         void m4() {
         }
     }
-    
+
     static class Sub2 extends Super2 {
         String g;
 
@@ -83,7 +83,7 @@ class ContractsOverriding {
         void m3() {
             g = odd;
         }
-        
+
         @Override
         @EnsuresOdd("f")
         void m4() {

@@ -40,7 +40,7 @@ public class ReflectiveEvalutator {
     }
 
     /**
-     * 
+     *
      * @param allArgValues
      *            a list of list where the first list corresponds to all
      *            possible values for the first argument. Pass null to indicate
@@ -193,7 +193,7 @@ public class ReflectiveEvalutator {
         }
         return returnListOfLists;
     }
-    
+
     public Object evaluateStaticFieldAccess(String classname, String fieldName,
             MemberSelectTree tree) {
         try {
@@ -218,7 +218,7 @@ public class ReflectiveEvalutator {
             NewClassTree tree, TypeMirror typeToCreate) {
         try {
             // get the constructor
-            Constructor<?> constructor = 
+            Constructor<?> constructor =
                     getConstrutorObject(tree,typeToCreate);
             if (constructor == null) {
                 return new ArrayList<>();
@@ -234,7 +234,7 @@ public class ReflectiveEvalutator {
                 listOfArguments = cartesianProduct(argValues,
                         argValues.size() - 1);
             }
-            
+
             List<Object> results = new ArrayList<>();
             for (Object[] arguments : listOfArguments) {
                 try {
@@ -245,7 +245,7 @@ public class ReflectiveEvalutator {
                                 Result.warning("constructor.invocation.failed"),
                                 tree);
                     return new ArrayList<Object>();
-                } 
+                }
                 return results;
             }
 
@@ -290,5 +290,5 @@ public class ReflectiveEvalutator {
         }
         return type;
     }
-   
+
 }

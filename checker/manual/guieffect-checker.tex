@@ -40,7 +40,7 @@ The programmer annotates each method to indicate whether:
 %% section of the manual.
 % The GUI Effect Checker prevents this problem by using an \emph{effect
 % system}, also known as a type-and-effect system.
-% An \emph{effect} is a property of a \emph{computation}.  
+% An \emph{effect} is a property of a \emph{computation}.
 % A well-known example of an effect system is Java's checked exception mechanism.  When Java's
 % type system says a method may throw exceptions \code{A} or \code{B} (the method type-checks with a
 % \code{throws A, B} clause), this makes two important statements about the behavior of the method at
@@ -57,8 +57,8 @@ The programmer annotates each method to indicate whether:
 
 The GUI Effect Checker verifies these effects and statically enforces that UI methods are only
 called from the correct thread.  A method with the safe effect is prohibited from calling a method
-with the UI effect. 
-% All UI element methods have the ``UI effect.'' 
+with the UI effect.
+% All UI element methods have the ``UI effect.''
 
 For example, the effect system can reason about when method calls must be dispatched to the UI
 thread via a message such as \<Display.syncExec>.
@@ -151,7 +151,7 @@ issues a warning (not an error).
 % access UI elements, and therefore must execute only on the distinguished UI event thread; the
 % \code{@SafeEffect} effect and method annotation marks code that must not directly access UI
 % elements, and is therefore safe to call from any thread.
-% 
+%
 % Polymorphic effects are used for classes and interfaces which are used in both ways, for example the
 % \code{java.util.Runnable} interface, containing one method, which is used for tasks including
 % starting new background threads (in which case the code must have the \code{@SafeEffect}) and
@@ -173,7 +173,7 @@ at all.
 The GUI Effect Checker provides three primary ways to change the default method effect for a class
 or package:
 \begin{itemize}
-\item 
+\item
   \refqualclass{checker/guieffect/qual}{UIType}
   is a class annotation that makes the effect for unannotated methods in that
 class default to

@@ -7,10 +7,10 @@ import org.checkerframework.checker.nullness.qual.*;
  * This test reads two stub files (in addtion to flow.astub):
  * tests/nullness-stubfile/stubfile1.astub
  * tests/nullness-stubfile/stubfile2.astub
- * 
- * The annotations on the methods are merged such that reading the two 
+ *
+ * The annotations on the methods are merged such that reading the two
  * stub files is equavlent to the following stubfile:
- * 
+ *
 public final class  String {
      public @Nullable String intern();
      public @NonNull String substring(@Nullable int beginIndex) @Nullable;

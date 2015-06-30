@@ -26,7 +26,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * The annotation indicates that the format string requires any Object as the
  * first parameter ({@link ConversionCategory#GENERAL}) and an integer as the
- * second parameter ({@link ConversionCategory#INT}). 
+ * second parameter ({@link ConversionCategory#INT}).
  *
  * @see ConversionCategory
  * @checker_framework.manual #formatter-checker Format String Checker

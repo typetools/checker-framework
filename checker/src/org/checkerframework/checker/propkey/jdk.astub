@@ -5,7 +5,7 @@ package java.util;
 class Properties {
   String getProperty(@PropertyKey String key);
   String getProperty(@PropertyKey String key, String defaultValue);
-  Object setProperty(@PropertyKey String key, String value); 
+  Object setProperty(@PropertyKey String key, String value);
 }
 
 class ResourceBundle {

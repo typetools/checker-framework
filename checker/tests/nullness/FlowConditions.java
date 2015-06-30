@@ -7,8 +7,8 @@ class FlowConditions {
         if (x == null || y == null) {
             //:: error: (dereference.of.nullable)
             x.toString();
-            //:: error: (dereference.of.nullable)            
-            y.toString();            
+            //:: error: (dereference.of.nullable)
+            y.toString();
         } else {
             x.toString();
             y.toString();

@@ -8,7 +8,7 @@ public class WhileTest {
     public static void main(String[] args) {
         new WhileTest().testwhile1();
     }
-    
+
     public void testwhile1() {
         z = null;
         //:: error: (assignment.type.incompatible)
@@ -29,7 +29,7 @@ public class WhileTest {
         }
         nnz = z;
     }
-    
+
     public void testdo1() {
         z = null;
         do {

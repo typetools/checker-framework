@@ -56,7 +56,7 @@ The Checker Framework comes with checkers for specific types of errors:
 % The Compiler Message Key Checker is neither here nor in the advanced
 % type system features chapter because it is really meant for
 % Checker Framework developers and as sample code, and is not meant
-% for Checker Framework users at large.  
+% for Checker Framework users at large.
 \item
   \ahrefloc{signature-checker}{Signature String Checker} to ensure that the
   string representation of a type is properly used, for example in
@@ -211,7 +211,7 @@ optional step.
   %END LATEX
   \url{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip}
 
-\item 
+\item
   Unzip it to create a \code{checker-framework} directory.
 
 \item
@@ -255,26 +255,26 @@ Eclipse or on the command line.
 
 % To run a checker on a source file, just compile as usual, but pass the
 % \<-processor> flag to the compiler.
-% 
+%
 % For instance, if you usually run the javac compiler like
 % this:
-% 
+%
 % \begin{Verbatim}
 %   javac Foo.java Bar.java
 % \end{Verbatim}
-% 
+%
 % \noindent
 % then you will instead a command line such as:
-% 
+%
 % \begin{alltt}
 %   javac \textbf{-processor NullnessChecker} Foo.java Bar.java
 %   javac \textbf{-processor RegexChecker} Foo.java Bar.java
 % \end{alltt}
-% 
+%
 % \noindent
 % but take note that the \code{javac} command must refer to the
 % Checker Framework compiler (see Section~\ref{javac-installation}).
-% 
+%
 % If you usually do your coding within an IDE, you will need to configure
 % the IDE; see Chapter~\ref{external-tools}.
 
@@ -426,7 +426,7 @@ Additional topics that apply to all checkers are covered later in the manual:
 \end{itemize}
 
 
-Finally, there is a 
+Finally, there is a
 \ahreforurl{http://types.cs.washington.edu/checker-framework/tutorial/}{tutorial}
 that walks you through using the Checker Framework in Eclipse or on the
 command line.
@@ -440,7 +440,7 @@ command line.
 
 The syntax of type annotations in Java is specified by
 the Java Language Specification (Java SE 8 edition).
-% \href{http://types.cs.washington.edu/jsr308/}{JSR 308}~\cite{JSR308-2008-09-12}.  
+% \href{http://types.cs.washington.edu/jsr308/}{JSR 308}~\cite{JSR308-2008-09-12}.
 Java 5 permitted annotations on declarations.  Java 8 also permits annotations
 anywhere that you would write a type, including generics and casts.  You
 can also write annotations to indicate type qualifiers for array levels and
@@ -571,7 +571,7 @@ checkers support the following command-line options.
 
 Unsound checking: ignore some errors
 \begin{itemize}
-\item \<-AskipUses>, \<-AonlyUses> 
+\item \<-AskipUses>, \<-AonlyUses>
   Suppress all errors and warnings at all uses of a given class --- or at all
   uses except those of a given class.  See Section~\ref{askipuses}
 \item \<-AskipDefs>, \<-AonlyDefs>
@@ -779,8 +779,8 @@ annotation processing including all pluggable type-checking.
 
 The \code{-processor} flag expects fully-qualified class names.
 For checkers that are packaged with the Checker Framework, the fully-qualified
-name can be quite long.  Therefore, when running a built-in checker, you may 
-omit the package name and the \<Checker> suffix.  The following three commands are equivalent: 
+name can be quite long.  Therefore, when running a built-in checker, you may
+omit the package name and the \<Checker> suffix.  The following three commands are equivalent:
 
 \begin{alltt}
   javac -processor \textbf{org.checkerframework.checker.nullness.NullnessChecker} MyFile.java
@@ -906,7 +906,7 @@ Annotating an entire existing program may seem like a daunting task.  But,
 if you approach it systematically and do a little bit at a time, you will
 find that it is manageable.
 
-Start small, focusing on some specific property that matters to you and 
+Start small, focusing on some specific property that matters to you and
 on the most mission-critical or error-prone part of your code.
 It is easiest to add annotations if you know the code or the
 code contains documentation; you will find that you spend most of your time
@@ -916,7 +916,7 @@ or running the checker.
 Start by annotating just part of your program.  Be systematic, such as
 annotating an entire class at a time (not just some of the methods)
 so that you don't lose track of your work.
-You may find it helpful to start annotating the leaves of the call tree --- 
+You may find it helpful to start annotating the leaves of the call tree ---
 that is,
 start with methods/classes/packages that have few dependencies on other
 code or, equivalently, start with code that a lot of your other code
@@ -1156,7 +1156,7 @@ Fix your code to prevent that crash.
 There is a weakness in the annotations.  Improve the annotations.
 For example, continuing the Nullness Checker example, if a particular
 variable is annotated as \refqualclass{checker/nullness/qual}{Nullable} but it
-actually never contains \<null> at run time, then change the annotation to 
+actually never contains \<null> at run time, then change the annotation to
 \refqualclass{checker/nullness/qual}{NonNull}.  The weakness might be in the
 annotations in your code, or in the annotations in a library that your code
 calls.  Another possible problem is that a library is unannotated (see

@@ -27,7 +27,7 @@ public abstract class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTyp
      * declaration. So, instead of overriding this method, override
      * TypeAnnotator.visitExecutable. TypeAnnotator.visitExecutable is called
      * both when checking method declarations and method invocations.
-     * 
+     *
      * @see org.checkerframework.framework.type.typeannotator.TypeAnnotator
      */
     @Override

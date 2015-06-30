@@ -28,7 +28,7 @@ public class FloatMath extends NumberMath<Float> {
         }
         throw new UnsupportedOperationException();
     }
-    
+
     @Override
     public Number minus(Number right) {
         if (right instanceof Byte) {

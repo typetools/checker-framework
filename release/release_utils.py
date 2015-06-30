@@ -4,7 +4,7 @@
 releaseutils.py
 
 Python Utils for releasing the Checker Framework
-This contains no main method only utility functions 
+This contains no main method only utility functions
 Created by Jonathan Burke 11/21/2012
 
 Copyright (c) 2012 University of Washington
@@ -219,7 +219,7 @@ def match_one(toTest, patternStrings):
             return patternStr
 
     return None
-        
+
 #=========================================================================================
 # Version Utils
 
@@ -281,7 +281,7 @@ def extract_from_site( site, open_tag, close_tag ):
     result = ver_re.search(text)
     return result.group(1)
 
-    
+
 def latest_openjdk(site):
     ver_re = re.compile(r"Build b(\d+)")
     text = urllib2.urlopen(url=site).read()
@@ -388,12 +388,12 @@ def update_projects(paths):
 
 #Commit the changes we made for this release
 #Then add a tag for this release
-#And push these changes 
+#And push these changes
 def commit_tag_and_push(version, path, tag_prefix):
     execute('hg -R %s commit -m "new release %s"' % (path, version))
     execute('hg -R %s tag %s%s' % (path, tag_prefix, version))
     execute('hg -R %s push' % path)
-    
+
 # Retrieve the changes since the tag (prefix + prev_version)
 def retrieve_changes(root, prev_version, prefix):
     return execute(
@@ -710,7 +710,7 @@ def changelog_header(filename):
         header.append(line)
 
     return ''.join(header)
-    
+
 def get_changelog_date():
     import datetime
     return datetime.datetime.now().strftime("%d %b %Y")
@@ -747,14 +747,14 @@ Base build
 
 ----------------------------------------------------------------------
 """ % (version, get_changelog_date(), latest_jdk, changes)
-    
+
 #Checker Framework Specific Change log method
 #Queries whether or not the user wants to update the checker framework changelog
 #then opens the changelog in the supplied editor
 def edit_checkers_changelog(version, path, editor, changes=""):
     desc = make_checkers_change_desc(version, changes)
     edit_changelog("Checker Framework", path, version, desc, editor)
-    
+
 
 #JSR308 Specific Change log method
 #Queries whether or not the user wants to update the checker framework changelog
@@ -769,7 +769,7 @@ def edit_langtools_changelog(version, openJdkReleaseSite, path, editor, changes=
 # Maven Utils
 
 def mvn_deploy_file(name, binary, version, dest_repo, group_id, pom=None):
-    pomOps = "" 
+    pomOps = ""
     if pom is None:
         pomOps= "-DgeneratePom=True"
     else:
@@ -806,7 +806,7 @@ def pluginDirToPom(pluginDir):
 
 def mvn_plugin_version(pluginDir):
     "Extract the version number from pom.xml in pluginDir/pom.xml"
-    pomLoc = pluginDirToPom(pluginDir) 
+    pomLoc = pluginDirToPom(pluginDir)
     dom = minidom.parse(pomLoc)
     version = ""
     project = dom.getElementsByTagName("project").item(0)
@@ -815,7 +815,7 @@ def mvn_plugin_version(pluginDir):
         if childNode.nodeName == 'version':
             if childNode.hasChildNodes():
                 version = childNode.firstChild.nodeValue
-            else: 
+            else:
                 print "Empty Maven plugin version!"
                 sys.exit(1)
             break

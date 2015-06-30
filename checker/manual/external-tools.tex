@@ -72,7 +72,7 @@ use the last one.
 
     You can simplify this by introducing an alias.  Then,
     whenever this document tells you to run \code{javac}, instead use that
-    alias.  Here is the syntax for your 
+    alias.  Here is the syntax for your
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
@@ -122,7 +122,7 @@ UnsupportedClassVersionError: ... : Unsupported major.minor version 52.0
    and add \<-source 7 -target 7> if you use a Java 7 JVM.
 
    (Explanation for advanced users:  More generally, anywhere that you would use \<javac.jar>, you can substitute
-   \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>; 
+   \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>;
    the result is to use the Checker
    Framework compiler instead of the regular \<javac>.)
 
@@ -149,29 +149,29 @@ The output should be:
 %   directory \<C:\ttbs{}Program Files\ttbs{}checker-framework\ttbs{}checkers\ttbs{}binary> to the
 %   beginning of your path variable.  Also set a \code{CHECKERFRAMEWORK} variable.
 % \end{sloppypar}
-% 
+%
 % % Instructions stolen from http://www.webreference.com/js/tips/020429.html
-% 
+%
 % To set an environment variable, you have two options:  make the change
 % temporarily or permanently.
 % \begin{itemize}
 % \item
 % To make the change \textbf{temporarily}, type at the command shell prompt:
-% 
+%
 % \begin{alltt}
 % path = \emph{newdir};%PATH%
 % \end{alltt}
-% 
+%
 % For example:
-% 
+%
 % \begin{Verbatim}
 % set CHECKERFRAMEWORK = C:\Program Files\checker-framework
 % path = %CHECKERFRAMEWORK%\checker\bin;%PATH%
 % \end{Verbatim}
-% 
+%
 % This is a temporary change that endures until the window is closed, and you
 % must re-do it every time you start a new command shell.
-% 
+%
 % \item
 % To make the change \textbf{permanently},
 % Right-click the \<My Computer> icon and
@@ -186,10 +186,10 @@ The output should be:
 % \<Variable Value> field and type the full directory name (not using the
 % \verb|%CHECKERFRAMEWORK%| environment variable) followed by a
 % semicolon (\<;>).
-% 
+%
 % % This is for the benefit of the Ant task.
 % Similarly, set the \code{CHECKERFRAMEWORK} variable.
-% 
+%
 % This is a permanent change that only needs to be done once ever.
 % \end{itemize}
 
@@ -213,7 +213,7 @@ Set the \code{jsr308javac} property:
   <property environment="env"/>
 
   <property name="checkerframework" value="${env.CHECKERFRAMEWORK}" />
-  
+
   <!-- On Mac/Linux, use the javac shell script; on Windows, use javac.bat -->
   <condition property="cfJavac" value="javac.bat" else="javac">
       <os family="windows" />
@@ -446,7 +446,7 @@ See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-suppor
 \section{Eclipse\label{eclipse}}
 
 % Eclipse supports type annotations.
-% Eclipse does not directly support running the Checker Framework, 
+% Eclipse does not directly support running the Checker Framework,
 % nor is Eclipse necessary for running the Checker Framework.
 
 There are two ways to run a checker from within the Eclipse IDE:  via Ant

@@ -39,7 +39,7 @@ class PriorityQueue3<E extends @NonNull Object> implements Collection2<E> {
 class Methods {
    static void addNull1(Collection1 l) {
       // Allowed, because upper bound of Collection1 is Nullable.
-      //:: warning: [unchecked] unchecked call to add(E) as a member of the raw type Collection1 
+      //:: warning: [unchecked] unchecked call to add(E) as a member of the raw type Collection1
       l.add(null);
    }
 

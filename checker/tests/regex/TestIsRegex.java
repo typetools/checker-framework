@@ -110,7 +110,7 @@ class TestIsRegex {
         Matcher m = p.matcher("abc");
         String g = m.group(1);
     }
-    
+
     void test11(String s) throws Exception {
         @Regex(2) String l1 = RegexUtil.asRegex(s, 2);
         @Regex(1) String l2 = RegexUtil.asRegex(s, 2);
@@ -118,7 +118,7 @@ class TestIsRegex {
         //:: error: (assignment.type.incompatible)
         @Regex(3) String l4 = RegexUtil.asRegex(s, 2);
     }
-    
+
     @Regex(2) String test12(String s, boolean b) throws Exception {
         return b ? null : RegexUtil.asRegex(s, 2);
     }

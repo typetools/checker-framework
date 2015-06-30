@@ -61,7 +61,7 @@ class Defaulting {
         @DefaultQualifier(value=H1S2.class, locations={DefaultLocation.OTHERWISE})
     })
     class TestConstructorParameter {
- 
+
         TestConstructorParameter (Object p) {
             @H1S1 Object l1 = p;
             //:: error: (assignment.type.incompatible)

@@ -23,7 +23,7 @@ public class SwitchTest {
     }
 
     public static @Nullable A getNbl( ) { return null; }
-    
+
     public static A getNN( ) { return A.X; }
 
     public static enum A { X }

@@ -13,7 +13,7 @@ private data, etc.
 For example, a user-supplied pointer, handle, or map key should be
 validated before being dereferenced.
 As another example, a user-supplied string should not be concatenated into a
-SQL query, lest the program be subject to a 
+SQL query, lest the program be subject to a
 \href{http://en.wikipedia.org/wiki/Sql_injection}{SQL injection} attack.
 A location in your program where malicious data could do damage is
 called a \emph{sensitive sink}.
@@ -105,7 +105,7 @@ libraries):
 
 \begin{Verbatim}
   public boolean execute(@Untainted String sql) throws SQLException;
-  public boolean executeUpdate(@Untainted String sql) throws SQLException; 
+  public boolean executeUpdate(@Untainted String sql) throws SQLException;
 \end{Verbatim}
 
 
@@ -126,7 +126,7 @@ examples:
   Prevent cross-site scripting attacks:  \code{@Tainted} is external input,
   \code{@Untainted} has been checked for JavaScript syntax.
 \item
-  Prevent information leakage:  \code{@Tainted} is secret data, 
+  Prevent information leakage:  \code{@Tainted} is secret data,
   \code{@Untainted} may be displayed to a user.
 \end{itemize}
 

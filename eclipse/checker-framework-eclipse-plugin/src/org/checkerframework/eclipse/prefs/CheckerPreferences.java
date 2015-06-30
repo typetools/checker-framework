@@ -2,9 +2,9 @@ package org.checkerframework.eclipse.prefs;
 
 /**
  * This class keeps static information about preferences for the checker plugin
- * 
+ *
  * @author asumu
- * 
+ *
  */
 public final class CheckerPreferences
 {

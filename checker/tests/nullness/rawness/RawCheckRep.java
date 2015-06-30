@@ -16,11 +16,11 @@ public class RawCheckRep {
   void checkRep(@UnderInitialization(RawCheckRep.class) @Raw(RawCheckRep.class) RawCheckRep this) {
     x.toString();
   }
-  
+
   static void checkRep2(@UnderInitialization(RawCheckRep.class) @Raw(RawCheckRep.class) RawCheckRep o) {
     o.x.toString();
   }
-  
+
   void checkRepb(@UnderInitialization(Object.class) @Raw(Object.class) RawCheckRep this) {
     //:: error: (dereference.of.nullable)
     x.toString();
@@ -42,24 +42,24 @@ class A {
 
 class B extends A {
     String b;
-    
+
     public B() {
         b = "";
     }
-    
+
     void t1(@UnderInitialization(Object.class) @Raw(Object.class) B x) {
         //:: error: (dereference.of.nullable)
         x.a.toString();
         //:: error: (dereference.of.nullable)
         x.b.toString();
     }
-    
+
     void t2(@UnderInitialization(A.class) @Raw(A.class) B x) {
         x.a.toString();
         //:: error: (dereference.of.nullable)
         x.b.toString();
     }
-    
+
     void t3(@UnderInitialization(B.class) @Raw(B.class) B x) {
         x.a.toString();
         x.b.toString();

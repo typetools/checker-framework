@@ -3,10 +3,10 @@ import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
 public class Flow {
-    
+
     @NonNull String f;
     @NotOnlyInitialized @NonNull String g;
-    
+
     public Flow(String arg) {
         //:: error: (dereference.of.nullable)
         f.toLowerCase();
@@ -20,20 +20,20 @@ public class Flow {
         g.toLowerCase();
         f = arg;
     }
-    
+
     void test() {
         @Nullable String s = null;
         s = "a";
         s.toLowerCase();
     }
-    
+
     void test2(@Nullable String s) {
         if (s != null) {
             s.toLowerCase();
         }
     }
-    
+
     void foo(@UnknownInitialization Flow this) {}
-    
+
     // TODO Pure, etc.
 }

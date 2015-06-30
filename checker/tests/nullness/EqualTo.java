@@ -3,9 +3,9 @@ import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
 public class EqualTo {
-    
+
 //    @Nullable String f;
-//    
+//
 //    void t1(@Nullable String g) {
 //        //:: error: (dereference.of.nullable)
 //        g.toLowerCase();
@@ -13,7 +13,7 @@ public class EqualTo {
 //            g.toLowerCase();
 //        }
 //    }
-//    
+//
 //    void t2() {
 //        //:: error: (dereference.of.nullable)
 //        f.toLowerCase();
@@ -21,7 +21,7 @@ public class EqualTo {
 //            f.toLowerCase();
 //        }
 //    }
-//    
+//
 //    void t1b(@Nullable String g) {
 //        //:: error: (dereference.of.nullable)
 //        g.toLowerCase();
@@ -29,7 +29,7 @@ public class EqualTo {
 //            g.toLowerCase();
 //        }
 //    }
-//    
+//
 //    void t2b() {
 //        //:: error: (dereference.of.nullable)
 //        f.toLowerCase();

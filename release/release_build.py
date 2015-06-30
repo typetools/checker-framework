@@ -315,9 +315,9 @@ def main(argv):
     # The release script will read the current version of the Checker Framework/Annotation File Utilities
     # from the release website and then suggest the next release version 0.0.1 higher than the current
     # version. You can also manually specify a version higher than the current version. Lower or equivalent
-    # versions are not possible and will be rejected when you try to push the release. 
+    # versions are not possible and will be rejected when you try to push the release.
 
-    # The jsr308-langtools version ALWAYS matches the Checker Framework version. 
+    # The jsr308-langtools version ALWAYS matches the Checker Framework version.
 
     # NOTE: If you pass --auto on the command line then the next logical version will be chosen automatically
 
@@ -334,7 +334,7 @@ def main(argv):
     # and writes them to a file. Please look through these changesets and ensure we have not missed
     # any relevant messages in the changelog. The release script will indicate what changelog you
     # should edit in case there are missing changes. These changes will be committed when you run
-    # the release_push.py script. 
+    # the release_push.py script.
 
     print_step("Build Step 4: Review changelogs.") # SEMIAUTO
 
@@ -346,7 +346,7 @@ def main(argv):
     print( "You can compute the relevant numbers by visiting these two URLs:\n" )
     print( "https://code.google.com/p/checker-framework/issues/list?q=status%3APushed\n" )
     print( "https://code.google.com/p/checker-framework/issues/list?can=1&q=closed-after%3A2014%2F09%2F25\n" )
-    print( "though you will need to adjust the date in the latter URL to be the date of the previous release.\n" )    
+    print( "though you will need to adjust the date in the latter URL to be the date of the previous release.\n" )
 
     # If release_build fails later on and you need to restart it, I recommend you make copies of the
     # changelogs you modified on your local machine, push the changes to those changelogs, and then
@@ -372,7 +372,7 @@ def main(argv):
     # repository and they will be committed by the release_push.py script.
 
     print_step("Build Step 5: Review manual changes.") # SEMIAUTO
-    
+
     print("Please verify that the lists of checkers in these Checker Framework chapter sections are\n" )
     print("up to date: Introduction, Run-time tests and type refinement\n" )
 
@@ -380,7 +380,7 @@ def main(argv):
     print("does not have lines that are longer than the page width (some lines go beyond the right margin -\n")
     print("this is acceptable), except for lines containing command lines or code - some of these inevitably\n")
     print("are longer than the page width.\n")
-    
+
     if not auto:
         if projects_to_release[LT_OPT]:
             propose_change_review( "the JSR308 manual", old_jsr308_version, JSR308_LANGTOOLS,

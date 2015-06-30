@@ -4,7 +4,7 @@
 
 CHECKER_QUAL_JAR=../checker/dist/checker-qual.jar
 
-ZIPFILES = eclipse-projects.zip sourcefiles.zip 
+ZIPFILES = eclipse-projects.zip sourcefiles.zip
 
 all: ${ZIPFILES}
 
@@ -33,13 +33,13 @@ clean-sourcefiles:
 
 copy-files-from-eclipse:
 	mkdir -p src/myqual
-	mkdir -p src/encrypted 
+	mkdir -p src/encrypted
 	cp eclipse-projects/checker-framework-tutorial/src/*.java src
 	cp eclipse-projects/encryption-checker/src/myqual/*.java src/myqual/
 	cp eclipse-projects/encryption-checker/src/encrypted/*.java src/encrypted/
 	cp -r eclipse-projects/personalblog-demo src
 
-clean-classes: 
+clean-classes:
 	find . -name '*.class' ! -name '.*' -exec rm {} +
 
 clean: clean-classes clean-checker-qual clean-sourcefiles

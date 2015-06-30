@@ -291,7 +291,7 @@ class RawPartial2 {
   }
 
   //   // TODO: Test overriding and super calls
-  // 
+  //
   //     // Receiver has type "@NonRaw B"; any other rawness annotation would be
   //     // more restrictive than the declaration in the superclass,
   //     // which is not permitted by the rules of subtyping.

@@ -326,7 +326,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     }
 
     /**
-     * Updates the value of node {@code node} to the value of the 
+     * Updates the value of node {@code node} to the value of the
      * {@code transferResult}. Returns true if the node's value changed, or a
      * store was updated.
      */

@@ -4,10 +4,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 // this is a test-case for initialization that covers multiple initializer blocks, field initializers and a few other things
 class TwoStaticInitBlocks {
-  
+
   String f2;
   String f1 = (f2 = "");
-  
+
   {
     t = "";
     f1.toString();
@@ -30,7 +30,7 @@ class TwoStaticInitBlocks {
 class B {
     static String f2;
     static String f1 = (f2 = "");
-    
+
     static {
       t = "";
       f1.toString();
