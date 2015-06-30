@@ -102,6 +102,7 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param checker the checker to which this factory belongs
      */
     public JavariAnnotatedTypeFactory(BaseTypeChecker checker) {
+        // use true to enable flow inference, false to disable it
         super(checker, false);
 
         this.READONLY = AnnotationUtils.fromClass(elements, ReadOnly.class);

@@ -83,37 +83,56 @@ type system, follow three steps.
 
 \begin{enumerate}
 \item
- Define an annotation for the \code{Encrypted} qualifier:
+ Define two annotations for the \code{Encrypted} and \code{PossiblyUnencrypted} qualifiers:
 
 \begin{Verbatim}
 package myqual;
 
 import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
-
-import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Denotes that the representation of an object is encrypted.
- * ...
  */
 @TypeQualifier
-@SubtypeOf(Unqualified.class)
+@SubtypeOf(PossiblyUnencrypted.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Encrypted {}
 \end{Verbatim}
 
-Don't forget to compile this class:
-
 \begin{Verbatim}
-$ javac myqual/Encrypted.java
+package myqual;
+
+import java.lang.annotation.Target;
+import java.lang.annotation.ElementType;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeQualifier;
+
+/**
+ * Denotes that the representation of an object might not be encrypted.
+ */
+@TypeQualifier
+@DefaultQualifierInHierarchy
+@SubtypeOf({})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+public @interface PossiblyUnencrypted {}
 \end{Verbatim}
 
-The resulting \<.class> file should either be on your classpath, or on the
+Don't forget to compile these classes:
+
+\begin{Verbatim}
+$ javac myqual/Encrypted.java myqual/PossiblyUnencrypted.java
+\end{Verbatim}
+
+The resulting \<.class> files should either be on your classpath, or on the
 processor path (set via the \<-processorpath> command-line option to javac).
 
 \item
-  Write \code{@Encrypted} annotations in your program (\code{YourProgram.java}):
+  Write \code{@Encrypted} annotations in your program (say, in file
+  \code{YourProgram.java}):
 
 \begin{Verbatim}
 import myqual.Encrypted;
@@ -153,10 +172,10 @@ capability of any realistic type system.
 
 \begin{Verbatim}
 $ javac -processorpath myqualpath -processor org.checkerframework.common.subtyping.SubtypingChecker \
-        -Aquals=myqual.Encrypted YourProgram.java
+        -Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted YourProgram.java
 
 YourProgram.java:42: incompatible types.
-found   : java.lang.String
+found   : @myqual.PossiblyUnencrypted java.lang.String
 required: @myqual.Encrypted java.lang.String
     sendOverInternet(password);
                      ^
