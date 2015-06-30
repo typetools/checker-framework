@@ -2,14 +2,12 @@ package myqual;
 
 import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
-
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
-
 /**
- * Denotes that the representation of an object is may not be encrypted.
+ * Denotes that the representation of an object might not be encrypted.
  */
 @TypeQualifier
 @DefaultQualifierInHierarchy

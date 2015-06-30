@@ -40,7 +40,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     protected final boolean debugSpew;
 
     public GuiEffectTypeFactory(BaseTypeChecker checker, boolean spew) {
-        // use true for flow inference
+        // use true to enable flow inference, false to disable it
         super(checker, false);
 
         debugSpew = spew;

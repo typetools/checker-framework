@@ -53,7 +53,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final Map<String, AnnotationMirror> aliasMap = new HashMap<String, AnnotationMirror>();
 
     public UnitsAnnotatedTypeFactory(BaseTypeChecker checker) {
-        // use true for flow inference
+        // use true to enable flow inference, false to disable it
         super(checker, false);
 
         BOTTOM = AnnotationUtils.fromClass(elements, UnitsBottom.class);
