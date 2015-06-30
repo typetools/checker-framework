@@ -26,7 +26,6 @@ import org.checkerframework.javacutil.TreeUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,8 +108,11 @@ public class QualifierDefaults {
         DefaultLocation.FIELD,
         DefaultLocation.PARAMETERS,
         DefaultLocation.RETURNS,
+        DefaultLocation.RECEIVERS,
         DefaultLocation.UPPER_BOUNDS,
-        DefaultLocation.LOWER_BOUNDS
+        DefaultLocation.LOWER_BOUNDS,
+        DefaultLocation.OTHERWISE,
+        DefaultLocation.ALL
     };
 
     /**
@@ -182,7 +184,7 @@ public class QualifierDefaults {
 
     private void checkIsValidUntypedLocation(AnnotationMirror untypedDefaultAnno, DefaultLocation location) {
         boolean isValidUntypeLocation = false;
-        for(DefaultLocation validLoc : validLocationsForUntyped()) {
+        for (DefaultLocation validLoc : validLocationsForUntyped()) {
             if (location == validLoc) {
                 isValidUntypeLocation = true;
                 break;
@@ -528,10 +530,10 @@ public class QualifierDefaults {
                     !atypeFactory.isFromStubFile(annotationScope)) ||
                     !annotatedForThisChecker
                     ) {
-                     for (Default def : untypedDefaults) {
-                         applier.apply(def);
-                    }
+                for (Default def : untypedDefaults) {
+                    applier.apply(def);
                 }
+            }
         }
 
         for (Default def : absoluteDefaults) {
