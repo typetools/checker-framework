@@ -488,15 +488,21 @@ the compiler.  When the compiler reads a \<.class> file, different
 defaulting rules apply.
 
 If the checker was run during the compiler execution that created the
-\<.class> file (and the qualifier hierarchy has both a top and a bottom
-qualifier, see Section~\ref{bottom-and-top-qualifier}), then there is no need for
+\<.class> file,
+%% This caveat is true, but it's a distraction at this point in the manual.
+%% Also, not having a top and a bottom qualifier is an uncommon case.
+% (and the qualifier hierarchy has both a top and a bottom
+% qualifier, see Section~\ref{bottom-and-top-qualifier}),
+then there is no need for
 defaults:  the \<.class> file has an explicit qualifier at each type use.
 (Furthermore, unless warnings were suppressed, those qualifiers are
 guaranteed to be correct.)
 When you are performing pluggable type-checking,
 it is best to ensure that the compiler only reads such \<.class> files.
 Section~\ref{compiling-libraries} discusses how to create annotated
-libraries, even if the library source code is only partially annotated.
+libraries.
+%% True, but not relevant to the point of this paragraph.
+% , even if the library source code is only partially annotated.
 
 If the checker was not run during the compiler execution that created the
 \<.class> file, then the \<.class> file contains only the type qualifiers
@@ -534,10 +540,12 @@ library, the Checker Framework may fail to warn about code that can
 misbehave at run time.  The Checker Framework developers are working to
 improve handling of mutable public fields in unannotated libraries.
 
-%% TODO: The following is even more safe, but separate handling for field
-%% read vs. write is currently not possible.
-%  For fields, use the bottom qualifier when writing to the field and the
-%  top qualifier when reading from the field.
+%% TODO: The following rule is preferable to the current safe behavior.
+%% However, we have not yet figured out how to implement separate handling
+%% for field read vs. write.
+% For fields, use the bottom qualifier when writing to the field and the
+% top qualifier when reading from the field.
+
 %% TODO: should give rules for other locations, such as type parameters
 %% (which should behave like fields), bounds, etc.
 
