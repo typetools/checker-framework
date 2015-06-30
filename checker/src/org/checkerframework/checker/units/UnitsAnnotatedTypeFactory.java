@@ -3,6 +3,7 @@ package org.checkerframework.checker.units;
 import org.checkerframework.checker.units.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -122,6 +123,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         // Explicitly add the top type.
         qualSet.add(UnknownUnits.class);
+        qualSet.add(PolyUnit.class);
+        qualSet.add(PolyAll.class);
 
         // Only add the directly supported units. Shorthands like kg are
         // handled automatically by aliases.
