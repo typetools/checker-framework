@@ -1,0 +1,84 @@
+Details about type variable handling:
+
+
+Last week, we discussed four strategies for handling the "E extends Enum<E>"
+pattern:
+
+
+1. Cyclic TypeMirrors (used by javac)
+
+In this strategy, both instances of 'E' are represented using the same object
+on the heap.  Thus,
+    t.getUpperBound().getTypeArguments().get(0) == t
+
+This strategy forces every recursive visitor to maintain a set of "encountered
+type variables" to avoid infinite recursion.  This strategy also does not
+interact well with immutability.  It's possible to create a cyclic TypeMirror
+without exposing any mutator methods by passing a callback to the constructor,
+but this results in rather ugly code in every caller of the constructor - in
+particular, each caller must maintain a data structure similar to the
+"encountered type variables" set used by visitors.
+
+
+2. Lazy expansion of bounds (used by the Checker Framework)
+
+A new AnnotatedTypeVariable starts with both bounds set to 'null'.  The first
+call to getUpperBound() initializes the bound to a new AnnotatedTypeMirror
+instance.  There is also a getUpperBoundField() method which returns 'null' if
+the bound has not yet been initialized.
+
+With this strategy, recursive visitors can avoid infinite recursion with less
+effort by using getUpperBoundField() in most cases and limiting the use of
+getUpperBound().  Constructing a new instance of AnnotatedTypeVariable is
+straightforward, but it requires access to an AnnotatedTypeFactory, which must
+be stored with the instance for use in lazy initialization of the bounds.
+
+
+3. Separate reference to declaration
+
+Under this strategy, there are two kinds of TypeVariables.  A "type parameter"
+has both bounds set to non-null TypeMirrors and its 'declaration' field set to
+'this'.  A "type variable use" has both bounds set to null and its
+'declaration' field set to some parameter TypeVariable.  The bounds for a type
+variable use can be obtained by checking the bounds of its 'declaration'
+TypeVariable.
+
+Recursive visitors can avoid infinite recursion easily by not examining the
+'declaration' field.  However, this strategy still produces cycles in the heap
+(the 'declaration' of the second 'E' points to the first 'E', which has the
+second 'E' accessible through its upper bound), so it has the same problems
+with construction of immutable cyclic TypeMirrors as in strategy 1.
+
+
+4. Symbol table
+
+Each TypeVariable consists only of a key into a separate symbol table.  The
+symbol table maps each key to the upper and lower bounds that were obtained
+from the declaration of the type parameter.  For the "Foo<E extends Enum<E>>"
+example, the TypeMirror is simply "Foo<E>" (with no bound information on the
+TypeVariable 'E'), and the symbol table entry for 'E' gives an upper bound of
+"Enum<E>".
+
+This strategy has no cycles in the heap and no lazy bound expansion, so there
+are no problems for recursive visitors.  There are also no major restrictions
+on the construction of TypeVariable instances.  The most significant problem
+with this strategy is the requirement that any code that processes type
+variable bounds must have access to the symbol table.
+
+
+
+I initially planned to implement strategy 3 in the qualifier API, intending to
+avoid the problems with visitors that arise in strategies 1 and 2.  While
+implementing the new system, I discovered the similar problems that occur when
+constructing cyclic immutable data structures, so I switched to strategy 4
+instead.  I added in the QualifiedTypeFactory a new HashMap from
+TypeParameterElements (obtainable by calling asElement() on the underlying
+javac TypeVariable) to pairs of QualifiedTypeMirrors (the parameter's bounds).
+I also added a method getQualifiedTypeParameterBounds, which reads the table
+and performs lazy initialization on the first access for each
+TypeParameterElement.  Currently the only code that inspects type parameter
+bounds is TypeMirrorConverter (when converting a QualifiedTypeVariable to an
+AnnotatedTypeVariable, it must find appropriate annotations for the
+AnnotatedTypeVariable's bounds), and TypeMirrorConverter already kept a
+reference to the QualifiedTypeFactory, so keeping the symbol table in the
+TypeFactory works for now.

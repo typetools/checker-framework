@@ -1,0 +1,402 @@
+Below is the original writeup of the qualifier API design.  The current
+implementation (as of 2014-03-27) follows this design for the most part.  The
+only significant changes to the design since the original writing are:
+
+ - QualifiedTypeMirror uses a new interface ExtendedTypeMirror instead of the
+   standard TypeMirror to represent the underlying types.  The two interfaces
+   (and their corresponding subinterfaces) are almost identical, with a few
+   differences which are described in the ExtendedTypeMirror subinterface
+   javadocs.
+
+ - QualifiedTypeMirror now has an additional method to compute the qualified
+   upper and lower bound types for a type variable (identified by its
+   TypeParameterElement).  See typevars.txt for more information on why this is
+   necessary.
+
+There are also a few features that are missing from the current implementation,
+mainly because they have not yet been found necessary:
+
+ - QualifiedTypeMirror.getEffectiveQualifier
+ - The QualifiedTypes class
+ - QualifiedTypeFactory's setup() and teardown() methods
+ - The VisitorState/VisitorTrees classes (referenced in DefaultQTF)
+ - TypecheckVisitor / Checker.getTypecheckVisitor
+
+
+ ===
+
+
+This document describes the design of a new API for developing type checkers
+for the Checker Framework.  The new API operates on a custom checker-defined
+type qualifier representation (indicated by a type variable Q), instead of
+operating directly on AnnotationMirrors.  This API is intended to replace the
+existing AnnotationMirror-based API eventually, though for the near future both
+APIs will be available to allow backward compatibility with existing checkers.
+
+Several parts of the new API are nearly identical to the old API.  Significant
+changes are described below.  For further details of the new API, see the Java
+source following the description.
+
+
+Type Qualifier Representations
+==============================
+
+The new API represents type qualifiers using a type Q which is defined by the
+checker.  (This is visible as the type parameter 'Q' which is present on most
+classes.)  Most code that currently operates on AnnotationMirrors should
+instead operate on instances of Q.  The framework places no constraints placed
+on the type Q, but the checker must provide implementations of classes such as
+QualifierHierarchy<Q> and AnnotationConverter<Q> to allow the default
+implementations of checker components to manipulate and compare type
+qualifiers when necessary.
+
+As an example, a simple tainting checker could define an enum with values
+{TAINTED, UNTAINTED} as its type qualifier representation.  The SPARTA flow
+checker would require a more complex type, such as a custom class 'Flow' with
+fields containing the set of sources and the set of sinks.
+
+
+QualifiedTypeMirror<Q>
+======================
+
+There are three major differences between QualifiedTypeMirror and
+AnnotatedTypeMirror.
+
+First, a QualifiedTypeMirror is a TypeMirror qualified by exactly one non-null
+type qualifier of type Q.  This is unlike AnnotatedTypeMirror, which contains a
+set of zero or more AnnotationMirrors.  This should simplify checker code for
+inspecting types, and it simplifies the API by removing the need for most of
+the getAnnotation/hasAnnotation variants.  Similar functionality to the removed
+methods can be obtained by adding appropriate instance methods to the qualifier
+representation.  For example, atm.hasAnnotation(Tainted.class) might be
+replaced by qtm.getQualifier() == TAINTED or qtm.getQualifier().isTainted(),
+depending on how the checker defines its qualifier representation.
+
+Note that the "one Q per QualifiedTypeMirror" rule does not restrict type
+system design.  Type systems that need multiple qualifiers for types, such as
+any currently using MultiGraphQualifierHierarchy, can be implemented by
+defining a tuple type for the type qualifier representation.
+
+Second, a QualifiedTypeMirror is immutable: the qualifier cannot be changed
+once the object is created.  (It is strongly recommended that the qualifier
+representation Q also be immutable, but this cannot be enforced.)  This will
+prevent a variety of subtle bugs that have arisen in the current Checker
+Framework implementation.  The class will provide helper methods and an
+extensible visitor for producing a copy of a QualifiedTypeMirror with different
+qualifiers.
+
+Other minor changes:
+
+ - Methods 'substitute' and 'directSuperTypes' are removed.  These were
+   originally used to implement the similarly-named methods of the
+   AnnotatedTypes helper class.  The corresponding methods of QualifiedTypes in
+   the new API use visitors instead.
+
+ - The get/hasExplicitAnnotation methods are removed.  These were originally
+   used to obtain the annotations explicitly provided by the programmer, to
+   allow the framework to give useful error messages.  Under Java 8, the
+   original AnnotationMirrors are available as part of the TypeMirror, so it is
+   no longer necessary to independently track the explicit annotations.  (There
+   are currently some bugs with this functionality in the release version of
+   Java 8, which will be fixed in the jsr308-langtools version.)
+
+
+QualifiedTypeFactory<Q>
+=======================
+
+Most of the differences between AnnotatedTypeFactory and QualifiedTypeFactory
+are aimed at reducing the unnecessary complexity of the current API and
+clarifying the expected for the typechecking visitor and other users.
+
+QualifiedTypeFactory is an interface which specifies exactly the methods that
+are expected to be called from the typechecking visitor and elsewhere.  The
+typechecking visitor and utility classes are implemented against this interface
+rather than any particular implementation class.  The Checker Framework will
+still provide an abstract base class DefaultQualifiedTypeFactory with default
+implementations and additional protected methods intended to be overridden by
+individual checkers.
+
+DefaultQualifiedTypeFactory will use overridable visitors to implement the
+getQualifiedType methods.  Checkers that need to modify the default behavior
+are expected to override methods in the appropriate visitors.  For example, the
+tainting checker can apply the TAINTED qualifier to string constants by
+overriding the visitor method that handles such constants.
+
+The two overridable visitors are TreeAnnotator, which computes the qualified
+type of an AST node, and TypeAnnotator, which converts TypeMirrors to
+QualifiedTypeMirrors using the annotations on the TypeMirror and the
+AnnotationConverter.  Unlike the existing TypeAnnotator and TreeAnnotator,
+these visitors do not have any special involvement with implicits or
+defaulting.  Custom defaulting rules can be implemented by overriding the
+appropriate methods, or by extending a framework-provided subclass with support
+for declarative specification of type systems.
+
+Other changes:
+
+ - The AnnotatedTypeFactory class contains a wide variety of helper methods,
+   with many being unnecessarily overridable and/or public.  These will be
+   moved to appropriate helper classes.  Methods for manipulating
+   QualifiedTypeMirrors will be moved to the QualifiedTypes class (analogous to
+   the existing AnnotatedTypes utility class).  Methods which manipulate Trees
+   or Elements while using the VisitorState to accelerate lookups will be moved
+   to a new utility class, VisitorTrees.
+
+ - Support for annotation aliases will be removed from the base API, since
+   QualifiedTypeFactory operates only in terms of type qualifiers.  All
+   manipulation of AnnotationMirrors is done through the AnnotationConverter
+   class, described below.
+
+ - Support for declarative specification of type systems (using @SubtypeOf,
+   @SupportedAnnotations, @ImplicitFor, etc) will not be included in the base
+   API, as it would add significant complexity.  This functionality will be
+   provided in separate subclasses for checkers that need it.
+
+
+QualifierHierarchy<Q>
+=====================
+
+This interface is responsible for defining a subtyping relation for instances
+of Q, just as the existing QualifierHierarchy class defines subtyping for
+AnnotationMirrors.  Unlike the existing QualifierHierarchy class, the new
+QualifierHierarchy<Q> cannot have any default implementation, as there is no
+reasonable way to compare objects of an unknown type Q.
+
+
+AnnotationConverter<Q>
+======================
+
+This interface is responsible for converting annotations written in the source
+code into qualifiers of type Q.  It has no equivalent in the existing API.  The
+conversions from annotations to qualifiers can be defined however best suits
+the checker.  For example, the nullness checker can implement aliasing by
+translating all recognized "nullable" annotations into a single NULLABLE enum
+value.  Similarly, the units checker can merge all unit annotations on a type
+into a single qualifier representing the product of the indicated units.
+
+
+
+-------
+
+The remainder of this document consists of Java source for the proposed API.
+It includes the full public and protected interfaces of the most essential
+classes, including the four described above.
+
+
+
+// A TypeMirror with an additional type qualifier of type Q.
+abstract class QualifiedTypeMirror<Q> {
+    // Accessors for the underlying TypeMirror.
+    public TypeKind getKind();
+    public TypeMirror getUnderlyingType();
+
+    // Simple accessor for the qualifier.
+    public @NonNull Q getQualifier();
+
+    // Like getQualifier(), except for wildcards and type variables it gets the
+    // qualifier from the upper bound instead.
+    public @NonNull Q getEffectiveQualifier();
+
+    // Support method for QualifiedTypeVisitor.
+    public <R,P> R accept(QualifiedTypeVisitor<Q,R,P> v, P p);
+
+    // Example concrete subclass:
+    public static class QualifiedArrayType<Q> extends QualifiedTypeMirror<Q> {
+        // Construct a QualifiedArrayType from its basic components.  This
+        // method performs some consistency checks:
+        //  - qual != null
+        //  - underlying.getKind() == TypeKind.ARRAY
+        //  - componentType.getUnderlyingType() == underlying.getComponentType()
+        // Regarding the last check, a QualifiedTypeMirror maintains its own
+        // internal structure (component types for arrays, argument types for
+        // methods, etc.), which is expected to run parallel to the structure
+        // of the underlying TypeMirror.  The check is necessary to make sure
+        // that the two structures actually correspond.
+        //
+        // This constructor is expected to be used only in the implementations
+        // of utility visitor base classes, such as QualifiedTypeBuilder.  Most
+        // users will extend such a visitor or use a QualifiedTypes helper
+        // function instead of calling the constructor directly.
+        public QualifiedArrayType(TypeMirror underlying, Q qual,
+                QualifiedTypeMirror<Q> componentType);
+
+        // Accessor for the qualified component type.
+        public QualifiedTypeMirror<Q> getComponentType();
+    }
+
+    // Other subclasses, with similar implementations.
+    public static class QualifiedDeclaredType<Q> extends QualifiedTypeMirror<Q> { ... }
+    public static class QualifiedExecutableType<Q> extends QualifiedTypeMirror<Q> { ... }
+    public static class QualifiedIntersectionType<Q> extends QualifiedTypeMirror<Q> { ... }
+    public static class QualifiedNoType<Q> extends QualifiedTypeMirror<Q> { ... }
+    public static class QualifiedNullType<Q> extends QualifiedTypeMirror<Q> { ... }
+    public static class QualifiedPrimitiveType<Q> extends QualifiedTypeMirror<Q> { ... }
+    public static class QualifiedReferenceType<Q> extends QualifiedTypeMirror<Q> { ... }
+    public static class QualifiedTypeVariable<Q> extends QualifiedTypeMirror<Q> { ... }
+    public static class QualifiedUnionType<Q> extends QualifiedTypeMirror<Q> { ... }
+    public static class QualifiedWildcardType<Q> extends QualifiedTypeMirror<Q> { ... }
+}
+
+// Utility class for manipulating QualifiedTypeMirrors.
+class QualifiedTypes {
+    // The QualifiedTypes class includes equivalents for existing
+    // AnnotatedTypes functionality (not shown), along with some new functions
+    // specific to QualifiedTypeMirrors.
+
+    // For each component of a TypeMirror, build a QualifiedTypeMirror<Q> using
+    // the qualifier of type Q produced by a visitor.
+    public <Q,P> QualifiedTypeMirror<Q> buildQualifiedType(
+            TypeMirror, TypeVisitor<Q,P>, P);
+
+    // For each component of a QualifiedTypeMirror<Q>, replace the qualifier
+    // with a new qualifier of type R produced by a visitor.
+    // QualifiedTypeVisitor that produces an R for each QualifiedTypeMirror<Q>.
+    public <Q,R,P> QualifiedTypeMirror<R> convertQualifiedType(
+            QualifiedTypeMirror<Q>, QualifiedTypeVisitor<Q,R,P>, P);
+
+    // Replace the qualifier on a QualifiedTypeMirror.  This changes the
+    // qualifier at the top level only.
+    public <Q> QualifiedTypeMirror<Q> replaceQualifier(QualifiedTypeMirror<Q>, Q);
+}
+
+// Factory for producing the qualified type of an Element or a Tree.
+interface QualifiedTypeFactory<Q> {
+    // Get the qualified type from an Element or Tree.
+    QualifiedTypeMirror<Q> getQualifiedType(Element);
+    QualifiedTypeMirror<Q> getQualifiedType(Tree);
+    QualifiedTypeMirror<Q> getQualifiedTypeFromTypeTree(Tree);
+
+
+    // Set up the factory to process a new compilation unit.  This is a good
+    // place to pre-calculate any data that will be needed to construct types.
+    public void setup(CompilationUnitTree compilationUnit);
+
+    // Run any final teardown steps for the current compilation unit.  This may
+    // be useful for clearing caches or reporting summary statistics.
+    public void teardown();
+
+
+    // Get the hierarchies for this type system.
+    QualifierHierarchy<Q> getQualifierHierarchy();
+    TypeHierarchy<Q> getTypeHierarchy();
+
+
+    // Hooks for modifying certain typing rules.
+    List<QualifiedTypeMirror<Q>> postDirectSuperTypes(QualifiedTypeMirror<Q> subtype, List<? extends QualifiedTypeMirror<Q>> supertypes);
+    QualifiedTypeMirror<Q> postAsMemberOf(QualifiedTypeMirror<Q> memberType, QualifiedTypeMirror<Q> receiverType, Element memberElt);
+    List<QualifiedTypeVariable<Q>> typeVariablesFromUse(QualifiedDeclaredType<Q>, TypeElement);
+    Pair<AnnotatedTypeMirror$AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree);
+    Pair<AnnotatedTypeMirror$AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(NewClassTree);
+
+    // TODO: do we need getSelfType here?
+    // public AnnotatedTypeMirror$AnnotatedDeclaredType getSelfType(Tree);
+}
+
+// Default implementation of QualifiedTypeFactory, with common functionality
+// that will be useful for most checkers.
+abstract class DefaultQualifiedTypeFactory<Q> {
+    // The constructor requires a VisitorState object to provide more efficient
+    // lookups for Trees between the tree being visited and the root of the
+    // compilation unit.
+    public DefaultQualifiedTypeFactory(VisitorState);
+    // The VisitorState is used to provide a helper VisitorTrees object, which
+    // contains methods for accessing Trees along the current path.
+    protected final VisitorTrees getVisitorTrees();
+    // TODO: It might be useful to split VisitorState into a read-only
+    // interface and a read-write implementation, and provide only the
+    // read-only interface to the type factory.
+
+    // Default implementations that invoke the appropriate visitors.  To
+    // override part of this behavior, extend the appropriate visitor instead.
+    public final QualifiedTypeMirror<Q> getQualifiedType(Element);
+    public final QualifiedTypeMirror<Q> getQualifiedType(Tree);
+    public final QualifiedTypeMirror<Q> getQualifiedTypeFromTypeTree(Tree);
+
+    // Create a visitor that produces a QualifiedTypeMirror<Q> for each tree.
+    // The default implementation uses standard Java typing rules, like the
+    // existing TypeFromTree visitor.
+    protected TreeAnnotator<Q> createTreeAnnotator();
+
+    // Create a visitor that produces a QualifiedTypeMirror<Q> for a
+    // TypeMirror.  The default implementation uses the AnnotationConverter to
+    // obtain the appropriate Q for each TypeMirror.
+    protected TypeAnnotator<Q> createTypeAnnotator();
+    // TypeAnnotator<Q> will be made to extend TypeVisitor<Q, Element>, so it
+    // can be used with QualifiedTypes.buildQualifiedType.  The additional
+    // Element argument to the visitor is passed in from
+    // getQualifiedType(Element) to allow the choice of implicit/default
+    // annotations to depend on declaration annotations on the Element.  (For
+    // example, the SPARTA flow checker uses different defaulting rules for
+    // methods depending on whether or not @NoFlow is present on the method or
+    // a containing class.)
+
+    // Create a helper object for converting the set of AnnotationMirrors on a
+    // type into a valid qualifier of type Q.
+    protected abstract AnnotationConverter<Q> createAnnotationConverter();
+
+
+    // Overrides that simply call create*Hierarchy and cache the result.
+    public final QualifierHierarchy<Q> getQualifierHierarchy();
+    public final TypeHierarchy<Q> getTypeHierarchy();
+
+    protected abstract QualifierHierarchy<Q> createQualifierHierarchy();
+    protected TypeHierarchy<Q> createTypeHierarchy();
+
+
+    // Default implementations that do not modify the input type.
+    public List<QualifiedTypeMirror<Q>> postDirectSuperTypes(
+        QualifiedTypeMirror<Q> type,
+        List<? extends QualifiedTypeMirror<Q>> supertypes);
+    public QualifiedTypeMirror<Q> postAsMemberOf(
+        QualifiedTypeMirror<Q> memberType,
+        QualifiedTypeMirror<Q> receiverType,
+        Element memberElement);
+
+    // Default implementations that use the standard Java behavior.
+    public List<QualifiedTypeVariable<Q>> typeVariablesFromUse(
+        QualifiedDeclaredType<Q>, TypeElement);
+    public Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>>
+        methodFromUse(MethodInvocationTree);
+    public Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>>
+        constructorFromUse(NewClassTree);
+}
+
+// Hierarchy for comparing and manipulating qualifiers of type Q.
+interface QualifierHierarchy<Q> {
+    // The checker must implement these to define its type system.
+    boolean isSubtype(Q a, Q b);
+    Q leastUpperBound(Q a, Q b);
+    Q greatestLowerBound(Q a, Q b);
+    Q getTop();
+    Q getBottom();
+}
+
+// The AnnotationConverter reads Java annotations and produces appropriate
+// qualifier objects.  This will generally be the only part of the checker that
+// manipulates annotations directly.
+interface AnnotationConverter<Q> {
+    // Convert the set of annotations on a type into a qualifier of type Q.
+    Q fromAnnotationSet(Set<AnnotationMirror> anno);
+
+    // Check if an annotation is supported by this checker.
+    boolean isAnnotationSupported(AnnotationMirror anno);
+}
+
+// The Checker provides the interface between the javac annotation processing
+// framework and the components of the custom typechecker (namely, the type
+// factory and the typechecking visitor).
+abstract class Checker<Q> extends SourceChecker {
+    // This method must be overridden to provide the checker-specific
+    // QualifiedTypeFactory implementation.
+    protected abstract QualifiedTypeFactory<Q> createQualifiedTypeFactory(VisitorState);
+
+    // This method can be overridden to use a non-default TypecheckVisitor.
+    // The default TypecheckVisitor obtains qualified types from the
+    // QualifiedTypeFactory and checks the types of pseudo-assignments for
+    // correctness, similar to the existing BaseTypeVisitor.
+    protected TypecheckVisitor<Q> createTypecheckVisitor(VisitorState);
+
+    // This class also includes whatever additional methods are necessary to
+    // act as a javac annotation processor.  The class will contain various
+    // methods inherited from SourceChecker, but only the two methods listed
+    // above should actually be override by subclasses.
+}
