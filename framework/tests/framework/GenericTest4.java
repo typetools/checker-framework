@@ -6,7 +6,7 @@ import java.util.Map;
 // http://code.google.com/p/checker-framework/issues/detail?id=134
 // Handling of generics from different enclosing classes.
 // TODO: revisit with nested types in 1.3.
-// @skip-test 
+// @skip-test
 class GenericTest4 {
   public interface Foo {}
 

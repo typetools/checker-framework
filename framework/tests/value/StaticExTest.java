@@ -12,7 +12,7 @@ public class StaticExTest {
         //flag?1:flag?6:
         @IntVal({-1, 8, 9, 2, 4, 6}) int result = s.indexOf(subString, start);
     }
-    
+
     void test2() {
         String s = flag?"helloworlod":"lololxxolxxxol";
         @StringVal({"o","l"}) String subString = flag?"o":"l";
@@ -31,7 +31,7 @@ public class StaticExTest {
     void test4(){
         @IntVal({0,1})  int offset = flag? 0 : 1;
         char[] data1 =  {'h','e','l','l','o','b','y','e','t','o'};
-        char[] data2 = {'a','b','c','d','e','f','g','h','i','j'};        
+        char[] data2 = {'a','b','c','d','e','f','g','h','i','j'};
         char @StringVal({"hellobyeto","abcdefghij"})[] data = flag?data1: data2;
         @IntVal({5,6}) int charCount = flag?5:6;
         @StringVal({ "hello", "ellob", "hellob", "elloby", "abcde", "bcdef",
@@ -42,7 +42,7 @@ public class StaticExTest {
     void constructorsArrays(){
         char @ArrayLen(100)[] c = new char[100];
         String s = new String(c);
-        new String(b); 
+        new String(b);
     }
-   
+
 }

@@ -62,7 +62,7 @@ public abstract class RunCheckerAction extends CheckerHandler
     }
 
     /**
-     * 
+     *
      */
     public Object execute(ExecutionEvent event)
     {
@@ -80,9 +80,9 @@ public abstract class RunCheckerAction extends CheckerHandler
             // * just run one particular checker
             // * use the custom configured checkers
             // * run "selected" checkers using the action or auto build
-            
+
             final String actualNames;
-            
+
             if (!usePrefs && !useCustom && !useSingleCustom) {
             	actualNames = checkerName;
             }

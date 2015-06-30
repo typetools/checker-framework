@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * the compiler is allowed to run the method at compile time, if all of
  * the method's arguments are compile-time constants.
  * It is used by the Constant Value Checker.
- * 
+ *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @Retention(RetentionPolicy.RUNTIME)

@@ -26,8 +26,8 @@ public class MarkerReporter implements IWorkspaceRunnable
 
     //Typically a Java File
     private final IResource resource;
-    
-    
+
+
     private final int startLine;
     private final String message;
     private final int startPosition;

@@ -5,6 +5,6 @@ import org.checkerframework.checker.experimental.tainting_qual.qual.*;
 // Not tainting-specific, but a convenient location.
 class NestedTypeConstructor {
     class Inner {
-        @Tainted Inner() { } 
+        @Tainted Inner() { }
     }
 }

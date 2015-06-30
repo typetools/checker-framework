@@ -12,7 +12,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * An annotation indicating the possible values for a bool type.
  * If an expression's type has this annotation, then at run time, the
  * expression evaluates to one of the annotation's arguments.
- * 
+ *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @TypeQualifier

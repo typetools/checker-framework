@@ -170,7 +170,7 @@ public class CheckerActions
             super(JavariChecker.class.getCanonicalName());
         }
     }
-    
+
     public static class SubtypingAction extends RunCheckerAction
     {
         public SubtypingAction()
@@ -178,7 +178,7 @@ public class CheckerActions
             super(SubtypingChecker.class.getCanonicalName());
         }
     }
-    
+
     public static class CurrentAction extends RunCheckerAction
     {
         public CurrentAction()
@@ -195,10 +195,10 @@ public class CheckerActions
             usePrefs = false;
         }
     }
-    
+
     public static class SingleCustomAction extends RunCheckerAction
     {
-    	public SingleCustomAction() 
+    	public SingleCustomAction()
     	{
     		useSingleCustom = true;
     		usePrefs = false;

@@ -7,7 +7,7 @@ import java.lang.annotation.*;
  * calls of methods that override this method. Note that calls through
  * a supertype, where the method is not annotated, cannot be reported.
  * <p>
- * 
+ *
  * For example, assume three classes A, B, and C, that each implement/override
  * a method m and A &lt;: B &lt;: C.
  * Assume that B.m is annotated as ReportCall.

@@ -179,7 +179,7 @@ public class SignatureTypeFactoryTest {
       bn = t1;
       cgn = t1;
       fd = t1;
-      
+
       us = t2;
       //:: error: (assignment.type.incompatible)
       fqn = t2;
@@ -188,7 +188,7 @@ public class SignatureTypeFactoryTest {
       //:: error: (assignment.type.incompatible)
       cgn = t2;
       fd = t2;
-      
+
       us = t3;
       //:: error: (assignment.type.incompatible)
       fqn = t3;
@@ -197,7 +197,7 @@ public class SignatureTypeFactoryTest {
       //:: error: (assignment.type.incompatible)
       cgn = t3;
       fd = t3;
-      
+
       us = t4;
       //:: error: (assignment.type.incompatible)
       fqn = t4;
@@ -206,14 +206,14 @@ public class SignatureTypeFactoryTest {
       //:: error: (assignment.type.incompatible)
       cgn = t4;
       fd = t4;
-      
+
       us = t5;
       fqn = t5;
       bn = t5;
       cgn = t5;
       //:: error: (assignment.type.incompatible)
       fd = t5;
-      
+
       us = t6;
       fqn = t6;
       bn = t6;
@@ -221,7 +221,7 @@ public class SignatureTypeFactoryTest {
       cgn = t6;
       //:: error: (assignment.type.incompatible)
       fd = t6;
-      
+
       us = t7;
       //:: error: (assignment.type.incompatible)
       fqn = t7;
@@ -229,7 +229,7 @@ public class SignatureTypeFactoryTest {
       bn = t7;
       cgn = t7;
       fd = t7;
-      
+
       us = t8;
       //:: error: (assignment.type.incompatible)
       fqn = t8;
@@ -238,7 +238,7 @@ public class SignatureTypeFactoryTest {
       cgn = t8;
       //:: error: (assignment.type.incompatible)
       fd = t8;
-      
+
       us = t9;
       //:: error: (assignment.type.incompatible)
       fqn = t9;
@@ -247,7 +247,7 @@ public class SignatureTypeFactoryTest {
       //:: error: (assignment.type.incompatible)
       cgn = t9;
       fd = t9;
-      
+
       us = t10;
       //:: error: (assignment.type.incompatible)
       fqn = t10;
@@ -256,7 +256,7 @@ public class SignatureTypeFactoryTest {
       cgn = t10;
       //:: error: (assignment.type.incompatible)
       fd = t10;
-      
+
       us = t11;
       //:: error: (assignment.type.incompatible)
       fqn = t11;
@@ -265,7 +265,7 @@ public class SignatureTypeFactoryTest {
       //:: error: (assignment.type.incompatible)
       cgn = t11;
       fd = t11;
-      
+
       us = t12;
       //:: error: (assignment.type.incompatible)
       fqn = t12;
@@ -273,14 +273,14 @@ public class SignatureTypeFactoryTest {
       bn = t12;
       cgn = t12;
       fd = t12;
-      
+
       us = t13;
       fqn = t13;
       bn = t13;
       cgn = t13;
       //:: error: (assignment.type.incompatible)
       fd = t13;
-      
+
       us = t14;
       fqn = t14;
       bn = t14;
@@ -288,14 +288,14 @@ public class SignatureTypeFactoryTest {
       cgn = t14;
       //:: error: (assignment.type.incompatible)
       fd = t14;
-      
+
       us = t15;
       fqn = t15;
       bn = t15;
       cgn = t15;
       //:: error: (assignment.type.incompatible)
       fd = t15;
-      
+
       us = t16;
       fqn = t16;
       bn = t16;
@@ -303,14 +303,14 @@ public class SignatureTypeFactoryTest {
       cgn = t16;
       //:: error: (assignment.type.incompatible)
       fd = t16;
-      
+
       us = t17;
       fqn = t17;
       bn = t17;
       cgn = t17;
       //:: error: (assignment.type.incompatible)
       fd = t17;
-      
+
       us = t18;
       fqn = t18;
       bn = t18;
@@ -318,7 +318,7 @@ public class SignatureTypeFactoryTest {
       cgn = t18;
       //:: error: (assignment.type.incompatible)
       fd = t18;
-      
+
       us = t19;
       //:: error: (assignment.type.incompatible)
       fqn = t19;
@@ -326,7 +326,7 @@ public class SignatureTypeFactoryTest {
       cgn = t19;
       //:: error: (assignment.type.incompatible)
       fd = t19;
-      
+
       us = t20;
       //:: error: (assignment.type.incompatible)
       fqn = t20;
@@ -336,7 +336,7 @@ public class SignatureTypeFactoryTest {
       cgn = t20;
       //:: error: (assignment.type.incompatible)
       fd = t20;
-      
+
       us = t21;
       //:: error: (assignment.type.incompatible)
       fqn = t21;

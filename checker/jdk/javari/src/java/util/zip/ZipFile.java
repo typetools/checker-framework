@@ -35,7 +35,7 @@ public class ZipFile implements ZipConstants, Closeable {
     public ZipFile(File file, Charset charset) throws IOException {
         throw new RuntimeException("skeleton method");
     }
-    
+
     public String getComment(@ReadOnly ZipFile this) {
         throw new RuntimeException("skeleton method");
     }

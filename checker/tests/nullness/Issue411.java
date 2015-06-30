@@ -1,5 +1,5 @@
 // Test case for issue 411:
-// https://code.google.com/p/checker-framework/issues/detail?id=411 
+// https://code.google.com/p/checker-framework/issues/detail?id=411
 
 // Skip the test until Issue 411 is fixed.
 // @skip-test

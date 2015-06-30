@@ -15,7 +15,7 @@ be passed as a stub file for the checker.
 \item
 Alternately, you can run just the Constant Value Checker, by
 supplying the following command-line option to javac:
-\code{-processor org.checkerframework.common.value.ValueChecker -Astubs=statically-executable.astub} 
+\code{-processor org.checkerframework.common.value.ValueChecker -Astubs=statically-executable.astub}
 \end{itemize}
 
 \section{Annotations\label{constant-value-checker-annotations}}
@@ -54,7 +54,7 @@ Checker gives up and its type becomes
 % \refqualclass{checker/value/qual}{BottomVal}, meaning that the expression
 % is dead or always has the value \<null>.
 
-Figure~\ref{fig-value-hierarchy} shows the 
+Figure~\ref{fig-value-hierarchy} shows the
 subtyping relationship among the type annotations.
 For two annotations of the same type, subtypes have a smaller set of
 possible values, as also shown in the figure.
@@ -78,9 +78,9 @@ infers type annotations (using flow-sensitive type qualifier refinement, Section
 \begin{Verbatim}
 public void foo(boolean b) {
     int i = 1;     // i has type:  @IntVal({1}) int
-    if (b) {  
+    if (b) {
         i = 2;     // i now has type:  @IntVal({2}) int
-    }        
+    }
                    // i now has type:  @IntVal({1,2}) int
     i = i + 1;     // i now has type:  @IntVal({2,3}) int
 }
@@ -117,7 +117,7 @@ public void bar() {
     int c = foo(a, b);  // c has type:  @IntVal({9}) int
 }
 \end{Verbatim}
-\caption{The 
+\caption{The
   \refqualclass{common/value/qual}{StaticallyExecutable} annotation enables
   constant propagation through method calls.}
 \label{fig-staticallyexecutable}
@@ -141,7 +141,7 @@ your environment variable \code{CLASSPATH} or by passing the
 argument \code{-classpath path/to/class/files} to the call. The latter
 would look similar to:
 \code{-processor org.checkerframework.common.value.ValueChecker
--Astubs=statically-executable.astub -classpath \$CLASSPATH:\$MY\_PROJECT/build/} 
+-Astubs=statically-executable.astub -classpath \$CLASSPATH:\$MY\_PROJECT/build/}
 
 
 

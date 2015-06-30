@@ -1,4 +1,4 @@
-@SuppressWarnings("nullness") // Don't want to depend on @Nullable 
+@SuppressWarnings("nullness") // Don't want to depend on @Nullable
 class AssignmentContext {
 
     void foo(String [] a) {}

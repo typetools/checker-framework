@@ -238,7 +238,7 @@
         <property name="langtools.excludes" value="${checkerframework}/release/langtools-excludes"/>
         <available file="${langtools.excludes}"  property="langtools.excludes.available"/>
         <fail unless="${langtools.excludes.available}" message="${langtools.excludes} includes file not available"/>
-        
+
         <zip destfile="${dest.dir}/${file.name}">
             <zipfileset dir="${langtools}" prefix="jsr308-langtools-${version}"
                         excludesfile="release/langtools-excludes"/>

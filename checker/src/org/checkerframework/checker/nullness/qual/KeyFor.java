@@ -19,11 +19,11 @@ import org.checkerframework.framework.qual.*;
  * <p>
  * The value of the annotation can also be a set of reference names of the maps.
  * If <tt>defaultConfig</tt> is also a <tt>Map&lt;String, String&gt;</tt>, then
- * 
+ *
  * <pre><code>  @KeyFor({"config","defaultConfig"}) String key = "HOSTNAME"; </code></pre>
- * 
+ *
  * indicates that "HOSTNAME" is a key in <tt>config</tt> and in <tt>defaultConfig</tt>.
- * 
+ *
  * @checker_framework.manual #map-key-checker Map Key Checker
  */
 @TypeQualifier

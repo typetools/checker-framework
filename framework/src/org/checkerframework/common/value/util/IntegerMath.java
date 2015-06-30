@@ -28,7 +28,7 @@ public class IntegerMath extends NumberMath<Integer> {
         }
         throw new UnsupportedOperationException();
     }
-    
+
     @Override
     public Number minus(Number right) {
         if (right instanceof Byte) {

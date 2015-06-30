@@ -25,7 +25,7 @@ public class CheckerPlugin extends AbstractUIPlugin
 
     /** The plug-in ID */
     public static final String PLUGIN_ID = "checker.framework.eclipse.plugin";
-    
+
     public static final String CHECKER_WARNING_IMG_ID = "checker-warning";
 
     /** The shared instance */
@@ -33,7 +33,7 @@ public class CheckerPlugin extends AbstractUIPlugin
 
     /** The console name to use for this plugin */
     private static final String consoleName = "Checker Framework Plugin Console";
-    
+
 
     public CheckerPlugin()
     {
@@ -58,10 +58,10 @@ public class CheckerPlugin extends AbstractUIPlugin
     protected void initializeImageRegistry(ImageRegistry reg) {
     	reg.put(CHECKER_WARNING_IMG_ID, getImageDescriptor("icons/sample_decorator.gif"));
     }
-    
+
     /**
      * Returns the shared instance
-     * 
+     *
      * @return the shared instance
      */
     public static CheckerPlugin getDefault()
@@ -72,7 +72,7 @@ public class CheckerPlugin extends AbstractUIPlugin
     /**
      * Returns an image descriptor for the image file at the given plug-in
      * relative path
-     * 
+     *
      * @param path
      *            the path
      * @return the image descriptor
@@ -84,7 +84,7 @@ public class CheckerPlugin extends AbstractUIPlugin
 
     /**
      * Log an exception.
-     * 
+     *
      * @param e
      *            the exception
      * @param message
@@ -116,7 +116,7 @@ public class CheckerPlugin extends AbstractUIPlugin
     /**
      * Returns the SWT Shell of the active workbench window or <code>null</code>
      * if no workbench window is active.
-     * 
+     *
      * @return the SWT Shell of the active workbench window, or
      *         <code>null</code> if no workbench window is active
      */
@@ -155,7 +155,7 @@ public class CheckerPlugin extends AbstractUIPlugin
 
     /**
      * Get the MessageConsole for the plugin
-     * 
+     *
      * @return a MessageConsole (will create if it doesn't exist)
      */
     public static MessageConsole findConsole()

@@ -143,7 +143,7 @@ public final class Character implements java.io.Serializable, Comparable<Charact
     public static Character. @Nullable UnicodeBlock of(char a1) { throw new RuntimeException("skeleton method"); }
     public static Character. @Nullable UnicodeBlock of(int a1) { throw new RuntimeException("skeleton method"); }
     public final static Character.UnicodeBlock forName(String a1) { throw new RuntimeException("skeleton method"); }
-    
+
     protected UnicodeBlock() {}
   }
   public final static int MIN_RADIX = 2;

@@ -139,7 +139,6 @@ Exception in thread "main" java.util.regex.PatternSyntaxException: Unclosed char
         at java.util.regex.Pattern.&lt;init&gt;(Pattern.java:1337)
         at java.util.regex.Pattern.compile(Pattern.java:1022)
         at RegexExample.main(RegexExample.java:13)
-                                
 </pre>
 
         <p>Good programming style dictates that the user should not see a
@@ -226,7 +225,7 @@ $ <strong>javacheck -processor org.checkerframework.checker.regex.RegexChecker R
         prints a user-friendly warning.</p>
         <pre>
 $ <strong>java -cp ".:$CHECKERFRAMEWORK/checker/dist/checker.jar" RegexExample '[01]?[\d-\([0123]?\d\)-\d{4}+' '01-24-2013'</strong>
-Input is not a regular expression "[01]?[d-([0123]?d)-d{4}+": Illegal character range near index 24 
+Input is not a regular expression "[01]?[d-([0123]?d)-d{4}+": Illegal character range near index 24
 </pre>
 
         <p>(If this issues an error</p>

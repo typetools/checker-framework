@@ -26,7 +26,7 @@ import org.checkerframework.dataflow.qual.*;
 
 /**
  * An empty immutable map.
- * 
+ *
  * @author Jesse Wilson
  * @author Kevin Bourrillion
  */

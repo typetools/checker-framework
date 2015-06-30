@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.*;
 
 public class AssertWithStatic {
-    
+
     static @Nullable String f;
 
 

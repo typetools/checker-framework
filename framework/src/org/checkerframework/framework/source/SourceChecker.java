@@ -1653,7 +1653,7 @@ public abstract class SourceChecker
     }
 
     /**
-     * Overrides the default implementation to always 
+     * Overrides the default implementation to always
      * return a singleton set containing only "*".
      * <p>
      *

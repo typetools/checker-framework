@@ -79,8 +79,8 @@ transformation:
        separate the current logic into individual steps, where each step is run
        successively on the current tree.
    2.  Abandon the lazy approach.  Separate the current logic into steps that
-       are run over an entire compilation unit.  This is to avoid the visitor 
-       feedback loop that makes debugging so difficult.  
+       are run over an entire compilation unit.  This is to avoid the visitor
+       feedback loop that makes debugging so difficult.
   [Rene]
 
 * separate definition of a type-checker from performing type-checking using
@@ -95,7 +95,7 @@ transformation:
 to worry about the Processor interface.  Invocation could be done a number of
 ways:
 javac --processor checkerFramework.CheckerFramework -Acheckers:checker1:checker2:checker
-javac --checkers checker1:checker2:checkers3 
+javac --checkers checker1:checker2:checkers3
 By the way, the second option will work with both the jsr308 and Java8
 compilers as the --checkers could be translated by CheckerMain into the first
 form.  [I don't see how a Java 8 compiler could handle the --checkers
@@ -110,7 +110,7 @@ Inference-related tasks:
 
 * Create unique ids for each annotated type location in source code, these IDs
 will replace inference's ids.  This can be a discrete task, though I would
-imagine there are some interactions with Stuart's code.   
+imagine there are some interactions with Stuart's code.
 
 * Add a callback for either generating constraints or enforcing checks in
 either commonAssignmentCheck or QualifierHierarchy.  If this is done through
@@ -127,7 +127,7 @@ or a GenerateGame step.
 Overview of Stuart's refactorings, in his own words:
 
 > The stuff I'm working on has three main components:
-> 
+>
 >  - User-defined qualifier support: Allow checkers to use custom objects to
 >    represent qualifiers internally, instead of using AnnotationMirrors
 >    directly.
@@ -136,30 +136,30 @@ Overview of Stuart's refactorings, in his own words:
 >    its implementation.
 >  - SPARTA: A new implementation of the SPARTA FlowChecker, based on qualifier
 >    parameters.
-> 
+>
 > Here are my branches:
-> 
+>
 > ssh://tricycle/homes/gws/spernste/hg/checker-framework
 >   (branched from checker-framework-dff)
 >   This has changes to existing checker framework components that are necessary
 >   to make the other components work.
-> 
+>
 > ssh://tricycle/homes/gws/spernste/hg/checker-framework-qual
 >   (branched from ~spernste/hg/checker-framework)
 >   This has user-defined qualifier support, implemented as an abstract base
 >   checker in the checkers.userqual package.  I also adapted the TaintingChecker
 >   to use the new userqual base classes.
-> 
+>
 > ssh://tricycle/homes/gws/spernste/hg/checker-framework-qualparam
 >   (branched from ~spernste/hg/checker-framework-qual)
 >   This has qualifier parameter support, implemented as an abstract base checker
 >   in the checkers.qualparam package.  I also adapted the TaintingChecker to
 >   use the new qualparam base classes.
-> 
+>
 > ssh://tricycle/homes/gws/spernste/hg/checker-framework-sparta
 >   (branched from ~spernste/hg/checker-framework-qualparam)
 >   This has the qualparam-based implementation of the SPARTA FlowChecker.
-> 
+>
 > I think I have the permissions set so anyone can check out from these
 > repositories, but let me know if I need to fix them.
 

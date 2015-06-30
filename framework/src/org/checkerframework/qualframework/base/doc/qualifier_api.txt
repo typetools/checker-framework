@@ -53,7 +53,7 @@ qualifiers when necessary.
 As an example, a simple tainting checker could define an enum with values
 {TAINTED, UNTAINTED} as its type qualifier representation.  The SPARTA flow
 checker would require a more complex type, such as a custom class 'Flow' with
-fields containing the set of sources and the set of sinks.  
+fields containing the set of sources and the set of sinks.
 
 
 QualifiedTypeMirror<Q>
@@ -211,7 +211,7 @@ abstract class QualifiedTypeMirror<Q> {
         // methods, etc.), which is expected to run parallel to the structure
         // of the underlying TypeMirror.  The check is necessary to make sure
         // that the two structures actually correspond.
-        // 
+        //
         // This constructor is expected to be used only in the implementations
         // of utility visitor base classes, such as QualifiedTypeBuilder.  Most
         // users will extend such a visitor or use a QualifiedTypes helper

@@ -63,9 +63,9 @@ import com.sun.tools.javac.util.Names;
  * <li>{@link Method#invoke(Object, Object...)}</li>
  * <li>{@link Constructor#newInstance(Object...)}</li>
  * </ul>
- * 
+ *
  * @checker_framework.manual #reflection-resolution Reflection resolution
- * 
+ *
  * @author rjust
  *
  */

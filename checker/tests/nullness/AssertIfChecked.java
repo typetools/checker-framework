@@ -102,7 +102,7 @@ public class AssertIfChecked {
 
   @Nullable Object getValueUnpure() { return value; }
   @org.checkerframework.dataflow.qual.Pure @Nullable Object getValuePure() { return value; }
-  
+
   @EnsuresNonNullIf(result=true, expression="getValuePure()")
   public boolean hasValuePure() {
       return getValuePure() != null;
@@ -118,7 +118,7 @@ public class AssertIfChecked {
     return (o instanceof String) && equals((String) o);
   }
 
-  
+
   /*
    * The next two methods are from Daikon's class Quant. They verify that
    * EnsuresNonNullIf is correctly added to the assumptions after a check.

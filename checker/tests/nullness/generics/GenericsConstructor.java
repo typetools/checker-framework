@@ -8,7 +8,7 @@ public class GenericsConstructor {
       new Test("Ha!");
       new <String>Test("Ha!");
       new Test(new Object());
-      
+
       // new <String, String>Test("Hi", "Ho");
   }
 }

@@ -10,7 +10,7 @@ class Ternary {
         String s = b ? null : new String("foo");
     }
 
-    @SuppressWarnings("nullness") // Don't want to depend on @Nullable 
+    @SuppressWarnings("nullness") // Don't want to depend on @Nullable
     String m3(boolean b) {
         return b ? new String("foo") : null;
     }

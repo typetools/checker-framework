@@ -1,6 +1,6 @@
 /*
  * @test
- * @summary Test for Issue 257 
+ * @summary Test for Issue 257
  *
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack Small.java
  *

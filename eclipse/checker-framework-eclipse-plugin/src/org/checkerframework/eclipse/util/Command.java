@@ -8,7 +8,7 @@ import java.io.*;
  * executes its argument and pipes both stdout and stderr to System.out. Each
  * line in the piped output from stdout is prefixed with "OUT>" and the output
  * from stderr is prefixed with "ERR>"
- * 
+ *
  * <p>
  * Credit: Producer code modified (and augmented) from Michael Daconta's
  * "Java Traps" column ("When Runtime.exec() won't"), found at

@@ -1,7 +1,7 @@
 \htmlhr
 \chapter{Fake Enum Checker\label{fenum-checker}}
 
-Java's 
+Java's
 \href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-8.html#jls-8.9}{\code{enum}}
 keyword lets you define an enumeration type: a finite set of distinct values
 that are related to one another but are disjoint from all other
@@ -28,13 +28,13 @@ doing so would break existing clients.  For example, Java's JDK still uses
 \code{int} constants in the AWT and Swing frameworks.
 %
 Another reason is performance, especially in environments with limited
-resources.  Use of an int instead of an object can 
+resources.  Use of an int instead of an object can
 reduce code size, memory requirements, and run time.
 % Android no longer recommends use of ints instead of enums:  see
 % http://stackoverflow.com/questions/5143256/why-was-avoid-enums-where-you-only-need-ints-removed-from-androids-performanc
 
 In cases when code has to use the fake enum pattern, the Fake Enum Checker,
-or Fenum Checker, gives the same safety guarantees as a true enumeration type. 
+or Fenum Checker, gives the same safety guarantees as a true enumeration type.
 The developer can introduce new types that are distinct from all values of the
 base type and from all other fake enums. Fenums can be introduced for
 primitive types as well as for reference types.
@@ -93,7 +93,7 @@ your project, whereas the second approach allows quick prototyping.
 
 \section{What the Fenum Checker checks\label{fenum-checks}}
 
-The Fenum Checker ensures that unrelated types are not mixed. 
+The Fenum Checker ensures that unrelated types are not mixed.
 All types with a particular fenum annotation, or \code{@Fenum(...)} with a particular \code{String} argument, are
 disjoint from all unannotated types and all types with a different fenum
 annotation or \code{String} argument.
@@ -114,7 +114,7 @@ reference variable.)
 The Fenum Checker can be invoked by running the following commands.
 
 \begin{itemize}
-  \item 
+  \item
 If you define your own annotation, provide the name of the annotation using the
 \code{-Aquals} option:
 
@@ -147,7 +147,7 @@ the field or class declaration, for example:
 @SuppressWarnings("fenum:assignment.type.incompatible") // initialization of fake enums
 class MyConsts {
   public static final @Fenum("A") int ACONST1 = 1;
-  public static final @Fenum("A") int ACONST2 = 2;  
+  public static final @Fenum("A") int ACONST2 = 2;
 }
 \end{Verbatim}
 

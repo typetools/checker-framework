@@ -37,9 +37,9 @@ Version 1.9.0, 17 April 2015
 Bug fixes for generics, especially type parameters:
    * Manual chapter 21 "Generics and polymorphism" has been expanded,
      and it gives more information on annotating type parameters.
-   * The qualifier on a type parameter (e.g. <@HERE T> ) only applies 
+   * The qualifier on a type parameter (e.g. <@HERE T> ) only applies
      to the lower bound of that type parameter.  Previously it also
-     applied to the upper bound.  
+     applied to the upper bound.
    * Unannotated, unbounded wildcards are now qualified with the
      annotations of the type parameter to which they are an argument.
      See the new manual section 23.3.4 for more details.
@@ -93,10 +93,10 @@ Implicit imports are deprecated, including the jsr308_imports environment
 variable and the -jsr308_imports ... and -Djsr308.imports=... command-line
 options.
 
-For checkers bundled with the Checker Framework, package names may now 
+For checkers bundled with the Checker Framework, package names may now
 be omitted when running from the command line.
 E.g.
-    javac -processor NullnessChecker MyFile.java 
+    javac -processor NullnessChecker MyFile.java
 
 The Nullness checker supports Android annotations
 android.support.annotation.NonNull and android.support.annotation.Nullable.
@@ -132,9 +132,9 @@ Dataflow:
    boxed Booleans, finally blocks, switch statements, type casts, enhanced
    for loops
  * Performance improvements
-	      
+
 Annotations:
-The checker-compat-qual.jar is now included with the Checker Framework 
+The checker-compat-qual.jar is now included with the Checker Framework
 release.  It can also be found in Maven Central at the coordinates:
 org.checkerframework:checker-compat-qual
 Annotations in checker-compat-qual.jar do not require Java 8 but
@@ -252,11 +252,11 @@ Changed the Java package of all type-checkers and qualifiers.  The package
 "checkers" has been renamed to "org.checkerframeork.checker".  This
 requires you to change your import statements, such as from
   import checkers.nullness.quals.*;
-to 
+to
   import org.checkerframework.checker.nullness.qual.*;
 It also requires you to change command-line invocations of javac, such as from
   javac -processor checkers.nullness.NullnessChecker ...
-to 
+to
   javac -processor org.checkerframework.checker.nullness.NullnessChecker ...
 
 Restructured the Checker Framework project and package layout,
@@ -294,7 +294,7 @@ Manual:
    Improved discussion of checker guarantees.
 
 Maven Plugin:
-   Added option useJavacOutput to display exact compiler output. 
+   Added option useJavacOutput to display exact compiler output.
 
 Eclipse Plugin:
    Added the Format String Checker to the list of built-in checkers.
@@ -384,7 +384,7 @@ New command-line options:
   -AconcurrentSemantics Whether to assume concurrent semantics
   -Anocheckjdk Don't err if no annotated JDK can be found
   -Aflowdotdir Create an image of the control flow graph
-  -AinvariantArrays replaces -Alint=arrays:invariant 
+  -AinvariantArrays replaces -Alint=arrays:invariant
   -AcheckCastElementType replaces -Alint=cast:strict
 
 Manual:
@@ -410,7 +410,7 @@ Bug fixes:
 Version 1.6.6, 01 August 2013
 
 Documentation:
-  The Checker Framework manual has been improved.  Changes include: 
+  The Checker Framework manual has been improved.  Changes include:
 more troubleshooting tips to the Checker Framework manual, an improved discussion on qualifier bounds, more examples, improved formatting, and more.
   An FAQ entry has been added to discuss JSR305.
   Minor clarifications have been added to the Checker Framework tutorial.
@@ -454,7 +454,7 @@ Version 1.6.3, 01 May 2013
 Eclipse plugin bug fixes:
   The javac argument files used by the Eclipse plugin now properly escape file paths.  Windows users should no longer encounter errors about missing built-in checkers.
 
-Documentation: 
+Documentation:
   Add FAQ "What is the meaning of an annotation after a type?"
 
 ----------------------------------------------------------------------
@@ -489,15 +489,15 @@ Maven plugin:
   Added option to compile code in order to support checking for multi-module projects.
   The plugin no longer copies the various Checker Framework maven artifacts to one location but instead takes advantage of the new custom path options for javac.jar and jdk7.jar.
   The maven plugin no longer attempts to resolve jdk6.jar
-  
+
 Eclipse plugin:
   Put Checker Framework jars at the beginning of classpath.
   All files selected from a single project can now be checked.  The previous behavior only checked the entire project or one file depending on the type of the first file selected.
-  
+
 Documentation:
   Fixed broken links and incomplete URLs in the Checker Framework Manual.
   Update FAQ to discuss that some other tools incorrectly interpret array declarations.
-  
+
 Bug fixes
 
 ----------------------------------------------------------------------
@@ -557,7 +557,7 @@ Tool Integration Changes
     naming conventions.
   Eclipse and Maven plugin version numbers will now
     track the Checker Framework version numbers.
-  
+
 Bug fixes.
 
 ----------------------------------------------------------------------
@@ -1179,7 +1179,7 @@ Bug Fixes
 
 Manual
   Clarified FAQ item regarding why List's type parameter is
-    "extends @NonNull Object"  
+    "extends @NonNull Object"
 
 ----------------------------------------------------------------------
 Version 1.0.3, 5 Dec 2009

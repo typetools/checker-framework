@@ -26,7 +26,7 @@ class Constructors {
   }
 
   public class Options {
-  
+
     class OptionInfo {
       Date d;
       @UnknownInitialization @Raw Object obj;

@@ -11,7 +11,7 @@ public class Uninit12 {
   public Uninit12() {
     f.toString();
   }
-  
+
   static Object g = new Object();
 
   static Object h;
@@ -24,7 +24,7 @@ public class Uninit12 {
 }
 
 class Uninit12_OK {
-    
+
     static Object g = new Object();
 
     static Object h;

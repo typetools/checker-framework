@@ -123,6 +123,6 @@ checkers/binary/poms/localInstall.sh for example -Dfile arguments).
     -DgroupId=org.checkerframework \
     -Dpackaging=jar \
     -DpomFile=checkerframework/maven-plugin/pom.xml \
-    -DgeneratePom=false 
+    -DgeneratePom=false
 
 Note that the url property must start with a protocol such as "file://".

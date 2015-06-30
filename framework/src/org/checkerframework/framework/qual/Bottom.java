@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
  * Note that because of the missing RetentionPolicy, the qualifier will
  * not be stored in bytecode.
  * <p>
- * 
+ *
  * Only use this qualifier for very simple type systems.
  * For realistic systems, introduce a top and bottom qualifier
  * that gets stored in bytecode.

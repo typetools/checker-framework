@@ -6,7 +6,7 @@ import org.checkerframework.framework.qual.*;
 
 /**
  * Used internally by the type system; should never be written by a programmer.
- * 
+ *
  * <p>
  * Indicates that the value assigned to the annotated variable is not known to be
  * a key for any map.  It is the top type qualifier in the

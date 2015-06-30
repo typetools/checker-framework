@@ -263,7 +263,7 @@ def main(argv):
     # Runs the link the checker on all websites at:
     # http://types.cs.washington.edu/dev/
     # The output of the link checker is written to files in the /tmp directory
-    # whose locations will be output at the command prompt. 
+    # whose locations will be output at the command prompt.
 
     # It is ok for there to be broken links in JSR308 referring to ../../specification.
     # These links are broken because there is no specification in the dev website (the
@@ -309,11 +309,11 @@ def main(argv):
     # Central Repository.
 
     # Once staging is complete, there are manual steps to log into Sonatypes Central and "close" the
-    # staging repository. Closing allows us to test the artifacts. 
+    # staging repository. Closing allows us to test the artifacts.
 
     # This step deploys the artifacts to the Central repository and prompts the user to close the
     # artifacts. Later, you will be prompted to release the staged artifacts after we commit the
-    # release to our Google Code repositories. 
+    # release to our Google Code repositories.
 
     # For more information on deploying to the Central Repository see:
     # https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide

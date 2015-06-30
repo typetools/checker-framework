@@ -28,7 +28,7 @@ public class LongMath extends NumberMath<Long> {
         }
         throw new UnsupportedOperationException();
     }
-    
+
     @Override
     public Number minus(Number right) {
         if (right instanceof Byte) {

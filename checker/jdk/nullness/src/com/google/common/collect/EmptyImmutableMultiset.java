@@ -20,7 +20,7 @@ import com.google.common.annotations.GwtCompatible;
 
 /**
  * An empty immutable multiset.
- * 
+ *
  * @author Jared Levy
  */
 @GwtCompatible(serializable = true)

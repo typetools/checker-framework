@@ -8,7 +8,7 @@ public final class URL implements java.io.Serializable {
     static final long serialVersionUID = -7627629688361524110L;
 
     public URL(String protocol, String host, int port, String file) throws MalformedURLException {
-        throw new RuntimeException("skeleton method"); 
+        throw new RuntimeException("skeleton method");
     }
 
     public URL(String protocol, String host, String file) throws MalformedURLException {

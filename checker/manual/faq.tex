@@ -85,7 +85,7 @@ discover.  Not every type error leads to an exception being thrown; and
 even if an exception is thrown, it may not seem related to classical types.
 Remember that a type system can discover
 null pointer dereferences,
-incorrect side effects, 
+incorrect side effects,
 security errors such as information leakage or SQL injection,
 partially-initialized data,
 wrong units of measurement,
@@ -167,7 +167,7 @@ use it.  You will be the best judge of this for your own code, of course.
 
 The \ahrefloc{linear-checker}{Linear Checker} (see
 \chapterpageref{linear-checker}) has not been extensively tested.
-The 
+The
 \ahrefloc{igj-checker}{IGJ Checker} (see \chapterpageref{igj-checker}),
 \ahrefloc{javari-checker}{Javari Checker} (see
 \chapterpageref{javari-checker}), and some of the third-party checkers (see
@@ -234,7 +234,7 @@ Java type-checker would reject.  Here are a few examples.
   It uses a dataflow analysis to determine a more precise type for
   variables after conditional tests or assignments.
 \item
-  It treats certain Java constructs more precisely, such as 
+  It treats certain Java constructs more precisely, such as
   reflection (see Chapter~\ref{reflection-resolution}).
 \item
   It includes special-case logic for type-checking specific methods, such
@@ -415,7 +415,7 @@ is invoked.
 % This paragraph is weak.
 
 Even if a pluggable checker cannot give an ironclad
-guarantee of correctness, it is still useful.  It can find errors, 
+guarantee of correctness, it is still useful.  It can find errors,
 exclude certain types of possible problems (e.g., restricting the
 possible class of problems), improve documentation, and increase confidence
 in your software.
@@ -458,30 +458,30 @@ limits the amount of flow-sensitive type qualifier refinement
 % of putting data in a local variable doesn't fix the problem,
 % just masks it from one particular checker.  This is bad style and may make
 % debugging harder rather than easier.
-% 
+%
 % For instance, suppose you you have
-% 
+%
 % if (x.val != null) {
 %   x.val = x.val + 1;
 % }
-% 
+%
 % which can suffer a null pointer exception if another thread nulls out
 % x.val.  The underlying problem is the possible concurrency error:  the user
 % should have used locks or some other mechanism to protect access to x.val.
-% 
+%
 % Changing this to
-% 
+%
 % myval = x.val;
 % if (myval != null) {
 %   x.val = myval + 1;
 % }
-% 
+%
 % does not fix the concurrency error, because no locking has been introduced.
 % The code still has a data race that can lose updates or corrupt data
 % structures.  The code has been transformed so that the Nullness Checker
 % does not issue a warning, but this is scant comfort since the code is no
 % more correct than it was before.
-% 
+%
 % If you want to detect concurrency errors, then it is better to use a
 % correct checker that is concurrency-aware, rather than an unsound one that
 % encourages incorrect workarounds.  Another way to put this is that a static
@@ -785,7 +785,7 @@ permit nulls, then \<Collection> cannot either:
   }
   // must not permit null elements, or PriorityQueue would not be a subtype of Collection
   interface Collection<E> {
-    boolean add(E);    
+    boolean add(E);
     ...
   }
 \end{Verbatim}
@@ -833,7 +833,7 @@ Any subclass of \<ArrayList> must also support null elements.
 % Every implementation of List seems to permit null.
 % Examples of Collection that do not permit null:
 % BlockingQueue family:
-%   BlockingQueue, BlockingDeque, ArrayBlockingQueue, DelayQueue, LinkedBlockingDeque, LinkedBlockingQueue, PriorityBlockingQueue, SynchronousQueue 
+%   BlockingQueue, BlockingDeque, ArrayBlockingQueue, DelayQueue, LinkedBlockingDeque, LinkedBlockingQueue, PriorityBlockingQueue, SynchronousQueue
 % PriorityQueue
 % probably lots of other queues.
 
@@ -938,13 +938,13 @@ The CLIMB-to-top rule reduces the code edits required to annotate an
 existing program, and it treats types written in the program consistently.
 
 When a user writes no upper bound, as in
-\code{class C<T> \ttlcb\ ... \ttrcb}, 
+\code{class C<T> \ttlcb\ ... \ttrcb},
 then Java permits the class to be instantiated with any type parameter.
 The Checker Framework behaves exactly the same, no matter what the default
 is for a particular type system -- and no matter whether the user has
 changed the default locally.
 
-When a user writes an upper bound, as in 
+When a user writes an upper bound, as in
 \code{class C<T extends OtherClass> \ttlcb\ ... \ttrcb},
 then the Checker Framework treats this occurrence of \<OtherClass> exactly
 like any other occurrence, and applies the usual defaulting rules.  Use of
@@ -1000,7 +1000,7 @@ verifiable than a procedural syntax.
 We have not found the procedural syntax to be the most important impediment
 to writing a checker.
 
-Previous attempts to devise a declarative syntax 
+Previous attempts to devise a declarative syntax
 for realistic type systems have failed; see a technical
 paper~\cite{PapiACPE2008} for a discussion.  When an
 adequate syntax exists, then the Checker Framework can be extended to
@@ -1094,7 +1094,7 @@ more concise and easier to understand.
 
 \textbf{JML is not as practical as pluggable type-checking.}
 The JML toolset is less mature.  For instance, if your code uses
-generics or other features of Java 5, then you cannot use JML.  
+generics or other features of Java 5, then you cannot use JML.
 However, JML has a run-time checker, which the Checker Framework currently
 lacks.
 

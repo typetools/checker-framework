@@ -5,7 +5,7 @@ import org.checkerframework.checker.initialization.qual.*;
 class MethodInvocation {
 
     String s;
-    
+
     public MethodInvocation() {
         //:: error: (method.invocation.invalid)
         a();
@@ -13,13 +13,13 @@ class MethodInvocation {
         c();
         s = "abc";
     }
-    
+
     public MethodInvocation(boolean p) {
         //:: error: (method.invocation.invalid)
         a(); // still not okay to be committed
         s = "abc";
     }
-    
+
     public void a() {
     }
 
@@ -27,7 +27,7 @@ class MethodInvocation {
         //:: error: (dereference.of.nullable)
         s.hashCode();
     }
-    
+
     public void c(@UnknownInitialization @Raw MethodInvocation this) {
         //:: error: (dereference.of.nullable)
         s.hashCode();

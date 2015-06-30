@@ -11,7 +11,7 @@ class ReadyReadLine {
       String line = buf.readLine();
       line.toString();
     }
-    
+
     if (buf.readLine() != null) {
         //:: error: (dereference.of.nullable)
         buf.readLine().toString();

@@ -13,7 +13,7 @@ import org.checkerframework.framework.qual.TypeQualifiers;
 /**
  * The MethodVal Checker provides a sound estimate of the signature of Method
  * objects
- * 
+ *
  * @checker_framework.manual #methodval-and-classval-checkers MethodVal Checker
  */
 

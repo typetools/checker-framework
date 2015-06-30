@@ -98,7 +98,7 @@ public class CustomPreferencesPage extends PreferencePage implements
             {
             }
         });
-        
+
         Button removeButton = new Button(customGroup, SWT.PUSH);
         removeButton.setText("Remove");
         removeButton.addSelectionListener(new SelectionListener()
@@ -114,7 +114,7 @@ public class CustomPreferencesPage extends PreferencePage implements
             {
             }
         });
-        
+
         customCheckers =
         	new org.eclipse.swt.widgets.List(customGroup, SWT.MULTI);
 
@@ -122,7 +122,7 @@ public class CustomPreferencesPage extends PreferencePage implements
          * customClassAuto = new Button(customGroup, SWT.CHECK);
          * customClassAuto.setText("Use custom classes in autobuild?");
          */
-        
+
         FormData listFd = new FormData();
         listFd.left = new FormAttachment(0, 5);
         listFd.top = new FormAttachment(classesLabel, 5);
@@ -135,7 +135,7 @@ public class CustomPreferencesPage extends PreferencePage implements
         addFd.right = new FormAttachment(100, -5);
         addFd.left  = new FormAttachment(customCheckers, 5);
         addButton.setLayoutData(addFd);
-        
+
         FormData removeFd = new FormData();
         removeFd.top = new FormAttachment(addButton, 5);
         removeFd.right = new FormAttachment(100, -5);
@@ -173,8 +173,8 @@ public class CustomPreferencesPage extends PreferencePage implements
                     classNames.add(type.getFullyQualifiedName());
                 }
             }
-            
-            for(final String cn : classNames) { 
+
+            for(final String cn : classNames) {
             	if(!contains(cn)) { //TODO: ADD A DIALOG TO WARN IF ALREADY CONTAINED
             	    customCheckers.add(cn);
             	}

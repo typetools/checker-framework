@@ -100,7 +100,7 @@ errors/warnings relating to the given message key are suppressed.  For example,
 
 Each warning from the compiler gives the most specific
 suppression key that can be used to suppress that warning.
-An example is \<dereference.of.nullable> in 
+An example is \<dereference.of.nullable> in
 
 %BEGIN LATEX
 \begin{smaller}
@@ -125,9 +125,9 @@ not just the most specific one.
 % \item \code{checker-framework/checker/src/org/checkerframework/checker/\emph{checkername}/messages.properties}
 % \item \code{checker-framework/framework/src/org/checkerframework/common/basetype/messages.properties}
 % \end{enumerate}
-% 
+%
 % \noindent
-% You need to check the latter file because 
+% You need to check the latter file because
 % each checker is built on the \code{basetype} checker and inherits its
 % properties.
 
@@ -316,13 +316,13 @@ technique to verify that the assertion can never fail at run time, so the
 checker assumes the assertion passes and does not issue a warning.
 
 Distinguishing the purpose of each assertion is important for precise
-type-checking.  
+type-checking.
 % In particular, the Checker Framework would miss many errors
 % if it assumed that every assertion succeeds at run time.
 Suppose that a
 programmer encounters a failing test, adds an assertion to aid debugging, and fixes the
 test.  The programmer leaves the assertion in the program if the programmer
-is worried that the program might fail in a similar way in the future.  
+is worried that the program might fail in a similar way in the future.
 % The assertion indicates the potential for failure at this point in the code.
 The Checker Framework should not assume that the assertion succeeds ---
 doing so would defeat the very purpose of the Checker Framework, which is
@@ -341,7 +341,7 @@ that the assertion always succeeds at run time.
 % fact that should always be true.  There are two distinct reasons a
 % programmer may have written the invariant, depending on whether the
 % programmer is 100\% sure that the application invariant holds.
-% 
+%
 % \begin{enumerate}
 % \item
 %   A programmer might write it as \textbf{defensive programming}.  This causes
@@ -349,16 +349,16 @@ that the assertion always succeeds at run time.
 %   it gives an earlier run-time indication of the error.
 %   A programmer would use an assertion in this way if the programmer is not
 %   100\% sure that the application invariant holds.
-% 
+%
 %   % , or even to document what the program
 %   % is intended to do.
-% 
+%
 % \item
 %   A programmer might write it to \textbf{suppress} false positive
 %   \textbf{warning messages} from a checker.  A programmer would use an
 %   assertion this way if the programmer is 100\% sure that the application
 %   invariant holds, and the reference can never be null at run time.
-% 
+%
 % \end{enumerate}
 
 
@@ -475,7 +475,7 @@ definitions should be type-checked.
 For example, if you use
 ``{\codesize\verb|-AskipDefs=^mypackage\.|}'' on the command line
 (with appropriate quoting) when invoking
-\code{javac}, then the definitions of 
+\code{javac}, then the definitions of
 classes whose fully-qualified name starts with \codesize\verb|mypackage.|
 will not be checked.
 
@@ -703,7 +703,7 @@ inserting spaces:  in the Formatter preferences, in the Comments tab,
 unselect the ``enable block comment formatting'' checkbox.
 
 Compiler flag \code{-XDTA:noannotationsincomments} causes the compiler
-to ignore annotation comments.  With this compiler flag, the 
+to ignore annotation comments.  With this compiler flag, the
 Checker Framework compiler behaves like a standard Java 8 compiler that does
 not support annotations in comments.  If your code already contains
 comments of the form \</*@...*/> that look like type annotations, and
@@ -823,7 +823,7 @@ The Checker Framework's type annotations utilize a Java 8 feature that
 allows them to be placed on any type use, including generic type parameters
 as in \code{List<@NonNull String>}.  A downside is that use of these type
 annotations creates a dependency on Java 8, which means that the compiled
-program requires a Java 8 or later JDK at run time. 
+program requires a Java 8 or later JDK at run time.
 
 To ensure that your program can run on a Java 5/6/7 JVM, use a command-line
 option such as \<-target 7> when doing normal compilation to produce
@@ -870,7 +870,7 @@ approach with its own advantages and disadvantages.
 If it is important to you to distribute Java 5/6/7 classfiles against which
 clients can do some type-checking, this section gives a way to do so.
 
-The idea is to 
+The idea is to
 use annotations that are Java 5/6/7 declaration annotations.
 This approach requires you to use annotations that are declared in
 different packages than usual and that have slightly different names.
@@ -896,7 +896,7 @@ Here are some disadvantages of this approach:
 \item
   It produces classfiles that contain only some of your type annotations
   --- the ones that were not written in comments.
-  If your code uses type annotations at 
+  If your code uses type annotations at
   locations such as generic type parameters and \<extends> clauses, then
   modular type-checking will not observe them;
   the implications of that were described above.

@@ -1,7 +1,7 @@
 \htmlhr
 \chapter{Annotating libraries\label{annotating-libraries}}
 
-%% TODO: reinstate this once the checker/lib/ directory contains content. 
+%% TODO: reinstate this once the checker/lib/ directory contains content.
 % The Checker Framework distribution contains annotated versions of popular
 % libraries in directory \<checker-framework/checker/lib/>.
 % These currently include
@@ -24,16 +24,16 @@
 % over time, this should become more common, reducing the need for the
 % Checker Framework to include annotated versions of them.
 
-%% Extra detail about the 
+%% Extra detail about the
 % \section{Using distributed annotated JDKs\label{skeleton-using}\label{skeleton}}
-% 
+%
 % The Checker Framework distribution contains two
 % annotated JDKs at the paths \<checker/dist/jdk7.jar> and
 % \<checker/dist/jdk8.jar>.
 % The \<javac> that is distributed with the Checker Framework and the command
 % \code{java -jar \$CHECKERFRAMEWORK/checker/dist/checker.jar} both use the appropriate \<jdk7.jar> or \<jdk8.jar>
 % based on the version of Java used to run them.
-% 
+%
 % The annotated JDKs should \emph{not} be in your classpath at run time, only
 % at compile time; and they are automatically added to your classpath at
 % compile time.
@@ -302,16 +302,16 @@ author should place \code{jdk.astub} in the same directory as the Checker class,
 the subclass of \code{BaseTypeVisitor}.)  Programmers should only use the
 \<-Astubs> argument for additional stub files they create themselves.
 
-If a method appears in more than one stub file (or twice in the same 
-stub file), then the annotations are merged. If any of the 
+If a method appears in more than one stub file (or twice in the same
+stub file), then the annotations are merged. If any of the
 methods have different annotations from the same hierarchy on the same type,
-then the annotation from the last declaration is used.  
+then the annotation from the last declaration is used.
 
 % \textbf{The following is not implemented yet}
 % A library writers should create a file \code{library.astub} on the
 % classpath (in the resources directory or the binary jars).
 % The Checker Framework automatically imports all the stub files named
-% \code{library.astub} found in the classpath.  
+% \code{library.astub} found in the classpath.
 
 
 
@@ -494,9 +494,9 @@ if an entry could not be found.
 By default, the stub parser silently ignores
 annotations on unknown classes and methods.
 The stub parser also silently ignores unknown annotations, so don't forget to
-\<import> any annotations.  
+\<import> any annotations.
 
-Use command-line option 
+Use command-line option
 \<-AstubWarnIfNotFound> to warn whenever some element of a stub file cannot
 be found.
 
@@ -525,7 +525,7 @@ Fix this error by removing the method \<enableForgroundNdefPush(...)> from
 the stub file, because it is not defined in class \<android.nfc.NfcAdapter>
 in the version of the library you are using:
 \begin{Verbatim}
-StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback) 
+StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
       not found in type android.nfc.NfcAdapter
 \end{Verbatim}
 
@@ -537,7 +537,7 @@ future release.
 
 \begin{itemize}
 
-\item 
+\item
   The receiver is written after the method parameter list, instead of as an
   explicit first parameter.  That is, instead of
 
@@ -559,10 +559,10 @@ in a stub file one has to write
   annotations to the appropriate nested class.
 
 \item
-  Annotations must be written before the package name on a fully qualified 
-  types rather than directly on the type it qualifies.  However, it is usually not 
-  necessary to write the fully qualified name.  
-  
+  Annotations must be written before the package name on a fully qualified
+  types rather than directly on the type it qualifies.  However, it is usually not
+  necessary to write the fully qualified name.
+
   \begin{Verbatim}
           void init(@Nullable java.security.SecureRandom random);
    \end{Verbatim}

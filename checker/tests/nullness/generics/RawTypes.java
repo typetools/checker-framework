@@ -7,7 +7,7 @@ class RawTypes {
   }
 
   class Test<X extends Number> {}
-  
+
   void bar() {
     // Java will complain about this:
     // Test x = new Test<Object>();

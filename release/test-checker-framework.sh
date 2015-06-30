@@ -20,12 +20,12 @@ function cfruntest() {
   if (($?)); then exit 6; fi
 
   $CHECKERFRAMEWORK/checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker \
-      $CHECKERFRAMEWORK/checker/examples/NullnessReleaseTests.java 
+      $CHECKERFRAMEWORK/checker/examples/NullnessReleaseTests.java
   if (($?)); then exit 6; fi
 
   java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar \
       -processor org.checkerframework.checker.nullness.NullnessChecker \
-      $CHECKERFRAMEWORK/checker/examples/NullnessReleaseTests.java 
+      $CHECKERFRAMEWORK/checker/examples/NullnessReleaseTests.java
   if (($?)); then exit 6; fi
 }
 

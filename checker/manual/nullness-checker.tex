@@ -7,8 +7,8 @@ guarantee enables a programmer to prevent errors from occurring when a
 program is run.  See Section~\ref{nullness-checks} for more details about
 the guarantee and what is checked.
 
-The most important annotations supported by the Nullness Checker are 
-\refqualclass{checker/nullness/qual}{NonNull} and 
+The most important annotations supported by the Nullness Checker are
+\refqualclass{checker/nullness/qual}{NonNull} and
 \refqualclass{checker/nullness/qual}{Nullable}.
 \refqualclass{checker/nullness/qual}{NonNull} is rarely written, because it is
 the default.  All of the annotations are explained in
@@ -90,7 +90,7 @@ command-line option.)
   guaranteed to be non-null, as in \code{("m" == null)}.  Such a check is
   unnecessary and might indicate a programmer error or misunderstanding.
   The lint option is disabled by default because sometimes such checks are
-  part of ordinary defensive programming.  
+  part of ordinary defensive programming.
 
 \item
   \label{lint-uninitialized-item}%
@@ -176,7 +176,7 @@ The nullness hierarchy contains these qualifiers:
 
   It is permitted to initialize a MonotonicNonNull field to null, but the
   field may not be assigned to null anywhere else in the program.  If you
-  supply the \<noInitForMonotonicNonNull> lint flag (for example, supply 
+  supply the \<noInitForMonotonicNonNull> lint flag (for example, supply
   \<-Alint=noInitForMonotonicNonNull> on the command line), then
   @MonotonicNonNull fields are not allowed to have initializers.
 
@@ -289,7 +289,7 @@ are satisfied:
 \noindent
 If either of these two conditions is violated, then \<mymap.get(mykey)> has
 the possibility of returning \<null>.
-    
+
 \section{Writing nullness annotations\label{writing-nullness-annotations}}
 
 \subsection{Implicit qualifiers\label{nullness-implicit-qualifiers}}
@@ -347,7 +347,7 @@ rule.
 %   \code{@DefaultQualifier(value=NonNull.class,
 %     locations=\discretionary{}{}{}\{DefaultLocation\discretionary{}{}{}.ALL\_EXCEPT\_LOCALS\})}
 %   annotation.
-% 
+%
 %   The NNEL default leads to the smallest number of explicit annotations in
 %   your code~\cite{PapiACPE2008}.  It is what we recommend.  If you do not
 %   explicitly specify a different default, then NNEL is the default.
@@ -458,10 +458,10 @@ Section~\ref{type-refinement}.
 The Nullness Checker does some special checks in certain circumstances, in
 order to soundly reduce the number of warnings that it produces.
 
-For example, a call to 
+For example, a call to
 \sunjavadoc{java/lang/System.html\#getProperty-java.lang.String-}{System.getProperty(String)}
 can return null in general, but it will not return null if the argument is
-one of the built-in-keys listed in the documentation of 
+one of the built-in-keys listed in the documentation of
 \sunjavadoc{java/lang/System.html\#getProperties--}{System.getProperties()}.
 The Nullness Checker is aware of this fact, so you do not have to suppress
 a warning for a call like \<System.getProperty("line.separator")>.  The
@@ -1132,7 +1132,7 @@ initialization state is unknown.
 
 These distinctions are mostly relevant within the constructor, or for
 references to \code{this} that escape the constructor (say, by being stored
-in a field or passed to a method before initialization is complete).  
+in a field or passed to a method before initialization is complete).
 Use of initialization annotations is rare in most code.
 
 The most common use for the \<@UnderInitialization> annotation is for a
@@ -1394,7 +1394,7 @@ for an object becoming initialized.
 As soon as all of the \refqualclass{checker/nullness/qual}{NonNull} fields
 in class $C$ have been initialized, then \code{this} is treated as
 \refqualclass{checker/initialization/qual}{UnderInitialization}\code{(\emph{C})}, rather than
-treated as simply 
+treated as simply
 \refqualclass{checker/initialization/qual}{Initialized}.
 
 The example above lists 4 moments during construction.  At those moments,
@@ -1414,41 +1414,41 @@ the type of the object being constructed is:
 \end{enumerate}
 
 % \paragraph{Example}
-% 
+%
 % As another example, consider the following 12 declarations, where class A
 % extends Object and class B extends A:
-% 
+%
 % \begin{Verbatim}
 %     @UnderInitialization(Object.class) Object uOo;
 %     @Initialized Object o;
-% 
+%
 %     @UnderInitialization(Object.class) A uOa;
 %     @UnderInitialization(A.class) A uAa;
 %     @Initialized A nraA;
-% 
+%
 %     @UnderInitialization(Object.class) B uOb;
 %     @UnderInitialization(A.class) B uAb;
 %     @UnderInitialization(B.class) B uBb;
 %     @Initialized B b;
 % \end{Verbatim}
-% 
+%
 % In the following table, the type in cell C1 is a supertype of the type in
 % cell C2 if:  C1 is at least as high and at least as far left in the table
 % as C2 is.  For example, \<nraA>'s type is a supertype of those of \<rB>,
 % \<nraB>, \<nrbB>, \<a>, and \<b>.  (The empty cells on the top row are real
 % types, but are not expressible.  The other empty cells are not interesting
 % types.)
-% 
+%
 % \noindent
 % \begin{tabular}{|c|c|c|}
-% 
+%
 % \hline
 %     \<@UnderInitialization Object rO;>
 % &
-% & 
+% &
 % \\
 % \hline
-% 
+%
 %     \<@Initialized(Object.class) Object nroO;>
 % &
 % \begin{minipage}{2in}
@@ -1461,7 +1461,7 @@ the type of the object being constructed is:
 %     \<@Initialized(Object.class) B nroB;>
 % \\
 % \hline
-% 
+%
 % &
 %     \<@Initialized(A.class) A nraA;>
 % &
@@ -1473,13 +1473,13 @@ the type of the object being constructed is:
 % \end{minipage}
 % \\
 % \hline
-% 
+%
 % &
 % &
 %     \<@Initialized(B.class) B nrbB;>
 % \\
 % \hline
-% 
+%
 %     \<Object o;>
 % &
 %     \<A a;>
@@ -1516,7 +1516,7 @@ not initialize fields: \ldots''.
   \refqualclass{checker/nullness/qual}{RequiresNonNull} annotation to indicate
   which methods require the field to be non-null.
 \item
-  Initialize the field in the constructor or in the field's initializer, if 
+  Initialize the field in the constructor or in the field's initializer, if
   the field should be initialized.  (In this case, the Initialization
   Checker has found a bug!)
 
@@ -1567,7 +1567,7 @@ Section~\ref{nullness-method-annotations}.
 
 
 You may get the ``call to \ldots\ is not allowed on the given receiver''
-error even if your constructor has already initialized all the fields.  
+error even if your constructor has already initialized all the fields.
 For this code:
 
 \begin{Verbatim}
@@ -1597,7 +1597,7 @@ MyClass.java:7: error: call to helperMethod() not allowed on the given receiver.
 \begin{sloppypar}
 The reason is that even though the object under construction has had all
 the fields declared in \<MyClass> initialized, there might be a subclass of
-\<MyClass>.  Thus, the receiver of \<helperMethod> should be declared as 
+\<MyClass>.  Thus, the receiver of \<helperMethod> should be declared as
 \<@UnderInitialization(MyClass.class)>, which says that initialization has
 completed for all the \<MyClass> fields but may not have been completed
 overall.  If \<helperMethod> had been a public method that could also be called after
@@ -1654,7 +1654,7 @@ The Checker Framework supports two different initialization checkers that
 are integrated with the Nullness Checker.
 You can use whichever one you prefer.
 
-One (described in most of Section~\ref{initialization-checker}) uses the three annotations 
+One (described in most of Section~\ref{initialization-checker}) uses the three annotations
 \refqualclass{checker/initialization/qual}{Initialized},
 \refqualclass{checker/initialization/qual}{UnknownInitialization}, and
 \refqualclass{checker/initialization/qual}{UnderInitialization}.
@@ -1723,7 +1723,7 @@ The Nullness Checker uses the \refqualclass{checker/nullness/qual}{Raw} annotati
 is not yet fully initialized --- that is, not all its \<@NonNull> fields have been
 assigned.  Rawness is mostly relevant within the constructor, or for
 references to \code{this} that escape the constructor (say, by being stored
-in a field or passed to a method before initialization is complete).  
+in a field or passed to a method before initialization is complete).
 Use of rawness annotations is rare in most code.
 
 The most common use for the \<@Raw> annotation is for a helper routine that
@@ -1979,7 +1979,7 @@ When you write \refqualclass{checker/nullness/qual}{NonRaw}\code{(Foo.class) MyC
   x;}, that means that variable \<x> is initialized for \<Foo> and all its
 superclasses, and (possibly) uninitialized for all subclasses of \<Foo>.
 
-If \<A> is a direct superclass of \<B> (as in the example above), then 
+If \<A> is a direct superclass of \<B> (as in the example above), then
 \<@Raw A x;> and \<@NonRaw(B.class) A x;> are equivalent declarations.
 Neither one is the same as \<@NonRaw A x;>, which indicates that, whatever
 the actual class of the object that \<x> refers to, that object is fully
@@ -1993,7 +1993,7 @@ for an object becoming non-raw.
 As soon as all of the \refqualclass{checker/nullness/qual}{NonNull} fields
 have been initialized, then \code{this} is treated as
 \refqualclass{checker/nullness/qual}{NonRaw}\code{(\emph{typeofthis})}, rather than
-treated as simply 
+treated as simply
 \refqualclass{checker/nullness/qual}{NonRaw}.
 
 The example above lists 4 moments during construction.  At those moments,
@@ -2046,7 +2046,7 @@ types.)
 \hline
     \<@Raw Object rO;>
 &
-& 
+&
 \\
 \hline
 

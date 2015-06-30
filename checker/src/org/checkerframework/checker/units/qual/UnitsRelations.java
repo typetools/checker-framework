@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 /**
  * Specify the class that knows how to handle the meta-annotated unit
  * when put in relation (plus, multiply, ...) with another unit.
- * 
+ *
  * @see org.checkerframework.checker.units.UnitsRelations
  */
 @Documented

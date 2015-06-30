@@ -93,6 +93,6 @@ import org.checkerframework.dataflow.qual.*;
   @Pure @Override public boolean equals(@Nullable Object object) {
     return super.equals(object);
   }
-  
-  private static final long serialVersionUID = 7431625294878419160L;  
+
+  private static final long serialVersionUID = 7431625294878419160L;
 }

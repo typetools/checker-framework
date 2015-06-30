@@ -30,7 +30,7 @@ public class ClearMarkersAction extends CheckerHandler
     /**
      * Clear the markers on each project in the given selection, displaying a
      * progress monitor.
-     * 
+     *
      */
     public Object execute(ExecutionEvent event)
     {

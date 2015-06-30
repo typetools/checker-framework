@@ -6,9 +6,9 @@ import java.util.Set;
 
 /**
  * Base class of the {@link Block} implementation hierarchy.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public abstract class BlockImpl implements Block {
 
