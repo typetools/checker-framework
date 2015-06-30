@@ -26,7 +26,6 @@ import org.checkerframework.javacutil.TreeUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +81,7 @@ public class QualifierDefaults {
     private final List<String> upstreamCheckerNames;
 
     private final DefaultSet absoluteDefaults = new DefaultSet();
-    private final DefaultSet untypedDefaults = new DefaultSet();
+    private final DefaultSet unannotatedDefaults = new DefaultSet();
 
     /** Mapping from an Element to the source Tree of the declaration. */
     private static final int CACHE_SIZE = 300;
@@ -103,23 +102,26 @@ public class QualifierDefaults {
     private final Map<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
 
     /**
-     * List of DefaultLocations which are valid for untyped code defaults.
+     * List of DefaultLocations which are valid for unannotated code defaults.
      */
-    private static final DefaultLocation[] validUntypedDefaultLocations = {
+    private static final DefaultLocation[] validUnannotatedDefaultLocations = {
         DefaultLocation.FIELD,
         DefaultLocation.PARAMETERS,
         DefaultLocation.RETURNS,
+        DefaultLocation.RECEIVERS,
         DefaultLocation.UPPER_BOUNDS,
-        DefaultLocation.LOWER_BOUNDS
+        DefaultLocation.LOWER_BOUNDS,
+        DefaultLocation.OTHERWISE,
+        DefaultLocation.ALL
     };
 
     /**
-     * Returns an array of locations that are valid for the untyped value
+     * Returns an array of locations that are valid for the unannotated value
      * defaults.  These are simply by syntax, since an entire file is typechecked,
-     * it is not possible for local variables to be untyped.
+     * it is not possible for local variables to be unannotated.
      */
-    public static DefaultLocation[] validLocationsForUntyped() {
-        return validUntypedDefaultLocations;
+    public static DefaultLocation[] validLocationsForUnannotated() {
+        return validUnannotatedDefaultLocations;
     }
 
     /**
@@ -142,21 +144,21 @@ public class QualifierDefaults {
     }
 
     /**
-     * Sets the default annotation for untyped elements.
+     * Sets the default annotation for unannotated elements.
      */
-    public void addUntypedDefault(AnnotationMirror untypedDefaultAnno, DefaultLocation location) {
-        checkDuplicates(untypedDefaults, untypedDefaultAnno, location);
-        checkIsValidUntypedLocation(untypedDefaultAnno, location);
+    public void addUnannotatedDefault(AnnotationMirror unannotatedDefaultAnno, DefaultLocation location) {
+        checkDuplicates(unannotatedDefaults, unannotatedDefaultAnno, location);
+        checkIsValidUnannotatedLocation(unannotatedDefaultAnno, location);
 
-        untypedDefaults.add(new Default(untypedDefaultAnno, location));
+        unannotatedDefaults.add(new Default(unannotatedDefaultAnno, location));
     }
 
     /**
-     * Sets the default annotation for untyped elements, with specific locations.
+     * Sets the default annotation for unannotated elements, with specific locations.
      */
-    public void addUntypedDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
+    public void addUnannotatedDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
         for (DefaultLocation location : locations) {
-            addUntypedDefault(absoluteDefaultAnno, location);
+            addUnannotatedDefault(absoluteDefaultAnno, location);
         }
     }
 
@@ -180,9 +182,9 @@ public class QualifierDefaults {
         elementDefaults.put(elem, prevset);
     }
 
-    private void checkIsValidUntypedLocation(AnnotationMirror untypedDefaultAnno, DefaultLocation location) {
+    private void checkIsValidUnannotatedLocation(AnnotationMirror unannotatedDefaultAnno, DefaultLocation location) {
         boolean isValidUntypeLocation = false;
-        for(DefaultLocation validLoc : validLocationsForUntyped()) {
+        for (DefaultLocation validLoc : validLocationsForUnannotated()) {
             if (location == validLoc) {
                 isValidUntypeLocation = true;
                 break;
@@ -191,7 +193,7 @@ public class QualifierDefaults {
 
         if (!isValidUntypeLocation) {
             ErrorReporter.errorAbort(
-                    "Invalid untyped default location: " + location + " -> " + untypedDefaultAnno );
+                    "Invalid unannotated default location: " + location + " -> " + unannotatedDefaultAnno );
         }
 
     }
@@ -516,7 +518,7 @@ public class QualifierDefaults {
             applier.apply(def);
         }
 
-        if (untypedDefaults.size() > 0) {
+        if (unannotatedDefaults.size() > 0) {
                 // TODO: I would expect this:
                 //   atypeFactory.isFromByteCode(annotationScope)) {
                 // to work instead of the last three clauses,
@@ -528,10 +530,10 @@ public class QualifierDefaults {
                     !atypeFactory.isFromStubFile(annotationScope)) ||
                     !annotatedForThisChecker
                     ) {
-                     for (Default def : untypedDefaults) {
-                         applier.apply(def);
-                    }
+                for (Default def : unannotatedDefaults) {
+                    applier.apply(def);
                 }
+            }
         }
 
         for (Default def : absoluteDefaults) {
