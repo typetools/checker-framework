@@ -535,10 +535,12 @@ mutable public field in a library, this can result in unsound
 handling of reads and writes of this field by client code.
 The Checker Framework developers are working to correct this.
 
-%% TODO: The following is even more safe, but separate handling for field
-%% read vs. write is currently not possible.
-%  For fields, use the bottom qualifier when writing to the field and the
-%  top qualifier when reading from the field.
+%% TODO: The following rule is preferable to the current safe behavior.
+%% However, we have not yet figured out how to implement separate handling
+%% for field read vs. write.
+% For fields, use the bottom qualifier when writing to the field and the
+% top qualifier when reading from the field.
+
 %% TODO: should give rules for other locations, such as type parameters
 %% (which should behave like fields), bounds, etc.
 
