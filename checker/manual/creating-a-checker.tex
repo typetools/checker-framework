@@ -342,10 +342,9 @@ manner (e.g.,
 
 \subsection{Defining a default annotation\label{typesystem-defaults}}
 
-% This paragraph is out of place.
-
-A type system designer may set a default annotation.  A user may override
-the default; see Section~\ref{defaults}.
+A type system applies a default qualifier where the user has not written a
+qualifier (and no implicit qualifier is applicable), as explained in
+Section~\ref{defaults}.
 
 The type system designer may specify a default annotation declaratively,
 using the \refqualclass{framework/qual}{DefaultQualifierInHierarchy}
@@ -364,11 +363,6 @@ example.
 \end{sloppypar}
 
 
-Recall that defaults are distinct
-from implicit annotations; see Sections~\ref{effective-qualifier}
-and~\ref{writing-type-introduction}.
-
-
 \subsection{Completeness of the type hierarchy\label{bottom-and-top-qualifier}}
 
 When you define a type system, its type hierarchy must be a
@@ -380,7 +374,8 @@ explicitly for the type system, rather than (say) reusing a qualifier from the
 Checker Framework such as \<@Unqualified>.
 
 It is possible that a single type-checker checks multiple type hierarchies.
-An example is the Nullness Checker that has separate type hierarchies for
+An example is the Nullness Checker, which has three separate type
+hierarchies, one each for
 nullness, initialization, and map keys.  In this case, each type hierarchy
 would have its own top qualifier and its own bottom qualifier; they don't
 all have to share a single top qualifier or a single bottom qualifier.
@@ -398,9 +393,10 @@ will not type-check unless \<null> has the bottom type:
 \begin{Verbatim}
 <T> T f() {
     return null;
+}
 \end{Verbatim}
 
-You don't necessarily have to define a new bottom qualifier.  But, You can
+You don't necessarily have to define a new bottom qualifier.  You can
 use \<org.checkerframework.framework.qual.Bottom> if your type system does not already have an
 appropriate bottom qualifier.
 
@@ -430,6 +426,7 @@ defined like this:
 Your type hierarchy must have a top qualifier
 --- a qualifier that is a (direct or indirect) supertype of every other
 qualifier.
+Here is the reason.
 The default type for local variables is the top
 qualifier (that type is then flow-sensitively
 refined depending on what values are stored in the local variable).
@@ -437,49 +434,15 @@ If there is no single top qualifier, then there is no
 unambiguous choice to make for local variables.
 
 Furthermore, it is most convenient to users if the top qualifier is defined
-by the type system.  An example of a type system that does
-\emph{not} do that is the \<@Encrypted> type system of
-Section~\ref{encrypted-example}.  It lacks its own explicit top qualifier and instead
-uses \<@Unqualified>, which is shared across multiple type systems:
-
-\begin{Verbatim}
-  @TypeQualifier
-  @SubtypeOf(Unqualified.class)
-  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface Encrypted {}
-\end{Verbatim}
-
-% \noindent
-% The interning type system of Section~\ref{interning-checker} also lacks a
-% top qualifier; there is no \<@Uninterned> qualifier that is a supertype of
-% \refqualclass{checker/interning/qual}{Interned}.
-
-\noindent
-It can be convenient to use \<@Unqualified> as the top type to avoid
-having to define your own top type.  The disadvantage is that users lose
+by the type system.  It is possible to use the framework's
+\<@Unqualified> as the top type, but this is poor practice.
+Users lose
 flexibility in expressing defaults:  there is no
 way for a user to change the default qualifier for just that type system.
 If a user specifies
 \<@DefaultQualifier(Unqualified.class)>,
 then the default would apply to every
 type system that uses \<@Unqualified>, which is unlikely to be desired.
-
-It is best if a type system as an explicit qualifier for every
-possible meaning.  For example,
-the Nullness type system has both \refqualclass{checker/nullness/qual}{Nullable} and
-\refqualclass{checker/nullness/qual}{NonNull}.  Because it has no built-in meaning
-for unannotated types; a user may specify a default qualifier.  This
-greater flexibility for the user is usually preferable.
-
-There are reasons to not explicitly define the top qualifier, but to reuse
-\<@Unqualified>.
-The ability to omit the top qualifier is a convenience
-when writing a type system, because it reduces the number of qualifiers
-that must be defined; this is especially convenient when using the Subtyping
-Checker (Chapter~\ref{subtyping-checker}).
-% TODO: Examples of the following?
-More importantly, omitting the top qualifier restricts the user in ways
-that the type system designer may have intended.
 
 
 \section{Type factory: Implicit annotations\label{writing-type-introduction}}
@@ -597,18 +560,19 @@ such constructs.
 
 \section{Dataflow: enhancing flow-sensitive type qualifier inference\label{dataflow}}
 
-The Checker Framework provides automatic type refinement as described
+By default, every checker performs automatic type refinement, also known as
+flow inference, as described
 in Section~\ref{type-refinement}.
 
-Class
-\refclass{common/basetype}{BaseAnnotatedTypeFactory}
-provides a 2 parameter constructor that allows subclasses to disable
-flow inference.
-By default the 1 parameter constructor performs flow inference.
-To disable flow inference, call
-\code{super(checker, root, false);}
-in your subtype of
-\refclass{common/basetype}{BaseAnnotatedTypeFactory}.
+In the uncommon case that you wish to disable flow inferenc in your
+checker, put the following two lines at the beginning of the constructor
+for your subtype of
+\refclass{common/basetype}{BaseAnnotatedTypeFactory}:
+
+\begin{Verbatim}
+        // use true to enable flow inference, false to disable it
+        super(checker, false);
+\end{Verbatim}
 
 You can enhance the Checker Framework's built-in flow-sensitive type refinement,
 so that it is more powerful and is customized to your type system. In
