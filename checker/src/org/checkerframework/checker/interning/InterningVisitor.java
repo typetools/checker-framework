@@ -405,7 +405,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * </pre>
      * Returns true iff the given node fits this pattern.
      *
-     * @return true iff the node fits the pattern (a == b || a.equals(b))
+     * @return true iff the node fits a pattern such as (a == b || a.equals(b))
      */
     private boolean suppressEarlyEquals(final BinaryTree node) {
         // Only handle == binary trees
