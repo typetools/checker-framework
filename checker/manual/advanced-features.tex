@@ -481,15 +481,21 @@ defaulting rules apply if you supply the command-line option
 \<-AsafeDefaultsForUnannotatedBytecode>.
 
 If the checker was run during the compiler execution that created the
-\<.class> file (and the qualifier hierarchy has both a top and a bottom
-qualifier, see Section~\ref{bottom-and-top-qualifier}), then there is no need for
+\<.class> file,
+%% This caveat is true, but it's a distraction at this point in the manual.
+%% Also, not having a top and a bottom qualifier is an uncommon case.
+% (and the qualifier hierarchy has both a top and a bottom
+% qualifier, see Section~\ref{bottom-and-top-qualifier}),
+then there is no need for
 defaults:  the \<.class> file has an explicit qualifier at each type use.
 (Furthermore, unless warnings were suppressed, those qualifiers are
 guaranteed to be correct.)
 When you are performing pluggable type-checking,
 it is best to ensure that the compiler only reads such \<.class> files.
 Section~\ref{compiling-libraries} discusses how to create annotated
-libraries, even if the library source code is only partially annotated.
+libraries.
+%% True, but not relevant to the point of this paragraph.
+% , even if the library source code is only partially annotated.
 
 If the checker was not run during the compiler execution that created the
 \<.class> file, then the \<.class> file contains only the type qualifiers
@@ -497,6 +503,8 @@ that the programmer wrote explicitly.  (Furthermore, there is no guarantee
 that these qualifiers are correct, since they have not been checked.)
 In this case, each checker decides what qualifier to use for the
 locations where the programmer did not write an annotation.
+%% TODO: The default behavior will change soon so that libraries, and this text will need to
+%% be updated in accordance 
 The defaulting rules that apply to source code that is read by
 the compiler are normally used for these locations.  However,
 if you supply the command-line option \<-AsafeDefaultsForUnannotatedBytecode>,
