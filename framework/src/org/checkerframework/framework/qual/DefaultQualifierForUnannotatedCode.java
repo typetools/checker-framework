@@ -5,27 +5,24 @@ import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import java.lang.annotation.*;
 
 /**
- * Indicates that the annotated qualifier is the default qualifier on types
- * from unannotated code (bytecode or source code).  Examples of unannotated code are:
- * bytecode imported from a jar file that does not have a stub file describing it,
- * or partially annotated library source code that is not annotated with {code @AnnotatedFor}
- * for the checker being executed.
+ * Indicates that the annotated qualifier is the default qualifier on
+ * unannotated type uses (in bytecode or source code).
  * <p>
  *
- * This qualifier will only apply to unannotated bytecode if the
+ * This qualifier will only apply to unannotated type uses in bytecode if the
  * -AsafeDefaultsForUnannotatedBytecode command-line option is passed.
- * It will only apply to unannotated source code if the
+ * It will only apply to unannotated type uses in source code if the
  * -AuseConservativeDefaultsForUnannotatedSourceCode command-line
  * option is passed and the source code is not annotated with
- * {code @AnnotatedFor} for the checker being executed.
+ * {@link AnnotatedFor} for the checker being executed.
  * <p>
  *
  * Each type qualifier hierarchy may have at most one qualifier marked as
  * {@code DefaultQualifierForUnannotatedCode}.
  * <p>
  *
- * Note, this annotation is analogous to {@code DefaultQualifierInHierarchy} but for
- * unannotated code.
+ * Note, this annotation is analogous to {@link DefaultQualifierInHierarchy} but for
+ * unannotated type uses.
  * This qualifier is for type system developers, not end-users.
  * @see AnnotatedFor
  * @see DefaultForUnannotatedCode

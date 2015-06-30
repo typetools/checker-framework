@@ -8,24 +8,20 @@ import java.lang.annotation.Target;
 
 /**
  * Applied to the declaration of a type qualifier specifies that
- * the given annotation should be the default for a particular location,
- * only when the symbol is from unannotated code (bytecode or source code).
- * Examples of unannotated code are: bytecode imported from a jar file that
- * does not have a stub file describing it, or partially annotated
- * library source code that is not annotated with {code @AnnotatedFor}
- * for the checker being executed.
+ * the given annotation should be the default for unannotated type uses
+ * (in bytecode or source code) at the given location(s).
  * <p>
  *
- * This qualifier will only apply to unannotated bytecode if the
+ * This qualifier will only apply to unannotated type uses in bytecode if the
  * -AsafeDefaultsForUnannotatedBytecode command-line option is passed.
- * It will only apply to unannotated source code if the
+ * It will only apply to unannotated type uses in source code if the
  * -AuseConservativeDefaultsForUnannotatedSourceCode command-line
  * option is passed and the source code is not annotated with
- * {code @AnnotatedFor} for the checker being executed.
+ * {@link AnnotatedFor} for the checker being executed.
  * <p>
  *
- * Note, this annotation is analogous to {@code DefaultFor} but for
- * unannotated code.
+ * Note, this annotation is analogous to {@link DefaultFor} but for
+ * unannotated type uses.
  * This qualifier is for type system developers, not end-users.
  *
  * @see AnnotatedFor
