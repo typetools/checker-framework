@@ -430,7 +430,12 @@ public abstract class GenericAnnotatedTypeFactory<
             }
             Set<? extends AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
             for (AnnotationMirror bot : bottoms) {
-                defs.addUnannotatedDefault(bot, DefaultLocation.OTHERWISE);
+                defs.addUnannotatedDefault(bot, DefaultLocation.PARAMETERS);
+                defs.addUnannotatedDefault(bot, DefaultLocation.LOWER_BOUNDS);
+                defs.addUnannotatedDefault(bot, DefaultLocation.FIELD);
+                // TODO: this isn't simply DefaultLocation.OTHERWISE, because that would
+                // also apply to type declarations, which isn't currently working as desired.
+                // See: https://groups.google.com/d/msg/checker-framework-dev/vk2V6ZFKPLk/v3hENw-e7gsJ
             }
         }
 
