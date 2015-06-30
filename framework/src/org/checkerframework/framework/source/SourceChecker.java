@@ -176,12 +176,12 @@ import com.sun.tools.javac.util.Log;
     // org.checkerframework.framework.flow.CFAbstractTransfer.sequentialSemantics
     "concurrentSemantics",
 
-    // Whether to use conservative checks for unchecked bytecode; these are configured
-    // by the specific type checker using Default[For|Qualifier]InUncheckedBytecode.
+    // Whether to use conservative checks for unannotated bytecode; these are configured
+    // by the specific type checker using @Default[Qualifier]ForUnannotatedCode.
     // They may require more annotations or stub files.
-    "unsafeDefaultsForUncheckedBytecode",
+    "unsafeDefaultsForUnannotatedBytecode",
     // TODO: temporary option to turn on sound behavior.
-    "safeDefaultsForUncheckedBytecode",
+    "safeDefaultsForUnannotatedBytecode",
 
     "useConservativeDefaultsForUnannotatedSourceCode",
 

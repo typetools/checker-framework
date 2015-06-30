@@ -1,17 +1,13 @@
 Version 1.9.3, 30 June 2015
 
 New command-line options:
- * -AsafeDefaultsForUncheckedBytecode causes a checker to use conservative
+ * -AsafeDefaultsForUnannotatedBytecode causes a checker to use conservative
    defaults for .class files that were compiled without running the given
    checker.  Without this option, type-checking is unsound (that is, there
    might be errors at run time even though the checker issues no warnings).
  * -AuseConservativeDefaultsForUnannotatedSourceCode uses conservative
    annotations for unannotated type uses.  Use this when compiling a library in
    which some but not all classes are annotated.
-
-Non-user-visible changes:
- * checker/bin-devel directory containing a version of the scripts
-   for Checker Framework developers
 
 Various bug fixes and documentation improvements.
 
