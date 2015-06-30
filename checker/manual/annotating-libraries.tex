@@ -144,7 +144,7 @@ code you have not yet annotated.
 You use \<@AnnotatedFor> to indicate which classes you have annotated.
 
 When compiling a library that is not fully annotated, use command-line
-argument \<-AuseConservativeDefaultsForUnannotatedCode>.  This causes the
+argument \<-AuseConservativeDefaultsForUnannotatedSourceCode>.  This causes the
 checker to assume that all source files being compiled are unannotated
 libraries, except any classes with a relevant \<@AnnotatedFor> annotation.
 In particular, the checker uses conservative defaults (see
@@ -157,7 +157,7 @@ systems.  For example, \<@AnnotatedFor(\ttlcb"nullness", "regex"\ttrcb)> means t
 the programmer has written annotations for the Nullness and Regular
 Expression type systems.  If one of those two type-checkers is run, this
 class is treated normally, even if the
-\<-AuseConservativeDefaultsForUnannotatedCode> command-line argument is
+\<-AuseConservativeDefaultsForUnannotatedSourceCode> command-line argument is
 supplied:  unannotated types are defaulted using normal source-code
 defaults and type-checking warnings are issued.
 \refqualclass{framework/qual}{AnnotatedFor}'s arguments are any string that
@@ -166,7 +166,7 @@ fully-qualified class name for the checker, or a shorthand for built-in
 checkers (see Section~\ref{shorthand-for-checkers}).
 
 Whenever you compile a class using the Checker Framework, including when
-using the \<-AuseConservativeDefaultsForUnannotatedCode> command-line
+using the \<-AuseConservativeDefaultsForUnannotatedSourceCode> command-line
 argument, the resulting \<.class> files are fully-annotated; each type use
 in the \<.class> file has an explicit type qualifier for any checker that
 is run.
@@ -194,7 +194,7 @@ partially-annotated library.
 
   Adjust the library's
   build process, such as a Maven or Ant buildfile, so that every time it runs the
-  compiler, it passes the \<-AuseConservativeDefaultsForUnannotatedCode>
+  compiler, it passes the \<-AuseConservativeDefaultsForUnannotatedSourceCode>
   command-line option and runs every pluggable type-checker for which any
   annotations exist.  You are not adding a new buld target, but modifying
   any existing targets.
@@ -203,9 +203,9 @@ partially-annotated library.
   defaulted properly.
 
 \item Annotate some files.
-  You can determine which files need to be annotated by using the
-  \<-AprintUnannotatedMethods> command-line argument while type-checking a
-  client of the library.
+%  You can determine which files need to be annotated by using the
+%  \<-AprintUnannotatedMethods> command-line argument while type-checking a
+%  client of the library.
 
   % This is a strong recomendation, but not a requirement.  @AnnotatedFor
   % can be written on a method as well.
