@@ -564,7 +564,7 @@ By default, every checker performs automatic type refinement, also known as
 flow inference, as described
 in Section~\ref{type-refinement}.
 
-In the uncommon case that you wish to disable flow inferenc in your
+In the uncommon case that you wish to disable flow inference in your
 checker, put the following two lines at the beginning of the constructor
 for your subtype of
 \refclass{common/basetype}{BaseAnnotatedTypeFactory}:
@@ -784,7 +784,7 @@ Updating the \refclass{dataflow/analysis}{Store} treats an expression as a
 having a refined type for the remainder of the method or conditional block. For
 example, when the Nullness Checker's dataflow evaluates \code{myvar != null}, it
 updates the \refclass{dataflow/analysis}{Store} to specify that the variable
-\code{myvar} hould be treated as having type \code{@NonNull} for the rest of the
+\code{myvar} should be treated as having type \code{@NonNull} for the rest of the
 then conditional block.  Not all kinds of expressions can be refined; currently
 method return values, local variables, fields, and array values can be stored in
 the \refclass{dataflow/analysis}{Store}.  Other kinds of expressions, like
@@ -1292,7 +1292,7 @@ qualifiers like \code{@Unqualified} which are usually not shown.
 (Use the \code{@InvisibleQualifier} meta-annotation on a qualifier to hide it.)
 
 \item \code{-Adetailedmsgtext}: Output error/warning messages in a
-  stylyized format that is easy for tools to parse.  This is useful for
+  stylized format that is easy for tools to parse.  This is useful for
   tools that run the Checker Framework and parse its output, such as IDE
   plugins.  See the source code of \<SourceChecker.java> for details about
   the format.
@@ -1538,10 +1538,10 @@ following sections:
   This section includes descriptions of the annotations with links to the
   Javadoc.  Separate type annotations from declaration annotations, and put
   any type annotations that a programmer may not write (they are only used
-  internaally by the implementation) last within variety of annotation.
+  internally by the implementation) last within variety of annotation.
 
   Draw a diagram of the type hierarchy.  A textual description of
-  the hieraarchy is not sufficient; the diagram really helps readers to
+  the hierarchy is not sufficient; the diagram really helps readers to
   understand the system.
 
   The Javadoc for the annotations deserves the same care as the manual
@@ -1798,10 +1798,18 @@ without warnings or errors.
 % LocalWords:  AggregateChecker getSupportedTypeCheckers Uninterned sourcepath
 % LocalWords:  DefaultQualifier bytecode NullType strictfp ClassTree TypesUtils
 % LocalWords:  ForEachTree ElementKind TreeAnnotator TreeUtils ElementUtils ecj
-% LocalWords:  AnnotatedTypes AbstractTypeProcessor gcj hardcoding jsr
+% LocalWords:  AnnotatedTypes AbstractTypeProcessor gcj hardcoding jsr api
 % LocalWords:  typeProcess getSupportedSourceVersion fenum classpath astub
 %%  LocalWords:  addAbsoluteDefault BaseAnnotatedTypeFactory superclasses
 %%  LocalWords:  SupportedOptions AprintAllQualifiers InvisibleQualifier
 %%  LocalWords:  Adetailedmsgtext AprintErrorStack Aignorejdkastub Astubs
-%%  LocalWords:  Anocheckjdk AstubDebug Aflowdotdir AresourceStats
-%%  LocalWords:  classfiles
+%%  LocalWords:  Anocheckjdk AstubDebug Aflowdotdir AresourceStats Regex
+%%  LocalWords:  classfiles CHECKERFRAMEWORK RegexUtil asRegex myString
+%%  LocalWords:  myInt CFAbstractTransfer RegexTransfer CFAbstractAnalysis
+%%  LocalWords:  createTransferFunction RegexAnalysis createFlowAnalysis
+%%  LocalWords:  EqualToNode LeftShiftNode VariableDeclarationNode myvar
+%%  LocalWords:  MethodInvocationNode visitMethodInvocation TransferResult
+%%  LocalWords:  RegexUtils LockTransfer FormatterTransfer CFValue argfile
+%%  LocalWords:  RegexTransfer's newResultValue subcheckers taglet tex XXX
+%%  LocalWords:  ParameterizedCheckerTest AoutputArgsToFile ManualTaglet
+%%  LocalWords:  Hevea Hitchhiker's compilermsgs args
