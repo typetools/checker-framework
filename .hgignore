@@ -29,9 +29,10 @@ api
 build
 dist
 stubparser/docs/api
-*.jar
+# Don't want to ignore .jar files in checker/lib/
+# *.jar
+checker/jdk/jdk*.jar
 checker/jdk/**/*.class
-checker/jdk/jdk.jar
 *.pyc
 checker/build-temp
 checker/examples/**/*.class
