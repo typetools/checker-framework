@@ -2,7 +2,7 @@
 <feature
       id="checker.framework.eclipse.feature"
       label="Checker Framework Feature"
-      version="1.9.2"
+      version="1.9.3"
       provider-name="Checker Framework Development Team">
 
    <description url="http://types.cs.washington.edu/checker-framework/eclipse">
@@ -394,6 +394,6 @@ as provided by Sun in the LICENSE file that accompanied this code.&quot;
          id="checker.framework.eclipse.plugin"
          download-size="0"
          install-size="0"
-         version="1.9.2"/>
+         version="1.9.3"/>
 
 </feature>
