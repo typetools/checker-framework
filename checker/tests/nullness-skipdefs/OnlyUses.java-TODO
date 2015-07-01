@@ -1,0 +1,71 @@
+// This test case illustrates the complications of the -AonlyUses command line option.  It would be run with -AonlyUses=OnlyMyUses.
+
+import org.checkerframework.checker.nullness.qual.*;
+
+public class OnlyUses {
+
+  static class OnlyMyUses {
+    @Nullable Object foo(@NonNull Object o) { return null; }
+    static @Nullable Object bar(@NonNull Object o) { return null; }
+
+    @Nullable OnlyMyUses foo2(@NonNull OnlyMyUses o) { return null; }
+    static @Nullable OnlyMyUses bar2(@NonNull OnlyMyUses o) { return null; }
+  }
+
+  static class NotMyUses {
+    @Nullable Object foo(@NonNull Object o) { return null; }
+    static @Nullable Object bar(@NonNull Object o) { return null; }
+  }
+
+  static class Client {
+    void m1(@NonNull Object nn, @Nullable Object nble) {
+      @NonNull Object x;
+
+      OnlyMyUses omu = new OnlyMyUses();
+      omu.foo(nn);
+      omu.foo(nble);
+      x = omu.foo(nn);
+
+      @NonNull OnlyMyUses omuX = new OnlyMyUses();
+      @NonNull OnlyMyUses omuNn = new OnlyMyUses();
+      @Nullable OnlyMyUses omuNble = null;
+      omu.foo2(omuNn);
+      omu.foo2(omuNble);
+      omuX = omu.foo2(omuNn);
+    }
+
+    void m2(@NonNull Object nn, @Nullable Object nble) {
+      @NonNull Object x;
+
+      OnlyMyUses.bar(nn);
+      OnlyMyUses.bar(nble);
+      x = OnlyMyUses.bar(nn);
+
+      @NonNull OnlyMyUses omuX = new OnlyMyUses();
+      @NonNull OnlyMyUses omuNn = new OnlyMyUses();
+      @Nullable OnlyMyUses omuNble = null;
+
+      OnlyMyUses.bar2(omuNn);
+      OnlyMyUses.bar2(omuNble);
+      omuX = OnlyMyUses.bar2(omuNn);
+    }
+
+    void m3(@NonNull Object nn, @Nullable Object nble) {
+      @NonNull Object x;
+
+      NotMyUses nmu = new NotMyUses();
+      nmu.foo(nn);
+      nmu.foo(nble);
+      x = nmu.foo(nn);
+    }
+
+    void m4(@NonNull Object nn, @Nullable Object nble) {
+      @NonNull Object x;
+
+      NotMyUses.bar(nn);
+      NotMyUses.bar(nble);
+      x = NotMyUses.bar(nn);
+    }
+  }
+
+}
