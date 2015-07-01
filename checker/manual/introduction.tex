@@ -597,6 +597,12 @@ Unsound checking: ignore some errors
 %   Whether unannotated bytecode should use the same defaults as source
 %   code (unsound, but might reduce annotation effort); see
 %   Section~\ref{defaults-classfile}.
+% This item is repeated below:
+\item \<-AuseConservativeDefaultsForUnannotatedSourceCode>
+  Outside the scope of any relevant
+  \refqualclass{framework/qual}{AnnotatedFor} annotation, use conservative
+  default annotations and suppress all type-checking warnings; see
+  Section~\ref{compiling-libraries}.
 \end{itemize}
 
 \label{unsound-by-default}
@@ -653,6 +659,7 @@ Partially-annotated libraries
   List of stub files or directories; see Section~\ref{stub-using}.
 \item \<-AstubWarnIfNotFound>
   Warn if a stub file entry could not be found; see Section~\ref{stub-using}.
+% This item is repeated above:
 \item \<-AuseConservativeDefaultsForUnannotatedSourceCode>
   Outside the scope of any relevant
   \refqualclass{framework/qual}{AnnotatedFor} annotation, use conservative
