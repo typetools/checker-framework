@@ -1050,9 +1050,9 @@ type-checking rules.
 \section{The checker class:  Compiler interface\label{writing-compiler-interface}}
 
 A checker's entry point is a subclass of
-\refclass{common/basetype}{SourceChecker}, and is usually a direct subclass
+\refclass{framework/source}{SourceChecker}, and is usually a direct subclass
 of either \refclass{common/basetype}{BaseTypeChecker} or subclass of either
-\refclass{common/basetype}{AggregateChecker}.
+\refclass{framework/source}{AggregateChecker}.
 This entry
 point, which we call the checker class, serves two
 roles:  an interface to the compiler and a factory for constructing
