@@ -1,0 +1,9 @@
+This directory contains annotated versions of libraries.
+During type-checking, put these versions on your classpath,
+to obtain more precise type-checking with fewer false positive warnings.
+
+When adding a .jar file to this directory, update the below list and also the list in ../manual/annotating-libraries.tex .
+
+The source code appears at the following locations:
+
+[[TODO]]
