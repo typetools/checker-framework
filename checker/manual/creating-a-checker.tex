@@ -298,7 +298,7 @@ The declarative and procedural mechanisms for specifying the hierarchy can
 be used together.  In particular, when using the \refqualclass{framework/qual}{SubtypeOf}
 meta-annotation, further customizations may be
 performed procedurally (Section~\ref{procedural-hierarchy})
-by overriding the \href{api/org/checkerframework/framework/util/GraphQualifierHierarchy.html#isSubtype-java.util.Collection-java.util.Collection-}{\code{isSubtype}} method in the checker class
+by overriding the \refmethodterse{framework/util}{GraphQualifierHierarchy}{isSubtype}{-java.util.Collection-java.util.Collection-} method in the checker class
 (Section~\ref{writing-compiler-interface}).
 However, the declarative mechanism is sufficient for most type systems.
 
@@ -306,8 +306,8 @@ However, the declarative mechanism is sufficient for most type systems.
 \subsection{Procedurally defining the qualifier and type hierarchy\label{procedural-hierarchy}}
 
 While the declarative syntax suffices for many cases, more complex
-type hierarchies can be expressed by overriding, in \refclass{common/basetype}{BaseTypeVisitor},
-either \href{api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#createQualifierHierarchy--}{\<createQualifierHierarchy>} or \href{api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#createTypeHierarchy--}{\<createTypeHierarchy>} (typically
+type hierarchies can be expressed by overriding, in your subclass of \refclass{common/basetype}{BaseTypeVisitor},
+either \refmethodterse{framework/type}{AnnotatedTypeFactory}{createQualifierHierarchy}{--} or \refmethodterse{framework/type}{AnnotatedTypeFactory}{createTypeHierarchy}{--} (typically
 only one of these needs to be overridden).
 For more details, see the Javadoc of those methods and of the classes
 \refclass{framework/type}{QualifierHierarchy} and \refclass{framework/type}{TypeHierarchy}.
@@ -356,7 +356,7 @@ files that the checker reads.
 \begin{sloppypar}
 Alternately, the type system designer may specify a default procedurally,
 by calling the
-\href{api/org/checkerframework/framework/util/defaults/QualifierDefaults.html#addAbsoluteDefault-javax.lang.model.element.AnnotationMirror-org.checkerframework.framework.qual.DefaultLocation-}{\<QualifierDefaults.addAbsoluteDefault>}
+\refmethod{framework/util/defaults}{QualifierDefaults}{addAbsoluteDefault}{-javax.lang.model.element.AnnotationMirror-org.checkerframework.framework.qual.DefaultLocation-}
 method.  You may do this even if you have declaratively defined the
 qualifier hierarchy; see the Nullness Checker's implementation for an
 example.
@@ -1078,7 +1078,7 @@ that make up the type hierarchy for this checker (including
 polymorphic qualifiers), either via a
 \refqualclass{framework/qual}{TypeQualifiers} annotation or by overriding
 the
-\refmethod{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{--}
+\refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{--}
 method.  Each argument to \<@TypeQualifiers> or value returned by
 \<createSupportedTypeQualifiers> is a class literal for a type qualifier
 whose definition bears the
@@ -1090,7 +1090,7 @@ type qualifiers, but each of its component subcheckers should do so.
 
 The checker class bridges between the compiler and the rest of the checker.  It
 invokes the type-rule check visitor on every Java source file being
-compiled, and provides a simple API, \href{http://types.cs.washington.edu/dev/checker-framework/api/org/checkerframework/framework/source/SourceChecker.html#report-org.checkerframework.framework.source.Result-java.lang.Object-}{\<report>}, to issue
+compiled, and provides a simple API, \refmethod{framework/source}{SourceChecker}{report}{-org.checkerframework.framework.source.Result-java.lang.Object-}, to issue
 errors using the compiler error reporting mechanism.
 
 Also, the checker class follows the factory method pattern to
@@ -1107,7 +1107,7 @@ must specify the component classes for construction.
 A checker can customize the default error messages through a
 \sunjavadoc{java/util/Properties.html}{Properties}-loadable text file named
 \<messages.properties> that appears in the same directory as the checker class.
-The property file keys are the strings passed to \href{http://types.cs.washington.edu/dev/checker-framework/api/org/checkerframework/framework/source/SourceChecker.html#report-org.checkerframework.framework.source.Result-java.lang.Object-}{\<report>}
+The property file keys are the strings passed to \refmethodterse{framework/source}{SourceChecker}{report}{-org.checkerframework.framework.source.Result-java.lang.Object-}
 (like \code{type.incompatible}) and the values are the strings to be
 printed (\code{"cannot assign ..."}).
 The \<messages.properties> file only need to mention the new messages that

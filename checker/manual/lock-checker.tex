@@ -51,8 +51,8 @@ The method does not make any use of locks or synchronization.
 \item[\refqualclass{checker/lock/qual}{GuardedBy}\small{(String lock)}]
   indicates a type whose value may be accessed only when the given lock is
   held.
-  See the \href{api/org/checkerframework/checker/lock/qual/GuardedBy.html}{GuardedBy
-    Javadoc} for an explanation of the argument and other details.  The lock
+  See the Javadoc for \refclass{checker/lock/qual}{GuardedBy}
+  for an explanation of the argument and other details.  The lock
   acquisition and the value access may be arbitrarily far in the future;
   or, if the value is never accessed, the lock never need be held.
 \end{description}
