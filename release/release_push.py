@@ -155,7 +155,7 @@ def check_all_links( jsr308_website, afu_website, checker_website, suffix ):
            "\t" + afuCheck     + "\n" +
            "\t" + checkerCheck + "\n" )
 
-    continue_script = prompt_w_suggestion("Delete DEV site link checker results?", "yes", "^(Yes|yes|No|no)$")
+    continue_script = prompt_w_suggestion("Delete " + suffix + " site link checker results?", "yes", "^(Yes|yes|No|no)$")
     if is_yes(continue_script):
         delete( jsr308Check )
         delete( afuCheck )
@@ -299,7 +299,7 @@ def main(argv):
     print_step( "3c: Build the Eclipse plugin and test." )
     print("Please download: http://types.cs.washington.edu/dev/checker-framework/current/checker-framework.zip")
     print("Use the jars in the dist directory along with the instructions at " +
-          "checker-framework/eclipse/developer-README to build the Eclipse plugin to build the Eclipse plugin." +
+          "checker-framework/eclipse/README-developers.html to build the Eclipse plugin." +
           "Please install this version in the latest version of Eclipse and follow the tutorial at:\n" +
           "http://types.cs.washington.edu/dev/checker-framework/tutorial/" )
     continue_or_exit("If the tutorial doesn't work, please abort the release and contact the appropriate developer.")
@@ -408,7 +408,7 @@ def main(argv):
                 "Sonatype credentials and follow the 'DROP' instructions at: " + SONATYPE_DROPPING_DIRECTIONS_URL )
     else:
         msg = ( "Please 'release' the artifacts, but IMPORTANTLY first ensure that the Checker Framework maven plug-in directory" +
-                "(and only that directory) is removed from the artifacts." +
+                "(and only that directory) is removed from the artifacts. " +
                 "To release, log into https://oss.sonatype.org using your " +
                 "Sonatype credentials and follow the 'close' instructions at: " + SONATYPE_RELEASE_DIRECTIONS_URL )
 
@@ -442,7 +442,7 @@ def main(argv):
         msg = ( "Test Mode: You are in test_mode.  If you built the Eclipse plugin on"   +
                 "your local machine, you may want to revert any files that were modified." )
     else:
-        msg = ( "If you built the Eclipse plugin on your local machine, there are a few" +
+        msg = ( "If you built the Eclipse plugin on your local machine, there are a few " +
                 "changed files with version number changes that need to be pushed.\n" +
                 "Do not push the .classpath file. The following files should be pushed:\n" +
                 "checker-framework-eclipse-feature/feature.xml\n" +
