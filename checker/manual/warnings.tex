@@ -7,6 +7,11 @@
 % conservative:  it may issue warnings when your code is safe and never
 % misbehaves at run time.
 
+When the Checker Framework reports a warning, it's best to change the code
+or its annotations, to eliminate the warning.  Alternately, you can
+suppress the warning, which does not change the code but prevents the
+Checker Framework from reporting this particular warning to you.
+
 You may wish to suppress checker warnings because of unannotated libraries
 or un-annotated portions of your own code, because of application
 invariants that are beyond the capabilities of the type system, because of
