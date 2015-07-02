@@ -18,7 +18,7 @@ public class AnnotatedForTest extends ParameterizedCheckerTest {
               "subtyping",
               "-Anomsgtext",
               "-Aquals=tests.util.SubQual,tests.util.SuperQual",
-              "-AuseConservativeDefaultsForUnannotatedSourceCode");
+              "-AuseSafeDefaultsForUnannotatedSourceCode");
     }
 
     @Parameters

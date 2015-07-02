@@ -379,7 +379,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     // temporarily use unsafe defaults for bytecode, unless option given
                     checker.hasOption("safeDefaultsForUnannotatedBytecode") ||
                     // This block may need to be split after safeDefaults... is reverted to unsafeDefaults...
-                    checker.hasOption("useConservativeDefaultsForUnannotatedSourceCode")) {
+                    checker.hasOption("useSafeDefaultsForUnannotatedSourceCode")) {
                 DefaultForUnannotatedCode defaultForUnannotated = qual.getAnnotation(DefaultForUnannotatedCode.class);
 
                 if (defaultForUnannotated != null) {
@@ -421,7 +421,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 // temporarily use unsafe defaults for bytecode, unless option given
                 checker.hasOption("safeDefaultsForUnannotatedBytecode") ||
                 // This block may need to be split after safeDefaults... is reverted to unsafeDefaults...
-                checker.hasOption("useConservativeDefaultsForUnannotatedSourceCode")) &&
+                checker.hasOption("useSafeDefaultsForUnannotatedSourceCode")) &&
                 !foundDefaultOtherwiseForUnannotatedCode) {
             Set<? extends AnnotationMirror> tops = this.qualHierarchy.getTopAnnotations();
             for (AnnotationMirror top : tops) {

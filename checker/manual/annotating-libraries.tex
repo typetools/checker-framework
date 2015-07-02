@@ -146,7 +146,7 @@ code you have not yet annotated.
 You use \<@AnnotatedFor> to indicate which classes you have annotated.
 
 When compiling a library that is not fully annotated, use command-line
-argument \<-AuseConservativeDefaultsForUnannotatedSourceCode>.  This causes
+argument \<-AuseSafeDefaultsForUnannotatedSourceCode>.  This causes
 the checker to behave normally for classes with a relevant \<@AnnotatedFor>
 annotation.  For all other classes, the checker uses conservative defaults
 (see Section~\ref{defaults-classfile}) for any type use with no explicit
@@ -158,7 +158,7 @@ systems.  For example, \<@AnnotatedFor(\ttlcb"nullness", "regex"\ttrcb)> means t
 the programmer has written annotations for the Nullness and Regular
 Expression type systems.  If one of those two type-checkers is run, this
 class is treated normally, even if the
-\<-AuseConservativeDefaultsForUnannotatedSourceCode> command-line argument is
+\<-AuseSafeDefaultsForUnannotatedSourceCode> command-line argument is
 supplied:  unannotated types are defaulted using normal source-code
 defaults and type-checking warnings are issued.
 \refqualclass{framework/qual}{AnnotatedFor}'s arguments are any string that
@@ -167,7 +167,7 @@ fully-qualified class name for the checker, or a shorthand for built-in
 checkers (see Section~\ref{shorthand-for-checkers}).
 
 Whenever you compile a class using the Checker Framework, including when
-using the \<-AuseConservativeDefaultsForUnannotatedSourceCode> command-line
+using the \<-AuseSafeDefaultsForUnannotatedSourceCode> command-line
 argument, the resulting \<.class> files are fully-annotated; each type use
 in the \<.class> file has an explicit type qualifier for any checker that
 is run.
@@ -195,7 +195,7 @@ partially-annotated library.
 
   Adjust the library's
   build process, such as a Maven or Ant buildfile, so that every time it runs the
-  compiler, it passes the \<-AuseConservativeDefaultsForUnannotatedSourceCode>
+  compiler, it passes the \<-AuseSafeDefaultsForUnannotatedSourceCode>
   command-line option and runs every pluggable type-checker for which any
   annotations exist.  You are not adding a new buld target, but modifying
   any existing targets.
