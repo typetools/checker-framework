@@ -18,7 +18,7 @@ type qualifiers.
 
 Section~\ref{qualifier-polymorphism} describes the
 original scheme, which uses method-based annotations that are meta-annotated
-with \refclass{framework/qual}{PolymorphicQualifier}.
+with \refqualclass{framework/qual}{PolymorphicQualifier}.
 
 Section~\ref{qualifier-parameters} describes the qualifier parameters
 scheme, in which qualifier parameters are specified for classes and methods
@@ -673,10 +673,10 @@ style.
 
 \subsection{The \code{@PolyAll} qualifier applies to every type system\label{polyall}}
 
-Ordinarily, you have to create a new polymorphic type qualifier for each
-type system you write.  This can be tedious.  More seriously, it can lead
-to an explosion in the number of type annotations, if some method is
-qualifier-polymorphic over every type qualifier hierarchy.
+Each type system has its own polymorphic type qualifier.
+If some method is qualifier-polymorphic over every type qualifier
+hierarchy, then it is tedious, and leads to an explosion in the number of
+type annotations, to place every \<@Poly*> qualifier on that method.
 
 For example, a method that only performs \<==> on array elements will work
 no matter what the array's element types are:
@@ -731,8 +731,9 @@ A better signature lets the two arrays' element types vary independently:
 Note that in this case, the \<@Nullable> annotation on \<elt>'s type is no
 longer necessary, since it is subsumed by \<@PolyAll>.
 
-The \<@PolyAll> annotation applies to every type qualifier hierarchy for
-which no explicit qualifier is written.  For example, a declaration like
+The \<@PolyAll> annotation at a location $l$ applies to every type
+qualifier hierarchy for which no explicit qualifier is written at location
+$l$.  For example, a declaration like
 \<@PolyAll @NonNull Object elt> is polymorphic over every type system
 \emph{except} the nullness type system, for which the type is fixed at
 \<@NonNull>.  That would be the proper declaration for \<elt> if the body

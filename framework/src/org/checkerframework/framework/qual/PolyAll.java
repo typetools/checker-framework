@@ -10,11 +10,8 @@ import org.checkerframework.framework.util.QualifierPolymorphism;
 
 /**
  * A polymorphic type qualifier that varies over all type hierarchies.
- * <p>
- *
  * Writing <tt>@PolyAll</tt> is equivalent to writing a polymorphic
- * qualifier for every type system (whether such a qualifier has been
- * declared or not).
+ * qualifier for every type system.
  * <p>
  *
  * The <tt>@PolyAll</tt> annotation applies to every type qualifier hierarchy for
@@ -33,13 +30,19 @@ import org.checkerframework.framework.util.QualifierPolymorphism;
  * <p>
  * -->
  *
- * To support <tt>@PolyAll</tt> in a type system, simply add it to the
+ * <tt>@PolyAll</tt> only works for a given type system if that type system
+ * already has its own polymorphic qualifier, such as
+ * {@code @PolyNull} or {@code @PolyRegex}.
+ * Therefore, every type system should define a polymorphic qualifier.
+ * Then, to support <tt>@PolyAll</tt> in a type system, simply add it to the
  * list of <tt>@TypeQualifiers</tt>.
  *
  * @see org.checkerframework.checker.nullness.qual.PolyNull
  * @see org.checkerframework.checker.interning.qual.PolyInterned
  * @see PolymorphicQualifier
  * @see QualifierPolymorphism
+ *
+ * @checker_framework.manual #polyall The @PolyAll qualifier applies to every type system
  */
 @Documented
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
