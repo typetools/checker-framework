@@ -11,8 +11,8 @@ import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
- * A type-checker that checks that only valid keys are used to access property files
- * and resource bundles.
+ * A type-checker that checks that only valid keys are used to access
+ * property files and resource bundles.
  * Subclasses can specialize this class for the different uses of property files,
  * for examples see the I18n Checker and Compiler Messages Checker.
  *
@@ -39,7 +39,7 @@ import org.checkerframework.framework.source.SupportedOptions;
  * @checker_framework.manual #propkey-checker Property File Checker
  */
 // Subclasses need something similar to this:
-@TypeQualifiers( {PropertyKey.class, UnknownPropertyKey.class, Bottom.class} )
+@TypeQualifiers({ PropertyKey.class, UnknownPropertyKey.class, Bottom.class })
 @SupportedOptions( {"propfiles", "bundlenames"} )
 public class PropertyKeyChecker extends BaseTypeChecker {
 }

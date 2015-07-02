@@ -13,6 +13,6 @@ import org.checkerframework.framework.qual.TypeQualifiers;
  *
  * @author wmdietl
  */
-@TypeQualifiers( {CompilerMessageKey.class, PropertyKey.class,
-    UnknownPropertyKey.class, PropertyKeyBottom.class} )
+@TypeQualifiers({ CompilerMessageKey.class, PropertyKey.class,
+    UnknownPropertyKey.class, PropertyKeyBottom.class })
 public class CompilerMessagesChecker extends PropertyKeyChecker {}

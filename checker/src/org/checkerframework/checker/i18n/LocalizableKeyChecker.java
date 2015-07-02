@@ -37,7 +37,7 @@ import java.util.Locale;
  *
  * </ol>
  */
-@TypeQualifiers( {LocalizableKey.class, PropertyKey.class, UnknownPropertyKey.class} )
+@TypeQualifiers({ LocalizableKey.class, PropertyKey.class, UnknownPropertyKey.class })
 @SupportedOptions( {"propfiles", "bundlenames"} )
 public class LocalizableKeyChecker extends PropertyKeyChecker {
 }
