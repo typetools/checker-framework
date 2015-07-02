@@ -20,8 +20,9 @@ import org.checkerframework.framework.qual.TypeQualifiers;
  * @author Siwakorn Srisakaokul
  *
  */
-@TypeQualifiers({ I18nUnknownFormat.class, I18nFormat.class, I18nFormatBottom.class, I18nInvalidFormat.class,
-        I18nFormatFor.class})
+@TypeQualifiers({ I18nUnknownFormat.class, I18nFormat.class,
+      I18nFormatBottom.class, I18nInvalidFormat.class,
+      I18nFormatFor.class })
 @SupportedOptions( {"bundlenames", "propfiles"} )
 public class I18nFormatterChecker extends BaseTypeChecker {
 }

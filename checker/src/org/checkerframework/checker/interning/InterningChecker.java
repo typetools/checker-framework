@@ -26,7 +26,7 @@ import javax.annotation.processing.SupportedOptions;
  * @checker_framework.manual #interning-checker Interning Checker
  */
 @TypeQualifiers({ Interned.class, UnknownInterned.class,
-    PolyInterned.class, PolyAll.class})
+    PolyInterned.class, PolyAll.class })
 @SupportedLintOptions({"dotequals"})
 @SupportedOptions({"checkclass"})
 public final class InterningChecker extends BaseTypeChecker {
