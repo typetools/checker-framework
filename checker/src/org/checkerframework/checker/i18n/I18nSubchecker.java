@@ -11,6 +11,6 @@ import org.checkerframework.framework.qual.TypeQualifiers;
  *
  * @checker_framework.manual #i18n-checker Internationalization Checker
  */
-@TypeQualifiers( {Localized.class, UnknownLocalized.class} )
+@TypeQualifiers({ Localized.class, UnknownLocalized.class })
 public class I18nSubchecker extends BaseTypeChecker {
 }
