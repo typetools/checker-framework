@@ -12,7 +12,7 @@ import java.lang.annotation.*;
  * This qualifier applies to unannotated type uses in bytecode only if the
  * -AsafeDefaultsForUnannotatedBytecode command-line option is passed.
  * This qualifier applies to unannotated type uses in source code only if the
- * -AuseConservativeDefaultsForUnannotatedSourceCode command-line
+ * -AuseSafeDefaultsForUnannotatedSourceCode command-line
  * option is passed and the containing class is not annotated with
  * {@code @}{@link AnnotatedFor} for the checker being executed.
  * <p>
