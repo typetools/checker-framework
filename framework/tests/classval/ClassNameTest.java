@@ -1,7 +1,7 @@
 import org.checkerframework.common.reflection.qual.ClassVal;
 
 public class ClassNameTest {
-    void test() throws Exception{
+    void test() throws Exception {
         @ClassVal("Class$Inner") Object o ;
         @ClassVal("java.lang.String") Object o1;
         @ClassVal("java.lang.String[]") Object o2 ;

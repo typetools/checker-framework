@@ -1,7 +1,7 @@
 import org.checkerframework.common.value.qual.*;
 
 class ArrayInit {
-    public void raggedArrays(){
+    public void raggedArrays() {
         int @ArrayLen(4) []@ArrayLen({1,3,4})[]@ArrayLen({1,2,3,4,7})[] alpha = new int[][][]{
                 {{1,1},{1,1,1},{1},{1}},
                 {{1},{1},{1},{1,1}},
@@ -39,13 +39,13 @@ class ArrayInit {
         int @ArrayLen({2}) [][] c = new int[][] {{2},{3}};
     }
 
-    public void initilizer(){
+    public void initilizer() {
         int @ArrayLen(3) [] ints = new int[]{2,2,2};
         byte @StringVal("d%")[] bytes = new byte[]{100,'%'};
         char @StringVal("-A%")[] chars = new char[]{45,'A','%'};
         int @ArrayLen(3) [] ints2 = {2,2,2};
     }
-    public void vargsTest(){
+    public void vargsTest() {
         //type of arg should be @UnknownValue Object @BottomVal[]
         vargs((Object[])null);
 
@@ -56,6 +56,6 @@ class ArrayInit {
         //:: error: (argument.type.incompatible)
         vargs((byte[]) null);
     }
-    public void vargs( Object @ArrayLen(0)... ints){
+    public void vargs( Object @ArrayLen(0)... ints) {
     }
 }

@@ -1,8 +1,8 @@
 import org.checkerframework.common.value.qual.*;
 
-class ExceptionTest{
+class ExceptionTest {
 
-    public void foo(){
+    public void foo() {
         int a = 5;
         String s = "hello";
         //:: warning: (method.evaluation.exception)

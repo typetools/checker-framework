@@ -41,7 +41,7 @@ class TypeCast {
 
     }
 
-    void otherCast(){
+    void otherCast() {
 
         byte [] b = (byte[]) null;
         @BoolVal(true) boolean bool = (boolean) true;

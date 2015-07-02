@@ -1,6 +1,6 @@
 import java.util.List;
 
-class Throw{
+class Throw {
     <E extends Exception> void throwTypeVar(E ex) {
         try {
             throw ex;

@@ -47,12 +47,12 @@ public class ParameterExpression {
 
   @EnsuresNonNull("param")
   //:: warning: (contracts.postcondition.expression.parameter.name)
-  public void m6(Object param){ param = new Object(); }
+  public void m6(Object param) { param = new Object(); }
 
   @EnsuresNonNull("field") // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
   // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant the field.
   //:: warning: (contracts.postcondition.expression.parameter.name)
-  public void m7(Object field){ field = new Object(); }
+  public void m7(Object field) { field = new Object(); }
 
   // Preconditions
   @RequiresNonNull("field") // OK
@@ -60,12 +60,12 @@ public class ParameterExpression {
 
   @RequiresNonNull("param")
   //:: warning: (contracts.precondition.expression.parameter.name)
-  public void m9(Object param){ }
+  public void m9(Object param) { }
 
   @RequiresNonNull("field") // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
   // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant the field.
   //:: warning: (contracts.precondition.expression.parameter.name)
-  public void m10(Object field){ }
+  public void m10(Object field) { }
 
   // Conditional postconditions
   @EnsuresNonNullIf(result=true, expression="field") // OK
@@ -73,14 +73,14 @@ public class ParameterExpression {
 
   @EnsuresNonNullIf(result=true, expression="param")
   //:: warning: (contracts.conditional.postcondition.expression.parameter.name)
-  public boolean m12(Object param){ param = new Object(); return true; }
+  public boolean m12(Object param) { param = new Object(); return true; }
 
   @EnsuresNonNullIf(result=true, expression="field") // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
   // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant the field.
   //:: warning: (contracts.conditional.postcondition.expression.parameter.name)
-  public boolean m13(Object field){ field = new Object(); return true; }
+  public boolean m13(Object field) { field = new Object(); return true; }
 
   // Annotations on formal parameters referring to a formal parameter of the same method.
   //:: warning: (method.declaration.expression.parameter.name)
-  public void m14(@KeyFor("param2") Object param1, Map<Object,Object> param2){ }
+  public void m14(@KeyFor("param2") Object param1, Map<Object,Object> param2) { }
 }

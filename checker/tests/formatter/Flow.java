@@ -49,7 +49,7 @@ public class Flow {
         try {
             String l = FormatUtil.asFormat(u, ConversionCategory.FLOAT, ConversionCategory.INT);
             Assert.fail("Expected Exception");
-        } catch (Error e){}
+        } catch (Error e) {}
 
         String a = "Success: %s %d %f";
         f.format(a, "String", 1337, 7.5);

@@ -20,7 +20,7 @@ import org.checkerframework.framework.util.QualifierPolymorphism;
  * The <tt>@PolyAll</tt> annotation applies to every type qualifier hierarchy for
  * which no explicit qualifier is written.  For example, a declaration like
  * <tt>@PolyAll @NonNull String s</tt> is polymorphic over every type system
- * \emph{except} the nullness type system, for which the type is fixed at
+ * <em>except</em> the nullness type system, for which the type is fixed at
  * <tt>@NonNull</tt>.
  * <p>
  *

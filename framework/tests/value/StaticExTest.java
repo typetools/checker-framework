@@ -21,14 +21,14 @@ public class StaticExTest {
         @IntVal({-1, 0, 1, 2, 4, 9, 12, 13}) int result3 = s.indexOf(subString, start);
     }
 
-    void test3(){
+    void test3() {
         @IntVal({0,1}) int offset = flag? 0 : 1;
         char[] data = {'h','e','l','l','o','b','y','e','t','o'};
         @IntVal({5,6}) int charCount = flag?5:6;
         @StringVal({ "hello", "ellob", "hellob", "elloby" })
         String s = new String(data, offset, charCount);
     }
-    void test4(){
+    void test4() {
         @IntVal({0,1})  int offset = flag? 0 : 1;
         char[] data1 =  {'h','e','l','l','o','b','y','e','t','o'};
         char[] data2 = {'a','b','c','d','e','f','g','h','i','j'};
@@ -39,7 +39,7 @@ public class StaticExTest {
         String s = new String(data, offset, charCount);
     }
     static byte[] b = new byte[0];
-    void constructorsArrays(){
+    void constructorsArrays() {
         char @ArrayLen(100)[] c = new char[100];
         String s = new String(c);
         new String(b);

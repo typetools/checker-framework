@@ -8,44 +8,44 @@ public class AssertWithStatic {
 
 
     @EnsuresNonNullIf(result=true, expression="AssertWithStatic.f")
-    public boolean hasSysOut1(){
+    public boolean hasSysOut1() {
         return AssertWithStatic.f != null;
     }
 
     @EnsuresNonNullIf(result=true, expression="f")
-    public boolean hasSysOut2(){
+    public boolean hasSysOut2() {
         return AssertWithStatic.f != null;
     }
 
     @EnsuresNonNullIf(result=true, expression="AssertWithStatic.f")
-    public boolean hasSysOut3(){
+    public boolean hasSysOut3() {
         return f != null;
     }
 
     @EnsuresNonNullIf(result=true, expression="f")
-    public boolean hasSysOut4(){
+    public boolean hasSysOut4() {
         return f != null;
     }
 
 
 
     @EnsuresNonNullIf(result=false, expression="AssertWithStatic.f")
-    public boolean noSysOut1(){
+    public boolean noSysOut1() {
         return AssertWithStatic.f == null;
     }
 
     @EnsuresNonNullIf(result=false, expression="f")
-    public boolean noSysOut2(){
+    public boolean noSysOut2() {
         return AssertWithStatic.f == null;
     }
 
     @EnsuresNonNullIf(result=false, expression="AssertWithStatic.f")
-    public boolean noSysOut3(){
+    public boolean noSysOut3() {
         return f == null;
     }
 
     @EnsuresNonNullIf(result=false, expression="f")
-    public boolean noSysOut4(){
+    public boolean noSysOut4() {
         return f == null;
     }
 
@@ -53,12 +53,12 @@ public class AssertWithStatic {
 
     @EnsuresNonNull("AssertWithStatic.f")
     //:: error: (contracts.postcondition.not.satisfied)
-    public void sysOutAfter1(){
+    public void sysOutAfter1() {
     }
 
     @EnsuresNonNull("f")
     //:: error: (contracts.postcondition.not.satisfied)
-    public void sysOutAfter2(){
+    public void sysOutAfter2() {
     }
 
 

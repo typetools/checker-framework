@@ -9,7 +9,7 @@ class Creation {
     }
 
     @ReportCreation
-    class TestAll{
+    class TestAll {
         TestAll() {}
         TestAll(int i) {}
     }

@@ -112,7 +112,7 @@ public class ValueCheckerUtils {
         if (newClass == String.class) {
             return Collections.singletonList("null");
         }
-        else{
+        else {
             return new ArrayList<>();
         }
     }

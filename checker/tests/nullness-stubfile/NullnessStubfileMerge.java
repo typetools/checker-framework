@@ -18,11 +18,11 @@ public final class  String {
      void getChars(@Nullable int arg0, @NonNull int arg1, @NonNull char @NonNull [] arg2, @NonNull int arg3) @NonNull;
 }
 */
-public class NullnessStubfileMerge{
+public class NullnessStubfileMerge {
    @Nullable String nullString = null;
    @NonNull String nonNull = "Hello!";
 
-   void method( ){
+   void method( ) {
        //:: error: (assignment.type.incompatible)
        @NonNull String error1 = nonNull.intern();
 

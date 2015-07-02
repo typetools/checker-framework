@@ -28,22 +28,22 @@ class FenumUser {
     //:: error: (assignment.type.incompatible)
     state1 = t.BCONST1;
 
-    if( t.ACONST1 < t.ACONST2  ) {
+    if ( t.ACONST1 < t.ACONST2  ) {
       // ok
     }
 
     //:: error: (binary.type.incompatible)
-    if( t.ACONST1 < t.BCONST2  ) {
+    if ( t.ACONST1 < t.BCONST2  ) {
     }
     //:: error: (binary.type.incompatible)
-    if( t.ACONST1 == t.BCONST2  ) {
+    if ( t.ACONST1 == t.BCONST2  ) {
     }
 
     //:: error: (binary.type.incompatible)
-    if( t.ACONST1 < 5 ) {
+    if ( t.ACONST1 < 5 ) {
     }
     //:: error: (binary.type.incompatible)
-    if( t.ACONST1 == 5 ) {
+    if ( t.ACONST1 == 5 ) {
     }
   }
 }

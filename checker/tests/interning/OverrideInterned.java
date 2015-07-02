@@ -21,7 +21,7 @@ class OverrideInterned {
   }
 
   void useAnonymousClass() {
-    MessageReceipt ret = new MessageReceipt(){
+    MessageReceipt ret = new MessageReceipt() {
       public NodeHandle getHint() {
         return null;
       }

@@ -7,7 +7,7 @@ import java.util.prefs.*;
 public class UsesObjectEqualsTest {
 
     public @UsesObjectEquals class A {
-        public A(){}
+        public A() {}
     }
 
     @UsesObjectEquals class B extends A {}
@@ -26,21 +26,21 @@ public class UsesObjectEqualsTest {
     @UsesObjectEquals class TestEquals {
 
         @org.checkerframework.dataflow.qual.Pure
-        public boolean equals(Object o){
+        public boolean equals(Object o) {
             return true;
         }
     }
 
     class TestComparison {
 
-        public void comp(@Interned Object o, A a1, A a2){
-            if (a1 == a2){
+        public void comp(@Interned Object o, A a1, A a2) {
+            if (a1 == a2) {
                 System.out.println("one");
             }
-            if (a1 == o){
+            if (a1 == o) {
                 System.out.println("two");
             }
-            if (o == a1){
+            if (o == a1) {
                 System.out.println("three");
             }
         }
