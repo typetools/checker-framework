@@ -6,6 +6,8 @@ Documented the notion of a compound checker, which depends on other checkers
 Renamed -AuseConservativeDefaultsForUnannotatedSourceCode command-line
   option to -AuseSafeDefaultsForUnannotatedSourceCode
 
+Fixed issues:  429.
+
 ----------------------------------------------------------------------
 
 Version 1.9.3, 1 July 2015

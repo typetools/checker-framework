@@ -172,39 +172,5 @@ class MyClass {
 \end{verbatim}
 
 
-\subsection{When local variable inference is not possible\label{map-key-annotations-inference-exceptions}}
-
-One usage pattern where you \emph{do} have to write \<@KeyFor> is for a
-collection that you know to be a subset of a key set.  In the example
-below, the Map Key Checker cannot verify that the set returned by the call to \<nounSubset> in
-\<outputAllNounDefinitions> contains only strings that are keys for \<dict>.
-
-\begin{verbatim}
-Map<String, String> dict;   // English dictionary. Maps words to their definitions.
-
-// Method nounSubset's declaration uses no @KeyFor annotations
-// because in addition to being used by the dictionary feature,
-// it is also used by a spell checker that only stores sets of words
-// and does not use the notions of dictionaries, maps, or keys.
-public Set<String> nounSubset(Set<String> words) { ... }
-
-void outputAllNounDefinitions() {
-    @SuppressWarnings("keyfor") // argument elements are @KeyFor("dict"), so result elements are too
-    Set<@KeyFor("dict") String> nounSet = nounSubset(dict.keySet());
-
-    for (@KeyFor("dict") String noun : nounSet) {
-      String definition = dict.get(noun);
-      System.out.println(noun + ": " + definition);
-    }
-}
-\end{verbatim}
-
-For this pattern, it would be preferable to annotate the parameter and return
-values of \<nounSubset> with \<@PolyAll> (Section~\ref{polyall}) instead.
-The Checker Framework does not currently support \<@PolyAll> for the
-Map Key Checker and the Checker Framework developers are working to
-correct this --- it is tracked by
-\href{http://code.google.com/p/checker-framework/issues/detail?id=429}{Issue 429}.
-
 %%  LocalWords:  KeyFor containsKey java keyfor UnknownKeyFor KeyForBottom
 %%  LocalWords:  2cm mapSet keySet km threeLetterWordSubset JT
