@@ -1085,7 +1085,7 @@ whose definition bears the
 \refqualclass{framework/qual}{TypeQualifier} meta-annotation.
 An aggregate checker (which extends
 \refclass{framework/source}{AggregateChecker}) does not need to specify its
-type qualifiers, but each of its component subcheckers should do so.
+type qualifiers, but each of its component checkers should do so.
 
 
 The checker class bridges between the compiler and the rest of the checker.  It
@@ -1120,41 +1120,69 @@ For more details about message keys, see Section~\refwithpageparen{compiler-mess
 
 \subsection{Bundling multiple checkers\label{bundling-multiple-checkers}}
 
-To run a checker, a user supplies the \<-processor> command-line option.
-There are two ways to run multiple related checkers as a unit.
+Sometimes, multiple checkers work together and should always be run
+together.  There are two different ways to bundle multiple checkers
+together, by creating an ``aggregate checker'' or a ``compound checker''.
+
 
 \begin{enumerate}
 \item
-A user can pass
-multiple processors to the \<-processor> command-line option:
+An aggregate checker runs multiple independent, unrelated checkers.  There
+is no communication or cooperation among them.
+
+The effect is the same as if a user passes
+multiple processors to the \<-processor> command-line option.
+
+For example, instead of a user having to run
 
 \begin{Verbatim}
-  javac -processor DistanceUnitChecker,SpeedUnitChecker ... files ...
+  javac -processor DistanceUnitChecker,VelocityUnitChecker,MassUnitChecker ... files ...
 \end{Verbatim}
 
 \noindent
-This is verbose, and it is also error-prone, since a user might omit one of
-several related checkers that are designed to be run together.
+the user can write
 
-\item
-You can define an aggregate checker class that combines
-multiple checkers.  Extend \refclass{framework/source}{AggregateChecker} and override
+\begin{Verbatim}
+  javac -processor MyUnitCheckers ... files ...
+\end{Verbatim}
+
+\noindent
+if you define an aggregate checker class.  Extend \refclass{framework/source}{AggregateChecker} and override
 the \<getSupportedTypeCheckers> method, like the following:
 
 \begin{Verbatim}
   public class MyUnitCheckers extends AggregateChecker {
     protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
-      return Arrays.asList(DistanceUnitChecker.class, SpeedUnitChecker.class);
+      return Arrays.asList(DistanceUnitChecker.class,
+                           VelocityUnitChecker.class,
+                           MassUnitChecker.class);
     }
   }
 \end{Verbatim}
 
-\noindent
-Now, a user can pass a single processor to the \<-processor> argument on the command line:
+% This is the *only* example, as of July 2015.
+An example of an aggregate checker is \refclass{checker/i18n}{I18nChecker}
+(see \chapterpageref{i18n-checker}), which consists of
+\refclass{checker/i18n}{I18nSubchecker} and
+\refclass{checker/i18n}{LocalizableKeyChecker}.
 
-\begin{Verbatim}
-  javac -processor MyUnitCheckers ... files ...
-\end{Verbatim}
+\item
+Use a compound checker to express dependencies among checkers.  Suppose it
+only makes sense to run MyChecker if MyHelperChecker has already been run;
+that might be the case if MyHelperChecker computes some information that
+MyChecker needs to use.
+
+Override 
+\<MyChecker.\refmethodbrief{common/basetype}{BaseTypeChecker}{getImmediateSubcheckerClasses}{--}
+to return a list of the checkers that MyChecker depends on.  Every one of
+them will be run before MyChecker is run.  One of MyChecker's subcheckers
+may itself be a compound checker, and multiple checkers may declare a
+dependence on the same subchecker.  The Checker Framework will run each
+checker once, and in an order consistent with all the dependences.
+
+A checker obtains information from its subcheckers (those that ran before
+it) by querying their \refclass{framework/type}{AnnotatedTypeFactory} to
+determine the types of variables.
 
 \end{enumerate}
 

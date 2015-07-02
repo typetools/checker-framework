@@ -115,15 +115,19 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     }
 
      /*
-      * The full list of subcheckers that need to be run prior to this one, in the order they need to be run in.
-      * This list will only be non-empty for the one checker that runs all other subcheckers.
-      * Do not read this field directly. Instead, retrieve it via getSubcheckers().
+      * The full list of subcheckers that need to be run prior to this one,
+      * in the order they need to be run in.  This list will only be
+      * non-empty for the one checker that runs all other subcheckers.  Do
+      * not read this field directly. Instead, retrieve it via {@link
+      * #getSubcheckers}.
+      * <p>
       *
-      * The list is initialized to null so that getSubcheckers() will know to call instantiateSubcheckers the
-      * if it is still null by the time getSubcheckers() is called. However if the current object
-      * was itself instantiated by a prior call to instantiateSubcheckers, this field will have been
-      * initialized to an empty list before getSubcheckers() is called, thereby ensuring that this
-      * list is non-empty only for one checker.
+      * If the list still null when {@link #getSubcheckers} is called, then
+      * getSubcheckers() will call {@link #instantiateSubcheckers}.
+      * However, if the current object was itself instantiated by a prior
+      * call to instantiateSubcheckers, this field will have been
+      * initialized to an empty list before getSubcheckers() is called,
+      * thereby ensuring that this list is non-empty only for one checker.
       */
      private List<BaseTypeChecker> subcheckers = null;
 
