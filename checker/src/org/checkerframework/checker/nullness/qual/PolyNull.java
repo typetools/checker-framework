@@ -2,7 +2,6 @@ package org.checkerframework.checker.nullness.qual;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.PolyNull;
 
 import java.lang.annotation.*;
 
