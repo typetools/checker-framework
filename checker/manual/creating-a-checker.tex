@@ -1126,10 +1126,10 @@ There are two ways to run multiple related checkers as a unit.
 \begin{enumerate}
 \item
 A user can pass
-multiple \<-processor> command-line options, like:
+multiple processors to the \<-processor> command-line option:
 
 \begin{Verbatim}
-  javac -processor DistanceUnitChecker -processor SpeedUnitChecker ... files ...
+  javac -processor DistanceUnitChecker,SpeedUnitChecker ... files ...
 \end{Verbatim}
 
 \noindent
@@ -1150,7 +1150,7 @@ the \<getSupportedTypeCheckers> method, like the following:
 \end{Verbatim}
 
 \noindent
-Now, a user can pass a single \<-processor> argument on the command line:
+Now, a user can pass a single processor to the \<-processor> argument on the command line:
 
 \begin{Verbatim}
   javac -processor MyUnitCheckers ... files ...
