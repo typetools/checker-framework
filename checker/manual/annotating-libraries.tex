@@ -195,9 +195,17 @@ partially-annotated library.
 
   Adjust the library's
   build process, such as a Maven or Ant buildfile, so that every time it runs the
-  compiler, it passes the \<-AuseSafeDefaultsForUnannotatedSourceCode>
-  command-line option and runs every pluggable type-checker for which any
-  annotations exist.  You are not adding a new buld target, but modifying
+  compiler, it:
+  \begin{itemize}
+  \item
+    passes the \<-AuseSafeDefaultsForUnannotatedSourceCode>
+    command-line option and
+  \item
+    runs every pluggable type-checker for which any
+  annotations exist, using \<-processor
+  \emph{TypeSystem1},\emph{TypeSystem2},\emph{TypeSystem3}>
+  \end{itemize}
+  You are not adding a new buld target, but modifying
   any existing targets.
   The reason to run every type-checker is to verify
   the annotations you wrote, and to use appropriate defaults for all
