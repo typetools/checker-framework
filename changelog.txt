@@ -1,5 +1,8 @@
 Version 1.9.4, 1 August 2015
 
+Documented the notion of a compound checker, which depends on other checkers
+  and automatically runs them.
+
 Renamed -AuseConservativeDefaultsForUnannotatedSourceCode command-line
   option to -AuseSafeDefaultsForUnannotatedSourceCode
 
