@@ -1,14 +1,14 @@
 import org.checkerframework.common.value.qual.StringVal;
 
-class Test{
+class Test {
 
-    void bytes(){
+    void bytes() {
         String s = "hello";
         byte @StringVal("hello") [] bytes = s.getBytes();
         @StringVal("hello") String s2 = new String(bytes);
     }
 
-    void chars(){
+    void chars() {
         String s = "$-hello@";
         //Not Implemented.
 //        char @StringVal("$-hello@") [] chars = s.toCharArray();

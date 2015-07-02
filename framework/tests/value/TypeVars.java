@@ -12,35 +12,35 @@ public class TypeVars<K, V> {
         class ImplicitUpperBound<T>{}
         class ExplicitUpperBound<T extends Object>{}
 
-        void useImplicit(){
+        void useImplicit() {
                 ImplicitUpperBound<Object> bottom;
         }
 
-        void useExplicit(){
+        void useExplicit() {
                 ExplicitUpperBound<Object> bottom;;
         }
 
-        void wildCardImplicit(){
+        void wildCardImplicit() {
                 ImplicitUpperBound<?> bottom;
         }
 
-        void wildCardExplicit(){
+        void wildCardExplicit() {
                 ExplicitUpperBound<?> bottom;
         }
 
-        void wildCardUpperBoundImplicit(){
+        void wildCardUpperBoundImplicit() {
                 ImplicitUpperBound<? extends  Object> bottom;
         }
 
-        void wildCardUpperBoundExplicit(){
+        void wildCardUpperBoundExplicit() {
                 ExplicitUpperBound<? extends  Object> bottom;
         }
 
-        void wildCardLowerImplicit(){
+        void wildCardLowerImplicit() {
                 ImplicitUpperBound<? super Object> bottom;
         }
 
-        void wildCardLowerBoundExplicit(){
+        void wildCardLowerBoundExplicit() {
                 ExplicitUpperBound<? super Object> bottom;;
         }
 

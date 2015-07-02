@@ -14,8 +14,8 @@ import java.lang.annotation.Target;
  * the checker class name.
  *
  * In contrast to
- * {@link javax.annotation.processing.SupportedOptions}
- * note that this qualifier is @code{Inherited}.
+ * {@link javax.annotation.processing.SupportedOptions},
+ * note that this qualifier is {@link Inherited}.
  *
  * @see SupportedLintOptions
  * @see javax.annotation.processing.SupportedOptions

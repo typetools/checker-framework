@@ -14,7 +14,7 @@ import org.checkerframework.framework.source.SourceChecker;
  * @author smillst
  *
  */
-public class TestAggregateChecker extends AggregateChecker{
+public class TestAggregateChecker extends AggregateChecker {
 
     @Override
     protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {

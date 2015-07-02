@@ -53,7 +53,7 @@ boolean flag = false;
         }
         @MethodVal(className ={"class","class2"}, methodName = {"method","method2"}, params = {0,1}) Object classClass2Method0 = null;
         @MethodVal(className ={"class2","class"}, methodName = {"method","method2"}, params = {0,1}) Object class2classMethod0 = null;
-        void setsLub(){
+        void setsLub() {
             if (flag) {
                 unknown = classClass2Method0;
             } else {
@@ -68,7 +68,7 @@ boolean flag = false;
             //:: error: (assignment.type.incompatible)
             class2classMethod0 = unknown;
         }
-        void inferedlubTest() throws Exception{
+        void inferedlubTest() throws Exception {
             Class<MethodValInferenceTest> c = MethodValInferenceTest.class;
             Method m;
             if (flag) {

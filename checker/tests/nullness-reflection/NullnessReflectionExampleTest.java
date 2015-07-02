@@ -10,18 +10,19 @@ import org.checkerframework.common.reflection.qual.MethodVal;
  *
  */
 public class NullnessReflectionExampleTest {
-    @NonNull Location getCurrentLocation(){
+    @NonNull Location getCurrentLocation() {
         //...
         return new Location();
     }
 
-    String getCurrentCity() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+    String getCurrentCity() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         @MethodVal(className="NullnessReflectionExampleTest", methodName="getCurrentLocation", params=0)
         Method toLowerCase = getClass().getMethod("getCurrentLocation");
         Location currentLocation = (Location) toLowerCase.invoke(this);
         return currentLocation.nameOfCity();
     }
 }
-class Location{
-   String nameOfCity(){return "Seattle";}
+
+class Location {
+   String nameOfCity() { return "Seattle"; }
 }

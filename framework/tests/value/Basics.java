@@ -122,7 +122,7 @@ class Basics {
         @StringVal({ "test1" }) String c = (java.lang.String) b;
     }
 
-    void tooManyValuesInt(){
+    void tooManyValuesInt() {
         //:: warning: (too.many.values.given)
         @IntVal({1,2,3,4,5,6,7,8,9,10,11,12}) int a = 8;
 
@@ -138,7 +138,7 @@ class Basics {
         d = 2 * d; // This should succeed since d is @UnknownVal
     }
 
-    void tooManyValuesDouble(){
+    void tooManyValuesDouble() {
         //:: warning: (too.many.values.given)
         @DoubleVal({1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0}) double a = 8.0;
 
@@ -154,7 +154,7 @@ class Basics {
         d = 2.0 * d; // This should succeed since d is @UnknownVal
     }
 
-    void tooManyValuesString(){
+    void tooManyValuesString() {
         //:: warning: (too.many.values.given)
         @StringVal({"a","b","c","d","e","f","g","h","i","j","k","l"}) String a = "h";
 

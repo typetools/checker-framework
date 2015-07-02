@@ -420,7 +420,7 @@ public abstract class SourceChecker
 
             SourceChecker checker = this;
 
-            while(checker != null) {
+            while (checker != null) {
                 upstreamCheckerNames.add(checker.getClass().getName());
                 checker = checker.parentChecker;
             }
@@ -1249,7 +1249,7 @@ public abstract class SourceChecker
         }
 
         /*@Nullable*/ ClassTree cls = TreeUtils.enclosingClass(path);
-        if (cls != null){
+        if (cls != null) {
             /*@Nullable*/ Element elt = InternalUtils.symbol(cls);
 
             if (shouldSuppressWarnings(elt, err))

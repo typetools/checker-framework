@@ -8,7 +8,7 @@ abstract class Ordering<T> implements Comparator<T> {
     // Natural order
 
     public static <C extends Comparable> Ordering<C> natural() {
-        return new Ordering<C>(){
+        return new Ordering<C>() {
             @Override
             public int compare(C o1, C o2) {
                 return 0;

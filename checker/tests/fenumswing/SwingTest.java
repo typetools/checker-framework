@@ -86,7 +86,7 @@ public class SwingTest {
 
   Object testInference5() {
       Object o = null;
-      if( 5==4 ) {
+      if ( 5==4 ) {
         o = new Object();
       }
       return o;
@@ -94,7 +94,7 @@ public class SwingTest {
 
   Object testInference5b() {
       Object o = null;
-      if( 5==4 ) {
+      if ( 5==4 ) {
         o = new Object();
       } else {}
       // the empty else branch actually covers a different code path!
@@ -103,7 +103,7 @@ public class SwingTest {
 
   @SwingHorizontalOrientation int testInference5c() {
       int o;
-      if( 5==4 ) {
+      if ( 5==4 ) {
         o = CENTER;
       } else {
         o = LEFT;
@@ -119,7 +119,7 @@ public class SwingTest {
 
   @SwingBoxOrientation Object testInference7() {
       Object o = new @SwingVerticalOrientation Object();
-      if( 5==4 ) {
+      if ( 5==4 ) {
         o = new @SwingHorizontalOrientation Object();
       } else {
       //   o = new @SwingVerticalOrientation Object();
@@ -129,7 +129,7 @@ public class SwingTest {
 
   @SwingBoxOrientation Object testInference7b() {
     Object o;
-    if( 5==4 ) {
+    if ( 5==4 ) {
       o = new @SwingHorizontalOrientation Object();
     } else {
       o = new @SwingVerticalOrientation Object();
@@ -139,7 +139,7 @@ public class SwingTest {
 
   @SwingBoxOrientation Object testInference7c() {
     Object o = null;
-    if( 5==4 ) {
+    if ( 5==4 ) {
       o = new @SwingHorizontalOrientation Object();
     } else {
       o = new @SwingVerticalOrientation Object();
@@ -174,8 +174,8 @@ public class SwingTest {
 
   Object testInference9() {
       Object o = null;
-      while(flag) {
-        if( 5==4 ) {
+      while (flag) {
+        if ( 5==4 ) {
           o = new @SwingHorizontalOrientation Object();
         } else {
           o = new @SwingVerticalOrientation Object();
@@ -189,8 +189,8 @@ public class SwingTest {
 
   @SwingBoxOrientation Object testInference9b() {
       Object o = null;
-      while(flag) {
-        if( 5==4 ) {
+      while (flag) {
+        if ( 5==4 ) {
           o = new @SwingHorizontalOrientation Object();
         } else {
           o = new @SwingVerticalOrientation Object();
@@ -203,8 +203,8 @@ public class SwingTest {
 
   @SwingHorizontalOrientation Object testInference9c() {
       Object o = null;
-      while(flag) {
-        if( 5==4 ) {
+      while (flag) {
+        if ( 5==4 ) {
           o = new @SwingHorizontalOrientation Object();
         } else {
           o = new @SwingVerticalOrientation Object();
@@ -218,8 +218,8 @@ public class SwingTest {
 
   @SwingVerticalOrientation Object testInference9d() {
       Object o = null;
-      while(flag) {
-        if( 5==4 ) {
+      while (flag) {
+        if ( 5==4 ) {
           o = new @SwingHorizontalOrientation Object();
         } else {
           o = new @SwingVerticalOrientation Object();
@@ -233,8 +233,8 @@ public class SwingTest {
 
   @SwingBoxOrientation Object testInference9e() {
     Object o = null;
-    while(flag) {
-      if( 5==4 ) {
+    while (flag) {
+      if ( 5==4 ) {
         o = new @SwingHorizontalOrientation Object();
       } else {
         o = new @SwingVerticalOrientation Object();
@@ -249,7 +249,7 @@ public class SwingTest {
    * at the @FenumTop initial value.
   int testInferenceThrow() {
       int i;
-      if( 5==4 ) {
+      if ( 5==4 ) {
         i = 5;
       } else {
         throw new RuntimeException("bla");

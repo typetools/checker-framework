@@ -13,7 +13,7 @@ public class GenericsBoundsRange<@Regex(3) T extends @Regex(1) String> {
 
     public GenericsBoundsRange(T t ) {
         Matcher matcher = Pattern.compile(t).matcher("some str");
-        if( matcher.matches() ) {
+        if ( matcher.matches() ) {
             matcher.group(0);
             matcher.group(1);
 

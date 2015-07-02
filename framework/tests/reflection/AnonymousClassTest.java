@@ -21,7 +21,7 @@ public class AnonymousClassTest {
      * MyClass$1.setSib2()
      * MyClass$1.getSib2()
      */
-    public static void main(String[] args){
+    public static void main(String[] args) {
        AnonymousClassTest act = new AnonymousClassTest();
        act.returnTypePass();
        act.argumentTypePass();

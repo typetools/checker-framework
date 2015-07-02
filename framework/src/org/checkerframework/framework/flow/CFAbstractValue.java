@@ -349,7 +349,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
 
 
         //see issue422: Intersections can happen when we have a
-        // if( T instanceof String && T instanceof Integer )
+        // if ( T instanceof String && T instanceof Integer )
         AnnotatedTypeMirror fixedType1;
         if (type1.getKind() == TypeKind.INTERSECTION) {
             fixedType1  = result.deepCopy();

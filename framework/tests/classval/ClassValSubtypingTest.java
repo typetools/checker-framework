@@ -9,13 +9,13 @@ public class ClassValSubtypingTest {
     @ClassVal({"c","d"}) Object cd = null;
     Object unknown = null;
 
-    void assignToUnknown(){
+    void assignToUnknown() {
         unknown = a;
         unknown = ab;
         unknown = c;
         unknown = cd;
     }
-    void assignUnknown(){
+    void assignUnknown() {
         //:: error: (assignment.type.incompatible)
         a = unknown;
       //:: error: (assignment.type.incompatible)
@@ -25,7 +25,7 @@ public class ClassValSubtypingTest {
       //:: error: (assignment.type.incompatible)
         cd = unknown;
     }
-    void assignments(){
+    void assignments() {
       //:: error: (assignment.type.incompatible)
        a=ab;
        ab=a;
@@ -45,13 +45,13 @@ class ClassBoundSubtypingTest {
     @ClassBound({"c","d"}) Object cd = null;
     Object unknown = null;
 
-    void assignToUnknown(){
+    void assignToUnknown() {
         unknown = a;
         unknown = ab;
         unknown = c;
         unknown = cd;
     }
-    void assignUnknown(){
+    void assignUnknown() {
         //:: error: (assignment.type.incompatible)
         a = unknown;
       //:: error: (assignment.type.incompatible)
@@ -61,7 +61,7 @@ class ClassBoundSubtypingTest {
       //:: error: (assignment.type.incompatible)
         cd = unknown;
     }
-    void assignments(){
+    void assignments() {
       //:: error: (assignment.type.incompatible)
        a=ab;
        ab=a;

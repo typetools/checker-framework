@@ -34,7 +34,7 @@ public class ClassValVisitor extends BaseTypeVisitor<ClassValAnnotatedTypeFactor
     }
 
 }
-class ClassNameValidator extends BaseTypeValidator{
+class ClassNameValidator extends BaseTypeValidator {
 
     public ClassNameValidator(BaseTypeChecker checker,
             BaseTypeVisitor<?> visitor, AnnotatedTypeFactory atypeFactory) {
