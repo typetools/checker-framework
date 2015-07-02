@@ -123,11 +123,11 @@
     <h4>2. Write the type annotation definitions</h4>
 
     <p>For this example, the annotation definitions have already been
-    written for you and appear in files Encrypted.java and PossiblyUnencrypted.java.</p>
+    written for you and appear in files Encrypted.java, PossiblyUnencrypted.java, and PolyEncrypted.java.</p>
 
     <p><b>Compile the annotation definitions.</b></p>
     <pre>
-$ <strong>javacheck myqual/Encrypted.java myqual/PossiblyUnencrypted.java</strong>
+$ <strong>javacheck myqual/Encrypted.java myqual/PossiblyUnencrypted.java myqual/PossiblyUnencrypted.java</strong>
 </pre>
   </div>
 
@@ -143,7 +143,7 @@ $ <strong>javacheck myqual/Encrypted.java myqual/PossiblyUnencrypted.java</stron
     command-line option, and add the Encrypted and PossiblyUnencrypted
     classfiles to the processor classpath:</p>
     <pre>
-$ <strong>javacheck -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted encrypted/EncryptionDemo.java</strong>
+$ <strong>javacheck -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted,myqual.PolyUnencrypted encrypted/EncryptionDemo.java</strong>
 encrypted/EncryptionDemo.java:21: error: [assignment.type.incompatible] incompatible types in assignment.
         /*@Encrypted*/ int encryptInt = (character + OFFSET) % Character.MAX_VALUE ;
                                                              ^
@@ -177,7 +177,7 @@ private /*@Encrypted*/ char encryptCharacter(char character) {
 
     <p>You will see the following error:</p>
     <pre>
-$ <strong>javacheck -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted encrypted/EncryptionDemo.java</strong>
+$ <strong>javacheck -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted,myqual.PolyUnencrypted encrypted/EncryptionDemo.java</strong>
 encrypted/EncryptionDemo.java:34: error: [argument.type.incompatible] incompatible types in argument.
         sendOverInternet(password);
                          ^
@@ -207,7 +207,7 @@ void sendPassword() {
     <h4>7. Re-run the Encryption Checker</h4>
 
     <pre>
-$ <strong>javacheck -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted encrypted/EncryptionDemo.java</strong>
+$ <strong>javacheck -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted,myqual.PolyUnencrypted encrypted/EncryptionDemo.java</strong>
 </pre>
 
     <p>There should be no errors.</p>

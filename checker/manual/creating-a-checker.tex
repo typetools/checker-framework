@@ -170,8 +170,17 @@ the components of a type system as written using the Checker Framework:
 
 \section{Annotations: Type qualifiers and hierarchy\label{writing-typequals}}
 
-A type system designer specifies the qualifiers in the type system and
+A type system designer specifies the qualifiers in the type system (Section~\ref{define-type-qualifiers})
+and
 the type hierarchy that relates them.
+The type hierarchy --- the subtyping relationships among the qualifiers ---
+can be defined either
+declaratively via meta-annotations (Section~\ref{declarative-hierarchy}), or procedurally through
+subclassing \refclass{framework/type}{QualifierHierarchy} or
+\refclass{framework/type}{TypeHierarchy} (Section~\ref{procedural-hierarchy}).
+
+
+\subsection{Defining the type qualifiers\label{define-type-qualifiers}}
 
 %% True, but seems irrelevant here, so it detracts from the message.
 % Each qualifier restricts the values that
@@ -208,13 +217,13 @@ definition, such as \refqualclass{framework/qual}{TypeQualifier}, is called a \e
 % declaration does not bear the \<@TypeQualifier> meta-annotation (with minor
 % exceptions, such as \<@SuppressWarnings>).
 
-The type hierarchy induced by the qualifiers can be defined either
-declaratively via meta-annotations (Section~\ref{declarative-hierarchy}), or procedurally through
-subclassing \refclass{framework/type}{QualifierHierarchy} or
-\refclass{framework/type}{TypeHierarchy} (Section~\ref{procedural-hierarchy}).
+Your type system should include a top qualifier and a bottom qualifier
+(Section~\ref{bottom-and-top-qualifier}).  You should also define a
+polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
+(Section~\ref{qualifier-polymorphism}).
 
 
-\subsection{Declaratively defining the qualifier and type hierarchy\label{declarative-hierarchy}}
+\subsection{Declaratively defining the qualifier hierarchy\label{declarative-hierarchy}}
 
 Declaratively, the type system designer uses two meta-annotations (written
 on the declaration of qualifier annotations) to specify the qualifier
@@ -303,7 +312,7 @@ by overriding the \refmethodterse{framework/util}{GraphQualifierHierarchy}{isSub
 However, the declarative mechanism is sufficient for most type systems.
 
 
-\subsection{Procedurally defining the qualifier and type hierarchy\label{procedural-hierarchy}}
+\subsection{Procedurally defining the qualifier hierarchy\label{procedural-hierarchy}}
 
 While the declarative syntax suffices for many cases, more complex
 type hierarchies can be expressed by overriding, in your subclass of \refclass{common/basetype}{BaseTypeVisitor},
@@ -1063,11 +1072,11 @@ checker class has no work to do.  Here are the complete definitions of the
 checker classes for the Interning Checker and the Nullness Checker:
 
 \begin{Verbatim}
-  @TypeQualifiers({ Interned.class, PolyInterned.class })
+  @TypeQualifiers({ Interned.class, PolyInterned.class, PolyAll.class })
   @SupportedLintOptions({"dotequals"})
   public final class InterningChecker extends BaseTypeChecker { }
 
-  @TypeQualifiers({ Nullable.class, Raw.class, NonNull.class, PolyNull.class })
+  @TypeQualifiers({ Nullable.class, Raw.class, NonNull.class, PolyNull.class, PolyAll.class })
   @SupportedLintOptions({"flow", "cast", "cast:redundant"})
   public class NullnessChecker extends BaseTypeChecker { }
 \end{Verbatim}
