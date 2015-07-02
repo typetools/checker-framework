@@ -19,17 +19,21 @@ import org.checkerframework.framework.util.QualifierPolymorphism;
  * qualifier hierarchy.  In each version of the method, all instances of
  * the polymorphic type qualifier are replaced by one of the other type
  * qualifiers.
+ * <p>
  *
- * @see org.checkerframework.checker.nullness.qual.PolyNull
- * @see org.checkerframework.checker.interning.qual.PolyInterned
- * @see QualifierPolymorphism
+ * @checker_framework.manual #map-key-checker Map Key Checker
  */
 @Documented
 @Target({ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PolymorphicQualifier {
-    // To which sub-hierarchy does this polymorphic qualifier belong.
-    // Pass a qualifier from the given hierarchy, typically the top qualifier.
+    /**
+     * Usually, you can write {@code @PolymorphicQualifier} without an
+     * argument.  When multiple type hierarchies are supported by a single
+     * type system, then each polymorphic qualifier needs to indicate which
+     * sub-hierarchy it belongs to.  Do so by passing a qualifier from the
+     * given hierarchy, by convention the top qualifier.
+     */
     // We use the meaningless PolymorphicQualifier.class as default value and
     // then ensure there is a single top qualifier to use.
     Class<? extends Annotation> value() default PolymorphicQualifier.class;
