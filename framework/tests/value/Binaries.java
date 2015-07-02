@@ -17,7 +17,7 @@ class Binaries {
         }
     }
 
-    void write(int t){}
+    void write(int t) {}
     public void add() {
         int a = 1;
         if (true) {
@@ -287,14 +287,14 @@ class Binaries {
         @DoubleVal({ 3 }) double e = a * c - 2 * b - (char) 1;
     }
 
-    public void compareWithNull(){
+    public void compareWithNull() {
         String s = "1";
         //TODO
         //:: error: (assignment.type.incompatible)
     @BoolVal(true) boolean b = (s != null);
     }
 
-    public void conditionalComparisions(){
+    public void conditionalComparisions() {
         @BoolVal(true) boolean a1 = true || false;
         @BoolVal(true) boolean a2 = true || true;
         @BoolVal(false) boolean a3 = false || false;

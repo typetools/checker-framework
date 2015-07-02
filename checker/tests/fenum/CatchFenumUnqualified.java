@@ -1,15 +1,15 @@
 import org.checkerframework.checker.fenum.qual.Fenum;
 
-class CatchFenumUnqualfied{
-    void method(){
-        try{
+class CatchFenumUnqualfied {
+    void method() {
+        try {
         //:: error: (exception.parameter.invalid)
-        }catch(@Fenum("A") RuntimeException e){
+        } catch(@Fenum("A") RuntimeException e) {
 
         }
-        try{
+        try {
         //:: error: (exception.parameter.invalid)
-        }catch(@Fenum("A") NullPointerException | @Fenum("A") ArrayIndexOutOfBoundsException e){
+        } catch(@Fenum("A") NullPointerException | @Fenum("A") ArrayIndexOutOfBoundsException e) {
 
         }
     }

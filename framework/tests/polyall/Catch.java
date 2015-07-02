@@ -17,16 +17,16 @@ class Catch {
         }
     }
 
-    void explictlyTopUnionType()throws Throwable{
-        try{
+    void explictlyTopUnionType()throws Throwable {
+        try {
             throw new Throwable();
         } catch (@H1Top @H2Top IndexOutOfBoundsException | @H1Top @H2Top  NullPointerException ex) {
 
         }
     }
 
-    void explictlyNotTopUnionType()throws Throwable{
-        try{
+    void explictlyNotTopUnionType()throws Throwable {
+        try {
             throw new Throwable();
         //:: error: (exception.parameter.invalid)
         } catch (@H1S1 @H2Top  IndexOutOfBoundsException | @H1S1 @H2Top  NullPointerException ex) {

@@ -14,8 +14,8 @@ public class FlowBreak {
       // initially o is @FenumTop
       o = null;
       // o is @Bottom
-      while(flag) {
-        if( flag ) {
+      while (flag) {
+        if ( flag ) {
           o = CENTER;
           // o is @SwingHorizontalOrientation
         } else {

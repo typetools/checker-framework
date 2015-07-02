@@ -9,7 +9,7 @@ import java.util.*;
 class KeyForPolyAll
 {
     Map<@KeyFor("dict") String, String> dict = new HashMap<@KeyFor("dict") String, String>();
-    void m(){
+    void m() {
         Set<@KeyFor("dict") String> s = nounSubset(dict.keySet());
 
         for (@KeyFor("dict") String noun : nounSubset(dict.keySet())) { }

@@ -105,7 +105,7 @@ public void testOperationsWithPrimitives() {
     --primitive;
 
     //:: error: (contracts.precondition.not.satisfied.field)
-    if (primitive != 5){ }
+    if (primitive != 5) { }
 
     //:: error: (contracts.precondition.not.satisfied.field)
     i = primitive >> i;
@@ -179,7 +179,7 @@ public void testOperationsWithPrimitives() {
 
 
     //:: error: (contracts.precondition.not.satisfied.field)
-    if (primitiveBoolean){}
+    if (primitiveBoolean) {}
 
     //:: error: (contracts.precondition.not.satisfied.field)
     i = ~primitive;
@@ -236,17 +236,17 @@ void testTreeTypes() {
 
     // The following test cases were inspired from annotator.find.ASTPathCriterion.isSatisfiedBy in the Annotation File Utilities
 
-// Hits a bug in dataflow:    do { break; } while(foo != null); // access to guarded object in while condition of do/while loop
-// Hits a bug in dataflow:    for(foo = new Object(); foo != null; foo = new Object()){ break; } // access to guarded object in condition of for loop
+// Hits a bug in dataflow:    do { break; } while (foo != null); // access to guarded object in while condition of do/while loop
+// Hits a bug in dataflow:    for(foo = new Object(); foo != null; foo = new Object()) { break; } // access to guarded object in condition of for loop
     //:: error: (contracts.precondition.not.satisfied.field)
     foo = new Object(); // assignment to guarded object
     //:: error: (contracts.precondition.not.satisfied.field)
-    synchronized(foo){ // attempt to use guarded object as a lock
+    synchronized(foo) { // attempt to use guarded object as a lock
     }
     //:: error: (contracts.precondition.not.satisfied.field)
-    switch(foo.hashCode()){ // attempt to use guarded object in a switch statement
+    switch(foo.hashCode()) { // attempt to use guarded object in a switch statement
     }
-    // try(foo = new Object()){ foo.toString(); } // attempt to use guarded object inside a try with resources
+    // try(foo = new Object()) { foo.toString(); } // attempt to use guarded object inside a try with resources
     //:: error: (contracts.precondition.not.satisfied.field)
     fooArray[0].toString(); // method call on access of guarded array
     //:: error: (contracts.precondition.not.satisfied.field)
@@ -258,11 +258,11 @@ void testTreeTypes() {
     //:: error: (contracts.precondition.not.satisfied.field)
     label: foo.toString(); // access to guarded object in labeled statement
     //:: error: (contracts.precondition.not.satisfied.field)
-    if (foo instanceof Object){} // access to guarded object in instanceof expression
+    if (foo instanceof Object) {} // access to guarded object in instanceof expression
     //:: error: (contracts.precondition.not.satisfied.field)
-    while(foo != null){ break; } // access to guarded object in while condition of while loop
+    while (foo != null) { break; } // access to guarded object in while condition of while loop
     //:: error: (contracts.precondition.not.satisfied.field)
-    if (false){}else if (foo == o){} // binary operator on guarded object in else if condition
+    if (false) {} else if (foo == o) {} // binary operator on guarded object in else if condition
     // Hits a bug in dataflow:    Runnable rn = () -> { foo.toString(); }; // access to guarded object in a lambda expression
     //:: error: (contracts.precondition.not.satisfied.field)
     i = myClassInstance.i; // access to member field of guarded object
@@ -275,7 +275,7 @@ void testTreeTypes() {
     s = i == 5 ? f.toString() : foo.toString(); // access to guarded object in conditional expression tree
     // Testing of 'return' is done in getFoo()
     //:: error: (contracts.precondition.not.satisfied.field)
-    try{ throw exception; } catch(Exception e){} // throwing a guarded object
+    try { throw exception; } catch(Exception e) {} // throwing a guarded object
     //:: error: (contracts.precondition.not.satisfied.field)
     Object e = (Object) exception; // casting of a guarded object
     //:: error: (contracts.precondition.not.satisfied.field)

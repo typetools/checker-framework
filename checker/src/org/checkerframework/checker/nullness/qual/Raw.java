@@ -39,7 +39,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * More precisely, an expression of type {@code @Raw(T.class)} refers to an
  * object that has all fields of {@code T} (and any super-classes) initialized
  * (e.g., to a non-null value in the {@link NullnessRawnessChecker}).
- * Just {@code @Raw} is equivalent to {@code @Raw{Object.class}}.
+ * Just {@code @Raw} is equivalent to {@code @Raw(Object.class)}.
  *
  * <p>
  * At the beginning of a constructor, the fields of the object are not yet

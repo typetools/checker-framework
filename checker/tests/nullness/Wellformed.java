@@ -8,9 +8,9 @@ class Wellformed {
     class Gen1a<T extends @NonNull @Nullable Object> {}
     class Gen1b {
         //:: error: (type.invalid)
-        <T extends @NonNull @Nullable Object> void m(T p){}
+        <T extends @NonNull @Nullable Object> void m(T p) {}
         //:: error: (type.invalid)
-        <@NonNull @Nullable T> void m2(T p){}
+        <@NonNull @Nullable T> void m2(T p) {}
     }
     //:: error: (type.invalid)
     class Gen1c<@NonNull @Nullable TTT> {}

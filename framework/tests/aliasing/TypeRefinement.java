@@ -64,6 +64,6 @@ class TypeRefinement {
         return s;
     }
 
-    void isUnique(@NonLeaked @Unique String s){} //@NonLeaked so it doesn't refine the type of the argument.
+    void isUnique(@NonLeaked @Unique String s) {} //@NonLeaked so it doesn't refine the type of the argument.
 
 }

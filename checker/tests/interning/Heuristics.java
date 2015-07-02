@@ -36,10 +36,10 @@ public class Heuristics implements Comparable<Heuristics> {
   public boolean optimizeEqualsClient(Object a, Object b, Object[] arr) {
     // Using == is OK if it's the left-hand side of an || whose right-hand
     // side is a call to equals with the same arguments.
-    if(a == b || a.equals(b)){
+    if (a == b || a.equals(b)) {
       System.out.println("one");
     }
-    if(a == b || b.equals(a)){
+    if (a == b || b.equals(a)) {
       System.out.println("two");
     }
 
@@ -58,10 +58,10 @@ public class Heuristics implements Comparable<Heuristics> {
   public <T extends Comparable<T>> boolean optimizeCompareToClient(T a, T b) {
     // Using == is OK if it's the left-hand side of an || whose right-hand
     // side is a call to compareTo with the same arguments.
-    if(a == b || a.compareTo(b) == 0){
+    if (a == b || a.compareTo(b) == 0) {
       System.out.println("one");
     }
-    if(a == b || b.compareTo(a) == 0){
+    if (a == b || b.compareTo(a) == 0) {
       System.out.println("two");
     }
 

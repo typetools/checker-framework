@@ -89,7 +89,7 @@ public class KeyForSubtyping {
     private void testWithNullnessAnnotation(String not_a_key,
                                             @KeyFor("this.mapA") String a,
                                             @KeyFor("this.mapB") String b,
-                                            @Nullable @KeyFor({"this.mapA","this.mapB"}) String ab){
+                                            @Nullable @KeyFor({"this.mapA","this.mapB"}) String ab) {
         // These fail only because a @Nullable RHS cannot be assigned to a @NonNull LHS.
 
         //:: error: (assignment.type.incompatible)

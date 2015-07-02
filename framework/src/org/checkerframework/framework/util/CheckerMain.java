@@ -367,7 +367,7 @@ public class CheckerMain {
         if (outputFilename != null) {
             String errorMessage = null;
 
-            try{
+            try {
                 PrintWriter writer = new PrintWriter(outputFilename, "UTF-8");
                 for (int i = 0; i < args.size(); i++) {
                     String arg = args.get(i);

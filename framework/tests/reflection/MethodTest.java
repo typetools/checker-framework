@@ -10,7 +10,7 @@ public class MethodTest {
     @Sibling1 int sibling1;
     @Sibling2 int sibling2;
 
-    public void real_class(){
+    public void real_class() {
         try {
         Class<?> c = Object.class;
         Method m = c.getMethod("equals", Object.class);
@@ -217,7 +217,7 @@ public class MethodTest {
         }
     }
 
-    public void test(){
+    public void test() {
     }
 
     public void fail1() {

@@ -6,7 +6,7 @@ public class MethodValSubtypingTest {
     @MethodVal(className ={"class","class2"}, methodName = {"method","method2"}, params = {0,1}) Object classClass2Method0 = null;
     @MethodVal(className ={"class2","class"}, methodName = {"method","method2"}, params = {0,1}) Object class2classMethod0 = null;
     Object unknown = null;
-    void methodValSubtyping(){
+    void methodValSubtyping() {
         classMethod0 = classMethod0Dup;
         //:: error: (assignment.type.incompatible)
         classMethod0 = classClass2Method0;
@@ -14,14 +14,14 @@ public class MethodValSubtypingTest {
         classClass2Method0 = class2classMethod0;
         classClass2Method0 = classMethod0;
     }
-    void bottomMethodVal(){
+    void bottomMethodVal() {
         classMethod0 = null;
         classClass2Method0 = null;
     }
-    void unknownMethodVal1(){
+    void unknownMethodVal1() {
         unknown = class2classMethod0;
     }
-    void unknownMethodVal2(){
+    void unknownMethodVal2() {
         //:: error: (assignment.type.incompatible)
         class2classMethod0 = unknown;
     }
@@ -35,7 +35,7 @@ public class MethodValSubtypingTest {
     @MethodVal(className ={"aclass"},
             methodName = {"amethod"},
             params = {2}) Object one = null;
-    void test(){
+    void test() {
         tripleAgain = triple;
         //:: error: (assignment.type.incompatible)
         one = triple;
