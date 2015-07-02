@@ -13,10 +13,10 @@ import java.lang.annotation.Target;
  * <tt>@Nullable</tt> and <tt>@Regex</tt>.
  * <p>
  *
- * Ordinarily, the <tt>-AuseConservativeDefaultsForUnannotatedSourceCode</tt> command-line argument
+ * Ordinarily, the <tt>-AuseSafeDefaultsForUnannotatedSourceCode</tt> command-line argument
  * causes unannotated locations to be defaulted using conservative library
  * annotations, and it suppresses all warnings.  The
- * <tt>-AuseConservativeDefaultsForUnannotatedSourceCode</tt> command-line argument has no effect on
+ * <tt>-AuseSafeDefaultsForUnannotatedSourceCode</tt> command-line argument has no effect on
  * classes with a relevant <tt>@AnnotatedFor</tt> annotation:  any
  * unannotated location is defaulted normally (typically using the
  * CLIMB-to-top rule), and typechecking warnings are issued.

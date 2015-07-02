@@ -187,7 +187,7 @@ import com.sun.tools.javac.util.Log;
     // by the specific type checker using @Default[Qualifier]ForUnannotatedCode
     // and only apply to source code that is not marked as @AnnotatedFor the checker
     // that is being executed.
-    "useConservativeDefaultsForUnannotatedSourceCode",
+    "useSafeDefaultsForUnannotatedSourceCode",
 
     // Whether to resolve reflective method invocations
     // resolveReflection=debug cause debugging information
@@ -1259,7 +1259,7 @@ public abstract class SourceChecker
                 return false; // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements, because they may not have an @AnnotatedFor.
         }
 
-        if (hasOption("useConservativeDefaultsForUnannotatedSourceCode")) {
+        if (hasOption("useSafeDefaultsForUnannotatedSourceCode")) {
             // If we got this far without hitting an @AnnotatedFor and returning false, we DO suppress the warning.
             return true;
         }
@@ -1283,7 +1283,7 @@ public abstract class SourceChecker
 
     private boolean isAnnotatedForThisCheckerOrUpstreamChecker(/*@Nullable*/ Element elt) {
 
-        if (elt == null || !hasOption("useConservativeDefaultsForUnannotatedSourceCode"))
+        if (elt == null || !hasOption("useSafeDefaultsForUnannotatedSourceCode"))
             return false;
 
         /*@Nullable*/ AnnotatedFor anno = elt.getAnnotation(AnnotatedFor.class);

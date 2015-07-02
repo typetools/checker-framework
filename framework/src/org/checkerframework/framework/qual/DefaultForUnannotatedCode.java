@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * This qualifier will only apply to unannotated type uses in bytecode if the
  * -AsafeDefaultsForUnannotatedBytecode command-line option is passed.
  * It will only apply to unannotated type uses in source code if the
- * -AuseConservativeDefaultsForUnannotatedSourceCode command-line
+ * -AuseSafeDefaultsForUnannotatedSourceCode command-line
  * option is passed and the source code is not annotated with
  * {@link AnnotatedFor} for the checker being executed.
  * <p>
