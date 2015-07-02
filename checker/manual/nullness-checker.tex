@@ -525,6 +525,11 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 
 \section{Suppressing nullness warnings\label{suppressing-warnings-nullness}}
 
+When the Nullness Checker reports a warning, it's best to change the code
+or its annotations, to eliminate the warning.  Alternately, you can
+suppress the warning, which does not change the code but prevents the
+Nullness Checker from reporting this particular warning to you.
+
 The Checker Framework supplies several ways to suppress warnings, most
 notably the \<@SuppressWarnings("nullness")> annotation (see
 Section~\ref{suppressing-warnings}).  An example use is
