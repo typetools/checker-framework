@@ -12,8 +12,9 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 
 /**
- * An implementation of the nullness type-system based on an initialization
- * type-system for safe initialization.
+ * An implementation of the nullness type-system, parameterized by an
+ * initialization type-system for safe initialization.  It can use
+ * freedom-before-commitment or rawness as its initialization type system.
  */
 @SupportedLintOptions({
     AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
