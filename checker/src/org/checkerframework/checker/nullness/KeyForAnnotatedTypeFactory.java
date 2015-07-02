@@ -8,6 +8,7 @@ import org.checkerframework.checker.nullness.KeyForPropagator.PropagationDirecti
 import org.checkerframework.checker.nullness.qual.Covariant;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
+import org.checkerframework.checker.nullness.qual.PolyKeyFor;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -17,6 +18,7 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.*;
@@ -66,7 +68,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 
-@TypeQualifiers({ KeyFor.class, UnknownKeyFor.class, KeyForBottom.class})
+@TypeQualifiers({ KeyFor.class, UnknownKeyFor.class, KeyForBottom.class, PolyKeyFor.class, PolyAll.class})
 public class KeyForAnnotatedTypeFactory extends
     GenericAnnotatedTypeFactory<CFValue, CFStore, KeyForTransfer, KeyForAnalysis> {
 
