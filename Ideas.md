@@ -1,8 +1,4 @@
-Contents:
-
-
-
-# Introduction #
+# Checker Framework project ideas #
 
 This page lists a few potential projects that would be a valuable extension
 to the Checker Framework.  We are also open to other new ideas!  Feel free
