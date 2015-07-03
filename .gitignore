@@ -1,5 +1,3 @@
-syntax: glob
-
 *TODOJDK
 
 # git
@@ -9,9 +7,10 @@ syntax: glob
 # Emacs and other temporary files
 *~
 .#*
-*.swp
+\#*#
 TAGS
 tags
+*.swp
 *.orig
 .DS_Store
 # Eclipse files
@@ -113,10 +112,3 @@ target/
 *.iws
 *.iml
 
-syntax: regexp
-# Not a glob because it starts with # which looks like a comment.
-(.*/)?\#[^/]*\#$
-(.*/)?\.\#.*
-
-syntax: regexp
-^checker/tests/nullness-extra/multiple-errors/Out\.txt$
