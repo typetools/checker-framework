@@ -1,5 +1,4 @@
-## The Checker Framework homepage is ##
-# http://checker-framework.org/ #
+## The Checker Framework homepage is http://checker-framework.org/ ##
 
 The Checker Framework enhances Java's type system to make it more powerful and useful. This lets software developers detect and prevent errors in their Java programs.
 

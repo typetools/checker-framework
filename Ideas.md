@@ -14,7 +14,7 @@ that pushes the limits of technology and may be publishable.
 Some of the projects have both types of impact.
 
 In addition to the larger projects on this page, see the list of
-[open issues](http://code.google.com/p/checker-framework/issues/list).  Or
+[open issues](https://github.com/typetools/checker-framework/issues).  Or
 add to it if you notice other problems!
 
 **Required skills:**
@@ -278,34 +278,34 @@ implementation challenge and/or a research challenge, depending on the type
 system that you target.
 
   * Javari:
-> > The Javarifier tool ([code](http://code.google.com/p/javarifier/),
-> > [manual](http://groups.csail.mit.edu/pag/javari/javarifier/)) infers type
-> > annotations for the
-> > [Javari](http://types.cs.washington.edu/checker-framework/#javari-checker)
-> > type system.  Javari gives guarantees that your code does not
-> > make modifications that it should not.  Javarifier needs to be updated
-> > to use newer versions of some libraries (a great starter task), then
-> > there are several substantial architectural changes or enhancements that
-> > are possible.
+    The Javarifier tool ([code](https://github.com/typetools/javarifier),
+    [manual](http://types.cs.washington.edu/javari/javarifier/)) infers type
+    annotations for the
+    [Javari](http://types.cs.washington.edu/checker-framework/#javari-checker)
+    type system.  Javari gives guarantees that your code does not
+    make modifications that it should not.  Javarifier needs to be updated
+    to use newer versions of some libraries (a great starter task), then
+    there are several substantial architectural changes or enhancements that
+    are possible.
 
   * Nullness:
-> > Several inference tools for
-> > [nullness](http://types.cs.washington.edu/checker-framework/#nullness-inference)
-> > exist, but all have shortcomings (and some need a maintainer).
-> > You can extend the precise dynamic tool to infer more varieties of
-> > annotation, or can extend a conservative static tool to be more precise.
+    Several inference tools for
+    [nullness](http://types.cs.washington.edu/checker-framework/#nullness-inference)
+    exist, but all have shortcomings (and some need a maintainer).
+    You can extend the precise dynamic tool to infer more varieties of
+    annotation, or can extend a conservative static tool to be more precise.
 
   * IGJ:
-> > [IGJ](http://types.cs.washington.edu/checker-framework/#igj-checker) is
-> > another, even more powerful system for immutability (that is, for
-> > controlling side effects).  It has no type inference system, but would
-> > benefit from one.
+    [IGJ](http://types.cs.washington.edu/checker-framework/#igj-checker) is
+    another, even more powerful system for immutability (that is, for
+    controlling side effects).  It has no type inference system, but would
+    benefit from one.
 
   * Another type system:
-> > Choose any type system that you are interested in, either from the
-> > [Checker Framework manual](http://types.cs.washington.edu/checker-framework/),
-> > or from research papers, or from your own experience.  Build
-> > an inference system for it.
+    Choose any type system that you are interested in, either from the
+    [Checker Framework manual](http://types.cs.washington.edu/checker-framework/),
+    or from research papers, or from your own experience.  Build
+    an inference system for it.
 
 A very ambitious project that we would like to take on -- after building a few
 specific type inference tools -- is to build a general framework for type
