@@ -2,7 +2,7 @@ import org.checkerframework.framework.qual.*;
 import tests.util.*;
 
 // Test case for Issue 140:
-// http://code.google.com/p/checker-framework/issues/detail?id=140
+// https://github.com/typetools/checker-framework/issues/140
 class GenericTest9 {
     // Make sure that substitutions on classes work correctly
 

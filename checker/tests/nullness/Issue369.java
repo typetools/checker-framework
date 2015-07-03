@@ -1,5 +1,5 @@
 // Test case for Issue 369:
-// https://code.google.com/p/checker-framework/issues/detail?id=369
+// https://github.com/typetools/checker-framework/issues/369
 
 // @skip-test
 import static java.util.stream.Collectors.toSet;

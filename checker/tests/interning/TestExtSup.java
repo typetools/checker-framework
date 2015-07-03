@@ -1,4 +1,4 @@
-// Test case for issue #237: https://code.google.com/p/checker-framework/issues/detail?id=237
+// Test case for issue #237: https://github.com/typetools/checker-framework/issues/237
 
 import java.util.*;
 

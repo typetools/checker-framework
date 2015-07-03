@@ -1,5 +1,5 @@
 // Test case for Issue 388:
-// https://code.google.com/p/checker-framework/issues/detail?id=388
+// https://github.com/typetools/checker-framework/issues/388
 
 import java.util.Map;
 

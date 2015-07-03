@@ -1,5 +1,5 @@
 // Test for Issue 289:
-// https://code.google.com/p/checker-framework/issues/detail?id=289
+// https://github.com/typetools/checker-framework/issues/289
 
 import org.checkerframework.checker.nullness.qual.*;
 

@@ -1,5 +1,5 @@
 // Test case for Issue 261
-// https://code.google.com/p/checker-framework/issues/detail?id=261
+// https://github.com/typetools/checker-framework/issues/261
 class Issue261 {
   boolean b;
 

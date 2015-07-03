@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.*;
 import java.util.*;
 
 //@skip-test -- should be fixed, but is a bit tricky to implement, so defer for now.
-// See http://code.google.com/p/checker-framework/issues/detail?id=223
+// See https://github.com/typetools/checker-framework/issues/223
 class Constructors {
 
   static void requireInitialized(Object o) { }

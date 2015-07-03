@@ -1,6 +1,6 @@
 /*
  * Test case for Issue 138:
- * https://code.google.com/p/checker-framework/issues/detail?id=138
+ * https://github.com/typetools/checker-framework/issues/138
  *
  * Assignment and compound assignment should be treated equally for
  * method type argument inference.

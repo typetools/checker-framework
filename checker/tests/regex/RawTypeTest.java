@@ -23,7 +23,7 @@ class RawTypeTest {
     /* It would be desirable to optionally check the following code without
      * warnings. See issue 119:
      *
-     * http://code.google.com/p/checker-framework/issues/detail?id=119
+     * https://github.com/typetools/checker-framework/issues/119
      *
     class Raw {
         public void m2(Class<Object> c) {}

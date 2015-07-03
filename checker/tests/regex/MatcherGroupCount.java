@@ -1,5 +1,5 @@
 // Test case for Issue 291
-// https://code.google.com/p/checker-framework/issues/detail?id=291
+// https://github.com/typetools/checker-framework/issues/291
 // @skip-test
 import java.util.regex.*;
 import org.checkerframework.checker.regex.RegexUtil;

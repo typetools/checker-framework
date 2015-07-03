@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.*;
 
 // This is a test case for (now fixed) issue #105:
-// http://code.google.com/p/checker-framework/issues/detail?id=105
+// https://github.com/typetools/checker-framework/issues/105
 
 public class Uninit12 {
 

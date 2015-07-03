@@ -460,7 +460,7 @@ public class Throwable implements Serializable {
      */
   // The signature of initCause should use @PolyRaw as follows, but implementing
   // @PolyRaw is a fair amount of work, so don't bother to do so yet.  See
-  // https://code.google.com/p/checker-framework/issues/detail?id=216 .
+  // https://github.com/typetools/checker-framework/issues/216 .
   // public synchronized @PolyRaw Throwable initCause(@PolyRaw Throwable this, @Nullable Throwable a1) { throw new RuntimeException("skeleton method"); }
     public synchronized @UnknownInitialization @Raw Throwable initCause(@UnknownInitialization @Raw Throwable this, @Nullable Throwable cause) {
         if (this.cause != this)

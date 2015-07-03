@@ -19,6 +19,7 @@ import re
 import subprocess
 from subprocess import Popen, PIPE
 import os
+import os.path
 import pwd
 import re
 import shutil
@@ -357,7 +358,7 @@ def get_afu_version_from_html( html_file_path ):
 # Mercurial Utils
 
 #ensure that the environment variable "HGUSER" is set
-#if it is not, Mercurial will not allow changes to be commited or pushed
+#if it is not, Mercurial will not allow changes to be committed or pushed
 def check_hg_user():
     hg_user = os.getenv("HGUSER")
     if not hg_user: #note this is true if hg_user is NONE or if it is empty
@@ -366,19 +367,34 @@ def check_hg_user():
     if not prompt_yes_no(("Your Mercurial user name is: %s" % hg_user) + os.linesep + "Is this correct?"):
         raise Exception("Please set your HGUSER name to the correct value before running the script!")
 
+def is_git( repo_root ):
+    if os.path.isdir(repo_root + "/.git"):
+        return true
+    if os.path.isdir(repo_root + "/.hg"):
+        return false
+    raise Exception(repo_root + " has neither a .git nor a .hg subdirectory")
+
 def hg_push_or_fail( repo_root ):
-    cmd = 'hg -R %s push' % repo_root
-    result = os.system('hg -R %s push' % repo_root)
+    if is_git(repo_root):
+        cmd = 'hg -R %s push' % repo_root
+    else:
+        cmd = 'git -C %s push' % repo_root
+    result = os.system(cmd)
     if result is not 0:
         raise Exception("Could not push to: " + repo_root)
 
 def hg_push( repo_root ):
-    execute('hg -R %s push' % repo_root)
+    if is_git(repo_root):
+        execute('hg -R %s push' % repo_root)
+    else:
+        execute('git -C %s push' % repo_root)
 
 #Pull the latest changes and update
 def update_project(path):
-    execute('hg -R %s pull' % path)
-    execute('hg -R %s update' % path)
+    if is_git(path):
+        execute('git -C %s pull' % path)
+    else:
+        execute('hg -R %s pull -u' % path)
 
 def update_projects(paths):
     for path in paths:
@@ -390,41 +406,61 @@ def update_projects(paths):
 #Then add a tag for this release
 #And push these changes
 def commit_tag_and_push(version, path, tag_prefix):
-    execute('hg -R %s commit -m "new release %s"' % (path, version))
-    execute('hg -R %s tag %s%s' % (path, tag_prefix, version))
-    execute('hg -R %s push' % path)
+    if is_git(path):
+        execute('git -C %s commit -a -m "new release %s"' % (path, version))
+        execute('git -C %s tag %s%s' % (path, tag_prefix, version))
+    else:
+        execute('hg -R %s commit -m "new release %s"' % (path, version))
+        execute('hg -R %s tag %s%s' % (path, tag_prefix, version))
+    hg_push(path)
 
 # Retrieve the changes since the tag (prefix + prev_version)
 def retrieve_changes(root, prev_version, prefix):
-    return execute(
-            "hg -R %s log -r %s%s:tip --template ' * {desc}\n'" %
-                (root, prefix, prev_version),
-                capture_output=True)
+    if is_git(root):
+        cmd_template = "git -C %s log %s%s.."
+    else:
+        cmd_template = "hg -R %s log -r %s%s:tip --template ' * {desc}\n'"
+    return execute(cmd_template % (root, prefix, prev_version),
+                   capture_output=True)
 
 def clone_or_update_repo(src_repo, dst_repo):
     if os.path.isdir(os.path.abspath(dst_repo)):
         update_project( dst_repo )
     else:
-        execute('hg clone %s %s' % (src_repo, dst_repo))
+        if "git" in src_repo:
+            execute('git clone %s %s' % (src_repo, dst_repo))
+        else:
+            execute('hg clone %s %s' % (src_repo, dst_repo))
 
 def is_repo_cleaned_and_updated(repo):
-    summary = execute('hg -R %s summary' % (repo), capture_output=True)
-    if not "commit: (clean)" in summary:
-        return False
-    if not "update: (current)" in summary:
-        return False
-    return True
+    if is_git(repo):
+        # Could add "--untracked-files=no" to this command
+        is_clean = not execute("git -C %s status --porcelain" % (repo), capture_output=True)
+        is_updated = not execute("git -C %s log ..FETCH_HEAD" % (repo), capture_output=True)
+        return is_clean and is_updated
+    else:
+        summary = execute('hg -R %s summary' % (repo), capture_output=True)
+        if "commit: (clean)" not in summary:
+            return False
+        if "update: (current)" not in summary:
+            return False
+        return True
 
 def repo_exists(repo):
     print ('Does repo exist: %s' % repo)
-    failed = execute('hg -R %s root' % (repo), False, False)
+    hg_failed = execute('hg -R %s root' % (repo), False, False)
+    git_failed = execute('git -C %s rev-parse --show-toplevel' % (repo), False, False)
     print ''
-    return not failed
+    return not (hg_failed and git_failed)
 
 def strip(repo):
-    strip_args = ['hg', '-R', repo, 'strip', '--no-backup', 'roots(outgoing())']
-    print "Executing: " + " ".join(strip_args)
-    process = subprocess.Popen(strip_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    """Deletes all outgoing changesets"""
+    if is_git(repo):
+        execute("git -C %s reset --hard origin/master" % repo)
+        return
+    cmd = ['hg', '-R', repo, 'strip', '--no-backup', 'roots(outgoing())']
+    print "Executing: " + " ".join(cmd)
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     out, err = process.communicate()
     process.wait()
@@ -443,13 +479,23 @@ def strip(repo):
     print ""
 
 def revert(repo):
-    execute('hg -R %s revert --all' % repo)
+    if is_git(repo):
+        execute('git -C %s reset --hard' % repo)
+    else:
+        execute('hg -R %s revert --all' % repo)
 
 def purge(repo, all=False):
-    if all:
-        cmd = 'hg -R %s purge  --all' % repo
+    """All means also ignored files"""
+    if is_git:
+        if all:
+            cmd = 'git -C %s clean -f -x' % repo
+        else:
+            cmd = 'git -C %s clean -f' % repo
     else:
-        cmd = 'hg -R %s purge' % repo
+        if all:
+            cmd = 'hg -R %s purge  --all' % repo
+        else:
+            cmd = 'hg -R %s purge' % repo
     execute(cmd)
 
 def clean_repo(repo, prompt):
@@ -486,6 +532,8 @@ def get_tag_line( lines, revision, tag_prefixes ):
     return None
 
 def get_hash_for_tag( revision, repo_file_path, tag_prefixes ):
+    if is_git(repo_file_path):
+        raise Exception("get_hash_for_tag is not defined for git repositories")
     tags = execute("hg tags -R " + repo_file_path, True, True)
     lines = tags.split( "\n" )
 
@@ -502,16 +550,23 @@ def get_tip_hash( repository ):
     return get_hash_for_tag( "tip", repository, [""] )
 
 def write_changesets_since( old_version, repository, tag_prefixes, file ):
-    old_tag = get_hash_for_tag( old_version, repository, tag_prefixes )
-    tip_tag = get_tip_hash( repository )
+    if is_git(repository):
+        cmd = "git -C %s log %s.." % ( repository, old_tag )
+    else:
+        old_tag = get_hash_for_tag( old_version, repository, tag_prefixes )
+        tip_tag = get_tip_hash( repository )
 
-    cmd = "hg -R %s log -r%s:%s" % ( repository, old_tag, tip_tag )
+        cmd = "hg -R %s log -r%s:%s" % ( repository, old_tag, tip_tag )
+
     execute_write_to_file( cmd, file)
 
-def write_changes_to_file( old_version, repository, tag_prefixes, dir_path, file ):
-    old_tag = get_hash_for_tag( old_version, repository, tag_prefixes )
-    tip_tag = get_tip_hash( repository )
-    cmd = "hg -R %s diff -w -r%s:%s %s" % (repository, old_tag, tip_tag, dir_path )
+def write_diff_to_file( old_version, repository, tag_prefixes, dir_path, file ):
+    if is_git(repository):
+        cmd = "git -C %s diff -w %s.. %s" % (repository, old_tag, dir_path )
+    else:
+         old_tag = get_hash_for_tag( old_version, repository, tag_prefixes )
+         tip_tag = get_tip_hash( repository )
+         cmd = "hg -R %s diff -w -r%s:%s %s" % (repository, old_tag, tip_tag, dir_path )
     execute_write_to_file( cmd, file )
 
 def propose_changelog_edit( project_name, changelog_file_path, changeset_output_file,
@@ -528,7 +583,7 @@ def propose_changelog_edit( project_name, changelog_file_path, changeset_output_
 def propose_change_review( dir_title, old_version, repository_path, tag_prefixes,
                               dir_path, diff_output_file ):
     if prompt_yes_no( "Review %s?" %dir_title, True ):
-        write_changes_to_file( old_version, repository_path, tag_prefixes, dir_path, diff_output_file )
+        write_diff_to_file( old_version, repository_path, tag_prefixes, dir_path, diff_output_file )
         print( "Please review " + dir_title + " and make any edits you deem necessary in:\n" + dir_path )
         print( "Diff file: " + diff_output_file )
         prompt_until_yes()

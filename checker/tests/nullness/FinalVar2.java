@@ -1,4 +1,4 @@
-// @skip-test Test case for issue 266: https://code.google.com/p/checker-framework/issues/detail?id=266
+// @skip-test Test case for issue 266: https://github.com/typetools/checker-framework/issues/266
 // The problem is limited refinement of final variables.
 
 import org.checkerframework.checker.nullness.qual.*;

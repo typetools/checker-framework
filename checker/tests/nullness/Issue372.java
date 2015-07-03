@@ -1,5 +1,5 @@
 // Test case for Issue 372:
-// https://code.google.com/p/checker-framework/issues/detail?id=372
+// https://github.com/typetools/checker-framework/issues/372
 
 // @skip-test
 import java.util.HashMap;

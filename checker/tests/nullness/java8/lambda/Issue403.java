@@ -1,5 +1,5 @@
 // Test case for Issue 403:
-// https://code.google.com/p/checker-framework/issues/detail?id=403
+// https://github.com/typetools/checker-framework/issues/403
 
 // @below-java8-jdk-skip-test
 

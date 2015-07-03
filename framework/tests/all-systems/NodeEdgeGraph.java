@@ -1,6 +1,6 @@
 /*
  * Test case for Issue 116:
- * http://code.google.com/p/checker-framework/issues/detail?id=116
+ * https://github.com/typetools/checker-framework/issues/116
  */
 
 class Node<EdgeType extends Edge<? extends Node<EdgeType>>> {}

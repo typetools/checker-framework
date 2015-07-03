@@ -1,5 +1,5 @@
 // Test case for Issue 269
-// https://code.google.com/p/checker-framework/issues/detail?id=269
+// https://github.com/typetools/checker-framework/issues/269
 class Repro {
   // Implicitly G has bound @Nullable Object
   interface Callback<G> {

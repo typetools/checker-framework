@@ -1,5 +1,5 @@
 // Test case for Issue 376:
-// https://code.google.com/p/checker-framework/issues/detail?id=376
+// https://github.com/typetools/checker-framework/issues/376
 
 // @skip-test
 class Test {

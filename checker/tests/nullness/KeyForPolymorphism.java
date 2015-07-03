@@ -8,7 +8,7 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.PolyAll;
 
-// test related to issue 429: https://code.google.com/p/checker-framework/issues/detail?id=429
+// test related to issue 429: https://github.com/typetools/checker-framework/issues/429
 class KeyForPolymorphism {
 
     Map<String,Object> m1 = new HashMap<String,Object>();

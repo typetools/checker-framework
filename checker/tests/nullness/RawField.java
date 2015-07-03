@@ -4,7 +4,7 @@ import org.checkerframework.framework.qual.*;
 import org.checkerframework.checker.initialization.qual.*;
 
 // This test does not correctly work in the FBC system,
-// see http://code.google.com/p/checker-framework/issues/detail?id=223
+// see https://github.com/typetools/checker-framework/issues/223
 class RawField {
 
     public @Raw @UnknownInitialization RawField a;
@@ -49,7 +49,7 @@ class Options {
 
 class MultiVersionControl {
 
-  @SuppressWarnings("fbc") // see http://code.google.com/p/checker-framework/issues/detail?id=223
+  @SuppressWarnings("fbc") // see https://github.com/typetools/checker-framework/issues/223
   public void parseArgs(@UnknownInitialization @Raw MultiVersionControl this) {
     Options options = new Options (this);
     options.parse_or_usage ();

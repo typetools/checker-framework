@@ -1,5 +1,5 @@
 // Test case for Issue 314:
-// https://code.google.com/p/checker-framework/issues/detail?id=314
+// https://github.com/typetools/checker-framework/issues/314
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;

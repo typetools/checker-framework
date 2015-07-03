@@ -1,5 +1,5 @@
 // Test case for (a part of) Issue 142:
-// http://code.google.com/p/checker-framework/issues/detail?id=142
+// https://github.com/typetools/checker-framework/issues/142
 class GenericTest10 {
     abstract static class Bijection<A, B> {
         abstract B apply(A a);

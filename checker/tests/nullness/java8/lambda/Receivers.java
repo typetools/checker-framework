@@ -23,7 +23,7 @@ class ReceiverTest {
     }
     void context2(@Nullable ReceiverTest this) {
         // TODO: This is bug that is not specific to lambdas
-        // https://code.google.com/p/checker-framework/issues/detail?id=352
+        // https://github.com/typetools/checker-framework/issues/352
         //:: error: (return.type.incompatible)
         Supplier s = () -> this;
     }

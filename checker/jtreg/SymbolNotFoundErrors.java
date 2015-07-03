@@ -7,6 +7,6 @@
 public class SymbolNotFoundErrors {
     // We only expect one error message for the unknown symbol.
     // However, we receive three.
-    // http://code.google.com/p/checker-framework/issues/detail?id=94
+    // https://github.com/typetools/checker-framework/issues/94
     CCC f;
 }

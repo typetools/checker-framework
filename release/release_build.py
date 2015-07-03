@@ -343,10 +343,8 @@ def main(argv):
     print( "Finally, ensure that the changelog ends with a line like\n" )
     print( "Resolved issues:  200, 300, 332, 336, 357, 359, 373, 374\n" )
 
-    print( "You can compute the relevant numbers by visiting these two URLs:\n" )
-    print( "https://code.google.com/p/checker-framework/issues/list?q=status%3APushed\n" )
-    print( "https://code.google.com/p/checker-framework/issues/list?can=1&q=closed-after%3A2014%2F09%2F25\n" )
-    print( "though you will need to adjust the date in the latter URL to be the date of the previous release.\n" )
+    print( "List all issues that have been closed since the last release:\n" )
+    print( "https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aclosed\n" )
 
     # If release_build fails later on and you need to restart it, I recommend you make copies of the
     # changelogs you modified on your local machine, push the changes to those changelogs, and then

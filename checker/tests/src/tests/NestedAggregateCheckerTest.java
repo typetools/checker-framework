@@ -1,7 +1,7 @@
 package tests;
 
 // Test case for issue 343.
-// https://code.google.com/p/checker-framework/issues/detail?id=343
+// https://github.com/typetools/checker-framework/issues/343
 // This exists to just run the NestedAggregateChecker
 
 import org.checkerframework.framework.test.ParameterizedCheckerTest;

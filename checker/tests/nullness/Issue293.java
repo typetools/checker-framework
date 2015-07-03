@@ -1,5 +1,5 @@
 // Test for Issue 293:
-// https://code.google.com/p/checker-framework/issues/detail?id=293
+// https://github.com/typetools/checker-framework/issues/293
 // @skip-test
 class Issue293 {
   void foobar() {

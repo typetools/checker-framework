@@ -281,7 +281,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
                     in interm are clones of the Google code repositories.  This is so that
                     we can test and push the release to the interm repositories then check the
                     release before we have made any irreversible changes.  Then, when the release
-                    is validated, all we do is run &quot;hg push&quot; on all of the repos in interm.
+                    is validated, all we do is run &quot;git push&quot; or &quot;hg push&quot; on all of the repos in interm.
                 </td>
             </tr>
             <tr>
@@ -442,15 +442,9 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         <ul>
             <li>Only (and all) changes that affect users go into the changelog.
                 If a change is breaking, no matter how small, mention it.</li>
-            <li>List all issues (in Google Code issue trackers) resolved in this release.  There is a step
-                in the release that asks you to change all &quot;Pushed&quot; issues to &quot;Fixed&quot;; these
-                issues should all be included in the changelog.  Search for the word &quot;issues&quot; in the
-                changelog to see an example. Here is an example
-<a href="https://code.google.com/p/checker-framework/issues/list?can=1&q=status%3Apushed&amp;sort=-closed&amp;colspec=ID+Type+Status+Priority+Milestone+Owner+Summary+Closed&amp;cells=tiles">query</a>
-                to help find these issues for the Checker Framework only. It is a good idea to ask the core
-                team of developers if they have any issues they have pushed but have not marked as pushed,
-                and generally if they have any changes they would like to be listed in the changelog that
-                they have not done so.
+            <li>List all issues (in Google Code issue trackers) resolved in this release.
+	      See the closed issues, sorted by date on which they were closed:
+<a href="https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aclosed">query</a>.
             </li>
 
             <li>You may need to be aware of projects for which we don't want an announcement.  For instance,
@@ -548,6 +542,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
 
     <section id="fi_bug_fixes">
         <h3>Bug Fixes</h3>
+        [We have switched to Git.  Does a similar problem still happen?]
         A known bug at the moment is a failed 'hg strip' that happens once in a while when the script is
         cleaning the build/interm repositories.  Running the script a few times clears this.  It happens at the
         beginning of the script so this doesn't take long but it would be good to figure out why the command

@@ -1,5 +1,5 @@
 // Test case for Issue 396:
-// https://code.google.com/p/checker-framework/issues/detail?id=396
+// https://github.com/typetools/checker-framework/issues/396
 class Test {
     void b() {
         try {

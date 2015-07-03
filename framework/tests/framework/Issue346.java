@@ -1,5 +1,5 @@
 // Test case for Issue 346:
-// https://code.google.com/p/checker-framework/issues/detail?id=346
+// https://github.com/typetools/checker-framework/issues/346
 
 class Before {}
 

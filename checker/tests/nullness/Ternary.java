@@ -1,4 +1,4 @@
-// Test case for issue #277: http://code.google.com/p/checker-framework/issues/detail?id=277
+// Test case for issue #277: https://github.com/typetools/checker-framework/issues/277
 
 import org.checkerframework.checker.nullness.qual.*;
 

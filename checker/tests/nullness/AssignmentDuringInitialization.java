@@ -1,5 +1,5 @@
 // This test covers Issue345 at:
-// https://code.google.com/p/checker-framework/issues/detail?id=345
+// https://github.com/typetools/checker-framework/issues/345
 /* @skip-test */
 public class AssignmentDuringInitialization {
     String f1;

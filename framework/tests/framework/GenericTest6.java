@@ -1,7 +1,7 @@
 import tests.util.*;
 
 // Test case for Issue 136:
-// http://code.google.com/p/checker-framework/issues/detail?id=136
+// https://github.com/typetools/checker-framework/issues/136
 class GenericTest6 {
   interface Foo<T extends Foo<?>> {}
 

@@ -2,7 +2,7 @@ import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 // Test case for Issue 173
-// https://code.google.com/p/checker-framework/issues/detail?id=173
+// https://github.com/typetools/checker-framework/issues/173
 public abstract class MyMap<K, V> implements Map<K, V> {
   @Override
   public @Nullable V put(K key, V value) {

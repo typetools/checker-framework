@@ -1,5 +1,5 @@
 // Test case for Issue 337:
-// https://code.google.com/p/checker-framework/issues/detail?id=337
+// https://github.com/typetools/checker-framework/issues/337
 
 import javax.annotation.Nullable;
 

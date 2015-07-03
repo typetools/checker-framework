@@ -1,5 +1,5 @@
 // From issue #216:
-// https://code.google.com/p/checker-framework/issues/detail?id=216
+// https://github.com/typetools/checker-framework/issues/216
 
 public class InferMethod {
         public abstract static class Generic<T> {

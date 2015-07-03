@@ -1,5 +1,5 @@
 // Test case for Issue 247:
-// https://code.google.com/p/checker-framework/issues/detail?id=247
+// https://github.com/typetools/checker-framework/issues/247
 
 interface Foo {}
 interface Bar {}
