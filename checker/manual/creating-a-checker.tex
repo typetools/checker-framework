@@ -1259,60 +1259,10 @@ required parsing of the option.
 
 \section{Testing framework\label{testing-framework}}
 
-The Checker Framework comes with a testing framework that is used for
-testing the distributed checkers.
-It is easy to use this testing framework to ensure correctness of your
-checker!
-
-You first need to provide a subclass of
-\code{ParameterizedCheckerTest}
-that determines the checker to use and all command-line options that
-should be provided.
-This class can be run as a JUnit test runner.
-Note that you always need to use the
-\code{-Anomsgtext} option to suppress the substitution of message keys
-by human-readable values.
-See the test setup classes in directory \code{tests/src/tests/} for examples.
-
-Locate all your test cases in a subdirectory of the \code{tests}
-directory.
-The individual test cases are normal Java files that use stylized
-comments to indicate expected error messages.
-For example, consider this test case from the Nullness Checker:
-
-\begin{Verbatim}
-  //:: error: (dereference.of.nullable)
-  s.toString();
-\end{Verbatim}
-
-An expected error message is introduced by the \code{//::} comment.
-The next token is either \code{error:} or \code{warning:},
-distinguishing what kind of message is expected.
-Finally, the message key for the expected message is given.
-
-Multiple expected messages can be given using the "//:: A :: B :: C"
-syntax.
-This example expects both an error and a warning from the same line of code:
-
-\begin{Verbatim}
-  @Regex String s1 = null;
-  //:: error: (assignment.type.incompatible) :: warning: (cast.unsafe)
-  @Regex(3) String s2 = (@Regex(2) String) s;
-\end{Verbatim}
-
-As an alternative, expected errors can be specified in a separate file
-using the \code{.out} file extension.
-These files are of the following format:
-
-\begin{Verbatim}
-:19: error: (dereference.of.nullable)
-\end{Verbatim}
-
-The number between the colons is the line number of the expected error
-message.
-This format is a lot harder to maintain and we suggest using the
-in-line comment format.
-
+The Checker Framework provides a convenient way to write tests for your
+checker.
+% Don't repeat the information here, to prevent them from getting out of sync.
+It is extensively documented in file \<checker-framework/checker/tests/README>.
 
 
 \section{Debugging options\label{debugging-options}}
@@ -1320,6 +1270,7 @@ in-line comment format.
 The Checker Framework provides debugging options that can be helpful when
 writing a checker. These are provided via the standard \code{javac} ``\code{-A}''
 switch, which is used to pass options to an annotation processor.
+
 
 \subsection{Amount of detail in messages\label{debugging-options-detail}}
 
@@ -1849,4 +1800,7 @@ without warnings or errors.
 %%  LocalWords:  RegexUtils LockTransfer FormatterTransfer CFValue argfile
 %%  LocalWords:  RegexTransfer's newResultValue subcheckers taglet tex XXX
 %%  LocalWords:  ParameterizedCheckerTest AoutputArgsToFile ManualTaglet
-%%  LocalWords:  Hevea Hitchhiker's compilermsgs args
+%%  LocalWords:  Hevea Hitchhiker's compilermsgs args Poly MyTypeSystem
+%%  LocalWords:  I18nChecker i18n I18nSubchecker LocalizableKeyChecker
+%%  LocalWords:  MyChecker MyHelperChecker getImmediateSubcheckerClasses
+%%  LocalWords:  MyChecker's subchecker plugins
