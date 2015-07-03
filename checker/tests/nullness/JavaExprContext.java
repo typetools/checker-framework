@@ -2,7 +2,7 @@ import java.util.*;
 
 import org.checkerframework.checker.nullness.qual.*;
 
-// See issue 241: https://code.google.com/p/checker-framework/issues/detail?id=241
+// See issue 241: https://github.com/typetools/checker-framework/issues/241
 
 // Cover all 8 combinations of:
 // -(Non)static class

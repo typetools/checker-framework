@@ -1,5 +1,5 @@
 // Test case for Issue 409:
-// https://code.google.com/p/checker-framework/issues/detail?id=409
+// https://github.com/typetools/checker-framework/issues/409
 //@skip-test
 
 public class Issue409 {

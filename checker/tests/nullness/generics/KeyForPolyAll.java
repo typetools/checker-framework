@@ -5,7 +5,7 @@ import org.checkerframework.framework.qual.PolyAll;
 
 import java.util.*;
 
-// test related to issue 429: https://code.google.com/p/checker-framework/issues/detail?id=429
+// test related to issue 429: https://github.com/typetools/checker-framework/issues/429
 class KeyForPolyAll
 {
     Map<@KeyFor("dict") String, String> dict = new HashMap<@KeyFor("dict") String, String>();

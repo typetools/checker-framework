@@ -2,7 +2,7 @@ import java.util.*;
 
 /*
  * Test case for Issue 111
- * http://code.google.com/p/checker-framework/issues/detail?id=111
+ * https://github.com/typetools/checker-framework/issues/111
  */
 public class Generics2 {
     /* This simple test makes sure that the same defaulting for type variable

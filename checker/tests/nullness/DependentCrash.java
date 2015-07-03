@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.KeyFor;
 import java.util.Map;
 
 // Test for Issue 259
-// https://code.google.com/p/checker-framework/issues/detail?id=259
+// https://github.com/typetools/checker-framework/issues/259
 abstract class Precondition {
 
   abstract <T> T checkNotNull(T reference);

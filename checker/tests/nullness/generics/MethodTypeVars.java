@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 /*
  * This test is based on Issue 93:
- * http://code.google.com/p/checker-framework/issues/detail?id=93
+ * https://github.com/typetools/checker-framework/issues/93
  */
 public class MethodTypeVars {
     void m() {

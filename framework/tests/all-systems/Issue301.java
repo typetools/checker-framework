@@ -1,5 +1,5 @@
 // Test case for Issue 301:
-// https://code.google.com/p/checker-framework/issues/detail?id=301
+// https://github.com/typetools/checker-framework/issues/301
 class Issue301 {
 
   {

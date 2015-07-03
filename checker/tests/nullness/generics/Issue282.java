@@ -1,5 +1,5 @@
 // Test case for Issue 282
-// https://code.google.com/p/checker-framework/issues/detail?id=282
+// https://github.com/typetools/checker-framework/issues/282
 import org.checkerframework.checker.nullness.qual.*;
 
 import java.util.Collection;

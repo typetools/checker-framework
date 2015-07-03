@@ -67,12 +67,11 @@ INTERM_JSR308_REPO  = os.path.join(INTERM_REPO_ROOT, "jsr308-langtools")
 INTERM_ANNO_REPO    = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
 
 #The central repositories for Checker Framework related projects
-LIVE_REPO_ROOT    = "https://code.google.com/p/"
-LIVE_CHECKER_REPO = LIVE_REPO_ROOT + "checker-framework"
-LIVE_JSR308_REPO  = LIVE_REPO_ROOT + "jsr308-langtools"
-LIVE_ANNO_REPO    = LIVE_REPO_ROOT + "annotation-tools"
-LIVE_PLUME_LIB    = LIVE_REPO_ROOT + "plume-lib"
-LIVE_PLUME_BIB    = LIVE_REPO_ROOT + "plume-bib"
+LIVE_CHECKER_REPO = "https://github.com/typetools/checker-framework"
+LIVE_JSR308_REPO  = "https://code.google.com/p/jsr308-langtools"
+LIVE_ANNO_REPO    = "https://github.com/typetools/annotation-tools"
+LIVE_PLUME_LIB    = "https://github.com/mernst/plume-lib"
+LIVE_PLUME_BIB    = "https://github.com/mernst/plume-bib"
 
 # "USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566
 # Another alternative is: USER = os.getenv('USER')
@@ -221,7 +220,7 @@ PATH = PATH + ":/homes/gws/mernst/bin/Linux-i686:/uns/bin:."
 os.environ['PATH'] = PATH
 
 #Tools that must be on your PATH ( besides common *nix ones like grep )
-TOOLS = [ 'hevea', 'perl', 'java', 'dia', 'latex', 'mvn', 'hg', EDITOR ]
+TOOLS = [ 'hevea', 'perl', 'java', 'dia', 'latex', 'mvn', 'hg', 'git', EDITOR ]
 
 #Script option constants
 LT_OPT   = "langtools"

@@ -1,5 +1,5 @@
 // Test case for Issue 139:
-// http://code.google.com/p/checker-framework/issues/detail?id=139
+// https://github.com/typetools/checker-framework/issues/139
 abstract class GenericTest8 {
     interface A<S> {}
 

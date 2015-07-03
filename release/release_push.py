@@ -417,18 +417,6 @@ def main(argv):
     print( msg )
     prompt_until_yes()
 
-    # When a developer pushes a commit that fixes an issue, they should mark those issues as 'pushed'.
-    # When a release occurs, these issues should be changed to 'fixed'.
-
-    print_step( "Push Step 11. Update pushed issues." ) # MANUAL
-
-    if not test_mode:
-        print( "Select all of the issues at each of the following URLs and change their status from 'pushed' to 'fixed':\n" )
-        print( "https://code.google.com/p/checker-framework/issues/list?q=status%3APushed\n" )
-        print( "https://code.google.com/p/annotation-tools/issues/list?q=status%3APushed\n" )
-
-    continue_or_exit( "Please log in to google code and mark all issues that were 'pushed' to 'fixed' (as well all issues mentioned as fixed in the changelogs)." )
-
     # A prompt describes the email you should send to all relevant mailing lists.
     # Please fill out the email and announce the release.
 

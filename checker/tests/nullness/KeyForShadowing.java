@@ -1,5 +1,5 @@
 // Test for Checker Framework issue 273:
-// http://code.google.com/p/checker-framework/issues/detail?id=273
+// https://github.com/typetools/checker-framework/issues/273
 
 import org.checkerframework.checker.nullness.qual.*;
 import java.util.Map;

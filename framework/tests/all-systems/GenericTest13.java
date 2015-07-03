@@ -1,5 +1,5 @@
 // Test case for Issue 142
-// http://code.google.com/p/checker-framework/issues/detail?id=142
+// https://github.com/typetools/checker-framework/issues/142
 class GenericTest13 {
   interface Entry<K extends Object, V extends Object> { V getValue(); }
   interface Iterator<E extends Object> { E next(); }

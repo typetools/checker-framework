@@ -1,6 +1,6 @@
 // @skip-test
 
-// Test case for issue 371: https://code.google.com/p/checker-framework/issues/detail?id=371
+// Test case for issue 371: https://github.com/typetools/checker-framework/issues/371
 
 import java.net.URL;
 

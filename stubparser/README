@@ -10,11 +10,9 @@ The project branched off of javaparser 1.0.7, available at:
 Known Issues:
 - does not parse annotations on new class or new array expressions
 - uses the old receiver parameter syntax, must be adapted
-- This is only a Java 1.5 parser, ideally we would use a Java 8 parser eventually
-  Consider these or other projects that fork the original javaparser to
-  add support for Java 1.7:
-    https://github.com/matozoid/javaparser
-    https://github.com/before/javaparser
+- This is only a Java 1.5 parser, ideally we would update to a more recent
+  version that supports Java 8.  This is low priority because users are
+  encouraged to use annotated libraries rather than stub files.
 
 -------------------------------------------------------------------------
 To modify and rebuild the parser, install javacc (the Java Compiler

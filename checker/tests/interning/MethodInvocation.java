@@ -39,7 +39,7 @@ public class MethodInvocation {
     void internedCharacterParameter(@Interned Character a) {
     }
 
-    // See http://code.google.com/p/checker-framework/issues/detail?id=84
+    // See https://github.com/typetools/checker-framework/issues/84
     void internedCharacterParametersClient() {
         // TODO: autoboxing from char to Character //:: error: (argument.type.incompatible)
         internedCharacterParameter('\u00E4'); // lowercase a with umlaut

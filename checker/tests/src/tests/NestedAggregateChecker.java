@@ -1,7 +1,7 @@
 package tests;
 
 // Test case for Issue 343
-// https://code.google.com/p/checker-framework/issues/detail?id=343
+// https://github.com/typetools/checker-framework/issues/343
 
 import org.checkerframework.checker.fenum.FenumChecker;
 import org.checkerframework.checker.i18n.I18nChecker;

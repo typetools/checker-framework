@@ -6,6 +6,12 @@ Documented the notion of a compound checker, which depends on other checkers
 Renamed -AuseConservativeDefaultsForUnannotatedSourceCode command-line
   option to -AuseSafeDefaultsForUnannotatedSourceCode
 
+Moved the Checker Framework version control repository from Google Code to
+GitHub, and from the Mercurial version control system to Git.  If you have
+cloned the old repository, then discard your old clone and create a new one
+using this command:
+  git clone https://github.com/typetools/checker-framework.git
+
 Fixed issues:  429.
 
 ----------------------------------------------------------------------
@@ -980,7 +986,7 @@ Implementation details:
   of the method and the inferred or explicit method type arguments.
   If you override this method, you will need to update your version.
   See this change set for a simple example:
-  http://code.google.com/p/checker-framework/source/detail?r=8381a213a4
+  https://github.com/typetools/checker-framework/source/detail?r=8381a213a4
 
 - Testing framework:
   Support for multiple expected errors using the "//:: A :: B :: C" syntax.

@@ -1,7 +1,7 @@
 import tests.util.*;
 
 // Test case for Issue 135:
-// http://code.google.com/p/checker-framework/issues/detail?id=135
+// https://github.com/typetools/checker-framework/issues/135
 // Method type argument substitution needs to consider arrays correctly.
 public class GenericTest5 {
   interface Foo { <T> T[] id(T[] a); }

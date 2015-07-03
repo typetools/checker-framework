@@ -1,7 +1,7 @@
 // @skip-tests  type.invalid is currently hard to support in the qualifier api
 
 // Test case for Issue 292:
-// https://code.google.com/p/checker-framework/issues/detail?id=292
+// https://github.com/typetools/checker-framework/issues/292
 
 // TODO: ensure that type validation is consistently performed for each
 // possible tree.

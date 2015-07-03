@@ -1,6 +1,6 @@
 /**
  * Test case for Issue 143:
- * http://code.google.com/p/checker-framework/issues/detail?id=143
+ * https://github.com/typetools/checker-framework/issues/143
  */
 class InferredPrimitive {
   public static void main( String[] args ) {

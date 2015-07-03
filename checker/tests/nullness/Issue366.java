@@ -1,5 +1,5 @@
 // Test case for Issue 366:
-// https://code.google.com/p/checker-framework/issues/detail?id=366
+// https://github.com/typetools/checker-framework/issues/366
 
 // @skip-test
 import java.util.Optional;

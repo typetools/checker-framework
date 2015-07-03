@@ -3,7 +3,7 @@ import tests.util.*;
 import java.util.Map;
 
 // Test case for Issue 134:
-// http://code.google.com/p/checker-framework/issues/detail?id=134
+// https://github.com/typetools/checker-framework/issues/134
 // Handling of generics from different enclosing classes.
 // TODO: revisit with nested types in 1.3.
 // @skip-test

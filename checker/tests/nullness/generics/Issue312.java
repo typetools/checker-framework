@@ -1,5 +1,5 @@
 // Test case for Issue 312:
-// https://code.google.com/p/checker-framework/issues/detail?id=312
+// https://github.com/typetools/checker-framework/issues/312
 
 import java.util.List;
 

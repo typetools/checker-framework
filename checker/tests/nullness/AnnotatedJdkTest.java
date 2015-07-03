@@ -1,4 +1,4 @@
-// Test case for issue 370: https://code.google.com/p/checker-framework/issues/detail?id=370
+// Test case for issue 370: https://github.com/typetools/checker-framework/issues/370
 
 import java.util.*;
 import org.checkerframework.checker.nullness.qual.Nullable;

@@ -5,7 +5,7 @@ import org.checkerframework.checker.nullness.qual.*;
  * The component type of newly created arrays is always @Nullable,
  * also for boxed types.
  * This is an expanded version of the test case for Issue 151:
- * http://code.google.com/p/checker-framework/issues/detail?id=151
+ * https://github.com/typetools/checker-framework/issues/151
  */
 public class ArrayCreationNullable {
 

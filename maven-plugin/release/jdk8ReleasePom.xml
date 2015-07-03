@@ -29,8 +29,8 @@
     <version><!-- checker-framework-version -->1.9.3<!-- /checker-framework-version --></version>
 
     <scm>
-        <url>https://code.google.com/p/checker-framework/</url>
-        <connection>https://code.google.com/p/checker-framework/</connection>
+        <url>https://github.com/typetools/checker-framework.git</url>
+        <connection>https://github.com/typetools/checker-framework.git</connection>
     </scm>
 
 

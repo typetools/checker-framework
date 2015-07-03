@@ -75,7 +75,7 @@ class ThrowsTest {
     //Test Exception parameters
     void unionTypes() {
 // GuiEffectChecker throws an exception on this code.  When issue 384 is fixed, uncomment these lines.
-//https://code.google.com/p/checker-framework/issues/detail?id=384
+//https://github.com/typetools/checker-framework/issues/384
 //        try {
 //        } catch(@AlwaysSafe NullPointerPolyUIException | @AlwaysSafe ArrayStorePolyUIException unionParam) {
 //

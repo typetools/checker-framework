@@ -1,5 +1,5 @@
 // Test case for Issue 296:
-// https://code.google.com/p/checker-framework/issues/detail?id=296
+// https://github.com/typetools/checker-framework/issues/296
 import java.util.Arrays;
 
 import org.checkerframework.checker.nullness.qual.Nullable;

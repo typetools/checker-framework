@@ -1,5 +1,5 @@
 // Test case for Issue 353:
-// https://code.google.com/p/checker-framework/issues/detail?id=353
+// https://github.com/typetools/checker-framework/issues/353
 // @skip-test
 
 class StaticInit {

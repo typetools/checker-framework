@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.*;
 
 /**
- * Test case for issue 62: http://code.google.com/p/checker-framework/issues/detail?id=62
+ * Test case for issue 62: https://github.com/typetools/checker-framework/issues/62
  * @skip-test
  */
 public class AssertIfTrueTest {

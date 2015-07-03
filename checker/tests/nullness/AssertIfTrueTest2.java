@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 
 /**
- * Test case for issue 53: http://code.google.com/p/checker-framework/issues/detail?id=53 (fixed now)
+ * Test case for issue 53: https://github.com/typetools/checker-framework/issues/53 (fixed now)
  */
 public class AssertIfTrueTest2 {
 

@@ -1,4 +1,4 @@
-// Test case for issue 278: https://code.google.com/p/checker-framework/issues/detail?id=278
+// Test case for issue 278: https://github.com/typetools/checker-framework/issues/278
 
 import org.checkerframework.checker.experimental.tainting_qual.qual.*;
 
