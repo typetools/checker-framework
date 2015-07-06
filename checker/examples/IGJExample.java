@@ -21,7 +21,7 @@ class Date {
         return this.time;
     }
 
-    public int mutableReciever() /*@Mutable*/ // Error: No method with mutable receiver within Immutable Class
+    public int mutableReciever(/*@Mutable*/ Date this) // Error: No method with mutable receiver within Immutable Class
     { return 0; }
 }
 
@@ -38,10 +38,10 @@ class Point {
     void setX(@AssignsFields Point this, double x) { this.x = x; }
     void setY(@AssignsFields Point this, double y) { this.y = y; }
 
-    double getX() /*@ReadOnly*/ { return x; }
-    double getY() /*@ReadOnly*/ { return y; }
+    double getX(/*@ReadOnly*/ Point this) { return x; }
+    double getY(/*@ReadOnly*/ Point this) { return y; }
 
-    public int hashCode() /*@ReadOnly*/ {
+    public int hashCode(/*@ReadOnly*/ Point this) {
         x += 4; // Error: ReadOnly receiver
         return 0;
     }
@@ -73,9 +73,9 @@ class Point {
 @I
 class TestClass {
 
-    void mutableReceiver() /*@Mutable*/ { }
-    void readOnlyReceiver() /*@ReadOnly*/ { }
-    void immutableReceiver() /*@Immutable*/ { }
+    void mutableReceiver(/*@Mutable*/ TestClass this) { }
+    void readOnlyReceiver(/*@ReadOnly*/ TestClass this) { }
+    void immutableReceiver(/*@Immutable*/ TestClass this) { }
 
     static void isMutable(@Mutable TestClass tc)  { }
     static void isImmutable(@Immutable TestClass tc) { }
@@ -87,21 +87,21 @@ class TestClass {
         immutableReceiver();  // Error: Cannot call method with immutable receiver
     }
 
-    void testMethod1() /*@ReadOnly*/ {
+    void testMethod1(/*@ReadOnly*/ TestClass this) {
         readOnlyReceiver();
         mutableReceiver();   // Error: cannot call method with mutable receiver within method with ReadOnly receiver
         isRO(this);
         isMutable(this);    // Error: this escapes as RO
     }
 
-    void testMethod2() /*@Mutable*/ {
+    void testMethod2(/*@Mutable*/ TestClass this) {
         immutableReceiver();  // Error: cannot call method with immutable receiver
         isRO(this);
         isMutable(this);    // this escapes as mutable
         isImmutable(this);  // Error: this escapes as Immutable
     }
 
-    void testMethod3() /*@Immutable*/ {
+    void testMethod3(/*@Immutable*/ TestClass this) {
         immutableReceiver();
         isRO(this);
         isMutable(this);    // Error: this escapes as immutable

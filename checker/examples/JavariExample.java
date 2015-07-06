@@ -111,13 +111,13 @@ class JavariExample {
         }
 
         // this is ok
-        void mutateInternal(String other) /*@Mutable*/ {
+        void mutateInternal(/*@Mutable*/ JavariCell this, String other) {
             s = other;
             this.s = other;
         }
 
         // this is not ok
-        void illegalMutateInternal(String other) /*@ReadOnly*/ {
+        void illegalMutateInternal(/*@ReadOnly*/ JavariCell this, String other) {
             s = other;       // method with readonly receiver, cannot do this
             this.s = other;  // method with readonly readonly, cannot do this either
         }
