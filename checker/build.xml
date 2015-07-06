@@ -516,6 +516,8 @@
 
       <antcall target="nullness-extra-tests-nojdk"/>
 
+      <antcall target="example-tests-nojdk"/>
+
       <!-- Copied from -run-tests target -->
       <mkdir dir="${build.reports}"/>
 
@@ -812,6 +814,24 @@
             <param name="param" value="tests.GuiEffectTest"/>
         </antcall>
     </target>
+
+    <target name="example-tests" depends="dist,example-tests-nojdk"
+            description="Run tests for the example programs">
+    </target>
+
+    <target name="example-tests-nojdk" depends="dist-nojdk,jdk.jar.exists,build-tests"
+            description="Run tests for the example programs, WITHOUT updating jdkX.jar">
+      <exec executable="chmod">
+        <arg line="+x ${basedir}/bin/javac"/>
+      </exec>
+
+      <exec executable="make" failonerror="${halt.on.test.failure}">
+        <env key="JAVAC" value="${basedir}/bin/javac"/>
+        <arg line="-C examples/"/>
+      </exec>
+    </target>
+
+
 
     <target name="jtreg-tests-checkers" depends="-def-jtreg,jar"
             description="Run checker jtreg tests">
