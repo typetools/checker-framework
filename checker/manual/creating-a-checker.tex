@@ -14,7 +14,6 @@ with the annotations.
 If you only want to \emph{use} a checker, you do not need to read this
 chapter.
 
-
 Writing a simple checker is easy!  For example, here is a complete, useful
 type-checker:
 
@@ -37,7 +36,7 @@ You can also create your own checker by customizing a different existing
 checker.  Specific checkers that are designed for extension (besides the Subtyping
 Checker) include the Fake Enumeration Checker
 (\chapterpageref{fenum-checker}), the Units Checker
-(\chapterpageref{units-checker}), and the typestate checkers
+(\chapterpageref{units-checker}), and the Typestate Checker
 (\chapterpageref{typestate-checker}).
 Or, you can copy and then modify a different existing checker --- whether
 one distributed with the Checker Framework or a third-party one.
@@ -109,7 +108,6 @@ Other \par tools
 \end{tabular}
 \end{center}
 
-
 The Base Checker enforces the standard subtyping rules on extended types.
 The Subtyping Checker is a simple use of the Base Checker that supports
 providing type qualifiers on the command line.
@@ -153,7 +151,7 @@ the components of a type system as written using the Checker Framework:
   Subtyping rules related to the type hierarchy, such as that every
   assignment and pseudo-assignment satisfies a subtyping relationship.
   Your checker automatically inherits these subtyping rules from the Base
-  Checker (Chapter~\ref{subtyping-checker}).
+  Checker See (Chapter~\ref{extending-visitor}) and (Chapter~\ref{subtyping-checker}).
 \item
   Additional rules that are specific to your particular checker.  For
   example, in the Nullness type system, only references with a
@@ -461,7 +459,6 @@ even if a programmer did not explicitly write it.  For example, every
 literal (other than \<null>) has a \refqualclass{checker/nullness/qual}{NonNull} type.
 
 The implicit annotations may be specified declaratively and/or procedurally.
-
 
 \subsection{Declaratively specifying implicit annotations\label{declarative-type-introduction}}
 
@@ -1270,7 +1267,6 @@ It is extensively documented in file \<checker-framework/checker/tests/README>.
 The Checker Framework provides debugging options that can be helpful when
 writing a checker. These are provided via the standard \code{javac} ``\code{-A}''
 switch, which is used to pass options to an annotation processor.
-
 
 \subsection{Amount of detail in messages\label{debugging-options-detail}}
 
