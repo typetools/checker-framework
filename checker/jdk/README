@@ -1,7 +1,8 @@
 This directory contains annotated versions of the JDK.
 
-(Annotated versions of non-JDK libraries appear in stub files, such as
-checker-framework/checker/src/org/checkerframework/checker/nullness/astubs/gnu-getopt.astub .)
+(Annotated versions of non-JDK libraries appear either as .jar files in
+checker-framework/checker/lib or as stub files in a directory such as
+checker-framework/checker/src/org/checkerframework/checker/nullness/astubs/ .)
 
 See chapter "Annotating libraries" in the Checker Framework Manual for
 information on using these classes.
