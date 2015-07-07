@@ -27,7 +27,6 @@ import java.util.LinkedHashSet;
     // It is permitted temporarily, until we gathered more experience
     // See issues 154, 322, and 433.
     "forbidnonnullarraycomponents" })
-@StubFiles("astubs/gnu-getopt.astub")
 public abstract class AbstractNullnessChecker extends InitializationChecker {
 
     /**
