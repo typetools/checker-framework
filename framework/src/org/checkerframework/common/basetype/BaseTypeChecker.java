@@ -440,7 +440,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         // by a previous checker run in an aggregate checker.
         int nerrorsOfAllPreviousCheckers = this.errsOnLastExit;
         for (BaseTypeChecker checker : getSubcheckers()) {
-            checker.errsOnLastExit += nerrorsOfAllPreviousCheckers;
+            checker.errsOnLastExit = nerrorsOfAllPreviousCheckers;
             int errorsBeforeTypeChecking = log.nerrors;
 
             checker.typeProcess(element, tree);
@@ -448,7 +448,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             int errorsAfterTypeChecking = log.nerrors;
             nerrorsOfAllPreviousCheckers += errorsAfterTypeChecking - errorsBeforeTypeChecking;
         }
-        this.errsOnLastExit += nerrorsOfAllPreviousCheckers;
+        this.errsOnLastExit = nerrorsOfAllPreviousCheckers;
         super.typeProcess(element, tree);
     }
 
