@@ -6,4 +6,4 @@ When adding a .jar file to this directory, update the below list and also the li
 
 The source code appears at the following locations:
 
-java-getopt-1.0.14.jar : from https://github.com/dbrosoft/java-getopt
+java-getopt-1.0.14.jar : from https://github.com/typetools/java-getopt
