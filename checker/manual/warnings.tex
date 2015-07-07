@@ -774,9 +774,11 @@ import org.checkerframework.checker.regex.qual.*;
 \end{Verbatim}
 
 \noindent
-If the import statements are \emph{not} commented out, then when compiling
-it is necessary to have the annotation definitions (e.g., the
-\code{checker.jar} or \code{checker-qual.jar} file) on the classpath.
+If the import statements are \emph{not} commented out, then every time you
+compile the code (even when not doing pluggable type-checking),
+the annotation definitions (e.g., the \code{checker.jar}
+or \code{checker-qual.jar} file) must be on the classpath.
+(This is done automatically if you use the Checker Framework comiler.)
 Commenting out the import statements also eliminates Eclipse
 warnings about unused import statements, if all uses of the imported
 qualifier are themselves in comments and thus invisible to Eclipse.

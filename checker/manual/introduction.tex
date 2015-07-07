@@ -464,53 +464,6 @@ Checker Framework compiler.  For more details, see
 Section~\ref{annotations-in-comments}.
 
 
-
-\subsection{Distributing your annotated project\label{distributing}}
-
-If your code contains annotations, then your code has a dependency on the
-annotation declarations.  People who want to compile or run your code may
-need declarations of the annotations on their classpath.
-
-\begin{itemize}
-\item
-To perform pluggable type-checking, all of the Checker Framework (which
-also contains the annotation declarations) is needed.
-\item
-To compile the code:
-\begin{itemize}
-\item
-  If you wrote annotations in comments (see
-  Section~\ref{annotations-in-comments}), then the code
-  can be compiled by any Java compiler, without needing declarations of the
-  annotations.
-\item
-  Otherwise, compiling the code requires a declaration of the annotations.
-  These appear in the full Checker Framework.  Additionally, the Checker
-  Framework distribution \code{.zip} file contains a small jar file,
-  \code{checker-qual.jar}, that only contains the definitions of the
-  distributed qualifiers and some run-time utilities, without any support
-  for type-checking.  Because the annotations use Java 8 features, only do
-  this if you are compiling to Java 8 classfiles.
-\end{itemize}
-\item
-To run the code:
-\begin{itemize}
-\item
-  If you compiled the code without using the annotation declarations, then
-  no annotation declarations are needed.
-\item
-  If you compiled the code using the annotation declarations, then users
-  may need to have the annotation declarations on their classpath.
-\end{itemize}
-\end{itemize}
-
-A simple rule of thumb is as follows.  When distributing your source code,
-you may wish to include either the Checker Framework jar file or the
-\code{checker-qual.jar} file.  When distributing compiled binaries, you
-may wish to compile them without using the annotations, or include the
-contents of \code{checker-qual.jar} in your distribution.
-
-
 \section{Running a checker\label{running}}
 
 To run a checker plugin, run the compiler \code{javac} as usual,
@@ -561,6 +514,41 @@ will interfere with type-checking of clients that use your code.
 Therefore, it is strongly recommended that whenever you are creating
 \<.class> files that will be distributed or compiled against, you run the
 type-checkers for all the annotations that your have written.
+
+
+\subsection{Distributing your annotated project\label{distributing}}
+
+You have two main options for distributing your compiled code (\<.jar>
+files).
+
+\begin{itemize}
+\item
+  Option 1: no annotations appear in the \<.jar> files.  There is no
+  run-time dependence on the Checker Framework, and the distributed \<.jar>
+  files are not useful for pluggable type-checking of client code.
+
+  Write annotations in comments (see
+  Section~\ref{annotations-in-comments}).
+  Developers perform pluggable type-checking in-house to detect errors and
+  verify their absence.
+  To create the distributed \<.jar> files, use a normal Java compiler,
+  which ignores the annotations.
+\item
+  Option 2: annotations appear in the \<.jar> files.  The distributed
+  \<.jar> files can be used for pluggable type-checking of client code.
+  The \<.jar> files are only compatible with a Java 8 JVM, unless you
+  do extra work (see Section~\ref{declaration-annotations-for-java7}).
+
+  Write annotations in comments or not in comments (it doesn't matter which).
+  Developers perform pluggable type-checking in-house to detect errors and
+  verify their absence.
+  When you create \<.class> files, use the Checker Framework compiler
+  (Section~\ref{external-tools}) and running each relevant type system.
+  Create the distributed \<.jar> files from those \<.class> files, and also
+  include the contents of \code{checker-qual.jar} from the Checker
+  Framework distribution, to define the annotations.
+
+\end{itemize}
 
 
 \subsection{Summary of command-line options\label{checker-options}}
