@@ -1551,7 +1551,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         if (tree.getKind() == Tree.Kind.METHOD_INVOCATION &&
-                TreeUtils.isGetClassInvocation((MethodInvocationTree) tree, processingEnv)) {
+                TreeUtils.isGetClassInvocation((MethodInvocationTree) tree)) {
             adaptGetClassReturnTypeToReceiver(methodType, receiverType);
         }
 
