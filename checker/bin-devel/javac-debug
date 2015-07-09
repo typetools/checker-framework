@@ -21,16 +21,21 @@ case `uname -s` in
       ;;
 esac
 
-binaryDir="${mydir}"/../binary
+binaryDir="${mydir}"/../dist
 
-#Langtools bin dir
-ltBinDir="${mydir}"/../../../jsr308-langtools/build/classes
+# langtools bin dir for Jenkins
+if [ -z "$LT_BIN" ] || [ "$LT_BIN" = "" ]; then
+   ltBinDir="${mydir}"/../../../jsr308-langtools/build/classes
+else
+   ltBinDir="$LT_BIN"
+fi
+
 jdkPaths="${mydir}"/../jdk/annotated
 
 cfDir="${mydir}"/../..
 # Put "checker" last, as "ant bindist" puts other projects
 # into the checker/build directory.
-buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/javaparser/build:"${cfDir}"/checker/build
+buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/stubparser/build:"${cfDir}"/framework/build:"${cfDir}"/checker/build
 
 eval "java" \
      "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" \
@@ -39,4 +44,4 @@ eval "java" \
      "-DCheckerDevelMain.runtime.bcp=${ltBinDir} " \
      "-DCheckerDevelMain.binary=${binaryDir}" \
      "-classpath ${buildDirs} " \
-     "org.checkerframework.framework.util.CheckerDevelMain" "$@"
+     "org.checkerframework.framework.util.CheckerDevelMain" "-AprintErrorStack" "$@"
