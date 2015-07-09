@@ -12,7 +12,8 @@
 # This script also has debug arguments set up
 # to allow remote debugging of the framework on port
 # 5005
-#
+
+# When editing, keep this file in sync with javac in this directory.
 
 mydir="`dirname $0`"
 case `uname -s` in
