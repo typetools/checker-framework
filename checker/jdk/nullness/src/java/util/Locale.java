@@ -54,15 +54,10 @@ import sun.util.locale.BaseLocale;
 import sun.util.locale.InternalLocaleBuilder;
 import sun.util.locale.LanguageTag;
 import sun.util.locale.LocaleExtensions;
-import sun.util.locale.LocaleMatcher;
 import sun.util.locale.LocaleObjectCache;
 import sun.util.locale.LocaleSyntaxException;
 import sun.util.locale.LocaleUtils;
 import sun.util.locale.ParseStatus;
-import sun.util.locale.provider.LocaleProviderAdapter;
-import sun.util.locale.provider.LocaleResources;
-import sun.util.locale.provider.LocaleServiceProviderPool;
-import sun.util.locale.provider.ResourceBundleBasedAdapter;
 
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -1001,7 +996,7 @@ public final class Locale implements Cloneable, Serializable {
      * @return An array of installed locales.
      */
     public static Locale[] getAvailableLocales() {
-        return LocaleServiceProviderPool.getAllAvailableLocales();
+        return null; // LocaleServiceProviderPool.getAllAvailableLocales();
     }
 
     /**
@@ -1779,12 +1774,12 @@ public final class Locale implements Cloneable, Serializable {
             throw new NullPointerException();
         }
 
-        LocaleServiceProviderPool pool =
-            LocaleServiceProviderPool.getPool(LocaleNameProvider.class);
+        // LocaleServiceProviderPool pool =
+        //     LocaleServiceProviderPool.getPool(LocaleNameProvider.class);
         String key = (type == DISPLAY_VARIANT ? "%%"+code : code);
-        String result = pool.getLocalizedObject(
-                                LocaleNameGetter.INSTANCE,
-                                inLocale, key, type, code);
+        String result = null; // pool.getLocalizedObject(
+                              //  LocaleNameGetter.INSTANCE,
+                              //  inLocale, key, type, code);
             if (result != null) {
                 return result;
             }
@@ -1817,15 +1812,16 @@ public final class Locale implements Cloneable, Serializable {
         if (baseLocale.getVariant().length() == 0)
             return "";
 
-        LocaleResources lr = LocaleProviderAdapter.forJRE().getLocaleResources(inLocale);
+        // LocaleResources lr = LocaleProviderAdapter.forJRE().getLocaleResources(inLocale);
 
         String names[] = getDisplayVariantArray(inLocale);
 
-        // Get the localized patterns for formatting a list, and use
-        // them to format the list.
-        return formatList(names,
-                          lr.getLocaleName("ListPattern"),
-                          lr.getLocaleName("ListCompositionPattern"));
+        return null;
+        // // Get the localized patterns for formatting a list, and use
+        // // them to format the list.
+        // return formatList(names,
+        //                   lr.getLocaleName("ListPattern"),
+        //                   lr.getLocaleName("ListCompositionPattern"));
     }
 
     /**
@@ -1874,7 +1870,7 @@ public final class Locale implements Cloneable, Serializable {
      * @throws NullPointerException if <code>inLocale</code> is <code>null</code>
      */
     public String getDisplayName(Locale inLocale) {
-        LocaleResources lr =  LocaleProviderAdapter.forJRE().getLocaleResources(inLocale);
+        // LocaleResources lr = LocaleProviderAdapter.forJRE().getLocaleResources(inLocale);
 
         String languageName = getDisplayLanguage(inLocale);
         String scriptName = getDisplayScript(inLocale);
@@ -1882,9 +1878,9 @@ public final class Locale implements Cloneable, Serializable {
         String[] variantNames = getDisplayVariantArray(inLocale);
 
         // Get the localized patterns for formatting a display name.
-        String displayNamePattern = lr.getLocaleName("DisplayNamePattern");
-        String listPattern = lr.getLocaleName("ListPattern");
-        String listCompositionPattern = lr.getLocaleName("ListCompositionPattern");
+        String displayNamePattern = null; // lr.getLocaleName("DisplayNamePattern");
+        String listPattern = null; // lr.getLocaleName("ListPattern");
+        String listCompositionPattern = null; // lr.getLocaleName("ListCompositionPattern");
 
         // The display name consists of a main name, followed by qualifiers.
         // Typically, the format is "MainName (Qualifier, Qualifier)" but this
@@ -2124,7 +2120,7 @@ public final class Locale implements Cloneable, Serializable {
     // avoid its class loading.
     private static boolean isUnicodeExtensionKey(String s) {
         // 2alphanum
-        return (s.length() == 2) && LocaleUtils.isAlphaNumericString(s);
+        return (s.length() == 2); // && LocaleUtils.isAlphaNumericString(s);
     }
 
     /**
@@ -2259,41 +2255,6 @@ public final class Locale implements Cloneable, Serializable {
             extensions = LocaleExtensions.NUMBER_THAI;
         }
         return extensions;
-    }
-
-    /**
-     * Obtains a localized locale names from a LocaleNameProvider
-     * implementation.
-     */
-    private static class LocaleNameGetter
-        implements LocaleServiceProviderPool.LocalizedObjectGetter<LocaleNameProvider, String> {
-        private static final LocaleNameGetter INSTANCE = new LocaleNameGetter();
-
-        @Override
-        // Not @Nullable because the "return null" in the body is dead code
-        public String getObject(LocaleNameProvider localeNameProvider,
-                                Locale locale,
-                                String key,
-                                Object... params) {
-            assert params.length == 2;
-            int type = (Integer)params[0];
-            String code = (String)params[1];
-
-            switch(type) {
-            case DISPLAY_LANGUAGE:
-                return localeNameProvider.getDisplayLanguage(code, locale);
-            case DISPLAY_COUNTRY:
-                return localeNameProvider.getDisplayCountry(code, locale);
-            case DISPLAY_VARIANT:
-                return localeNameProvider.getDisplayVariant(code, locale);
-            case DISPLAY_SCRIPT:
-                return localeNameProvider.getDisplayScript(code, locale);
-            default:
-                assert false; // shouldn't happen
-            }
-
-            return null;
-        }
     }
 
     /**
@@ -3035,7 +2996,7 @@ public final class Locale implements Cloneable, Serializable {
          *     found in the given {@code ranges} is ill-formed
          */
         public static List<LanguageRange> parse(String ranges) {
-            return LocaleMatcher.parse(ranges);
+            return null; // LocaleMatcher.parse(ranges);
         }
 
         /**
@@ -3111,7 +3072,7 @@ public final class Locale implements Cloneable, Serializable {
         public static List<LanguageRange> mapEquivalents(
                                               List<LanguageRange>priorityList,
                                               Map<String, List<String>> map) {
-            return LocaleMatcher.mapEquivalents(priorityList, map);
+            return null; // LocaleMatcher.mapEquivalents(priorityList, map);
         }
 
         /**
@@ -3180,7 +3141,7 @@ public final class Locale implements Cloneable, Serializable {
     public static List<Locale> filter(List<LanguageRange> priorityList,
                                       Collection<Locale> locales,
                                       FilteringMode mode) {
-        return LocaleMatcher.filter(priorityList, locales, mode);
+        return null; // LocaleMatcher.filter(priorityList, locales, mode);
     }
 
     /**
@@ -3227,7 +3188,7 @@ public final class Locale implements Cloneable, Serializable {
     public static List<String> filterTags(List<LanguageRange> priorityList,
                                           Collection<String> tags,
                                           FilteringMode mode) {
-        return LocaleMatcher.filterTags(priorityList, tags, mode);
+        return null; // LocaleMatcher.filterTags(priorityList, tags, mode);
     }
 
     /**
@@ -3268,7 +3229,7 @@ public final class Locale implements Cloneable, Serializable {
      */
     public static @Nullable Locale lookup(List<LanguageRange> priorityList,
                                 Collection<Locale> locales) {
-        return LocaleMatcher.lookup(priorityList, locales);
+        return null; // LocaleMatcher.lookup(priorityList, locales);
     }
 
     /**
@@ -3287,7 +3248,7 @@ public final class Locale implements Cloneable, Serializable {
      */
     public static @Nullable String lookupTag(List<LanguageRange> priorityList,
                                    Collection<String> tags) {
-        return LocaleMatcher.lookupTag(priorityList, tags);
+        return null; // LocaleMatcher.lookupTag(priorityList, tags);
     }
 
 }
