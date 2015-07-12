@@ -328,20 +328,24 @@ These instructions use the artifacts from
     </dependencies>
 \end{alltt}
 
-\item Direct the Maven compiler plugin to use the \code{javac\_maven} script. Find
-the existing reference to the \code{maven-compiler-plugin} within the \code{<plugins>}
-section or add it if necessary.
+\item Direct the Maven compiler plugin to use the \code{javac\_maven} script.
+Change the reference to the \code{maven-compiler-plugin} within the \code{<plugins>}
+section, or add it if it is not present.
 
 \begin{alltt}
+  <build>
+    <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
           <fork>true</fork>
-          <executable>(absolute path to checker framework installation)/checker/bin/javac_maven</executable>
+          <executable>${env.CHECKERFRAMEWORK}/checker/bin/javac_maven</executable>
         </configuration>
       </plugin>
+    </plugins>
+  </build>
 \end{alltt}
 
 On Windows, the \code{javac\_maven.bat} script is automatically used instead
@@ -371,7 +375,7 @@ difficult or impossible to pass via the \code{pom.xml}, hence the need for this 
 If you would like to call this file something other than \code{argfile},
 please modify the \code{javac\_maven} script accordingly.
 
-\medskip
+\end{enumerate}
 
 Note: On June 2, 2014, the separate Maven plugin for the Checker
 Framework was deprecated in favor of the above  approach.
@@ -400,7 +404,7 @@ For \code{javac\_maven.bat}, modify (or copy) it such that the last line ends wi
 Please see Section~\ref{debugging-options-output-args} for more details on how to use
 the resulting file.
 
-\end{enumerate}
+
 
 \section{Gradle\label{gradle}}
 
