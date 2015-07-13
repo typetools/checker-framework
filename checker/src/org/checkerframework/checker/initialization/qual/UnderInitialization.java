@@ -57,7 +57,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *      public A() {
  *          a = "";
  *          // Now, all fields of A are initialized.
- *          // However, if this constuctor is invoked as part of 'new B()', then
+ *          // However, if this constructor is invoked as part of 'new B()', then
  *          // the fields of B are not yet initialized.
  *          // If we would type 'this' as &#64;Initialized, then the following call is valid:
  *          foo();
