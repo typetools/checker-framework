@@ -1,26 +1,23 @@
 package org.checkerframework.checker.nullness;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import org.checkerframework.checker.nullness.qual.KeyFor;
-import org.checkerframework.framework.source.AggregateChecker;
-import org.checkerframework.framework.source.SourceChecker;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.NonRaw;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.checker.nullness.qual.Raw;
+import org.checkerframework.framework.qual.PolyAll;
+import org.checkerframework.framework.qual.TypeQualifiers;
 
 /**
- * An aggregated checker for the nullness type-system (with rawness) and
- * {@link KeyFor}.
- *
- * @checker_framework.manual #nullness-checker Nullness Checker
- * @checker_framework.manual #initialization-rawness-checker Rawness Initialization Checker
+ * A concrete instantiation of {@link AbstractNullnessChecker} using rawness.
  */
-public class NullnessRawnessChecker extends AggregateChecker {
+@TypeQualifiers({ Nullable.class, MonotonicNonNull.class, NonNull.class,
+        NonRaw.class, Raw.class, PolyNull.class, PolyAll.class })
+public class NullnessRawnessChecker extends AbstractNullnessChecker {
 
-    @Override
-    protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
-        Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>(1);
-        checkers.add(AbstractNullnessRawnessChecker.class);
-        return checkers;
+    public NullnessRawnessChecker() {
+        super(false);
     }
 
 }

@@ -1,25 +1,27 @@
 package org.checkerframework.checker.nullness;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import org.checkerframework.checker.nullness.qual.KeyFor;
-import org.checkerframework.framework.source.AggregateChecker;
-import org.checkerframework.framework.source.SourceChecker;
+import org.checkerframework.checker.initialization.qual.FBCBottom;
+import org.checkerframework.checker.initialization.qual.Initialized;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.framework.qual.PolyAll;
+import org.checkerframework.framework.qual.TypeQualifiers;
 
 /**
- * An aggregate checker for the nullness type system (with
- * freedom-before-commitment and {@link KeyFor}).
- *
- * @checker_framework.manual #nullness-checker Nullness Checker
+ * A concrete instantiation of {@link AbstractNullnessChecker} using
+ * freedom-before-commitment.
  */
-public class NullnessChecker extends AggregateChecker {
+@TypeQualifiers({ Nullable.class, MonotonicNonNull.class, NonNull.class,
+        UnderInitialization.class, Initialized.class, UnknownInitialization.class,
+        FBCBottom.class, PolyNull.class, PolyAll.class })
+public class NullnessChecker extends AbstractNullnessChecker {
 
-    @Override
-    protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
-        Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>(1);
-        checkers.add(AbstractNullnessFbcChecker.class);
-        return checkers;
+    public NullnessChecker() {
+        super(true);
     }
 
 }
