@@ -113,7 +113,8 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if ((type.getKind().isPrimitive()) ||
                     node.getKind() == Tree.Kind.EQUAL_TO ||
                     node.getKind() == Tree.Kind.NOT_EQUAL_TO) {
-                type.replaceAnnotation(INTERNED);
+
+            	type.replaceAnnotation(INTERNED);
             } else {
                 type.replaceAnnotation(TOP);
             }
@@ -145,6 +146,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // case 3: Enum types, and the Enum class itself, are interned
             Element elt = t.getUnderlyingType().asElement();
             assert elt != null;
+
             if (elt.getKind() == ElementKind.ENUM) {
                 t.replaceAnnotation(INTERNED);
             } else if (InterningAnnotatedTypeFactory.this.fromElement(elt).hasAnnotation(INTERNED)) {
