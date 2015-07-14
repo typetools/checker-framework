@@ -62,7 +62,7 @@ public class FieldTypeInferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFac
      */
     public void addAssignedField(Receiver r, AnnotatedTypeMirror fieldDeclType,
             AnnotatedTypeMirror rhsATM) {
-        // This is only refining the primary annotations (and not the
+        // This is ONLY refining the primary annotations (and not the
         // Java types/type arguments) of the private field. That may change if
         // the implementation of AnnotatedTypes.leastUpperBound changes.
         AnnotatedTypeMirror previousLUB = assignedPrivateFields.get(r);
@@ -72,10 +72,9 @@ public class FieldTypeInferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFac
             previousLUB.clearAnnotations();
             previousLUB.addAnnotations(newLUB.getAnnotations());
         } else {
-            AnnotatedTypeMirror copyOfFieldDeclaration = fieldDeclType.deepCopy(true);
-            copyOfFieldDeclaration.clearAnnotations();
-            copyOfFieldDeclaration.addAnnotations(rhsATM.getAnnotations());
-            assignedPrivateFields.put(r, copyOfFieldDeclaration);
+            fieldDeclType.clearAnnotations();
+            fieldDeclType.addAnnotations(rhsATM.getAnnotations());
+            assignedPrivateFields.put(r, fieldDeclType);
         }
     }
 

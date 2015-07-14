@@ -68,6 +68,9 @@ public class FieldTypeInferenceTransfer extends CFTransfer {
         if (!expr.containsUnknown() && expr instanceof FieldAccess &&
                 ((FieldAccess) expr).getField().getModifiers().
                 contains(Modifier.PRIVATE)) {
+            // A copy of the type of the LHS is created below, which is then
+            // passed to the addAssignedField method. Modifying this new type
+            // will not modify the original type of the LHS.
             AnnotatedTypeMirror lhsDeclType = AnnotatedTypeMirror.createType(
                     n.getTarget().getType(), factory, true);
             factory.addAssignedField(expr, lhsDeclType,
