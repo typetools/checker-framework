@@ -22,14 +22,15 @@ import java.lang.annotation.*;
  * <tt>@Covariant</tt> is simply trusted.
  * <p>
  *
- * The argument to <tt>@Covariant</tt> is the zero-based indices of the
- * type parameters that should be treated covariantly.
- *
  * @checker_framework.manual #covariant-type-parameters Covariant type parameters
  */
 @Documented
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Covariant {
+  /**
+   * The zero-based indices of the type parameters that should be treated
+   * covariantly.
+   */
   int[] value();
 }
