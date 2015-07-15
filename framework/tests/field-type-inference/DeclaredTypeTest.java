@@ -32,7 +32,13 @@ public class DeclaredTypeTest {
         publicDeclaredField2 = getTop();
     }
 
-    // Testing that the types above were not widden.
+    // No errors should be issued below:
+    void assignFieldsToBot() {
+        privateDeclaredField2 = getBottom();
+        publicDeclaredField2 = getBottom();
+    }
+
+    // Testing that the types above were not widened.
     void testFields2() {
         expectsBottom(privateDeclaredField2);
         expectsBottom(publicDeclaredField2);
