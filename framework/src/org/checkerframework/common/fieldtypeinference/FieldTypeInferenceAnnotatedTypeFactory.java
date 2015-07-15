@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.lang.model.type.TypeMirror;
+
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -26,7 +28,7 @@ import com.sun.source.tree.CompilationUnitTree;
 public class FieldTypeInferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Maps a Receiver representing a private field to an ATM that contains the
-    LUB of all AMs they have been assigned to. **/
+    LUB of all AMs that have been assigned to it. **/
     private final Map<Receiver, AnnotatedTypeMirror> assignedPrivateFields =
             new HashMap<Receiver, AnnotatedTypeMirror>();
 
@@ -55,27 +57,30 @@ public class FieldTypeInferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFac
      * mapping to <tt>rhsATM</tt>.
      * @param r
      *      A receiver representing a private field.
-     * @param fieldDeclType
-     *      The declared type of the private field.
+     * @param lhsTypeMirror
+     *      The declared type of the private field. lhsTypeMirror is
+     *      side-effected and must not be modified.
      * @param rhsATM
      *      An ATM assigned to the private field in <tt>r</tt>.
      */
-    public void addAssignedField(Receiver r, AnnotatedTypeMirror fieldDeclType,
-            AnnotatedTypeMirror rhsATM) {
+    public void addAssignedField(Receiver r, TypeMirror lhsTypeMirror,
+            AnnotatedTypeMirror newATM) {
         // This is ONLY refining the primary annotations (and not the
         // Java types/type arguments) of the private field. That may change if
         // the implementation of AnnotatedTypes.leastUpperBound changes.
-        AnnotatedTypeMirror previousLUB = assignedPrivateFields.get(r);
-        if (previousLUB != null) { // If a previous LUB exists in the map
-            AnnotatedTypeMirror newLUB = AnnotatedTypes.leastUpperBound(
-                    getProcessingEnv(), this, previousLUB, rhsATM);
-            previousLUB.clearAnnotations();
-            previousLUB.addAnnotations(newLUB.getAnnotations());
+        AnnotatedTypeMirror curATM = assignedPrivateFields.get(r);
+        if (curATM == null) {
+            // A copy of the type of the LHS is created below.
+            // Modifying this new type will not modify the
+            // original type of the LHS. lhsTypeMirror must not be modified.
+            curATM = AnnotatedTypeMirror.createType(lhsTypeMirror, this, true);
+            assignedPrivateFields.put(r, curATM);
         } else {
-            fieldDeclType.clearAnnotations();
-            fieldDeclType.addAnnotations(rhsATM.getAnnotations());
-            assignedPrivateFields.put(r, fieldDeclType);
+            newATM = AnnotatedTypes.leastUpperBound(getProcessingEnv(), this,
+                     curATM, newATM);
         }
+        curATM.clearAnnotations();
+        curATM.addAnnotations(newATM.getAnnotations());
     }
 
     public Set<Receiver> getAssignedPrivateFieldsKeySet() {
