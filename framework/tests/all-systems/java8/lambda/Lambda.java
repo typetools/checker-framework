@@ -22,8 +22,10 @@ interface Noop {
 
 @SuppressWarnings("javari")
 class Lambda {
-    Lambda(Consumer<String> consumer)
-    {
+
+    public static void consumeStr(String str) {}
+
+    Lambda(Consumer<String> consumer) {
         consumer.consume("hello");
     }
 
@@ -36,7 +38,7 @@ class Lambda {
     Supplier<Integer> f6 = () -> {                 // Complex block body with returns
       if (true) return 12;
       else {
-        new Lambda(System.out::println);           // Use lambda as a constructor argument
+        new Lambda(Lambda::consumeStr);           // Use lambda as a constructor argument
         int result = 15;
         for (int i = 1; i < 10; i++)
           result *= i;
