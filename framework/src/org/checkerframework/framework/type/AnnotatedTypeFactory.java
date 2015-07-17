@@ -89,6 +89,7 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -2721,6 +2722,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result = getFnInterfaceFromTree(enclosingLambda);
                 AnnotatedExecutableType methodExe = result.second;
                 return (AnnotatedDeclaredType) methodExe.getReturnType();
+
+            case CONDITIONAL_EXPRESSION:
+                ConditionalExpressionTree conditionalExpressionTree = (ConditionalExpressionTree) parentTree;
+                final AnnotatedTypeMirror falseType = getAnnotatedType(conditionalExpressionTree.getFalseExpression());
+                final AnnotatedTypeMirror trueType = getAnnotatedType(conditionalExpressionTree.getTrueExpression());
+                assertFunctionalInterface(javacTypes, (Type) falseType.getUnderlyingType(), parentTree, lambdaTree);
+                assertFunctionalInterface(javacTypes, (Type) trueType.getUnderlyingType(), parentTree, lambdaTree);
+                if (!falseType.equals(trueType)) {
+                    ErrorReporter.errorAbort(String.format(
+                            "Expected conditional expression to have same types. " +
+                                    "False branch type: %s, true branch type: %s in lambda tree: %s",
+                            falseType, trueType, parentTree));
+
+                }
+                return (AnnotatedDeclaredType) falseType;
 
             default:
                 ErrorReporter.errorAbort("Could not find functional interface from assignment context. " +
