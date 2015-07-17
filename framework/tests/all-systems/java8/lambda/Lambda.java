@@ -22,6 +22,10 @@ interface Noop {
 
 @SuppressWarnings("javari")
 class Lambda {
+    Lambda(Consumer<String> consumer)
+    {
+        consumer.consume("hello");
+    }
 
     Noop f1 = () -> {};                // No parameters; result is void
     Supplier<Integer> f2 = () -> 42;                // No parameters, expression body
@@ -32,6 +36,7 @@ class Lambda {
     Supplier<Integer> f6 = () -> {                 // Complex block body with returns
       if (true) return 12;
       else {
+        new Lambda(System.out::println);           // Use lambda as a constructor argument
         int result = 15;
         for (int i = 1; i < 10; i++)
           result *= i;

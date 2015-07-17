@@ -2685,6 +2685,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 assertFunctionalInterface(javacTypes, (Type) trees.getTypeMirror(getPath(cast.getType())), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType)getAnnotatedType(cast.getType());
 
+            case NEW_CLASS: {
+                NewClassTree newClass = (NewClassTree) parentTree;
+                int index = newClass.getArguments().indexOf(lambdaTree);
+                Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> exe = this.constructorFromUse(newClass);
+                AnnotatedTypeMirror param = exe.first.getParameterTypes().get(index);
+                assertFunctionalInterface(javacTypes, (Type) param.getUnderlyingType(), parentTree, lambdaTree);
+                return (AnnotatedDeclaredType) param;
+            }
+
             case METHOD_INVOCATION:
                 MethodInvocationTree method = (MethodInvocationTree) parentTree;
                 int index = method.getArguments().indexOf(lambdaTree);
