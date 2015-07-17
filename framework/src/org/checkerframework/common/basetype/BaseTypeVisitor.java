@@ -292,7 +292,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // annotated type of the ClassTree before checking the type of any
         // code within the class.  The call below causes flow analysis to
         // be run over the class.  See GenericAnnotatedTypeFactory
-        // .annotateImplicitWithFlow where analysis is performed.
+        // .annotateImplicit where analysis is performed.
         visitorState.setClassType(atypeFactory.getAnnotatedType(node));
         visitorState.setClassTree(node);
         visitorState.setMethodReceiver(null);

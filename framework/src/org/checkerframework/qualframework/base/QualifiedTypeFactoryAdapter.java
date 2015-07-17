@@ -381,7 +381,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         if (iUseFlow) {
             /**
              * We perform flow analysis on each {@link ClassTree} that is
-             * passed to annotateImplicitWithFlow.  This works correctly when
+             * passed to annotateImplicit.  This works correctly when
              * a {@link ClassTree} is passed to this method before any of its
              * sub-trees.  It also helps to satisfy the requirement that a
              * {@link ClassTree} has been advanced to annotation before we
