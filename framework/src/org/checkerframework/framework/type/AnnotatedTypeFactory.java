@@ -2690,7 +2690,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 NewClassTree newClass = (NewClassTree) parentTree;
                 int indexOfLambda = newClass.getArguments().indexOf(lambdaTree);
                 Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> con = this.constructorFromUse(newClass);
-                AnnotatedTypeMirror constructorParam = con.first.getParameterTypes().get(indexOfLambda);
+                AnnotatedTypeMirror constructorParam = unwrapVarargs(con.first.getParameterTypes(), indexOfLambda);
                 assertFunctionalInterface(javacTypes, (Type) constructorParam.getUnderlyingType(), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) constructorParam;
 
@@ -2698,7 +2698,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 MethodInvocationTree method = (MethodInvocationTree) parentTree;
                 int index = method.getArguments().indexOf(lambdaTree);
                 Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> exe = this.methodFromUse(method);
-                AnnotatedTypeMirror param = exe.first.getParameterTypes().get(index);
+                AnnotatedTypeMirror param = unwrapVarargs(exe.first.getParameterTypes(), index);
                 assertFunctionalInterface(javacTypes, (Type)param.getUnderlyingType(), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) param;
 
@@ -2758,6 +2758,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         " For lambda tree: " + lambdaTree);
                 return null;
         }
+    }
+
+    private AnnotatedTypeMirror unwrapVarargs(List<AnnotatedTypeMirror> parameterTypes, int index) {
+        final int lastIndex = parameterTypes.size() - 1;
+        final AnnotatedTypeMirror lastType = parameterTypes.get(lastIndex);
+        final boolean parameterBeforeVarargs = index < lastIndex;
+        if (!parameterBeforeVarargs && lastType instanceof AnnotatedArrayType) {
+            final AnnotatedArrayType arrayType = (AnnotatedArrayType) lastType;
+            final Type.ArrayType underlyingType = (Type.ArrayType) arrayType.getUnderlyingType();
+            if (underlyingType.isVarargs()) {
+                return arrayType.getComponentType();
+            }
+        }
+        return parameterTypes.get(index);
     }
 
     private void assertFunctionalInterface(com.sun.tools.javac.code.Types javacTypes,
