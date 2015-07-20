@@ -1,4 +1,5 @@
 
+// see also the test for Issue450
 // Test file for lambda syntax
 
 import java.lang.Runnable;
@@ -31,12 +32,6 @@ class Lambda {
         consumer.consume("hello");
     }
 
-    Lambda(int i, Runnable ...runnables) {
-    }
-
-    void varargs(Runnable ...runnables)
-    {
-    }
 
     Noop f1 = () -> {};                // No parameters; result is void
     Supplier<Integer> f2 = () -> 42;                // No parameters, expression body
@@ -47,9 +42,6 @@ class Lambda {
     Supplier<Integer> f6 = () -> {                 // Complex block body with returns
       if (true) return 12;
       else {
-        new Lambda(Lambda::consumeStr);           // Use lambda as a constructor argument
-        varargs(new Thread()::start, new Thread()::start);             // Use lambda in a var arg list of method
-        new Lambda(42, new Thread()::start);          // Use lambda in a var arg list of constructor
         int result = 15;
         for (int i = 1; i < 10; i++)
           result *= i;
