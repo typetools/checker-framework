@@ -2,8 +2,8 @@ package tests.fieldtypeinference;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.fieldtypeinference.FieldTypeInferenceAnnotatedTypeFactory;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
@@ -25,7 +25,7 @@ import tests.fieldtypeinference.qual.*;
  */
 @TypeQualifiers({ Parent.class, Top.class, Sibling1.class, Sibling2.class,
         FieldTypeInferenceBottom.class })
-public class FieldTypeInferenceTestAnnotatedTypeFactory extends FieldTypeInferenceAnnotatedTypeFactory {
+public class FieldTypeInferenceTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public FieldTypeInferenceTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         postInit();

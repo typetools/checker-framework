@@ -66,6 +66,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
@@ -202,6 +203,21 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     @Override
     public S initialStore(UnderlyingAST underlyingAST,
             /*@Nullable */ List<LocalVariableNode> parameters) {
+        S iniStore = getInitialStore(underlyingAST, parameters);
+        // We could add a check for an option here if we want to make private
+        // field type inference optional.
+        // Performing private field type inference:
+        for (Receiver r : analysis.atypeFactory.getAssignedPrivateFieldsKeySet()) {
+            for (AnnotationMirror am : analysis.atypeFactory.
+                    getAssignedPrivateFieldATM(r).getAnnotations()) {
+                iniStore.insertValue(r, am);
+            }
+        }
+        return iniStore;
+    }
+
+    private S getInitialStore(UnderlyingAST underlyingAST,
+            List<LocalVariableNode> parameters) {
         if (fixedInitialStore != null
                 && underlyingAST.getKind() != Kind.LAMBDA) return fixedInitialStore;
 
@@ -722,6 +738,17 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         S info = in.getRegularStore();
         V rhsValue = in.getValueOfSubNode(rhs);
         processCommonAssignment(in, lhs, rhs, info, rhsValue);
+
+        Receiver expr = FlowExpressions.internalReprOf(analysis.getTypeFactory(),
+                n.getTarget());
+        // If this is an assignment to a field of 'this' and this field is
+        // private, then populate the map in the ATF.
+        if (!expr.containsUnknown() && expr instanceof FieldAccess &&
+                ((FieldAccess) expr).getField().getModifiers().
+                contains(Modifier.PRIVATE)) {
+            analysis.getTypeFactory().addAssignedField(expr, n.getTarget(),
+                    analysis.getTypeFactory().getAnnotatedType(rhs.getTree()));
+        }
 
         return new RegularTransferResult<>(finishValue(rhsValue, info), info);
     }

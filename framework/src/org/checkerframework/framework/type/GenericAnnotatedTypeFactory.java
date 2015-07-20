@@ -8,6 +8,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.cfg.CFGBuilder;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
@@ -44,6 +45,7 @@ import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -70,6 +72,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
@@ -128,6 +131,11 @@ public abstract class GenericAnnotatedTypeFactory<
     /** An empty store. */
     private Store emptyStore;
 
+    /** Maps a Receiver representing a private field to an ATM that contains the
+    LUB of all AMs that have been assigned to it. **/
+    private final Map<Receiver, AnnotatedTypeMirror> assignedPrivateFields =
+            new HashMap<Receiver, AnnotatedTypeMirror>();
+
     /**
      * Creates a type factory for checking the given compilation unit with
      * respect to the given annotation.
@@ -185,6 +193,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public void setRoot(/*@Nullable*/ CompilationUnitTree root) {
         super.setRoot(root);
         this.analyses.clear();
+        this.assignedPrivateFields.clear();
         this.scannedClasses.clear();
         this.flowResult = null;
         this.regularExitStores = null;
@@ -931,6 +940,49 @@ public abstract class GenericAnnotatedTypeFactory<
                 performFlowAnalysis(classTree);
             }
         }
+    }
+
+    /**
+     * Updates the ATM mapped by the parameter <tt>r</tt> in the map
+     * <tt>assignedPrivateFields</tt> to be the LUB between the parameter
+     * <tt>rhsATM</tt> and the current ATM mapped by <tt>r</tt> in this map.
+     * <p>
+     * If <tt>r</tt> is not a key in the map, it is added to the map
+     * mapping to <tt>rhsATM</tt>.
+     * @param r
+     *      A receiver representing a private field.
+     * @param node
+     *      The declared type of the private field. lhsTypeMirror is
+     *      side-effected and must not be modified.
+     * @param rhsATM
+     *      An ATM assigned to the private field in <tt>r</tt>.
+     */
+    public void addAssignedField(Receiver r, Node node,
+            AnnotatedTypeMirror newATM) {
+        // This is ONLY refining the primary annotations (and not the
+        // Java types/type arguments) of the private field. That may change if
+        // the implementation of AnnotatedTypes.leastUpperBound changes.
+        AnnotatedTypeMirror curATM = assignedPrivateFields.get(r);
+        if (curATM == null) {
+            // A copy of the type of the LHS is created below.
+            // Modifying this new type will not modify the
+            // original type of the LHS. lhsTypeMirror must not be modified.
+            curATM = getAnnotatedType(node.getTree()).deepCopy(false);
+            assignedPrivateFields.put(r, curATM);
+        } else {
+            newATM = AnnotatedTypes.leastUpperBound(getProcessingEnv(), this,
+                     curATM, newATM);
+        }
+        curATM.clearAnnotations();
+        curATM.addAnnotations(newATM.getAnnotations());
+    }
+
+    public Set<Receiver> getAssignedPrivateFieldsKeySet() {
+        return assignedPrivateFields.keySet();
+    }
+
+    public AnnotatedTypeMirror getAssignedPrivateFieldATM(Receiver r) {
+        return assignedPrivateFields.get(r);
     }
 
     /**
