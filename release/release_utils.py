@@ -369,25 +369,25 @@ def check_hg_user():
 
 def is_git( repo_root ):
     if os.path.isdir(repo_root + "/.git"):
-        return true
+        return True
     if os.path.isdir(repo_root + "/.hg"):
-        return false
+        return False
     raise Exception(repo_root + " has neither a .git nor a .hg subdirectory")
 
 def hg_push_or_fail( repo_root ):
     if is_git(repo_root):
-        cmd = 'hg -R %s push' % repo_root
-    else:
         cmd = 'git -C %s push' % repo_root
+    else:
+        cmd = 'hg -R %s push' % repo_root
     result = os.system(cmd)
     if result is not 0:
         raise Exception("Could not push to: " + repo_root)
 
 def hg_push( repo_root ):
     if is_git(repo_root):
-        execute('hg -R %s push' % repo_root)
-    else:
         execute('git -C %s push' % repo_root)
+    else:
+        execute('hg -R %s push' % repo_root)
 
 #Pull the latest changes and update
 def update_project(path):
@@ -427,7 +427,7 @@ def clone_or_update_repo(src_repo, dst_repo):
     if os.path.isdir(os.path.abspath(dst_repo)):
         update_project( dst_repo )
     else:
-        if "git" in src_repo:
+        if ("http" in src_repo and "git" in src_repo) or is_git(src_repo):
             execute('git clone %s %s' % (src_repo, dst_repo))
         else:
             execute('hg clone %s %s' % (src_repo, dst_repo))
@@ -486,7 +486,7 @@ def revert(repo):
 
 def purge(repo, all=False):
     """All means also ignored files"""
-    if is_git:
+    if is_git(repo):
         if all:
             cmd = 'git -C %s clean -f -x' % repo
         else:
@@ -531,6 +531,34 @@ def get_tag_line( lines, revision, tag_prefixes ):
                 return line
     return None
 
+def get_commit_line_for_tag( lines, revision, tag_prefixes ):
+    last_commit = None
+
+    for line in lines:
+        if (line.startswith( "commit " )):
+            last_commit = line.split(" ")[1]
+        else:
+            for prefix in tag_prefixes:
+                full_tag = prefix + revision
+                if full_tag in line:
+                    return last_commit
+    return None
+
+def get_commit_for_tag( revision, repo_file_path, tag_prefixes ):
+    if not is_git(repo_file_path):
+        raise Exception("get_commit_for_tag is only defined for git repositories")
+
+    tags = execute("git -C " + repo_file_path + " log --grep=" + revision, True, True)
+    lines = tags.split( "\n" )
+
+    commit = get_commit_line_for_tag( lines, revision, tag_prefixes )
+    if commit is None:
+        msg = "Could not find revision %s in repo %s using tags %s " %  ( revision, repo_file_path, ",".join( tag_prefixes ) )
+        raise Exception( msg )
+
+    return commit
+
+
 def get_hash_for_tag( revision, repo_file_path, tag_prefixes ):
     if is_git(repo_file_path):
         raise Exception("get_hash_for_tag is not defined for git repositories")
@@ -551,6 +579,7 @@ def get_tip_hash( repository ):
 
 def write_changesets_since( old_version, repository, tag_prefixes, file ):
     if is_git(repository):
+        old_tag = get_commit_for_tag( old_version, repository, tag_prefixes )
         cmd = "git -C %s log %s.." % ( repository, old_tag )
     else:
         old_tag = get_hash_for_tag( old_version, repository, tag_prefixes )
@@ -562,6 +591,7 @@ def write_changesets_since( old_version, repository, tag_prefixes, file ):
 
 def write_diff_to_file( old_version, repository, tag_prefixes, dir_path, file ):
     if is_git(repository):
+        old_tag = get_commit_for_tag( old_version, repository, tag_prefixes )
         cmd = "git -C %s diff -w %s.. %s" % (repository, old_tag, dir_path )
     else:
          old_tag = get_hash_for_tag( old_version, repository, tag_prefixes )

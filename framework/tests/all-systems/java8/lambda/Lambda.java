@@ -1,7 +1,6 @@
 
 // Test file for lambda syntax
 
-import java.lang.System;
 import java.lang.Thread;
 
 interface Supplier<R> {
@@ -43,7 +42,7 @@ class Lambda {
         int result = 15;
         for (int i = 1; i < 10; i++)
           result *= i;
-        Consumer<String> consumer = result > 100 ? System.out::println : System.err::println; // conditional expression
+        Consumer<String> consumer = result > 100 ? Lambda::consumeStr : Lambda::consumeStr; // conditional expression
         return result;
       }
     };
