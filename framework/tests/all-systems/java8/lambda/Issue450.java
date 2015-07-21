@@ -1,4 +1,15 @@
+import java.lang.CharSequence;
+
 class Issue450 {
+
+    interface Top {
+        public void consume(String s);
+    }
+
+    interface Sub extends Top {
+        default public void otherMethod() {
+        }
+    }
 
     interface Consumer<T> {
         void consume(T t);
@@ -9,8 +20,13 @@ class Issue450 {
     }
 
     public static void consumeStr(String str) {}
+    public static void consumeStr2(String str) {}
 
-    void context() {
+    <E extends Consumer<String>> void context(E e, Sub s) {
         new Issue450(Issue450::consumeStr);
+
+        Consumer<String> cs1 = (false) ? Issue450::consumeStr2 : Issue450::consumeStr;
+        Consumer<String> cs2 = (false) ? e : Issue450::consumeStr;
+        Top t = (false) ? s : Issue450::consumeStr;
     }
 }

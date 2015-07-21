@@ -89,6 +89,7 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -2729,6 +2730,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result = getFnInterfaceFromTree(enclosingLambda);
                 AnnotatedExecutableType methodExe = result.second;
                 return (AnnotatedDeclaredType) methodExe.getReturnType();
+
+            case CONDITIONAL_EXPRESSION:
+                ConditionalExpressionTree conditionalExpressionTree = (ConditionalExpressionTree) parentTree;
+                final AnnotatedTypeMirror falseType = getAnnotatedType(conditionalExpressionTree.getFalseExpression());
+                final AnnotatedTypeMirror trueType = getAnnotatedType(conditionalExpressionTree.getTrueExpression());
+
+                //Known cases where we must use LUB because falseType/trueType will not be equal:
+                // a) when one of the types is a type variable that extends a functional interface
+                //    or extends a type variable that extends a functional interface
+                // b) When one of the two sides of the expression is a reference to a sub-interface.
+                //   e.g.   interface ConsumeStr {
+                //              public void consume(String s)
+                //          }
+                //          interface SubConsumer extends ConsumeStr {
+                //              default void someOtherMethod() { ... }
+                //          }
+                //   SubConsumer s = ...;
+                //   ConsumeStr stringConsumer = (someCondition) ? s : System.out::println;
+                AnnotatedTypeMirror conditionalType = AnnotatedTypes.leastUpperBound(processingEnv, this, trueType, falseType);
+                assertFunctionalInterface(javacTypes, (Type) conditionalType.getUnderlyingType(), parentTree, lambdaTree);
+                return (AnnotatedDeclaredType) conditionalType;
 
             default:
                 ErrorReporter.errorAbort("Could not find functional interface from assignment context. " +
