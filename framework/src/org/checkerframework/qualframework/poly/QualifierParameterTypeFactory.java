@@ -158,6 +158,9 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
         new QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>>() {
             @Override
             public QualParams<Q> process(QualParams<Q> params, Map<String, Wildcard<Q>> substs) {
+                if (params.equals(getQualifierHierarchy().getBottom())) {
+                    return getQualifierHierarchy().getBottom();
+                }
                 return params.substituteAll(substs);
             }
         };

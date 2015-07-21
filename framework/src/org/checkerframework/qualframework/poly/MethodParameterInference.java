@@ -220,6 +220,10 @@ class MethodParameterInference<Q> {
         new QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>>() {
             @Override
             public QualParams<Q> process(QualParams<Q> params, Map<String, Wildcard<Q>> substs) {
+                if (params.equals(qualParamHierarchy.getBottom())) {
+                    return qualParamHierarchy.getBottom();
+                }
+
                 return params.substituteAll(substs);
             }
         };
