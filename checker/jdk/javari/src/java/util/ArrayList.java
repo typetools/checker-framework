@@ -323,7 +323,7 @@ public class ArrayList<E> extends AbstractList<E>
      */
     @SuppressWarnings("unchecked")
     public E get(@ReadOnly ArrayList<E> this, int index) {
-    RangeCheck(index);
+    rangeCheck(index);
 
     return (E) elementData[index];
     }
@@ -338,7 +338,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public E set(int index, E element) {
-    RangeCheck(index);
+    rangeCheck(index);
 
     @SuppressWarnings("unchecked")
     E oldValue = (E) elementData[index];
@@ -389,7 +389,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public E remove(int index) {
-    RangeCheck(index);
+    rangeCheck(index);
 
     modCount++;
     @SuppressWarnings("unchecked")
@@ -548,7 +548,7 @@ public class ArrayList<E> extends AbstractList<E>
      * negative: It is always used immediately prior to an array access,
      * which throws an ArrayIndexOutOfBoundsException if index is negative.
      */
-    private void RangeCheck(int index) {
+    private void rangeCheck(int index) {
     if (index >= size)
         throw new IndexOutOfBoundsException(
         "Index: "+index+", Size: "+size);

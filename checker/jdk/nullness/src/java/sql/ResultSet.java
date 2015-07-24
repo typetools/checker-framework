@@ -2548,8 +2548,8 @@ public interface ResultSet extends Wrapper, AutoCloseable {
      * this method
      * @since 1.2
      */
-    @Nullable Object getObject(String columnLabel, java.util.Map<String,Class<?>> map)
-      throws SQLException;
+    //@Nullable Object getObject(String columnLabel, java.util.Map<String,Class<?>> map)
+    //  throws SQLException;
 
     /**
      * Retrieves the value of the designated column in the current row

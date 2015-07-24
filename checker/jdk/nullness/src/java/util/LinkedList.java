@@ -52,6 +52,6 @@ public class LinkedList<E extends @Nullable Object> extends AbstractSequentialLi
   public <T extends @Nullable Object> @Nullable T @PolyNull [] toArray(T @PolyNull [] a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 
-  @EnsuresNonNullIf(expression={"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"}, result=false)
-  @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
+  //@EnsuresNonNullIf(expression={"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"}, result=false)
+  //@Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
 }

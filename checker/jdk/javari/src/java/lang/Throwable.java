@@ -54,17 +54,13 @@ public class Throwable implements Serializable {
         throw new RuntimeException("skeleton method");
     }
 
-    private void printStackTraceAsCause(PrintStream s, StackTraceElement[] causedTrace) {
-        throw new RuntimeException("skeleton method");
-    }
-
     public void printStackTrace(@ReadOnly Throwable this, PrintWriter s) {
         throw new RuntimeException("skeleton method");
     }
 
-    private void printStackTraceAsCause(PrintWriter s, StackTraceElement[] causedTrace) {
-        throw new RuntimeException("skeleton method");
-    }
+    //private void printStackTraceAsCause(PrintWriter s, StackTraceElement[] causedTrace) {
+    //    throw new RuntimeException("skeleton method");
+    //}
 
     public synchronized native Throwable fillInStackTrace();
 

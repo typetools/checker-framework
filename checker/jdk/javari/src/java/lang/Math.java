@@ -93,7 +93,9 @@ public final class Math {
         throw new RuntimeException("skeleton method");
     }
 
-    private static Random randomNumberGenerator;
+    private static class RandomNumberGeneratorHolder {
+        static final Random randomNumberGenerator = new Random();
+    }
 
     private static synchronized void initRNG() {
         throw new RuntimeException("skeleton method");

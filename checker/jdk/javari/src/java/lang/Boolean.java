@@ -56,8 +56,4 @@ public final @ReadOnly class Boolean implements java.io.Serializable,
     public int compareTo(Boolean b) {
         throw new RuntimeException("skeleton method");
     }
-
-    private static boolean toBoolean(String name) {
-        throw new RuntimeException("skeleton method");
-    }
 }

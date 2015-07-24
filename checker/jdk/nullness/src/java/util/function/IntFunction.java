@@ -1,5 +1,5 @@
 package java.util.function;
 
 public interface IntFunction<R> {
-    R accept(int arg0);
+    R apply(int arg0);
 }

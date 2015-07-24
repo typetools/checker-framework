@@ -110,17 +110,17 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
     final static int [] sizeTable = { 9, 99, 999, 9999, 99999, 999999, 9999999,
                                      99999999, 999999999, Integer.MAX_VALUE };
 
-    static int stringSizeOfInt(int x) {
-        throw new RuntimeException("skeleton method");
-    }
+    //static int stringSizeOfInt(int x) {
+    //    throw new RuntimeException("skeleton method");
+    //}
 
     public AbstractStringBuilder append(long l) {
         throw new RuntimeException("skeleton method");
     }
 
-    static int stringSizeOfLong(long x) {
-        throw new RuntimeException("skeleton method");
-    }
+    //static int stringSizeOfLong(long x) {
+    //    throw new RuntimeException("skeleton method");
+    //}
 
     public AbstractStringBuilder append(float f) {
         throw new RuntimeException("skeleton method");
