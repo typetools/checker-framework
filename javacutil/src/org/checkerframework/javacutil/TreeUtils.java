@@ -913,21 +913,14 @@ public final class TreeUtils {
         }
     }
 
-    //The element corresponding to "java.lang.Object#getClass"
-    private static ExecutableElement getClass;
-
     /**
      * @see Object#getClass()
      * @return True iff invocationTree is an instance of getClass()
      */
-    public static boolean isGetClassInvocation(MethodInvocationTree invocationTree, ProcessingEnvironment procEnv) {
-        if (getClass == null) {
-            getClass = getMethod("java.lang.Object", "getClass", 0, procEnv);
-        }
+    public static boolean isGetClassInvocation(MethodInvocationTree invocationTree) {
         final Element declarationElement = elementFromUse(invocationTree);
-
-        // Note: getClass is final so we need no check to see if we are using a subtype's getClass
-        // if there were potential subclass overrides we should use isMethodInvocation
-        return declarationElement.equals(getClass);
+        String ownerName = ElementUtils.getQualifiedClassName(declarationElement.getEnclosingElement()).toString();
+        return ownerName.equals("java.lang.Object")
+                && declarationElement.getSimpleName().toString().equals("getClass");
     }
 }

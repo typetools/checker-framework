@@ -672,7 +672,7 @@ public class QualifierDefaults {
                     if (scope != null && scope.getKind() == ElementKind.PARAMETER &&
                             t == type) {
                         doApply(t, qual);
-                    } else if ((scope.getKind() == ElementKind.METHOD || scope.getKind() == ElementKind.CONSTRUCTOR) &&
+                    } else if (scope != null && (scope.getKind() == ElementKind.METHOD || scope.getKind() == ElementKind.CONSTRUCTOR) &&
                             t.getKind() == TypeKind.EXECUTABLE &&
                             t == type) {
 

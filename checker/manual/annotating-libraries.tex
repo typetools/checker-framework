@@ -65,7 +65,7 @@ Sections~\ref{askipuses}--\ref{askipdefs}).  Also, recall that the Checker
 Framework analyzes all, and only, the source code that is passed to it.
 The Checker Framework is a plug-in to the javac compiler, and it never
 analyzes code that is not being compiled, though it does look up
-annotations in the class files for code that is not being compiled.)
+annotations in the class files for code that was previously compiled.)
 
 You make the library's annotations known to the checkers by writing
 annotations in a copy of the library's source code (or in a ``stub
@@ -145,6 +145,10 @@ conservative defaulting rules (Section~\ref{defaults-classfile}) for
 code you have not yet annotated.
 You use \<@AnnotatedFor> to indicate which classes you have annotated.
 
+
+\subsection{The \<-AuseSafeDefaultsForUnannotatedSourceCode> command-line
+argument\label{AuseSafeDefaultsForUnannotatedSourceCode}}
+
 When compiling a library that is not fully annotated, use command-line
 argument \<-AuseSafeDefaultsForUnannotatedSourceCode>.  This causes
 the checker to behave normally for classes with a relevant \<@AnnotatedFor>
@@ -156,10 +160,10 @@ The \refqualclass{framework/qual}{AnnotatedFor} annotation, written on a
 class, indicates that the class has been annotated for certain type
 systems.  For example, \<@AnnotatedFor(\ttlcb"nullness", "regex"\ttrcb)> means that
 the programmer has written annotations for the Nullness and Regular
-Expression type systems.  If one of those two type-checkers is run, this
-class is treated normally, even if the
-\<-AuseSafeDefaultsForUnannotatedSourceCode> command-line argument is
-supplied:  unannotated types are defaulted using normal source-code
+Expression type systems.  If one of those two type-checkers is run,
+the \<-AuseSafeDefaultsForUnannotatedSourceCode> command-line argument
+has no effect and this class is treated normally:
+unannotated types are defaulted using normal source-code
 defaults and type-checking warnings are issued.
 \refqualclass{framework/qual}{AnnotatedFor}'s arguments are any string that
 may be passed to the \<-processor> command-line argument:  the
@@ -194,22 +198,32 @@ partially-annotated library.
   what edits you have made.
 
   Adjust the library's
-  build process, such as a Maven or Ant buildfile, so that every time it runs the
-  compiler, it:
-  \begin{itemize}
+  build process, such as a Maven or Ant buildfile.
+  \begin{enumerate}
   \item
-    passes the \<-AuseSafeDefaultsForUnannotatedSourceCode>
-    command-line option and
+    Every time the build system runs the compiler, it should:
+    \begin{itemize}
+    \item
+      passes the \<-AuseSafeDefaultsForUnannotatedSourceCode>
+      command-line option and
+    \item
+      runs every pluggable type-checker for which any
+      annotations exist, using \<-processor
+      \emph{TypeSystem1},\emph{TypeSystem2},\emph{TypeSystem3}>
+    \end{itemize}
   \item
-    runs every pluggable type-checker for which any
-  annotations exist, using \<-processor
-  \emph{TypeSystem1},\emph{TypeSystem2},\emph{TypeSystem3}>
-  \end{itemize}
-  You are not adding a new buld target, but modifying
-  any existing targets.
+    When the build system creates a \<.jar> file, the resulting \<.jar>
+    file includes the contents of
+    \<checker-framework/checker/dist/checker-qual.jar>.
+  \end{enumerate}
+
+  You are not adding new build targets, but modifying existing targets.
   The reason to run every type-checker is to verify
   the annotations you wrote, and to use appropriate defaults for all
   unnanotated type uses.
+  The reason to include the contents of \<checker-qual.jar> is so that 
+  the resulting \<.jar> file can be used whether or not the Checker Framework
+  is being run.
 
 \item Annotate some files.
 %  You can determine which files need to be annotated by using the
@@ -219,7 +233,7 @@ partially-annotated library.
   % This is a strong recomendation, but not a requirement.  @AnnotatedFor
   % can be written on a method as well.
   When you annotate a file, annotate the whole thing, not just a few of its
-  methods.  Once the file is annotated, add an
+  methods.  Once the file is fully annotated, add an
   \<\refqualclass{framework/qual}{AnnotatedFor}(\ttlcb"\emph{checkername}"\ttrcb)>
   annotation to its class(es), or augment an existing \<@AnnotatedFor>
   annotation.
@@ -227,8 +241,8 @@ partially-annotated library.
 \item
   Build the library.
 
-  Because of the changes that you made in step 1, this will run the Checker
-  Framework.  If there are any compiler warnings, fix them and re-compile.
+  Because of the changes that you made in step 1, this will run pluggable
+  type-checkers.  If there are any compiler warnings, fix them and re-compile.
 
   Now you have a \<.jar> file that you can use while type-checking and at
   run time.

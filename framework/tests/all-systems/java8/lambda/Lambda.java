@@ -1,6 +1,9 @@
 
+// see also the test for Issue450
 // Test file for lambda syntax
 
+import java.lang.Runnable;
+import java.lang.String;
 import java.lang.Thread;
 
 interface Supplier<R> {
@@ -23,6 +26,13 @@ interface Noop {
 @SuppressWarnings("javari")
 class Lambda {
 
+    public static void consumeStr(String str) {}
+
+    Lambda(Consumer<String> consumer) {
+        consumer.consume("hello");
+    }
+
+
     Noop f1 = () -> {};                // No parameters; result is void
     Supplier<Integer> f2 = () -> 42;                // No parameters, expression body
 //    Supplier<Void> f3 = () -> null;              // No parameters, expression body
@@ -35,6 +45,7 @@ class Lambda {
         int result = 15;
         for (int i = 1; i < 10; i++)
           result *= i;
+        Consumer<String> consumer = result > 100 ? Lambda::consumeStr : Lambda::consumeStr; // conditional expression
         return result;
       }
     };

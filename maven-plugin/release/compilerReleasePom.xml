@@ -27,8 +27,8 @@
     <version><!-- checker-framework-version -->1.9.3<!-- /checker-framework-version --></version>
 
     <scm>
-        <url>https://code.google.com/p/jsr308-langtools/</url>
-        <connection>https://code.google.com/p/jsr308-langtools/</connection>
+        <url>https://bitbucket.org/typetools/jsr308-langtools/</url>
+        <connection>https://bitbucket.org/typetools/jsr308-langtools/</connection>
     </scm>
 
     <developers>

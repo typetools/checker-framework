@@ -89,6 +89,7 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -1551,7 +1552,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         if (tree.getKind() == Tree.Kind.METHOD_INVOCATION &&
-                TreeUtils.isGetClassInvocation((MethodInvocationTree) tree, processingEnv)) {
+                TreeUtils.isGetClassInvocation((MethodInvocationTree) tree)) {
             adaptGetClassReturnTypeToReceiver(methodType, receiverType);
         }
 
@@ -2635,7 +2636,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return getFnInterfaceFromTree((Tree)tree);
     }
     public Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(LambdaExpressionTree tree) {
-        return getFnInterfaceFromTree((Tree)tree);
+        return getFnInterfaceFromTree((Tree) tree);
     }
 
     /**
@@ -2685,11 +2686,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 assertFunctionalInterface(javacTypes, (Type) trees.getTypeMirror(getPath(cast.getType())), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType)getAnnotatedType(cast.getType());
 
+            case NEW_CLASS:
+                NewClassTree newClass = (NewClassTree) parentTree;
+                int indexOfLambda = newClass.getArguments().indexOf(lambdaTree);
+                Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> con = this.constructorFromUse(newClass);
+                AnnotatedTypeMirror constructorParam = AnnotatedTypes.unwrapVarargs(con.first.getParameterTypes(), indexOfLambda);
+                assertFunctionalInterface(javacTypes, (Type) constructorParam.getUnderlyingType(), parentTree, lambdaTree);
+                return (AnnotatedDeclaredType) constructorParam;
+
             case METHOD_INVOCATION:
                 MethodInvocationTree method = (MethodInvocationTree) parentTree;
                 int index = method.getArguments().indexOf(lambdaTree);
                 Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> exe = this.methodFromUse(method);
-                AnnotatedTypeMirror param = exe.first.getParameterTypes().get(index);
+                AnnotatedTypeMirror param = AnnotatedTypes.unwrapVarargs(exe.first.getParameterTypes(), index);
                 assertFunctionalInterface(javacTypes, (Type)param.getUnderlyingType(), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) param;
 
@@ -2721,6 +2730,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result = getFnInterfaceFromTree(enclosingLambda);
                 AnnotatedExecutableType methodExe = result.second;
                 return (AnnotatedDeclaredType) methodExe.getReturnType();
+
+            case CONDITIONAL_EXPRESSION:
+                ConditionalExpressionTree conditionalExpressionTree = (ConditionalExpressionTree) parentTree;
+                final AnnotatedTypeMirror falseType = getAnnotatedType(conditionalExpressionTree.getFalseExpression());
+                final AnnotatedTypeMirror trueType = getAnnotatedType(conditionalExpressionTree.getTrueExpression());
+
+                //Known cases where we must use LUB because falseType/trueType will not be equal:
+                // a) when one of the types is a type variable that extends a functional interface
+                //    or extends a type variable that extends a functional interface
+                // b) When one of the two sides of the expression is a reference to a sub-interface.
+                //   e.g.   interface ConsumeStr {
+                //              public void consume(String s)
+                //          }
+                //          interface SubConsumer extends ConsumeStr {
+                //              default void someOtherMethod() { ... }
+                //          }
+                //   SubConsumer s = ...;
+                //   ConsumeStr stringConsumer = (someCondition) ? s : System.out::println;
+                AnnotatedTypeMirror conditionalType = AnnotatedTypes.leastUpperBound(processingEnv, this, trueType, falseType);
+                assertFunctionalInterface(javacTypes, (Type) conditionalType.getUnderlyingType(), parentTree, lambdaTree);
+                return (AnnotatedDeclaredType) conditionalType;
 
             default:
                 ErrorReporter.errorAbort("Could not find functional interface from assignment context. " +
