@@ -1,13 +1,8 @@
 language: java
 
-before_script: ant clean
-
-script: ant dist
-
-after_success: ant javadoc tests
+script: ./.travis-build.sh
 
 jdk:
   - oraclejdk8
   - oraclejdk7
-  - openjdk8
   - openjdk7
