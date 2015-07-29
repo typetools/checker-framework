@@ -9,4 +9,4 @@ cd annotation-tools/
 cd $ROOT/checker-framework
 ant clean
 ant dist
-ant javadoc tests
+ant javadoc tests-nojdk
