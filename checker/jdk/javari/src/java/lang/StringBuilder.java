@@ -32,10 +32,6 @@ public final class StringBuilder
         throw new RuntimeException("skeleton method");
     }
 
-    private StringBuilder append(StringBuilder sb) {
-        throw new RuntimeException("skeleton method");
-    }
-
     public StringBuilder append(@ReadOnly StringBuffer sb) {
         throw new RuntimeException("skeleton method");
     }

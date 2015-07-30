@@ -23,6 +23,9 @@ dot_files
 
 Makefile.user
 
+# ant tab completion cache file
+.ant-targets-build.xml
+
 # build files
 api
 build

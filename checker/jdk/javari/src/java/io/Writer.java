@@ -5,7 +5,7 @@ import org.checkerframework.checker.javari.qual.*;
 public abstract class Writer implements Appendable, Closeable, Flushable {
 
     private char[] writeBuffer;
-    private final int writeBufferSize = 1024;
+    private final int WRITE_BUFFER_SIZE = 1024;
 
     protected @ReadOnly Object lock;
 

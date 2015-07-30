@@ -211,4 +211,6 @@ public class IGJTest extends CheckerTest {
     @Test public void testALTest1() {
         test();
     }
+
+    @Test public void testImplicitBounds() { test(); }
 }

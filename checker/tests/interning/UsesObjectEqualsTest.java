@@ -14,12 +14,12 @@ public class UsesObjectEqualsTest {
 
     class B2 extends A {}
 
-    //changed to inherited, no (superclass.marked) warning
+    //changed to inherited, no (superclass.annotated) warning
     class C extends A {}
 
     class D {}
 
-    //:: error: (superclass.unmarked)
+    //:: error: (superclass.notannotated)
     @UsesObjectEquals class E extends D {}
 
     //:: error: (overrides.equals)

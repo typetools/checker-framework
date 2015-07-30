@@ -76,8 +76,8 @@ public java.lang.annotation.Annotation[] getDeclaredAnnotations() { throw new Ru
   @Pure public native boolean isInterface();
   @Pure public native int getModifiers();
 
-  @Pure public boolean isTypeAnnotationPresent(Class<? extends java.lang.annotation.Annotation> annotationClass) { throw new RuntimeException("skeleton method"); }
-  public <M extends java.lang.annotation.Annotation> M getTypeAnnotation(Class<M> annotationClass) { throw new RuntimeException("skeleton method"); }
-  public java.lang.annotation.Annotation[] getTypeAnnotations() { throw new RuntimeException("skeleton method"); }
-  public java.lang.annotation.Annotation[] getDeclaredTypeAnnotations() { throw new RuntimeException("skeleton method"); }
+  //@Pure public boolean isTypeAnnotationPresent(Class<? extends java.lang.annotation.Annotation> annotationClass) { throw new RuntimeException("skeleton method"); }
+  //public <M extends java.lang.annotation.Annotation> M getTypeAnnotation(Class<M> annotationClass) { throw new RuntimeException("skeleton method"); }
+  //public java.lang.annotation.Annotation[] getTypeAnnotations() { throw new RuntimeException("skeleton method"); }
+  //public java.lang.annotation.Annotation[] getDeclaredTypeAnnotations() { throw new RuntimeException("skeleton method"); }
 }

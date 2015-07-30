@@ -40,12 +40,14 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 
 /**
- * A type-checking visitor for the {@link Interned} type
- * qualifier that uses the {@link BaseTypeVisitor} implementation. This visitor
- * reports errors or warnings for violations for the following cases:
+ * Typechecks source code for interning violations.  A type is considered interned
+ * if its primary annotation is {@link Interned}.
+ * This visitor reports errors or warnings for violations for the following cases:
  *
  * <ol>
  * <li value="1">either argument to a "==" or "!=" comparison is not Interned (error
@@ -60,27 +62,30 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
     /** The interned annotation. */
     private final AnnotationMirror INTERNED;
+    /** See method typeToCheck() */
     private final DeclaredType typeToCheck;
 
-    /**
-     * Creates a new visitor for type-checking {@link Interned}.
-     *
-     * @param checker the checker to use
-     */
     public InterningVisitor(BaseTypeChecker checker) {
         super(checker);
         this.INTERNED = AnnotationUtils.fromClass(elements, Interned.class);
         typeToCheck = typeToCheck();
     }
 
-    // Handles the -Acheckclass command-line argument
-    private boolean shouldCheckFor(ExpressionTree tree) {
+    /**
+     * @return  true if interning should be verified for the input expression.  By default, all classes are checked
+     * for interning unless -Acheckclass is specified.
+     * {@see http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#interning-checks}.
+    */
+    private boolean shouldCheckExpression(ExpressionTree tree) {
         if (typeToCheck == null) return true;
 
         TypeMirror type = InternalUtils.typeOf(tree);
         return types.isSubtype(type, typeToCheck) || types.isSubtype(typeToCheck, type);
     }
 
+    /**
+     * Checks comparison operators, == and !=, for INTERNING violations.
+     */
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
 
@@ -104,7 +109,32 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         if (left.getKind().isPrimitive() || right.getKind().isPrimitive())
             return super.visitBinary(node, p);
 
-        if (!(shouldCheckFor(leftOp) && shouldCheckFor(rightOp)))
+        // If shouldCheckExpression returns true for either the LHS or RHS,
+        // this method proceeds with the interning check.
+
+        // Justification: Consider the following scenario:
+
+        // interface I { ... }
+        // class A { ... }
+        // class B extends A implements I { ... }
+        // ...
+        // I i;
+        // A a;
+        // ...
+        // if (a == i) { ... }
+
+        // The Java compiler does not issue a compilation error for the (a == i) comparison because,
+        // even though A does not implement I, 'a' could be assigned an instance of B, and B does
+        // implement I (note that the compiler does not need to know about the existence of B
+        // in order to assume this).
+
+        // Now suppose the user passes -AcheckClass=A on the command-line.
+        // I is not a subtype or supertype of A, so shouldCheckExpression will not return true for I.
+        // But the interning check must be performed, given the argument above.  Therefore if
+        // shouldCheckExpression returns true for either the LHS or the RHS, this method proceeds
+        // with the interning check.
+
+        if (!shouldCheckExpression(leftOp) && !shouldCheckExpression(rightOp))
             return super.visitBinary(node, p);
 
         // Syntactic checks for legal uses of ==
@@ -115,27 +145,36 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         if (suppressEarlyCompareTo(node))
             return super.visitBinary(node, p);
 
-        if (suppressClassAnnotation(left, right)) {
+        if (suppressEqualsIfClassIsAnnotated(left, right)) {
             return super.visitBinary(node, p);
         }
 
         Element leftElt = null;
         Element rightElt = null;
-        if (left instanceof org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType) {
+        if (left instanceof AnnotatedTypeMirror.AnnotatedDeclaredType) {
             leftElt = ((DeclaredType)left.getUnderlyingType()).asElement();
         }
-        if (right instanceof org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType) {
+        if (right instanceof AnnotatedTypeMirror.AnnotatedDeclaredType) {
             rightElt = ((DeclaredType)right.getUnderlyingType()).asElement();
         }
 
+        //TODO: CODE REVIEW
+        //TODO: WOULD IT BE CLEARER TO USE A METHOD usesReferenceEquality(AnnotatedTypeMirror type)
+        //TODO: RATHER THAN leftElt.getAnnotation(UsesObjectEquals.class) != null)
         //if neither @Interned or @UsesObjectEquals, report error
-        if (!(left.hasEffectiveAnnotation(INTERNED) || (leftElt != null && leftElt.getAnnotation(UsesObjectEquals.class) != null)))
+        if (!(left.hasEffectiveAnnotation(INTERNED) || (leftElt != null && leftElt.getAnnotation(UsesObjectEquals.class) != null))) {
             checker.report(Result.failure("not.interned", left), leftOp);
-        if (!(right.hasEffectiveAnnotation(INTERNED) || (rightElt != null && rightElt.getAnnotation(UsesObjectEquals.class) != null)))
+        }
+        if (!(right.hasEffectiveAnnotation(INTERNED) || (rightElt != null && rightElt.getAnnotation(UsesObjectEquals.class) != null))) {
             checker.report(Result.failure("not.interned", right), rightOp);
+        }
         return super.visitBinary(node, p);
     }
 
+    /**
+     * If lint option "dotequals" is specified, warn if the .equals method is used
+     * where reference equality is safe.
+     */
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         if (isInvocationOfEquals(node)) {
@@ -152,52 +191,55 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
 
-    /*
+    /**
      * Method to implement the @UsesObjectEquals functionality.
-     * If a class is marked @UsesObjectEquals, it must:
+     * If a class is annotated with @UsesObjectEquals, it must:
      *
      *    -not override .equals(Object)
-     *    -be a subclass of Object or another class marked @UsesObjectEquals
+     *    -be a subclass of Object or another class annotated with @UsesObjectEquals
      *
-     * If a class is not marked @UsesObjectEquals, it must:
+     * If a class is not annotated with @UsesObjectEquals, it must:
      *
-     *  -not have a superclass marked @UsesObjectEquals
+     *  -not have a superclass annotated with @UsesObjectEquals
      *
      *
      * @see org.checkerframework.common.basetype.BaseTypeVisitor#visitClass(com.sun.source.tree.ClassTree, java.lang.Object)
+     *
+     * TODO: CODE REVIEW: Should this METHOD INSTEAD USE EITHER THE Javac TYPES or SOME OTHER UTILITY TO GET
+     * TODO: ALL DIRECT SUPERTYPES AND VERIFY THAT EACH DOES NOT OVERRIDE .equals and THAT AT LEAST ONE OF THEM
+     * TODO: DECLARES @UsesObjectEquals
      */
     @Override
     public Void visitClass(ClassTree node, Void p) {
-        //Looking for an @UsesObjectEquals class declaration
+        // Looking for an @UsesObjectEquals class declaration
 
         TypeElement elt = TreeUtils.elementFromDeclaration(node);
         UsesObjectEquals annotation = elt.getAnnotation(UsesObjectEquals.class);
 
         Tree superClass = node.getExtendsClause();
         Element elmt = null;
-        if (superClass!= null && (superClass instanceof IdentifierTree || superClass instanceof MemberSelectTree)) {
+        if (superClass != null && (superClass instanceof IdentifierTree || superClass instanceof MemberSelectTree)) {
             elmt = TreeUtils.elementFromUse((ExpressionTree)superClass);
         }
 
-
-        //if it's there, check to make sure does not override equals
-        //and supertype is Object or @UsesObjectEquals
+        // If @UsesObjectEquals is present, check to make sure the class does not override equals
+        // and its supertype is Object or is annotated with @UsesObjectEquals.
         if (annotation != null) {
-            //check methods to ensure no .equals
+            // Check methods to ensure no .equals
             if (overridesEquals(node)) {
                 checker.report(Result.failure("overrides.equals"), node);
             }
 
 
             if (!(superClass == null || (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null))) {
-                checker.report(Result.failure("superclass.unmarked"), node);
+                checker.report(Result.failure("superclass.notannotated"), node);
             }
         } else {
-            //the class is not marked @UsesObjectEquals -> make sure its superclass isn't either.
-            //this is impossible after design change making @UsesObjectEquals inherited?
-            //check left in case of future design change back to non-inherited.
+            // The class is not annotated with @UsesObjectEquals -> make sure its superclass isn't either.
+            // TODO: is this impossible after the design change making @UsesObjectEquals inherited?
+            // This check is left behind in case of a future design change back to non-inherited.
             if (superClass != null && (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null)) {
-                checker.report(Result.failure("superclass.marked"), node);
+                checker.report(Result.failure("superclass.annotated"), node);
             }
         }
 
@@ -240,6 +282,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      */
     private boolean isInvocationOfEquals(MethodInvocationTree node) {
         ExecutableElement method = TreeUtils.elementFromUse(node);
+        //TODO: CODE REVIEW NEITHER OF THE TWO
         return (method.getParameters().size() == 1
                 && method.getReturnType().getKind() == TypeKind.BOOLEAN
                 // method symbols only have simple names
@@ -304,18 +347,44 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
         // If we're not directly in an if statement in a method (ignoring
         // parens and blocks), terminate.
-        // TODO: only if it's the first statement in the block
         if (!Heuristics.matchParents(getCurrentPath(), Tree.Kind.IF, Tree.Kind.METHOD))
             return false;
 
-        ExecutableElement enclosing =
-            TreeUtils.elementFromDeclaration(visitorState.getMethodTree());
+        // Ensure the if statement is the first statement in the method
+
+        TreePath parentPath = getCurrentPath().getParentPath();
+
+        // Retrieve the enclosing if statement tree and method tree
+        Tree tree, ifStatementTree = null;
+        MethodTree methodTree = null;
+        while ((tree = parentPath.getLeaf()) != null) {
+            if (tree.getKind() == Tree.Kind.IF) {
+            	ifStatementTree = tree;
+            } else if (tree.getKind() == Tree.Kind.METHOD) {
+            	methodTree = (MethodTree) tree;
+                break;
+            }
+
+            parentPath = parentPath.getParentPath();
+        }
+
+        assert ifStatementTree != null; // The call to Heuristics.matchParents already ensured there is an enclosing if statement
+        assert methodTree != null; // The call to Heuristics.matchParents already ensured there is an enclosing method
+
+        StatementTree stmnt = methodTree.getBody().getStatements().get(0);
+        assert stmnt != null; // The call to Heuristics.matchParents already ensured the enclosing method has at least one statement (an if statement) in the body
+
+        if (stmnt != ifStatementTree) {
+        	return false; // The if statement is not the first statement in the method.
+        }
+
+        ExecutableElement enclosing = TreeUtils.elementFromDeclaration(visitorState.getMethodTree());
         assert enclosing != null;
 
         final Element lhs = TreeUtils.elementFromUse((IdentifierTree)left);
         final Element rhs = TreeUtils.elementFromUse((IdentifierTree)right);
 
-        //Matcher to check for if statement that returns zero
+        // Matcher to check for if statement that returns zero
         Heuristics.Matcher matcherIfReturnsZero = new Heuristics.Matcher() {
 
                 @Override
@@ -384,16 +453,26 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         return false;
     }
 
-    private static ExpressionTree unparenthesize(ExpressionTree t) {
-        while (t.getKind() == Tree.Kind.PARENTHESIZED) {
-            t = ((ParenthesizedTree) t).getExpression();
-        }
-        return t;
-    }
-
-    // This string comparison seems wrong.  Fix later.
-    private static boolean sameTree(ExpressionTree a, ExpressionTree b) {
-        return unparenthesize(a).toString().equals(unparenthesize(b).toString());
+    /**
+     * Returns true if two expressions originating from the same scope are identical,
+     * i.e. they are syntactically represented in the same way (modulo parentheses) and
+     * represent the same value.
+     *
+     * For example, given an expression
+     * (a == b) || a.equals(b)
+     * sameTree can be called to determine that the first 'a' and second 'a' refer
+     * to the same variable, which is the case since both expressions 'a' originate from
+     * the same scope.
+     *
+     * If the expression includes one or more method calls, assumes the method calls
+     * are deterministic.
+     *
+     * @param expr1 the first expression to compare
+     * @param expr2 the second expression to compare - expr2 must originate from the same scope as expr1
+     * @return true if the expressions expr1 and expr2 are identical
+     */
+    private static boolean sameTree(ExpressionTree expr1, ExpressionTree expr2) {
+        return TreeUtils.skipParens(expr1).toString().equals(TreeUtils.skipParens(expr2).toString());
     }
 
     /**
@@ -413,15 +492,15 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             return false;
 
         // should strip parens
-        final ExpressionTree left = unparenthesize(node.getLeftOperand());
-        final ExpressionTree right = unparenthesize(node.getRightOperand());
+        final ExpressionTree left = TreeUtils.skipParens(node.getLeftOperand());
+        final ExpressionTree right = TreeUtils.skipParens(node.getRightOperand());
 
         // looking for ((a == b || a.equals(b))
         Heuristics.Matcher matcherEqOrEquals = new Heuristics.Matcher() {
 
                 // Returns true if e is either "e1 != null" or "e2 != null"
                 private boolean isNeqNull(ExpressionTree e, ExpressionTree e1, ExpressionTree e2) {
-                    e = unparenthesize(e);
+                    e = TreeUtils.skipParens(e);
                     if (e.getKind() != Tree.Kind.NOT_EQUAL_TO) {
                         return false;
                     }
@@ -531,8 +610,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         if (node.getKind() != Tree.Kind.EQUAL_TO)
             return false;
 
-        Tree left = node.getLeftOperand();
-        Tree right = node.getRightOperand();
+        Tree left = TreeUtils.skipParens(node.getLeftOperand());
+        Tree right = TreeUtils.skipParens(node.getRightOperand());
 
         // Only valid if we're comparing identifiers.
         if (!(left.getKind() == Tree.Kind.IDENTIFIER
@@ -616,19 +695,14 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
     /**
-     * Suppose that we have:
-     * <pre>
-     *   class A { ... }
-     *   @Interned class B { ... }
-     * </pre>
-     * then <code>a == b</code>, where a has type A and b has type B, is
-     * fine because it will be true only if a's run-time type is B (or
+     * Given <code>a == b</code>, where a has type A and b has type B,
+     * don't issue a warning when either the declaration of A or that of B
+     * is annotated with @Interned
+     * because <code>a == b</code> will be true only if a's run-time type is B (or
      * lower), in which case a is actually interned.
      * <p>
-     * More generally, if either of the classes is of a type whose
-     * declaration is annotated with @Interned, then the comparison is OK.
      */
-    private boolean suppressClassAnnotation(AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
+    private boolean suppressEqualsIfClassIsAnnotated(AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
         // It would be better to just test their greatest lower bound.
         // That could permit some comparisons that this forbids.
         return classIsAnnotated(left) || classIsAnnotated(right);
@@ -642,6 +716,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             // Maybe a type variable or wildcard had no upper bound
             return false;
         }
+
+        //TODO: CODE REVIEW: WHAT IF YOU HAVE A DECLARATION <E extends F, F extends SomeInternedClass
+        //TODO: THESE NEED TO BE WHILE LOOPS
         if (tm.getKind() == TypeKind.TYPEVAR) {
             tm = ((TypeVariable) tm).getUpperBound();
         }
@@ -678,7 +755,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * Determines the element corresponding to "this" inside a scope.  Returns
      * null within static methods.
      *
-     * @param scope the scope with the
+     * @param scope the scope to search for the element corresponding to "this" in
      * @return the element corresponding to "this" in the given scope, or null
      *      if not found
      */

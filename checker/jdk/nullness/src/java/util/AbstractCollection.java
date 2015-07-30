@@ -38,6 +38,4 @@ public abstract class AbstractCollection<E extends @Nullable Object> implements 
   public void clear() { throw new RuntimeException("skeleton method"); }
   @Override
   @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
-  @Override
-  public Stream<E> stream() { throw new RuntimeException("skeleton method"); }
 }

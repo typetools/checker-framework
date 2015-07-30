@@ -156,7 +156,7 @@ The checker-compat-qual.jar is now included with the Checker Framework
 release.  It can also be found in Maven Central at the coordinates:
 org.checkerframework:checker-compat-qual
 Annotations in checker-compat-qual.jar do not require Java 8 but
-can only be placed in annotation locations valid in Java 7
+can only be placed in annotation locations valid in Java 7.
 
 ----------------------------------------------------------------------
 

@@ -201,7 +201,7 @@ public class Logger {
     private String name;
     private final CopyOnWriteArrayList<Handler> handlers =
         new CopyOnWriteArrayList<>();
-    private String resourceBundleName;
+    //private String resourceBundleName;
     private volatile boolean useParentHandlers = true;
     private volatile Filter filter;
     private boolean anonymous;
@@ -1280,7 +1280,7 @@ public class Logger {
     // Private method to get the potentially inherited
     // resource bundle name for this Logger.
     // May return null
-    private String getEffectiveResourceBundleName() { throw new RuntimeException(); }
+    //private String getEffectiveResourceBundleName() { throw new RuntimeException(); }
 
 
 }
