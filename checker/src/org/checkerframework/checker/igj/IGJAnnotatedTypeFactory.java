@@ -319,6 +319,7 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitExecutable(type, p);
         }
 
+/*
         @Override
         public Void visitTypeVariable(AnnotatedTypeVariable type, Void p) {
             // In a declaration the upperbound is ReadOnly, while
@@ -331,14 +332,14 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         || elemKind == ElementKind.METHOD)
                     // case 5: upper bound within a class/method declaration
                     type.getUpperBoundField().replaceAnnotation(READONLY);
-                else*/ if (TypesUtils.isObject(type.getUnderlyingType()))
+                else* / if (TypesUtils.isObject(type.getUnderlyingType()))
                     // case 10: remaining cases
                     type.getUpperBoundField().replaceAnnotation(MUTABLE);
             }
 
             return super.visitTypeVariable(type, p);
         }
-
+*/
         @Override
         public Void visitWildcard(AnnotatedWildcardType type, Void p) {
             // In a declaration the upper bound is ReadOnly, while
