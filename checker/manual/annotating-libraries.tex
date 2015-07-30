@@ -137,13 +137,20 @@ pluggable type-checker, and include the resulting \<.jar> file on your
 classpath.  You get a guarantee that the library contains no errors.
 
 The rest of this section tells you how to compile a library if you
-\emph{partially} annotate it, such as writing annotations for some of its
+\emph{partially} annotate it:  that is, you write annotations for some of its
 classes but not others.
+(There is another type of partial annotation, which is when you annotate
+method signatures but do not type-check the bodies.  To do that variety of
+partial annotation, simply suppress warnings; see
+Chapter~\ref{suppressing-warnings}.  You can combine the two types of
+partial annotation.)
+
 When compiling a partially-annotated library, the checker needs to use normal
 defaulting rules (Section~\ref{climb-to-top}) for code you have annotated and
 conservative defaulting rules (Section~\ref{defaults-classfile}) for
 code you have not yet annotated.
 You use \<@AnnotatedFor> to indicate which classes you have annotated.
+
 
 
 \subsection{The \<-AuseSafeDefaultsForUnannotatedSourceCode> command-line
