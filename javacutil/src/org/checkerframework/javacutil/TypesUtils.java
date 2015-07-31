@@ -390,7 +390,7 @@ public final class TypesUtils {
      * Given a bounded type (wildcard or typevar) get the concrete type of it's upper bound.  If
      * the bounded type extends other bounded types, this method will iterate through their bounds
      * until a class, interface, or intersection is found.
-     * @return A type that is not a wildcard or typevar
+     * @return A type that is not a wildcard or typevar, or null if this type is an unbounded wildcard
      */
     public static TypeMirror findConcreteUpperBound(final TypeMirror boundedType) {
         TypeMirror effectiveUpper = boundedType;
@@ -398,6 +398,9 @@ public final class TypesUtils {
             switch (effectiveUpper.getKind()) {
                 case WILDCARD:
                     effectiveUpper = ((javax.lang.model.type.WildcardType) effectiveUpper).getExtendsBound();
+                    if (effectiveUpper == null) {
+                        return null;
+                    }
                     break;
 
                 case TYPEVAR:
