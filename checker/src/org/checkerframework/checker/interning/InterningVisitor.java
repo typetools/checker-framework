@@ -43,6 +43,7 @@ import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Typechecks source code for interning violations.  A type is considered interned
@@ -717,18 +718,12 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             return false;
         }
 
-        //TODO: CODE REVIEW: WHAT IF YOU HAVE A DECLARATION <E extends F, F extends SomeInternedClass
-        //TODO: THESE NEED TO BE WHILE LOOPS
-        if (tm.getKind() == TypeKind.TYPEVAR) {
-            tm = ((TypeVariable) tm).getUpperBound();
-        }
-        if (tm.getKind() == TypeKind.WILDCARD) {
-            tm = ((WildcardType) tm).getExtendsBound();
-        }
+        tm = TypesUtils.findConcreteUpperBound(tm);
         if (tm == null || tm.getKind() == TypeKind.ARRAY) {
             // Bound of a wildcard might be null
             return false;
         }
+
         if (tm.getKind() != TypeKind.DECLARED) {
             checker.message(Kind.WARNING,
                     "InterningVisitor.classIsAnnotated: tm = %s (%s)%n", tm, tm.getClass());

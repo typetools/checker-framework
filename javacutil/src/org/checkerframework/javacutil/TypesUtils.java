@@ -97,7 +97,7 @@ public final class TypesUtils {
      */
     public static boolean isDeclaredOfName(TypeMirror type, CharSequence qualifiedName) {
         return type.getKind() == TypeKind.DECLARED
-            && getQualifiedName((DeclaredType)type).contentEquals(qualifiedName);
+            && getQualifiedName((DeclaredType) type).contentEquals(qualifiedName);
     }
 
     public static boolean isBoxedPrimitive(TypeMirror type) {
@@ -384,5 +384,33 @@ public final class TypesUtils {
             default:
                 return false;
         }
+    }
+
+    /**
+     * Given a bounded type (wildcard or typevar) get the concrete type of it's upper bound.  If
+     * the bounded type extends other bounded types, this method will iterate through their bounds
+     * until a class, interface, or intersection is found.
+     * @return A type that is not a wildcard or typevar, or null if this type is an unbounded wildcard
+     */
+    public static TypeMirror findConcreteUpperBound(final TypeMirror boundedType) {
+        TypeMirror effectiveUpper = boundedType;
+        outerLoop : while (true) {
+            switch (effectiveUpper.getKind()) {
+                case WILDCARD:
+                    effectiveUpper = ((javax.lang.model.type.WildcardType) effectiveUpper).getExtendsBound();
+                    if (effectiveUpper == null) {
+                        return null;
+                    }
+                    break;
+
+                case TYPEVAR:
+                    effectiveUpper = ((TypeVariable) effectiveUpper).getUpperBound();
+                    break;
+
+                default:
+                    break outerLoop;
+            }
+        }
+        return effectiveUpper;
     }
 }

@@ -9,6 +9,7 @@ ZIPFILES = eclipse-projects.zip sourcefiles.zip
 all: ${ZIPFILES}
 
 eclipse-projects.zip: copy-checker-qual clean-classes
+	rm -f eclipse-projects/README.txt
 	\cp -pf README-sourcefiles.txt eclipse-projects/README.txt
 	zip -r eclipse-projects.zip eclipse-projects/
 
@@ -25,7 +26,8 @@ clean-checker-qual:
 	@\rm -f eclipse-projects/personalblog-demo/lib/checker-qual.jar
 
 sourcefiles.zip: copy-checker-qual clean-classes copy-files-from-eclipse
-	\cp -pf README-sourcefiles.txt src/README.txt
+	rm -f src/README.txt
+	cp -pf README-sourcefiles.txt src/README.txt
 	zip -r sourcefiles.zip src/
 
 clean-sourcefiles:
