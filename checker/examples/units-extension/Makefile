@@ -1,14 +1,24 @@
-JAVAC?=../../bin/javac
-
 FILES=Frequency.java \
   FrequencyRelations.java \
-  Hz.java
+  Hz.java \
+  kHz.java
 
-all: compile check
+JAVAOPTS=-source 7 -target 7
 
-compile: $(FILES)
-	$(JAVAC) $(FILES)
+JSR308JAVAC?=../../bin/javac
 
-check: compile $(FILES)
-	@echo "***** This command is expected to produce errors on lines 8 and 29:"
-	$(JAVAC) -Xbootclasspath/p:. -AprintErrorStack -processor org.checkerframework.checker.units.UnitsChecker -Aunits=Hz,Frequency Demo.java
+all: framework-test clean
+
+demo: 
+	$(JSR308JAVAC) $(JAVAOPTS) $(FILES)
+	@echo "***** This command is expected to produce errors on line 10 & 60:"
+	$(JSR308JAVAC) -Xbootclasspath/p:. -AprintErrorStack -processor org.checkerframework.checker.units.UnitsChecker -Aunits=Hz,kHz,Frequency Demo.java
+
+framework-test:
+	$(JAVAC) $(JAVAOPTS) $(FILES)
+	-$(JAVAC) -Xbootclasspath/p:. -AprintErrorStack -processor org.checkerframework.checker.units.UnitsChecker -Aunits=Hz,kHz,Frequency Demo.java > Out.txt 2>&1
+	diff -u Out.txt Expected.txt
+
+clean:
+	-rm *.class
+	-rm Out.txt
