@@ -31,9 +31,11 @@ on units.
 
 \section{Units annotations\label{units-annotations}}
 
-The checker currently supports two varieties of units annotations:
-kind annotations (\code{@Length}, \code{@Mass}, \dots) and
-the SI units (\code{@m}, \code{@kg}, \dots).
+The checker currently supports three varieties of units annotations:
+kind annotations (\refqualclass{checker/units/qual}{Length},
+\refqualclass{checker/units/qual}{Mass}, \dots),
+the SI units (\refqualclass{checker/units/qual}{m}, \refqualclass{checker/units/qual}{kg}, \dots), and polymorphic annotations
+(\refqualclass{checker/units/qual}{PolyUnit}).
 
 
 Kind annotations can be used to declare what the expected unit of
@@ -130,6 +132,15 @@ example, after statically importing \code{UnitsTools.m},
 the expression \code{5 * m} represents five meters.
 As all these unit constants are public, static, and final with value
 one, the compiler will optimize away these multiplications.
+
+
+The polymorphic annotation \refqualclass{checker/units/qual}{PolyUnit}
+enables you to write a method that takes an argument of any unit type and
+returns a result of that same type.  For more about polymorphic qualifiers,
+see Section~\ref{qualifier-polymorphism}.  For an example of it use, see 
+\code{@PolyUnit}, see the
+\href{api/org/checkerframework/checker/units/qual/PolyUnit.html}{\<@PolyUnit>
+Javadoc}.
 
 
 \section{Extending the Units Checker\label{extending-units}}
