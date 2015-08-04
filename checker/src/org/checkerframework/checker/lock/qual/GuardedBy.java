@@ -15,22 +15,24 @@ package org.checkerframework.checker.lock.qual;
 
 import java.lang.annotation.*;
 
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
- * The field (or other variable) to which this annotation is applied can
- * only be accessed when holding a particular lock, which may be a built-in
- * (synchronization) lock, or may be an explicit {@link
- * java.util.concurrent.locks.Lock}.
+ * Indicates that a thread may dereference the value referred to by the
+ * annotated variable only if the thread holds all the given expressions.
  * <p>
  *
- * This annotation does <b>not</b> indicate whether or not the given lock
- * is held at the moment that execution reaches the annotation.
- * It merely indicates that the lock must be held when the
- * variable is accessed.
+ * Expressions may evaluate to a built-in (synchronization) lock, or
+ * an explicit {@link java.util.concurrent.locks.Lock}
  * <p>
  *
- * The argument is a string that indicates which lock guards the annotated variable:
+ * <code>@GuardedBy({})</code> is the default type qualifier.
+ * <p>
+ *
+ * The argument is a string or set of strings that indicates the expression(s) that must be held:
  * <ul>
  * <li>
  * <code>this</code> : The intrinsic lock of the object in whose class the field is defined.
@@ -40,45 +42,42 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  * the <code><em>class-name</em>.this</code> designation allows you to specify which 'this' reference is intended
  * </li>
  * <li>
- * <code>itself</code> : For reference (non-primitive) fields only; the object to which the field refers.
+ * <code>itself</code> : For reference (non-primitive) fields only; the value to which the field refers.
  * </li>
  * <li>
- * <code><em>field-name</em></code> : The lock object is referenced by the (instance or static) field
+ * <code><em>field-name</em></code> : The instance or static field
  * specified by <code><em>field-name</em></code>.
  * </li>
  * <li>
- * <code><em>class-name</em>.<em>field-name</em></code> : The lock object is reference by the static field specified
+ * <code><em>class-name</em>.<em>field-name</em></code> : The static field specified
  * by <code><em>class-name</em>.<em>field-name</em></code>.
  * </li>
  * <li>
- * <code><em>method-name</em>()</code> : The lock object is returned by calling the named nil-ary method.
+ * <code><em>method-name</em>()</code> : The value returned by calling the named {@link org.checkerframework.dataflow.qual.Pure} method.
  * </li>
  * <li>
- * <code><em>class-name</em>.class</code> : The Class object for the specified class should be used as the lock object.
+ * <code><em>class-name</em>.class</code> : The Class object for the specified class.
  * </li>
  * </ul>
- *
- * <b>Subtyping rules:</b>
- * An unannotated type is a subtype of a
- * <code>@GuardedBy</code> one, because the unannotated type may be
- * used in any context where the <code>@GuardedBy</code> one is.
  * <p>
  *
  * @see Holding
- * @see HoldingOnEntry
  * @checker_framework.manual #lock-checker Lock Checker
  */
+@TypeQualifier
+@SubtypeOf(GuardedByInaccessible.class)
 @Documented
+@DefaultQualifierInHierarchy
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE })
 @PreconditionAnnotation(qualifier = LockHeld.class)
 public @interface GuardedBy {
     /**
-     * The Java expressions that need to be {@link LockHeld}.
+     * The Java value expressions that need to be held.
      *
      * @see <a
      *      href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax
      *      of Java expressions</a>
      */
-    String[] value();
+    String[] value() default {};
 }
