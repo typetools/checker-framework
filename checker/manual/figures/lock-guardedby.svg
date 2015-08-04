@@ -7,9 +7,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="1373.54"
-   height="194.8819"
-   viewBox="328 238 1539.934 205"
+   width="822.53998"
+   height="194.88"
+   viewBox="328 238 922.19013 204.99801"
    id="svg2"
    version="1.1"
    inkscape:version="0.48.4 r9939"
@@ -41,34 +41,15 @@
      id="namedview194"
      showgrid="false"
      inkscape:zoom="0.8733739"
-     inkscape:cx="526.22414"
-     inkscape:cy="258.73598"
+     inkscape:cx="530.80408"
+     inkscape:cy="63.977547"
      inkscape:window-x="0"
      inkscape:window-y="31"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg2" />
   <g
-     id="g50-7"
-     transform="matrix(1.301579,0,0,1,13.440222,-0.37402863)">
-    <line
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x1="820"
-       y1="400"
-       x2="424.134"
-       y2="363.436"
-       id="line52-0" />
-    <polygon
-       style="fill:#000000"
-       points="410.194,362.148 423.491,370.406 424.778,356.465 "
-       id="polygon54-0" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:2"
-       points="410.194,362.148 423.491,370.406 424.778,356.465 "
-       id="polygon56-6" />
-  </g>
-  <g
      id="g4"
-     transform="translate(526.93642,0)">
+     transform="translate(156.95827,-0.00294728)">
     <rect
        style="fill:#ffffff"
        x="329.198"
@@ -96,41 +77,8 @@
     </text>
   </g>
   <g
-     id="g14"
-     transform="translate(526.93642,0)">
-    <rect
-       style="fill:#ffffff"
-       x="1149.67"
-       y="320"
-       width="189.8"
-       height="42"
-       id="rect16" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:2;stroke-opacity:1"
-       x="1149.67"
-       y="320"
-       width="189.8"
-       height="42"
-       id="rect18" />
-    <text
-       font-size="16"
-       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#7f7f7f;font-family:courier new"
-       x="1244.5699"
-       y="345.85001"
-       id="text20">
-      <tspan
-         x="1244.5699"
-         y="345.85001"
-         id="tspan22"
-         style="fill:#000000">@GuardedBy(<tspan
-   style="font-style:italic;fill:#000000"
-   id="tspan3175">Eset</tspan>
-)</tspan>
-    </text>
-  </g>
-  <g
      id="g50"
-     transform="translate(257.86232,0)">
+     transform="matrix(0.85973153,0,0,1,47.89181,-0.00294728)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -140,16 +88,16 @@
        id="line52" />
     <polygon
        style="fill:#000000"
-       points="410.194,362.148 423.491,370.406 424.778,356.465 "
+       points="424.778,356.465 410.194,362.148 423.491,370.406 "
        id="polygon54" />
     <polygon
        style="fill:none;stroke:#000000;stroke-width:2"
-       points="410.194,362.148 423.491,370.406 424.778,356.465 "
+       points="424.778,356.465 410.194,362.148 423.491,370.406 "
        id="polygon56" />
   </g>
   <g
      id="g58"
-     transform="translate(257.86232,0)">
+     transform="matrix(0.84013385,0,0,1,63.66033,-0.00294728)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -168,7 +116,7 @@
   </g>
   <g
      id="g66"
-     transform="translate(257.86222,0)">
+     transform="translate(-67.270155,-0.00294728)">
     <rect
        style="fill:#ffffff"
        x="740"
@@ -199,27 +147,27 @@
      font-size="12.8"
      style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
      x="820"
-     y="261"
+     y="260.99786"
      id="text76">
     <tspan
        x="820"
-       y="261"
+       y="260.99786"
        id="tspan78" />
   </text>
   <text
      font-size="12.8"
      style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
      x="409.198"
-     y="341.056"
+     y="341.05386"
      id="text80">
     <tspan
        x="409.198"
-       y="341.056"
+       y="341.05386"
        id="tspan82" />
   </text>
   <g
      id="g84"
-     transform="translate(526.93642,0)">
+     transform="translate(156.95827,-0.00294728)">
     <rect
        style="fill:#ffffff"
        x="499.97"
@@ -250,16 +198,16 @@
      font-size="12.8"
      style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
      x="579.96997"
-     y="340.95801"
+     y="340.95587"
      id="text94">
     <tspan
        x="579.96997"
-       y="340.95801"
+       y="340.95587"
        id="tspan96" />
   </text>
   <g
      id="g98"
-     transform="translate(459.66793,0)">
+     transform="translate(89.689765,-0.00294728)">
     <rect
        style="fill:#ffffff"
        x="739.44598"
@@ -290,16 +238,16 @@
      font-size="12.8"
      style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
      x="819.44598"
-     y="340.95801"
+     y="340.95587"
      id="text108">
     <tspan
        x="819.44598"
-       y="340.95801"
+       y="340.95587"
        id="tspan110" />
   </text>
   <g
      id="g128"
-     transform="matrix(0.70477634,0,0,1,500.24094,0)">
+     transform="matrix(0.81165992,0,0,1,87.336712,-0.00294728)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -309,16 +257,16 @@
        id="line130" />
     <polygon
        style="fill:#000000"
-       points="589.585,363.353 591.269,368.684 582.178,362.175 592.84,358.808 "
+       points="591.269,368.684 582.178,362.175 592.84,358.808 589.585,363.353 "
        id="polygon132" />
     <polygon
        style="fill:none;stroke:#000000;stroke-width:2"
-       points="589.585,363.353 591.269,368.684 582.178,362.175 592.84,358.808 "
+       points="591.269,368.684 582.178,362.175 592.84,358.808 589.585,363.353 "
        id="polygon134" />
   </g>
   <g
      id="g136"
-     transform="translate(257.86232,0)">
+     transform="translate(-67.270055,-0.00294728)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -339,45 +287,16 @@
      font-size="12.8"
      style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
      x="409.198"
-     y="341.056"
+     y="341.05386"
      id="text144">
     <tspan
        x="409.198"
-       y="341.056"
+       y="341.05386"
        id="tspan146" />
   </text>
   <g
-     id="g148"
-     transform="translate(526.93642,0)">
-    <rect
-       style="fill:#ffffff"
-       x="1079.65"
-       y="320"
-       width="40"
-       height="42"
-       id="rect150" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x="1079.65"
-       y="320"
-       width="40"
-       height="42"
-       id="rect152" />
-    <text
-       font-size="12.8"
-       style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-       x="1099.65"
-       y="344.89999"
-       id="text154">
-      <tspan
-         x="1099.65"
-         y="344.89999"
-         id="tspan156">...</tspan>
-    </text>
-  </g>
-  <g
      id="g168"
-     transform="translate(459.66793,0)">
+     transform="translate(89.689765,-0.00294728)">
     <rect
        style="fill:#ffffff"
        x="910.43402"
@@ -406,7 +325,7 @@
   </g>
   <g
      id="g186"
-     transform="translate(257.86232,0)">
+     transform="translate(-67.270055,-0.00294728)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -424,7 +343,7 @@
        id="polygon192" />
   </g>
   <g
-     transform="translate(238.31805,-158.69874)"
+     transform="translate(-86.814326,-158.70237)"
      id="g66-6">
     <rect
        style="fill:#ffffff"
@@ -453,7 +372,7 @@
     </text>
   </g>
   <g
-     transform="translate(-199.93935,2.784652)"
+     transform="translate(-525.0717,2.7817002)"
      id="g4-9">
     <rect
        style="fill:#ffffff"
@@ -463,90 +382,34 @@
        height="42"
        id="rect6-7" />
     <rect
-       style="fill:none;stroke:#000000;stroke-width:2.36202192"
-       x="531.44226"
-       y="317.54086"
-       width="225.10619"
-       height="41.637981"
-       id="rect8-8" />
-    <text
-       font-size="16"
-       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-       x="644.63873"
-       y="343.20987"
-       id="text10-4">
-      <tspan
-         x="644.63873"
-         y="343.20987"
-         id="tspan12-7">@NonLeakedUnknownGuard</tspan>
-    </text>
-    <rect
        style="fill:#ffffff"
-       x="824.64606"
+       x="844.82684"
        y="317.3519"
        width="160"
        height="42"
        id="rect6-7-3" />
     <rect
-       style="fill:none;stroke:#000000;stroke-width:2.56735444"
-       x="771.01471"
-       y="317.63556"
-       width="267.26263"
-       height="41.432652"
+       style="fill:none;stroke:#000000;stroke-width:1.87095177"
+       x="856.3158"
+       y="317.28735"
+       width="139.58952"
+       height="42.129055"
        id="rect8-8-8" />
     <text
        font-size="16"
        style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-       x="904.64606"
+       x="924.82684"
        y="343.2019"
        id="text10-4-7">
       <tspan
-         x="904.64606"
+         x="924.82684"
          y="343.2019"
-         id="tspan12-7-2">@LeakedToResultUnknownGuard</tspan>
+         id="tspan12-7-2">@UnknownGuard</tspan>
     </text>
   </g>
   <g
-     id="g58-2"
-     transform="matrix(1.4232916,0,0,1,-87.838058,-0.30732906)">
-    <line
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x1="820"
-       y1="400"
-       x2="1229.63"
-       y2="363.33701"
-       id="line60-9" />
-    <polygon
-       style="fill:#000000"
-       points="1243.58,362.089 1229.01,356.365 1230.26,370.309 "
-       id="polygon62-7" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:2"
-       points="1243.58,362.089 1229.01,356.365 1230.26,370.309 "
-       id="polygon64-1" />
-  </g>
-  <g
-     id="g50-7-8"
-     transform="matrix(-1.0333369,0,0,1.1961257,1393.7544,-158.76344)">
-    <line
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x1="820"
-       y1="400"
-       x2="424.134"
-       y2="363.436"
-       id="line52-0-1" />
-    <polygon
-       style="fill:#000000"
-       points="423.491,370.406 424.778,356.465 410.194,362.148 "
-       id="polygon54-0-5" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:2"
-       points="423.491,370.406 424.778,356.465 410.194,362.148 "
-       id="polygon56-6-8" />
-  </g>
-  <g
      id="g58-5"
-     transform="matrix(-0.91895094,0,0,0.98010942,2254.3761,-72.387321)">
+     transform="matrix(-0.73799823,0,0,0.98010942,1704.0276,-72.390198)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -565,7 +428,7 @@
   </g>
   <g
      id="g128-9"
-     transform="matrix(-1.0680778,0,0,0.95541913,1641.7576,-62.687232)">
+     transform="matrix(-1.2125979,0,0,0.95541913,1400.6166,-62.690109)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -575,16 +438,16 @@
        id="line130-2" />
     <polygon
        style="fill:#000000"
-       points="591.269,368.684 582.178,362.175 592.84,358.808 589.585,363.353 "
+       points="592.84,358.808 589.585,363.353 591.269,368.684 582.178,362.175 "
        id="polygon132-6" />
     <polygon
        style="fill:none;stroke:#000000;stroke-width:2"
-       points="591.269,368.684 582.178,362.175 592.84,358.808 589.585,363.353 "
+       points="592.84,358.808 589.585,363.353 591.269,368.684 582.178,362.175 "
        id="polygon134-1" />
   </g>
   <g
      id="g136-8"
-     transform="translate(257.17534,-81.33159)">
+     transform="translate(-67.957035,-81.334467)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -603,7 +466,7 @@
   </g>
   <g
      id="g186-4"
-     transform="matrix(-0.88273399,0,0,0.99800889,1969.3878,-78.821188)">
+     transform="matrix(-0.88273399,0,0,0.99800889,1644.2553,-78.824065)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -621,27 +484,8 @@
        id="polygon192-7" />
   </g>
   <g
-     id="g58-2-4"
-     transform="matrix(-1.1628908,0,0,1.1181891,2635.2423,-127.47626)">
-    <line
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x1="820"
-       y1="400"
-       x2="1229.63"
-       y2="363.33701"
-       id="line60-9-9" />
-    <polygon
-       style="fill:#000000"
-       points="1230.26,370.309 1243.58,362.089 1229.01,356.365 "
-       id="polygon62-7-7" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:2"
-       points="1230.26,370.309 1243.58,362.089 1229.01,356.365 "
-       id="polygon64-1-6" />
-  </g>
-  <g
      id="g128-9-4"
-     transform="matrix(-0.53721743,0,0,0.98528777,1369.5893,-74.268812)">
+     transform="matrix(-0.70266231,0,0,0.98528777,1140.5511,-74.271689)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -651,11 +495,22 @@
        id="line130-2-6" />
     <polygon
        style="fill:#000000"
-       points="592.84,358.808 589.585,363.353 591.269,368.684 582.178,362.175 "
+       points="589.585,363.353 591.269,368.684 582.178,362.175 592.84,358.808 "
        id="polygon132-6-3" />
     <polygon
        style="fill:none;stroke:#000000;stroke-width:2"
-       points="592.84,358.808 589.585,363.353 591.269,368.684 582.178,362.175 "
+       points="589.585,363.353 591.269,368.684 582.178,362.175 592.84,358.808 "
        id="polygon134-1-0" />
   </g>
+  <text
+     font-size="12.8"
+     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+     x="1238.2217"
+     y="344.13104"
+     id="text154">
+    <tspan
+       x="1238.2217"
+       y="344.13104"
+       id="tspan156">...</tspan>
+  </text>
 </svg>

@@ -80,42 +80,26 @@ This section describes the lock annotations you can use on types and methods.
   \<@GuardedBy(\{\})> is the default type qualifier if the programmer does not
   write an explicit locking type qualifier.
 
-% Description adapted from that of @NonLeaked in the Aliasing Checker chapter.
-% @NonLeakedUnknownGuard is inspired from @NonLeaked but its meaning is different.
-\item[\refqualclass{checker/lock/qual}{NonLeakedUnknownGuard}]
-  identifies a formal parameter that is not leaked nor
-  returned by the method body, and for which the \code{@GuardedBy} annotation
-  on the actual parameter is unknown at the method definition site.
+\item[\refqualclass{checker/lock/qual}{UnknownGuard}]
+  If a variable \<x> has type \code{@UnknownGuard}, then
+  the lock expressions that must be held when
+  dereferencing the value referred to by \<x> are unknown.
   For example, the formal parameter of the String copy constructor,
-  \code{String(String s)}, is \code{@NonLeakedUnknownGuard} because the body of the method
-  only makes a copy of the parameter, and the @GuardedBy annotation
+  \code{String(String s)}, is annotated with \code{@UnknownGuard} since
+  the \code{@GuardedBy} annotation
   on the actual parameter to a call to the constructor is unknown
   at its definition site, because the constructor can be called by
-  arbitrary code.  See Section~\ref{lock-checker-library-methods}
-  for details on when to use \code{@NonLeakedUnknownGuard}.
-
-  We say a routine "leaks" a value if the routine makes the value accessible
-  to clients, by making it reachable from a value accessible to the client
-  such as a global variable, an argument, a field, or a return value.
-
-% Description adapted from that of @LeakedToResult in the Aliasing Checker chapter.
-% @LeakedToResultUnknownGuard is inspired from @LeakedToResult but its meaning is different.
-\item[\refqualclass{checker/lock/qual}{LeakedToResultUnknownGuard}]
-  is used when the parameter may be returned, but it is not
-  otherwise leaked, and for which the @GuardedBy annotation
-  on the actual parameter is unknown at the method definition site.
-  For example, the receiver parameter of \code{StringBuffer.append(StringBuffer
-  this, String s)} is
-  \code{@LeakedToResultUnknownGuard}, because the method returns the updated receiver,
-  and the @GuardedBy annotation
-  on the receiver of a call to the method is unknown
-  at its definition site, because the method can be called by
-  arbitrary code.  See Section~\ref{lock-checker-library-methods}
-  for details on when to use \code{@LeakedToResultUnknownGuard}.
+  arbitrary code.
+  Note that \code{@UnknownGuard}
+  has a distinct meaning from \code{@GuardedBy(\{\})}.  \code{@GuardedBy(\{\})}
+  means that it is \emph{known} that a value can always be safely dereferenced
+  regardless of the lock expressions that are held on the current thread.
+  See Section~\ref{lock-checker-library-methods}
+  for details on when to use \code{@UnknownGuard}.
 
 \item[\refqualclass{checker/lock/qual}{GuardedByInaccessible}]
-  If a variable \<x> has type @GuardedByInaccessible, then
-  the value referred to by the \<x> can never be accessed.
+  If a variable \<x> has type \code{@GuardedByInaccessible}, then
+  the value referred to by \<x> can never be accessed.
   This annotation is used internally by the type system
   and should never be written by a programmer.
 
@@ -123,10 +107,17 @@ This section describes the lock annotations you can use on types and methods.
   This annotation is used internally by the type system
   and should never be written by a programmer.
 
+\item[\refqualclass{checker/interning/qual}{PolyGuardedBy}]
+  indicates qualifier polymorphism.  For a description of
+  \refqualclass{checker/interning/qual}{PolyGuardedBy}, see
+  Section~\ref{qualifier-polymorphism}.
+  See Section~\ref{lock-checker-library-methods}
+  for an example of a use of \code{@PolyGuardedBy}.
+
 \end{description}
 
 \begin{figure}
-\includeimage{lock-guardedby}{2.35cm}
+\includeimage{lock-guardedby}{3.5cm}
 \caption{The subtyping relationship of the Lock Checker's qualifiers.
 \code{@GuardedBy(\{\})} is the default type qualifier for all unannotated
 variables.
@@ -139,10 +130,10 @@ programmer.}
 Figure~\ref{fig-lock-guardedby-hierarchy} shows the type hierarchy of these
 qualifiers.
 All \code{@GuardedBy} annotations are incomparable:
-if \emph{Eset1} $\neq$ \emph{Eset2}, then \code{@GuardedBy(\emph{Eset1})} and
-\code{@GuardedBy(\emph{Eset2})} are siblings in the type hierarchy.
+if \emph{exprSet1} $\neq$ \emph{exprSet2}, then \code{@GuardedBy(\emph{exprSet1})} and
+\code{@GuardedBy(\emph{exprSet2})} are siblings in the type hierarchy.
 It might be expected that
-\<@GuardedBy({"x", "y"}) T> is a supertype of \<@GuardedBy({"x"}) T>.  The
+\<@GuardedBy({"x", "y"}) T> is a subtype of \<@GuardedBy({"x"}) T>.  The
 first type requires two locks to be held, and the second requires only one
 lock to be held and so could be used in any situation where both locks are
 held.  The type system conservatively prohibits this in order to prevent
@@ -184,14 +175,14 @@ The method does not make any use of locks or synchronization.
   mentioned in a \<@Holding> precondition are held at the method call site.
 \item[\refqualclass{checker/lock/qual}{EnsuresLockHeld}\small{(String[] locks)}]
 \item[\refqualclass{checker/lock/qual}{EnsuresLockHeldIf}\small{(String[] locks, boolean result)}]
-  indicate a method postcondition.  With \code{@EnsuresLockHeld}, the given
+  indicate a method postcondition.  With \code{@EnsuresLockHeld}, the given lock
   expressions are known by the programmer to be in
   a locked state after the method returns; this is useful for annotating a
   method that acquires a lock such as
   \sunjavadoc{java/util/concurrent/locks/ReentrantLock.html\#lock()}{ReentrantLock.lock()}.
 
   With \code{@EnsuresLockHeldIf}, if the annotated method returns the given
-  boolean value (true or false), the given
+  boolean value (true or false), the given lock
   expressions are known by the programmer to be in
   a locked state after the method returns; this is useful for annotating a
   method that conditionally acquires a lock.
@@ -217,7 +208,7 @@ to indicate that a method releases all locks it acquires, and is otherwise @Lock
 For now, the Lock Checker would treat it as @LockingFree.  Later, if we add a deadlock
 detection system, we could ask users interested
 in deadlock avoidance to replace this annotation with a more specific one (for example, one
-that specifies all the locks that are acquired/released by the method).}
+that specifies all the locks that are acquired and subsequently released by the method).}
 
 \end{description}
 
@@ -241,7 +232,7 @@ the Monitor class in Guava can be annotated such that the Lock Checker will inte
 @Holding("monitor") correctly, making it unnecessary to explicitly write @Holding("monitor.lock").}
 
 \textcolor{red}{Do you think that might be related to the meaning of this paragraph? If not, I propose we remove
-it (and the reference to it right above).}
+it (and the mention of it right above).}
 
   \code{@Holding} can specify a higher-level synchronization protocol that
   is not expressible as locks over Java objects.  By requiring locks to be
@@ -308,7 +299,7 @@ extra synchronized block.  Here are reasons:
 
 \subsection{Annotating library methods\label{lock-checker-library-methods}}
 
-\paragraph{Using the \refqualclass{checker/lock/qual}{NonLeakedUnknownGuard} annotation\label{lock-checker-library-methods-nonleakedunknownguard}}
+\paragraph{Using the \refqualclass{checker/lock/qual}{UnknownGuard} and \refqualclass{common/aliasing/qual}{NonLeaked} annotations\label{lock-checker-library-methods-unknownguard-and-nonleaked}}
 
 Often, when annotating library methods, one encounters methods that can
 be annotated with \code{@LockingFree}.  However, in order to make calls
@@ -357,11 +348,13 @@ using a variable named \code{lock}, which in addition to being impractical
 is ambiguous as \code{lock} could refer to different variables in different
 calling contexts.
 
-Instead, the recommended solution is to annotate the declaration as follows:
+Instead, the recommended solution is to annotate the declaration as follows.
+The \refqualclass{common/aliasing/qual}{NonLeaked} annotation is defined
+in Chapter \ref{aliasing-checker}.
 
 \begin{verbatim}
 @LockingFree
-public String(@NonLeakedUnknownGuard String original)
+public String(@NonLeaked @UnknownGuard String original)
 \end{verbatim}
 
 Because the documentation of the constructor indicated that a copy
@@ -369,18 +362,18 @@ is made of the original string, it is known that a reference to the
 original string will not be leaked (except possibly to local variables
 used within the method body).
 
-With this \code{@NonLeakedUnknownGuard} annotation in place, the
+With the \code{@NonLeaked} and \code{@UnknownGuard} annotations in place, the
 Lock Checker now issues no warnings for the \code{String(filename)}
 constructor call in the user code.  This is because (1) \code{lock}
 is known to be held prior to the call to the constructor, (2) the
 value in \code{filename} is known not to be leaked except to local
-variables , and (3) the method is annotated with \code{@LockingFree},
+variables, and (3) the method is annotated with \code{@LockingFree},
 therefore it is not possible for \code{lock} to be unlocked in the
 middle of the method execution before \code{filename} is dereferenced
 by the method.  The entire user sample code now type-checks without
 warnings.
 
-\paragraph{Using the \refqualclass{checker/lock/qual}{LeakedToResultUnknownGuard} annotation\label{lock-checker-library-methods-leakedtoresultunknownguard}}
+\paragraph{Using the \refqualclass{checker/lock/qual}{PolyGuardedBy} and \refqualclass{common/aliasing/qual}{LeakedToResult} annotations\label{lock-checker-library-methods-polyguardedby-and-leakedtoresult}}
 
 Consider now the following library method declaration:
 
@@ -410,16 +403,21 @@ method needs to be annotated to prevent this warning.
 
 The documentation for \sunjavadoc{java/lang/StringBuffer.html\#append-java.lang.String-}{StringBuffer.append(String str)}
 indicates that the method returns the updated receiver.  In this case,
-it is not correct to annotate the receiver formal parameter with
-\code{@NonLeakedUnknownGuard}, because the receiver is leaked to the
-return value.  Instead, the \code{@LeakedToResultUnknownGuard} annotation is needed:
+it is \emph{not} correct to annotate the receiver formal parameter with
+\code{@NonLeaked} because the receiver is leaked to the
+return value.  Instead, the \code{@LeakedToResult} annotation is needed.
+\refqualclass{common/aliasing/qual}{LeakedToResult} is defined
+in Chapter \ref{aliasing-checker}.  Also, \code{@PolyGuardedBy} is used
+to indicate that, although the lock expressions guarding the receiver
+are unknown at the method declaration site, it is known that the receiver
+parameter and the return value are guarded by the same set of lock expressions.
 
 \begin{verbatim}
 @LockingFree
-public StringBuffer append(@LeakedToResultUnknownGuard StringBuffer this, String str)
+public @PolyGuardedBy StringBuffer append(@LeakedToResult @PolyGuardedBy StringBuffer this, String str)
 \end{verbatim}
 
-With this \code{@LeakedToResultUnknownGuard} annotation in place, the
+With the \code{@LeakedToResult} and \code{@PolyGuardedBy} annotations in place, the
 Lock Checker now issues no warnings for the \code{append(".txt")}
 method call in the user code.  This is because (1) \code{lock}
 is known to be held prior to the method call, (2) the
@@ -434,28 +432,16 @@ Based on the method documentation, it is possible to annotate it more generally 
 
 \begin{verbatim}
 @LockingFree
-public StringBuffer append(@LeakedToResultUnknownGuard StringBuffer this, @NonLeakedUnknownGuard String str)
+public @PolyGuardedBy StringBuffer append(@LeakedToResult @PolyGuardedBy StringBuffer this,
+                                          @NonLeaked @UnknownGuard String str)
 \end{verbatim}
-
-Note that the return type may be also annotated with \code{@LeakedToResultUnknownGuard},
-but it is not necessary, as that is implied by the presence of the \code{@LeakedToResultUnknownGuard}
-annotation in one of the parameters.  Also, if more than one formal parameter
-is annotated with \code{@LeakedToResultUnknownGuard}, the \code{@GuardedBy}
-annotations at the method call site must match exactly for all the corresponding
-actual parameters, and these must of course also exactly match the \code{@GuardedBy}
-annotation on the return type.
-
-Note that \code{@NonLeakedUnknownGuard} and \code{@LeakedToResultUnknownGuard}
-have distinct meanings from \code{@GuardedBy(\{\})}.  \code{@GuardedBy(\{\})}
-means that it is \emph{known} that a value can always be safely dereferenced
-regardless of the lock expressions that are held on the current thread.
 
 \paragraph{Summary\label{lock-checker-library-methods-summary}}
 
-The \code{@LockingFree}, \code{@NonLeakedUnknownGuard}, and
-\code{@LeakedToResultUnknownGuard} annotations allow the programmer
+The \code{@LockingFree}, \code{@NonLeaked},
+\code{@LeakedToResult}, \code{@UnknownGuard} and \code{@PolyGuardedBy} annotations allow the programmer
 to annotate certain library methods that do not make any use of
-locks or synchronization such that the Lock Checker issues no
+locks or synchronization.  This instructs the Lock Checker to issue no
 warnings when calls are made to these methods when all the
 appropriate lock expressions are held.  This helps reduce the
 overall annotation burden for the programmer.
@@ -510,11 +496,11 @@ class MyClass {
 
 \subsection{Examples of @GuardedBy and @Holding\label{lock-examples-guardedby-and-holding}}
 
-\textbf{@GuardedBy(Eset)}
+\textbf{@GuardedBy(exprSet)}
 
 The following example demonstrates the reason the Lock Checker enforces the
-following rule:  if \code{Eset1} $\neq$ \code{Eset2}, then
-\code{@GuardedBy(Eset1)} and \code{@GuardedBy(Eset2)} are siblings in the type
+following rule:  if \emph{exprSet1} $\neq$ \emph{exprSet2}, then
+\code{@GuardedBy(\emph{exprSet1})} and \code{@GuardedBy(\emph{exprSet2})} are siblings in the type
 hierarchy.  Suppose the Lock Checker issued no errors for the following code:
 
 \begin{Verbatim}
@@ -625,7 +611,7 @@ The following example shows the interaction between these two annotations:
     helper1(e);  // OK to pass to another routine without holding the lock
     e.toString(); // ILLEGAL: the lock is not held
     synchronized (MyClass.myLock) {
-      helper2(e);
+      helper2(e); // OK: the lock is held
       helper3(e); // OK, but helper3's body still has an error.
     }
   }
@@ -786,6 +772,18 @@ Section~\ref{java-expressions-as-arguments} explains which Java
 expressions the Lock Checker is able to analyze as lock expressions.
 
 
+\subsection{Run-time checks for locking\label{lock-runtime-checks}}
+
+When you perform a run-time check for locking, such as
+\<if (explicitLock.isHeldByCurrentThread())\{...\}> or
+\<if (Thread.holdsLock(monitorLock))\{...\}>,
+then the Lock Checker considers the lock expression to be held
+within the scope of the test.  For more details, see
+Section~\ref{type-refinement}.
+% Note that the java.util.concurrent.locks.Lock interface does not include
+% a run-time test, but ReentrantLock does.
+
+
 \section{Other lock annotations\label{lock-other-annotations}}
 
 The Checker Framework's lock annotations are similar to annotations used
@@ -840,7 +838,7 @@ The book \href{http://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goet
 \begin{itemize}
 \item
   When applied to a field, it means that the given lock must be held when
-  accessing the field.  The lock acquisition and the field access may be
+  accessing the field.  The lock acquisition and the field access may occur
   arbitrarily far in the future.
 \item
   When applied to a method, it means that the given lock must be held by

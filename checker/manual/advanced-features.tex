@@ -747,6 +747,9 @@ Type systems that support a run-time test are:
   \ahrefloc{map-key-checker}{Map Key Checker} to track which values are
   keys in a map (see \chapterpageref{map-key-checker})
 \item
+  \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
+  (see \chapterpageref{lock-checker})
+\item
   \ahrefloc{regex-checker}{Regex Checker} to prevent use of syntactically
   invalid regular expressions (see \chapterpageref{regex-checker})
 \item
@@ -767,19 +770,6 @@ additional implementation work, are
 \item
   \ahrefloc{interning-checker}{Interning Checker} for errors in equality
   testing and interning (see \chapterpageref{interning-checker})
-\item
-  \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
-  (see \chapterpageref{lock-checker})
-% This section is supposed to be brief, but for the Checker Framework
-% developers' reference, the two run-time tests that the Lock Checker
-% could support with additional implementation work are:
-% myLock.isHeldByCurrentThread() if myLock is an explicit lock of type
-% ReentrantLock.
-% java.lang.Thread.holdsLock(myLock) if myLock is an implicit lock
-% (acquired via a synchronized statement or method modifier).
-%
-% Note that the java.util.concurrent.locks.Lock interface does not include
-% a run-time test, but ReentrantLock does.
 \item
   \ahrefloc{propkey-checker}{Property File Checker} to ensure that valid
   keys are used for property files and resource bundles (see
@@ -1118,7 +1108,6 @@ expression as an argument include:
 
 % TODO: Need to periodically check/update this list.
 \begin{itemize}
-%\item \refqualclass{checker/nullness/qual}{KeyFor}
 \item \refqualclass{framework/qual}{RequiresQualifier}
 \item \refqualclass{framework/qual}{EnsuresQualifier}
 \item \refqualclass{framework/qual}{EnsuresQualifierIf}
@@ -1138,11 +1127,31 @@ The expression is a subset of legal Java expressions:
 
 \begin{itemize}
 \item
-  the receiver object, \<this>.
+  the receiver object, \<this>.  You can write \<this> to annotate any
+  variable or declaration where you could write \<this> in code.
+  Notably, it cannot be used in annotations on declarations of
+  static fields or methods.  For a field, \<this> is the field's
+  receiver, i.e. its container.  For a local variable, it is the
+  method's receiver.
+  Note that assignment of type qualifier annotations with argument
+  \<this> is conservatively disallowed because the receiver may fall
+  out of scope.  For example, suppose the annotation on \<obj2.key>
+  has been refined to \<@KeyFor("this")>.  Then the assignment
+  \code{obj1.key = obj2.key} is disallowed, because \<obj2> may
+  fall out of scope while \<obj1> is still in use.
+
 \item
   the receiver object as seen from the superclass, \<super>.  This can be used
   to refer to fields shadowed in the subclass (although shadowing fields is
   discouraged in Java).
+
+\item
+  \<itself>, i.e. the value of the annotated reference (non-primitive) variable.
+  Currently only defined for the \<@GuardedBy> type system.
+  For example, \<@GuardedBy("itself") Object o> indicates that the value
+  referenced by \<o> is guarded by the intrinsic (monitor) lock of the value
+  referenced by \<o>.
+
 \item
   a formal parameter.  Write \<\#> followed by the \textbf{one-based} parameter
   index.  For example: \<\#1>, \<\#3>.  It is not permitted to write \<\#0> to
