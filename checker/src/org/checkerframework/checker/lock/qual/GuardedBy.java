@@ -22,11 +22,11 @@ import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Indicates that a thread may dereference the value referred to by the
- * annotated variable only if the thread holds all the given expressions.
+ * annotated variable only if the thread holds all the given lock expression.
  * <p>
  *
- * Expressions may evaluate to a built-in (synchronization) lock, or
- * an explicit {@link java.util.concurrent.locks.Lock}
+ * Expressions may evaluate to an intrinsic (built-in, synchronization)
+ * monitor, or an explicit {@link java.util.concurrent.locks.Lock}
  * <p>
  *
  * <code>@GuardedBy({})</code> is the default type qualifier.
@@ -35,14 +35,14 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * The argument is a string or set of strings that indicates the expression(s) that must be held:
  * <ul>
  * <li>
- * <code>this</code> : The intrinsic lock of the object in whose class the field is defined.
+ * <code>this</code> : The intrinsic lock, or monitor, of the receiver of the method in which the type appears.  For a field, [[TODO]].
  * </li>
  * <li>
  * <code><em>class-name</em>.this</code> : For inner classes, it may be necessary to disambiguate 'this';
  * the <code><em>class-name</em>.this</code> designation allows you to specify which 'this' reference is intended
  * </li>
  * <li>
- * <code>itself</code> : For reference (non-primitive) fields only; the value to which the field refers.
+ * <code>itself</code> : Applicable only to a reference (non-primitive) field; the field's value.
  * </li>
  * <li>
  * <code><em>field-name</em></code> : The instance or static field
