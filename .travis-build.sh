@@ -8,5 +8,5 @@ cd annotation-tools/
 
 cd $ROOT/checker-framework
 ant clean
-travis_wait ant dist
-travis_wait ant javadoc tests-nojdk
+ant dist
+ant javadoc tests-nojdk
