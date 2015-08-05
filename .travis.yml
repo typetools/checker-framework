@@ -1,6 +1,6 @@
 language: java
 
-script: travis_wait ./.travis-build.sh
+script: ./.travis-build.sh
 
 jdk:
   - oraclejdk8
