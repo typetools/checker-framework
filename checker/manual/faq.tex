@@ -1113,7 +1113,12 @@ type annotations, which are part of Java 8.  See the
 JSR 305 aimed to define official Java names for some annotations, such as
 \<@NonNull> and \<@Nullable>.  However, it did not aim to precisely define
 the semantics of those annotations nor to provide a reference
-implementation of an annotation processor that validated their use.
+implementation of an annotation processor that validated their use;
+as a result, JSR 305 was of limited utility as a specification.
+JSR 305 has been abandoned; there has been
+no activity by its expert group since
+% January
+2009.
 
 By contrast, the Checker Framework precisely defines the meaning of a set
 of annotations and provides powerful type-checkers that validate them.
@@ -1121,13 +1126,22 @@ However, the Checker Framework is not an official part of the Java
 language; it chooses one set of names, but another tool might choose other
 names.
 
-JSR 305 has been abandoned; there has been
-no activity by its expert group since
-% January
-2009.
-In the future, the Java Community Process might standardize the names and
+In the future, the Java Community Process might revitalize JSR 305 or
+create a replacement JSR to standardize the names and
 meanings of specific annotations, after there is more experience with their
 use in practice.
+
+% JSR 305 didn't specify the semantics of its annotations, and where it did
+% they were idiosyncratic -- essentially mimicking the FindBugs tool, but
+% not useful for any other defect detection tool.  A revitalization of JSR
+% 305 would have to start over from scratch in order to clearly specify a
+% semantics that is general and useful for a whole range of tools.
+% The Java community does not yet understand all the subtleties well enough
+% to set the annotations in stone in the Java specification yet; it is
+% better for the community to experiment with different approaches, such as
+% those of FindBugs, IntelliJ, Eclipse, and the Checker Framework, so that
+% we can come to consensus before deciding on an official set.
+
 
 The Checker Framework defines annotations \<@NonNull> and \<@Nullable> that
 are compatible with annotations defined by JSR 305, FindBugs, IntelliJ, and
