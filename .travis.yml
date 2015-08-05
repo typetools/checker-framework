@@ -6,3 +6,7 @@ jdk:
   - oraclejdk8
   - oraclejdk7
   - openjdk7
+
+notifications:
+  email:
+    - checker-framework-dev@googlegroups.com 
