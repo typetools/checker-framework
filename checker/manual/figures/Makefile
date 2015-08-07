@@ -4,13 +4,19 @@
 
 PDFFILES = $(patsubst %.svg,%.pdf,$(wildcard *.svg))
 
+RSVG_CONVERT_VERSION := $(shell rsvg-convert --version 2>/dev/null)
+
 all: ${PDFFILES} clean-obsolete-files svg-copy
 
 svg-copy:
 	cp -pf *.svg ..
 
 %.pdf : %.svg
+ifdef RSVG_CONVERT_VERSION
 	rsvg-convert -f pdf -o $@ $<
+else
+	convert $< $@
+endif
 
 clean: clean-obsolete-files
 	@\rm -f ${PDFFILES}

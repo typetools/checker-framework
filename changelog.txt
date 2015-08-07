@@ -1,4 +1,4 @@
-Version 1.9.4, 3 August 2015
+Version 1.9.4, 4 August 2015
 
 Documented the notion of a compound checker, which depends on other checkers
   and automatically runs them.

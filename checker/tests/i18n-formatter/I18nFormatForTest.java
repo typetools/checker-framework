@@ -15,7 +15,7 @@ import org.checkerframework.checker.i18nformatter.qual.*;
 public class I18nFormatForTest {
 
     static class A {
-        public void methodA(/*@I18nFormatFor("#2")*/ String format, Object... args) {
+        public void methodA(@I18nFormatFor("#2") String format, Object... args) {
 
         }
     }
