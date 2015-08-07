@@ -692,6 +692,11 @@ public abstract class VoidVisitorAdapter<A> implements VoidVisitor<A> {
     }
 
     public void visit(TypeParameter n, A arg) {
+        if (n.getAnnotations() != null) {
+            for (AnnotationExpr a : n.getAnnotations()) {
+                a.accept(this, arg);
+            }
+        }
         if (n.getTypeBound() != null) {
             for (ClassOrInterfaceType c : n.getTypeBound()) {
                 c.accept(this, arg);
