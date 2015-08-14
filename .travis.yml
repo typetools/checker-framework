@@ -1,8 +1,12 @@
 language: java
 
-script: ./.travis-build.sh
+script: travis_wait 90 ./.travis-build.sh
 
 jdk:
   - oraclejdk8
   - oraclejdk7
   - openjdk7
+
+notifications:
+  email:
+    - checker-framework-dev@googlegroups.com 
