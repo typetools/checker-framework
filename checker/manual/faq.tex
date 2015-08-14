@@ -50,6 +50,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-receiver}: What is a ``receiver''?
 \\ \ref{faq-annotation-after-type}: What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>?
 \\ \ref{faq-array-syntax-meaning}: What is the meaning of array annotations such as \<@NonNull Object @Nullable []>?
+\\ \ref{faq-vararg-syntax-meaning}: What is the meaning of vararg annotations such as \<@English String @NonEmpty ...>?
 \\ \ref{faq-type-qualifier-on-class-declaration}: What is the meaning of a type qualifier at a class declaration?
 \\ \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations?
 
@@ -642,6 +643,38 @@ older tools, you will find this incompatibility confusing.
 You will have to live with it until the older
 tool is updated to conform to the Java specification, or until you
 transition to a newer tool that conforms to the Java specification.
+
+
+\subsection{What is the meaning of vararg annotations such as \<@English String @NonEmpty ...>?\label{faq-vararg-syntax-meaning}}
+
+Vararg annotations are treated similarly to array annotations.
+(A way to remember this is that 
+when you write a varargs formal parameter such as
+\<void method(String... x) \ttlcb\ttrcb>, the Java compiler generates a
+method that takes an array of strings; whenever your source code calls the
+method with multiple arguments, the Java compiler packages them up into an
+array before calling the method.)
+
+Either of these annotations
+
+\begin{Verbatim}
+  void method(String @NonEmpty [] x) {}
+  void method(String @NonEmpty ... x) {}
+\end{Verbatim}
+
+\noindent
+applies to the array:  the method takes a non-empty array of strings, or
+the vararg list must not be empty.
+
+Either of these annotations
+
+\begin{Verbatim}
+  void method(@English String [] x) {}
+  void method(@English String ... x) {}
+\end{Verbatim}
+
+\noindent.
+applies to the element type. The annotation documents that the method takes an array of English strings.
 
 
 \subsection{What is the meaning of a type qualifier at a class declaration?\label{faq-type-qualifier-on-class-declaration}}

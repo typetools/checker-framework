@@ -88,6 +88,7 @@ checker/tests/nullness-extra/multiple-errors/*.class
 checker/tests/nullness-extra/multiple-errors/Out.txt
 checker/tests/nullness-extra/package-anno/Out.txt
 checker/tests/nullness-extra/package-anno/test/*.class
+checker/tests/nullness-extra/shorthand/NullnessRegexWithErrors.class
 checker/tests/nullness-extra/shorthand/Out.txt
 checker/tests/nullness/generics/*.class
 checker/tests/nullness-temp/*.java
