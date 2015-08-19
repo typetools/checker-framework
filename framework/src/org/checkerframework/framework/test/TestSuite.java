@@ -22,9 +22,9 @@ import java.util.List;
 
 /**
  *
- * <p>TestSuite runs a test class once for each set of parameters returned by its method marked with @Parameter/p>
+ * <p>TestSuite runs a test class once for each set of parameters returned by its method marked with {@code, @Parameter}</p>
  * <p>To use:<br/>
- *  Annotated your test class with @RunWith(TestSuite.class)<br/>
+ *  Annotated your test class with {@code, @RunWith(TestSuite.class)}<br/>
  *  Create a parameters method by annotating a public static method with {@code @Parameters}.  This method
  *  must return a {@code, List<Object[]>} where each array is a parameter set to instantiate the test class.
  * </p>

@@ -16,14 +16,11 @@ import static org.checkerframework.framework.test.TestConfigurationBuilder.build
  * 1) Create exactly 1 constructor in the subclass with exactly 1 argument which is a java.io.File.  This File
  * will be the Java file that is compiled and whose output is verified.
  * 2) Create a public static method that is annotation with org.junit.runners.Parameterized.Parameters.  This method
- * should look like: {@code,
- *     @Parameters
- *     List<Object[]> getTestFiles();
- * }
+ * should look like:
+ * {@code, @Parameters List<Object[]> getTestFiles(); }
  * The return type should be a List of 1 element arrays, where each member of that array is a Java file to be tested.
- * Usually the body of this method should look like: {@code,
- *     return findNestedJavaTestFiles("myCheckerDir1","all-systems","someDir");
- * }
+ * Usually the body of this method should look like:
+ * {@code, return findNestedJavaTestFiles("myCheckerDir1","all-systems","someDir"); }
  *
  * findNestedJavaTestFiles will prepend "path to currentWorkingDir/tests/" to the argument.
  *
