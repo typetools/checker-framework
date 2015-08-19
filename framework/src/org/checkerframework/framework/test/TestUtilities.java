@@ -69,8 +69,6 @@ public class TestUtilities {
 
     /**
      * Traverses the directories listed looking for java test files
-     * @param dirs
-     * @return
      */
     public static List<Object[]> getJavaFilesAsArgumentList(File... dirs) {
         List<Object[]> arguments = new ArrayList<Object[]>();
