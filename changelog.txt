@@ -1,4 +1,4 @@
-Version 1.9.4, 1 August 2015
+Version 1.9.4, 4 August 2015
 
 Documented the notion of a compound checker, which depends on other checkers
   and automatically runs them.
@@ -12,7 +12,7 @@ cloned the old repository, then discard your old clone and create a new one
 using this command:
   git clone https://github.com/typetools/checker-framework.git
 
-Fixed issues:  429.
+Fixed issues:  427, 429, 434, 442, 450.
 
 ----------------------------------------------------------------------
 
