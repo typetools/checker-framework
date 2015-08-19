@@ -99,12 +99,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         final List<AnnotatedTypeMirror> argTypes = getArgumentTypes(expressionTree, typeFactory);
         final AnnotatedTypeMirror assignedTo = getAssignedTo(expressionTree, typeFactory);
 
-        //steps 1-4
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
         final Map<TypeVariable, AnnotatedTypeMirror> inferredArgs =
                 infer(typeFactory,  argTypes, assignedTo, methodElem, methodType, targets);
 
-        //step 5
         handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
         return inferredArgs;
     }
@@ -113,14 +111,14 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     public void adaptMethodType(AnnotatedTypeFactory typeFactory, ExpressionTree invocation, AnnotatedExecutableType methodType) {
         //do nothing
     }
-
+    // TODO: THIS IS A BIG VIOLATION OF Single Responsibility and SHOULD BE FIXED, IT IS SOLELY HERE
+    // TODO: AS A TEMPORARY KLUDGE BEFORE A RELEASE/SPARTA ENGAGEMENT
     protected List<AnnotatedTypeMirror> getArgumentTypes(final ExpressionTree expression,
                                                          final AnnotatedTypeFactory typeFactory) {
         final List<? extends ExpressionTree> argTrees = TypeArgInferenceUtil.expressionToArgTrees(expression);
         return TypeArgInferenceUtil.treesToTypes(argTrees, typeFactory);
     }
-     // TODO: THIS IS A BIG VIOLATION OF Single Responsibility and SHOULD BE FIXED, IT IS SOLELY HERE
-     // TODO: AS A TEMPORARY KLUDGE BEFORE A RELEASE/SPARTA ENGAGEMENT
+
 
     protected AnnotatedTypeMirror getAssignedTo(ExpressionTree expression, AnnotatedTypeFactory typeFactory ) {
         return TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expression));
@@ -212,14 +210,14 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         Pair<InferenceResult, InferenceResult> argInference = inferFromArguments(typeFactory, afArgumentConstraints, targets);
 
         final InferenceResult fromArgEqualities = argInference.first;  //result 2.a
-        final InferenceResult fromArgSupertypes = argInference.second; //result 2.b
+        final InferenceResult fromArgSubandSupers = argInference.second; //result 2.b
 
-        clampToLowerBound(fromArgSupertypes, methodType.getTypeVariables(), typeFactory);
+        clampToLowerBound(fromArgSubandSupers, methodType.getTypeVariables(), typeFactory);
 
         //if this method invocation's has a return type and it is assigned/pseudo-assigned to
         //a variable, assignedTo is the type of that variable
         if (assignedTo == null) {
-            fromArgEqualities.mergeSubordinate(fromArgSupertypes);
+            fromArgEqualities.mergeSubordinate(fromArgSubandSupers);
             return fromArgEqualities.toAtmMap();
         } //else
 
@@ -241,7 +239,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
             // Step 4 - Combine the results from 2.b and step 3
             InferenceResult combinedSupertypesAndAssignment =
-                    combineSupertypeAndAssignmentResults(targets, typeFactory, fromAssignmentEqualities, fromArgSupertypes);
+                    combineSupertypeAndAssignmentResults(targets, typeFactory, fromAssignmentEqualities, fromArgSubandSupers);
 
             // Step 5 - Combine the result from 2.a and step 4, if there is a conflict use the result from step 2.a
             fromArgEqualities.mergeSubordinate(combinedSupertypesAndAssignment);
@@ -258,7 +256,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         } else {
 
-            fromArguments.mergeSubordinate(fromArgSupertypes);
+            fromArguments.mergeSubordinate(fromArgSubandSupers);
         }
 
         return fromArguments.toAtmMap();
@@ -298,7 +296,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             InferredValue inferred = fromArgSupertypes.get(targetDecl.getUnderlyingType());
             if (inferred != null && inferred instanceof InferredType) {
                 final AnnotatedTypeMirror lowerBoundAsArgument =
-                     AnnotatedTypes.asSuper(types, typeFactory, targetDecl.getLowerBound(), ((InferredType) inferred).type);
+                        AnnotatedTypes.asSuper(types, typeFactory, targetDecl.getLowerBound(), ((InferredType) inferred).type);
 
 
                 for (AnnotationMirror top : tops) {
@@ -361,7 +359,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         InferenceResult inferredFromArgEqualities = equalitiesSolver.solveEqualities(targets, argConstraints, typeFactory);
 
         Set<TypeVariable> remainingTargets =  inferredFromArgEqualities.getRemainingTargets(targets, true);
-        InferenceResult inferredFromLubs = supertypesSolver.solveFromArguments(remainingTargets, argConstraints, typeFactory);
+        InferenceResult inferredFromLubs = supertypesSolver.solveFromSupertypes(remainingTargets, argConstraints, typeFactory);
+
+        //TODO: solveFromSubtypes and then fromSubtypes (in infer) are misnamed if we use this method in this context
+        //TODO: find a clearer name
+        InferenceResult inferredFromGlbs = subtypesSolver.solveFromSubtypes(remainingTargets, argConstraints, typeFactory);
+        inferredFromLubs.mergeSubordinate(inferredFromGlbs);
 
         return Pair.of(inferredFromArgEqualities, inferredFromLubs);
     }
@@ -480,7 +483,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         InferenceResult equalitiesResult = equalitiesSolver.solveEqualities(targets, assignmentConstraints, typeFactory);
 
         Set<TypeVariable> remainingTargets = equalitiesResult.getRemainingTargets(targets, true);
-        InferenceResult subtypesResult = subtypesSolver.solveFromAssignment(remainingTargets, assignmentConstraints, typeFactory);
+        InferenceResult subtypesResult = subtypesSolver.solveFromSubtypes(remainingTargets, assignmentConstraints, typeFactory);
 
         equalitiesResult.mergeSubordinate(subtypesResult);
         return equalitiesResult;
@@ -534,7 +537,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      * annotations from that AnnotatedNullType.
      */
     private void handleUninferredTypeVariables(AnnotatedTypeFactory typeFactory, AnnotatedExecutableType methodType,
-                                              Set<TypeVariable> targets, Map<TypeVariable, AnnotatedTypeMirror> inferredArgs) {
+                                               Set<TypeVariable> targets, Map<TypeVariable, AnnotatedTypeMirror> inferredArgs) {
 
         for (AnnotatedTypeVariable atv : methodType.getTypeVariables()) {
             final TypeVariable typeVar = atv.getUnderlyingType();
