@@ -1,12 +1,13 @@
 package tests;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 import org.junit.runners.Parameterized.Parameters;
 
 import java.io.File;
 import java.util.Collection;
 
-public class RegexTest extends ParameterizedCheckerTest {
+public class RegexTest extends DefaultCheckerTest {
 
     public RegexTest(File testFile) {
         super(testFile,
@@ -16,7 +17,7 @@ public class RegexTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("regex", "regex_poly", "regex_qual_poly", "all-systems");
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("regex", "regex_poly", "regex_qual_poly", "all-systems");
     }
 }

@@ -3,13 +3,14 @@ package tests;
 import java.io.File;
 import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * JUnit tests for the Nullness Checker -- testing -AskipUses command-line argument.
  */
-public class NullnessSkipUsesTest extends ParameterizedCheckerTest {
+public class NullnessSkipUsesTest extends DefaultCheckerTest {
 
     public NullnessSkipUsesTest(File testFile) {
         super(testFile,
@@ -19,8 +20,8 @@ public class NullnessSkipUsesTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("nullness-skipuses");
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("nullness-skipuses");
     }
 
 }

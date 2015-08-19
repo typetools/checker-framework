@@ -1,6 +1,7 @@
 package tests;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 
 import java.io.File;
 import java.util.Collection;
@@ -10,7 +11,7 @@ import org.junit.runners.Parameterized.Parameters;
 /**
  * JUnit tests for the Nullness checker when using safe defaults for unannotated bytecode.
  */
-public class NullnessSafeDefaultsTest extends ParameterizedCheckerTest {
+public class NullnessSafeDefaultsTest extends DefaultCheckerTest {
 
     public NullnessSafeDefaultsTest(File testFile) {
         super(testFile,
@@ -21,8 +22,8 @@ public class NullnessSafeDefaultsTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("nullness-safedefaults");
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("nullness-safedefaults");
     }
 
 }

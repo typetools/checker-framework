@@ -3,10 +3,11 @@ package tests;
 import java.io.File;
 import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 import org.junit.runners.Parameterized.Parameters;
 
-public class FenumTest extends ParameterizedCheckerTest {
+public class FenumTest extends DefaultCheckerTest {
 
     public FenumTest(File testFile) {
         super(testFile,
@@ -16,7 +17,7 @@ public class FenumTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("fenum", "all-systems");
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("fenum", "all-systems");
     }
 }

@@ -3,12 +3,13 @@ package tests;
 import java.io.File;
 import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  */
-public class LubGlbTest extends ParameterizedCheckerTest {
+public class LubGlbTest extends DefaultCheckerTest {
 
     public LubGlbTest(File testFile) {
         super(testFile,
@@ -18,7 +19,7 @@ public class LubGlbTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("lubglb");
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("lubglb");
     }
 }

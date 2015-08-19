@@ -3,7 +3,8 @@ package tests;
 import java.io.File;
 import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 import org.junit.runners.Parameterized.Parameters;
 
 import tests.util.FlowTestChecker;
@@ -13,7 +14,7 @@ import tests.util.FlowTestChecker;
  *
  * @author Stefan Heule
  */
-public class PuritySuggestionsTest extends ParameterizedCheckerTest {
+public class PuritySuggestionsTest extends DefaultCheckerTest {
 
     public PuritySuggestionsTest(File testFile) {
         super(testFile,
@@ -23,7 +24,7 @@ public class PuritySuggestionsTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("purity-suggestions");
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("purity-suggestions");
     }
 }

@@ -1,7 +1,8 @@
 package tests;
 
 import org.checkerframework.checker.nullness.AbstractNullnessChecker;
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 
 import java.io.File;
 import java.util.Collection;
@@ -11,7 +12,7 @@ import org.junit.runners.Parameterized.Parameters;
 /**
  * JUnit tests for the Nullness Checker.
  */
-public class NullnessTempTest extends ParameterizedCheckerTest {
+public class NullnessTempTest extends DefaultCheckerTest {
 
     public NullnessTempTest(File testFile) {
         // TODO: remove forbidnonnullarraycomponents option once it's no
@@ -25,8 +26,8 @@ public class NullnessTempTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("nullness-temp");
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("nullness-temp");
     }
 
 }

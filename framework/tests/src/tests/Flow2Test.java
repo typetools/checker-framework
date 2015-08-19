@@ -3,7 +3,8 @@ package tests;
 import java.io.File;
 import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -14,7 +15,7 @@ import org.junit.runners.Parameterized.Parameters;
  * @author Stefan Heule
  *
  */
-public class Flow2Test extends ParameterizedCheckerTest {
+public class Flow2Test extends DefaultCheckerTest {
 
     public Flow2Test(File testFile) {
         super(testFile,
@@ -24,7 +25,7 @@ public class Flow2Test extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("flow2");
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("flow2");
     }
 }

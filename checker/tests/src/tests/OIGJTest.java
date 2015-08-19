@@ -5,13 +5,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * JUnit tests for the Interning Checker, which tests the Interned annotation.
  */
-public class OIGJTest extends ParameterizedCheckerTest {
+public class OIGJTest extends DefaultCheckerTest {
 
     public OIGJTest(File testFile) {
         super(testFile,
@@ -21,8 +22,8 @@ public class OIGJTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return filter(testFiles("oigj", "all-systems"));
+    public static Collection<Object[]> getTestFiles() {
+        return filter(TestUtilities.findNestedJavaTestFiles("oigj", "all-systems"));
     }
 
     // Duplicate from JavariTest.

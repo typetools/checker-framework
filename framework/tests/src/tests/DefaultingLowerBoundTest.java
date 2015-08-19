@@ -1,6 +1,7 @@
 package tests;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 
 import java.io.File;
 import java.util.Collection;
@@ -10,7 +11,7 @@ import org.junit.runners.Parameterized.Parameters;
 /**
  * Created by jburke on 9/29/14.
  */
-public class DefaultingLowerBoundTest extends ParameterizedCheckerTest {
+public class DefaultingLowerBoundTest extends DefaultCheckerTest {
 
     public DefaultingLowerBoundTest(File testFile) {
         super(testFile,
@@ -21,7 +22,7 @@ public class DefaultingLowerBoundTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("defaulting/lowerbound");
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("defaulting/lowerbound");
     }
 }

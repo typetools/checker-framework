@@ -1,6 +1,7 @@
 package tests;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 
 import java.io.File;
 import java.util.Collection;
@@ -10,7 +11,7 @@ import org.junit.runners.Parameterized.Parameters;
 /**
  * Created by jthaine on 6/25/15.
  */
-public class AnnotatedForTest extends ParameterizedCheckerTest {
+public class AnnotatedForTest extends DefaultCheckerTest {
 
     public AnnotatedForTest(File testFile) {
         super(testFile,
@@ -21,8 +22,10 @@ public class AnnotatedForTest extends ParameterizedCheckerTest {
               "-AuseSafeDefaultsForUnannotatedSourceCode");
     }
 
+
+
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("conservative-defaults/annotatedfor");
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("conservative-defaults/annotatedfor");
     }
 }

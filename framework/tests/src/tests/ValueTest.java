@@ -3,7 +3,8 @@ package tests;
 import java.io.File;
 import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -16,14 +17,16 @@ import org.junit.runners.Parameterized.Parameters;
  * @author plvines
  *
  */
-public class ValueTest extends ParameterizedCheckerTest {
+public class ValueTest extends DefaultCheckerTest {
 
     public ValueTest(File testFile) {
         super(testFile, org.checkerframework.common.value.ValueChecker.class,
                 "value", "-Anomsgtext", "-Astubs=statically-executable.astub");
     }
 
-    @Parameters public static Collection<Object[]> data() {
-        return testFiles("value");
+
+    @Parameters
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("value");
     }
 }

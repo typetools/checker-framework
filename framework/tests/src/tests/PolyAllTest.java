@@ -3,12 +3,13 @@ package tests;
 import java.io.File;
 import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  */
-public class PolyAllTest extends ParameterizedCheckerTest {
+public class PolyAllTest extends DefaultCheckerTest {
 
     public PolyAllTest(File testFile) {
         super(testFile,
@@ -19,7 +20,7 @@ public class PolyAllTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("polyall");
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("polyall");
     }
 }

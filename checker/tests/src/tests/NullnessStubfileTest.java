@@ -3,10 +3,11 @@ package tests;
 import java.io.File;
 import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 import org.junit.runners.Parameterized.Parameters;
 
-public class NullnessStubfileTest extends ParameterizedCheckerTest {
+public class NullnessStubfileTest extends DefaultCheckerTest {
 
     public NullnessStubfileTest(File testFile) {
         super(
@@ -22,8 +23,8 @@ public class NullnessStubfileTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("nullness-stubfile");
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("nullness-stubfile");
     }
 
 }

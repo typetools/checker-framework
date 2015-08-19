@@ -476,13 +476,23 @@
     <!-- Per the <test> element, output goes to ${build.reports} -->
     <target name="-run-tests" description="Generalized test runner">
 
+        <condition property="should.emit.debug.str" value="true" else="false">
+            <isset property="emit.test.debug"/>
+        </condition>
+
+        <condition property="debugger.str" value="-Xnoagent -Djava.compiler=NONE -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" else="">
+            <isset property="debugger.on"/>
+        </condition>
+
         <mkdir dir="${build.reports}"/>
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
                printsummary="false"
                haltonfailure="${halt.on.test.failure}">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg line="${debugger.str}"/>
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
+            <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
             <jvmarg line="-ea"/>
 
             <classpath>
@@ -510,6 +520,15 @@
     <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
     <target name="all-tests-nojar" depends="build-tests"
             description="Run tests for all checkers, WITHOUT building anything">
+
+      <condition property="should.emit.debug.str" value="true" else="false">
+          <isset property="emit.test.debug"/>
+      </condition>
+
+      <condition property="debugger.str" value="-Xnoagent -Djava.compiler=NONE -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" else="">
+          <isset property="debugger.on"/>
+      </condition>
+
       <ant dir="${framework.loc}">
           <target name="all-tests-nojar"/>
       </ant>
@@ -521,13 +540,15 @@
       <!-- Copied from -run-tests target -->
       <mkdir dir="${build.reports}"/>
 
-      <junit fork="${run.tests.should.fork}"
+        <junit fork="${run.tests.should.fork}"
              dir="${basedir}"
              printsummary="false"
              haltonfailure="${halt.on.test.failure}">
           <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
           <jvmarg line="-ea"/>
+          <jvmarg line="${debugger.str}"/>
           <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
+          <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
 
           <classpath>
               <pathelement path="${build}"/>

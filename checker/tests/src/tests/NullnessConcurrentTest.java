@@ -1,6 +1,7 @@
 package tests;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 import org.junit.runners.Parameterized.Parameters;
 
 import java.io.File;
@@ -9,7 +10,7 @@ import java.util.Collection;
 /**
  * JUnit tests for the Nullness checker when running with concurrent semantics
  */
-public class NullnessConcurrentTest extends ParameterizedCheckerTest {
+public class NullnessConcurrentTest extends DefaultCheckerTest {
 
     public NullnessConcurrentTest(File testFile) {
         super(testFile,
@@ -20,8 +21,8 @@ public class NullnessConcurrentTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("nullness-concurrent-semantics");
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("nullness-concurrent-semantics");
     }
 
 }

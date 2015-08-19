@@ -1,6 +1,7 @@
 package tests;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 
 import java.io.File;
 import java.util.Collection;
@@ -11,7 +12,7 @@ import org.junit.runners.Parameterized.Parameters;
  * JUnit tests for the Nullness Checker (that uses the Freedom Before Commitment
  * type system for initialization).
  */
-public class NullnessAssumeAssertionsAreDisabled extends ParameterizedCheckerTest {
+public class NullnessAssumeAssertionsAreDisabled extends DefaultCheckerTest {
 
     public NullnessAssumeAssertionsAreDisabled(File testFile) {
         super(testFile,
@@ -23,8 +24,8 @@ public class NullnessAssumeAssertionsAreDisabled extends ParameterizedCheckerTes
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("nullness-assumeassertions");
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("nullness-assumeassertions");
     }
 
 }

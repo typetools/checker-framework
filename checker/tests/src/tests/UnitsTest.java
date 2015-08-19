@@ -3,10 +3,11 @@ package tests;
 import java.io.File;
 import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 import org.junit.runners.Parameterized.Parameters;
 
-public class UnitsTest extends ParameterizedCheckerTest {
+public class UnitsTest extends DefaultCheckerTest {
 
     public UnitsTest(File testFile) {
         super(testFile,
@@ -16,7 +17,7 @@ public class UnitsTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("units", "all-systems");
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("units", "all-systems");
     }
 }

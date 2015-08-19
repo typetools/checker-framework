@@ -3,10 +3,11 @@ package tests;
 import java.io.File;
 import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.TestUtilities;
 import org.junit.runners.Parameterized.Parameters;
 
-public class ReportTreeKindsTest extends ParameterizedCheckerTest {
+public class ReportTreeKindsTest extends DefaultCheckerTest {
 
     public ReportTreeKindsTest(File testFile) {
         super(testFile,
@@ -16,7 +17,7 @@ public class ReportTreeKindsTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("reporttreekinds");
+    public static Collection<Object[]> getTestFiles() {
+        return TestUtilities.findNestedJavaTestFiles("reporttreekinds");
     }
 }
