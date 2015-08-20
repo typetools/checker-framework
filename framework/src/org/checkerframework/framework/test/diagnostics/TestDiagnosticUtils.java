@@ -167,17 +167,18 @@ public class TestDiagnosticUtils {
     }
 
     /**
-     * Given a category string that may be prepended with "isFixable-", return the category
+     * Given a category string that may be prepended with "fixable-", return the category
      * enum that corresponds with the category and whether or not it is a isFixable error
      */
     private static Pair<DiagnosticKind, Boolean> parseCategoryString(String category) {
-        final boolean fixable = category.startsWith("isFixable-");
-        if (fixable) {
-            category = category.substring("isFixable-".length());
+        final String fixable = "fixable-";
+        final boolean isFixable = category.startsWith(fixable);
+        if (isFixable) {
+            category = category.substring(fixable.length());
         }
         DiagnosticKind categoryEnum = DiagnosticKind.fromParseString(category);
 
-        return Pair.of(categoryEnum, fixable);
+        return Pair.of(categoryEnum, isFixable);
     }
 
     /**
