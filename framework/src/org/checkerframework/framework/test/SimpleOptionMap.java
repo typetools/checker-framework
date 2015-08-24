@@ -11,10 +11,12 @@ import java.util.Map;
 /**
  * SimpleOptionMap is a very basic Option container.  The keys of the Option container are the
  * set of Options and the values are the arguments to those options if they exists: e.g.,
+ * {@code
  * Map(
  *    "-AprintAllQualifiers" -> null
  *    "-classpath" -> "myDir1:myDir2"
  * )
+ * }
  *
  * This class is mainly used by TestConfigurationBuilder to make working with existing
  * options simpler and less error prone.  It is not intended for a general Option container
