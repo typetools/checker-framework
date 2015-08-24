@@ -24,8 +24,8 @@ public class NullnessAssumeAssertionsAreDisabled extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("nullness-assumeassertions");
+    public static String[] getTestDirs() {
+        return new String[]{"nullness-assumeassertions"};
     }
 
 }

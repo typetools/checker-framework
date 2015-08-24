@@ -17,7 +17,7 @@ public class FenumTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("fenum", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"fenum", "all-systems"};
     }
 }

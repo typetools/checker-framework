@@ -21,7 +21,7 @@ public class MethodValTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("methodval");
+    public static String [] getTestDirs() {
+        return new String[]{"methodval"};
     }
 }

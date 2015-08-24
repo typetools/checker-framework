@@ -17,8 +17,8 @@ public class RegexQualTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("regex", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"regex", "all-systems"};
     }
 }
 

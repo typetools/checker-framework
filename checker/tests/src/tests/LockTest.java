@@ -19,7 +19,7 @@ public class LockTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("lock", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"lock", "all-systems"};
     }
 }

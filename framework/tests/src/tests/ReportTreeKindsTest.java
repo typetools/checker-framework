@@ -17,7 +17,7 @@ public class ReportTreeKindsTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("reporttreekinds");
+    public static String [] getTestDirs() {
+        return new String[]{"reporttreekinds"};
     }
 }

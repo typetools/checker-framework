@@ -20,7 +20,7 @@ public class InterningTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("interning", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"interning", "all-systems"};
     }
 }

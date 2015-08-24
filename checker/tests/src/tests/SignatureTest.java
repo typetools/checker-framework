@@ -17,7 +17,7 @@ public class SignatureTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("signature", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"signature", "all-systems"};
     }
 }

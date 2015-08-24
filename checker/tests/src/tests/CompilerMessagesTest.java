@@ -20,8 +20,8 @@ public class CompilerMessagesTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("compilermsg", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"compilermsg", "all-systems"};
     }
 
 }

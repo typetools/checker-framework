@@ -22,7 +22,7 @@ public class DefaultingUpperBoundTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("defaulting/upperbound");
+    public static String [] getTestDirs() {
+        return new String[]{"defaulting/upperbound"};
     }
 }

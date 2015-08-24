@@ -25,7 +25,7 @@ public class Flow2Test extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("flow2");
+    public static String [] getTestDirs() {
+        return new String[]{"flow2"};
     }
 }

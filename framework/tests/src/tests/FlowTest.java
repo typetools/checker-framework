@@ -19,7 +19,7 @@ public class FlowTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("flow", "all-systems");
+    public static String [] getTestDirs() {
+        return new String[]{"flow", "all-systems"};
     }
 }

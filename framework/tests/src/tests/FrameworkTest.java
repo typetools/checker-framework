@@ -22,7 +22,7 @@ public class FrameworkTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("framework", "all-systems");
+    public static String [] getTestDirs() {
+        return new String[]{"framework", "all-systems"};
     }
 }

@@ -16,7 +16,7 @@ public class FormatterTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("formatter", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"formatter", "all-systems"};
     }
 }

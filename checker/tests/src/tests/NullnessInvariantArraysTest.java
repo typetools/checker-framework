@@ -22,8 +22,8 @@ public class NullnessInvariantArraysTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("nullness-invariantarrays");
+    public static String[] getTestDirs() {
+        return new String[]{"nullness-invariantarrays"};
     }
 
 }

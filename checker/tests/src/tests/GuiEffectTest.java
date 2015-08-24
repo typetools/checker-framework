@@ -17,7 +17,7 @@ public class GuiEffectTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("guieffect", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"guieffect", "all-systems"};
     }
 }

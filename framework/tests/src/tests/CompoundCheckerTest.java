@@ -21,7 +21,7 @@ public class CompoundCheckerTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("compound-checker");
+    public static String [] getTestDirs() {
+        return new String[]{"compound-checker"};
     }
 }

@@ -19,8 +19,8 @@ public class NestedAggregateCheckerTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("aggregate", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"aggregate", "all-systems"};
     }
 
 }

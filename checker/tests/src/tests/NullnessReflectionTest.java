@@ -22,8 +22,8 @@ public class NullnessReflectionTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("nullness-reflection");
+    public static String[] getTestDirs() {
+        return new String[]{"nullness-reflection"};
     }
 
 }

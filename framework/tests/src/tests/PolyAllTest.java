@@ -20,7 +20,7 @@ public class PolyAllTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("polyall");
+    public static String [] getTestDirs() {
+        return new String[]{"polyall"};
     }
 }

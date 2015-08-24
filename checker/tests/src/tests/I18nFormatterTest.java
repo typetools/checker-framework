@@ -17,7 +17,7 @@ public class I18nFormatterTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("i18n-formatter", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"i18n-formatter", "all-systems"};
     }
 }

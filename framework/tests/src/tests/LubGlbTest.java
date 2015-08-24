@@ -19,7 +19,7 @@ public class LubGlbTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("lubglb");
+    public static String [] getTestDirs() {
+        return new String[]{"lubglb"};
     }
 }

@@ -51,9 +51,11 @@ public class TypecheckExecutor {
 
 
 
-        //Even though the getTask takes a list of processors, it fails with a message:
-        //error: Class names, 'org.checkerframework.checker.interning.InterningChecker', are only accepted if annotation processing is explicitly requested
-        //if the processors are passed this way.  Therefore, we now add them to the beginning of the options list
+        //Even though the method compilergetTask takes a list of processors, it fails if processors are passed this way
+        //with the message:
+        //error: Class names, 'org.checkerframework.checker.interning.InterningChecker', are only accepted if
+        // annotation processing is explicitly requested
+        //Therefore, we now add them to the beginning of the options list
         final List<String> options = new ArrayList<String>();
         options.add("-processor");
         options.add(PluginUtil.join(",", configuration.getProcessors()));

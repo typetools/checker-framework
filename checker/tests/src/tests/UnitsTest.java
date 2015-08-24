@@ -17,7 +17,7 @@ public class UnitsTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("units", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"units", "all-systems"};
     }
 }

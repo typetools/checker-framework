@@ -15,17 +15,24 @@ import static org.checkerframework.framework.test.TestConfigurationBuilder.build
  * To use this class you must do two things:
  * 1) Create exactly 1 constructor in the subclass with exactly 1 argument which is a java.io.File.  This File
  * will be the Java file that is compiled and whose output is verified.
- * 2) Create a public static method that is annotation with org.junit.runners.Parameterized.Parameters.  This method
- * should look like:
- * {@code, @Parameters List<Object[]> getTestFiles(); }
- * The return type should be a List of 1 element arrays, where each member of that array is a Java file to be tested.
- * Usually the body of this method should look like:
- * {@code, return findNestedJavaTestFiles("myCheckerDir1","all-systems","someDir"); }
+ * 2) Create one of the following 2 public static methods with the annotation with org.junit.runners.Parameterized.Parameters.
+ * The method name and signature must match exactly (though you can place @Parameters on the line above the method).
  *
- * findNestedJavaTestFiles will prepend "path to currentWorkingDir/tests/" to the argument.
+ * {@code @Parameters public static String [] getTestDirs()}
+ * getTestDir must return an array of directories that exist in the test folder, e.g.
+ * {@code @Parameters public static String [] getTestDirs() { return new String[]{"all-systems", "flow"}}}
+ * The directories can contain more path information (e.g.  "myTestDir/moreTests") but note,
+ * the testsuite will find all of the java test files that exists below the listed directories.
+ * It is unnecessary to list child directories of a directory you have already listed.
  *
- * The TestSuite will then instantiate the subclass once for each file returned by getTestFiles and execute
- * the run method.
+ * {@code @Parameters public static List<String> getTestFiles(); }
+ * The method returns a List of Java files. There are methods in TestUtilities like findNestedJavaTestFiles to help
+ * you construct this List. The TestSuite will then instantiate the subclass once for each file returned by
+ * getTestFiles and execute the run method.
+ * An example of this method is:
+ *
+ * {@code @Parameters public static List<Object[]> getTestFiles() { return TestUtilities.findNestedJavaTestFiles("aggregate"); } }
+ *
  */
 @RunWith(TestSuite.class)
 public abstract class DefaultCheckerTest {

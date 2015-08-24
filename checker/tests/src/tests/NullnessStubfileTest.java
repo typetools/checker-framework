@@ -23,8 +23,8 @@ public class NullnessStubfileTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("nullness-stubfile");
+    public static String[] getTestDirs() {
+        return new String[]{"nullness-stubfile"};
     }
 
 }

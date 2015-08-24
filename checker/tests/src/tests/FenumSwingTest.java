@@ -19,7 +19,7 @@ public class FenumSwingTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("fenumswing", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"fenumswing", "all-systems"};
     }
 }

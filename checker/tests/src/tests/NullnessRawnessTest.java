@@ -28,8 +28,8 @@ public class NullnessRawnessTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("nullness", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"nullness", "all-systems"};
     }
 
 }

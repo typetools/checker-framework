@@ -19,8 +19,8 @@ public class AliasingTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("aliasing");
+    public static String[] getTestDirs() {
+        return new String[]{"aliasing"};
     }
 
 }

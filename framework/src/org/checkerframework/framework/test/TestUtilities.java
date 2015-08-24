@@ -39,15 +39,15 @@ public class TestUtilities {
         isAtLeast8Jvm = org.checkerframework.framework.util.PluginUtil.getJreVersion() >= 1.8d;
     }
 
-    public static List<Object[]> findNestedJavaTestFiles(String... dirNames) {
+    public static List<File> findNestedJavaTestFiles(String... dirNames) {
         return findRelativeNestedJavaFiles(new File("tests"), dirNames);
     }
 
-    public static List<Object[]> findRelativeNestedJavaFiles(String parent, String... dirNames) {
+    public static List<File> findRelativeNestedJavaFiles(String parent, String... dirNames) {
         return findRelativeNestedJavaFiles(new File(parent), dirNames);
     }
 
-    public static List<Object[]> findRelativeNestedJavaFiles(File parent, String... dirNames) {
+    public static List<File> findRelativeNestedJavaFiles(File parent, String... dirNames) {
         File [] dirs = new File[dirNames.length];
 
         int i = 0;
@@ -70,13 +70,13 @@ public class TestUtilities {
     /**
      * Traverses the directories listed looking for java test files
      */
-    public static List<Object[]> getJavaFilesAsArgumentList(File... dirs) {
-        List<Object[]> arguments = new ArrayList<Object[]>();
+    public static List<File> getJavaFilesAsArgumentList(File... dirs) {
+        List<File> arguments = new ArrayList<File>();
         for (File dir : dirs) {
             List<File> javaFiles = deeplyEnclosedJavaTestFiles(dir);
 
             for (File javaFile : javaFiles) {
-                arguments.add(new Object[] { javaFile });
+                arguments.add(javaFile);
             }
         }
         return arguments;

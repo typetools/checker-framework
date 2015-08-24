@@ -22,8 +22,8 @@ public class SubtypingEncryptedTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("subtyping", "all-systems");
+    public static String [] getTestDirs() {
+        return new String[]{"subtyping", "all-systems"};
     }
 
 }

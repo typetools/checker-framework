@@ -24,8 +24,8 @@ public class ReflectionTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("reflection");
+    public static String [] getTestDirs() {
+        return new String[]{"reflection"};
     }
 
     @Override

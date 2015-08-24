@@ -22,7 +22,7 @@ public class DefaultingLowerBoundTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("defaulting/lowerbound");
+    public static String [] getTestDirs() {
+        return new String[]{"defaulting/lowerbound"};
     }
 }

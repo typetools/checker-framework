@@ -26,7 +26,7 @@ public class ValueTest extends DefaultCheckerTest {
 
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("value");
+    public static String [] getTestDirs() {
+        return new String[]{"value"};
     }
 }

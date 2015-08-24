@@ -25,7 +25,7 @@ public class AnnotatedForTest extends DefaultCheckerTest {
 
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("conservative-defaults/annotatedfor");
+    public static String [] getTestDirs() {
+        return new String[]{"conservative-defaults/annotatedfor"};
     }
 }

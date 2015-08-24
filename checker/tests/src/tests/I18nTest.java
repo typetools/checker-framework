@@ -17,7 +17,7 @@ public class I18nTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("i18n", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"i18n", "all-systems"};
     }
 }

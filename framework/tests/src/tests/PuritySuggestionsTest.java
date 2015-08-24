@@ -24,7 +24,7 @@ public class PuritySuggestionsTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("purity-suggestions");
+    public static String [] getTestDirs() {
+        return new String[]{"purity-suggestions"};
     }
 }

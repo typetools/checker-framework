@@ -17,7 +17,7 @@ public class RegexTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("regex", "regex_poly", "regex_qual_poly", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"regex", "regex_poly", "regex_qual_poly", "all-systems"};
     }
 }

@@ -20,8 +20,8 @@ public class NullnessSkipDefsTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("nullness-skipdefs");
+    public static String[] getTestDirs() {
+        return new String[]{"nullness-skipdefs"};
     }
 
 }

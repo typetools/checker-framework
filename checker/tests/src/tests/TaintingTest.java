@@ -18,7 +18,7 @@ public class TaintingTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("tainting_qual_poly", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"tainting_qual_poly", "all-systems"};
     }
 }

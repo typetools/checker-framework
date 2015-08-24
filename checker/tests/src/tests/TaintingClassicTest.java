@@ -17,7 +17,7 @@ public class TaintingClassicTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("tainting", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"tainting", "all-systems"};
     }
 }

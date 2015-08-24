@@ -17,7 +17,7 @@ public class ReportTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("report");
+    public static String [] getTestDirs() {
+        return new String[]{"report"};
     }
 }

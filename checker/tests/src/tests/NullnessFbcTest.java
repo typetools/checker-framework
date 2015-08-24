@@ -31,8 +31,8 @@ public class NullnessFbcTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("nullness", "initialization/fbc", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"nullness", "initialization/fbc", "all-systems"};
     }
 
 }

@@ -21,8 +21,8 @@ public class NullnessConcurrentTest extends DefaultCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> getTestFiles() {
-        return TestUtilities.findNestedJavaTestFiles("nullness-concurrent-semantics");
+    public static String[] getTestDirs() {
+        return new String[]{"nullness-concurrent-semantics"};
     }
 
 }
