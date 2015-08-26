@@ -7,9 +7,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="822.53998"
+   width="682.53998"
    height="194.88"
-   viewBox="328 238 922.19013 204.99801"
+   viewBox="328 238 765.22915 204.99801"
    id="svg2"
    version="1.1"
    inkscape:version="0.48.4 r9939"
@@ -41,7 +41,7 @@
      id="namedview194"
      showgrid="false"
      inkscape:zoom="0.8733739"
-     inkscape:cx="530.80408"
+     inkscape:cx="533.09405"
      inkscape:cy="63.977547"
      inkscape:window-x="0"
      inkscape:window-y="31"
@@ -49,7 +49,7 @@
      inkscape:current-layer="svg2" />
   <g
      id="g4"
-     transform="translate(156.95827,-0.00294728)">
+     transform="translate(2.2396156,-0.00294728)">
     <rect
        style="fill:#ffffff"
        x="329.198"
@@ -77,27 +77,8 @@
     </text>
   </g>
   <g
-     id="g50"
-     transform="matrix(0.85973153,0,0,1,47.89181,-0.00294728)">
-    <line
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x1="820"
-       y1="400"
-       x2="424.134"
-       y2="363.436"
-       id="line52" />
-    <polygon
-       style="fill:#000000"
-       points="424.778,356.465 410.194,362.148 423.491,370.406 "
-       id="polygon54" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:2"
-       points="424.778,356.465 410.194,362.148 423.491,370.406 "
-       id="polygon56" />
-  </g>
-  <g
      id="g58"
-     transform="matrix(0.84013385,0,0,1,63.66033,-0.00294728)">
+     transform="matrix(0.61098909,0,0,1,170.58624,-0.00294728)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -116,7 +97,7 @@
   </g>
   <g
      id="g66"
-     transform="translate(-67.270155,-0.00294728)">
+     transform="translate(-147.99294,-0.00294728)">
     <rect
        style="fill:#ffffff"
        x="740"
@@ -167,7 +148,7 @@
   </text>
   <g
      id="g84"
-     transform="translate(156.95827,-0.00294728)">
+     transform="translate(2.2396156,-0.00294728)">
     <rect
        style="fill:#ffffff"
        x="499.97"
@@ -207,7 +188,7 @@
   </text>
   <g
      id="g98"
-     transform="translate(89.689765,-0.00294728)">
+     transform="translate(-65.028862,-0.00294728)">
     <rect
        style="fill:#ffffff"
        x="739.44598"
@@ -247,7 +228,7 @@
   </text>
   <g
      id="g128"
-     transform="matrix(0.81165992,0,0,1,87.336712,-0.00294728)">
+     transform="matrix(0.92931178,0,0,1,-89.991164,-0.00294728)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -257,31 +238,12 @@
        id="line130" />
     <polygon
        style="fill:#000000"
-       points="591.269,368.684 582.178,362.175 592.84,358.808 589.585,363.353 "
+       points="582.178,362.175 592.84,358.808 589.585,363.353 591.269,368.684 "
        id="polygon132" />
     <polygon
        style="fill:none;stroke:#000000;stroke-width:2"
-       points="591.269,368.684 582.178,362.175 592.84,358.808 589.585,363.353 "
+       points="582.178,362.175 592.84,358.808 589.585,363.353 591.269,368.684 "
        id="polygon134" />
-  </g>
-  <g
-     id="g136"
-     transform="translate(-67.270055,-0.00294728)">
-    <line
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x1="820"
-       y1="400"
-       x2="819.58698"
-       y2="371.55899"
-       id="line138" />
-    <polygon
-       style="fill:#000000"
-       points="824.623,373.986 819.587,371.559 814.624,374.131 819.478,364.06 "
-       id="polygon140" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:2"
-       points="824.623,373.986 819.587,371.559 814.624,374.131 819.478,364.06 "
-       id="polygon142" />
   </g>
   <text
      font-size="12.8"
@@ -296,7 +258,7 @@
   </text>
   <g
      id="g168"
-     transform="translate(89.689765,-0.00294728)">
+     transform="translate(-65.028862,-0.00294728)">
     <rect
        style="fill:#ffffff"
        x="910.43402"
@@ -325,7 +287,7 @@
   </g>
   <g
      id="g186"
-     transform="translate(-67.270055,-0.00294728)">
+     transform="matrix(0.55513772,0,0,1,216.34935,-0.00294728)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -335,15 +297,15 @@
        id="line188" />
     <polygon
        style="fill:#000000"
-       points="979.566,369.828 980.928,364.407 977.407,360.064 988.251,362.787 "
+       points="980.928,364.407 977.407,360.064 988.251,362.787 979.566,369.828 "
        id="polygon190" />
     <polygon
        style="fill:none;stroke:#000000;stroke-width:2"
-       points="979.566,369.828 980.928,364.407 977.407,360.064 988.251,362.787 "
+       points="980.928,364.407 977.407,360.064 988.251,362.787 979.566,369.828 "
        id="polygon192" />
   </g>
   <g
-     transform="translate(-86.814326,-158.70237)"
+     transform="translate(-167.53712,-158.70237)"
      id="g66-6">
     <rect
        style="fill:#ffffff"
@@ -372,44 +334,8 @@
     </text>
   </g>
   <g
-     transform="translate(-525.0717,2.7817002)"
-     id="g4-9">
-    <rect
-       style="fill:#ffffff"
-       x="564.6377"
-       y="317.35986"
-       width="160"
-       height="42"
-       id="rect6-7" />
-    <rect
-       style="fill:#ffffff"
-       x="844.82684"
-       y="317.3519"
-       width="160"
-       height="42"
-       id="rect6-7-3" />
-    <rect
-       style="fill:none;stroke:#000000;stroke-width:1.87095177"
-       x="856.3158"
-       y="317.28735"
-       width="139.58952"
-       height="42.129055"
-       id="rect8-8-8" />
-    <text
-       font-size="16"
-       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-       x="924.82684"
-       y="343.2019"
-       id="text10-4-7">
-      <tspan
-         x="924.82684"
-         y="343.2019"
-         id="tspan12-7-2">@UnknownGuard</tspan>
-    </text>
-  </g>
-  <g
      id="g58-5"
-     transform="matrix(-0.73799823,0,0,0.98010942,1704.0276,-72.390198)">
+     transform="matrix(-0.51494794,0,0,0.98010942,1345.6669,-72.390198)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -427,46 +353,8 @@
        id="polygon64-7" />
   </g>
   <g
-     id="g128-9"
-     transform="matrix(-1.2125979,0,0,0.95541913,1400.6166,-62.690109)">
-    <line
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x1="820"
-       y1="400"
-       x2="589.58502"
-       y2="363.353"
-       id="line130-2" />
-    <polygon
-       style="fill:#000000"
-       points="592.84,358.808 589.585,363.353 591.269,368.684 582.178,362.175 "
-       id="polygon132-6" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:2"
-       points="592.84,358.808 589.585,363.353 591.269,368.684 582.178,362.175 "
-       id="polygon134-1" />
-  </g>
-  <g
-     id="g136-8"
-     transform="translate(-67.957035,-81.334467)">
-    <line
-       style="fill:none;stroke:#000000;stroke-width:2"
-       x1="820"
-       y1="400"
-       x2="819.58698"
-       y2="371.55899"
-       id="line138-3" />
-    <polygon
-       style="fill:#000000"
-       points="819.587,371.559 814.624,374.131 819.478,364.06 824.623,373.986 "
-       id="polygon140-2" />
-    <polygon
-       style="fill:none;stroke:#000000;stroke-width:2"
-       points="819.587,371.559 814.624,374.131 819.478,364.06 824.623,373.986 "
-       id="polygon142-8" />
-  </g>
-  <g
      id="g186-4"
-     transform="matrix(-0.88273399,0,0,0.99800889,1644.2553,-78.824065)">
+     transform="matrix(-0.40806447,0,0,0.99800889,1093.9352,-78.824065)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -476,16 +364,16 @@
        id="line188-8" />
     <polygon
        style="fill:#000000"
-       points="980.928,364.407 977.407,360.064 988.251,362.787 979.566,369.828 "
+       points="977.407,360.064 988.251,362.787 979.566,369.828 980.928,364.407 "
        id="polygon190-5" />
     <polygon
        style="fill:none;stroke:#000000;stroke-width:2"
-       points="980.928,364.407 977.407,360.064 988.251,362.787 979.566,369.828 "
+       points="977.407,360.064 988.251,362.787 979.566,369.828 980.928,364.407 "
        id="polygon192-7" />
   </g>
   <g
      id="g128-9-4"
-     transform="matrix(-0.70266231,0,0,0.98528777,1140.5511,-74.271689)">
+     transform="matrix(-0.83627951,0,0,0.98528777,1137.4596,-74.271689)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -495,22 +383,60 @@
        id="line130-2-6" />
     <polygon
        style="fill:#000000"
-       points="589.585,363.353 591.269,368.684 582.178,362.175 592.84,358.808 "
+       points="592.84,358.808 589.585,363.353 591.269,368.684 582.178,362.175 "
        id="polygon132-6-3" />
     <polygon
        style="fill:none;stroke:#000000;stroke-width:2"
-       points="589.585,363.353 591.269,368.684 582.178,362.175 592.84,358.808 "
+       points="592.84,358.808 589.585,363.353 591.269,368.684 582.178,362.175 "
        id="polygon134-1-0" />
   </g>
   <text
      font-size="12.8"
      style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-     x="1238.2217"
+     x="1083.5023"
      y="344.13104"
      id="text154">
     <tspan
-       x="1238.2217"
+       x="1083.5023"
        y="344.13104"
        id="tspan156">...</tspan>
   </text>
+  <g
+     id="g186-2"
+     transform="matrix(-0.55513772,0,0,1,1123.2398,-0.25815538)">
+    <line
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x1="820"
+       y1="400"
+       x2="980.92798"
+       y2="364.40701"
+       id="line188-86" />
+    <polygon
+       style="fill:#000000"
+       points="977.407,360.064 988.251,362.787 979.566,369.828 980.928,364.407 "
+       id="polygon190-4" />
+    <polygon
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="977.407,360.064 988.251,362.787 979.566,369.828 980.928,364.407 "
+       id="polygon192-2" />
+  </g>
+  <g
+     id="g186-4-0"
+     transform="matrix(0.40806447,0,0,0.99800889,244.18996,-78.440616)">
+    <line
+       style="fill:none;stroke:#000000;stroke-width:2"
+       x1="820"
+       y1="400"
+       x2="980.92798"
+       y2="364.40701"
+       id="line188-8-6" />
+    <polygon
+       style="fill:#000000"
+       points="980.928,364.407 977.407,360.064 988.251,362.787 979.566,369.828 "
+       id="polygon190-5-3" />
+    <polygon
+       style="fill:none;stroke:#000000;stroke-width:2"
+       points="980.928,364.407 977.407,360.064 988.251,362.787 979.566,369.828 "
+       id="polygon192-7-3" />
+  </g>
 </svg>
