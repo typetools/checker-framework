@@ -53,7 +53,7 @@ import com.sun.source.util.TreePath;
 public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     private final Class<? extends Annotation> checkerGuardedByClass = org.checkerframework.checker.lock.qual.GuardedBy.class;
     private final Class<? extends Annotation> checkerHoldingClass = org.checkerframework.checker.lock.qual.Holding.class;
-    private final Class<? extends Annotation> checkerHoldingOnEntryClass = org.checkerframework.checker.lock.qual.HoldingOnEntry.class;
+    //private final Class<? extends Annotation> checkerHoldingOnEntryClass = org.checkerframework.checker.lock.qual.HoldingOnEntry.class;
     private final Class<? extends Annotation> checkerLockHeldClass = org.checkerframework.checker.lock.qual.LockHeld.class;
 
     // Note that Javax and JCIP @GuardedBy is used on both methods and objects. For methods they are
@@ -201,7 +201,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     protected List<String> methodHoldingOnEntry(ExecutableElement element) {
-        AnnotationMirror holdingOnEntry = atypeFactory.getDeclAnnotation(element, checkerHoldingOnEntryClass);
+        /*AnnotationMirror holdingOnEntry = atypeFactory.getDeclAnnotation(element, checkerHoldingOnEntryClass);
 
         if (holdingOnEntry == null)
             return Collections.emptyList();
@@ -211,7 +211,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         List<String> holdingOnEntryValue = AnnotationUtils.getElementValueArray(holdingOnEntry, "value", String.class, false);
         locks.addAll(holdingOnEntryValue);
 
-        return locks;
+        return locks;*/
+        return null;
     }
 
     /**
