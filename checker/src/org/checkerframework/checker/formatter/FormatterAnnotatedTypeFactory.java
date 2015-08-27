@@ -1,9 +1,5 @@
 package org.checkerframework.checker.formatter;
 
-import java.util.IllegalFormatException;
-
-import javax.lang.model.element.AnnotationMirror;
-
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatBottom;
@@ -11,12 +7,19 @@ import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
+
+import java.util.IllegalFormatException;
+
+import javax.lang.model.element.AnnotationMirror;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
