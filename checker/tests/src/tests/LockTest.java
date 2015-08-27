@@ -1,15 +1,13 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
-import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  */
-public class LockTest extends DefaultCheckerTest {
+public class LockTest extends CheckerFrameworkTest {
 
     public LockTest(File testFile) {
         super(testFile,

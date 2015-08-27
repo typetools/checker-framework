@@ -1,17 +1,15 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
-import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Test suite for the Subtyping Checker, using a simple {@link Encrypted}
  * annotation.
  */
-public class SubtypingEncryptedTest extends DefaultCheckerTest {
+public class SubtypingEncryptedTest extends CheckerFrameworkTest {
 
     public SubtypingEncryptedTest(File testFile) {
         super(testFile,

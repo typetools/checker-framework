@@ -1,11 +1,9 @@
 package tests;
 
 import org.checkerframework.checker.nullness.AbstractNullnessChecker;
-import org.checkerframework.framework.test.TestUtilities;
-import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 
 import java.io.File;
-import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
@@ -13,7 +11,7 @@ import org.junit.runners.Parameterized.Parameters;
  * JUnit tests for the Nullness checker (that uses the Freedom Before Commitment
  * type system for initialization).
  */
-public class NullnessFbcTestWithAsserts extends DefaultCheckerTest {
+public class NullnessFbcTestWithAsserts extends CheckerFrameworkTest {
 
     public NullnessFbcTestWithAsserts(File testFile) {
         // TODO: remove forbidnonnullarraycomponents option once it's no

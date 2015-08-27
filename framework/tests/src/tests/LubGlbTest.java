@@ -1,15 +1,13 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
-import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  */
-public class LubGlbTest extends DefaultCheckerTest {
+public class LubGlbTest extends CheckerFrameworkTest {
 
     public LubGlbTest(File testFile) {
         super(testFile,

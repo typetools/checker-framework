@@ -1,10 +1,8 @@
 package tests;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
-import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 
 import java.io.File;
-import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
@@ -12,7 +10,7 @@ import org.junit.runners.Parameterized.Parameters;
  * JUnit tests for the Nullness Checker (that uses the Freedom Before Commitment
  * type system for initialization).
  */
-public class NullnessAssumeAssertionsAreDisabled extends DefaultCheckerTest {
+public class NullnessAssumeAssertionsAreDisabled extends CheckerFrameworkTest {
 
     public NullnessAssumeAssertionsAreDisabled(File testFile) {
         super(testFile,

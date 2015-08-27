@@ -1,13 +1,11 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
-import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class TaintingQualTest extends DefaultCheckerTest {
+public class TaintingQualTest extends CheckerFrameworkTest {
 
     public TaintingQualTest(File testFile) {
         super(testFile,

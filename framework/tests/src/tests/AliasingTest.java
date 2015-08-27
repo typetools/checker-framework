@@ -1,13 +1,11 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
-import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class AliasingTest extends DefaultCheckerTest {
+public class AliasingTest extends CheckerFrameworkTest {
 
     public AliasingTest(File testFile) {
         super(testFile,

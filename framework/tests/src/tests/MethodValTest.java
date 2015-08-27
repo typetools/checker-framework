@@ -1,10 +1,8 @@
 package tests;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
-import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 
 import java.io.File;
-import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
@@ -14,7 +12,7 @@ import org.junit.runners.Parameterized.Parameters;
  * @author smillst
  *
  */
-public class MethodValTest extends DefaultCheckerTest {
+public class MethodValTest extends CheckerFrameworkTest {
 
     public MethodValTest(File testFile) {
         super(testFile, org.checkerframework.common.reflection.MethodValChecker.class, "methodval", "-Anomsgtext");

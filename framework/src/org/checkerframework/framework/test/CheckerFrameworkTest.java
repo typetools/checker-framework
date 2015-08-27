@@ -35,7 +35,7 @@ import static org.checkerframework.framework.test.TestConfigurationBuilder.build
  *
  */
 @RunWith(TestSuite.class)
-public abstract class DefaultCheckerTest {
+public abstract class CheckerFrameworkTest {
 
     protected final File testFile;
 
@@ -55,9 +55,9 @@ public abstract class DefaultCheckerTest {
      * @param checkerDir the path to the directory of test inputs
      * @param checkerOptions options to pass to the compiler when running tests
      */
-    public DefaultCheckerTest(File testFile,
-                              Class<? extends AbstractProcessor> checker,
-                              String checkerDir, String... checkerOptions) {
+    public CheckerFrameworkTest(File testFile,
+                                Class<? extends AbstractProcessor> checker,
+                                String checkerDir, String... checkerOptions) {
         this.testFile = testFile;
         this.checkerName = checker.getName();
         this.checkerDir = "tests" + File.separator + checkerDir;

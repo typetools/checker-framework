@@ -15,7 +15,13 @@ import java.util.Map;
 public class ImmutableTestConfiguration implements TestConfiguration {
 
     /**
-     * Options that should be passed to the compiler
+     * Options that should be passed to the compiler.  This a Map(optionName -> optionArgumentIfAny).  E.g.,
+     * {@code
+     *     Map(
+     *       "-AprintAllQualifiers" -> null
+     *        "-classpath" -> "myDir1:myDir2"
+     *     )
+     * }
      */
     private final Map<String, String> options;
     /**
@@ -40,7 +46,7 @@ public class ImmutableTestConfiguration implements TestConfiguration {
 
     public ImmutableTestConfiguration(List<File> diagnosticFiles, List<File> testSourceFiles, List<String> processors,
                                       Map<String, String> options, boolean shouldEmitDebugInfo) {
-        this.diagnosticFiles = diagnosticFiles;
+        this.diagnosticFiles = Collections.unmodifiableList(diagnosticFiles);
         this.testSourceFiles = Collections.unmodifiableList(new ArrayList<>(testSourceFiles));
         this.processors = Collections.unmodifiableList(new ArrayList<>(processors));
         this.options = Collections.unmodifiableMap(new LinkedHashMap<>(options));

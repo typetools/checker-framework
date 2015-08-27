@@ -1,10 +1,8 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
-import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -15,7 +13,7 @@ import org.junit.runners.Parameterized.Parameters;
  * @author Stefan Heule
  *
  */
-public class Flow2Test extends DefaultCheckerTest {
+public class Flow2Test extends CheckerFrameworkTest {
 
     public Flow2Test(File testFile) {
         super(testFile,

@@ -1,13 +1,11 @@
 package tests;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
-import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 import java.io.File;
-import java.util.Collection;
 
-public class RegexTest extends DefaultCheckerTest {
+public class RegexTest extends CheckerFrameworkTest {
 
     public RegexTest(File testFile) {
         super(testFile,

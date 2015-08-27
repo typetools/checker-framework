@@ -1,16 +1,14 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
-import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * JUnit tests for the Nullness Checker -- testing -AskipDefs command-line argument.
  */
-public class NullnessSkipDefsTest extends DefaultCheckerTest {
+public class NullnessSkipDefsTest extends CheckerFrameworkTest {
 
     public NullnessSkipDefsTest(File testFile) {
         super(testFile,

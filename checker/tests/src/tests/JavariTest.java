@@ -2,18 +2,16 @@ package tests;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.checkerframework.framework.test.TestUtilities;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * JUnit tests for the Javari annotation checker.
  */
-public class JavariTest extends DefaultCheckerTest {
+public class JavariTest extends CheckerFrameworkTest {
 
     public JavariTest(File testFile) {
         super(testFile,

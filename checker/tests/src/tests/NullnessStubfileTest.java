@@ -1,13 +1,11 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
-import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class NullnessStubfileTest extends DefaultCheckerTest {
+public class NullnessStubfileTest extends CheckerFrameworkTest {
 
     public NullnessStubfileTest(File testFile) {
         super(

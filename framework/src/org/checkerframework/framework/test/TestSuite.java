@@ -149,7 +149,7 @@ public class TestSuite extends Suite {
         return method;
     }
 
-    private static String requiredFormsMessage =
+    private static final String requiredFormsMessage =
             "Parameter method must have one of the following two forms:\n"
                     + "@Parameters String [] getTestDirs()\n"
                     + "@Parameters List<File> getTestFiles()";

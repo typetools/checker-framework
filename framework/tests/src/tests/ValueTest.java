@@ -1,10 +1,8 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
-import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -17,7 +15,7 @@ import org.junit.runners.Parameterized.Parameters;
  * @author plvines
  *
  */
-public class ValueTest extends DefaultCheckerTest {
+public class ValueTest extends CheckerFrameworkTest {
 
     public ValueTest(File testFile) {
         super(testFile, org.checkerframework.common.value.ValueChecker.class,

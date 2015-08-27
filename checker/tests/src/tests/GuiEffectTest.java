@@ -1,14 +1,12 @@
 package tests;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
-import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 
 import java.io.File;
-import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
-public class GuiEffectTest extends DefaultCheckerTest {
+public class GuiEffectTest extends CheckerFrameworkTest {
 
     public GuiEffectTest(File testFile) {
         super(testFile, org.checkerframework.checker.guieffect.GuiEffectChecker.class, "guieffect",

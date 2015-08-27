@@ -1,10 +1,8 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
-import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -13,7 +11,7 @@ import org.junit.runners.Parameterized.Parameters;
  * @author smillst
  *
  */
-public class CompoundCheckerTest extends DefaultCheckerTest {
+public class CompoundCheckerTest extends CheckerFrameworkTest {
 
     public CompoundCheckerTest(File testFile) {
         super(testFile, tests.compound.CompoundChecker.class,

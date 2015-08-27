@@ -1,17 +1,15 @@
 package tests;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
-import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 
 import java.io.File;
-import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Created by jthaine on 6/25/15.
  */
-public class AnnotatedForTest extends DefaultCheckerTest {
+public class AnnotatedForTest extends CheckerFrameworkTest {
 
     public AnnotatedForTest(File testFile) {
         super(testFile,

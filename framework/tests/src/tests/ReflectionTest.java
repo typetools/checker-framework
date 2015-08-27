@@ -4,11 +4,9 @@ import java.io.File;
 import java.lang.Override;
 import java.lang.String;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import org.checkerframework.framework.test.DefaultCheckerTest;
-import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -17,7 +15,7 @@ import org.junit.runners.Parameterized.Parameters;
  * @author rjust, smillst
  *
  */
-public class ReflectionTest extends DefaultCheckerTest {
+public class ReflectionTest extends CheckerFrameworkTest {
 
     public ReflectionTest(File testFile) {
         super(testFile, tests.reflection.ReflectionTestChecker.class, "reflection", "-Anomsgtext");
