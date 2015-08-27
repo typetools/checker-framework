@@ -1743,8 +1743,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // Uses an ExecutableElement, which did not substitute type variables.
             break;
         default:
-            ErrorReporter.errorAbort("AnnotatedTypeFactory.fromNewClassContextHelper: unexpected context: " +
-                    ctxtype + " (" + ctxtype.getKind() + ")");
+            if (ctxtype.getKind().isPrimitive()) {
+                // See Issue 438. Ignore primitive types for diamond inference - a primitive type
+                // is never a suitable context anyways.
+            } else {
+                ErrorReporter.errorAbort("AnnotatedTypeFactory.fromNewClassContextHelper: unexpected context: " +
+                        ctxtype + " (" + ctxtype.getKind() + ")");
+            }
         }
     }
 
