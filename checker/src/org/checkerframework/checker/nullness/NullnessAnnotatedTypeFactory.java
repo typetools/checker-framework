@@ -107,6 +107,7 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.NonNull.class, NONNULL);
         addAliasedAnnotation(javax.annotation.Nonnull.class, NONNULL);
         addAliasedAnnotation(javax.validation.constraints.NotNull.class, NONNULL);
+        addAliasedAnnotation(lombok.NonNull.class, NONNULL);
         addAliasedAnnotation(org.eclipse.jdt.annotation.NonNull.class, NONNULL);
         addAliasedAnnotation(org.jetbrains.annotations.NotNull.class, NONNULL);
         addAliasedAnnotation(org.netbeans.api.annotations.common.NonNull.class, NONNULL);

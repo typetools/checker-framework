@@ -33,8 +33,8 @@ public class SubtypesSolver {
      * @return A mapping of ( {@code target -> inferred type} ), note this class always infers concrete types
      *         and will not infer that the target is equivalent to another target
      */
-    public InferenceResult solveFromAssignment(final Set<TypeVariable> remainingTargets, final ConstraintMap constraints,
-                                               final AnnotatedTypeFactory typeFactory) {
+    public InferenceResult solveFromSubtypes(final Set<TypeVariable> remainingTargets, final ConstraintMap constraints,
+                                             final AnnotatedTypeFactory typeFactory) {
         return glbSubtypes(remainingTargets, constraints, typeFactory);
     }
 

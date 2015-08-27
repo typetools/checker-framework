@@ -1,3 +1,9 @@
+Version 1.9.5, 1 September 2015
+
+Fixed issues:  459.
+
+----------------------------------------------------------------------
+
 Version 1.9.4, 4 August 2015
 
 Documented the notion of a compound checker, which depends on other checkers

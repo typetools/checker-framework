@@ -42,9 +42,9 @@ public class SupertypesSolver {
      * @return A mapping of ( {@code target -> inferred type} ), note this class always infers concrete types
      *         and will not infer that the target is equivalent to another target
      */
-    public InferenceResult solveFromArguments(final Set<TypeVariable> remainingTargets,
-                                              final ConstraintMap constraintMap,
-                                              final AnnotatedTypeFactory typeFactory) {
+    public InferenceResult solveFromSupertypes(final Set<TypeVariable> remainingTargets,
+                                               final ConstraintMap constraintMap,
+                                               final AnnotatedTypeFactory typeFactory) {
         //infer a type for all targets that have supertype constraints
         final Lubs lubs = targetToTypeLubs(remainingTargets, constraintMap, typeFactory);
 
