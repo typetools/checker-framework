@@ -44,7 +44,7 @@ public interface TestConfiguration {
 
     /**
      * Some Javac command line arguments require arguments themselves (e.g. -classpath takes a path)
-     * getOptions returns a Map(optionName -> optionArgumentIfAny).  If an option does not take
+     * getOptions returns a {@code Map(optionName -> optionArgumentIfAny)}.  If an option does not take
      * an argument, pass null as the value.
      *
      * E.g.,
