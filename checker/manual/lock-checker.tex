@@ -6,7 +6,7 @@ locking discipline.  A locking discipline indicates which locks must be held
 when a given operation occurs.  You express the locking discipline by
 giving a variable a type of
 \<\refqualclass{checker/lock/qual}{GuardedBy}{\small("\emph{lockexpr}")}>.
-This indicates that the variable may
+This indicates that the variable's value may
 be dereferenced only if the given lock is held.
 
 
@@ -24,7 +24,7 @@ Then the value computed for $e$ is only dereferenced by a thread when the
 thread holds locks \<x> and \<y.z>.
 Dereferencing a value is reading or writing one of its fields.
 The guarantee holds regardless of whether the expression that performs the dereference uses the expression $e$
-directly, or the value was first copied into a variable, returned as the
+directly or the value was first copied into a variable, returned as the
 result of a method call, etc.
 Copying a reference is always
 permitted by the Lock Checker, regardless of which locks are held.
@@ -69,7 +69,7 @@ This section describes the lock annotations you can use on types and methods.
   dereference the value referred to by \<x> only when the thread holds the
   lock that \emph{expr} currently evaluates to.
 
-  It is also permitted to write multiple expressions, as in
+  The \<@GuardedBy> annotation can list write multiple expressions, as in
   \<@GuardedBy(\ttlcb"\emph{expr1}", "\emph{expr2}"\ttrcb)>, in which case
   the dereference is
   permitted only if the thread holds all the locks.
@@ -95,10 +95,27 @@ This section describes the lock annotations you can use on types and methods.
 
 \paragraph{Polymorphic type qualifiers}
 
+\refqualclass{checker/lock/qual}{GuardSatisfied}
+and
+\refqualclass{checker/interning/qual}{PolyGuardedBy}
+indicate qualifier polymorphism.  For a description of qualifier
+polymorphism, see Section~\ref{qualifier-polymorphism}.
+
 \begin{description}
 
 \item[\refqualclass{checker/lock/qual}{GuardSatisfied}]
-  If a method parameter or receiver \<x> has type \code{@GuardSatisfied}, then
+  If a variable \<x> has type \code{@GuardSatisfied}, then all 
+  lock expressiens for \<x>'s value are held.
+
+  \code{@GuardSatisfied} is the default type qualifier for method
+  formal parameters (including the receiver parameter)
+  if the programmer does not
+  write an explicit locking type qualifier.
+  
+[[JAVIER:  Eliminate the rest of this paragraph.  Probably move the example
+    from this paragraph to the Javadoc.  The
+    description here is supposed to be brief, to give an overview of the
+    type system without overwhelming the reader.]]
   the lock expressions that must be held when
   dereferencing the value referred to by \<x> are allowed to be different
   for different call sites, and the Lock Checker
@@ -111,21 +128,13 @@ This section describes the lock annotations you can use on types and methods.
   on the actual parameter to a call to the constructor is unknown
   at its definition site, because the constructor can be called by
   arbitrary code.
-  \code{@GuardSatisfied} is the default type qualifier for method
-  formal parameters (including the receiver parameter)
-  if the programmer does not
-  write an explicit locking type qualifier.
   See Section~\ref{lock-checker-polymorphism}
   for an example of a use of \code{@GuardSatisfied}.
 
 \item[\refqualclass{checker/interning/qual}{PolyGuardedBy}]
-  indicates qualifier polymorphism.  For a description of
-  \refqualclass{checker/interning/qual}{PolyGuardedBy}, see
-  Section~\ref{qualifier-polymorphism}.  Unlike with \code{@GuardSatisfied},
-  a method parameter or receiver annotated with \code{@PolyGuardedBy}
-  can never be dereferenced, and all instances of \code{@PolyGuardedBy}
-  used in a method declaration must have exactly matching
-  \code{@GuardedBy} annotations at the method call site.
+  It is unknown what the guards are or whether they are held.
+  An expression whose type is \code{@PolyGuardedBy}
+  cannot be dereferenced.
 
 \end{description}
 
@@ -163,84 +172,76 @@ The Lock Checker supports several annotations that specify method behavior.
 These are declaration annotations, not type annotations: they apply to the
 method itself rather than to some particular type.
 
-% If changing this text, make sure it fits in the page in the PDF.
-% The wording below was chosen to ensure that it fits.
-\begin{tabular}{l|l|}
-\textbf{Declaration annotation} & \textbf{Meaning} \\
-@Holding(String[] locks) &
-Lock expressions that must be held when the method is called.
-\\
-@EnsuresLockHeld(String[] locks) &
-Lock expressions guaranteed to be held on method return.
-\\
-@EnsuresLockHeldIf(String[] locks, boolean result) &
-Lock expressions guaranteed to be held when the given result is returned.
-\\
-@LockingFree &
-The method does not make any use of locks or synchronization.
-\\
-@ReleasesNoLocks &
-The method releases only locks it acquires.
-\\
-@MayReleaseLocks &
-The method may release locks it did not acquire.
-\\
-\end{tabular}
-
+\paragraph{Method pre- and post-conditions}
 
 \begin{description}
 \item[\refqualclass{checker/lock/qual}{Holding}\small{(String[] locks)}]
-  Indicates a method precondition.  A method invocation type-checks only if all the lock expressions
-  mentioned in a \<@Holding> precondition are held at the method call site.
+  All the given lock expressions
+  are held at the method call site.
+
 \item[\refqualclass{checker/lock/qual}{EnsuresLockHeld}\small{(String[] locks)}]
-\item[\refqualclass{checker/lock/qual}{EnsuresLockHeldIf}\small{(String[] locks, boolean result)}]
-  indicate a method postcondition.  With \code{@EnsuresLockHeld}, the given lock
-  expressions are known by the programmer to be in
-  a locked state after the method returns; this is useful for annotating a
+  The given lock
+  expressions are
+  locked when the method returns.  This is useful for annotating a
   method that acquires a lock such as
   \sunjavadoc{java/util/concurrent/locks/ReentrantLock.html\#lock()}{ReentrantLock.lock()}.
 
-  With \code{@EnsuresLockHeldIf}, if the annotated method returns the given
+\item[\refqualclass{checker/lock/qual}{EnsuresLockHeldIf}\small{(String[] locks, boolean result)}]
+  If the annotated method returns the given
   boolean value (true or false), the given lock
-  expressions are known by the programmer to be in
-  a locked state after the method returns; this is useful for annotating a
+  expressions are locked when the method returns.
+  This is useful for annotating a
   method that conditionally acquires a lock.
   See Section~\ref{ensureslockheld-examples} for examples.
 
+\end{description}
+
+\paragraph{Side effect specifications}
+
+\begin{description}
+
 \item[\refqualclass{dataflow/qual}{LockingFree}]
-  indicates that the method does not use synchronization/locking,
-  directly or indirectly.  This is less restrictive than
-  \refqualclass{dataflow/qual}{SideEffectFree}.  It is especially useful for
-  annotating library methods, including JDK methods.  Since
+  The method does not aquire or release locks,
+  directly or indirectly.  The method is not \<synchronized>, it contains
+  no \<synchronized> blocks, it contains no calls to \<lock> or \<unlock>
+  methods, and it contains no calls to methods that are not themselves \<@LockingFree>.
+
+  Since
   \code{@SideEffectFree} implies \code{@LockingFree}, if both are applicable
-  then you should only write \code{@SideEffectFree}.
-  Do not use this annotation on a method that acquires locks but then releases
-  them, leaving the same number of locks held on exit as on entry.  Such a
-  method is not locking-free and may cause deadlocks.  If you need to annotate
-  such a method when type-checking with the Lock Checker, use the \code{@ReleasesNoLocks}
-  annotation or simply leave the method unannotated.
+  then you only need to write \code{@SideEffectFree}.
 
 \item[\refqualclass{dataflow/qual}{ReleasesNoLocks}]
-  indicates that the method acquires locks but then releases
-  them, and does not release any locks that were held prior to the method call,
-  leaving the same number of locks held on exit as on entry.
+  The method does not release any locks that were held prior
+  to the method call.  The method might acquire locks but then release
+  them, or might aquire locks but not release them (in which case it should
+  also be annotated with 
+  \refqualclass{checker/lock/qual}{EnsuresLockHeld} or
+  \refqualclass{checker/lock/qual}{EnsuresLockHeldIf}).
 
 \item[\refqualclass{dataflow/qual}{MayReleaseLocks}]
-  indicates that it is unknown whether the method releases
+  It is unknown whether the method releases
   locks that were held prior to the method being called.
-  Useful to annotate method declarations in stub files,
-  or methods that call other methods annotated with \code{@MayReleaseLocks}.
 
 \end{description}
 
 
-\subsection{Type checking rules}
+\subsection{Type-checking rules}
 
 In addition to the standard subtyping rules enforcing the subtyping relationship
-described in figure~\ref{fig-lock-guardedby-hierarchy}, the Lock Checker enforces
+described in Figure~\ref{fig-lock-guardedby-hierarchy}, the Lock Checker enforces
 the following additional rules:
 
+
+\paragraph{Assignments}
+
 \begin{description}
+
+\item[Polymorphic assignments]
+  The overall rules for polymorphic assignments are given in
+  Section~\ref{qualifier-polymorphism}.  In addition, ...
+
+
+
 
 \item[\code{@GuardSatisfied}]
   Given a method declaration with a receiver or parameter annotated with
@@ -267,31 +268,6 @@ the following additional rules:
   In addition to the standard type checking rules for polymorphic annotations
   (see Section~\ref{qualifier-polymorphism}), a value whose type is annotated with
   \code{@PolyGuardedBy} may never be dereferenced.
-
-\item[Primitive types]
-  Every access of a guarded primitive value (including assignments
-  and pseudo-assignments) is considered a dereference.
-
-\item[Dereferences of primitive values]
-  For dereferences of primitive values, the Lock Checker requires that
-  the appropriate locks be held, but it does not require the annotations
-  in the types involved in the operation (including assignments and
-  pseudo-assignments) to match. For example, given:
-  \begin{verbatim}
-  ReentrantLock lock1, lock2;
-  @GuardedBy("lock1") int a;
-  @GuardedBy("lock2") int b;
-  @GuardedBy({}) int c;
-  ...
-  lock1.lock();
-  lock2.lock();
-  a = b;
-  a = c;
-  a = b + c
-  \end{verbatim}
-  The expressions \code{a = b}, \code{a = c}, and \code{a = b + c}
-  all type check, whereas none of them would type check if \code{a},
-  \code{b} and \code{c} were not primitives.
 
 \item[Overriding methods annotated with \code{@Holding}]
   The Lock Checker ensures that subclass methods annotated with
@@ -331,6 +307,64 @@ the following additional rules:
   except for those locks specified to be held after the call
   by an \code{@EnsuresLockHeld} or \code{@EnsuresLockHeldIf}
   annotation on the method.
+
+\end{description}
+
+\paragraph{Dereferences}
+
+\begin{description}
+
+\item[Primitive types]
+  Every access of a guarded primitive value (including assignments
+  and pseudo-assignments) is considered a dereference.
+  [[JAVIER:  This is abuse of notation, because those accesses are not
+      dereferences.  If you want @GuardedBy on a primitive to have
+      different semantics, thon I think it's better to say that rather than
+      to mix by-value and by-name semantics without any explanation.]]
+
+\item[Dereferences of primitive values]
+  For dereferences of primitive values, the Lock Checker requires that
+  the appropriate locks be held, but it does not require the annotations
+  in the types involved in the operation (including assignments and
+  pseudo-assignments) to match. For example, given:
+  \begin{verbatim}
+  ReentrantLock lock1, lock2;
+  @GuardedBy("lock1") int a;
+  @GuardedBy("lock2") int b;
+  @GuardedBy({}) int c;
+  ...
+  lock1.lock();
+  lock2.lock();
+  a = b;
+  a = c;
+  a = b + c
+  \end{verbatim}
+  The expressions \code{a = b}, \code{a = c}, and \code{a = b + c}
+  all type check, whereas none of them would type check if \code{a},
+  \code{b} and \code{c} were not primitives.
+
+\end{description}
+
+\paragraph{Side effects}
+
+\begin{description}
+
+\item[no side effects on lock expressions]
+  If expression \emph{expr} is used to acquire a lock, then 
+  \emph{expr} must evaluate to the same value, starting from when
+  \emph{expr} is used to acquire a lock until \emph{expr} is used to
+  release the lock.
+  An expression is used to acquire a lock if it is the receiver at a 
+  call site of a \<synchronized> method, is the expression in a
+  \<synchronized> block, or is the argument to a \<lock> method.
+
+\item[locks are released after possible side effects]
+  The Lock Checker
+
+  If this would affect 
+
+  If a program construct might 
+side effect
 
 \end{description}
 
