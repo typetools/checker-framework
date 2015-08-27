@@ -3,7 +3,6 @@ package org.checkerframework.framework.type;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedReferenceType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
@@ -215,7 +214,7 @@ class SupertypeFinder {
                         (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(st, false);
                 supertypes.add(ast);
                 if (type.wasRaw()) {
-                    if (st instanceof DeclaredType) {
+                    if (st.getKind() == TypeKind.DECLARED) {
                         final List<? extends TypeMirror> typeArgs = ((DeclaredType) st).getTypeArguments();
                         final List<AnnotatedTypeMirror> annotatedTypeArgs = ast.getTypeArguments();
                         for (int i = 0; i < typeArgs.size(); i++) {
@@ -303,15 +302,13 @@ class SupertypeFinder {
             serializableType.addAnnotations(annotations);
             superTypes.add(serializableType);
 
-            if (type.getComponentType() instanceof AnnotatedReferenceType) {
-                for (AnnotatedTypeMirror sup : type.getComponentType().directSuperTypes()) {
-                    ArrayType arrType = atypeFactory.types.getArrayType(sup.getUnderlyingType());
-                    AnnotatedArrayType aarrType = (AnnotatedArrayType)
-                            atypeFactory.toAnnotatedType(arrType, false);
-                    aarrType.setComponentType(sup);
-                    aarrType.addAnnotations(annotations);
-                    superTypes.add(aarrType);
-                }
+            for (AnnotatedTypeMirror sup : type.getComponentType().directSuperTypes()) {
+                ArrayType arrType = atypeFactory.types.getArrayType(sup.getUnderlyingType());
+                AnnotatedArrayType aarrType = (AnnotatedArrayType)
+                        atypeFactory.toAnnotatedType(arrType, false);
+                aarrType.setComponentType(sup);
+                aarrType.addAnnotations(annotations);
+                superTypes.add(aarrType);
             }
 
             return superTypes;
