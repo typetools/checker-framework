@@ -2,8 +2,6 @@ package org.checkerframework.framework.test.diagnostics;
 
 import org.checkerframework.javacutil.Pair;
 
-import javax.tools.Diagnostic;
-import javax.tools.JavaFileObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -12,6 +10,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
 
 /**
  * A set of utilities and factory methods useful for working with TestDiagnostics
@@ -179,23 +180,6 @@ public class TestDiagnosticUtils {
         DiagnosticKind categoryEnum = DiagnosticKind.fromParseString(category);
 
         return Pair.of(categoryEnum, isFixable);
-    }
-
-    /**
-     * Convert from javax.tools.Diagnostic.Kind to org.checkerframework.framework.diagnostics.DiagnosticKind
-     */
-    private static DiagnosticKind translateDiagnosticKind(Diagnostic.Kind kind) {
-        switch (kind) {
-            case ERROR:
-                return DiagnosticKind.Error;
-
-            case MANDATORY_WARNING:
-            case WARNING:
-                return DiagnosticKind.Warning;
-
-            default:
-                return DiagnosticKind.Other;
-        }
     }
 
     /**
