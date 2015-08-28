@@ -57,7 +57,7 @@ should not, be solved with locks.
 
 \section{Lock annotations\label{lock-annotations}}
 
-This section describes the lock annotations you can use on types and methods.
+This section describes the lock annotations you can write on types and methods.
 
 
 \subsection{Type qualifiers\label{lock-type-qualifiers}}
@@ -142,10 +142,11 @@ polymorphism, see Section~\ref{qualifier-polymorphism}.
 \includeimage{lock-guardedby}{3cm}
 \caption{The subtyping relationship of the Lock Checker's qualifiers.
 \code{@GuardedBy(\{\})} is the default type qualifier for all unannotated
-variables.
+types, except that \code{@GuardedSatisfied} is the default for formal parameters.
 Qualifiers in gray
 are used internally by the type system but should never be written by a
-programmer.}
+programmer.
+}
 \label{fig-lock-guardedby-hierarchy}
 \end{figure}
 
@@ -172,7 +173,7 @@ The Lock Checker supports several annotations that specify method behavior.
 These are declaration annotations, not type annotations: they apply to the
 method itself rather than to some particular type.
 
-\paragraph{Method pre- and post-conditions}
+\paragraph{Method pre-conditions and post-conditions}
 
 \begin{description}
 \item[\refqualclass{checker/lock/qual}{Holding}\small{(String[] locks)}]
@@ -218,9 +219,15 @@ method itself rather than to some particular type.
   \refqualclass{checker/lock/qual}{EnsuresLockHeld} or
   \refqualclass{checker/lock/qual}{EnsuresLockHeldIf}).
 
+  This is the default for methods being type-checked that have no \<@LockingFree>,
+  \<@MayReleaseLocks>, \code{@SideEffectFree}, or \code{@Pure}
+  annotation.
+
 \item[\refqualclass{dataflow/qual}{MayReleaseLocks}]
   It is unknown whether the method releases
   locks that were held prior to the method being called.
+
+  This is the conservative default for methods in unannotated libraries (see \chapterpageref{annotating-libraries}).
 
 \end{description}
 
@@ -229,7 +236,7 @@ method itself rather than to some particular type.
 
 In addition to the standard subtyping rules enforcing the subtyping relationship
 described in Figure~\ref{fig-lock-guardedby-hierarchy}, the Lock Checker enforces
-the following additional rules:
+the following additional rules.
 
 
 \paragraph{Assignments}
@@ -237,90 +244,71 @@ the following additional rules:
 \begin{description}
 
 \item[Polymorphic assignments]
-  The overall rules for polymorphic assignments are given in
-  Section~\ref{qualifier-polymorphism}.  In addition, ...
+  The overall rules for polymorphic qualifiers are given in
+  Section~\ref{qualifier-polymorphism}.  There is an additional constraint
+  for assignments whose
+  left-hand side is an expression of type
+  \<@GuardSatisfied>.  The assignment type-checks only if all locks
+  mentioned in the right-hand side's \<@GuardedBy> type are currently held.
 
 
 
 
 \item[\code{@GuardSatisfied}]
-  Given a method declaration with a receiver or parameter annotated with
-  \code{@GuardSatisfied}, the method may only be called if its declaration is
-  annotated with \code{@LockingFree}, \code{@ReleasesNoLocks}, \code{@SideEffectFree}
-  or \code{@Pure} and
-  all the locks guarding each the receiver and/or each actual parameter whose
-  corresponding formal parameter is annotated with \code{@GuardSatisfied}
-  are held at the call site.  An exception is if the actual parameter is itself
-  a formal parameter of a method, in which case it may be annotated with \code{@GuardSatisfied}
-  and the Lock Checker will not verify whether any locks are held.
+
+[[JAVIER: I don't think that the following special case is needed.  If the Checker
+    Framework is going to issue a warning somewhere anyway, then why add
+    extra, complex rules?]]
   Methods with a formal parameter or receiver annotated with \code{@GuardSatisfied}
   and not annotated with \code{@LockingFree}, \code{@ReleasesNoLocks}, \code{@SideEffectFree}
   or \code{@Pure} may never be called. In addition to issuing a warning for such methods
   at their call site, the Lock Checker issues warnings when checking their method bodies.
+
+
   For \code{@GuardSatisfied} annotations with an index, the Lock Checker ensures that the
   corresponding \code{@GuardedBy} annotations at the call site all match exactly.
   For \code{@GuardSatisfied} annotations without an index, the Lock Checker does not enforce
   this and they may all have distinct \code{@GuardedBy} annotations at the call site ---
   this is different from the type checking rule for other polymorphic annotations.
+  [[JAVIER:
+    I am reluctant to introduce special cases
+    that violate conventions; it is likely to be confusing to users.
+    This one might be justified, of course.
+    Do you have an argument that this non-standard rule does not
+    introduce a type loophole?  Is argument-free \<@GuardedBy> allowed to
+    be used on a return type?
+]]
+    
   See Section~\ref{lock-checker-polymorphism} for an example demonstrating this rule.
-
-\item[\code{@PolyGuardedBy}]
-  In addition to the standard type checking rules for polymorphic annotations
-  (see Section~\ref{qualifier-polymorphism}), a value whose type is annotated with
-  \code{@PolyGuardedBy} may never be dereferenced.
-
-\item[Overriding methods annotated with \code{@Holding}]
-  The Lock Checker ensures that subclass methods annotated with
-  \code{@Holding} require a subset of the locks that a parent
-  class method requires in its \code{@Holding} annotation (if any).
-
-\item[Releasing explicit locks]
-  By default the Lock Checker treats methods whose bodies it is type checking and
-  that are not explicitly annotated with \code{@MayReleaseLocks}, \code{@LockingFree},
-  \code{@ReleasesNoLocks}, \code{@SideEffectFree} or \code{@Pure}
-  as if they were annotated with \code{@ReleasesNoLocks}.  If an explicit lock is
-  released in the body of such an unannotated method, the Lock Checker issues a warning that the
-  method must be annotated with \code{@MayReleaseLocks}.
-
-\item[Unannotated library methods]
-  When calling unannotated library methods (see \chapterpageref{annotating-libraries}),
-  the Lock Checker treats methods not explicitly annotated with \code{@MayReleaseLocks},
-  \code{@LockingFree}, \code{@ReleasesNoLocks}, \code{@SideEffectFree} or \code{@Pure}
-  as if they were annotated with \code{@MayReleaseLocks}.
-  This conservative assumption allows for sound type checking of calls to
-  unannotated library methods, and as is usual when calling such methods,
-  this assumption may result in false positive warnings.
-
-% These are standard dataflow analysis rules, but are worth
-% repeating here due to how important they are for the day-to-day
-% use of the Lock Checker.  I believe this would be the single
-% largest source of confusion amongst Lock Checker users if this
-% were not stated explicitly.
-\item[Locks known to be held after a method call]
-  After a call to a method annotated with \code{@LockingFree},
-  \code{@ReleasesNoLocks}, \code{@SideEffectFree} or \code{@Pure}
-  the Lock Checker considers that all the
-  locks held prior to the method call are still held after the call.
-  After a call to a method annotated with \code{@MayReleaseLocks},
-  the Lock Checker conservatively assumes that \emph{all} locks held
-  prior to the method call are no longer held after the call,
-  except for those locks specified to be held after the call
-  by an \code{@EnsuresLockHeld} or \code{@EnsuresLockHeldIf}
-  annotation on the method.
 
 \end{description}
 
 \paragraph{Dereferences}
 
+[[JAVIER: I propose that you cut all mention of primitives from this section.]]
+
 \begin{description}
+
+\item[\code{@GuardedBy}]
+  An expression of type \<@GuardedBy(\emph{eset})> may be dereferenced only
+  if all locks in \emph{eset} are held.
+
+\item[\code{@GuardSatisfied}]
+  An expression of type \<@GuardSatisfied> may be dereferenced.
+
+\item[Not \code{@GuardedBy} or \code{@GuardSatisfied}]
+  An expression whose type is not annotated with \code{@GuardedBy} or
+  \code{@GuardSatisfied} may not be dereferenced.
+  In particular, an expression of type \code{@PolyGuardedBy} may not be dereferenced.
 
 \item[Primitive types]
   Every access of a guarded primitive value (including assignments
   and pseudo-assignments) is considered a dereference.
   [[JAVIER:  This is abuse of notation, because those accesses are not
-      dereferences.  If you want @GuardedBy on a primitive to have
+      dereferences by the standard definition of dereference.  If you want @GuardedBy on a primitive to have
       different semantics, thon I think it's better to say that rather than
-      to mix by-value and by-name semantics without any explanation.]]
+      to mix by-value and by-name semantics without any justification or
+      discussion.]]
 
 \item[Dereferences of primitive values]
   For dereferences of primitive values, the Lock Checker requires that
@@ -342,12 +330,33 @@ the following additional rules:
   The expressions \code{a = b}, \code{a = c}, and \code{a = b + c}
   all type check, whereas none of them would type check if \code{a},
   \code{b} and \code{c} were not primitives.
+[[JAVIER: What is the point of this rule?  Wouldn't it be easier to just
+    say that all primitive types are treated as \<@GuardedBy()> and that it
+    is an error to write \<@GuardedBy> on any primitive type?]]
+
+\end{description}
+
+\paragraph{Overriding}
+
+\begin{description}
+
+\item[Overriding methods annotated with \code{@Holding}]
+  If class $B$ overrides method $m$ from class $A$, then the expressions in
+  $B$'s \<@Holding>
+  annotation must be a subset of or equal to that of $A$.
+
+[[JAVIER: what about side effect annotations such as @LockingFree,
+    @ReleasesNoLocks, and @MayReleaseLocks?]]
 
 \end{description}
 
 \paragraph{Side effects}
 
 \begin{description}
+
+\item[Releasing explicit locks]
+  Any method that releases an explicit lock must be annotated 
+  with \code{@MayReleaseLocks}.
 
 \item[no side effects on lock expressions]
   If expression \emph{expr} is used to acquire a lock, then 
@@ -359,21 +368,32 @@ the following additional rules:
   \<synchronized> block, or is the argument to a \<lock> method.
 
 \item[locks are released after possible side effects]
-  The Lock Checker
-
-  If this would affect 
-
-  If a program construct might 
-side effect
+% These are standard dataflow analysis rules, but are worth
+% repeating here due to how important they are for the day-to-day
+% use of the Lock Checker.  I believe this would be the single
+% largest source of confusion amongst Lock Checker users if this
+% were not stated explicitly.
+  After a call to a method annotated with \code{@LockingFree},
+  \code{@ReleasesNoLocks}, \code{@SideEffectFree}, or \code{@Pure}
+  the Lock Checker considers that all the
+  locks held prior to the method call are still held after the call.
+  After a call to a method annotated with \code{@MayReleaseLocks},
+  the Lock Checker conservatively assumes that \emph{all} locks held
+  prior to the method call are no longer held after the call,
+  except for those locks specified to be held after the call
+  by an \code{@EnsuresLockHeld} or \code{@EnsuresLockHeldIf}
+  annotation on the method.
+[[JAVIER: What about assignment operations (the \<=> operator)?
+  Don't they affect the estimate of held locks?]]      
+[[JAVIER: It's better to speak of the estimate of held locks rather than
+    anthropomorpic and potentially confusing ``considers that''.]]
 
 \end{description}
 
 
 \subsection{Polymorphism and handling call sites with different types\label{lock-checker-polymorphism}}
 
-The polymorphic \code{@GuardSatisfied} type annotation, when used in a method
-declaration together with the \code{@LockingFree}, \code{@ReleasesNoLocks},
-\code{@SideEffectFree}, or \code{@Pure} method annotation, allows the method
+The polymorphic \code{@GuardSatisfied} type annotation allows the method
 to be called with different \code{@GuardedBy} annotations on the parameters
 and receiver at each call site.
 
