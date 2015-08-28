@@ -141,7 +141,7 @@ public abstract class AnnotatedTypeMirror {
     // the class name of Annotation instead.
     // Caution: Assumes that a type can have at most one AnnotationMirror for
     // any Annotation type. JSR308 is pushing to have this change.
-    protected final Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
+    private final Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
 
     /** The explicitly written annotations on this type. */
     // TODO: use this to cache the result once computed? For generic types?
@@ -297,10 +297,25 @@ public abstract class AnnotatedTypeMirror {
      * It does not include annotations in deep types (type arguments, array
      * components, etc).
      *
-     * @return  a set of the annotations on this
+     * @return  a unmodifiable set of the annotations on this
      */
-    public Set<AnnotationMirror> getAnnotations() {
+    public final Set<AnnotationMirror> getAnnotations() {
         return Collections.unmodifiableSet(annotations);
+    }
+
+    /**
+     * Returns the annotations on this type.
+     *
+     * It does not include annotations in deep types (type arguments, array
+     * components, etc).
+     *
+     * The returned set should not be modified, but for efficiency reasons
+     * modification is not prevented. Modifications might break invariants.
+     *
+     * @return  the set of the annotations on this, directly
+     */
+    protected final Set<AnnotationMirror> getAnnotationsField() {
+        return annotations;
     }
 
     /**
@@ -968,7 +983,7 @@ public abstract class AnnotatedTypeMirror {
             AnnotatedDeclaredType type =
                 new AnnotatedDeclaredType(getUnderlyingType(), atypeFactory, declaration);
             if (copyAnnotations)
-                type.addAnnotations(annotations);
+                type.addAnnotations(this.getAnnotationsField());
             type.setEnclosingType(getEnclosingType());
             type.setTypeArguments(getTypeArguments());
             return type;
@@ -1383,7 +1398,7 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedArrayType shallowCopy(boolean copyAnnotations) {
             AnnotatedArrayType type = new AnnotatedArrayType((ArrayType) actualType, atypeFactory);
             if (copyAnnotations)
-                type.addAnnotations(annotations);
+                type.addAnnotations(this.getAnnotationsField());
             type.setComponentType(getComponentType());
             return type;
         }
@@ -1544,7 +1559,7 @@ public abstract class AnnotatedTypeMirror {
             //We allow the above replacement first because primary annotations might not have annotations for
             //all hierarchies, so we don't want to avoid placing bottom on the lower bound for those hierarchies that
             //don't have a qualifier in primaryAnnotations
-            if (!annotations.isEmpty()) {
+            if (!this.getAnnotationsField().isEmpty()) {
                 if (upperBound != null) {
                     replaceUpperBoundAnnotations();
                 }
@@ -1557,7 +1572,7 @@ public abstract class AnnotatedTypeMirror {
                 //   primary annotations overwrite the upper and lower bounds of type variables
                 //   when getUpperBound/getLowerBound is called
                 if (lowerBound != null) {
-                    lowerBound.replaceAnnotations(annotations);
+                    lowerBound.replaceAnnotations(this.getAnnotationsField());
                 }
             }
         }
@@ -1572,10 +1587,10 @@ public abstract class AnnotatedTypeMirror {
             if (upperBound.getKind() == TypeKind.INTERSECTION) {
                 final List<AnnotatedDeclaredType> bounds = ((AnnotatedIntersectionType) upperBound).directSuperTypes();
                 for (final AnnotatedDeclaredType bound : bounds) {
-                    bound.replaceAnnotations(annotations);
+                    bound.replaceAnnotations(this.getAnnotationsField());
                 }
             } else {
-                upperBound.replaceAnnotations(annotations);
+                upperBound.replaceAnnotations(this.getAnnotationsField());
             }
         }
 
@@ -1658,7 +1673,7 @@ public abstract class AnnotatedTypeMirror {
                 new AnnotatedTypeVariable(((TypeVariable)actualType), atypeFactory, declaration);
 
             if (copyAnnotations) {
-                type.addAnnotations(annotations);
+                type.addAnnotations(this.getAnnotationsField());
             }
 
             if (!inUpperBounds) {
@@ -1743,7 +1758,7 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedNoType shallowCopy(boolean copyAnnotations) {
             AnnotatedNoType type = new AnnotatedNoType((NoType) actualType, atypeFactory);
             if (copyAnnotations)
-                type.addAnnotations(annotations);
+                type.addAnnotations(this.getAnnotationsField());
             return type;
         }
 
@@ -1786,7 +1801,7 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedNullType shallowCopy(boolean copyAnnotations) {
             AnnotatedNullType type = new AnnotatedNullType((NullType) actualType, atypeFactory);
             if (copyAnnotations)
-                type.addAnnotations(annotations);
+                type.addAnnotations(this.getAnnotationsField());
             return type;
         }
 
@@ -1833,7 +1848,7 @@ public abstract class AnnotatedTypeMirror {
             AnnotatedPrimitiveType type =
                 new AnnotatedPrimitiveType((PrimitiveType) actualType, atypeFactory);
             if (copyAnnotations)
-                type.addAnnotations(annotations);
+                type.addAnnotations(this.getAnnotationsField());
             return type;
         }
 
@@ -1935,12 +1950,12 @@ public abstract class AnnotatedTypeMirror {
         }
 
         private void fixupBoundAnnotations() {
-            if (!this.annotations.isEmpty()) {
+            if (!this.getAnnotationsField().isEmpty()) {
                 if (superBound != null) {
-                    superBound.replaceAnnotations(this.annotations);
+                    superBound.replaceAnnotations(this.getAnnotationsField());
                 }
                 if (extendsBound != null) {
-                    extendsBound.replaceAnnotations(this.annotations);
+                    extendsBound.replaceAnnotations(this.getAnnotationsField());
                 }
             }
         }
@@ -1971,7 +1986,7 @@ public abstract class AnnotatedTypeMirror {
             type.setExtendsBound(getExtendsBound().shallowCopy());
             type.setSuperBound(getSuperBound().shallowCopy());
             if (copyAnnotations)
-                type.addAnnotations(annotations);
+                type.addAnnotations(this.getAnnotationsField());
 
             type.typeArgHack = typeArgHack;
 
@@ -2043,7 +2058,7 @@ public abstract class AnnotatedTypeMirror {
             AnnotatedIntersectionType type =
                     new AnnotatedIntersectionType((IntersectionType) actualType, atypeFactory);
             if (copyAnnotations)
-                type.addAnnotations(annotations);
+                type.addAnnotations(this.getAnnotationsField());
             type.supertypes = this.supertypes;
             return type;
         }
@@ -2113,7 +2128,7 @@ public abstract class AnnotatedTypeMirror {
             AnnotatedUnionType type =
                     new AnnotatedUnionType((UnionType) actualType, atypeFactory);
             if (copyAnnotations)
-                type.addAnnotations(annotations);
+                type.addAnnotations(this.getAnnotationsField());
             type.alternatives = this.alternatives;
             return type;
         }

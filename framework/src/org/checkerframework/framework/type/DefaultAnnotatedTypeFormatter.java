@@ -1,17 +1,27 @@
 package org.checkerframework.framework.type;
 
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.AnnotationFormatter;
+import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.type.TypeKind;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeKind;
 
 /**
  * An AnnotatedTypeFormatter used by default by all AnnotatedTypeFactory (and therefore all
@@ -55,11 +65,13 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         this.formattingVisitor = visitor;
     }
 
+    @Override
     public String format(final AnnotatedTypeMirror type) {
         formattingVisitor.resetPrintInvisibles();
         return formattingVisitor.visit(type);
     }
 
+    @Override
     public String format(final AnnotatedTypeMirror type, final boolean printInvisibles) {
         formattingVisitor.setCurrentPrintInvisibleSetting(printInvisibles);
         return formattingVisitor.visit(type);
@@ -330,7 +342,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         @Override
         public String visitWildcard(AnnotatedWildcardType type, Set<AnnotatedTypeMirror> visiting) {
             StringBuilder sb = new StringBuilder();
-            sb.append(annoFormatter.formatAnnotationString(type.annotations, currentPrintInvisibleSetting));
+            sb.append(annoFormatter.formatAnnotationString(type.getAnnotationsField(), currentPrintInvisibleSetting));
             sb.append("?");
             if (!visiting.contains(type)) {
 

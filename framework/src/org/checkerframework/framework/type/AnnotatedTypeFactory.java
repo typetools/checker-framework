@@ -1039,9 +1039,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public void postTypeVarSubstitution(AnnotatedTypeVariable varDecl,
             AnnotatedTypeVariable varUse, AnnotatedTypeMirror value) {
-        if (!varUse.annotations.isEmpty()
-                && !AnnotationUtils.areSame(varUse.annotations, varDecl.annotations)) {
-            value.replaceAnnotations(varUse.annotations);
+        if (!varUse.getAnnotationsField().isEmpty()
+                && !AnnotationUtils.areSame(varUse.getAnnotationsField(), varDecl.getAnnotationsField())) {
+            value.replaceAnnotations(varUse.getAnnotationsField());
         }
     }
 

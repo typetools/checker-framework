@@ -362,7 +362,7 @@ class SupertypeFinder {
                             (elem.getKind() == ElementKind.TYPE_PARAMETER) &&
                             (mapping.containsKey(elem))) {
                         AnnotatedTypeMirror other = mapping.get(elem);
-                        other.replaceAnnotations(arg.annotations);
+                        other.replaceAnnotations(arg.getAnnotationsField());
                         args.add(other);
                     } else {
                         args.add(arg);
@@ -383,7 +383,7 @@ class SupertypeFinder {
                         (elem.getKind() == ElementKind.TYPE_PARAMETER) &&
                         (mapping.containsKey(elem))) {
                     other = mapping.get(elem);
-                    other.replaceAnnotations(comptype.annotations);
+                    other.replaceAnnotations(comptype.getAnnotationsField());
                     type.setComponentType(other);
                 } else {
                     scan(type.getComponentType(), mapping);
