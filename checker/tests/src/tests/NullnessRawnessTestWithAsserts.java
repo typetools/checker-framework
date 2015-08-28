@@ -1,10 +1,9 @@
 package tests;
 
 import org.checkerframework.checker.nullness.AbstractNullnessChecker;
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 
 import java.io.File;
-import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
@@ -12,7 +11,7 @@ import org.junit.runners.Parameterized.Parameters;
  * JUnit tests for the Nullness checker (that uses the rawness type system for
  * initialization).
  */
-public class NullnessRawnessTestWithAsserts extends ParameterizedCheckerTest {
+public class NullnessRawnessTestWithAsserts extends CheckerFrameworkTest {
 
     public NullnessRawnessTestWithAsserts(File testFile) {
         // TODO: remove forbidnonnullarraycomponents option once it's no
@@ -28,8 +27,8 @@ public class NullnessRawnessTestWithAsserts extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("nullness-asserts");
+    public static String[] getTestDirs() {
+        return new String[]{"nullness-asserts"};
     }
 
 }

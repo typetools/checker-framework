@@ -1,119 +1,85 @@
 package org.checkerframework.framework.test;
 
+import org.checkerframework.framework.util.PluginUtil;
+
+import javax.tools.Diagnostic;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.ToolProvider;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.Set;
+import org.junit.Assert;
 
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
+public class TestUtilities {
 
-public final class TestUtilities {
-
-    private TestUtilities() {
-        throw new AssertionError("not instantiated class");
-    }
-
-    /**
-     * Returns true if the file is a file ending with {@code .java}
-     */
-    public static boolean isJavaFile(File file) {
-        return file.isFile() && file.getName().endsWith(".java");
-    }
-
-    /**
-     * Checks if the given file is a Java test file not to be ignored.
-     *
-     * Returns true if {@code file} is a {@code .java} file and
-     * it does not contain {@code @skip-test} anywhere in the file.
-     */
-    public static boolean isJavaTestFile(File file) {
-        if (!isJavaFile(file))
-            return false;
-        Scanner in = null;
-        try {
-            in = new Scanner(file);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        while (in.hasNext()) {
-            String nextLine = in.nextLine();
-            if (nextLine.contains("@skip-test") ||
-                    (!isJSR308Compiler && nextLine.contains("@non-308-skip-test")) ||
-                    (!isAtLeast8Jvm && nextLine.contains("@below-java8-jdk-skip-test"))) {
-                in.close();
-                return false;
-            }
-        }
-        in.close();
-        return true;
-    }
 
     public static final boolean isJSR308Compiler;
+    public static final boolean isAtLeast8Jvm;
+
     static {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         OutputStream err = new ByteArrayOutputStream();
         compiler.run(null, null, err, "-version");
         isJSR308Compiler = err.toString().contains("jsr308");
-    }
-
-    public static final boolean isAtLeast8Jvm;
-    static {
         isAtLeast8Jvm = org.checkerframework.framework.util.PluginUtil.getJreVersion() >= 1.8d;
     }
 
-    /**
-     * Returns true if the compilation associated with the given expected
-     * output should succeed without any errors.
-     *
-     * In particular, it returns true if the expected file doesn't exist,
-     * or all the found errors are warnings.
-     */
-    public static boolean shouldSucceed(File expectedFile) {
-        if (!expectedFile.exists())
-            return true;
-        // Check if expectedFile has any errors
-        try {
-            Scanner in = new Scanner(new FileReader(expectedFile));
-            while (in.hasNextLine()) {
-                if (!in.nextLine().contains("warning")) {
-                    in.close();
-                    return false;
-                }
-            }
-            in.close();
-            return true;
-        } catch (Exception e) {
-            throw new Error(e);
+    public static List<File> findNestedJavaTestFiles(String... dirNames) {
+        return findRelativeNestedJavaFiles(new File("tests"), dirNames);
+    }
+
+    public static List<File> findRelativeNestedJavaFiles(String parent, String... dirNames) {
+        return findRelativeNestedJavaFiles(new File(parent), dirNames);
+    }
+
+    public static List<File> findRelativeNestedJavaFiles(File parent, String... dirNames) {
+        File [] dirs = new File[dirNames.length];
+
+        int i = 0;
+        for(String dirName : dirNames) {
+            dirs[i] = new File(parent, dirName);
+            i += 1;
         }
+
+        return getJavaFilesAsArgumentList(dirs);
+    }
+
+    public static List<Object[]> findFilesInParent(File parent, String ... fileNames) {
+        List<Object[]> files = new ArrayList<Object[]>();
+        for (String fileName : fileNames) {
+            files.add(new Object[] { new File(parent, fileName) });
+        }
+        return files;
     }
 
     /**
-     * Returns all the java files that are direct children of the given
-     * directory
+     * Traverses the directories listed looking for java test files
      */
-    public static List<File> enclosedJavaTestFiles(File directory) {
-        if (!directory.exists())
-            throw new IllegalArgumentException("directory does not exist: " + directory);
-        if (!directory.isDirectory())
-            throw new IllegalArgumentException("found file instead of directory: " + directory);
+    public static List<File> getJavaFilesAsArgumentList(File... dirs) {
+        List<File> arguments = new ArrayList<File>();
+        for (File dir : dirs) {
+            List<File> javaFiles = deeplyEnclosedJavaTestFiles(dir);
 
-        List<File> javaFiles = new ArrayList<File>();
-
-        for (File file : directory.listFiles()) {
-            if (isJavaTestFile(file))
-                javaFiles.add(file);
+            for (File javaFile : javaFiles) {
+                arguments.add(javaFile);
+            }
         }
-
-        return javaFiles;
+        return arguments;
     }
 
     /**
@@ -144,58 +110,264 @@ public final class TestUtilities {
         return javaFiles;
     }
 
-    public static List<String> expectedDiagnostics(File file) {
-        List<String> expected = new ArrayList<String>();
+    public static boolean isJavaFile(File file) {
+        return file.isFile() && file.getName().endsWith(".java");
+    }
 
+    public static boolean isJavaTestFile(File file) {
+        if (!isJavaFile(file))
+            return false;
+        Scanner in = null;
         try {
-            LineNumberReader reader = new LineNumberReader(new FileReader(file));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if (line.startsWith("//::")) {
-                    int errorLine = reader.getLineNumber() + 1;
-                    // drop the //::
-                    line = line.substring(4);
-                    String[] msgs = line.split("::");
-                    for (String msg : msgs) {
-                        // The trim removes spaces before and after the message.
-                        // This allows us to write "//:: A :: B
-                        // But it prevents us to check on leading spaces in messages.
-                        // I think that's OK, as we're always testing against "(codes)".
-                        msg = ":" + errorLine + ": " + msg.trim();
-                        expected.add(msg);
-                    }
-                } else if (line.startsWith("//warning:")) {
-                    // com.sun.tools.javac.util.AbstractDiagnosticFormatter.formatKind(JCDiagnostic, Locale)
-                    // These are warnings from javax.tools.Diagnostic.Kind.WARNING
-                    String msg = line.substring(2);
-                    expected.add(msg);
-                }
+            in = new Scanner(file);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        while (in.hasNext()) {
+            String nextLine = in.nextLine();
+            if (nextLine.contains("@skip-test") ||
+                    (!isJSR308Compiler && nextLine.contains("@non-308-skip-test")) ||
+                    (!isAtLeast8Jvm && nextLine.contains("@below-java8-jdk-skip-test"))) {
+                in.close();
+                return false;
             }
-            reader.close();
+        }
+        in.close();
+        return true;
+    }
+
+    public static String diagnosticToString(final Diagnostic<? extends JavaFileObject> diagnostic, boolean usingAnomsgtxt) {
+
+        String result = diagnostic.toString().trim();
+
+        // suppress Xlint warnings
+        if ( result.contains("uses unchecked or unsafe operations.")
+          || result.contains("Recompile with -Xlint:unchecked for details.")
+          || result.endsWith(" declares unsafe vararg methods.")
+          || result.contains("Recompile with -Xlint:varargs for details.")) {
+            return null;
+        }
+
+        if (usingAnomsgtxt) {
+            // Lines with "unexpected Throwable" are stack traces
+            // and should be printed in full.
+            if (!result.contains("unexpected Throwable")) {
+                String firstLine;
+                if (result.contains("\n")) {
+                    firstLine = result.substring(0, result.indexOf('\n'));
+                } else {
+                    firstLine = result;
+                }
+                if (firstLine.contains(".java:")) {
+                    firstLine = firstLine.substring(firstLine.indexOf(".java:") + 5).trim();
+                }
+                result = firstLine;
+            }
+        }
+
+        return result;
+    }
+
+    public static Set<String> diagnosticsToStrings(final Iterable<Diagnostic<? extends JavaFileObject>> actualDiagnostics, boolean usingAnomsgtxt) {
+        Set<String> actualDiagnosticsStr = new LinkedHashSet<String>();
+        for (Diagnostic<? extends JavaFileObject> diagnostic : actualDiagnostics) {
+            String diagnosticStr = TestUtilities.diagnosticToString(diagnostic, usingAnomsgtxt);
+            if (diagnosticStr != null) {
+                actualDiagnosticsStr.add(diagnosticStr);
+            }
+        }
+
+        return actualDiagnosticsStr;
+    }
+
+    public static String summarizeSourceFiles(List<File> javaFiles) {
+        StringBuilder listStrBuilder = new StringBuilder();
+
+        boolean first = true;
+        for (File file : javaFiles) {
+            if (first) {
+                first = false;
+            } else {
+                listStrBuilder.append(" ,");
+            }
+            listStrBuilder.append(file.getAbsolutePath());
+        }
+
+        return listStrBuilder.toString();
+    }
+
+    public static File getTestFile(String fileRelativeToTestsDir) {
+        return new File("tests", fileRelativeToTestsDir);
+    }
+
+    public static File findComparisonFile(File testFile) {
+        final File comparisonFile = new File(testFile.getParent(), testFile.getName().replace(".java", ".out"));
+        return comparisonFile;
+    }
+
+    public static List<String> optionMapToList(Map<String, String> options) {
+        List<String> optionList = new ArrayList<>(options.size() * 2);
+
+        for (Entry<String, String> opt : options.entrySet()) {
+            optionList.add(opt.getKey());
+
+            if (opt.getValue() != null) {
+                optionList.add(opt.getValue());
+            }
+        }
+
+        return optionList;
+    }
+
+    public static void writeLines(File file, Iterable<?> lines) {
+        try {
+            final BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
+            Iterator<?> iter = lines.iterator();
+            while (iter.hasNext()) {
+                Object next = iter.next();
+                if (next == null) {
+                    bw.write("<null>");
+                } else {
+                    bw.write(next.toString());
+                }
+                bw.newLine();
+            }
+            bw.flush();
+            bw.close();
+
+        } catch (IOException io) {
+            throw new RuntimeException(io);
+        }
+    }
+
+    public static void writeDiagnostics(File file, File testFile, List<String> expected, List<String> actual, List<String> unexpected, List<String> missing, boolean usingNoMsgText, boolean testFailed) {
+        try {
+            final BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
+            bw.write("File: " + testFile.getAbsolutePath() + "\n");
+            bw.write("TestFailed: " + testFailed + "\n");
+            bw.write("Using nomsgtxt: " + usingNoMsgText + "\n");
+            bw.write("#Missing: " + missing.size() + "      #Unexpected: " + unexpected.size() + "\n");
+
+            bw.write("Expected:\n");
+            bw.write(PluginUtil.join("\n", expected));
+            bw.newLine();
+
+            bw.write("Actual:\n");
+            bw.write(PluginUtil.join("\n", actual));
+            bw.newLine();
+
+            bw.write("Missing:\n");
+            bw.write(PluginUtil.join("\n", missing));
+            bw.newLine();
+
+            bw.write("Unexpected:\n");
+            bw.write(PluginUtil.join("\n", unexpected));
+            bw.newLine();
+
+            bw.newLine();
+            bw.newLine();
+            bw.flush();
+            bw.close();
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        return expected;
     }
 
-    public static List<String> expectedDiagnostics(String prefix, String[] files) {
-        List<String> expected = new ArrayList<String>();
+    public static void writeTestConfiguration(File file, TestConfiguration config) {
+        try {
+            final BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
+            bw.write(config.toString());
+            bw.newLine();
+            bw.newLine();
+            bw.flush();
+            bw.close();
 
-        for (String file : files)
-            expected.addAll(expectedDiagnostics(new File(prefix + file)));
-
-        return expected;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public static List<String> expectedDiagnostics(File[] files) {
-        List<String> expected = new ArrayList<String>();
+    public static void writeJavacArguments(File file, Iterable<? extends JavaFileObject> files, Iterable<String> options, Iterable<String> processors) {
+        try {
+            final BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
+            bw.write("Files:\n");
+            for(JavaFileObject f : files) {
+                bw.write("    " + f.getName());
+                bw.newLine();
+            }
+            bw.newLine();
 
-        for (File file : files)
-            expected.addAll(expectedDiagnostics(file));
+            bw.write("Options:\n");
+            for(String o : options) {
+                bw.write("    " + o);
+                bw.newLine();
+            }
+            bw.newLine();
 
-        return expected;
+
+            bw.write("Processors:\n");
+            for(String p : processors) {
+                bw.write("    " + p);
+                bw.newLine();
+            }
+            bw.newLine();
+            bw.newLine();
+
+            bw.flush();
+            bw.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    /**
+     * TODO: REDO COMMENT
+     * Compares the result of the compiler against an array of Strings.
+     *
+     * In a checker, we treat a more specific error message as subsumed by a general one.
+     * For example, "new.array.type.invalid" is subsumed by "type.invalid".
+     * This is not the case in the test framework; the exact error key is expected.
+     */
+    public static void assertResultsAreValid(TypecheckResult testResult) {
+        if (testResult.didTestFail()) {
+            Assert.fail(testResult.summarize());
+        }
+    }
+
+    public static void ensureDirectoryExists(File path) {
+        if (!path.exists()) {
+            if (!path.mkdirs()) {
+                throw new RuntimeException("Could not make directory: " + path.getAbsolutePath());
+            }
+        }
+    }
+
+    public static boolean testBooleanProperty(String propName) {
+        return testBooleanProperty(propName, false);
+    }
+
+    public static boolean testBooleanProperty(String propName, boolean defaultValue) {
+        return System.getProperty(propName, String.valueOf(defaultValue)).equalsIgnoreCase("true");
+    }
+
+    //We should do this while discovering source file but that would require a
+    //refactoring of the test utilities
+    public static void filterOutJdk8Sources(List<Object[]> sources) {
+        for (int i = 0; i < sources.size(); ) {
+            for (Object sourceObj : sources.get(i)) {
+                File sourceFile = (File) sourceObj;
+                if (sourceFile.getAbsolutePath().contains("java8")) {
+                    sources.remove(i);
+                } else {
+                    i++;
+                }
+            }
+        }
+    }
+
+    public static boolean getShouldEmitDebugInfo() {
+        String emitDebug = System.getProperty("emit.test.debug");
+        return emitDebug != null && emitDebug.equalsIgnoreCase("true");
+    }
 }

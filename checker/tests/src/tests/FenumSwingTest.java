@@ -1,12 +1,11 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class FenumSwingTest extends ParameterizedCheckerTest {
+public class FenumSwingTest extends CheckerFrameworkTest {
 
     public FenumSwingTest(File testFile) {
         super(testFile,
@@ -18,7 +17,7 @@ public class FenumSwingTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("fenumswing", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"fenumswing", "all-systems"};
     }
 }
