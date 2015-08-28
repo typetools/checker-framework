@@ -1,12 +1,11 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class TaintingQualTest extends ParameterizedCheckerTest {
+public class TaintingQualTest extends CheckerFrameworkTest {
 
     public TaintingQualTest(File testFile) {
         super(testFile,
@@ -16,7 +15,7 @@ public class TaintingQualTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("tainting_qual", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"tainting_qual", "all-systems"};
     }
 }

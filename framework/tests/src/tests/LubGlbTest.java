@@ -1,14 +1,13 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  */
-public class LubGlbTest extends ParameterizedCheckerTest {
+public class LubGlbTest extends CheckerFrameworkTest {
 
     public LubGlbTest(File testFile) {
         super(testFile,
@@ -18,7 +17,7 @@ public class LubGlbTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("lubglb");
+    public static String [] getTestDirs() {
+        return new String[]{"lubglb"};
     }
 }

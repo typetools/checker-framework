@@ -1,12 +1,11 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class ReportModifiersTest extends ParameterizedCheckerTest {
+public class ReportModifiersTest extends CheckerFrameworkTest {
 
     public ReportModifiersTest(File testFile) {
         super(testFile,
@@ -16,7 +15,7 @@ public class ReportModifiersTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("reportmodifiers");
+    public static String [] getTestDirs() {
+        return new String[]{"reportmodifiers"};
     }
 }

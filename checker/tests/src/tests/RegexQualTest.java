@@ -1,12 +1,11 @@
 package tests;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 import java.io.File;
-import java.util.Collection;
 
-public class RegexQualTest extends ParameterizedCheckerTest {
+public class RegexQualTest extends CheckerFrameworkTest {
 
     public RegexQualTest(File testFile) {
         super(testFile,
@@ -16,8 +15,8 @@ public class RegexQualTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("regex", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"regex", "all-systems"};
     }
 }
 

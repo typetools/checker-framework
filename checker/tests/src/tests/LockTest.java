@@ -1,14 +1,13 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  */
-public class LockTest extends ParameterizedCheckerTest {
+public class LockTest extends CheckerFrameworkTest {
 
     public LockTest(File testFile) {
         super(testFile,
@@ -18,7 +17,7 @@ public class LockTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("lock", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"lock", "all-systems"};
     }
 }
