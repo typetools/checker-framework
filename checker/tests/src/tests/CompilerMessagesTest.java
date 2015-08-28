@@ -1,10 +1,10 @@
 package tests;
 
 import org.checkerframework.framework.test.CheckerFrameworkTest;
-import org.junit.runners.Parameterized.Parameters;
 
 import java.io.File;
-import java.util.Collection;
+
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * JUnit tests for the Compiler Messages Checker. Depends on the compiler.properties file.
