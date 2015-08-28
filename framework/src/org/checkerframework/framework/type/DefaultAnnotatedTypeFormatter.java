@@ -359,7 +359,8 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
         @SideEffectFree
         protected String formatFlatType(final AnnotatedTypeMirror flatType) {
-            return annoFormatter.formatAnnotationString(flatType.getAnnotations(), currentPrintInvisibleSetting) + TypeAnnotationUtils.unannotatedType((Type) flatType.getUnderlyingType());
+            return annoFormatter.formatAnnotationString(flatType.getAnnotations(), currentPrintInvisibleSetting)
+                    + TypeAnnotationUtils.unannotatedType((Type) flatType.getUnderlyingType());
         }
     }
 }

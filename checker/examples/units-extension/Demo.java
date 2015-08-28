@@ -57,6 +57,7 @@ public class Demo {
         @Frequency int okTernaryAssign = seconds > 10 ? hertz : kilohertz;
 
         // on the other hand, this statement expects the right hand side to be a Hz, so it will fail
+        //:: error: (assignment.type.incompatible)
         @Hz int badTernaryAssign = seconds > 10 ? hertz : kilohertz;
     }
 }

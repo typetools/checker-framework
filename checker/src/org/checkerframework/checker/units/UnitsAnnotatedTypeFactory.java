@@ -218,9 +218,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void loadExternalUnit(String qualName) {
         try {
+            @SuppressWarnings("unchecked")
             final Class<? extends Annotation> q = (Class<? extends Annotation>) Class.forName(qualName);
 
             // add the annotation class to the qualifier set if it is not an alias annotation
@@ -274,7 +274,6 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return false;
     }
 
-    @SuppressWarnings("unchecked")
     private /*@Nullable*/ Class<? extends Annotation> getBaseUnitAnnoClass(AnnotationMirror anno) {
         // loop through the meta annotations of the annotation, look for UnitsMultiple
         for (AnnotationMirror metaAnno : anno.getAnnotationType().asElement().getAnnotationMirrors() ) {
@@ -282,6 +281,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (isUnitsMultiple(metaAnno)) {
                 // TODO: does every alias have to have Prefix?
                 // retrieve the Class of the base unit annotation
+                @SuppressWarnings("unchecked")
                 Class<? extends Annotation> baseUnitAnnoClass = (Class<? extends Annotation>) AnnotationUtils.getElementValueClass(metaAnno, "quantity", true);
 
                 return baseUnitAnnoClass;

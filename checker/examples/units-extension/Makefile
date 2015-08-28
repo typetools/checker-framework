@@ -11,7 +11,7 @@ all: framework-test clean
 
 demo: 
 	$(JSR308JAVAC) $(JAVAOPTS) $(FILES)
-	@echo "***** This command is expected to produce errors on line 10 & 60:"
+	@echo "***** This command is expected to produce errors on line 10 & 61:"
 	$(JSR308JAVAC) -Xbootclasspath/p:. -AprintErrorStack -processor org.checkerframework.checker.units.UnitsChecker -Aunits=Hz,kHz,Frequency Demo.java
 
 framework-test:
