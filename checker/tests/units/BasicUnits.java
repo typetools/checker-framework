@@ -48,6 +48,34 @@ public class BasicUnits {
         //:: error: (assignment.type.incompatible)
         @km2 int bae1 = m * m;
 
+        @radians double rad = 20.0d * UnitsTools.rad;
+        @degrees double deg = 30.0d * UnitsTools.deg;
+
+        @degrees double rToD1 = UnitsTools.toDegrees(rad);
+        //:: error: (argument.type.incompatible)
+        @degrees double rToD2 = UnitsTools.toDegrees(deg);
+        //:: error: (assignment.type.incompatible)
+        @radians double rToD3 = UnitsTools.toDegrees(rad);
+
+        @radians double dToR1 = UnitsTools.toRadians(deg);
+        //:: error: (argument.type.incompatible)
+        @radians double rToR2 = UnitsTools.toRadians(rad);
+        //:: error: (assignment.type.incompatible)
+        @degrees double rToR3 = UnitsTools.toRadians(deg);
+
+        // speed conversion
+        @mPERs int mPs = 30 * UnitsTools.mPERs;
+        @kmPERh int kmPhr = 20 * UnitsTools.kmPERh;
+
+        @kmPERh int kmPhrRes = (int) UnitsTools.fromMeterPerSecondToKiloMeterPerHour(mPs);
+        @mPERs int mPsRes = (int) UnitsTools.fromKiloMeterPerHourToMeterPerSecond(kmPhr);
+
+        //:: error: (assignment.type.incompatible)
+        @mPERs int mPsResBad = (int) UnitsTools.fromMeterPerSecondToKiloMeterPerHour(mPs);
+        //:: error: (assignment.type.incompatible)
+        @kmPERh int kmPhrResBad = (int) UnitsTools.fromKiloMeterPerHourToMeterPerSecond(kmPhr);
+
+        // speeds
         @km int kilometers = 10 * UnitsTools.km;
         @h int hours = UnitsTools.h;
         @kmPERh int speed = kilometers / hours;
@@ -66,5 +94,26 @@ public class BasicUnits {
         speed /= 2;
 
         speed = (speed /= 2);
+    }
+
+    void prefixOutputTest() {
+        @m int x = 5 * UnitsTools.m;
+        @m(Prefix.kilo) int y = 2 * UnitsTools.km;
+        @m(Prefix.one) int z = 3 * UnitsTools.m;
+        @km int y2 = 3 * UnitsTools.km;
+
+        //:: error: (assignment.type.incompatible)
+        y2 = z;
+        //:: error: (assignment.type.incompatible)
+        y2 = x;
+        //:: error: (assignment.type.incompatible)
+        y = z;
+        //:: error: (assignment.type.incompatible)
+        y = x;
+
+        //:: error: (assignment.type.incompatible)
+        y2 = x * x;
+        //:: error: (assignment.type.incompatible)
+        y2 = z * z;
     }
 }

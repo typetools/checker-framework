@@ -571,6 +571,8 @@
                 </fileset>
             </batchtest>
         </junit>
+
+        <antcall target="units-extension-tests"/>
     </target>
 
     <target name="aggregate-tests" depends="jar,build-tests"
@@ -699,14 +701,14 @@
 
     <target name="nullness-extra-tests-nojdk" depends="dist-nojdk,jdk.jar.exists,build-tests"
             description="Run extra tests for the Nullness Checker, WITHOUT updating jdkX.jar">
-      <exec executable="chmod">
-        <arg line="+x ${basedir}/bin/javac"/>
-      </exec>
+        <exec executable="chmod">
+            <arg line="+x ${basedir}/bin/javac"/>
+        </exec>
 
-      <exec executable="make" failonerror="${halt.on.test.failure}">
-        <env key="JAVAC" value="${basedir}/bin/javac"/>
-        <arg line="-C tests/nullness-extra/"/>
-      </exec>
+        <exec executable="make" failonerror="${halt.on.test.failure}">
+            <env key="JAVAC" value="${basedir}/bin/javac"/>
+            <arg line="-C tests/nullness-extra/"/>
+        </exec>
     </target>
 
     <target name="nullness-skipuses-tests" depends="jar,build-tests"
@@ -787,14 +789,14 @@
         </antcall>
     </target>
 
-    <target name="regex_classic-tests" depends="jar,build-tests"
+    <target name="regex-classic-tests" depends="jar,build-tests"
             description="Run tests for the Regex Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.RegexClassicTest"/>
         </antcall>
     </target>
 
-    <target name="regex_qual-tests" depends="jar,build-tests"
+    <target name="regex-qual-tests" depends="jar,build-tests"
             description="Run tests for the qualifier API Regex Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.RegexQualTest"/>
@@ -815,14 +817,14 @@
         </antcall>
     </target>
 
-    <target name="tainting_classic-tests" depends="jar,build-tests"
+    <target name="tainting-classic-tests" depends="jar,build-tests"
             description="Run tests for the classic Tainting Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.TaintingClassicTest"/>
         </antcall>
     </target>
 
-    <target name="tainting_qual-tests" depends="jar,build-tests"
+    <target name="tainting-qual-tests" depends="jar,build-tests"
             description="Run tests for the qualifier API Tainting Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.TaintingQualTest"/>
@@ -834,6 +836,18 @@
         <antcall target="-run-tests">
             <param name="param" value="tests.UnitsTest"/>
         </antcall>
+    </target>
+
+    <target name="units-extension-tests" depends="jar,build-tests"
+            description="Run tests for the Units Checker extension capabilities">
+        <exec executable="chmod">
+            <arg line="+x ${basedir}/bin/javac"/>
+        </exec>
+
+        <exec executable="make" failonerror="${halt.on.test.failure}">
+            <env key="JAVAC" value="${basedir}/bin/javac"/>
+            <arg line="-C tests/units-extension/"/>
+        </exec>
     </target>
 
     <target name="guieffect-tests" depends="jar,build-tests"

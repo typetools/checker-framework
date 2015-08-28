@@ -607,7 +607,16 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return newlubs;
     }
 
-    private AnnotationMirror findLub(AnnotationMirror a1, AnnotationMirror a2) {
+    /**
+     * Finds and returns the Least Upper Bound (LUB) of two annotation mirrors
+     * a1 and a2 by recursively climbing the qualifier hierarchy of a1 until one
+     * of them is a subtype of the other, or returns null if no subtype
+     * relationships can be found
+     * @param a1 first annotation mirror
+     * @param a2 second annotation mirror
+     * @return the LUB of a1 and a2, or null if none can be found
+     */
+    protected AnnotationMirror findLub(AnnotationMirror a1, AnnotationMirror a2) {
         if (isSubtype(a1, a2))
             return a2;
         if (isSubtype(a2, a1))
