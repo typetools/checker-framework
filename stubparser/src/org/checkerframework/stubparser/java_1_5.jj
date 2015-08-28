@@ -1436,13 +1436,15 @@ List TypeParameters():
 TypeParameter TypeParameter():
 {
 	String name;
+	List annotations = null;
 	List typeBound = null;
 	int line;
 	int column;
 }
 {
+   annotations = Annotationsopt()
    <IDENTIFIER> { name = token.image; line=token.beginLine; column=token.beginColumn;} [ typeBound = TypeBound() ]
-   { return new TypeParameter(line, column, token.endLine, token.endColumn,name, typeBound); }
+   { return new TypeParameter(line, column, token.endLine, token.endColumn,name, annotations, typeBound); }
 }
 
 List TypeBound():

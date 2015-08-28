@@ -757,6 +757,11 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
     }
 
     public R visit(TypeParameter n, A arg) {
+        if (n.getAnnotations() != null) {
+            for (AnnotationExpr a : n.getAnnotations()) {
+                a.accept(this, arg);
+            }
+        }
         if (n.getTypeBound() != null) {
             for (ClassOrInterfaceType c : n.getTypeBound()) {
                 c.accept(this, arg);

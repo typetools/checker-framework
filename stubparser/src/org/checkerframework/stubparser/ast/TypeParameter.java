@@ -23,6 +23,7 @@ package org.checkerframework.stubparser.ast;
 
 import java.util.List;
 
+import org.checkerframework.stubparser.ast.expr.AnnotationExpr;
 import org.checkerframework.stubparser.ast.type.ClassOrInterfaceType;
 import org.checkerframework.stubparser.ast.visitor.GenericVisitor;
 import org.checkerframework.stubparser.ast.visitor.VoidVisitor;
@@ -48,17 +49,20 @@ public final class TypeParameter extends Node {
 
     private String name;
 
+    private List<AnnotationExpr> annotations;
+
     private List<ClassOrInterfaceType> typeBound;
 
     public TypeParameter() {
     }
 
-    public TypeParameter(String name, List<ClassOrInterfaceType> typeBound) {
+    public TypeParameter(String name, List<AnnotationExpr> annotations, List<ClassOrInterfaceType> typeBound) {
         this.name = name;
+        this.annotations = annotations;
         this.typeBound = typeBound;
     }
 
-    public TypeParameter(int beginLine, int beginColumn, int endLine, int endColumn, String name, List<ClassOrInterfaceType> typeBound) {
+    public TypeParameter(int beginLine, int beginColumn, int endLine, int endColumn, String name, List<AnnotationExpr> annotations, List<ClassOrInterfaceType> typeBound) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.name = name;
         this.typeBound = typeBound;
@@ -111,6 +115,10 @@ public final class TypeParameter extends Node {
      */
     public void setTypeBound(List<ClassOrInterfaceType> typeBound) {
         this.typeBound = typeBound;
+    }
+
+    public List<AnnotationExpr> getAnnotations() {
+        return annotations;
     }
 
 }
