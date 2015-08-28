@@ -1,8 +1,10 @@
 package tests;
 
-import static org.checkerframework.framework.test.TestConfigurationBuilder.buildDefaultConfiguration;
-import static org.checkerframework.framework.test.TestConfigurationBuilder.getDefaultConfigurationBuilder;
-import static org.junit.Assert.assertFalse;
+import org.checkerframework.framework.test.TestConfiguration;
+import org.checkerframework.framework.test.TestConfigurationBuilder;
+import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.TypecheckExecutor;
+import org.checkerframework.framework.test.TypecheckResult;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -11,15 +13,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-import org.checkerframework.framework.test.TestConfiguration;
-import org.checkerframework.framework.test.TestConfigurationBuilder;
-import org.checkerframework.framework.test.TestUtilities;
-import org.checkerframework.framework.test.TypecheckExecutor;
-import org.checkerframework.framework.test.TypecheckResult;
-
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runners.Parameterized.Parameters;
 
 //TODO: The IGJ has a completely different testing mechanism from the rest of the framework
 //TODO: We should probably standardize
@@ -54,7 +50,7 @@ public class IGJTest {
             temp.close();
             scanner.close();
         } catch (IOException exp) {
-            assertFalse("Couldn't compile file! ", true);
+            Assert.assertFalse("Couldn't compile file! ", true);
         }
     }
 
@@ -84,7 +80,7 @@ public class IGJTest {
         //TODO: TypecheckExecutor.test(testFile)
         boolean shouldEmitDebugInfo = TestUtilities.getShouldEmitDebugInfo();
         TestConfigurationBuilder configBuilder =
-                getDefaultConfigurationBuilder(checkerDir, javaFile, checkerName, checkerOptions, shouldEmitDebugInfo);
+                TestConfigurationBuilder.getDefaultConfigurationBuilder(checkerDir, javaFile, checkerName, checkerOptions, shouldEmitDebugInfo);
         if (diagnosticFile != null) {
             configBuilder.addDiagnosticFile(diagnosticFile);
         }
