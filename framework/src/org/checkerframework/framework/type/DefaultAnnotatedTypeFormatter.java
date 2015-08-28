@@ -14,6 +14,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -22,6 +23,8 @@ import java.util.Set;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
+
+import com.sun.tools.javac.code.Type;
 
 /**
  * An AnnotatedTypeFormatter used by default by all AnnotatedTypeFactory (and therefore all
@@ -367,7 +370,8 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
         @SideEffectFree
         protected String formatFlatType(final AnnotatedTypeMirror flatType) {
-            return annoFormatter.formatAnnotationString(flatType.getAnnotations(), currentPrintInvisibleSetting) + flatType.actualType;
+            return annoFormatter.formatAnnotationString(flatType.getAnnotations(), currentPrintInvisibleSetting)
+                    + TypeAnnotationUtils.unannotatedType((Type) flatType.getUnderlyingType());
         }
     }
 }

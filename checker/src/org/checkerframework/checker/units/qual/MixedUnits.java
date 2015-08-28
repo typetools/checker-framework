@@ -1,7 +1,6 @@
 package org.checkerframework.checker.units.qual;
 
 import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -19,5 +18,5 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @SubtypeOf(UnknownUnits.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({}) // forbids a programmer from writing it in a program
 public @interface MixedUnits {}

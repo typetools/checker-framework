@@ -1,8 +1,8 @@
 package org.checkerframework.checker.units;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.h;
@@ -15,102 +15,85 @@ import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.mm2;
 import org.checkerframework.checker.units.qual.s;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
 
-import java.util.Map;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.util.Elements;
+/*>>>
+import org.checkerframework.checker.nullness.qual.Nullable;
+ */
 
 /**
  * Default relations between SI units.
  * TODO: what relations are missing?
  */
 public class UnitsRelationsDefault implements UnitsRelations {
+    protected AnnotationMirror m, km, mm, m2, km2, mm2, s, h, mPERs, kmPERh, mPERs2;
+    protected Elements elements;
 
-    protected AnnotationMirror m, km, mm, m2, km2, mm2, s, h, mPERs, mPERs2, kmPERh;
-
+    /**
+     * Constructs various AnnotationMirrors representing specific
+     * checker-framework provided Units involved in the rules resolved in this
+     * UnitsRelations implementation
+     */
     @Override
     public UnitsRelations init(ProcessingEnvironment env) {
-        AnnotationBuilder builder = new AnnotationBuilder(env, m.class);
-        Elements elements = env.getElementUtils();
+        elements = env.getElementUtils();
 
-        builder.setValue("value", Prefix.one);
-        m = builder.build();
+        m = UnitsRelationsTools.buildAnnoMirrorWithDefaultPrefix(env, m.class);
+        km = UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(env, m.class, Prefix.kilo);
+        mm = UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(env, m.class, Prefix.milli);
 
-        builder = new AnnotationBuilder(env, m.class);
-        builder.setValue("value", Prefix.kilo);
-        km = builder.build();
+        m2 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, m2.class);
+        km2 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, km2.class);
+        mm2 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, mm2.class);
 
-        builder = new AnnotationBuilder(env, m.class);
-        builder.setValue("value", Prefix.milli);
-        mm = builder.build();
+        s = UnitsRelationsTools.buildAnnoMirrorWithDefaultPrefix(env, s.class);
+        h = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, h.class);
 
-        m2 = AnnotationUtils.fromClass(elements, m2.class);
-        km2 = AnnotationUtils.fromClass(elements, km2.class);
-        mm2 = AnnotationUtils.fromClass(elements, mm2.class);
+        mPERs = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, mPERs.class);
+        kmPERh = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, kmPERh.class);
 
-        builder = new AnnotationBuilder(env, s.class);
-        builder.setValue("value", Prefix.one);
-        s = builder.build();
-        h = AnnotationUtils.fromClass(elements, h.class);
-
-        mPERs = AnnotationUtils.fromClass(elements, mPERs.class);
-        kmPERh = AnnotationUtils.fromClass(elements, kmPERh.class);
-
-        mPERs2 = AnnotationUtils.fromClass(elements, mPERs2.class);
+        mPERs2 = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(env, mPERs2.class);
 
         return this;
     }
 
+    /**
+     * Provides rules for resolving the result Unit of the multiplication of
+     * checker-framework provided Units
+     */
     @Override
-    public /*@Nullable*/ AnnotationMirror multiplication(AnnotatedTypeMirror p1, AnnotatedTypeMirror p2) {
+    public /*@Nullable*/ AnnotationMirror multiplication(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
         // TODO: does this handle scaling correctly?
 
         // length * length => area
-        if (AnnotationUtils.containsSameIgnoringValues(p1.getAnnotations(), m) &&
-                AnnotationUtils.containsSameIgnoringValues(p2.getAnnotations(), m)) {
-            Prefix p1prefix = getTypeMirrorPrefix(p1);
-            Prefix p2prefix = getTypeMirrorPrefix(p2);
-
-            if (p1prefix == null || p2prefix == null) {
-                // prefix of null means we couldn't find or assign any prefixes at all (error state)
-                return null;
-            } else if (p1prefix.equals(p2prefix) && p2prefix.equals(Prefix.kilo)) {
-                // km * km
-                return km2;
-            } else if (p1prefix.equals(p2prefix) && p2prefix.equals(Prefix.milli)) {
-                // mm * mm
-                return mm2;
-            } else if (p1prefix.equals(p2prefix) && p2prefix.equals(Prefix.one)) {
+        // checking SI units only
+        if (UnitsRelationsTools.hasSpecificUnitIgnoringPrefix(lht, m) && UnitsRelationsTools.hasSpecificUnitIgnoringPrefix(rht, m)) {
+            if (UnitsRelationsTools.hasNoPrefix(lht) && UnitsRelationsTools.hasNoPrefix(rht)) {
                 // m * m
                 return m2;
+            }
+
+            Prefix lhtPrefix = UnitsRelationsTools.getPrefix(lht);
+            Prefix rhtPrefix = UnitsRelationsTools.getPrefix(rht);
+
+            if (bothHaveSpecificPrefix(lhtPrefix, rhtPrefix, Prefix.kilo)) {
+                // km * km
+                return km2;
+            } else if (bothHaveSpecificPrefix(lhtPrefix, rhtPrefix, Prefix.one)) {
+                // m(Prefix.one) * m(Prefix.one)
+                return m2;
+            } else if (bothHaveSpecificPrefix(lhtPrefix, rhtPrefix, Prefix.milli)) {
+                // mm * mm
+                return mm2;
             } else {
                 return null;
             }
-        } else if (AnnotationUtils.containsSame(p1.getAnnotations(), s) &&
-                AnnotationUtils.containsSame(p2.getAnnotations(), mPERs)
-                ||
-                AnnotationUtils.containsSame(p1.getAnnotations(), mPERs) &&
-                AnnotationUtils.containsSame(p2.getAnnotations(), s)) {
+        } else if (havePairOfUnitsIgnoringOrder(lht, s, rht, mPERs)) {
             // s * mPERs or mPERs * s => m
             return m;
-        } else if (AnnotationUtils.containsSame(p1.getAnnotations(), s) &&
-                AnnotationUtils.containsSame(p2.getAnnotations(), mPERs2)
-                ||
-                AnnotationUtils.containsSame(p1.getAnnotations(), mPERs2) &&
-                AnnotationUtils.containsSame(p2.getAnnotations(), s)) {
+        } else if (havePairOfUnitsIgnoringOrder(lht, s, rht, mPERs2)) {
             // s * mPERs2 or mPERs2 * s => mPERs
             return mPERs;
-        } else if (AnnotationUtils.containsSame(p1.getAnnotations(), h) &&
-                AnnotationUtils.containsSame(p2.getAnnotations(), kmPERh)
-                ||
-                AnnotationUtils.containsSame(p1.getAnnotations(), kmPERh) &&
-                AnnotationUtils.containsSame(p2.getAnnotations(), h)) {
+        } else if (havePairOfUnitsIgnoringOrder(lht, h, rht, kmPERh)) {
             // h * kmPERh or kmPERh * h => km
             return km;
         } else {
@@ -118,42 +101,37 @@ public class UnitsRelationsDefault implements UnitsRelations {
         }
     }
 
+    /**
+     * Provides rules for resolving the result Unit of the division of
+     * checker-framework provided Units
+     */
     @Override
-    public /*@Nullable*/ AnnotationMirror division(AnnotatedTypeMirror p1, AnnotatedTypeMirror p2) {
-        if (AnnotationUtils.containsSame(p1.getAnnotations(), m) &&
-                AnnotationUtils.containsSame(p2.getAnnotations(), s)) {
+    public /*@Nullable*/ AnnotationMirror division(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
+        if (havePairOfUnits(lht, m, rht, s)) {
             // m / s => mPERs
             return mPERs;
-        } else if (AnnotationUtils.containsSame(p1.getAnnotations(), km) &&
-                AnnotationUtils.containsSame(p2.getAnnotations(), h)) {
+        } else if (havePairOfUnits(lht, km, rht, h)) {
             // km / h => kmPERh
             return kmPERh;
-        } else if (AnnotationUtils.containsSame(p1.getAnnotations(), m2) &&
-                AnnotationUtils.containsSame(p2.getAnnotations(), m)) {
+        } else if (havePairOfUnits(lht, m2, rht, m)) {
             // m2 / m => m
             return m;
-        } else if (AnnotationUtils.containsSame(p1.getAnnotations(), km2) &&
-                AnnotationUtils.containsSame(p2.getAnnotations(), km)) {
+        } else if (havePairOfUnits(lht, km2, rht, km)) {
             // km2 / km => km
             return km;
-        } else if (AnnotationUtils.containsSame(p1.getAnnotations(), mm2) &&
-                AnnotationUtils.containsSame(p2.getAnnotations(), mm)) {
+        } else if (havePairOfUnits(lht, mm2, rht, mm)) {
             // mm2 / mm => mm
             return mm;
-        } else if (AnnotationUtils.containsSame(p1.getAnnotations(), m) &&
-                AnnotationUtils.containsSame(p2.getAnnotations(), mPERs)) {
+        } else if (havePairOfUnits(lht, m, rht, mPERs)) {
             // m / mPERs => s
             return s;
-        } else if (AnnotationUtils.containsSame(p1.getAnnotations(), km) &&
-                AnnotationUtils.containsSame(p2.getAnnotations(), kmPERh)) {
+        } else if (havePairOfUnits(lht, km, rht, kmPERh)) {
             // km / kmPERh => h
             return h;
-        } else if (AnnotationUtils.containsSame(p1.getAnnotations(), mPERs) &&
-                AnnotationUtils.containsSame(p2.getAnnotations(), s)) {
+        } else if (havePairOfUnits(lht, mPERs, rht, s)) {
             // mPERs / s = mPERs2
             return mPERs2;
-        } else if (AnnotationUtils.containsSame(p1.getAnnotations(), mPERs) &&
-                AnnotationUtils.containsSame(p2.getAnnotations(), mPERs2)) {
+        } else if (havePairOfUnits(lht, mPERs, rht, mPERs2)) {
             // mPERs / mPERs2 => s  (velocity / acceleration == time)
             return s;
         } else {
@@ -161,36 +139,49 @@ public class UnitsRelationsDefault implements UnitsRelations {
         }
     }
 
-    // helper functions
-    // go through each annotation of an annotated type, find the prefix and return it
-    private Prefix getTypeMirrorPrefix(AnnotatedTypeMirror atm) {
-        for (AnnotationMirror mirror : atm.getAnnotations()) {
-            AnnotationValue annotationValue = getAnnotationMirrorPrefix(mirror);
-            // annotation has no element value (ie no SI prefix)
-            if (annotationValue == null) {
-                return Prefix.one;
-            }
-            // if the annotation has a value, then detect the string name of the prefix and return the Prefix
-            String prefixString = annotationValue.getValue().toString();
-            if (prefixString.equals(Prefix.kilo.toString())) {
-                return Prefix.kilo;
-            } else if (prefixString.equals(Prefix.milli.toString())) {
-                return Prefix.milli;
-            } else if (prefixString.equals(Prefix.one.toString())) {
-                return Prefix.one;
-            }
+    /**
+     * Checks to see if both lhtPrefix and rhtPrefix have the same prefix as
+     * specificPrefix
+     *
+     * @param lhtPrefix Left hand side prefix
+     * @param rhtPrefix Right hand side prefix
+     * @param specificPrefix Specific desired prefix to match
+     * @return true if all 3 Prefix are the same, false otherwise
+     */
+    protected boolean bothHaveSpecificPrefix(Prefix lhtPrefix, Prefix rhtPrefix, Prefix specificPrefix) {
+        if (lhtPrefix == null || rhtPrefix == null || specificPrefix == null) {
+            return false;
         }
-        return null;
+
+        return (lhtPrefix.equals(rhtPrefix) && rhtPrefix.equals(specificPrefix));
     }
 
-    // given an annotation, returns the prefix value (eg kilo) if there is any, otherwise returns null
-    private AnnotationValue getAnnotationMirrorPrefix(AnnotationMirror mirror) {
-        Map<? extends ExecutableElement,? extends AnnotationValue> elementValues = mirror.getElementValues();
-        for (Map.Entry<? extends ExecutableElement,? extends AnnotationValue> entry : elementValues.entrySet()) {
-            if ("value".equals(entry.getKey().getSimpleName().toString())) {
-                return entry.getValue();
-            }
-        }
-        return null;
+    /**
+     * Checks to see if lht has the unit ul and if rht has the unit ur all at
+     * the same time
+     *
+     * @param lht Left hand annotated type
+     * @param ul Left hand unit
+     * @param rht Right hand annotated type
+     * @param ur Right hand unit
+     * @return true if lht has lu and rht has ru, false otherwise
+     */
+    protected boolean havePairOfUnits(AnnotatedTypeMirror lht, AnnotationMirror ul, AnnotatedTypeMirror rht, AnnotationMirror ur) {
+        return UnitsRelationsTools.hasSpecificUnit(lht, ul) && UnitsRelationsTools.hasSpecificUnit(rht, ur);
+    }
+
+    /**
+     * Checks to see if lht and rht have the pair of units u1 and u2 regardless
+     * of order
+     *
+     * @param lht Left hand annotated type
+     * @param u1 Unit 1
+     * @param rht Right hand annotated type
+     * @param u2 Unit 2
+     * @return true if lht and rht have the pair of units u1 and u2 regardless
+     *         of order, false otherwise
+     */
+    protected boolean havePairOfUnitsIgnoringOrder(AnnotatedTypeMirror lht, AnnotationMirror u1, AnnotatedTypeMirror rht, AnnotationMirror u2) {
+        return havePairOfUnits(lht, u1, rht, u2) || havePairOfUnits(lht, u2, rht, u1);
     }
 }
