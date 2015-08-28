@@ -113,11 +113,14 @@ import org.checkerframework.stubparser.ast.type.VoidType;
 import org.checkerframework.stubparser.ast.type.WildcardType;
 
 /**
+ * Builds a string representation of any AST node for printing.
+ *
  * @author Julio Vilmar Gesser
  */
 
 public final class DumpVisitor implements VoidVisitor<Object> {
 
+    // Writes to StringBuilder buffer.
     private static class SourcePrinter {
 
         private int level = 0;
@@ -171,10 +174,16 @@ public final class DumpVisitor implements VoidVisitor<Object> {
 
     private final SourcePrinter printer = new SourcePrinter();
 
+    // Return buffered contents of SourcePrinter.
     public String getSource() {
         return printer.getSource();
     }
 
+    /**
+     * Print Java modifiers indicated by the bit flags in the argument.
+     *
+     * @param modifiers Java modifiers represented as a set of bit flags
+     */
     private void printModifiers(int modifiers) {
         if (ModifierSet.isPrivate(modifiers)) {
             printer.print("private ");
@@ -211,6 +220,12 @@ public final class DumpVisitor implements VoidVisitor<Object> {
         }
     }
 
+    /**
+     * Print out declarations from a stub file.
+     *
+     * @param members list of declarations
+     * @param arg argument provided to the calling visitor method
+     */
     private void printMembers(List<BodyDeclaration> members, Object arg) {
         for (BodyDeclaration member : members) {
             printer.printLn();
@@ -219,6 +234,12 @@ public final class DumpVisitor implements VoidVisitor<Object> {
         }
     }
 
+    /**
+     * Print a list of annotations on separate lines, ending with a newline.
+     *
+     * @param annotations list of {@link AnnotationExpr annotation expressions}
+     * @param arg argument provided to the calling visitor method
+     */
     private void printMemberAnnotations(List<AnnotationExpr> annotations, Object arg) {
         if (annotations != null) {
             for (AnnotationExpr a : annotations) {
@@ -228,15 +249,49 @@ public final class DumpVisitor implements VoidVisitor<Object> {
         }
     }
 
-    private void printAnnotations(List<AnnotationExpr> annotations, Object arg) {
+    /**
+     * Print a list of annotations, including a trailing space.
+     *
+     * @param annotations list of {@link AnnotationExpr annotation expressions}
+     * @param arg argument provided to the calling visitor method
+     */
+    private void printAnnotations(List<AnnotationExpr> annotations,
+            Object arg) {
+        printAnnotations(annotations, arg, false);
+    }
+
+    /**
+     * Print a list of annotations.  The final parameter determines whether to
+     * issue a leading (if true) or trailing (if false) space.
+     *
+     * @param annotations list of {@link AnnotationExpr annotation expressions}
+     * @param arg argument provided to the calling visitor method
+     * @param isOnReceiver whether annotation is on a method receiver
+     */
+    private void printAnnotations(List<AnnotationExpr> annotations,
+            Object arg, boolean isOnReceiver) {
         if (annotations != null) {
-            for (AnnotationExpr a : annotations) {
+            Iterator<AnnotationExpr> i = annotations.iterator();
+            if (i.hasNext()) {
+                AnnotationExpr a = i.next();
+                if (isOnReceiver) { printer.print(" "); }
                 a.accept(this, arg);
-                printer.print(" ");
+                while (i.hasNext()) {
+                    printer.print(" ");
+                    a = i.next();
+                    a.accept(this, arg);
+                }
+                if (!isOnReceiver) { printer.print(" "); }
             }
         }
     }
 
+    /**
+     * Print a list of type arguments in between angle brackets.
+     *
+     * @param args type arguments
+     * @param arg argument provided to the calling visitor method
+     */
     private void printTypeArgs(List<Type> args, Object arg) {
         if (args != null) {
             printer.print("<");
@@ -251,6 +306,12 @@ public final class DumpVisitor implements VoidVisitor<Object> {
         }
     }
 
+    /**
+     * Print a list of type parameters in between angle brackets.
+     *
+     * @param args type parameters
+     * @param arg argument provided to the calling visitor method
+     */
     private void printTypeParameters(List<TypeParameter> args, Object arg) {
         if (args != null) {
             printer.print("<");
@@ -265,6 +326,12 @@ public final class DumpVisitor implements VoidVisitor<Object> {
         }
     }
 
+    /**
+     * Print a list of method arguments in between parentheses.
+     *
+     * @param args method arguments
+     * @param arg argument provided to the calling visitor method
+     */
     private void printArguments(List<Expression> args, Object arg) {
         printer.print("(");
         if (args != null) {
@@ -279,11 +346,19 @@ public final class DumpVisitor implements VoidVisitor<Object> {
         printer.print(")");
     }
 
+    /**
+     * Print a javadoc comment.
+     *
+     * @param javadoc comment
+     * @param arg argument provided to the calling visitor method
+     */
     private void printJavadoc(JavadocComment javadoc, Object arg) {
         if (javadoc != null) {
             javadoc.accept(this, arg);
         }
     }
+
+    // Visitor interface implementation follows
 
     public void visit(IndexUnit n, Object arg) {
         for (CompilationUnit unit : n.getCompilationUnits()) {
@@ -315,7 +390,7 @@ public final class DumpVisitor implements VoidVisitor<Object> {
     }
 
     public void visit(PackageDeclaration n, Object arg) {
-        printAnnotations(n.getAnnotations(), arg);
+        printMemberAnnotations(n.getAnnotations(), arg);
         printer.print("package ");
         n.getName().accept(this, arg);
         printer.printLn(";");
@@ -346,7 +421,7 @@ public final class DumpVisitor implements VoidVisitor<Object> {
 
     public void visit(ClassOrInterfaceDeclaration n, Object arg) {
         printJavadoc(n.getJavaDoc(), arg);
-        printAnnotations(n.getAnnotations(), arg);
+        printMemberAnnotations(n.getAnnotations(), arg);
         printModifiers(n.getModifiers());
 
         if (n.isInterface()) {
@@ -412,6 +487,7 @@ public final class DumpVisitor implements VoidVisitor<Object> {
     }
 
     public void visit(TypeParameter n, Object arg) {
+        printAnnotations(n.getAnnotations(), arg);
         printer.print(n.getName());
         if (n.getTypeBound() != null) {
             printer.print(" extends ");
@@ -840,8 +916,8 @@ public final class DumpVisitor implements VoidVisitor<Object> {
         printMemberAnnotations(n.getAnnotations(), arg);
         printModifiers(n.getModifiers());
 
-        printTypeParameters(n.getTypeParameters(), arg);
         if (n.getTypeParameters() != null) {
+            printTypeParameters(n.getTypeParameters(), arg);
             printer.print(" ");
         }
         printer.print(n.getName());
@@ -858,8 +934,7 @@ public final class DumpVisitor implements VoidVisitor<Object> {
         }
         printer.print(")");
 
-        printer.print(" ");
-        printAnnotations(n.getReceiverAnnotations(), arg);
+        printAnnotations(n.getReceiverAnnotations(), arg, true);
 
         if (n.getThrows() != null) {
             printer.print(" throws ");
@@ -870,10 +945,14 @@ public final class DumpVisitor implements VoidVisitor<Object> {
                     printer.print(", ");
                 }
             }
-        printer.print(" ");
         }
 
-        n.getBlock().accept(this, arg);
+        if (n.getBlock() == null) {
+            printer.print(";");
+        } else {
+            printer.print(" ");
+            n.getBlock().accept(this, arg);
+        }
     }
 
     public void visit(MethodDeclaration n, Object arg) {
@@ -906,8 +985,7 @@ public final class DumpVisitor implements VoidVisitor<Object> {
             printer.print("[]");
         }
 
-        printer.print(" ");
-        printAnnotations(n.getReceiverAnnotations(), arg);
+        printAnnotations(n.getReceiverAnnotations(), arg, true);
 
         if (n.getThrows() != null) {
             printer.print(" throws ");
@@ -956,7 +1034,7 @@ public final class DumpVisitor implements VoidVisitor<Object> {
     }
 
     public void visit(VariableDeclarationExpr n, Object arg) {
-        printAnnotations(n.getAnnotations(), arg);
+        printMemberAnnotations(n.getAnnotations(), arg);
         printModifiers(n.getModifiers());
 
         n.getType().accept(this, arg);
