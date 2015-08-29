@@ -537,6 +537,11 @@
 
         <antcall target="example-tests-nojdk"/>
 
+        <antcall target="units-extension-tests"/>
+
+        <!-- Note that the order of the ant vs junit calls matters
+             for the Jenkins setup. The junit call must come last. -->
+
         <!-- Copied from -run-tests target -->
         <mkdir dir="${build.reports}"/>
 
@@ -571,8 +576,6 @@
                 </fileset>
             </batchtest>
         </junit>
-
-        <antcall target="units-extension-tests"/>
     </target>
 
     <target name="aggregate-tests" depends="jar,build-tests"
