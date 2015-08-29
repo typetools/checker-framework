@@ -1,10 +1,10 @@
 package org.checkerframework.framework.test;
 
+import java.util.Collections;
+import java.util.List;
+
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * CompilationResult represents the output of the compiler after it is run.

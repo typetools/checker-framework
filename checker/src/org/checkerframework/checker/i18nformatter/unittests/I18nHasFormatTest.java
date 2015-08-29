@@ -5,7 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.checkerframework.checker.i18nformatter.I18nFormatUtil;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
-import org.checkerframework.checker.i18nformatter.qual.I18nFormat;
+
 import org.junit.Test;
 
 public class I18nHasFormatTest {

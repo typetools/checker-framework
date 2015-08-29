@@ -155,6 +155,7 @@ public class TypesIntoElements {
         addUniqueTypeCompounds(types, sym, tcs);
     }
 
+    @SuppressWarnings("unused") // TODO: see usage in comments above
     private static void storeClassExtends(ProcessingEnvironment processingEnv, Types types,
             AnnotatedTypeFactory atypeFactory, Tree ext, Symbol.ClassSymbol csym,
             int implidx) {
