@@ -21,7 +21,29 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.WildcardTree;
 
 /**
  * Converts ExpressionTrees into AnnotatedTypeMirrors
@@ -112,7 +134,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         // e.g. see Ternary test case for Nullness Checker.
         // TODO: Can we adapt asSuper to handle those correctly?
 
-        if (trueType != null && trueType.equals(falseType)) {
+        if (trueType.equals(falseType)) {
             return trueType;
         }
 
