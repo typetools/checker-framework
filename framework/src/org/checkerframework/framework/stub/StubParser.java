@@ -4,28 +4,6 @@ package org.checkerframework.framework.stub;
 import org.checkerframework.checker.nullness.qual.*;
 */
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
-
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -70,6 +48,28 @@ import org.checkerframework.stubparser.ast.type.ClassOrInterfaceType;
 import org.checkerframework.stubparser.ast.type.ReferenceType;
 import org.checkerframework.stubparser.ast.type.Type;
 import org.checkerframework.stubparser.ast.type.WildcardType;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 
 // Main entry point is:
 // parse(Map<Element, AnnotatedTypeMirror>, Map<Element, Set<AnnotationMirror>>)
@@ -343,7 +343,7 @@ public class StubParser {
         // couldn't find type.  not in class path
         if (typeElt == null) {
             boolean warn = true;
-            if (typeDecl != null && typeDecl.getAnnotations() != null) {
+            if (typeDecl.getAnnotations() != null) {
                 for (AnnotationExpr anno : typeDecl.getAnnotations()) {
                     if (anno.getName().getName().contentEquals("NoStubParserWarning")) {
                         warn = false;
