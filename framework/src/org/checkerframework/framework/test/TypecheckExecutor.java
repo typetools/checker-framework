@@ -87,6 +87,15 @@ public class TypecheckExecutor {
      * which contains all of the missing and expected diagnostics
      */
     public TypecheckResult interpretResults(TestConfiguration config, CompilationResult compilationResult) {
+        List<TestDiagnostic> expectedDiagnostics = readDiagnostics(config, compilationResult);
+        return TypecheckResult.fromCompilationResults(config, compilationResult, expectedDiagnostics);
+    }
+
+    /**
+     * Added in case a subclass wishes to filter out errors or add new expected errors.  This method is called immediately
+     * before results are checked.
+     */
+    protected List<TestDiagnostic> readDiagnostics(TestConfiguration config, CompilationResult compilationResult) {
         List<TestDiagnostic> expectedDiagnostics;
         if (config.getDiagnosticFiles() == null || config.getDiagnosticFiles().isEmpty()) {
             expectedDiagnostics = JavaDiagnosticReader.readExpectedDiagnosticsJfo(compilationResult.getJavaFileObjects(), true);
@@ -94,6 +103,8 @@ public class TypecheckExecutor {
             expectedDiagnostics = JavaDiagnosticReader.readDiagnosticFiles(config.getDiagnosticFiles(), true);
         }
 
-        return TypecheckResult.fromCompilationResults(config, compilationResult, expectedDiagnostics);
+        return expectedDiagnostics;
     }
+
+
 }

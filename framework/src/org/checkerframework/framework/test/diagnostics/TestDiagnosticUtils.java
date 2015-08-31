@@ -22,11 +22,16 @@ public class TestDiagnosticUtils {
     public static final String STUB_PARSER_STRING = "warning: StubParser";
     public static final String STUB_PARSER_COMMENT = "//" + STUB_PARSER_STRING;
 
+    //This is SPARTA specific and should be removed, we need to create a more general way to handle these special
+    //diagnostics, perhaps by moving away from static state
+    public static final String FLOW_POLICY_STRING = "warning: FlowPolicy:";
+    public static final String FLOW_POLICY_COMMENT = "//" + FLOW_POLICY_STRING;
+
     //this regex represents how the diagnostics appear in Java source files
     public static final String DIAGNOSTIC_IN_JAVA_REGEX = "\\s*(error|fixable-error|warning|other):\\s*(\\(?.*\\)?)\\s*";
     public static final Pattern DIAGNOSTIC_IN_JAVA_PATTERN = Pattern.compile(DIAGNOSTIC_IN_JAVA_REGEX);
 
-    public static final String DIAGNOSTIC_WARNING_IN_JAVA_REGEX = "\\s*warning:\\s*(\\[.*\\]\\s*.*)\\s*";
+    public static final String DIAGNOSTIC_WARNING_IN_JAVA_REGEX = "\\s*warning:\\s*(.*\\s*.*)\\s*";
     public static final Pattern DIAGNOSTIC_WARNING_IN_JAVA_PATTERN = Pattern.compile(DIAGNOSTIC_WARNING_IN_JAVA_REGEX);
 
     //this regex represents how the diagnostics appear in javax tools diagnostics from the compiler
@@ -99,50 +104,52 @@ public class TestDiagnosticUtils {
             groupOffset = 0;
         }
 
-        if (diagnosticString.startsWith(STUB_PARSER_STRING)) {
-            kind = DiagnosticKind.Warning;
-            isFixable = false;
-            message = diagnosticString.substring("warning:".length()).trim();
-            noParentheses = true;
-            lineNo = 0;
+        Matcher diagnosticMatcher = diagnosticPattern.matcher(diagnosticString);
+        if (diagnosticMatcher.matches()) {
+            Pair<DiagnosticKind, Boolean> categoryToFixable = parseCategoryString(diagnosticMatcher.group(1 + groupOffset));
+            kind = categoryToFixable.first;
+            isFixable = categoryToFixable.second;
+            Pair<Boolean, String> dropQuotesToString = dropParentheses(diagnosticMatcher.group(2 + groupOffset).trim());
+            message = dropQuotesToString.second;
+            noParentheses = !dropQuotesToString.first;
+
+            if (lineNumber == null) {
+                lineNo = Long.parseLong(diagnosticMatcher.group(1));
+            }
 
         } else {
-            Matcher diagnosticMatcher = diagnosticPattern.matcher(diagnosticString);
-            if (diagnosticMatcher.matches()) {
-                Pair<DiagnosticKind, Boolean> categoryToFixable = parseCategoryString(diagnosticMatcher.group(1 + groupOffset));
-                kind = categoryToFixable.first;
-                isFixable = categoryToFixable.second;
-                Pair<Boolean, String> dropQuotesToString = dropParentheses(diagnosticMatcher.group(2 + groupOffset).trim());
-                message = dropQuotesToString.second;
-                noParentheses = !dropQuotesToString.first;
+            Matcher warningMatcher = warningPattern.matcher(diagnosticString);
+            if (warningMatcher.matches()) {
+                kind = DiagnosticKind.Warning;
+                isFixable = false;
+                message = warningMatcher.group(1 + groupOffset);
+                noParentheses = true;
 
                 if (lineNumber == null) {
                     lineNo = Long.parseLong(diagnosticMatcher.group(1));
                 }
 
-            } else {
-                Matcher warningMatcher = warningPattern.matcher(diagnosticString);
-                if (warningMatcher.matches()) {
-                    kind = DiagnosticKind.Warning;
-                    isFixable = false;
-                    message = warningMatcher.group(1 + groupOffset);
-                    noParentheses = true;
-
-                    if (lineNumber == null) {
-                        lineNo = Long.parseLong(diagnosticMatcher.group(1));
-                    }
-
+            } else if (diagnosticString.startsWith("warning:")) {
+                kind = DiagnosticKind.Warning;
+                isFixable = false;
+                message = diagnosticString.substring("warning:".length()).trim();
+                noParentheses = true;
+                if (lineNumber != null) {
+                    lineNo = lineNumber;
                 } else {
-                    kind = DiagnosticKind.Other;
-                    isFixable = false;
-                    message = diagnosticString;
-                    noParentheses = true;
+                    lineNo = 0;
+                }
 
-                    //this should only happen if we are parsing a Java Diagnostic from the compiler
-                    //that we did do not handle
-                    if (lineNumber == null) {
-                        lineNo = -1;
-                    }
+            } else {
+                kind = DiagnosticKind.Other;
+                isFixable = false;
+                message = diagnosticString;
+                noParentheses = true;
+
+                //this should only happen if we are parsing a Java Diagnostic from the compiler
+                //that we did do not handle
+                if (lineNumber == null) {
+                    lineNo = -1;
                 }
             }
         }
@@ -189,8 +196,9 @@ public class TestDiagnosticUtils {
         final String trimmedLine = originalLine.trim();
         long errorLine = lineNumber + 1;
 
-        boolean normalDiagnostic = trimmedLine.startsWith("//::");
-        if (normalDiagnostic || trimmedLine.startsWith(STUB_PARSER_COMMENT)) {
+        //TODO: see comments on FLOW_POLICY_COMMENT
+        final boolean normalDiagnostic = trimmedLine.startsWith("//::");
+        if (normalDiagnostic || trimmedLine.startsWith("//warning:")) {
 
             String[] diagnosticStrs;
             if (normalDiagnostic) {
@@ -204,7 +212,7 @@ public class TestDiagnosticUtils {
 
             List<TestDiagnostic> diagnostics = new ArrayList<>(diagnosticStrs.length);
             for (String diagnostic : diagnosticStrs) {
-                diagnostics.add(fromJavaFileComment(errorLine, diagnostic));
+                diagnostics.add(fromJavaFileComment((normalDiagnostic) ? errorLine : 0, diagnostic));
             }
 
             return new TestDiagnosticLine(errorLine, originalLine, Collections.unmodifiableList(diagnostics));
