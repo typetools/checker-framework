@@ -65,6 +65,7 @@ public final class TypeParameter extends Node {
     public TypeParameter(int beginLine, int beginColumn, int endLine, int endColumn, String name, List<AnnotationExpr> annotations, List<ClassOrInterfaceType> typeBound) {
         super(beginLine, beginColumn, endLine, endColumn);
         this.name = name;
+        this.annotations = annotations;
         this.typeBound = typeBound;
     }
 
