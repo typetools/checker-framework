@@ -1,6 +1,13 @@
 Version 1.9.5, 1 September 2015
 
-Fixed issues:  438, 459.
+Test Framework Updates:
+  * The test framework has been refactored to improve extensibility.  
+  * Tests that previously extended ParameterizedCheckerTest and 
+    CheckerTest should extend either CheckerFrameworkTest or nothing. 
+  * If a test used methods that were previously found on 
+    CheckerTest, you may find them in TestUtilities.
+
+Fixed issues:  438, 457, 459.
 
 ----------------------------------------------------------------------
 
