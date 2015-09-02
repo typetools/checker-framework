@@ -512,6 +512,26 @@ The website contains instructions for installing and using the plugin.
 % and supports all checkers that are distributed with the Checker Framework.
 
 
+\subsection{Troubleshooting Eclipse}
+
+Eclipse issues an ``Unhandled Token in @SuppressWarnings'' warning if you
+write a \<@SuppressWarnings> annotation containing a string that does not
+know about.  Unfortunately, Eclipse
+\href{https://bugs.eclipse.org/bugs/show_bug.cgi?id=122475}{hard-codes}
+this list and there is not a way for the Eclipse plug-in to extend it.
+
+To eliminate the warnings, you have two options:
+
+\begin{enumerate}
+\item
+Write \<@SuppressWarnings> annotations related to the Checker Framework in
+comments (see Section~\ref{annotations-in-comments}).
+\item
+  Disable all ``Unhandled Token in @SuppressWarnings'' warnings in Eclipse.
+  Look under the menu headings Java $\rightarrow$ Compiler $\rightarrow$ Errors/Warnings $\rightarrow$ Annotations $\rightarrow$ Unhandled Token in '@SuppressWarnings', and set it to ignore.
+\end{enumerate}
+
+
 \section{tIDE\label{tide}}
 
 \begin{sloppypar}
