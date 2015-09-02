@@ -1039,9 +1039,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public void postTypeVarSubstitution(AnnotatedTypeVariable varDecl,
             AnnotatedTypeVariable varUse, AnnotatedTypeMirror value) {
-        if (!varUse.annotations.isEmpty()
-                && !AnnotationUtils.areSame(varUse.annotations, varDecl.annotations)) {
-            value.replaceAnnotations(varUse.annotations);
+        if (!varUse.getAnnotationsField().isEmpty()
+                && !AnnotationUtils.areSame(varUse.getAnnotationsField(), varDecl.getAnnotationsField())) {
+            value.replaceAnnotations(varUse.getAnnotationsField());
         }
     }
 
@@ -1743,8 +1743,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // Uses an ExecutableElement, which did not substitute type variables.
             break;
         default:
-            ErrorReporter.errorAbort("AnnotatedTypeFactory.fromNewClassContextHelper: unexpected context: " +
-                    ctxtype + " (" + ctxtype.getKind() + ")");
+            if (ctxtype.getKind().isPrimitive()) {
+                // See Issue 438. Ignore primitive types for diamond inference - a primitive type
+                // is never a suitable context anyways.
+            } else {
+                ErrorReporter.errorAbort("AnnotatedTypeFactory.fromNewClassContextHelper: unexpected context: " +
+                        ctxtype + " (" + ctxtype.getKind() + ")");
+            }
         }
     }
 

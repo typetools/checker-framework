@@ -1,12 +1,11 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class I18nFormatterTest extends ParameterizedCheckerTest {
+public class I18nFormatterTest extends CheckerFrameworkTest {
 
     public I18nFormatterTest(File testFile) {
         super(testFile,
@@ -16,7 +15,7 @@ public class I18nFormatterTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("i18n-formatter", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"i18n-formatter", "all-systems"};
     }
 }

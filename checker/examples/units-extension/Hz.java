@@ -11,8 +11,9 @@ import org.checkerframework.framework.qual.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
-@SubtypeOf( { Frequency.class } )
+@SubtypeOf(Frequency.class)
 @UnitsRelations(FrequencyRelations.class)
+// Hz has a default prefix value of Prefix.one
 public @interface Hz {
     Prefix value() default Prefix.one;
 }

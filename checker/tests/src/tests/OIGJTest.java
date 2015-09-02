@@ -2,16 +2,16 @@ package tests;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
+import java.util.List;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
+import org.checkerframework.framework.test.TestUtilities;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * JUnit tests for the Interning Checker, which tests the Interned annotation.
  */
-public class OIGJTest extends ParameterizedCheckerTest {
+public class OIGJTest extends CheckerFrameworkTest {
 
     public OIGJTest(File testFile) {
         super(testFile,
@@ -21,22 +21,18 @@ public class OIGJTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return filter(testFiles("oigj", "all-systems"));
+    public static List<File> getTestFiles() {
+        return filter(TestUtilities.findNestedJavaTestFiles("oigj", "all-systems"));
     }
 
-    // Duplicate from JavariTest.
-    protected static Collection<Object[]> filter(Collection<Object[]> in) {
-        Collection<Object[]> out = new ArrayList<Object[]>();
-        for (Object[] oa : in) {
-            Collection<Object> oout = new LinkedList<Object>();
-            for (Object o : oa) {
-                if (!filter(o)) {
-                    oout.add(o);
-                }
-            }
-            if (!oout.isEmpty()) {
-                out.add(oout.toArray());
+    // TODO: I want this method somewhere in ParameterizedChecker, but as
+    // all these methods are static, I didn't find a fast way :-(
+    // Duplicated in OIGJTest!
+    protected static List<File> filter(List<File> in) {
+        List<File> out = new ArrayList<File>();
+        for (File file : in) {
+            if (!filter(file)) {
+                out.add(file);
             }
         }
         return out;

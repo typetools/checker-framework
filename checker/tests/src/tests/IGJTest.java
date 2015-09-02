@@ -1,33 +1,41 @@
 package tests;
 
-import static org.junit.Assert.assertFalse;
+import org.checkerframework.framework.test.TestConfiguration;
+import org.checkerframework.framework.test.TestConfigurationBuilder;
+import org.checkerframework.framework.test.TestUtilities;
+import org.checkerframework.framework.test.TypecheckExecutor;
+import org.checkerframework.framework.test.TypecheckResult;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
-import org.checkerframework.framework.test.CheckerTest;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+//TODO: The IGJ has a completely different testing mechanism from the rest of the framework
+//TODO: We should probably standardize
 // Also see file FailedTests, that contains currently-failing tests.
 /**
  * JUnit tests for the IGJ annotation checker.
  */
-public class IGJTest extends CheckerTest {
+public class IGJTest {
 
-    public IGJTest() {
-        super(org.checkerframework.checker.igj.IGJChecker.class,
-                "igj",
-                "-Anomsgtext");
-    }
+    private final String checkerDir = "tests" + File.separator + "igj";
+    private final Class<?> checker = org.checkerframework.checker.igj.IGJChecker.class;
+    private final String checkerName = checker.getName();
+    private final List<String> checkerOptions = Arrays.asList("-Anomsgtext");
 
-    void runTestWithDefault(String expectedFileName, boolean shouldSucceed, String javaFile) {
+    void runTestWithDefault(String diagnosticFileName, boolean shouldSucceed, String javaFile) {
         try {
             File tempFile = File.createTempFile("Test", ".java");
+            final File originalJavaFile = new File(checkerDir + "/" + javaFile);
             FileWriter temp = new FileWriter(tempFile);
-            Scanner scanner = new Scanner(new File(checkerDir + "/" + javaFile));
+            Scanner scanner = new Scanner(originalJavaFile);
             while (scanner.hasNextLine()) {
                 String s = scanner.nextLine();
                 s = s.replaceAll("public\\s+class", "class");
@@ -37,13 +45,48 @@ public class IGJTest extends CheckerTest {
                 temp.write('\n');
             }
             temp.flush();
-            runTest(expectedFileName, shouldSucceed, tempFile);
+            runTest(new File(originalJavaFile.getParent(), diagnosticFileName), tempFile);
             scanner.close();
             temp.close();
             scanner.close();
         } catch (IOException exp) {
-            assertFalse("Couldn't compile file! ", true);
+            Assert.assertFalse("Couldn't compile file! ", true);
         }
+    }
+
+    protected void runTest() {
+        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+        assert stack.length >= 3;
+        String method = stack[2].getMethodName();
+        if (!method.startsWith("test"))
+            throw new AssertionError("caller's name is invalid");
+        String[] parts = method.split("test");
+        String testName = parts[parts.length - 1];
+
+        final File testFile = new File(this.checkerDir + File.separator + testName + ".java");
+        runTest(testFile);
+    }
+
+
+    public void runTest(File testFile) {
+        final File diagnostics = TestUtilities.findComparisonFile(testFile);
+        runTest(diagnostics == null || !diagnostics.exists() ? null : new File(testFile.getParent(), diagnostics.getName()), testFile);
+    }
+
+
+    protected void runTest(File diagnosticFile, File javaFile) {
+        //TODO: This is mostly the body of DefaultCheckerTest.run but with a passed in file name/exoectedDiagnostic
+        //TODO: We could make it a method on TypecheckExecutor and testing would just be
+        //TODO: TypecheckExecutor.test(testFile)
+        boolean shouldEmitDebugInfo = TestUtilities.getShouldEmitDebugInfo();
+        TestConfigurationBuilder configBuilder =
+                TestConfigurationBuilder.getDefaultConfigurationBuilder(checkerDir, javaFile, checkerName, checkerOptions, shouldEmitDebugInfo);
+        if (diagnosticFile != null) {
+            configBuilder.addDiagnosticFile(diagnosticFile);
+        }
+        TestConfiguration config = configBuilder.validateThenBuild(true);
+        TypecheckResult testResult = new TypecheckExecutor().runTest(config);
+        TestUtilities.assertResultsAreValid(testResult);
     }
 
     /** Tests fields. */
@@ -52,7 +95,7 @@ public class IGJTest extends CheckerTest {
     // See issue https://github.com/typetools/checker-framework/issues/199.
     @Ignore
     @Test public void testFields() {
-        test();
+        runTest();
     }
 
     // This test is skipped because the IGJ/OIGJ org.checkerframework.checker are not fully compatible with the latest
@@ -65,7 +108,7 @@ public class IGJTest extends CheckerTest {
 
     /** Tests method invocation */
     @Test public void testMethodInvocation() {
-        test();
+        runTest();
     }
 
     /** Tests method invocation */
@@ -75,7 +118,7 @@ public class IGJTest extends CheckerTest {
 
     /** Tests Immutable Object */
     @Test public void testImmutableObject() {
-        test();
+        runTest();
     }
 
     /** Tests ListNode */
@@ -84,12 +127,12 @@ public class IGJTest extends CheckerTest {
     // See issue https://github.com/typetools/checker-framework/issues/199.
     @Ignore
     @Test public void testListNode() {
-        test();
+        runTest();
     }
 
     /** Tests ThisReference */
     @Test public void testThisReferenceReadOnly() {
-        test();
+        runTest();
     }
 
     /** Tests ThisReference */
@@ -98,7 +141,7 @@ public class IGJTest extends CheckerTest {
     }
 
     @Test public void testThisReferenceMutable() {
-        test();
+        runTest();
     }
 
     /** Tests ThisReference */
@@ -107,7 +150,7 @@ public class IGJTest extends CheckerTest {
     }
 
     @Test public void testThisReferenceImmutable() {
-        test();
+        runTest();
     }
 
     /** Tests ThisReference */
@@ -117,11 +160,11 @@ public class IGJTest extends CheckerTest {
 
     /** Tests ForEnhanced */
     @Test public void testForEnhanced() {
-        test();
+        runTest();
     }
 
     @Test public void testTemplateImmutability()  {
-        test();
+        runTest();
     }
 
     @Test public void testTemplateImmutabilityDefault() {
@@ -130,7 +173,7 @@ public class IGJTest extends CheckerTest {
 
 
     @Test public void testAssignability() {
-        test();
+        runTest();
     }
 
     // This test is skipped because the IGJ/OIGJ org.checkerframework.checker are not fully compatible with the latest
@@ -142,23 +185,23 @@ public class IGJTest extends CheckerTest {
     }
 
     @Test public void testThrowCatch() {
-        test();
+        runTest();
     }
 
     @Test public void testOverrideGenericMethod() {
-        test();
+        runTest();
     }
 
     @Test public void testArrays() {
-        test();
+        runTest();
     }
 
     @Test public void testPrimitives() {
-        test();
+        runTest();
     }
 
     @Test public void testFlow() {
-        test();
+        runTest();
     }
 
     // This test is skipped because the IGJ/OIGJ org.checkerframework.checker are not fully compatible with the latest
@@ -166,15 +209,15 @@ public class IGJTest extends CheckerTest {
     // See issue https://github.com/typetools/checker-framework/issues/199.
     @Ignore
     @Test public void testRandomTests() {
-        test();
+        runTest();
     }
 
     @Test public void testMutableEnum() {
-        test();
+        runTest();
     }
 
     @Test public void testInnerClassesThis() {
-        test();
+        runTest();
     }
 
     // This test is skipped because the IGJ/OIGJ org.checkerframework.checker are not fully compatible with the latest
@@ -182,11 +225,11 @@ public class IGJTest extends CheckerTest {
     // See issue https://github.com/typetools/checker-framework/issues/199.
     @Ignore
     @Test public void testInnerClassesInvok() {
-        test();
+        runTest();
     }
 
     @Test public void testIResolution() {
-        test();
+        runTest();
     }
 
     // This test is skipped because the IGJ/OIGJ org.checkerframework.checker are not fully compatible with the latest
@@ -194,13 +237,13 @@ public class IGJTest extends CheckerTest {
     // See issue https://github.com/typetools/checker-framework/issues/199.
     @Ignore
     @Test public void testConstructors() {
-        test();
+        runTest();
     }
 
-    @Test public void testGenericClass() { test(); }
-    @Test public void testManifestClass()   { test(); }
-    @Test public void testMutableClass()    { test(); }
-    @Test public void testUnannoFieldArrayAccess() { test(); }
+    @Test public void testGenericClass() { runTest(); }
+    @Test public void testManifestClass()   { runTest(); }
+    @Test public void testMutableClass()    { runTest(); }
+    @Test public void testUnannoFieldArrayAccess() { runTest(); }
 
     // TODO: MDE will add
     // @Test public void testSubclassing() { test(); }
@@ -209,8 +252,8 @@ public class IGJTest extends CheckerTest {
     // @Test public void testFailedTests() { test(); }
 
     @Test public void testALTest1() {
-        test();
+        runTest();
     }
 
-    @Test public void testImplicitBounds() { test(); }
+    @Test public void testImplicitBounds() { runTest(); }
 }

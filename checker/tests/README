@@ -9,12 +9,17 @@ How to run all the tests for the Checker Framework
 ==================================================
 
   # Warning: this may rebuild the JDK, which takes a long time
+  # from the checker-framework directory
+  ant -e -find build.xml tests
+
+  #from the checker Directory
   ant -e -find build.xml all-tests
 
 Other ant targets also exist to run a subset of the tests, without
 rebuilding the JDK; for example,
+  #from the checker directory
   ant -e -find build.xml nullness-tests
-
+  ant -e -find build.xml all-tests-nojdk
 
 How to run just one test for the Checker Framework
 ==================================================
@@ -139,7 +144,7 @@ To create tests for a new checker, mimic some existing checker's tests:
    checker-framework/checker/tests/nullness-reflection, for the test cases
  * create a top-level JUnit test, such as:
    checker-framework/checker/tests/src/tests/NullnessReflectionTest.java
-   It is a subclass of ParameterizedCheckerTest, and its list of checker
+   It is a subclass of CheckerFrameworkTest, and its list of checker
    options must include "-Anomsgtext".
  * change checker-framework/checker/build.xml to run those tests
 

@@ -1,24 +1,24 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 import tests.aggregate.AggregateOfCompoundChecker;
 
-public class AggregateTest  extends ParameterizedCheckerTest {
+public class AggregateTest  extends CheckerFrameworkTest {
 
-        public AggregateTest(File testFile) {
-            super(testFile, AggregateOfCompoundChecker.class,"aggregate", "-Anomsgtext","-AresolveReflection");
-        }
-
-        @Parameters
-        public static Collection<Object[]> data() {
-            return testFiles("aggregate");
-        }
-
+    public AggregateTest(File testFile) {
+        super(testFile, AggregateOfCompoundChecker.class,"aggregate", "-Anomsgtext","-AresolveReflection");
     }
+
+
+    @Parameters
+    public static String[] getTestDirs() {
+        return new String[]{"aggregate"};
+    }
+
+}
 
 

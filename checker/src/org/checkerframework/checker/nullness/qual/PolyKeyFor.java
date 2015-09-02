@@ -1,9 +1,13 @@
 package org.checkerframework.checker.nullness.qual;
 
-import java.lang.annotation.*;
+import org.checkerframework.framework.qual.PolymorphicQualifier;
+import org.checkerframework.framework.qual.TypeQualifier;
 
-import org.checkerframework.checker.nullness.qual.KeyFor;
-import org.checkerframework.framework.qual.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * A polymorphic qualifier for the Map Key (@KeyFor) type system.

@@ -1,12 +1,11 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class SignatureTest extends ParameterizedCheckerTest {
+public class SignatureTest extends CheckerFrameworkTest {
 
     public SignatureTest(File testFile) {
         super(testFile,
@@ -16,7 +15,7 @@ public class SignatureTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("signature", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"signature", "all-systems"};
     }
 }

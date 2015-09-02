@@ -476,13 +476,23 @@
     <!-- Per the <test> element, output goes to ${build.reports} -->
     <target name="-run-tests" description="Generalized test runner">
 
+        <condition property="should.emit.debug.str" value="true" else="false">
+            <isset property="emit.test.debug"/>
+        </condition>
+
+        <condition property="debugger.str" value="-Xnoagent -Djava.compiler=NONE -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" else="">
+            <isset property="debugger.on"/>
+        </condition>
+
         <mkdir dir="${build.reports}"/>
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
                printsummary="false"
                haltonfailure="${halt.on.test.failure}">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg line="${debugger.str}"/>
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
+            <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
             <jvmarg line="-ea"/>
 
             <classpath>
@@ -510,46 +520,62 @@
     <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
     <target name="all-tests-nojar" depends="build-tests"
             description="Run tests for all checkers, WITHOUT building anything">
-      <ant dir="${framework.loc}">
-          <target name="all-tests-nojar"/>
-      </ant>
 
-      <antcall target="nullness-extra-tests-nojdk"/>
+        <condition property="should.emit.debug.str" value="true" else="false">
+            <isset property="emit.test.debug"/>
+        </condition>
 
-      <antcall target="example-tests-nojdk"/>
+        <condition property="debugger.str" value="-Xnoagent -Djava.compiler=NONE -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" else="">
+            <isset property="debugger.on"/>
+        </condition>
 
-      <!-- Copied from -run-tests target -->
-      <mkdir dir="${build.reports}"/>
+        <ant dir="${framework.loc}">
+            <target name="all-tests-nojar"/>
+        </ant>
 
-      <junit fork="${run.tests.should.fork}"
-             dir="${basedir}"
-             printsummary="false"
-             haltonfailure="${halt.on.test.failure}">
-          <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-          <jvmarg line="-ea"/>
-          <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
+        <antcall target="nullness-extra-tests-nojdk"/>
 
-          <classpath>
+        <antcall target="example-tests-nojdk"/>
+
+        <antcall target="units-extension-tests"/>
+
+        <!-- Note that the order of the ant vs junit calls matters
+             for the Jenkins setup. The junit call must come last. -->
+
+        <!-- Copied from -run-tests target -->
+        <mkdir dir="${build.reports}"/>
+
+        <junit fork="${run.tests.should.fork}"
+               dir="${basedir}"
+               printsummary="false"
+               haltonfailure="${halt.on.test.failure}">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg line="-ea"/>
+            <jvmarg line="${debugger.str}"/>
+            <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
+            <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
+
+            <classpath>
               <pathelement path="${build}"/>
               <pathelement path="${tests.build}"/>
               <pathelement path="${javac.lib}"/>
               <pathelement path="${junit.lib}"/>
-          </classpath>
+            </classpath>
 
-          <formatter type="xml"/>
-          <formatter type="brief" usefile="false"/>
+            <formatter type="xml"/>
+            <formatter type="brief" usefile="false"/>
 
-          <batchtest todir="${build.reports}">
-              <fileset dir="${tests}/${src}">
-                  <include name="**/*Test.java"/>
-                  <exclude name="**/AllTests.java"/>
+            <batchtest todir="${build.reports}">
+                <fileset dir="${tests}/${src}">
+                    <include name="**/*Test.java"/>
+                    <exclude name="**/AllTests.java"/>
 
-                  <!-- Framework classes -->
-                  <exclude name="**/CheckerTest.java"/>
-                  <exclude name="**/ParameterizedCheckerTest.java"/>
-              </fileset>
-          </batchtest>
-      </junit>
+                    <!-- Framework classes -->
+                    <exclude name="**/CheckerTest.java"/>
+                    <exclude name="**/ParameterizedCheckerTest.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
     </target>
 
     <target name="aggregate-tests" depends="jar,build-tests"
@@ -678,14 +704,14 @@
 
     <target name="nullness-extra-tests-nojdk" depends="dist-nojdk,jdk.jar.exists,build-tests"
             description="Run extra tests for the Nullness Checker, WITHOUT updating jdkX.jar">
-      <exec executable="chmod">
-        <arg line="+x ${basedir}/bin/javac"/>
-      </exec>
+        <exec executable="chmod">
+            <arg line="+x ${basedir}/bin/javac"/>
+        </exec>
 
-      <exec executable="make" failonerror="${halt.on.test.failure}">
-        <env key="JAVAC" value="${basedir}/bin/javac"/>
-        <arg line="-C tests/nullness-extra/"/>
-      </exec>
+        <exec executable="make" failonerror="${halt.on.test.failure}">
+            <env key="JAVAC" value="${basedir}/bin/javac"/>
+            <arg line="-C tests/nullness-extra/"/>
+        </exec>
     </target>
 
     <target name="nullness-skipuses-tests" depends="jar,build-tests"
@@ -766,14 +792,14 @@
         </antcall>
     </target>
 
-    <target name="regex_classic-tests" depends="jar,build-tests"
+    <target name="regex-classic-tests" depends="jar,build-tests"
             description="Run tests for the Regex Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.RegexClassicTest"/>
         </antcall>
     </target>
 
-    <target name="regex_qual-tests" depends="jar,build-tests"
+    <target name="regex-qual-tests" depends="jar,build-tests"
             description="Run tests for the qualifier API Regex Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.RegexQualTest"/>
@@ -794,14 +820,14 @@
         </antcall>
     </target>
 
-    <target name="tainting_classic-tests" depends="jar,build-tests"
+    <target name="tainting-classic-tests" depends="jar,build-tests"
             description="Run tests for the classic Tainting Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.TaintingClassicTest"/>
         </antcall>
     </target>
 
-    <target name="tainting_qual-tests" depends="jar,build-tests"
+    <target name="tainting-qual-tests" depends="jar,build-tests"
             description="Run tests for the qualifier API Tainting Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.TaintingQualTest"/>
@@ -813,6 +839,18 @@
         <antcall target="-run-tests">
             <param name="param" value="tests.UnitsTest"/>
         </antcall>
+    </target>
+
+    <target name="units-extension-tests" depends="jar,build-tests"
+            description="Run tests for the Units Checker extension capabilities">
+        <exec executable="chmod">
+            <arg line="+x ${basedir}/bin/javac"/>
+        </exec>
+
+        <exec executable="make" failonerror="${halt.on.test.failure}">
+            <env key="JAVAC" value="${basedir}/bin/javac"/>
+            <arg line="-C tests/units-extension/"/>
+        </exec>
     </target>
 
     <target name="guieffect-tests" depends="jar,build-tests"

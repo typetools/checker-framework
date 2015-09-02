@@ -1,16 +1,15 @@
 package tests;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 
 import java.io.File;
-import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * JUnit tests for the Nullness checker when array subtyping is invariant.
  */
-public class NullnessInvariantArraysTest extends ParameterizedCheckerTest {
+public class NullnessInvariantArraysTest extends CheckerFrameworkTest {
 
     public NullnessInvariantArraysTest(File testFile) {
         super(testFile,
@@ -21,8 +20,8 @@ public class NullnessInvariantArraysTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("nullness-invariantarrays");
+    public static String[] getTestDirs() {
+        return new String[]{"nullness-invariantarrays"};
     }
 
 }

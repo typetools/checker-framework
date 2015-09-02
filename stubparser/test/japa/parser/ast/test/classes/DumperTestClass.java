@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -322,7 +324,7 @@ public class DumperTestClass<T extends List<int[]>, X> extends Base implements S
     class A<T extends Integer & Serializable> implements XXX, Serializable {
 
         @AnnotationTest
-        public <ABC> A(Integer integer, ABC string) throws Exception, IOException {
+        public <@TypeAnnotationTest ABC> A(Integer integer, ABC string) throws Exception, IOException {
         }
     }
 
@@ -358,6 +360,11 @@ public class DumperTestClass<T extends List<int[]>, X> extends Base implements S
         AnnotationTest valueA2() default @AnnotationTest("qwe");
 
         AnnotationTest valueA3() default @AnnotationTest(value = "qwe", valueI = { 1 });
+    }
+
+    @Documented
+    @Target({ElementType.TYPE_USE})
+    public @interface TypeAnnotationTest {
     }
 
     ;

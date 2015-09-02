@@ -346,7 +346,7 @@ public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMi
      */
     protected void maybeCopyPrimaryAnnotations(final AnnotatedTypeMirror source, final AnnotatedTypeMirror dest) {
         if (copyAnnotations) {
-            dest.addAnnotations(source.annotations);
+            dest.addAnnotations(source.getAnnotationsField());
         }
     }
 }

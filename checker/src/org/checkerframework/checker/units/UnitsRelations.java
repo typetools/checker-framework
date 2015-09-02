@@ -1,13 +1,13 @@
 package org.checkerframework.checker.units;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+
+/*>>>
+import org.checkerframework.checker.nullness.qual.Nullable;
+*/
 
 /**
  * Interface that is used to specify the relation between units.
@@ -22,22 +22,22 @@ public interface UnitsRelations {
     UnitsRelations init(ProcessingEnvironment env);
 
     /**
-     * Called for the multiplication of type p1 and p2.
+     * Called for the multiplication of type lht and rht.
      *
-     * @param p1 LHS in multiplication.
-     * @param p2 RHS in multiplication.
+     * @param lht Left hand side in multiplication.
+     * @param rht Right hand side in multiplication.
      * @return The annotation to use for the result of the multiplication or
      *      null if no special relation is known.
      */
-    /*@Nullable*/ AnnotationMirror multiplication(AnnotatedTypeMirror p1, AnnotatedTypeMirror p2);
+    /*@Nullable*/ AnnotationMirror multiplication(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht);
 
     /**
-     * Called for the division of type p1 and p2.
+     * Called for the division of type lht and rht.
      *
-     * @param p1 LHS in division.
-     * @param p2 RHS in division.
+     * @param lht Left hand side in division.
+     * @param rht Right hand side in division.
      * @return The annotation to use for the result of the division or
      *      null if no special relation is known.
      */
-    /*@Nullable*/ AnnotationMirror division(AnnotatedTypeMirror p1, AnnotatedTypeMirror p2);
+    /*@Nullable*/ AnnotationMirror division(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht);
 }

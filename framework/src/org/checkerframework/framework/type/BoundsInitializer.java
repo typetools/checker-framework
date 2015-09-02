@@ -78,7 +78,7 @@ public class BoundsInitializer {
      *
      */
     private static Set<AnnotationMirror> saveAnnotations(final AnnotatedTypeMirror type) {
-        if (!type.annotations.isEmpty()) {
+        if (!type.getAnnotationsField().isEmpty()) {
             final Set<AnnotationMirror> annos = new HashSet<>(type.getAnnotations());
             type.clearAnnotations();
             return annos;

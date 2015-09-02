@@ -1,9 +1,8 @@
 package tests;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 
 import java.io.File;
-import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
@@ -13,14 +12,14 @@ import org.junit.runners.Parameterized.Parameters;
  * @author smillst
  *
  */
-public class MethodValTest extends ParameterizedCheckerTest {
+public class MethodValTest extends CheckerFrameworkTest {
 
     public MethodValTest(File testFile) {
         super(testFile, org.checkerframework.common.reflection.MethodValChecker.class, "methodval", "-Anomsgtext");
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("methodval");
+    public static String [] getTestDirs() {
+        return new String[]{"methodval"};
     }
 }
