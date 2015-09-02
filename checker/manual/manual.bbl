@@ -39,13 +39,14 @@ Werner Dietl, Stephanie Dietzel, Michael~D. Ernst, K{\i}van{\c{c}} Mu{\c{s}}lu,
   2011.
 
 \bibitem[EJM{\etalchar{+}}14]{ErnstJMDPRKBBHVW2014}
-Michael~D. Ernst, Ren{\'e} Just, Suzanne Millstein, Werner~M. Dietl, Stuart
+Michael~D. Ernst, Ren{\'e} Just, Suzanne Millstein, Werner Dietl, Stuart
   Pernsteiner, Franziska Roesner, Karl Koscher, Paulo Barros, Ravi Bhoraskar,
   Seungyeop Han, Paul Vines, and Edward~X. Wu.
 \newblock Collaborative verification of information flow for a high-assurance
   app store.
 \newblock In {\em Proceedings of the 21st ACM Conference on Computer and
-  Communications Security (CCS)}, Scottsdale, AZ, USA, November~4--6, 2014.
+  Communications Security (CCS)}, pages 1092--1104, Scottsdale, AZ, USA,
+  November~4--6, 2014.
 
 \bibitem[Ern08]{JSR308-2008-09-12}
 Michael~D. Ernst.
