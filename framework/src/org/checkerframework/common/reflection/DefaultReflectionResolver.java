@@ -21,7 +21,9 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.reflection.qual.Invoke;
 import org.checkerframework.common.reflection.qual.MethodVal;
+import org.checkerframework.common.reflection.qual.NewInstance;
 import org.checkerframework.common.reflection.qual.UnknownMethod;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -79,10 +81,6 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     private final Trees trees;
     private final boolean debug;
 
-    private final ExecutableElement invoke;
-    private final ExecutableElement newInstance;
-
-
     public DefaultReflectionResolver(BaseTypeChecker checker,
             MethodValAnnotatedTypeFactory methodValProvider, boolean debug) {
         this.checker = checker;
@@ -90,17 +88,13 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         this.processingEnv = checker.getProcessingEnvironment();
         this.trees = Trees.instance(processingEnv);
         this.debug = debug;
-
-        invoke = TreeUtils.getMethod("java.lang.reflect.Method", "invoke", 2,
-                processingEnv);
-        newInstance = TreeUtils.getMethod("java.lang.reflect.Constructor",
-                "newInstance", 1, processingEnv);
     }
 
     @Override
     public boolean isReflectiveMethodInvocation(MethodInvocationTree tree) {
-        if ((TreeUtils.isMethodInvocation(tree, invoke, processingEnv) || TreeUtils
-                .isMethodInvocation(tree, newInstance, processingEnv))) {
+        if ((provider.getDeclAnnotation(InternalUtils.symbol(tree),
+                Invoke.class) != null || provider.getDeclAnnotation(
+                        InternalUtils.symbol(tree), NewInstance.class) != null)) {
             return true;
         }
         // Called method is neither Method.invoke nor Constructor.newInstance
@@ -112,7 +106,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             AnnotatedTypeFactory factory, MethodInvocationTree tree,
             Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> origResult) {
         assert isReflectiveMethodInvocation(tree);
-        if (TreeUtils.isMethodInvocation(tree, newInstance, processingEnv)) {
+        if (provider.getDeclAnnotation(InternalUtils.symbol(tree),
+                NewInstance.class) != null) {
             return resolveConstructorCall(factory, tree, origResult);
         } else {
             return resolveMethodCall(factory, tree, origResult);
