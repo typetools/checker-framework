@@ -23,6 +23,9 @@ public class NullnessStubfileMerge {
    @NonNull String nonNull = "Hello!";
 
    void method( ) {
+       //:: error: (type.argument.type.incompatible)
+       ThreadLocal<@NonNull String> l;  // typeparam marked Nullable in jdk.jaif
+
        //:: error: (assignment.type.incompatible)
        @NonNull String error1 = nonNull.intern();
 
