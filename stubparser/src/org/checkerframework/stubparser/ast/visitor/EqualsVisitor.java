@@ -204,6 +204,10 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
     public Boolean visit(TypeParameter n1, Node arg) {
         TypeParameter n2 = (TypeParameter) arg;
 
+        if (!nodesEquals(n1.getAnnotations(), n2.getAnnotations())) {
+            return Boolean.FALSE;
+        }
+
         if (!objEquals(n1.getName(), n2.getName())) {
             return Boolean.FALSE;
         }

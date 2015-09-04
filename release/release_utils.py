@@ -368,11 +368,24 @@ def check_hg_user():
         raise Exception("Please set your HGUSER name to the correct value before running the script!")
 
 def is_git( repo_root ):
+    return is_git_private(repo_root, True)
+
+def is_git_not_bare( repo_root ):
+    return is_git_private(repo_root, False)
+
+def is_git_private( repo_root, return_value_on_bare ):
+    if is_git_bare(repo_root):
+        return return_value_on_bare
     if os.path.isdir(repo_root + "/.git"):
         return True
     if os.path.isdir(repo_root + "/.hg"):
         return False
-    raise Exception(repo_root + " has neither a .git nor a .hg subdirectory")
+    raise Exception(repo_root + " is not recognized as a git, git bare, or hg repository")
+
+def is_git_bare( repo_root ): # Bare git repos have no .git directory but they have a refs directory
+    if os.path.isdir(repo_root + "/refs"):
+        return True
+    return False
 
 def hg_push_or_fail( repo_root ):
     if is_git(repo_root):
@@ -391,7 +404,9 @@ def hg_push( repo_root ):
 
 #Pull the latest changes and update
 def update_project(path):
-    if is_git(path):
+    if is_git_bare(path):
+        execute('git -C %s fetch' % path)
+    elif is_git(path):
         execute('git -C %s pull' % path)
     else:
         execute('hg -R %s pull -u' % path)
@@ -423,12 +438,21 @@ def retrieve_changes(root, prev_version, prefix):
     return execute(cmd_template % (root, prefix, prev_version),
                    capture_output=True)
 
-def clone_or_update_repo(src_repo, dst_repo):
+def clone_or_update_repo(src_repo, dst_repo, bareflag):
     if os.path.isdir(os.path.abspath(dst_repo)):
         update_project( dst_repo )
     else:
-        if ("http" in src_repo and "git" in src_repo) or is_git(src_repo):
-            execute('git clone %s %s' % (src_repo, dst_repo))
+        isGitRepo = False
+        if ("http" in src_repo):
+            if ("git" in src_repo):
+                isGitRepo = True
+        elif is_git(src_repo):
+            isGitRepo = True
+        if (isGitRepo):
+            flags = ""
+            if (bareflag):
+                flags = "--bare"
+            execute('git clone %s %s %s' % (flags, src_repo, dst_repo))
         else:
             execute('hg clone %s %s' % (src_repo, dst_repo))
 
@@ -448,14 +472,16 @@ def is_repo_cleaned_and_updated(repo):
 
 def repo_exists(repo):
     print ('Does repo exist: %s' % repo)
-    hg_failed = execute('hg -R %s root' % (repo), False, False)
-    git_failed = execute('git -C %s rev-parse --show-toplevel' % (repo), False, False)
+    hg_failed = execute('git -C %s rev-parse --show-toplevel' % (repo), False, False)
+    git_failed = execute('hg -R %s root' % (repo), False, False)
     print ''
     return not (hg_failed and git_failed)
 
 def strip(repo):
     """Deletes all outgoing changesets"""
-    if is_git(repo):
+    if is_git_bare(repo):
+        raise Exception("strip cannot be called on a bare repo ( %s )" % repo)
+    elif is_git(repo):
         execute("git -C %s reset --hard origin/master" % repo)
         return
     cmd = ['hg', '-R', repo, 'strip', '--no-backup', 'roots(outgoing())']
@@ -479,6 +505,8 @@ def strip(repo):
     print ""
 
 def revert(repo):
+    if is_git_bare(repo):
+        raise Exception("revert cannot be called on a bare repo ( %s )" % repo)
     if is_git(repo):
         execute('git -C %s reset --hard' % repo)
     else:
@@ -486,6 +514,8 @@ def revert(repo):
 
 def purge(repo, all=False):
     """All means also ignored files"""
+    if is_git_bare(repo):
+        raise Exception("purge cannot be called on a bare repo ( %s )" % repo)
     if is_git(repo):
         if all:
             cmd = 'git -C %s clean -f -x' % repo
@@ -501,6 +531,8 @@ def purge(repo, all=False):
 def clean_repo(repo, prompt):
     if maybe_prompt_yn( 'Remove all modified files, untracked files and outgoing commits from %s ?' % repo, prompt ):
         ensure_group_access(repo)
+        if is_git_bare(repo):
+            return
         revert(repo)
         strip(repo)
         purge(repo, all)

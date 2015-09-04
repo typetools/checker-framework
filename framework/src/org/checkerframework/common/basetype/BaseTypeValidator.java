@@ -4,17 +4,15 @@ package org.checkerframework.common.basetype;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 */
 
-import java.util.List;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
-
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
@@ -23,6 +21,13 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+
+import java.util.List;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ExpressionTree;
@@ -64,6 +69,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      *     field type should then be validated.
      * @return True, iff the type is valid.
      */
+    @Override
     public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
         this.isValid = true;
         visit(type, tree);
@@ -295,8 +301,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             comp = ((AnnotatedArrayType) comp).getComponentType();
         } while (comp.getKind() == TypeKind.ARRAY);
 
-        if (comp != null &&
-                comp.getKind() == TypeKind.DECLARED &&
+        if (comp.getKind() == TypeKind.DECLARED &&
                 checker.shouldSkipUses(((AnnotatedDeclaredType) comp)
                         .getUnderlyingType().asElement())) {
             return super.visitArray(type, tree);

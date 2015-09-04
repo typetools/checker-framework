@@ -751,9 +751,11 @@ final class ASTParser implements ASTParserConstants {
 
   final public TypeParameter TypeParameter() throws ParseException {
         String name;
+        List annotations = null;
         List typeBound = null;
         int line;
         int column;
+    annotations = Annotationsopt();
     jj_consume_token(IDENTIFIER);
                   name = token.image; line=token.beginLine; column=token.beginColumn;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -764,7 +766,7 @@ final class ASTParser implements ASTParserConstants {
       jj_la1[27] = jj_gen;
       ;
     }
-     {if (true) return new TypeParameter(line, column, token.endLine, token.endColumn,name, typeBound);}
+     {if (true) return new TypeParameter(line, column, token.endLine, token.endColumn, name, annotations, typeBound);}
     throw new Error("Missing return statement in function");
   }
 
@@ -5323,6 +5325,7 @@ final class ASTParser implements ASTParserConstants {
   }
 
   private boolean jj_3R_168() {
+    if (jj_3R_77()) return true;
     if (jj_scan_token(IDENTIFIER)) return true;
     Token xsp;
     xsp = jj_scanpos;

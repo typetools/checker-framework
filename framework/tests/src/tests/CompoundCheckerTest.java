@@ -1,9 +1,8 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -12,7 +11,7 @@ import org.junit.runners.Parameterized.Parameters;
  * @author smillst
  *
  */
-public class CompoundCheckerTest extends ParameterizedCheckerTest {
+public class CompoundCheckerTest extends CheckerFrameworkTest {
 
     public CompoundCheckerTest(File testFile) {
         super(testFile, tests.compound.CompoundChecker.class,
@@ -20,7 +19,7 @@ public class CompoundCheckerTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("compound-checker");
+    public static String [] getTestDirs() {
+        return new String[]{"compound-checker"};
     }
 }

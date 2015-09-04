@@ -7,8 +7,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.checkerframework.framework.util.QualifierPolymorphism;
-
 /**
  * A meta-annotation that indicates that an annotation is a polymorphic type
  * qualifier.

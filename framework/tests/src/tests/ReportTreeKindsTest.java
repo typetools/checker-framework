@@ -1,12 +1,11 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class ReportTreeKindsTest extends ParameterizedCheckerTest {
+public class ReportTreeKindsTest extends CheckerFrameworkTest {
 
     public ReportTreeKindsTest(File testFile) {
         super(testFile,
@@ -16,7 +15,7 @@ public class ReportTreeKindsTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("reporttreekinds");
+    public static String [] getTestDirs() {
+        return new String[]{"reporttreekinds"};
     }
 }

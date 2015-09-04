@@ -865,6 +865,13 @@ public abstract class ModifierVisitorAdapter<A> implements GenericVisitor<Node, 
     }
 
     public Node visit(TypeParameter n, A arg) {
+        List<AnnotationExpr> annotations = n.getAnnotations();
+        if (annotations != null) {
+            for (int i = 0; i < annotations.size(); i++) {
+                annotations.set(i, (AnnotationExpr) annotations.get(i).accept(this, arg));
+            }
+            removeNulls(annotations);
+        }
         List<ClassOrInterfaceType> typeBound = n.getTypeBound();
         if (typeBound != null) {
             for (int i = 0; i < typeBound.size(); i++) {

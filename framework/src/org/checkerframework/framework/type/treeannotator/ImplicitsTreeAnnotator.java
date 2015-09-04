@@ -1,7 +1,5 @@
 package org.checkerframework.framework.type.treeannotator;
 
-import com.sun.source.tree.*;
-import com.sun.source.tree.Tree.Kind;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -9,10 +7,19 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
-import javax.lang.model.element.AnnotationMirror;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
+
+import javax.lang.model.element.AnnotationMirror;
+
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 
 
 /**

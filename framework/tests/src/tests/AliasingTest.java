@@ -1,12 +1,11 @@
 package tests;
 
 import java.io.File;
-import java.util.Collection;
 
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class AliasingTest extends ParameterizedCheckerTest {
+public class AliasingTest extends CheckerFrameworkTest {
 
     public AliasingTest(File testFile) {
         super(testFile,
@@ -18,8 +17,8 @@ public class AliasingTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("aliasing");
+    public static String[] getTestDirs() {
+        return new String[]{"aliasing"};
     }
 
 }

@@ -21,13 +21,13 @@ def print_usage():
 #If the relevant repos do not exist, clone them, otherwise, update them.
 def update_repos():
     for live_to_interm in LIVE_TO_INTERM_REPOS:
-        clone_or_update_repo( live_to_interm[0], live_to_interm[1] )
+        clone_or_update_repo( live_to_interm[0], live_to_interm[1], True )
 
     for interm_to_build in INTERM_TO_BUILD_REPOS:
-        clone_or_update_repo( interm_to_build[0], interm_to_build[1] )
+        clone_or_update_repo( interm_to_build[0], interm_to_build[1], False )
 
-    clone_or_update_repo( LIVE_PLUME_LIB, PLUME_LIB )
-    clone_or_update_repo( LIVE_PLUME_BIB, PLUME_BIB )
+    clone_or_update_repo( LIVE_PLUME_LIB, PLUME_LIB, False )
+    clone_or_update_repo( LIVE_PLUME_BIB, PLUME_BIB, False )
 
 def get_afu_date( building_afu ):
     if building_afu:

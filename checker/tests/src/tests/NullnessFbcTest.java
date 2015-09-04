@@ -1,10 +1,9 @@
 package tests;
 
 import org.checkerframework.checker.nullness.AbstractNullnessChecker;
-import org.checkerframework.framework.test.ParameterizedCheckerTest;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 
 import java.io.File;
-import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
@@ -12,7 +11,7 @@ import org.junit.runners.Parameterized.Parameters;
  * JUnit tests for the Nullness checker (that uses the Freedom Before Commitment
  * type system for initialization).
  */
-public class NullnessFbcTest extends ParameterizedCheckerTest {
+public class NullnessFbcTest extends CheckerFrameworkTest {
 
     public NullnessFbcTest(File testFile) {
         // TODO: remove forbidnonnullarraycomponents option once it's no
@@ -30,8 +29,8 @@ public class NullnessFbcTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() {
-        return testFiles("nullness", "initialization/fbc", "all-systems");
+    public static String[] getTestDirs() {
+        return new String[]{"nullness", "initialization/fbc", "all-systems"};
     }
 
 }

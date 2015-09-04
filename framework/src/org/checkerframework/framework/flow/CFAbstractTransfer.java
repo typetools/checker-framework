@@ -998,7 +998,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         V operandValue = p.getValueOfSubNode(n.getOperand());
 
         // Combine the two.
-        V mostPreciseValue = moreSpecificValue(factoryValue, operandValue);
+        V mostPreciseValue = moreSpecificValue(operandValue, factoryValue);
 
         // Insert into the store if possible.
         Receiver operandInternal = FlowExpressions.internalReprOf(
