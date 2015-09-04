@@ -23,8 +23,9 @@ public class NullnessStubfileMerge {
    @NonNull String nonNull = "Hello!";
 
    void method( ) {
+       // below fails because of stub file overruling annotated JDK
        //:: error: (type.argument.type.incompatible)
-       ThreadLocal<@NonNull String> l;  // typeparam marked Nullable in jdk.jaif
+       java.util.List<@NonNull String> l;
 
        //:: error: (assignment.type.incompatible)
        @NonNull String error1 = nonNull.intern();
