@@ -25,13 +25,13 @@ import static org.checkerframework.framework.test.TestConfigurationBuilder.build
  * the testsuite will find all of the java test files that exists below the listed directories.
  * It is unnecessary to list child directories of a directory you have already listed.
  *
- * {@code @Parameters public static List<String> getTestFiles(); }
+ * {@code @Parameters public static List<File> getTestFiles(); }
  * The method returns a List of Java files. There are methods in TestUtilities like findNestedJavaTestFiles to help
  * you construct this List. The TestSuite will then instantiate the subclass once for each file returned by
  * getTestFiles and execute the run method.
  * An example of this method is:
  *
- * {@code @Parameters public static List<Object[]> getTestFiles() { return TestUtilities.findNestedJavaTestFiles("aggregate"); } }
+ * {@code @Parameters public static List<File> getTestFiles() { return TestUtilities.findNestedJavaTestFiles("aggregate"); } }
  *
  */
 @RunWith(TestSuite.class)
