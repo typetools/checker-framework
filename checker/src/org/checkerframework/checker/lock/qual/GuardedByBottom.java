@@ -12,7 +12,9 @@ import org.checkerframework.framework.qual.TypeQualifier;
 import com.sun.source.tree.Tree;
 
 /**
- * The bottom of the guarded-by qualifier hierarchy.
+ * The bottom of the GuardedBy qualifier hierarchy.
+ * If a variable {@code x} has type {@code @GuardedByBottom}, then
+ * the value referred to by {@code x} is {@code null}.
  * <p>
  *
  * This annotation may not be written in source code; it is an
@@ -22,7 +24,8 @@ import com.sun.source.tree.Tree;
  */
 @TypeQualifier
 @InvisibleQualifier
-@SubtypeOf(GuardedBy.class)
+@SubtypeOf({GuardedBy.class, GuardSatisfied.class})
+@ImplicitFor(trees = {Tree.Kind.NULL_LITERAL})
 @Documented
 @DefaultFor({DefaultLocation.LOWER_BOUNDS})
 @Target({}) // not necessary to be used by the programmer

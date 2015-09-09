@@ -7,8 +7,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
- * The top of the guarded-by qualifier hierarchy.
- *
+ * The top of the GuardedBy qualifier hierarchy.
  * Indicates that the value referred to by the
  * annotated variable can never be accessed.
  * <p>

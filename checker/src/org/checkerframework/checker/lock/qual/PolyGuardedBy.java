@@ -11,6 +11,8 @@ import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * A polymorphic qualifier for the GuardedBy type system.
+ * Indicates that is unknown what the guards are or whether they are held.
+ * An expression whose type is {@code @PolyGuardedBy} cannot be dereferenced.
  * <p>
  *
  * Any method written using {@code @PolyGuardedBy} conceptually has an
@@ -20,14 +22,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * replaced by {@code @}{@link GuardedByBottom}, and ones in which every
  * instance of {@code @PolyGuardedBy} has been replaced by {@code @}{@link GuardedBy},
  * for every possible combination of map arguments.
- * <p>
- *
- * For example, the receiver parameter and return value of
- * {@link StringBuffer#append(String s)} are annotated as {@code @PolyGuardedBy}, because
- * the {@code @GuardedBy} annotation on the receiver of a call to the method is unknown at its
- * definition site, because the method can be called by arbitrary code, but is known to match
- * the {@code @GuardedBy} annotation on the return value because the method documentation
- * indicates that the receiver is returned to the caller.
  * <p>
  *
  * @see GuardedBy
