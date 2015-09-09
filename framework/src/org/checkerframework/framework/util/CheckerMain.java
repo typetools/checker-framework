@@ -116,6 +116,14 @@ public class CheckerMain {
         }
     }
 
+    public void addToClasspath(List<String> cpOpts) {
+        this.cpOpts.addAll(cpOpts);
+    }
+
+    public void addToRuntimeBootclasspath(List<String> runtimeBootClasspathOpts) {
+        this.runtimeBootClasspath.addAll(runtimeBootClasspathOpts);
+    }
+
     protected List<String> createRuntimeBootclasspath(final List<String> argsList) {
         return new ArrayList<String>(Arrays.asList(javacJar.getAbsolutePath()));
     }
@@ -324,7 +332,7 @@ public class CheckerMain {
     /**
      * Invoke the JSR308 Type Annotations Compiler with all relevant jars on it's classpath or boot classpath
      */
-    protected int invokeCompiler() {
+    public List<String> getExecArguments() {
         List<String> args = new ArrayList<String>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 5);
 
         final String java = PluginUtil.getJavaCommand(System.getProperty("java.home"), System.out);
@@ -347,6 +355,14 @@ public class CheckerMain {
         }
 
         args.addAll(toolOpts);
+        return args;
+    }
+
+    /**
+     * Invoke the JSR308 Type Annotations Compiler with all relevant jars on it's classpath or boot classpath
+     */
+    public int invokeCompiler() {
+        List<String> args = getExecArguments();
 
         for (int i = 0; i < args.size(); i++) {
             String arg = args.get(i);
