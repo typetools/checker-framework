@@ -80,7 +80,6 @@ public class ExecUtil {
                             exception = exc;
                         } finally {
                             quietlyClose(in);
-                            quietlyClose(out);
                         }
                     }
                 }
