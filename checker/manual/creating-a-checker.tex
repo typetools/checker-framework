@@ -1263,6 +1263,9 @@ The Checker Framework provides a convenient way to write tests for your
 checker.
 % Don't repeat the information here, to prevent them from getting out of sync.
 It is extensively documented in file \<checker-framework/checker/tests/README>.
+Also see the API documentation for
+\mbox{\code{org.checkerframework.framework.test.CheckerFrameworkTest}},
+which all test classes should extend.
 
 
 \section{Debugging options\label{debugging-options}}
@@ -1388,6 +1391,8 @@ examples/InterningExampleWithWarnings.java:21: (not.interned)
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
+
+\subsection{Using an external debugger\label{debugging-options-external}}
 
 You can use any standard debugger to observe the execution of your checker.
 Set the execution main class to \code{com.sun.tools.javac.Main}, and insert
