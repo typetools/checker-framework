@@ -268,38 +268,42 @@ the following additional rules.
 
 \end{description}
 
-\paragraph{Operations on primitive types}
+\paragraph{Primitive types}
 
-  Primitive values are not guarded.  Instead, the variables that store them are.
-\textcolor{red}{JT: Do I need to justify why primitives are guarded by name?
-I could explain that this is the way primitives are most commonly guarded in
-practice and could even explain why that is the case, but it seems unnecessary.}
-  Therefore, for reads, writes and other operations on primitive values, the Lock Checker requires that
-  the appropriate locks be held, but it does not enforce any other rules.
-  In particular, it does not require the annotations
-  in the types involved in the operation (including assignments and
-  pseudo-assignments) to match.  For example, given:
-  \begin{verbatim}
-  ReentrantLock lock1, lock2;
-  @GuardedBy("lock1") int a;
-  @GuardedBy("lock2") int b;
-  @GuardedBy({}) int c;
-  ...
-  lock1.lock();
-  lock2.lock();
-  a = b;
-  a = c;
-  a = b + c;
-  \end{verbatim}
-  The expressions \code{a = b}, \code{a = c}, and \code{a = b + c}
-  all type check, whereas none of them would type check if \code{a},
-  \code{b} and \code{c} were not primitives.
-[[JAVIER: What is the point of this rule?  Wouldn't it be easier to just
-    say that all primitive types are treated as \<@GuardedBy()> and that it
-    is an error to write \<@GuardedBy> on any primitive type?]]
-\textcolor{red}{JT: The user may still want to guard primitive variables
-against data races, such as a bank account balance.  I think we should
-just mention that this guarding is by-name.}
+Primitive types are treated as being annotated with \<@GuardedBy(\{\})>.
+It is an error to annotate any primitive type with an annotation from
+the \<@GuardedBy> type hierarchy.
+\textcolor{red}{JT: I think it would be useful to issue a warning
+even when the user explicitly annotates a primitive type with \<@GuardedBy(\{\})>.
+The warning would indicate that in general, verifying a locking discipline
+involving primitive types is not handled by the Lock Checker.
+The reason to have such a warning is so that in a future version,
+the message for the same warning can be replaced with one indicating that
+\<@GuardedByName> is the appropriate annotation to use for primitive types.
+The user would thus not see a net increase in the number of warnings when
+upgrading to the newer Lock Checker version.}
+
+%  Primitive values are not guarded.  Instead, the variables that store them are.
+%  Therefore, for reads, writes and other operations on primitive values, the Lock Checker requires that
+%  the appropriate locks be held, but it does not enforce any other rules.
+%  In particular, it does not require the annotations
+%  in the types involved in the operation (including assignments and
+%  pseudo-assignments) to match.  For example, given:
+%  \begin{verbatim}
+%  ReentrantLock lock1, lock2;
+%  @GuardedBy("lock1") int a;
+%  @GuardedBy("lock2") int b;
+%  @GuardedBy({}) int c;
+%  ...
+%  lock1.lock();
+%  lock2.lock();
+%  a = b;
+%  a = c;
+%  a = b + c;
+%  \end{verbatim}
+%  The expressions \code{a = b}, \code{a = c}, and \code{a = b + c}
+%  all type check, whereas none of them would type check if \code{a},
+%  \code{b} and \code{c} were not primitives.
 
 \paragraph{Overriding}
 
