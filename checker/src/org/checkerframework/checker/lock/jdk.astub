@@ -1,5 +1,82 @@
 import org.checkerframework.checker.lock.qual.*;
 
+package java.text;
+
+public class SimpleDateFormat {
+    StringBuffer format(Date date) @GuardSatisfied;
+}
+
+package java.util;
+
+public interface Map<K,V> {
+  @Pure int size() @GuardSatisfied;
+  @Pure V get(Object a1) @GuardSatisfied;
+  V put(K a1, V a2) @GuardSatisfied;
+  void putAll(Map<? extends K, ? extends V> a1) @GuardSatisfied;
+  @Pure boolean containsKey(Object a1) @GuardSatisfied;
+  V remove(Object a1) @GuardSatisfied;
+  void clear() @GuardSatisfied;
+  Set<Map.Entry<K,V>> entrySet() @GuardSatisfied;
+  @SideEffectFree Set<K> keySet() @GuardSatisfied;
+  @SideEffectFree Collection<V> values() @GuardSatisfied;
+}
+
+public class AbstractMap<K,V> {
+    int size() @GuardSatisfied;
+    V get(Object key) @GuardSatisfied;
+    V put(K key, V value) @GuardSatisfied;
+    void clear()@GuardSatisfied;
+    Set<Map.Entry<K,V>> entrySet() @GuardSatisfied;
+    @Pure boolean containsKey(Object a1) @GuardSatisfied;
+    V remove(Object a1) @GuardSatisfied;    
+}
+
+public class HashMap<K,V> {
+    int size() @GuardSatisfied;
+    V get(Object key) @GuardSatisfied;
+    V put(K key, V value) @GuardSatisfied;
+    void clear()@GuardSatisfied;
+    Set<Map.Entry<K,V>> entrySet() @GuardSatisfied;
+    void putAll(Map<? extends K, ? extends V> a1) @GuardSatisfied;
+    V remove(Object a1) @GuardSatisfied;
+}
+
+public class LinkedHashMap<K,V> {
+    V put(K key, V value) @GuardSatisfied;
+    void clear() @GuardSatisfied;
+    void putAll(Map<? extends K, ? extends V> a1) @GuardSatisfied;
+}
+
+public interface List<E> {
+    @Pure int size() @GuardSatisfied;
+    @Pure E get(int index) @GuardSatisfied;
+    void add(E element) @GuardSatisfied;
+    boolean remove(E element) @GuardSatisfied;
+    E remove(int index) @GuardSatisfied;
+}
+
+public class AbstractList<E> {
+    @Pure int size() @GuardSatisfied;
+    @Pure E get(int index) @GuardSatisfied;
+    void add(E element) @GuardSatisfied;
+    boolean remove(E element) @GuardSatisfied;
+    E remove(int index) @GuardSatisfied;
+}
+
+public abstract class AbstractCollection<E> {
+    int size() @GuardSatisfied;
+}
+
+public interface Collection<E> {
+    void add(E element) @GuardSatisfied;
+    int size() @GuardSatisfied;
+}
+
+public class Hashtable<K, V> {
+  @Pure V get(Object a1) @GuardSatisfied;
+  V put(K a1, V a2) @GuardSatisfied;
+}
+
 package java.util.concurrent.locks;
 
 public class ReentrantLock {

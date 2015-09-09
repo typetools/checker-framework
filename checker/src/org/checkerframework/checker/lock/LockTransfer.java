@@ -143,7 +143,12 @@ public class LockTransfer extends
                 final ClassTree classTree = method.getClassTree();
                 TypeMirror classType = InternalUtils.typeOf(classTree);
 
-                store.insertThisValue(LOCKHELD, classType);
+                if (methodElement.getModifiers().contains(Modifier.STATIC)) {
+                    store.insertExactValue(new FlowExpressions.ClassName(classType), LOCKHELD);
+                }
+                else {
+                    store.insertThisValue(LOCKHELD, classType);
+                }
             }
             else if (methodElement.getKind() == ElementKind.CONSTRUCTOR) {
                 store.setInConstructorOrInitializer();

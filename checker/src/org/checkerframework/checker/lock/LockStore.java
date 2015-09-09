@@ -69,7 +69,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
             return;
         }
         if (r instanceof FlowExpressions.LocalVariable) {
-            Element localVar = ((FlowExpressions.LocalVariable) r).getElement();
+            FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) r;
             localVariableValues.put(localVar, value);
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
@@ -95,6 +95,11 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
             // also fixed) if concurrent semantics are enabled.
             if (sequentialSemantics || thisRef.isUnmodifiableByOtherCode()) {
                 thisValue = value;
+            }
+        } else if (r instanceof FlowExpressions.ClassName) {
+            FlowExpressions.ClassName className = (FlowExpressions.ClassName) r;
+            if (sequentialSemantics || className.isUnmodifiableByOtherCode()) {
+                classValues.put(className, value);
             }
         } else {
             // No other types of expressions need to be stored.

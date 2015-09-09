@@ -120,6 +120,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment
@@ -292,7 +293,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // annotated type of the ClassTree before checking the type of any
         // code within the class.  The call below causes flow analysis to
         // be run over the class.  See GenericAnnotatedTypeFactory
-        // .annotateImplicit where analysis is performed.
+        // .annotateImplicitWithFlow where analysis is performed.
         visitorState.setClassType(atypeFactory.getAnnotatedType(node));
         visitorState.setClassTree(node);
         visitorState.setMethodReceiver(null);
@@ -982,8 +983,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 return;
             }
 
+            Node nodeNode = atypeFactory.getNodeForTree(tree);
+
             if (flowExprContext == null) {
-                Node nodeNode = atypeFactory.getNodeForTree(tree);
                 if (methodCall) {
                     flowExprContext = FlowExpressionParseUtil
                             .buildFlowExprContextForUse(
@@ -1029,24 +1031,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 try {
                     CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
 
-                    String s = expression.trim();
+                    // TODO: Wrap the following 'itself' handling logic into a method that calls FlowExpressionParseUtil.parse
+                    /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
+                    Pattern itselfPattern = Pattern.compile("^itself$");
+                    Matcher itselfMatcher = itselfPattern.matcher(expression.trim());
 
-                    Pattern selfPattern = Pattern.compile("^(this)$");
-                    Matcher selfMatcher = selfPattern.matcher(s);
-                    if (selfMatcher.matches()) {
-                        s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
+                    expr = FlowExpressionParseUtil.parse(expression,
+                            flowExprContext, getCurrentPath());
+
+                    if (expr == null && itselfMatcher.matches()) { // There is no variable, class, etc. named "itself"
+                        Node node;
+                        /*if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
+                            node = atypeFactory.getNodeForTree(((JCFieldAccess) tree).getExpression());
+                        } else {*/
+                            node = nodeNode;
+                        //}
+
+                        expr = FlowExpressions.internalReprOf(atypeFactory,
+                                node);
                     }
 
-                    // Try local variables first
-                    CFAbstractValue<?> value = store.getValueOfLocalVariableByName(s);
-
-                    if (value == null) // Not a recognized local variable
-                    {
-                        expr = FlowExpressionParseUtil.parse(expression,
-                                flowExprContext, getCurrentPath());
-
-                        value = store.getValue(expr);
-                    }
+                    CFAbstractValue<?> value = store.getValue(expr);
 
                     AnnotationMirror inferredAnno = value == null ? null : value
                             .getType().getAnnotationInHierarchy(anno);
@@ -1059,7 +1064,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 expr == null ? expression : expr.toString()), tree);
                     }
                 } catch (FlowExpressionParseException e) {
-                    // errors are reported at declaration site
+                    checker.report(e.getResult(), tree);
                 }
             }
         }
