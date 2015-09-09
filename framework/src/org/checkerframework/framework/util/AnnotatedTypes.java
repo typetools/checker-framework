@@ -1635,6 +1635,22 @@ public class AnnotatedTypes {
     public static AnnotationMirror findEffectiveAnnotationInHierarchy(final QualifierHierarchy qualifierHierarchy,
                                                                       final AnnotatedTypeMirror toSearch,
                                                                       final AnnotationMirror top) {
+        return findEffectiveAnnotationInHierarchy(qualifierHierarchy, toSearch, top, false);
+    }
+    /**
+     * When comparing types against the bounds of a type variable, we may encounter other
+     * type variables, wildcards, and intersections in those bounds.  This method traverses
+     * the bounds until it finds a concrete type from which it can pull an annotation.
+     * @param top The top of the hierarchy for which you are searching.
+     * @param canBeEmpty Whether or not the effective type can have NO annotation in the hierarchy specified by top
+     *                   If this param is false, an exception will be thrown if no annotation is found
+     *                   Otherwise the result is null
+     * @return The AnnotationMirror that represents the type of toSearch in the hierarchy of top
+     */
+    public static AnnotationMirror findEffectiveAnnotationInHierarchy(final QualifierHierarchy qualifierHierarchy,
+                                                                      final AnnotatedTypeMirror toSearch,
+                                                                      final AnnotationMirror top,
+                                                                      final boolean canBeEmpty) {
         AnnotatedTypeMirror source = toSearch;
         while (source.getAnnotationInHierarchy(top) == null) {
 
@@ -1659,10 +1675,15 @@ public class AnnotatedTypes {
                     return glb;
 
                 default:
+                    if (canBeEmpty) {
+                        return null;
+                    }
+
                     ErrorReporter.errorAbort("Unexpected AnnotatedTypeMirror with no primary annotation!\n"
                             + "toSearch=" + toSearch + "\n"
                             + "top="      + top      + "\n"
                             + "source=" + source);
+                    return null;
             }
         }
 

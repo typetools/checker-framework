@@ -25,6 +25,7 @@ rebuilding the JDK; for example,
   ant -e -find build.xml nullness-tests
   ant -e -find build.xml all-tests-nojdk
 
+
 How to run just one test for the Checker Framework
 ==================================================
 
