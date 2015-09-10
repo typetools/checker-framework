@@ -37,6 +37,10 @@ def copy_release_dir( path_to_dev, path_to_live, release_version ):
 
     return dest_location
 
+def copy_htaccess():
+    execute("cp %s %s" % (DEV_HTACCESS, LIVE_HTACCESS))
+    ensure_group_access(LIVE_HTACCESS)
+
 def copy_releases_to_live_site( checker_version, afu_version):
     copy_release_dir( JSR308_INTERM_RELEASES_DIR,  JSR308_LIVE_RELEASES_DIR,  checker_version )
     copy_release_dir( CHECKER_INTERM_RELEASES_DIR, CHECKER_LIVE_RELEASES_DIR, checker_version )
@@ -347,6 +351,7 @@ def main(argv):
     if not test_mode:
         print("Copying to live site")
         copy_releases_to_live_site( new_checker_version, new_afu_version )
+        copy_htaccess()
         ensure_group_access_to_releases()
         update_release_symlinks( new_checker_version, new_afu_version )
     else:

@@ -559,7 +559,8 @@ public class QualifierDefaults {
                T t;
             }
           We would like t to have its primary annotation defaulted but NOT the E inside its upper bound.
-          we use referential equality with the top level type var to determine which ones are defaultable
+          we use referential equality with the top level type var to determine which ones are definite
+          type uses, i.e. uses which can be defaulted
         */
         private final AnnotatedTypeVariable defaultableTypeVar;
 

@@ -391,14 +391,14 @@ def hg_push_or_fail( repo_root ):
     if is_git(repo_root):
         cmd = 'git -C %s push' % repo_root
     else:
-        cmd = 'hg -R %s push' % repo_root
+        cmd = 'hg -R %s push --tags' % repo_root
     result = os.system(cmd)
     if result is not 0:
         raise Exception("Could not push to: " + repo_root)
 
 def hg_push( repo_root ):
     if is_git(repo_root):
-        execute('git -C %s push' % repo_root)
+        execute('git -C %s push --tags' % repo_root)
     else:
         execute('hg -R %s push' % repo_root)
 
@@ -438,23 +438,27 @@ def retrieve_changes(root, prev_version, prefix):
     return execute(cmd_template % (root, prefix, prev_version),
                    capture_output=True)
 
-def clone_or_update_repo(src_repo, dst_repo, bareflag):
-    if os.path.isdir(os.path.abspath(dst_repo)):
-        update_project( dst_repo )
-    else:
-        isGitRepo = False
-        if ("http" in src_repo):
-            if ("git" in src_repo):
-                isGitRepo = True
-        elif is_git(src_repo):
+def delete_and_clone(src_repo, dst_repo, bareflag):
+    if os.path.exists(dst_repo):
+        delete_path(dst_repo)
+
+    clone(src_repo, dst_repo, bareflag)
+
+def clone(src_repo, dst_repo, bareflag):
+    isGitRepo = False
+    if ("http" in src_repo):
+        if ("git" in src_repo):
             isGitRepo = True
-        if (isGitRepo):
-            flags = ""
-            if (bareflag):
-                flags = "--bare"
-            execute('git clone %s %s %s' % (flags, src_repo, dst_repo))
-        else:
-            execute('hg clone %s %s' % (src_repo, dst_repo))
+    elif is_git(src_repo):
+        isGitRepo = True
+
+    if (isGitRepo):
+        flags = ""
+        if (bareflag):
+            flags = "--bare"
+        execute('git clone %s %s %s' % (flags, src_repo, dst_repo))
+    else:
+        execute('hg clone %s %s' % (src_repo, dst_repo))
 
 def is_repo_cleaned_and_updated(repo):
     if is_git(repo):
@@ -580,10 +584,11 @@ def get_commit_for_tag( revision, repo_file_path, tag_prefixes ):
     if not is_git(repo_file_path):
         raise Exception("get_commit_for_tag is only defined for git repositories")
 
-    tags = execute("git -C " + repo_file_path + " log --grep=" + revision, True, True)
-    lines = tags.split( "\n" )
+    #assume the first is the most recent
+    tags = execute("git -C " + repo_file_path + " rev-list " + tag_prefixes[0] + revision, True, True)
+    lines = tags.splitlines()
 
-    commit = get_commit_line_for_tag( lines, revision, tag_prefixes )
+    commit = lines[0]
     if commit is None:
         msg = "Could not find revision %s in repo %s using tags %s " %  ( revision, repo_file_path, ",".join( tag_prefixes ) )
         raise Exception( msg )
@@ -969,6 +974,16 @@ def mvn_sign_and_deploy_all(url, repo_id, pom_file, artifact_jar, source_jar, ja
 
 #=========================================================================================
 # Misc. Utils
+
+def update_htaccess(releaseDir, cfLtVersion, afuVersion, htAccessTemplate, htAccessToReplace):
+    msg = """Would you like to overwrite %s?""" % htAccessToReplace;
+
+    if not prompt_yn( msg ):
+        raise Exception( '%s file not written!' % htAccessToReplace )
+
+    cmd = "ant -f release.xml update-htaccess-versions -Dhtaccess.file=%s -Dcflt.version=%s -Dafu.version=%s" % (htAccessTemplate, cfLtVersion, afuVersion)
+    execute(cmd, True, False, releaseDir)
+    execute("cp %s %s" % (htAccessTemplate, htAccessToReplace))
 
 def print_step( step ):
     print( "\n" )

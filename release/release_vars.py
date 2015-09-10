@@ -41,10 +41,12 @@ MAX_DOWNLOAD_SIZE=2000000000
 #The location the test site is built in
 HTTP_PATH_TO_DEV_SITE  = "http://types.cs.washington.edu/dev"
 FILE_PATH_TO_DEV_SITE  = "/cse/www2/types/dev/"
+DEV_HTACCESS = os.path.join(FILE_PATH_TO_DEV_SITE, ".htaccess")
 
 #The location the test site is pushed to when it is ready
 HTTP_PATH_TO_LIVE_SITE  = "http://types.cs.washington.edu"
 FILE_PATH_TO_LIVE_SITE  = "/cse/www2/types"
+LIVE_HTACCESS = os.path.join(FILE_PATH_TO_LIVE_SITE, ".htaccess")
 
 PGP_PASSPHRASE_FILE = "/projects/swlab1/checker-framework/release-private.password"
 SONATYPE_OSS_URL = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
@@ -87,7 +89,8 @@ BUILD_DIR        = "/scratch/jsr308-release/build/"
 CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, 'checker-framework')
 CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, 'release')
 CHECKER_BIN_DIR  = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
-CHECKER_TAG_PREFIXES = [ "checkers-", "checker-framework-", "new release " ]
+RELEASE_HTACCESS = os.path.join(CHECKER_FRAMEWORK_RELEASE, "types.htaccess")
+CHECKER_TAG_PREFIXES = [ "checker-framework-", "checkers-" , "new release " ]
 
 CHECKER_BINARY   = os.path.join(CHECKER_BIN_DIR, 'checker.jar' )
 CHECKER_SOURCE   = os.path.join(CHECKER_BIN_DIR, 'checker-source.jar' )
@@ -185,6 +188,7 @@ AFU_LIVE_RELEASES_DIR = os.path.join( AFU_LIVE_SITE,  "releases" )
 
 CHECKER_LIVE_SITE = os.path.join( FILE_PATH_TO_LIVE_SITE, "checker-framework" )
 CHECKER_LIVE_RELEASES_DIR = os.path.join( CHECKER_LIVE_SITE, "releases" )
+LIVE_CF_LOGO = os.path.join(CHECKER_LIVE_SITE, "CFLogo.png")
 
 CURRENT_DATE=datetime.date.today()
 
