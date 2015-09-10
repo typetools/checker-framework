@@ -38,6 +38,12 @@ Werner Dietl, Stephanie Dietzel, Michael~D. Ernst, K{\i}van{\c{c}} Mu{\c{s}}lu,
   Software Engineering}, pages 681--690, Waikiki, Hawaii, USA, May~25--27,
   2011.
 
+\bibitem[DEM11]{DietlEM2011}
+Werner Dietl, Michael~D. Ernst, and Peter M{\"u}ller.
+\newblock Tunable static inference for {Generic} {Universe} {Types}.
+\newblock In {\em ECOOP 2011 --- Object-Oriented Programming, 25th European
+  Conference}, pages 333--357, Lancaster, UK, July~27--29, 2011.
+
 \bibitem[EJM{\etalchar{+}}14]{ErnstJMDPRKBBHVW2014}
 Michael~D. Ernst, Ren{\'e} Just, Suzanne Millstein, Werner Dietl, Stuart
   Pernsteiner, Franziska Roesner, Karl Koscher, Paulo Barros, Ravi Bhoraskar,
@@ -170,6 +176,13 @@ Matthew~S. Tschantz and Michael~D. Ernst.
 \newblock In {\em Object-Oriented Programming Systems, Languages, and
   Applications (OOPSLA 2005)}, pages 211--230, San Diego, CA, USA,
   October~18--20, 2005.
+
+\bibitem[TPV10]{TangPJ2010}
+Daniel Tang, Ales Plsek, and Jan Vitek.
+\newblock Static checking of safety critical {Java} annotations.
+\newblock In {\em 8th International Workshop on Java Technologies for Real-time
+  and Embedded Systems}, pages 148--154, Prague, Czech Republic, August~19--21,
+  2010.
 
 \bibitem[VPEJ14]{VakilianPEJ2014}
 Mohsen Vakilian, Amarin Phaosawasdi, Michael~D. Ernst, and Ralph~E. Johnson.
