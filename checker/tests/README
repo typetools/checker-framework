@@ -4,10 +4,6 @@ checker writers, and Checker Framework maintainers.  Users of the Checker
 Framework and of the checkers packaged with it should read the manual
 instead; see file ../manual/manual.html .
 
-NOTE: This document needs to be updated in accordance with the current
-test framework.  For now, see the API documentation for
-org.checkerframework.framework.test.CheckerFrameworkTest .
-
 
 How to run all the tests for the Checker Framework
 ==================================================
@@ -150,7 +146,8 @@ To create tests for a new checker, mimic some existing checker's tests:
  * create a top-level JUnit test, such as:
    checker-framework/checker/tests/src/tests/NullnessReflectionTest.java
    It is a subclass of CheckerFrameworkTest, and its list of checker
-   options must include "-Anomsgtext".
+   options must include "-Anomsgtext".  (See the API documentation for
+   CheckerFrameworkTest for more detailed information.)
  * change checker-framework/checker/build.xml to run those tests
 
 Different test cases may need to pass different command-line arguments
