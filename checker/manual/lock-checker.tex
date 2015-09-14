@@ -4,7 +4,7 @@
 The Lock Checker prevents certain concurrency errors by enforcing a
 locking discipline.  A locking discipline indicates which locks must be held
 when a given operation occurs.  You express the locking discipline by
-giving a variable a type of
+declaring variable's type to have the qualifier
 \<\refqualclass{checker/lock/qual}{GuardedBy}{\small("\emph{lockexpr}")}>.
 This indicates that the variable's value may
 be dereferenced only if the given lock is held.
@@ -23,8 +23,9 @@ Suppose that expression $e$ has type
 Then the value computed for $e$ is only dereferenced by a thread when the
 thread holds locks \<x> and \<y.z>.
 Dereferencing a value is reading or writing one of its fields.
-The guarantee holds regardless of whether the expression that performs the dereference uses the expression $e$
-directly or the value was first copied into a variable, returned as the
+The guarantee holds not only if the expression $e$ is dereferenced
+directly, but also if the value was first copied into a variable,
+returned as the
 result of a method call, etc.
 Copying a reference is always
 permitted by the Lock Checker, regardless of which locks are held.
@@ -48,10 +49,16 @@ Ensuring that your program obeys its locking discipline is an easy and
 effective way to eliminate a common and important class of errors.
 If the Lock Checker issues no warnings, then your program obeys its locking discipline.
 However, your program might still have other types of concurrency errors.
-For example, you might have forgotten to indicate that a particular value
-should only be dereferenced when a lock is held.  Your program might release and
+%
+For example, you might have specified an inadequate locking discipline
+because you forgot some \refqualclass{checker/lock/qual}{GuardedBy}
+annotations.
+%
+Your program might release and
 re-acquire the lock, when correctness requires it to hold it throughout a
-computation.  And, there are other concurrency errors that cannot, or
+computation.
+%
+And, there are other concurrency errors that cannot, or
 should not, be solved with locks.
 
 
@@ -94,6 +101,23 @@ This section describes the lock annotations you can write on types and methods.
   and should never be written by a programmer.
 
 \end{description}
+
+Figure~\ref{fig-lock-guardedby-hierarchy} shows the type hierarchy of these
+qualifiers.
+All \code{@GuardedBy} annotations are incomparable:
+if \emph{exprSet1} $\neq$ \emph{exprSet2}, then \code{@GuardedBy(\emph{exprSet1})} and
+\code{@GuardedBy(\emph{exprSet2})} are siblings in the type hierarchy.
+You might expect that
+\<@GuardedBy({"x", "y"}) T> is a subtype of \<@GuardedBy({"x"}) T>.  The
+first type requires two locks to be held, and the second requires only one
+lock to be held and so could be used in any situation where both locks are
+held.  The type system conservatively prohibits this in order to prevent
+type-checking loopholes that would result from aliasing and side effects
+--- that is, from having two mutable references, of different types, to the
+same data. See
+Section~\ref{guardedby-invariant-subtyping} for an example
+of a problem that would occur if this rule were relaxed.
+
 
 \paragraph{Polymorphic type qualifiers}
 
@@ -138,22 +162,6 @@ programmer.
 }
 \label{fig-lock-guardedby-hierarchy}
 \end{figure}
-
-Figure~\ref{fig-lock-guardedby-hierarchy} shows the type hierarchy of these
-qualifiers.
-All \code{@GuardedBy} annotations are incomparable:
-if \emph{exprSet1} $\neq$ \emph{exprSet2}, then \code{@GuardedBy(\emph{exprSet1})} and
-\code{@GuardedBy(\emph{exprSet2})} are siblings in the type hierarchy.
-You might expect that
-\<@GuardedBy({"x", "y"}) T> is a subtype of \<@GuardedBy({"x"}) T>.  The
-first type requires two locks to be held, and the second requires only one
-lock to be held and so could be used in any situation where both locks are
-held.  The type system conservatively prohibits this in order to prevent
-type-checking loopholes that would result from aliasing and side effects
---- that is, from having two mutable references, of different types, to the
-same data. See
-Section~\ref{lock-examples-guardedby-and-holding} for an example
-of a problem that would occur if this rule were relaxed.
 
 
 \subsection{Declaration annotations\label{lock-declaration-annotations}}
@@ -236,15 +244,33 @@ the following additional rules.
   Section~\ref{qualifier-polymorphism}.  There is an additional constraint
   for assignments whose
   left-hand side is an expression of type
-  \<@GuardSatisfied>.  The assignment type-checks only if all locks
+  \<@GuardSatisfied>:  the assignment type-checks only if all locks
   mentioned in the right-hand side's \<@GuardedBy> type are currently held.
 
 \item[\code{@GuardSatisfied}]
 
   The Lock Checker ensures that for all \<@GuardSatisfied> with the same index, the
-  corresponding \code{@GuardedBy} annotations at the call site all match exactly.
+  corresponding \code{@GuardedBy} annotations\textcolor{red}{MDE: Arguments have types, but arguments don't have annotations.}
+  at the call site all match exactly.\textcolor{red}{I don't understand the
+    motivation for this non-standard rule.  Other polymorphic types do not
+    place such a constraint on arguments:  the pseudo-assignment has to
+    type-check but the types do not have to be identical.  Why should this
+    one?}
   Similarly, the Lock Checker ensures that for all \<@GuardSatisfied> with no index, the
   corresponding \code{@GuardedBy} annotations at the call site all match exactly.
+
+\textcolor{red}{MDE:
+  Here is a counter-proposal to your specification of @GuardSatisfied
+  without an argument.
+  Conceptually, @GuardSatisfied must always be written with an argument.
+  @GuardSatisfied without an argument means use a fresh (that is, unique) identifier each time.
+  (This is different than other @Poly... types, where omitting the
+  identifier is shorthand for using the same argument each time, as you
+  described.)
+Assignments:
+  @GuardSatisfied(id) can be freely assigned at its declaration, so long as the right-hand side has all of its guards satisfied
+  @GuardSatisfied(id) can only be re-assigned from a right-hand-side of identical @GuardSatisfied(id) type}
+
 
   See Section~\ref{lock-checker-polymorphism} for an example demonstrating this rule.
 
@@ -271,10 +297,13 @@ the following additional rules.
 \paragraph{Primitive types}
 
 Primitive types are treated as being annotated with \<@GuardedBy(\{\})>.
-It is an error to annotate any primitive type with an annotation from
+It is an error for the programmer to annotate any primitive type with an annotation from
 the \<@GuardedBy> type hierarchy.
 \textcolor{red}{JT: I think it would be useful to issue a warning
-even when the user explicitly annotates a primitive type with \<@GuardedBy(\{\})>.
+even when the user explicitly annotates a primitive type with
+\<@GuardedBy(\{\})>.
+[[MDE: That's fine with me.  It is already implied by the immediately
+preceding sentence.]]
 The warning would indicate that in general, verifying a locking discipline
 involving primitive types is not handled by the Lock Checker.
 The reason to have such a warning is so that in a future version,
@@ -320,13 +349,13 @@ upgrading to the newer Lock Checker version.}
   must be at least as strong as that in $A$'s declaration of $m$.
   From weakest to strongest, the side effect annotations
   processed by the Lock Checker are:
-  \begin{verbatim}
+\begin{verbatim}
   @MayReleaseLocks
   @ReleasesNoLocks
   @LockingFree
   @SideEffectFree
   @Pure
-  \end{verbatim}
+\end{verbatim}
 
 \end{description}
 
@@ -343,7 +372,7 @@ upgrading to the newer Lock Checker version.}
   the Lock Checker cannot guarantee that the guard will be satisfied
   throughout the body of a method if that method may release a lock.
 
-\item[no side effects on lock expressions]
+\item[No side effects on lock expressions]
   If expression \emph{expr} is used to acquire a lock, then
   \emph{expr} must evaluate to the same value, starting from when
   \emph{expr} is used to acquire a lock until \emph{expr} is used to
@@ -352,14 +381,14 @@ upgrading to the newer Lock Checker version.}
   call site of a \<synchronized> method, is the expression in a
   \<synchronized> block, or is the argument to a \<lock> method.
 
-\item[locks are released after possible side effects]
+\item[Locks are released after possible side effects]
 % These are standard dataflow analysis rules, but are worth
 % repeating here due to how important they are for the day-to-day
 % use of the Lock Checker.  I believe this would be the single
 % largest source of confusion amongst Lock Checker users if this
 % were not stated explicitly.
   After a call to a method annotated with \code{@LockingFree},
-  \code{@ReleasesNoLocks}, \code{@SideEffectFree}, or \code{@Pure}
+  \code{@ReleasesNoLocks}, \code{@SideEffectFree}, or \code{@Pure},
   the Lock Checker's estimate of held locks
   after a method call is the same as that prior to the method call.
   After a call to a method annotated with \code{@MayReleaseLocks},
@@ -381,6 +410,13 @@ upgrading to the newer Lock Checker version.}
 The polymorphic \code{@GuardSatisfied} type annotation allows a method
 to be called with different \code{@GuardedBy} annotations on the parameters
 and receiver at each call site.
+
+\textcolor{red}{MDE:  This section's title, and the topic sentence, talk
+  about handling multiple call sites, but the section never gives an
+  example of that.  Therefore, the section seems to ramble and never
+  address its topic.  Readers will not be able to follow it.  I think it
+  needs to be rewritten.}
+
 
 Consider the following example:
 
@@ -439,25 +475,13 @@ With these annotations in place, the example type checks.
 \section{Examples\label{lock-examples}}
 
 The Lock Checker guarantees that a value that was computed from an expression of \code{@GuardedBy} type is
-never dereferenced unless all the expressions indicated in the
-\code{@GuardedBy} annotation are held by the thread performing the
-dereference, at the time of the dereference.  This is true regardless of what
-expression is dereferenced in the source code (a variable, the result of a method call, etc.).
+dereferenced only when the current thread holds all the expressions in the
+\code{@GuardedBy} annotation.
 
 \subsection{Examples of @GuardedBy\label{lock-examples-guardedby}}
 
-The following example demonstrates the most commonly encountered
-type checking rules.  A value is created via the expression
-\code{new Object()}.  The example shows where the Lock Checker issues errors
-for dereferences of the value that are not permitted.  The Lock Checker
-detects these illegal dereferences even though the value is stored in
-different variables and is returned by a method call.
-
-Note that the expression \code{new Object()} is assumed to have type \code{@GuardedBy("lock")}
-because it is immediately assigned to a newly declared
-variable having type annotation \code{@GuardedBy("lock")}.  You could
-explicitly write \code{new @GuardedBy("lock") Object()} but it is not
-required.
+The following example demonstrates the basic
+type-checking rules.
 
 \begin{Verbatim}
 class MyClass {
@@ -485,15 +509,22 @@ class MyClass {
 }
 \end{Verbatim}
 
+Note that the expression \code{new Object()} is assumed to have type \code{@GuardedBy("lock")}
+because it is immediately assigned to a newly-declared
+variable having type annotation \code{@GuardedBy("lock")}.  You could
+explicitly write \code{new @GuardedBy("lock") Object()} but it is not
+required.
 
-\subsection{Examples of @GuardedBy and @Holding\label{lock-examples-guardedby-and-holding}}
+
+\subsection{@GuardedBy(\{``a'', ``b''\}) is not a subtype of @GuardedBy(\{``a''\})\label{lock-guardedby-invariant-subtyping}}
+
 
 \textbf{@GuardedBy(exprSet)}
 
 The following example demonstrates the reason the Lock Checker enforces the
 following rule:  if \emph{exprSet1} $\neq$ \emph{exprSet2}, then
 \code{@GuardedBy(\emph{exprSet1})} and \code{@GuardedBy(\emph{exprSet2})} are siblings in the type
-hierarchy.  Suppose the Lock Checker issued no errors for the following code:
+hierarchy.
 
 \begin{Verbatim}
 class MyClass {
@@ -503,111 +534,46 @@ class MyClass {
     @GuardedBy({"a", "b"}) Object y = new Object();
     void myMethod() {
         y = x;
+        synchronized(a) {
+          x.toString();  // dereferences y's value without holding lock b
+        }
     }
 }
 \end{Verbatim}
 
-At first glance, it appears that the assignment should be allowed, since
-whenever \code{y}'s value is dereferenced, locks \code{a} and \code{b} are
-held, so the guarantee about \code{x} is satisfied.  However, suppose the
-following code can be executed after the assignment \code{y = x}:
 
-\begin{Verbatim}
-synchronized(a) {
-  x.toString();
-}
-\end{Verbatim}
-
-The problem is that variables \code{x} and \code{y} now contain references to
-the same object, and by dereferencing \code{x}, the code is also dereferencing
-\code{y}.  However the programmer requested that any value stored in variable
-\code{y} only be dereferenced when both \code{a} and \code{b} are held.
-
-To prevent this kind of problem, the Lock Checker forbids the assignment
-\code{y = x} by enforcing the aforementioned rule.
-\\
-
-The following example further demonstrates the enforcement of this rule:
-
-\begin{Verbatim}
-@GuardedBy({}) Object o1;
-@GuardedBy("lock") Object o2;
-@GuardedBy("lock") Object o3;
-[...]
-o3 = o2; // OK, since o2 and o3 are guarded by exactly the same lock set.
-
-o1 = o2; // Assignment type incompatible errors are issued for both assignments, since
-o2 = o1; // {"lock"} and {} are not identical sets.
-
-@SuppressWarnings("lock:cast.unsafe")
-o1 = (@GuardedBy({}) Object) o2; // A cast can be used if the user knows it is safe to do so.
-                           However the @SuppressWarnings must be added.
-\end{Verbatim}
+If the Lock Checker permitted the assignment
+\code{y = x;}, then the undesired dereference would be possible.
 
 
-
-
-
-The most common use of \code{@GuardedBy} is to annotate a field declaration
-type.  However, other uses of \code{@GuardedBy} are possible.
-
-\paragraph{Return types\label{lock-examples-guardedby-return}}
-
-A return type may be annotated with \code{@GuardedBy}:
-
-\begin{Verbatim}
-  @GuardedBy("MyClass.myLock") Object myMethod() { ... }
-
-  // reassignments without holding the lock are OK.
-  @GuardedBy("MyClass.myLock") Object x = myMethod();
-  @GuardedBy("MyClass.myLock") Object y = x;
-  x.toString(); // ILLEGAL because the lock is not held
-  synchronized(MyClass.myLock) {
-    y.toString();  // OK: the lock is held
-  }
-\end{Verbatim}
-
-\paragraph{Formal parameters\label{lock-examples-guardedby-formal-parameters}}
-
-A parameter type may be annotated with \code{@GuardedBy}, indicating that
-the method body must acquire the lock before dereferencing the parameter.
-
-\begin{Verbatim}
- void myMethod(@GuardedBy("MyClass.myLock") Object a) {
-    a.toString(); // ILLEGAL: the lock is not held
-    synchronized(MyClass.myLock) {
-      a.toString();  // OK: the lock is held
-    }
-  }
-\end{Verbatim}
-
-\textbf{Example of @GuardedBy and @Holding}
+\subsection{Examples of @Holding\label{lock-examples-holding}}
 
 The following example shows the interaction between these two annotations:
 
 \begin{Verbatim}
-  void helper1(@GuardedBy("MyClass.myLock") Object a) {
+  void helper1(@GuardedBy("myLock") Object a) {
     a.toString(); // ILLEGAL: the lock is not held
-    synchronized(MyClass.myLock) {
+    synchronized(myLock) {
       a.toString();  // OK: the lock is held
     }
   }
-  @Holding("MyClass.myLock")
-  void helper2(@GuardedBy("MyClass.myLock") Object b) {
+  @Holding("myLock")
+  void helper2(@GuardedBy("myLock") Object b) {
     b.toString(); // OK: the lock is held
   }
-  void helper3(@GuardedBy("MyClass.myLock") Object d) {
+  void helper3(@GuardedBy("myLock") Object d) {
     d.toString(); // ILLEGAL: the lock is not held
   }
-  void myMethod2(@GuardedBy("MyClass.myLock") Object e) {
+  void myMethod2(@GuardedBy("myLock") Object e) {
     helper1(e);  // OK to pass to another routine without holding the lock
     e.toString(); // ILLEGAL: the lock is not held
-    synchronized (MyClass.myLock) {
+    synchronized (myLock) {
       helper2(e); // OK: the lock is held
-      helper3(e); // OK, but helper3's body still has an error.
+      helper3(e); // OK, but helper3's body has an error.
     }
   }
 \end{Verbatim}
+
 
 \subsection{Examples of @EnsuresLockHeld and @EnsuresLockHeldIf\label{ensureslockheld-examples}}
 
@@ -625,7 +591,7 @@ class ReentrantLock {
     @EnsuresLockHeldIf (expression="this", result=true)
     public boolean tryLock();
 
-[...]
+    ...
 }
 \end{Verbatim}
 
@@ -637,14 +603,14 @@ public class Monitor {
 
     private ReentrantLock lock; // Initialized in the constructor
 
-[...]
+    ...
 
     @EnsuresLockHeld("lock")
     public void enter() {
        lock.lock();
     }
 
-[...]
+    ...
 }
 \end{Verbatim}
 
@@ -679,26 +645,26 @@ void myUnlockingMethod() {
     lock.unlock();
 }
 
-void myUnannotatedEmptyMethod() {
+// could be annotated @LockingFree, but the programme didn't do so
+void myUnannotatedMethod() {
 }
 
 void myOtherMethod() {
     if (lock.tryLock()) {
         x.toString(); // OK: the lock is held
         myMethod();
-        x.toString(); // OK: the lock is still known to be held since myMethod is locking-free
+        x.toString(); // OK: the lock is still known to be held
         mySideEffectFreeMethod();
-        x.toString(); // OK: the lock is still known to be held since mySideEffectFreeMethod
-                is side-effect-free
+        x.toString(); // OK: the lock is still known to be held
         myUnlockingMethod();
-        x.toString(); // ILLEGAL: myUnlockingMethod is not locking-free
+        x.toString(); // ILLEGAL: the lock is not known to be held
     }
     if (lock.tryLock()) {
         x.toString(); // OK: the lock is held
-        myUnannotatedEmptyMethod();
-        x.toString(); // ILLEGAL: even though myUnannotatedEmptyMethod is empty, since it is
-                not annotated with @LockingFree, the Lock Checker no longer knows
-                the state of the lock.
+        myUnannotatedMethod();
+        x.toString(); // ILLEGAL: the lock is not known to be held
+                      // (The lock is actually still held, but the Lock
+                      // Checker relies on method annotations at call sites.)
     }
 }
 \end{verbatim}
@@ -707,6 +673,9 @@ void myOtherMethod() {
 
 
 \section{More locking details\label{lock-details}}
+
+This section gives some details that are helpful for understanding how Java
+locking and the Lock Checker works.
 
 \subsection{Two types of locking:  monitor locks and explicit locks\label{lock-two-types}}
 
@@ -764,6 +733,14 @@ Section~\ref{java-expressions-as-arguments} explains which Java
 expressions the Lock Checker is able to analyze as lock expressions.
 
 
+The \code{@LockHeld} and \code{@LockPossiblyHeld} type qualifiers are used internally by the Lock Checker
+and should never be written by the programmer.
+If you
+see a warning mentioning \code{@LockHeld} or \code{@LockPossiblyHeld},
+please contact the Checker Framework developers as it is likely to
+indicate a bug in the Checker Framework.
+
+
 \subsection{Run-time checks for locking\label{lock-runtime-checks}}
 
 When you perform a run-time check for locking, such as
@@ -786,7 +763,7 @@ supports both.
 \paragraph{Synchronization protocol\label{lock-checker-holding-synchronization-protocol}}
 
   \code{@Holding} can specify a synchronization protocol that
-  is not expressible as locks over the argument to a method.  For example, a global lock
+  is not expressible as locks over the parameters to a method.  For example, a global lock
   or a lock on a different object might need to be held.  By requiring locks to be
   held, you can create protocol primitives without giving up
   the benefits of the annotations and checking of them.
@@ -839,23 +816,13 @@ extra synchronized block.  Here are reasons:
   called, rather than masking a programmer error by silently re-acquiring
   the lock.
 \item
-  The synchronized statement can deadlock if, due to a programmer error,
+  The version with a synchronized statement can deadlock if, due to a programmer error,
   the lock is not already held.  The Lock Checker prevents this type of
   error.
 \item
   The annotation has no run-time overhead.  Even if the lock re-acquisition
   succeeds, it still consumes time.
 \end{itemize}
-
-
-\subsection{Annotations used internally by the Lock Checker\label{lock-internals}}
-
-The \code{@LockHeld} and \code{@LockPossiblyHeld} type qualifiers are used internally by the Lock Checker
-and should never be written by the programmer.
-If you
-see a warning mentioning \code{@LockHeld} or \code{@LockPossiblyHeld},
-please contact the Checker Framework developers as it is likely to
-indicate a bug in the Checker Framework.
 
 
 \section{Other lock annotations\label{lock-other-annotations}}
@@ -925,7 +892,12 @@ The Lock Checker renames the method annotation to
 \refqualclass{checker/lock/qual}{GuardedBy} annotation into a type annotation
 that can apply not just to a field but to an arbitrary type (including the
 type of a parameter, return value, local variable, generic type parameter,
-etc.).  This makes the annotations more expressive and also more amenable
+etc.).  Another important distinction is that the Lock Checker's
+annotations express and enforce a locking discipline over values, just like
+the JLS expresses Java's locking semantics; by contrast, JCIP's annotations
+express a locking discipline that protects variable names and does not
+prevent race conditions.
+  This makes the annotations more expressive and also more amenable
 to automated checking.  It also accommodates the distinct
 meanings of the two annotations, and resolves ambiguity when \<@GuardedBy>
 is written in a location that might apply to either the method or the
@@ -965,6 +937,12 @@ These features are supported by
   thread-safety analysis}.
 
 
-% LocalWords:  quals GuardedBy JCIP putfield getfield invokevirtual 5cm
+% LocalWords:  quals GuardedBy JCIP putfield getfield invokevirtual 5cm JT
 % LocalWords:  invokeinterface threadsafety Clang's GuardedByInaccessible cleanroom
-%%  LocalWords:  api 5cm
+%%  LocalWords:  api 5cm lockexpr Dereferencing exprSet expr expr1 expr2
+%  LocalWords:  GuardedByBottom exprSet1 exprSet2 GuardSatisfied 3cm pre
+%  LocalWords:  PolyGuardedBy EnsuresLockHeld ReentrantLock boolean eset
+%  LocalWords:  EnsuresLockHeldIf LockingFree ReleasesNoLocks str lock1
+%  LocalWords:  MayReleaseLocks GuardedByName lock2 jls JLS LockHeld intra
+%  LocalWords:  LockPossiblyHeld explicitLock isHeldByCurrentThread JCIP's
+%  LocalWords:  holdsLock monitorLock
