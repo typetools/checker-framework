@@ -16,7 +16,6 @@ package org.checkerframework.checker.lock.qual;
 import java.lang.annotation.*;
 
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
-import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
@@ -44,7 +43,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @DefaultQualifierInHierarchy
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE })
-@PreconditionAnnotation(qualifier = LockHeld.class)
 public @interface GuardedBy {
     /**
      * The Java value expressions that need to be held.

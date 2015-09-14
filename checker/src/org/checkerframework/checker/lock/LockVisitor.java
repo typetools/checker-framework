@@ -6,6 +6,12 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByInaccessible;
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
+import org.checkerframework.checker.lock.qual.Holding;
+import org.checkerframework.checker.lock.qual.LockHeld;
+import org.checkerframework.checker.lock.qual.LockingFree;
+import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
+import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -15,6 +21,8 @@ import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -39,7 +47,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -57,17 +64,23 @@ import com.sun.tools.javac.tree.JCTree;
 
 /**
  * The LockVisitor enforces the subtyping rules of LockHeld and LockPossiblyHeld
- * (via BaseTypeVisitor). It also manually verifies that @Holding and @HoldingOnEntry
- * annotations are properly used on overridden methods. It handles @GuardedBy annotations
- * on method receivers. Finally, it ensures that we avoid doing any lock checking
+ * (via BaseTypeVisitor). It also manually verifies that @Holding
+ * annotations are properly used on overridden methods.
+ * Finally, it ensures that we avoid doing any lock checking
  * when visiting initializers.
  */
 
 public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
-    private final Class<? extends Annotation> checkerGuardedByClass = org.checkerframework.checker.lock.qual.GuardedBy.class;
-    private final Class<? extends Annotation> checkerHoldingClass = org.checkerframework.checker.lock.qual.Holding.class;
+    private final Class<? extends Annotation> checkerGuardedByClass = GuardedBy.class;
+    private final Class<? extends Annotation> checkerGuardSatisfiedClass = GuardSatisfied.class;
+    private final Class<? extends Annotation> checkerHoldingClass = Holding.class;
     //private final Class<? extends Annotation> checkerHoldingOnEntryClass = org.checkerframework.checker.lock.qual.HoldingOnEntry.class;
-    private final Class<? extends Annotation> checkerLockHeldClass = org.checkerframework.checker.lock.qual.LockHeld.class;
+    private final Class<? extends Annotation> checkerLockHeldClass = LockHeld.class;
+    private final Class<? extends Annotation> checkerLockingFreeClass = LockingFree.class;
+    private final Class<? extends Annotation> checkerReleasesNoLocksClass = ReleasesNoLocks.class;
+    private final Class<? extends Annotation> checkerMayReleaseLocksClass = MayReleaseLocks.class;
+    private final Class<? extends Annotation> sideEffectFreeClass = SideEffectFree.class;
+    private final Class<? extends Annotation> pureClass = Pure.class;
 
     // Note that Javax and JCIP @GuardedBy is used on both methods and objects. For methods they are
     // equivalent to the Checker Framework @Holding annotation.
@@ -91,7 +104,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // We need to directly access useFlow from the checker, because this method gets called
         // by the superclass constructor and a field in this class would not be initialized
         // yet. Oh the pain.
-        return new LockAnnotatedTypeFactory(checker, true);
+        return new LockAnnotatedTypeFactory(checker, true); // TODO: Do we still need this?
     }
 
     // Hack: this is only for a paper deadline. Do it right. TODO
@@ -173,7 +186,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 	        checkPreconditions(passedArg,
 	                invokedElement,
 	                passedArg.getKind() == Tree.Kind.METHOD_INVOCATION,
-	                getPreconditions(passedArgType));
+	                generatePreconditionsBasedOnGuards(passedArgType));
         }
 
         if (formalParameterGuardSatisfied == false) {
@@ -187,6 +200,57 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         } finally {
             visitorState.setAssignmentContext(preAssCtxt);
         }
+    }
+    
+    private enum SideEffectAnnotation {
+        MAYRELEASELOCKS,
+        RELEASESNOLOCKS,
+        LOCKINGFREE,
+        SIDEEFFECTFREE,
+        PURE
+    }
+
+    protected SideEffectAnnotation methodSideEffectAnnotation(Element element) {
+    	if (element == null)
+    		return SideEffectAnnotation.MAYRELEASELOCKS;
+    	
+    	// If more than one annotation is present, this method issues a warning and returns
+    	// the most annotation providing the weakest guarantee.
+    	
+    	// If no annotation is present, return RELEASESNOLOCKS as the default. TODO: conservative library default
+    	
+    	boolean[] sideEffectAnnotationPresent = new boolean[5];
+    	
+    	sideEffectAnnotationPresent[0] = atypeFactory.getDeclAnnotation(element, checkerMayReleaseLocksClass) != null;
+    	sideEffectAnnotationPresent[1] = atypeFactory.getDeclAnnotation(element, checkerReleasesNoLocksClass) != null;
+    	sideEffectAnnotationPresent[2] = atypeFactory.getDeclAnnotation(element, checkerLockingFreeClass) != null;
+    	sideEffectAnnotationPresent[3] = atypeFactory.getDeclAnnotation(element, sideEffectFreeClass) != null;
+    	sideEffectAnnotationPresent[4] = atypeFactory.getDeclAnnotation(element, pureClass) != null;
+        
+        int count = 0;
+        
+        for(int i = 0; i < 5; i++) {
+        	if (sideEffectAnnotationPresent[i])
+        		count++;
+        }
+        
+        if (count == 0) {
+        	return SideEffectAnnotation.RELEASESNOLOCKS;
+        }
+        
+        if (count > 1) {
+            // checker.report(Result.failure("", ), overriderTree);
+        	// TODO: Implement warning
+        	// TODO: Make sure ton of warnings are not issued for each method call of a method that has 2 annos.
+        	// A warning should be issued once per method.
+        }
+        
+        for(int i = 0; i < 5; i++) {
+        	if (sideEffectAnnotationPresent[i])
+        		return SideEffectAnnotation.values()[i];
+        }
+        
+        return SideEffectAnnotation.MAYRELEASELOCKS;
     }
 
     @Override
@@ -268,14 +332,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return annotationSet;
     }
 
-    private Set<Pair<String, String>> getPreconditions(AnnotatedTypeMirror atm) {
-        return getPreconditions(atm.getAnnotations());
+    private Set<Pair<String, String>> generatePreconditionsBasedOnGuards(AnnotatedTypeMirror atm) {
+        return generatePreconditionsBasedOnGuards(atm.getAnnotations());
     }
 
     // Given a set of AnnotationMirrors, returns the list of lock expression preconditions
     // specified in all the @GuardedBy annotations in the set.
     // Returns an empty set if no such expressions are found.
-    private Set<Pair<String, String>> getPreconditions(Set<AnnotationMirror> amList) {
+    private Set<Pair<String, String>> generatePreconditionsBasedOnGuards(Set<AnnotationMirror> amList) {
         Set<Pair<String, String>> preconditions = new HashSet<>();
 
         if (amList != null) {
@@ -342,7 +406,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 checkPreconditions(tree,
                         TreeUtils.elementFromUse(tree),
                         tree.getKind() == Tree.Kind.METHOD_INVOCATION,
-                        getPreconditions(valueType));
+                      	generatePreconditionsBasedOnGuards(valueType));
             }
         }
 
@@ -600,18 +664,31 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         	boolean skipCheckPreconditions = false;
 
         	AnnotationMirror gb = receiverAtm.getAnnotationInHierarchy(GUARDEDBY);
-        	if (gb != null && gb.getAnnotationType().toString().equals("org.checkerframework.checker.lock.qual.GuardedBy")){ // TODO hack!
-                if (treeKind == Kind.MEMBER_SELECT) {
-                    Element treeElement = TreeUtils.elementFromUse(tree);
-
-                	if (treeElement != null && treeElement.getKind() == ElementKind.METHOD) {
-                		skipCheckPreconditions = true;
-                	}
-                }
+        	if (gb != null) {
+        		if (AnnotationUtils.areSameByClass(gb, checkerGuardedByClass)) { // TODO JCIP and Javax
+	                if (treeKind == Kind.MEMBER_SELECT) {
+	                    Element treeElement = TreeUtils.elementFromUse(tree);
+	
+	                	if (treeElement != null && treeElement.getKind() == ElementKind.METHOD) { // Method calls are not dereferences.
+	                		skipCheckPreconditions = true;
+	                	}
+	                }
+        	    } else if (AnnotationUtils.areSameByClass(gb, checkerGuardSatisfiedClass)){
+        	    	skipCheckPreconditions = true; // Can always dereference if type is @GuardSatisfied        	    	
+        	    } else {
+        	    	// Can never dereference for any other types in the @GuardedBy hierarchy
+                    String annotationName = gb.toString();
+                    annotationName = annotationName.substring(annotationName.lastIndexOf('.') + 1 /* skip the last . as well */);
+        	    	checker.report(Result.failure(
+                            "cannot.dereference",
+                            tree.toString(),
+                            annotationName), tree);
+                    return;
+        	    }
         	}
 
         	if (skipCheckPreconditions == false) {
-        		checkPreconditions(expr, invokedElement, expr.getKind() == Tree.Kind.METHOD_INVOCATION, getPreconditions(receiverAtm));
+        		checkPreconditions(expr, invokedElement, expr.getKind() == Tree.Kind.METHOD_INVOCATION, generatePreconditionsBasedOnGuards(receiverAtm));
         	}
         }
     }
@@ -653,6 +730,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     FlowExpressions.Receiver fieldExpr = FlowExpressionParseUtil.parse(fieldName,
                             flowExprContext, getCurrentPath());
 
+                    // TODO: Is this still needed? Everything may just work without this:
                     if (fieldExpr.equals(expr)) {
                         // Avoid issuing warnings when accessing the field that is guarding the receiver.
                         // e.g. avoid issuing a warning when accessing bar below:
@@ -696,14 +774,26 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return super.isValidUse(declarationType, useType, tree);
     }
 
-
-    // Hack: this is only for a paper deadline. Do it right. TODO
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
 
-    	String s = node.toString();
-    	if (s.contains(".unlock()")) {
-            checker.report(Result.failure("unlocking.explicit.lock"), node);
+    	SideEffectAnnotation seaOfInvokedMethod = methodSideEffectAnnotation(TreeUtils.elementFromUse(node));
+
+        MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(node));
+
+        ExecutableElement methodElement = null;
+        if (enclosingMethod != null) {
+        	methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
+        }
+    	
+    	SideEffectAnnotation seaOfContainingMethod = methodSideEffectAnnotation(methodElement);
+    	// TODO: Think about methods enclosing other methods
+    	
+    	if (seaOfInvokedMethod.ordinal() < seaOfContainingMethod.ordinal()) {
+	    	checker.report(Result.failure(
+                    "method.guarantee.violated",
+                    methodElement.toString(),
+                    TreeUtils.elementFromUse(node).toString()), node);
     	}
 
     	return super.visitMethodInvocation(node, p);

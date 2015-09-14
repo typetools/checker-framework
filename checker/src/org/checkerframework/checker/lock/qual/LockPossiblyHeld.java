@@ -1,6 +1,7 @@
 package org.checkerframework.checker.lock.qual;
 
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
@@ -21,6 +22,7 @@ import java.lang.annotation.Target;
  * @checker_framework.manual #lock-checker Lock Checker
  */
 @TypeQualifier
+@InvisibleQualifier
 @SubtypeOf({}) // The top type in the hierarchy
 @Documented
 @DefaultQualifierInHierarchy

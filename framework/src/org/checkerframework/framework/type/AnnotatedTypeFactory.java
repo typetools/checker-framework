@@ -328,8 +328,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 org.checkerframework.dataflow.qual.Deterministic.class));
         addInheritedAnnotation(AnnotationUtils.fromClass(elements,
                 org.checkerframework.dataflow.qual.TerminatesExecution.class));
-        addInheritedAnnotation(AnnotationUtils.fromClass(elements,
-                org.checkerframework.dataflow.qual.LockingFree.class));
 
         initilizeReflectionResolution();
 

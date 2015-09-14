@@ -3,7 +3,6 @@ import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.dataflow.qual.LockingFree;
 
 public class TestTreeKinds {
   ReentrantLock lock = new ReentrantLock();

@@ -7,10 +7,11 @@ import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
-import org.checkerframework.dataflow.qual.LockingFree;
+import org.checkerframework.checker.lock.qual.LockingFree;
+import org.checkerframework.checker.lock.qual.MayReleaseLocks;
+import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.*;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -28,7 +29,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 
 import com.sun.source.tree.Tree;
@@ -73,7 +73,27 @@ public class LockAnnotatedTypeFactory
                 SideEffectFree.class,
                 AnnotationUtils.fromClass(elements, SideEffectFree.class));
 
+        // This alias is only true for the Lock Checker. All other checkers must
+        // ignore the @ReleasesNoLocks annotation.  Note that ReleasesNoLocks is
+        // not truly side-effect-free even as far as the Lock Checker is concerned,
+        // so there is additional handling of this annotation in the Lock Checker.
+        addAliasedDeclAnnotation(ReleasesNoLocks.class,
+                SideEffectFree.class,
+                AnnotationUtils.fromClass(elements, SideEffectFree.class));
+
         postInit();
+    }
+    
+    @Override
+    protected void postInit() {
+    	super.postInit();
+
+    	addInheritedAnnotation(AnnotationUtils.fromClass(elements,
+                MayReleaseLocks.class));
+    	addInheritedAnnotation(AnnotationUtils.fromClass(elements,
+    			ReleasesNoLocks.class));
+    	addInheritedAnnotation(AnnotationUtils.fromClass(elements,
+                LockingFree.class));
     }
 
     @Override
@@ -114,9 +134,6 @@ public class LockAnnotatedTypeFactory
     }
 
 
-    /**
-     * Adds @Interned to enum types and any use of a class that is declared to be @Interned
-     */
     private class LockTypeAnnotator extends TypeAnnotator {
 
     	LockTypeAnnotator(LockAnnotatedTypeFactory atypeFactory) {
@@ -141,7 +158,7 @@ public class LockAnnotatedTypeFactory
 
         AnnotatedTypeMirror type = getAnnotatedType(tree);
 
-        shouldCache = true;
+        shouldCache = true; // TODO: What does this do?
 
         return type;
     }

@@ -4,31 +4,33 @@ import org.checkerframework.checker.lock.qual.*;
 // and over all their class's non-static fields
 public class Constructors {
 
-    Object unlocked;
-    @GuardedBy("this") Object guardedThis = new Object();
-    @GuardedBy("unlocked") Object guardedOther = new Object();
-    static Object unlockedStatic;
-    @GuardedBy("unlockedStatic") Object nonstaticGuardedByStatic = new Object();
-    static @GuardedBy("unlocked") Object staticGuardedByNonStatic = new Object();
-    static @GuardedBy("unlockedStatic") Object staticGuardedByStatic = new Object();
+    static class MyClass { public Object field; }
 
-    Object initializedObject1 = unlocked.toString();
-    Object initializedObject2 = guardedThis.toString();
-    Object initializedObject3 = guardedOther.toString();
-    Object initializedObject4 = staticGuardedByNonStatic.toString();
+    MyClass unlocked;
+    @GuardedBy("this") MyClass guardedThis = new MyClass();
+    @GuardedBy("unlocked") MyClass guardedOther = new MyClass();
+    static MyClass unlockedStatic;
+    @GuardedBy("unlockedStatic") MyClass nonstaticGuardedByStatic = new MyClass();
+    static @GuardedBy("unlocked") MyClass staticGuardedByNonStatic = new MyClass();
+    static @GuardedBy("unlockedStatic") MyClass staticGuardedByStatic = new MyClass();
+
+    Object initializedObject1 = unlocked.field;
+    Object initializedObject2 = guardedThis.field;
+    Object initializedObject3 = guardedOther.field;
+    Object initializedObject4 = staticGuardedByNonStatic.field;
     //:: error: (contracts.precondition.not.satisfied.field)
-    Object initializedObject5 = nonstaticGuardedByStatic.toString();
+    Object initializedObject5 = nonstaticGuardedByStatic.field;
     //:: error: (contracts.precondition.not.satisfied.field)
-    Object initializedObject6 = staticGuardedByStatic.toString();
+    Object initializedObject6 = staticGuardedByStatic.field;
 
     Constructors() {
-        unlocked.toString();
-        guardedThis.toString();
-        guardedOther.toString();
-        staticGuardedByNonStatic.toString();
+        unlocked.field.toString();
+        guardedThis.field.toString();
+        guardedOther.field.toString();
+        staticGuardedByNonStatic.field.toString();
         //:: error: (contracts.precondition.not.satisfied.field)
-        nonstaticGuardedByStatic.toString();
+        nonstaticGuardedByStatic.field.toString();
         //:: error: (contracts.precondition.not.satisfied.field)
-        staticGuardedByStatic.toString();
+        staticGuardedByStatic.field.toString();
     }
 }

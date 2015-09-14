@@ -159,7 +159,7 @@ void myMethod7(){
 
 
 @LockingFree
-boolean compare(@GuardedByInaccessible Object a, @GuardedByInaccessible Object b){ return true; }
+boolean compare(@GuardSatisfied Object a, @GuardSatisfied Object b){ return true; }
 
 @GuardedBy({}) Object p1;
 @GuardedBy("lock") Object p2;
@@ -187,8 +187,8 @@ void myMethod6(){
     b.toString(); // OK: the lock is held
   }
   @LockingFree
-  void helper3(@GuardedByInaccessible Object c) {
-    c.toString(); // OK: no lock constraints
+  void helper3(@GuardSatisfied Object c) {
+    c.toString(); // OK: the guard is satisfied
   }
   @LockingFree
   void helper4(@GuardedBy("ChapterExamples.myLock") Object d) {
@@ -201,7 +201,7 @@ void myMethod6(){
     e.toString(); // ILLEGAL: the lock is not held
     synchronized (ChapterExamples.myLock) {
       helper2(e);
-      helper3(e); // OK, since @GuardedByInaccessible is a supertype of @GuardedBy
+      helper3(e); // OK, since parameter is @GuardSatisfied
       helper4(e); // OK, but helper4's body still has an error.
     }
   }

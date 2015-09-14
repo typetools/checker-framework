@@ -5,7 +5,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
