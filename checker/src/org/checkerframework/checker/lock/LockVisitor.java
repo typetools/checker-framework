@@ -179,6 +179,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         //System.out.println(passedArg);
         //System.out.println(passedArgType);
+        
+        if (formalParameterGuardSatisfied) {
 
         Element invokedElement = TreeUtils.elementFromUse(passedArg);
 
@@ -188,8 +190,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 	                passedArg.getKind() == Tree.Kind.METHOD_INVOCATION,
 	                generatePreconditionsBasedOnGuards(passedArgType));
         }
-
-        if (formalParameterGuardSatisfied == false) {
+        }
+        else {
                 commonAssignmentCheck(reqArg, passedArg,
                         "argument.type.incompatible", false);
         }
@@ -579,7 +581,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // the same as the receiver on the field/method we are checking preconditions for.
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(tree));
 
-        if (enclosingMethod != null) {
+        if (false && enclosingMethod != null) {
             ExecutableElement methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
 
             if (methodElement != null) {
@@ -665,7 +667,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         	AnnotationMirror gb = receiverAtm.getAnnotationInHierarchy(GUARDEDBY);
         	if (gb != null) {
-        		if (AnnotationUtils.areSameByClass(gb, checkerGuardedByClass)) { // TODO JCIP and Javax
+                if (AnnotationUtils.areSameByClass( gb, checkerGuardedByClass) ||
+                    AnnotationUtils.areSameByClass( gb, javaxGuardedByClass) ||
+                    AnnotationUtils.areSameByClass( gb, jcipGuardedByClass)) {
 	                if (treeKind == Kind.MEMBER_SELECT) {
 	                    Element treeElement = TreeUtils.elementFromUse(tree);
 	

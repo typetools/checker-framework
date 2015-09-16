@@ -1,95 +1,218 @@
-// @skip-test JCIP annotations are irrelevant to the current GuardedBy by-value case study.
-// TODO: Address this before the next release at the end of Feb. 2015.
 import net.jcip.annotations.*;
-import org.checkerframework.dataflow.qual.*;
+import org.checkerframework.checker.lock.qual.LockingFree;
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
 
-// Smoke test for supporting JCIP annotations
+// Smoke test for supporting JCIP and Javax annotations
 public class JCIPAnnotations {
+  class MyClass {
+     Object field = new Object();
+     @LockingFree
+     Object method(@GuardSatisfied MyClass this){return new Object();}
+  }
 
     Object lock;
 
-    @GuardedBy("lock") Object guardedField;
-    Object unguardedField;
+    @GuardedBy("lock") MyClass guardedField;
+    MyClass unguardedField;
 
     @LockingFree
-    void guardedReceiver(@org.checkerframework.checker.lock.qual.GuardedBy("lock") JCIPAnnotations this) { }
+    void guardedReceiver(@GuardedBy("lock") JCIPAnnotations this) { }
     @LockingFree
-    void unguardedReceiver(JCIPAnnotations this) { }
+    void unguardedReceiver() { }
 
     @LockingFree
-    void guardedArg(@GuardedBy("lock") Object arg) { }
+    void guardedArg(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") MyClass arg) { }
     @LockingFree
-    void unguardedArg(Object arg) { }
+    void guardedArgUnguardedReceiver(@GuardedBy("lock") MyClass arg) { }
+    @LockingFree
+    void unguardedArg(@GuardedBy("lock") JCIPAnnotations this, MyClass arg) { }
+    @LockingFree
+    void unguardedArgAndReceiver(MyClass arg) { }
 
     @LockingFree
-    static void guardedStaticArg(@GuardedBy("lock") Object x) { }
+    static void guardedStaticArg(@GuardedBy("lock") MyClass x) { }
     @LockingFree
-    static void unguardedStaticArg(Object x) { }
+    static void unguardedStaticArg(MyClass x) { }
 
-    void testUnguardedAccess(Object x) {
+    void testUnguardedAccess(MyClass x) {
         //:: error: (contracts.precondition.not.satisfied.field)
-        this.guardedField.toString();   // error
-        this.unguardedField.toString();
+        this.guardedField.field.toString();
+        this.unguardedField.field.toString();
+        //:: error: (method.invocation.invalid)
         this.guardedReceiver();
         this.unguardedReceiver();
-        this.guardedArg(x);
-        this.unguardedArg(x);
+        //:: error: (argument.type.incompatible)
+        this.guardedArgUnguardedReceiver(x);
+        this.unguardedArgAndReceiver(x);
         unguardedStaticArg(x);
+        //:: error: (argument.type.incompatible)
         guardedStaticArg(x);
     }
 
-    void testGuardedAccess(@org.checkerframework.checker.lock.qual.GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") Object x) {
+    void testGuardedAccess(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") MyClass x) {
         //:: error: (contracts.precondition.not.satisfied.field)
-        this.guardedField.toString();
-        //:: error: (contracts.precondition.not.satisfied.field)
-        this.unguardedField.toString();
-        //:: error: (contracts.precondition.not.satisfied)
+        this.guardedField.field.toString();
+        this.unguardedField.field.toString();
         this.guardedReceiver();
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (method.invocation.invalid)
         this.unguardedReceiver();
-        //:: error: (contracts.precondition.not.satisfied) :: error: (contracts.precondition.not.satisfied.field)
         this.guardedArg(x);
-        //:: error: (contracts.precondition.not.satisfied) :: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (argument.type.incompatible)
         this.unguardedArg(x);
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (argument.type.incompatible)
         unguardedStaticArg(x);
-        //:: error: (contracts.precondition.not.satisfied.field)
         guardedStaticArg(x);
         synchronized(lock) {
-            this.guardedField.toString();
-            this.unguardedField.toString();
+            this.guardedField.field.toString();
+            this.unguardedField.field.toString();
             this.guardedReceiver();
+            //:: error: (method.invocation.invalid)
             this.unguardedReceiver();
             this.guardedArg(x);
+            //:: error: (argument.type.incompatible)
             this.unguardedArg(x);
+            //:: error: (argument.type.incompatible)
             unguardedStaticArg(x);
             guardedStaticArg(x);
         }
     }
 
-    void testSemiGuardedAccess(@org.checkerframework.checker.lock.qual.GuardedBy("lock") JCIPAnnotations this, Object x) {
+    void testSemiGuardedAccess(@GuardedBy("lock") JCIPAnnotations this, MyClass x) {
         //:: error: (contracts.precondition.not.satisfied.field)
-        this.guardedField.toString();
-        //:: error: (contracts.precondition.not.satisfied.field)
-        this.unguardedField.toString();
-        //:: error: (contracts.precondition.not.satisfied)
+        this.guardedField.field.toString();
+        this.unguardedField.field.toString();
         this.guardedReceiver();
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (method.invocation.invalid)
         this.unguardedReceiver();
-        //:: error: (contracts.precondition.not.satisfied)
+        //:: error: (argument.type.incompatible)
         this.guardedArg(x);
-        //:: error: (contracts.precondition.not.satisfied)
         this.unguardedArg(x);
         unguardedStaticArg(x);
+        //:: error: (argument.type.incompatible)
         guardedStaticArg(x);
         synchronized(lock) {
-            this.guardedField.toString();
-            this.unguardedField.toString();
+            this.guardedField.field.toString();
+            this.unguardedField.field.toString();
             this.guardedReceiver();
+            //:: error: (method.invocation.invalid)
             this.unguardedReceiver();
+            //:: error: (argument.type.incompatible)
             this.guardedArg(x);
             this.unguardedArg(x);
             unguardedStaticArg(x);
+            //:: error: (argument.type.incompatible)
+            guardedStaticArg(x);
+        }
+    }
+
+    void testGuardedAccessAgainstJavaxGuardedBy(@javax.annotation.concurrent.GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") MyClass x) {
+        //:: error: (contracts.precondition.not.satisfied.field)
+        this.guardedField.field.toString();
+        this.unguardedField.field.toString();
+        this.guardedReceiver();
+        //:: error: (method.invocation.invalid)
+        this.unguardedReceiver();
+        this.guardedArg(x);
+        //:: error: (argument.type.incompatible)
+        this.unguardedArg(x);
+        //:: error: (argument.type.incompatible)
+        unguardedStaticArg(x);
+        guardedStaticArg(x);
+        synchronized(lock) {
+            this.guardedField.field.toString();
+            this.unguardedField.field.toString();
+            this.guardedReceiver();
+            //:: error: (method.invocation.invalid)
+            this.unguardedReceiver();
+            this.guardedArg(x);
+            //:: error: (argument.type.incompatible)
+            this.unguardedArg(x);
+            //:: error: (argument.type.incompatible)
+            unguardedStaticArg(x);
+            guardedStaticArg(x);
+        }
+    }
+
+    void testSemiGuardedAccessAgainstJavaxGuardedBy(@javax.annotation.concurrent.GuardedBy("lock") JCIPAnnotations this, MyClass x) {
+        //:: error: (contracts.precondition.not.satisfied.field)
+        this.guardedField.field.toString();
+        this.unguardedField.field.toString();
+        this.guardedReceiver();
+        //:: error: (method.invocation.invalid)
+        this.unguardedReceiver();
+        //:: error: (argument.type.incompatible)
+        this.guardedArg(x);
+        this.unguardedArg(x);
+        unguardedStaticArg(x);
+        //:: error: (argument.type.incompatible)
+        guardedStaticArg(x);
+        synchronized(lock) {
+            this.guardedField.field.toString();
+            this.unguardedField.field.toString();
+            this.guardedReceiver();
+            //:: error: (method.invocation.invalid)
+            this.unguardedReceiver();
+            //:: error: (argument.type.incompatible)
+            this.guardedArg(x);
+            this.unguardedArg(x);
+            unguardedStaticArg(x);
+            //:: error: (argument.type.incompatible)
+            guardedStaticArg(x);
+        }
+    }
+
+    void testGuardedAccessAgainstCheckerGuardedBy(@org.checkerframework.checker.lock.qual.GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") MyClass x) {
+        //:: error: (contracts.precondition.not.satisfied.field)
+        this.guardedField.field.toString();
+        this.unguardedField.field.toString();
+        this.guardedReceiver();
+        //:: error: (method.invocation.invalid)
+        this.unguardedReceiver();
+        this.guardedArg(x);
+        //:: error: (argument.type.incompatible)
+        this.unguardedArg(x);
+        //:: error: (argument.type.incompatible)
+        unguardedStaticArg(x);
+        guardedStaticArg(x);
+        synchronized(lock) {
+            this.guardedField.field.toString();
+            this.unguardedField.field.toString();
+            this.guardedReceiver();
+            //:: error: (method.invocation.invalid)
+            this.unguardedReceiver();
+            this.guardedArg(x);
+            //:: error: (argument.type.incompatible)
+            this.unguardedArg(x);
+            //:: error: (argument.type.incompatible)
+            unguardedStaticArg(x);
+            guardedStaticArg(x);
+        }
+    }
+
+    void testSemiGuardedAccessAgainstCheckerGuardedBy(@org.checkerframework.checker.lock.qual.GuardedBy("lock") JCIPAnnotations this, MyClass x) {
+        //:: error: (contracts.precondition.not.satisfied.field)
+        this.guardedField.field.toString();
+        this.unguardedField.field.toString();
+        this.guardedReceiver();
+        //:: error: (method.invocation.invalid)
+        this.unguardedReceiver();
+        //:: error: (argument.type.incompatible)
+        this.guardedArg(x);
+        this.unguardedArg(x);
+        unguardedStaticArg(x);
+        //:: error: (argument.type.incompatible)
+        guardedStaticArg(x);
+        synchronized(lock) {
+            this.guardedField.field.toString();
+            this.unguardedField.field.toString();
+            this.guardedReceiver();
+            //:: error: (method.invocation.invalid)
+            this.unguardedReceiver();
+            //:: error: (argument.type.incompatible)
+            this.guardedArg(x);
+            this.unguardedArg(x);
+            unguardedStaticArg(x);
+            //:: error: (argument.type.incompatible)
             guardedStaticArg(x);
         }
     }

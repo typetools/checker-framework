@@ -24,7 +24,7 @@ import com.sun.source.tree.Tree;
  */
 @TypeQualifier
 @InvisibleQualifier
-@SubtypeOf({GuardedBy.class, GuardSatisfied.class})
+@SubtypeOf({GuardedBy.class, GuardSatisfied.class, net.jcip.annotations.GuardedBy.class, javax.annotation.concurrent.GuardedBy.class})
 @ImplicitFor(trees = {Tree.Kind.NULL_LITERAL})
 @Documented
 @DefaultFor({DefaultLocation.LOWER_BOUNDS})

@@ -2,34 +2,38 @@ import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.dataflow.qual.Pure;
 
 class BlockedByteArrayInputStream {
-    private @GuardedBy({"itself"}) Object o;
-    private @GuardedBy({"nonexistentfield"}) Object o2;
+    class MyClass {
+        public Object field;
+    }
+
+    private @GuardedBy({"itself"}) MyClass m;
+    private @GuardedBy({"nonexistentfield"}) MyClass m2;
     @Pure
-    private @GuardedBy({"itself"}) Object m() { return o; }
+    private @GuardedBy({"itself"}) MyClass getm() { return m; }
 
     public void method() {
         //:: error: (contracts.precondition.not.satisfied)
-        m().toString();
+        getm().field = new Object();
         //:: error: (contracts.precondition.not.satisfied.field)
-        o.toString();
+        m.field = new Object();
         //:: error: (flowexpr.parse.error)
-        o2.toString();
-        synchronized(o) {
-            o.toString();
+        m2.field = new Object();
+        synchronized(m) {
+            m.field = new Object();
         }
-        synchronized(m()) {
-            m().toString();
+        synchronized(getm()) {
+            getm().field = new Object();
         }
 
         {
-            Object itself = new Object();
+            Object itself = new Object(); // Test the flow expression parser's ability to find an object named 'itself'
             //:: error: (contracts.precondition.not.satisfied.field)
-            o.toString();
+            m.field = new Object();
             //:: error: (contracts.precondition.not.satisfied)
-            m().toString();
+            getm().field = new Object();
             synchronized(itself){
-                o.toString();
-                m().toString();
+                m.field = new Object();
+                getm().field = new Object();
             }
         }
     }

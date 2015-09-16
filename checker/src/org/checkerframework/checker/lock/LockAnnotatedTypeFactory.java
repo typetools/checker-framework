@@ -48,7 +48,7 @@ public class LockAnnotatedTypeFactory
     extends GenericAnnotatedTypeFactory<CFValue, LockStore, LockTransfer, LockAnalysis> {
 
     /** Annotation constants */
-    protected final AnnotationMirror LOCKHELD, LOCKPOSSIBLYHELD, SIDEEFFECTFREE, GUARDEDBY, GUARDSATISFIED;
+    protected final AnnotationMirror LOCKHELD, LOCKPOSSIBLYHELD, SIDEEFFECTFREE, GUARDEDBY, JCIPGUARDEDBY, JAVAXGUARDEDBY, GUARDSATISFIED;
 
     // Cache for the lock annotations
     protected final Set<Class<? extends Annotation>> lockAnnos;
@@ -60,6 +60,8 @@ public class LockAnnotatedTypeFactory
         LOCKPOSSIBLYHELD = AnnotationUtils.fromClass(elements, LockPossiblyHeld.class);
         SIDEEFFECTFREE = AnnotationUtils.fromClass(elements, SideEffectFree.class);
         GUARDEDBY = AnnotationUtils.fromClass(elements, GuardedBy.class);
+        JCIPGUARDEDBY = AnnotationUtils.fromClass(elements, net.jcip.annotations.GuardedBy.class);
+        JAVAXGUARDEDBY = AnnotationUtils.fromClass(elements, javax.annotation.concurrent.GuardedBy.class);
         GUARDSATISFIED = AnnotationUtils.fromClass(elements, GuardSatisfied.class);
 
         Set<Class<? extends Annotation>> tempLockAnnos = new HashSet<>();
@@ -67,6 +69,9 @@ public class LockAnnotatedTypeFactory
         tempLockAnnos.add(LockPossiblyHeld.class);
         lockAnnos = Collections.unmodifiableSet(tempLockAnnos);
 
+        addAliasedAnnotation(javax.annotation.concurrent.GuardedBy.class, GUARDEDBY);
+        addAliasedAnnotation(net.jcip.annotations.GuardedBy.class, GUARDEDBY);
+        
         // This alias is only true for the Lock Checker. All other checkers must
         // ignore the @LockingFree annotation.
         addAliasedDeclAnnotation(LockingFree.class,
@@ -175,12 +180,18 @@ public class LockAnnotatedTypeFactory
         public LockQualifierHierarchy(MultiGraphFactory f) {
             super(f, LOCKHELD);
         }
+        
+        private boolean isGuardedBy(AnnotationMirror am) {
+        	return AnnotationUtils.areSameIgnoringValues(am, GUARDEDBY) ||
+        		   AnnotationUtils.areSameIgnoringValues(am, JAVAXGUARDEDBY) ||
+        		   AnnotationUtils.areSameIgnoringValues(am, JCIPGUARDEDBY);
+        }
 
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
 
-            boolean lhsIsGuardedBy = AnnotationUtils.areSameIgnoringValues(lhs, GUARDEDBY);
-            boolean rhsIsGuardedBy = AnnotationUtils.areSameIgnoringValues(rhs, GUARDEDBY);
+            boolean lhsIsGuardedBy = isGuardedBy(lhs);
+            boolean rhsIsGuardedBy = isGuardedBy(rhs);
 
             if (lhsIsGuardedBy && rhsIsGuardedBy) {
                 // Two @GuardedBy annotations are considered subtypes of each other if and only if their values match exactly.
@@ -193,7 +204,8 @@ public class LockAnnotatedTypeFactory
                 return rhsValues.containsAll(lhsValues) && lhsValues.containsAll(rhsValues);
             }
 
-            // Remove values from @GuardedBy annotations for further subtype checking.
+            // Remove values from @GuardedBy annotations (and use the Checker Framework's GuardedBy annotation, not JCIP's or Javax's)
+            // for further subtype checking.
 
             return super.isSubtype(rhsIsGuardedBy ? GUARDEDBY : rhs, lhsIsGuardedBy ? GUARDEDBY : lhs);
         }
