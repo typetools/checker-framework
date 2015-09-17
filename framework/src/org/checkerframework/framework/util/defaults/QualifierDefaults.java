@@ -4,6 +4,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifiers;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -525,10 +526,13 @@ public class QualifierDefaults {
                 // but it doesn't work correctly and tests fail.
                 // (That whole @FromStubFile and @FromByteCode annotation
                 // logic should be replaced by something sensible.)
-            if ((ElementUtils.isElementFromByteCode(annotationScope) &&
+        	SourceChecker checker = atypeFactory.getContext().getChecker();
+        	if ((ElementUtils.isElementFromByteCode(annotationScope) &&
                     atypeFactory.declarationFromElement(annotationScope) == null &&
-                    !atypeFactory.isFromStubFile(annotationScope)) ||
-                    !annotatedForThisChecker
+                    !atypeFactory.isFromStubFile(annotationScope) &&
+                    checker.hasOption("safeDefaultsForUnannotatedBytecode")) || // TODO: make safeDefaultsForUnannotatedBytecode the default behavior.
+                    (!annotatedForThisChecker &&
+                    checker.hasOption("useSafeDefaultsForUnannotatedSourceCode"))
                     ) {
                 for (Default def : unannotatedDefaults) {
                     applier.apply(def);
@@ -559,8 +563,7 @@ public class QualifierDefaults {
                T t;
             }
           We would like t to have its primary annotation defaulted but NOT the E inside its upper bound.
-          we use referential equality with the top level type var to determine which ones are definite
-          type uses, i.e. uses which can be defaulted
+          we use referential equality with the top level type var to determine which ones are defaultable
         */
         private final AnnotatedTypeVariable defaultableTypeVar;
 
