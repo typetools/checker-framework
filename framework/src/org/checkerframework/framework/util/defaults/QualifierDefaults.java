@@ -526,14 +526,13 @@ public class QualifierDefaults {
                 // but it doesn't work correctly and tests fail.
                 // (That whole @FromStubFile and @FromByteCode annotation
                 // logic should be replaced by something sensible.)
-        	SourceChecker checker = atypeFactory.getContext().getChecker();
-        	if ((ElementUtils.isElementFromByteCode(annotationScope) &&
-                    atypeFactory.declarationFromElement(annotationScope) == null &&
-                    !atypeFactory.isFromStubFile(annotationScope) &&
-                    checker.hasOption("safeDefaultsForUnannotatedBytecode")) || // TODO: make safeDefaultsForUnannotatedBytecode the default behavior.
-                    (!annotatedForThisChecker &&
-                    checker.hasOption("useSafeDefaultsForUnannotatedSourceCode"))
-                    ) {
+            SourceChecker checker = atypeFactory.getContext().getChecker();
+            if ((checker.hasOption("safeDefaultsForUnannotatedBytecode") &&
+                 ElementUtils.isElementFromByteCode(annotationScope) &&
+                 atypeFactory.declarationFromElement(annotationScope) == null &&
+                 !atypeFactory.isFromStubFile(annotationScope)) ||
+                (checker.hasOption("useSafeDefaultsForUnannotatedSourceCode") &&
+                 !annotatedForThisChecker)) {
                 for (Default def : unannotatedDefaults) {
                     applier.apply(def);
                 }
