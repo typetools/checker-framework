@@ -7,8 +7,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A @NewInstance annotation identifies the method
- * java.lang.reflect.Constructor.newInstance.
+ * Annotation for methods of the form:
+ * <br>
+ * <code>T method({@link MethodVal}(classname=c, methodname="&lt;init&gt;",
+ * params=p) Constructor this, Object... args)</code>
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

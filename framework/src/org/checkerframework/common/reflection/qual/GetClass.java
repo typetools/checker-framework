@@ -7,7 +7,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A @GetClass annotation identifies the method Object.getClass.
+ * Annotation for methods of the form:
+ * <br>
+ * <code>{@link ClassBound}("ReceiverType") Class method(ReceiverType this)
+ * {...}</code>
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

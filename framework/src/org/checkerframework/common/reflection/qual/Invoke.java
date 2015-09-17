@@ -7,7 +7,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An @Invoke annotation identifies the method java.lang.reflect.Method.invoke.
+ * Annotation for methods of the form:
+ * <br>
+ * <code>Object method({@link MethodVal}(classname=c, methodname=m, params=p)
+ * Method this, Object obj, Object... args)</code>
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

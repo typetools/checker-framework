@@ -7,8 +7,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A @ForName annotation identifies the methods Class.forName and 
- * ClassLoader.loadClass.
+ * Annotation for methods of the form:
+ * <br>
+ * <code>{@link ClassVal}("name") Class method(String name) {...}</code>
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

@@ -236,18 +236,12 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private boolean isForNameMethodInovaction(MethodInvocationTree tree) {
-            if (getDeclAnnotation(InternalUtils.symbol(tree),
-                    ForName.class) != null) {
-                return true;
-            }
-           return false;
+            return getDeclAnnotation(InternalUtils.symbol(tree),
+                    ForName.class) != null;
         }
         private boolean isGetClassMethodInovaction(MethodInvocationTree tree) {
-            if (getDeclAnnotation(InternalUtils.symbol(tree),
-                    GetClass.class) != null) {
-                return true;
-            }
-           return false;
+            return getDeclAnnotation(InternalUtils.symbol(tree),
+                    GetClass.class) != null;
         }
 
         private List<String> getStringValues(ExpressionTree arg) {

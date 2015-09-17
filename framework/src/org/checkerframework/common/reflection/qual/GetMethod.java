@@ -7,8 +7,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A @GetMethod annotation identifies the methods java.lang.Class.getMethod
- * and java.lang.Class.getDeclaredMethod.
+ * Annotation for methods of the form:
+ * <br>
+ * <code>{@link MethodVal}(classname=c, methodname=m, params=p) Method
+ * method(Class&lt;c&gt; this, String m, Object... params)</code>
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
