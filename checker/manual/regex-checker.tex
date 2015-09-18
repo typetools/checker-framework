@@ -33,9 +33,13 @@ These qualifiers make up the Regex type system:
 \begin{description}
 
 \item[\refqualclass{checker/regex/qual}{Regex}]
-  indicates valid regular expression \code{String}s. This qualifier takes
-  an optional parameter of at the least the number of capturing groups in
-  the regular expression. If not provided, the parameter defaults to 0.
+  indicates that the run-time value is a valid regular expression
+  \code{String}.  If the optional parameter is supplied to the qualifier,
+  then the number of capturing groups in the regular expression is at least
+  that many. If not provided, the parameter defaults to 0.
+  For example, if an expression's type is \<@Regex(1) String>, then its
+  run-time value could be \<"colo(u?)r"> or \<"(brown|beige)"> but not
+  \<"colou?r"> nor a non-regex string such as \<"1) first point">.
 
 \item[\refqualclass{checker/regex/qual}{PolyRegex}]
   indicates qualifier polymorphism (see Section~\ref{qualifier-polymorphism}).
@@ -183,7 +187,7 @@ Pattern p = Pattern.compile(regex);
 
 \subsection{Qualifier Parameters\label{regex-qual-params}}
 The Regex Checker supports qualifier parameters.
-See section \ref{qualifier-parameters} for more details on qualifier parameters.
+See Section~\ref{qualifier-parameters} for more details on qualifier parameters.
 
 The qualifier parameter system currently (as of February 2015) incurs a 50\%
 performance penalty. If this is unacceptable you can run the original Regex
@@ -220,4 +224,4 @@ so the \<asRegex> method should be used rarely.
 
 % LocalWords:  Regex regex quals PolyRegex isRegex RegexUtil regexError asRegex
 % LocalWords:  regexException PatternSyntaxException 9cm Matcher java 9cm
-%  LocalWords:  CheckedPatternSyntaxException
+%  LocalWords:  CheckedPatternSyntaxException colo colou 9cm

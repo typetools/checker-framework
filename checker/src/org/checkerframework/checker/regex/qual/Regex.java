@@ -14,9 +14,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Regex is the annotation to specify the regex qualifier.
- *
- * @see Tainted
+ * If a type is annotated as {@code @Regex(n)}, then the run-time value is
+ * a regular expression with <em>n</em> capturing groups.
+ * <p>
+ * For example, if an expression's type is <em>@Regex(2) String</em>, then
+ * at run time its value will be a legal regular expression with at least
+ * two capturing groups. The type states that possible run-time values
+ * include <tt>"(a*)(b*)"<tt>, <tt>"a(b?)c(d?)e"</tt>, and
+ * <tt>"(.)(.)(.)"</tt>, but not <tt>"hello"</tt> nor <tt>"(good)bye"</tt>
+ * nor <tt>"(a*)(b*)("</tt>.
  */
 //@ImplicitFor(trees = { Tree.Kind.NULL_LITERAL })
 @Retention(RetentionPolicy.RUNTIME)
