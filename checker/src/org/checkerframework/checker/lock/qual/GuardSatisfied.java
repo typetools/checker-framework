@@ -2,6 +2,8 @@ package org.checkerframework.checker.lock.qual;
 
 import java.lang.annotation.*;
 
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
@@ -34,7 +36,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @TypeQualifier
 @SubtypeOf(GuardedByInaccessible.class) // TODO: As an implementation detail, should this be in its own hierarchy?
 @Documented
-//@DefaultFor({DefaultLocation.RECEIVERS, DefaultLocation.PARAMETERS})
+@DefaultFor({DefaultLocation.RECEIVERS, DefaultLocation.PARAMETERS})
 @Retention(RetentionPolicy.RUNTIME)
 @Target({  ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE })
 public @interface GuardSatisfied {

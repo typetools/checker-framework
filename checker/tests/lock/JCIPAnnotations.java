@@ -7,7 +7,7 @@ public class JCIPAnnotations {
   class MyClass {
      Object field = new Object();
      @LockingFree
-     Object method(@GuardSatisfied MyClass this){return new Object();}
+     Object method(MyClass this){return new Object();}
   }
 
     Object lock;
@@ -18,23 +18,23 @@ public class JCIPAnnotations {
     @LockingFree
     void guardedReceiver(@GuardedBy("lock") JCIPAnnotations this) { }
     @LockingFree
-    void unguardedReceiver() { }
+    void unguardedReceiver(@GuardedBy({}) JCIPAnnotations this) { }
 
     @LockingFree
     void guardedArg(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") MyClass arg) { }
     @LockingFree
     void guardedArgUnguardedReceiver(@GuardedBy("lock") MyClass arg) { }
     @LockingFree
-    void unguardedArg(@GuardedBy("lock") JCIPAnnotations this, MyClass arg) { }
+    void unguardedArg(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy({}) MyClass arg) { }
     @LockingFree
-    void unguardedArgAndReceiver(MyClass arg) { }
+    void unguardedArgAndReceiver(@GuardedBy({}) JCIPAnnotations this, @GuardedBy({}) MyClass arg) { }
 
     @LockingFree
     static void guardedStaticArg(@GuardedBy("lock") MyClass x) { }
     @LockingFree
-    static void unguardedStaticArg(MyClass x) { }
+    static void unguardedStaticArg(@GuardedBy({}) MyClass x) { }
 
-    void testUnguardedAccess(MyClass x) {
+    void testUnguardedAccess(@GuardedBy({}) JCIPAnnotations this, @GuardedBy({}) MyClass x) {
         //:: error: (contracts.precondition.not.satisfied.field)
         this.guardedField.field.toString();
         this.unguardedField.field.toString();
@@ -77,7 +77,7 @@ public class JCIPAnnotations {
         }
     }
 
-    void testSemiGuardedAccess(@GuardedBy("lock") JCIPAnnotations this, MyClass x) {
+    void testSemiGuardedAccess(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy({}) MyClass x) {
         //:: error: (contracts.precondition.not.satisfied.field)
         this.guardedField.field.toString();
         this.unguardedField.field.toString();
@@ -133,7 +133,7 @@ public class JCIPAnnotations {
         }
     }
 
-    void testSemiGuardedAccessAgainstJavaxGuardedBy(@javax.annotation.concurrent.GuardedBy("lock") JCIPAnnotations this, MyClass x) {
+    void testSemiGuardedAccessAgainstJavaxGuardedBy(@javax.annotation.concurrent.GuardedBy("lock") JCIPAnnotations this, @GuardedBy({}) MyClass x) {
         //:: error: (contracts.precondition.not.satisfied.field)
         this.guardedField.field.toString();
         this.unguardedField.field.toString();
@@ -189,7 +189,7 @@ public class JCIPAnnotations {
         }
     }
 
-    void testSemiGuardedAccessAgainstCheckerGuardedBy(@org.checkerframework.checker.lock.qual.GuardedBy("lock") JCIPAnnotations this, MyClass x) {
+    void testSemiGuardedAccessAgainstCheckerGuardedBy(@org.checkerframework.checker.lock.qual.GuardedBy("lock") JCIPAnnotations this, @GuardedBy({}) MyClass x) {
         //:: error: (contracts.precondition.not.satisfied.field)
         this.guardedField.field.toString();
         this.unguardedField.field.toString();

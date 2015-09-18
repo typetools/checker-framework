@@ -9,6 +9,13 @@ public class TestTreeKinds {
      Object field = new Object();
      @LockingFree
      Object method(@GuardSatisfied MyClass this){return new Object();}
+     void method2(){}
+  }
+
+  @GuardedBy("lock") MyClass m;
+  {
+    //:: error: (contracts.precondition.not.satisfied.field)
+    m.field = new Object(); // In constructor/initializer, it's OK not to hold the lock on 'this', but other locks must be respected.
   }
 
   ReentrantLock lock = new ReentrantLock();
@@ -16,6 +23,8 @@ public class TestTreeKinds {
 
   @GuardedBy("lock")
   MyClass foo = new MyClass();
+
+  MyClass unguardedFoo = new MyClass();
 
   @EnsuresLockHeld("lock")
   void lockTheLock() {
@@ -277,6 +286,17 @@ void testEnumType() {
                              // automatically cast to the @GuardedBy annotation of the LHS
 }
 
+Object intrinsicLock;
+
+void testThreadHoldsLock(@GuardedBy("intrinsicLock") MyClass m) {
+    if (Thread.holdsLock(intrinsicLock)){
+        m.field.toString();
+    } else {
+        //:: error: (contracts.precondition.not.satisfied.field)
+        m.field.toString();
+    }
+}
+
 void testTreeTypes() {
     int i, l;
 
@@ -287,7 +307,10 @@ void testTreeTypes() {
 
 // Hits a bug in dataflow:    do { break; } while(foo != null); // access to guarded object in while condition of do/while loop
 // Hits a bug in dataflow:    for(foo = new MyClass(); foo != null; foo = new MyClass()){ break; } // access to guarded object in condition of for loop
-    foo = new MyClass(); // assignment to guarded object (OK)
+    foo = new MyClass(); // assignment to guarded object (OK) --- foo is still refined to @GuardedBy("lock") after this point, though.
+    unguardedFoo.method2(); // A simple method call to a guarded object is not considered a dereference (only field accesses are considered dereferences).
+    //:: error: (contracts.precondition.not.satisfied)
+    foo.method2(); // Same as above, but the guard must be satisfied if the receiver is @GuardSatisfied, which is the default.
     // TODO: Make the synchronized expression count as a dereference even if it is not a MemberSelectTree --- :: error: (contracts.precondition.not.satisfied.field)
     synchronized(foo){ // attempt to use guarded object as a lock - this counts as a dereference of foo
     }

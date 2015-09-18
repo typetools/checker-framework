@@ -20,4 +20,7 @@ import org.checkerframework.framework.qual.TypeQualifiers;
                   net.jcip.annotations.GuardedBy.class,
                   GuardSatisfied.class, GuardedByBottom.class })
 public class LockChecker extends BaseTypeChecker {
+    protected LockAnalysis analysis;
+    void setAnalysis(LockAnalysis analysis) { this.analysis = analysis; }
+    LockAnalysis getAnalysis() { return analysis; }
 }

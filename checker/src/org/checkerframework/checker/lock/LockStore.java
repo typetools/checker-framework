@@ -118,13 +118,11 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         if (inConstructorOrInitializer) {
             if (expr instanceof FlowExpressions.ThisReference) {
                 initializeThisValue(LOCKHELD, expr.getType());
-                return thisValue;
             } else if (expr instanceof FlowExpressions.FieldAccess) {
                 FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) expr;
                 if (!fieldAcc.isStatic() && // Static fields are not automatically considered synchronized within a constructor or initializer
                     fieldAcc.getReceiver() instanceof FlowExpressions.ThisReference) {
-                    insertValue(fieldAcc, LOCKHELD);
-                    return fieldValues.get(fieldAcc);
+                    insertValue(fieldAcc.getReceiver(), LOCKHELD);
                 }
             }
         }

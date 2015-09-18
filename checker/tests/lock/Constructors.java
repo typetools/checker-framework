@@ -1,7 +1,7 @@
 import org.checkerframework.checker.lock.qual.*;
 
 // Initializers and constructors are synchronized over 'this'
-// and over all their class's non-static fields
+// but not over their class's fields
 public class Constructors {
 
     static class MyClass { public Object field; }
@@ -16,7 +16,9 @@ public class Constructors {
 
     Object initializedObject1 = unlocked.field;
     Object initializedObject2 = guardedThis.field;
+    //:: error: (contracts.precondition.not.satisfied.field)
     Object initializedObject3 = guardedOther.field;
+    //:: error: (contracts.precondition.not.satisfied.field)
     Object initializedObject4 = staticGuardedByNonStatic.field;
     //:: error: (contracts.precondition.not.satisfied.field)
     Object initializedObject5 = nonstaticGuardedByStatic.field;
@@ -26,7 +28,9 @@ public class Constructors {
     Constructors() {
         unlocked.field.toString();
         guardedThis.field.toString();
+        //:: error: (contracts.precondition.not.satisfied.field)
         guardedOther.field.toString();
+        //:: error: (contracts.precondition.not.satisfied.field)
         staticGuardedByNonStatic.field.toString();
         //:: error: (contracts.precondition.not.satisfied.field)
         nonstaticGuardedByStatic.field.toString();

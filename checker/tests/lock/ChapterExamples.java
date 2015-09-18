@@ -51,8 +51,10 @@ void myMethod7(){
   Object f = myObj.field;
   //:: error: (contracts.precondition.not.satisfied)
   Object f2 = myMethodReturningMyObj().field;
-  myObj.method(); // Method calls are OK without the precondition being satisfied, as they are not dereferences.
-  myMethodReturningMyObj().method();
+  //:: error: (contracts.precondition.not.satisfied)
+  myObj.method(); // method()'s receiver is annotated as @GuardSatisfied
+  //:: error: (contracts.precondition.not.satisfied)
+  myMethodReturningMyObj().method(); // method()'s receiver is annotated as @GuardSatisfied
   // TODO: test a call to 'method()' with the receiver being the current object.
 
   synchronized(lock){
@@ -111,6 +113,8 @@ void myMethod7(){
         //:: error: (assignment.type.incompatible)
         y5 = x5; // ILLEGAL
     }
+
+    @GuardedBy("a") String s = "string"; // OK
 
 
     @GuardedBy({}) MyClass o1;
@@ -193,14 +197,23 @@ void myMethod6(){
     //:: error: (contracts.precondition.not.satisfied.field)
     d.field = new Object(); // ILLEGAL: the lock is not held
   }
+  @ReleasesNoLocks
+  void helper5() { }
+  // No annotation means @ReleasesNoLocks
+  void helper6() { }
   void myMethod2(@GuardedBy("ChapterExamples.myLock") MyClass e) {
     helper1(e);  // OK to pass to another routine without holding the lock.
     //:: error: (contracts.precondition.not.satisfied.field)
     e.field = new Object(); // ILLEGAL: the lock is not held
+    //:: error: (contracts.precondition.not.satisfied)
+    helper2(e);
     synchronized (ChapterExamples.myLock) {
       helper2(e);
       helper3(e); // OK, since parameter is @GuardSatisfied
       helper4(e); // OK, but helper4's body still has an error.
+      helper5();
+      //helper6();
+      helper2(e); // Can still be called after helper5() and helper6()
     }
   }
 
@@ -226,6 +239,11 @@ void myUnlockingMethod() {
 }
 
 void myUnannotatedEmptyMethod() {
+}
+
+@MayReleaseLocks
+//:: error: (guardsatisfied.with.mayreleaselocks)
+void methodGuardSatisfiedParameter(@GuardSatisfied Object o) {
 }
 
 @MayReleaseLocks
@@ -312,5 +330,43 @@ void boxingUnboxing() {
     // TODO re-enable this error (contracts.precondition.not.satisfied.field)
     a = b; // TODO: This assignment between two reference types should not require a lock to be held. See the explanation in LockVisitor.checkAccess for more information.
 }*/
+
+
+ReentrantLock lock1, lock2;
+@GuardedBy("lock1") StringBuffer filename;
+@GuardedBy("lock2") StringBuffer extension;
+
+void method0() {
+    //:: error: (contracts.precondition.not.satisfied) :: error: (contracts.precondition.not.satisfied.field)
+    filename.append(extension);
+    // filename = filename.append(extension);
+}
+
+void method1() {
+    lock1.lock();
+    //:: error: (contracts.precondition.not.satisfied.field)
+    filename.append(extension);
+    // filename = filename.append(extension);
+}
+
+void method2() {
+    lock2.lock();
+    //:: error: (contracts.precondition.not.satisfied)
+    filename.append(extension);
+    // filename = filename.append(extension);
+}
+
+void method3() {
+    lock1.lock();
+    lock2.lock();
+    filename.append(extension);
+    // filename = filename.append(extension);
+}
+
+
+//@LockingFree
+//public @GuardSatisfied(1) StringBuffer append(@GuardSatisfied(1) StringBuffer this,
+//                                              @GuardSatisfied(2) String str)
+
 
 }

@@ -5,6 +5,12 @@ public class Fields {
         public Object field;
     }
 
+    static @GuardedBy("Fields.class") MyClass lockedStatically;
+
+    static synchronized void ssMethod() {
+        lockedStatically.field = new Object();
+    }
+
     @GuardedBy("lockingObject") MyClass locked;
     Object lockingObject;
 
