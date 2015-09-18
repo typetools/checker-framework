@@ -501,14 +501,19 @@ public class QualifierDefaults {
     }
 
     /**
-     * Applies default annotations to a type.
-     * The defaults are taken from an {@link javax.lang.model.element.Element} by using the
-     * {@link org.checkerframework.framework.qual.DefaultQualifier} annotation present on the element
-     * or any of its enclosing elements.
+     * Applies default annotations to a type. Conservative defaults are applied first
+     * as appropriate, followed by source code defaults.
+     * <p>
+     *
+     * For a discussion on the rules for application of source code and conservative defaults,
+     * please see the linked manual sections.
      *
      * @param annotationScope the element representing the nearest enclosing
      *        default annotation scope for the type
      * @param type the type to which defaults will be applied
+     *
+     * @checker_framework.manual #effective-qualifier The effective qualifier on a type (defaults and inference)
+     * @checker_framework.manual #annotating-libraries Annotating libraries
      */
     private void applyDefaultsElement(final Element annotationScope, final AnnotatedTypeMirror type) {
         DefaultSet defaults = defaultsAt(annotationScope);
@@ -522,7 +527,8 @@ public class QualifierDefaults {
         if (unannotatedDefaults.size() > 0) {
                 // TODO: I would expect this:
                 //   atypeFactory.isFromByteCode(annotationScope)) {
-                // to work instead of the last three clauses,
+                // to work instead of the
+                // isElementFromByteCode/declarationFromElement/isFromStubFile calls,
                 // but it doesn't work correctly and tests fail.
                 // (That whole @FromStubFile and @FromByteCode annotation
                 // logic should be replaced by something sensible.)
