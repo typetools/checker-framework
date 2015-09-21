@@ -2,6 +2,8 @@ package myqual;
 
 import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
+
+import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
