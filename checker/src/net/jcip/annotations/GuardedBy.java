@@ -21,7 +21,8 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @SubtypeOf(GuardedByInaccessible.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE })
+@Target({ ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE })
+@PreconditionAnnotation(qualifier = LockHeld.class)
 public @interface GuardedBy {
     /**
      * The Java value expressions that need to be held.

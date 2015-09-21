@@ -1,14 +1,23 @@
 import net.jcip.annotations.*;
 import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
+import org.checkerframework.checker.lock.qual.Holding;
 
 // Smoke test for supporting JCIP and Javax annotations
 public class JCIPAnnotations {
-  class MyClass {
+    void testGuardedAccess5(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") MyClass x) {
+        x = new MyClass();
+    }
+
+ class MyClass {
      Object field = new Object();
      @LockingFree
      Object method(MyClass this){return new Object();}
   }
+
+    void testGuardedAccess1(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") MyClass x) {
+        this.guardedReceiver();
+    }
 
     Object lock;
 
@@ -52,6 +61,8 @@ public class JCIPAnnotations {
     void testGuardedAccess(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") MyClass x) {
         //:: error: (contracts.precondition.not.satisfied.field)
         this.guardedField.field.toString();
+        // Error because 'lock' is not known to be held, and 'lock' is guarding 'this':
+        //:: error: (contracts.precondition.not.satisfied.field)
         this.unguardedField.field.toString();
         this.guardedReceiver();
         //:: error: (method.invocation.invalid)
@@ -80,6 +91,8 @@ public class JCIPAnnotations {
     void testSemiGuardedAccess(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy({}) MyClass x) {
         //:: error: (contracts.precondition.not.satisfied.field)
         this.guardedField.field.toString();
+        // Error because 'lock' is not known to be held, and 'lock' is guarding 'this':
+        //:: error: (contracts.precondition.not.satisfied.field)
         this.unguardedField.field.toString();
         this.guardedReceiver();
         //:: error: (method.invocation.invalid)
@@ -108,6 +121,8 @@ public class JCIPAnnotations {
     void testGuardedAccessAgainstJavaxGuardedBy(@javax.annotation.concurrent.GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") MyClass x) {
         //:: error: (contracts.precondition.not.satisfied.field)
         this.guardedField.field.toString();
+        // Error because 'lock' is not known to be held, and 'lock' is guarding 'this':
+        //:: error: (contracts.precondition.not.satisfied.field)
         this.unguardedField.field.toString();
         this.guardedReceiver();
         //:: error: (method.invocation.invalid)
@@ -136,6 +151,8 @@ public class JCIPAnnotations {
     void testSemiGuardedAccessAgainstJavaxGuardedBy(@javax.annotation.concurrent.GuardedBy("lock") JCIPAnnotations this, @GuardedBy({}) MyClass x) {
         //:: error: (contracts.precondition.not.satisfied.field)
         this.guardedField.field.toString();
+        // Error because 'lock' is not known to be held, and 'lock' is guarding 'this':
+        //:: error: (contracts.precondition.not.satisfied.field)
         this.unguardedField.field.toString();
         this.guardedReceiver();
         //:: error: (method.invocation.invalid)
@@ -164,6 +181,8 @@ public class JCIPAnnotations {
     void testGuardedAccessAgainstCheckerGuardedBy(@org.checkerframework.checker.lock.qual.GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") MyClass x) {
         //:: error: (contracts.precondition.not.satisfied.field)
         this.guardedField.field.toString();
+        // Error because 'lock' is not known to be held, and 'lock' is guarding 'this':
+        //:: error: (contracts.precondition.not.satisfied.field)
         this.unguardedField.field.toString();
         this.guardedReceiver();
         //:: error: (method.invocation.invalid)
@@ -192,6 +211,8 @@ public class JCIPAnnotations {
     void testSemiGuardedAccessAgainstCheckerGuardedBy(@org.checkerframework.checker.lock.qual.GuardedBy("lock") JCIPAnnotations this, @GuardedBy({}) MyClass x) {
         //:: error: (contracts.precondition.not.satisfied.field)
         this.guardedField.field.toString();
+        // Error because 'lock' is not known to be held, and 'lock' is guarding 'this':
+        //:: error: (contracts.precondition.not.satisfied.field)
         this.unguardedField.field.toString();
         this.guardedReceiver();
         //:: error: (method.invocation.invalid)
@@ -217,4 +238,26 @@ public class JCIPAnnotations {
         }
     }
 
+    @GuardedBy("lock")
+    void testGuardedByAsHolding() {
+        this.guardedField.field.toString();
+        guardedField.field.toString();
+    }
+
+    @GuardedBy("lock") // JCIP GuardedBy applies to both the method and the return type, unfortunately.
+    Object testGuardedByAsHolding2() {
+        this.guardedField.field.toString();
+        guardedField.field.toString();
+        testGuardedByAsHolding();
+        @GuardedBy("lock") Object o = new Object();
+        return o;
+    }
+
+    void testGuardedByAsHolding3() {
+        synchronized(lock) {
+            testGuardedByAsHolding();
+        }
+        //:: error: (contracts.precondition.not.satisfied)
+        testGuardedByAsHolding();
+    }
 }

@@ -2377,7 +2377,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * name equals the passed annotationName if one exists, null otherwise. This
      * is the private implementation of the same-named, public method.
      */
-    private AnnotationMirror getDeclAnnotation(Element elt,
+    protected AnnotationMirror getDeclAnnotation(Element elt,
             /*@Interned*/ String annoName, boolean checkAliases) {
         Set<AnnotationMirror> declAnnos = getDeclAnnotations(elt);
 
@@ -2419,6 +2419,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         Set<AnnotationMirror> results = AnnotationUtils.createAnnotationSet();
         // Retrieving the annotations from the element.
+        if (elt == null) {
+          Object o = null;	
+        }
         results.addAll(elt.getAnnotationMirrors());
         // If indexDeclAnnos == null, return the annotations in the element.
         if (indexDeclAnnos != null) {

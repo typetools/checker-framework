@@ -1,5 +1,5 @@
 // This test contains the sample code from the Lock Checker manual chapter
-// slightly modified to fit testing instead of illustrative purposes.
+// modified to fit testing instead of illustrative purposes.
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.dataflow.qual.*;
 import java.util.concurrent.locks.ReentrantLock;
@@ -10,6 +10,69 @@ class ChapterExamples {
      @LockingFree
      Object method(@GuardSatisfied MyClass this){return new Object();}
   }
+
+@MayReleaseLocks
+@ReleasesNoLocks
+// TODO: enable (multiple.sideeffect.annotation)
+void testMultipleSideEffectAnnotations(){
+}
+
+void guardedByItselfOnReceiver(@GuardedBy("itself") ChapterExamples this) {
+  synchronized(this) { // Tests translation of 'itself' to 'this' by the LockVisitor for this scenario.
+    //myField = new MyClass();
+    myField.toString();
+    this.myField = new MyClass();
+    this.myField.toString();
+  }
+  //:: error: (contracts.precondition.not.satisfied.field)
+  myField = new MyClass();
+  //:: error: (contracts.precondition.not.satisfied.field)
+  myField.toString();
+  //:: error: (contracts.precondition.not.satisfied.field)
+  this.myField = new MyClass();
+  //:: error: (contracts.precondition.not.satisfied.field)
+  this.myField.toString();
+}
+
+void guardedByThisOnReceiver(@GuardedBy("this") ChapterExamples this) {
+  //:: error: (contracts.precondition.not.satisfied.field)
+  myField = new MyClass();
+  //:: error: (contracts.precondition.not.satisfied.field)
+  myField.toString();
+  //:: error: (contracts.precondition.not.satisfied.field)
+  this.myField = new MyClass();
+  //:: error: (contracts.precondition.not.satisfied.field)
+  this.myField.toString();
+  synchronized(this) {
+    myField = new MyClass();
+    myField.toString();
+    this.myField = new MyClass();
+    this.myField.toString();
+  }
+}
+
+void testDereferenceOfReceiverAndParameter(@GuardedBy("lock") ChapterExamples this, @GuardedBy("lock") MyClass m) {
+  //:: error: (contracts.precondition.not.satisfied.field)
+  myField = new MyClass();
+  //:: error: (contracts.precondition.not.satisfied.field)
+  myField.toString();
+  //:: error: (contracts.precondition.not.satisfied.field)
+  this.myField = new MyClass();
+  //:: error: (contracts.precondition.not.satisfied.field)
+  this.myField.toString();
+  //:: error: (contracts.precondition.not.satisfied.field)
+  m.field = new Object();
+  //:: error: (contracts.precondition.not.satisfied.field)
+  m.field.toString();
+  synchronized(lock) {
+    myField = new MyClass();
+    myField.toString();
+    this.myField = new MyClass();
+    this.myField.toString();
+    m.field = new Object();
+    m.field.toString();
+  }
+}
 
   @GuardedBy("lock") MyClass myObj = new MyClass();
 
@@ -207,17 +270,19 @@ void myMethod6(){
     e.field = new Object(); // ILLEGAL: the lock is not held
     //:: error: (contracts.precondition.not.satisfied)
     helper2(e);
+    //:: error: (contracts.precondition.not.satisfied.field)
+    helper3(e);
     synchronized (ChapterExamples.myLock) {
       helper2(e);
       helper3(e); // OK, since parameter is @GuardSatisfied
       helper4(e); // OK, but helper4's body still has an error.
       helper5();
-      //helper6();
+      helper6();
       helper2(e); // Can still be called after helper5() and helper6()
     }
   }
 
-private MyClass myField;
+private @GuardedBy({}) MyClass myField;
 private ReentrantLock myLock2; // Initialized in the constructor
 private @GuardedBy("myLock2") MyClass x3; // Initialized in the constructor
 
@@ -238,7 +303,8 @@ void myUnlockingMethod() {
     myLock2.unlock();
 }
 
-void myUnannotatedEmptyMethod() {
+@MayReleaseLocks
+void myReleaseLocksEmptyMethod() {
 }
 
 @MayReleaseLocks
@@ -261,10 +327,10 @@ void myOtherMethod() {
     }
     if (myLock2.tryLock()) {
         x3.field = new Object(); // OK: the lock is held
-        myUnannotatedEmptyMethod();
+        myReleaseLocksEmptyMethod();
         //:: error: (contracts.precondition.not.satisfied.field)
-        x3.field = new Object(); // ILLEGAL: even though myUnannotatedEmptyMethod is empty, since it is
-                      // not annotated with @LockingFree, the Lock Checker no longer knows
+        x3.field = new Object(); // ILLEGAL: even though myUnannotatedEmptyMethod is empty, since
+                      // myReleaseLocksEmptyMethod() is annotated with @MayReleaseLocks and the Lock Checker no longer knows
                       // the state of the lock.
         if (myLock2.isHeldByCurrentThread()) {
             x3.field = new Object(); // OK: the lock is known to be held

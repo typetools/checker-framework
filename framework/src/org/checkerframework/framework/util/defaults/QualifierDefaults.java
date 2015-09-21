@@ -4,6 +4,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifiers;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -499,40 +500,57 @@ public class QualifierDefaults {
         }
     }
 
+    public boolean applyUnannotatedDefaults(final Element annotationScope) {
+        boolean annotatedForThisChecker = isElementAnnotatedForThisChecker(annotationScope);
+
+        if (unannotatedDefaults.size() > 0) {
+            // TODO: I would expect this:
+            //   atypeFactory.isFromByteCode(annotationScope)) {
+            // to work instead of the
+            // isElementFromByteCode/declarationFromElement/isFromStubFile calls,
+            // but it doesn't work correctly and tests fail.
+            // (That whole @FromStubFile and @FromByteCode annotation
+            // logic should be replaced by something sensible.)
+	        SourceChecker checker = atypeFactory.getContext().getChecker();
+	        if ((checker.hasOption("safeDefaultsForUnannotatedBytecode") &&
+	             ElementUtils.isElementFromByteCode(annotationScope) &&
+	             atypeFactory.declarationFromElement(annotationScope) == null &&
+	             !atypeFactory.isFromStubFile(annotationScope)) ||
+	            (checker.hasOption("useSafeDefaultsForUnannotatedSourceCode") &&
+	             !annotatedForThisChecker)) {
+	        	return true;
+	        }
+        }
+        
+        return false;
+    }
+    
     /**
-     * Applies default annotations to a type.
-     * The defaults are taken from an {@link javax.lang.model.element.Element} by using the
-     * {@link org.checkerframework.framework.qual.DefaultQualifier} annotation present on the element
-     * or any of its enclosing elements.
+     * Applies default annotations to a type. Conservative defaults are applied first
+     * as appropriate, followed by source code defaults.
+     * <p>
+     *
+     * For a discussion on the rules for application of source code and conservative defaults,
+     * please see the linked manual sections.
      *
      * @param annotationScope the element representing the nearest enclosing
      *        default annotation scope for the type
      * @param type the type to which defaults will be applied
+     *
+     * @checker_framework.manual #effective-qualifier The effective qualifier on a type (defaults and inference)
+     * @checker_framework.manual #annotating-libraries Annotating libraries
      */
     private void applyDefaultsElement(final Element annotationScope, final AnnotatedTypeMirror type) {
         DefaultSet defaults = defaultsAt(annotationScope);
-        boolean annotatedForThisChecker = isElementAnnotatedForThisChecker(annotationScope);
         DefaultApplierElement applier = new DefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
 
         for (Default def : defaults) {
             applier.apply(def);
         }
 
-        if (unannotatedDefaults.size() > 0) {
-                // TODO: I would expect this:
-                //   atypeFactory.isFromByteCode(annotationScope)) {
-                // to work instead of the last three clauses,
-                // but it doesn't work correctly and tests fail.
-                // (That whole @FromStubFile and @FromByteCode annotation
-                // logic should be replaced by something sensible.)
-            if ((ElementUtils.isElementFromByteCode(annotationScope) &&
-                    atypeFactory.declarationFromElement(annotationScope) == null &&
-                    !atypeFactory.isFromStubFile(annotationScope)) ||
-                    !annotatedForThisChecker
-                    ) {
-                for (Default def : unannotatedDefaults) {
-                    applier.apply(def);
-                }
+        if (applyUnannotatedDefaults(annotationScope)) {
+            for (Default def : unannotatedDefaults) {
+                applier.apply(def);
             }
         }
 
@@ -559,7 +577,8 @@ public class QualifierDefaults {
                T t;
             }
           We would like t to have its primary annotation defaulted but NOT the E inside its upper bound.
-          we use referential equality with the top level type var to determine which ones are defaultable
+          we use referential equality with the top level type var to determine which ones are definite
+          type uses, i.e. uses which can be defaulted
         */
         private final AnnotatedTypeVariable defaultableTypeVar;
 

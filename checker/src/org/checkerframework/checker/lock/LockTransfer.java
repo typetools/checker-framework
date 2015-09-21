@@ -1,8 +1,11 @@
 package org.checkerframework.checker.lock;
 
 import java.util.List;
+import java.util.Set;
+
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -13,11 +16,17 @@ import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.util.ContractsUtils;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 
-import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ClassTree;	
 import com.sun.source.tree.MethodTree;
+
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -180,4 +189,6 @@ public class LockTransfer extends
 
         return result;
     }
+    
+   
 }

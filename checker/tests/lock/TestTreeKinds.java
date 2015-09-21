@@ -5,6 +5,7 @@ import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 public class TestTreeKinds {
+
   class MyClass {
      Object field = new Object();
      @LockingFree
@@ -36,6 +37,7 @@ public class TestTreeKinds {
     return lock.tryLock();
   }
 
+  @MayReleaseLocks // This @MayReleaseLocks annotation causes dataflow analysis to assume 'lock' is released after unlockTheLock() is called.
   void unlockTheLock() {
   }
 
@@ -47,6 +49,7 @@ public class TestTreeKinds {
   void lockingFreeMethod() {
   }
 
+  @MayReleaseLocks
   void nonSideEffectFreeMethod() {
   }
 
@@ -319,6 +322,10 @@ void testTreeTypes() {
     }
     // try(foo = new MyClass()){ foo.field.toString(); } // attempt to use guarded object inside a try with resources
 
+    // Retrieving an element from a guarded array is a dereference
+    //:: error: (contracts.precondition.not.satisfied.field)
+    MyClass m = fooArray[0];
+
     //:: error: (contracts.precondition.not.satisfied.field)
     fooArray[0].field.toString(); // method call on dereference of unguarded element of *guarded* array
     //:: error: (contracts.precondition.not.satisfied.field)
@@ -412,8 +419,15 @@ void testTreeTypes() {
       //:: error: (cannot.dereference)
       foo.field.toString();
     }
+
+    // TODO: Reenable:
+    // @PolyGuardedBy should not be written here, but it is not explicitly forbidden by the framework.
+    // @PolyGuardedBy MyClass m2 = new MyClass();
+    // (cannot.dereference)
+    // m2.field.toString();
 }
 
+@MayReleaseLocks
 public void testLocals() {
   ReentrantLock localLock = new ReentrantLock();
 
@@ -436,6 +450,7 @@ public void testLocals() {
   unlockTheLock();
 }
 
+@MayReleaseLocks
 public void testMethodAnnotations() {
   Random r = new Random();
 

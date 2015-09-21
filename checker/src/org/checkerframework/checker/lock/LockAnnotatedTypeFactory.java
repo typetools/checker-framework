@@ -1,15 +1,21 @@
 package org.checkerframework.checker.lock;
 
+/*>>>
+import org.checkerframework.checker.interning.qual.*;
+*/
+
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
+import org.checkerframework.checker.lock.qual.Holding;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -19,16 +25,21 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
 import com.sun.source.tree.Tree;
@@ -50,6 +61,15 @@ public class LockAnnotatedTypeFactory
     /** Annotation constants */
     protected final AnnotationMirror LOCKHELD, LOCKPOSSIBLYHELD, SIDEEFFECTFREE, GUARDEDBY, JCIPGUARDEDBY, JAVAXGUARDEDBY, GUARDSATISFIED;
 
+    private final Class<? extends Annotation> checkerHoldingClass = Holding.class;
+    //private final Class<? extends Annotation> checkerHoldingOnEntryClass = org.checkerframework.checker.lock.qual.HoldingOnEntry.class;
+
+    // Note that Javax and JCIP @GuardedBy is used on both methods and objects. For methods they are
+    // equivalent to the Checker Framework @Holding annotation.
+    private final Class<? extends Annotation> javaxGuardedByClass = javax.annotation.concurrent.GuardedBy.class;
+    private final Class<? extends Annotation> jcipGuardedByClass = net.jcip.annotations.GuardedBy.class;
+    
+    
     // Cache for the lock annotations
     protected final Set<Class<? extends Annotation>> lockAnnos;
 
@@ -167,6 +187,16 @@ public class LockAnnotatedTypeFactory
 
         return type;
     }
+    
+    protected AnnotationMirror getDeclAnnotationNoAliases(Element elt,
+            Class<? extends Annotation> anno) {
+        String annoName = anno.getCanonicalName().intern();
+        return getDeclAnnotation(elt, annoName, false);
+    }
+    
+    protected QualifierDefaults getQualifierDefaults() {
+    	return defaults;
+    }
 
     /**
      * @return The list of annotations of the lock type system.
@@ -210,4 +240,59 @@ public class LockAnnotatedTypeFactory
             return super.isSubtype(rhsIsGuardedBy ? GUARDEDBY : rhs, lhsIsGuardedBy ? GUARDEDBY : lhs);
         }
     }
+    
+    /*@Override
+    protected AnnotationMirror getDeclAnnotation(Element elt,
+            /*@Interned*//* String annoName, boolean checkAliases) {
+        Set<AnnotationMirror> declAnnos = getDeclAnnotations(elt);
+
+        if (checkAliases && annoName.equals(SideEffectFree.class.getCanonicalName().intern())) {
+        
+        }
+        
+        return super.getDeclAnnotation(elt, annoName, checkAliases);
+    }*/
+
+    protected List<String> methodHolding(ExecutableElement element) {
+        AnnotationMirror holding = getDeclAnnotation(element, checkerHoldingClass);
+        AnnotationMirror guardedBy
+            = getDeclAnnotation(element, jcipGuardedByClass);
+        AnnotationMirror guardedByJavax
+            = getDeclAnnotation(element, javaxGuardedByClass);
+
+        if (holding == null && guardedBy == null && guardedByJavax == null)
+            return Collections.emptyList();
+
+        List<String> locks = new ArrayList<String>();
+
+        if (holding != null) {
+            List<String> holdingValue = AnnotationUtils.getElementValueArray(holding, "value", String.class, false);
+            locks.addAll(holdingValue);
+        }
+        if (guardedBy != null) {
+            String guardedByValue = AnnotationUtils.getElementValue(guardedBy, "value", String.class, false);
+            locks.add(guardedByValue);
+        }
+        if (guardedByJavax != null) {
+            String guardedByValue = AnnotationUtils.getElementValue(guardedByJavax, "value", String.class, false);
+            locks.add(guardedByValue);
+        }
+
+        return locks;
+    }
+
+    /*protected List<String> methodHoldingOnEntry(ExecutableElement element) {
+        AnnotationMirror holdingOnEntry = atypeFactory.getDeclAnnotation(element, checkerHoldingOnEntryClass);
+
+        if (holdingOnEntry == null)
+            return Collections.emptyList();
+
+        List<String> locks = new ArrayList<String>();
+
+        List<String> holdingOnEntryValue = AnnotationUtils.getElementValueArray(holdingOnEntry, "value", String.class, false);
+        locks.addAll(holdingOnEntryValue);
+
+        return locks;
+    }*/
+    
 }

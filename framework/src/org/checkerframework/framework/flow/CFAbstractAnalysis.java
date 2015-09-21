@@ -65,13 +65,13 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
     /**
      * A type factory that can provide static type annotations for AST Trees.
      */
-    protected final GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> atypeFactory;
+    public final GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> atypeFactory;
 
     /**
      * A checker used to do error reporting.
      * TODO: if it's only for error reporting, should it be an (extended) ErrorHandler?
      */
-    protected final SourceChecker checker;
+    public final SourceChecker checker;
 
     /**
      * Initial abstract types for fields.

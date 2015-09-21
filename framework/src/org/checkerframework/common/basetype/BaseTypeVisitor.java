@@ -12,12 +12,14 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
+import org.checkerframework.dataflow.cfg.node.ExplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
@@ -965,7 +967,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected void checkPreconditions(Tree tree,
             Element invokedElement, boolean methodCall, Set<Pair<String, String>> additionalPreconditions) {
-        Set<Pair<String, String>> preconditions =
+        Set<Pair<String, String>> preconditions = invokedElement == null ?
+        		new HashSet<Pair<String, String>>() :
                 contractsUtils.getPreconditions(invokedElement);
 
         if (additionalPreconditions != null) {
@@ -1021,6 +1024,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     Receiver internalReceiver = FlowExpressions.internalReprOfArrayAccess(atypeFactory,
                         (ArrayAccessNode) nodeNode);
 
+                    flowExprContext = new FlowExpressionContext(
+                            internalReceiver, null, checker.getContext());
+                }
+                else if (nodeNode instanceof ExplicitThisLiteralNode ||
+                		 nodeNode instanceof ImplicitThisLiteralNode ||
+                		 nodeNode instanceof ThisLiteralNode) {
+                	Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory, nodeNode, false);
+                	
                     flowExprContext = new FlowExpressionContext(
                             internalReceiver, null, checker.getContext());
                 }

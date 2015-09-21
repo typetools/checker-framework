@@ -221,6 +221,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             methodValues.clear();
 
             arrayValues.clear();
+            
+            localVariableValues.clear();
         }
 
         // store information about method call if possible
