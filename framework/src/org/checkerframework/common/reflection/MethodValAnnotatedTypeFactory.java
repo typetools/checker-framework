@@ -4,6 +4,8 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.ClassBound;
 import org.checkerframework.common.reflection.qual.ClassVal;
+import org.checkerframework.common.reflection.qual.GetConstructor;
+import org.checkerframework.common.reflection.qual.GetMethod;
 import org.checkerframework.common.reflection.qual.MethodVal;
 import org.checkerframework.common.reflection.qual.MethodValBottom;
 import org.checkerframework.common.reflection.qual.UnknownMethod;
@@ -21,6 +23,7 @@ import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.ArrayList;
@@ -31,7 +34,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -42,18 +44,6 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             .fromClass(elements, MethodValBottom.class);
     private final AnnotationMirror UNKNOWN_METHOD = AnnotationUtils.fromClass(
             elements, UnknownMethod.class);
-
-    /** Methods with form:
-    @MethodVal(classname=c, methodname=m, params=p) Method getMethod(Class<c> this, String m, Object... params)**/
-    private final ExecutableElement[] getMethod = {
-            TreeUtils.getMethod("java.lang.Class", "getMethod", 2,
-                    processingEnv),
-            TreeUtils.getMethod("java.lang.Class", "getDeclaredMethod", 2,
-                    processingEnv) };
-    /** Methods with form:
-    @MethodVal(classname=c, methodname="<init>", params=p) Method getConstructor(Class<c> this, Object... params)**/
-    private final ExecutableElement[] getConstructor = {TreeUtils.getMethod(
-            "java.lang.Class", "getConstructor", 1, processingEnv)};
 
     private static final int UNKNOWN_PARAM_LENGTH = -1;
 
@@ -284,18 +274,16 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private boolean isGetConstructorMethodInovaction(MethodInvocationTree tree) {
-            for (ExecutableElement method: getConstructor ) {
-                if (TreeUtils.isMethodInvocation(tree, method, processingEnv)) {
-                    return true;
-                }
+            if (getDeclAnnotation(InternalUtils.symbol(tree),
+                    GetConstructor.class) != null) {
+                return true;
             }
-           return false;
+            return false;
         }
         private boolean isGetMethodMethodInovaction(MethodInvocationTree tree) {
-            for (ExecutableElement method: getMethod ) {
-                if (TreeUtils.isMethodInvocation(tree, method, processingEnv)) {
-                    return true;
-                }
+            if (getDeclAnnotation(InternalUtils.symbol(tree),
+                    GetMethod.class) != null) {
+                return true;
             }
            return false;
         }
