@@ -19,15 +19,42 @@ def print_usage():
     print( "\n  --auto  accepts or chooses the default for all prompts" )
 
 #If the relevant repos do not exist, clone them, otherwise, update them.
-def update_repos():
+def delete_and_clone_repos():
+    message = """Before building the release, we delete any old release repositories and then
+clone them again.  However, if you have had to run the script multiple times
+and no files have changed, you may skip this test.
+WARNING:IF THIS IS YOUR FIRST RUN OF THE RELEASE ON RELEASE DAY, DO NOT SKIP
+THIS STEP.
+The following repositories will be deleted then re-cloned from their origins:
+"""
     for live_to_interm in LIVE_TO_INTERM_REPOS:
-        clone_or_update_repo( live_to_interm[0], live_to_interm[1], True )
+        message += live_to_interm[1] + "\n"
 
     for interm_to_build in INTERM_TO_BUILD_REPOS:
-        clone_or_update_repo( interm_to_build[0], interm_to_build[1], False )
+        message += interm_to_build[1] + "\n"
 
-    clone_or_update_repo( LIVE_PLUME_LIB, PLUME_LIB, False )
-    clone_or_update_repo( LIVE_PLUME_BIB, PLUME_BIB, False )
+    message += PLUME_LIB + "\n"
+    message += PLUME_BIB + "\n\n"
+
+    message += "Delete and re-clone?"
+
+    if not prompt_yes_no(message):
+        print("WARNING: Continuing without refreshing repositories.\n")
+        return
+
+    for live_to_interm in LIVE_TO_INTERM_REPOS:
+        delete_and_clone( live_to_interm[0], live_to_interm[1], True )
+
+    for interm_to_build in INTERM_TO_BUILD_REPOS:
+        delete_and_clone( interm_to_build[0], interm_to_build[1], False )
+
+    delete_and_clone( LIVE_PLUME_LIB, PLUME_LIB, False )
+    delete_and_clone( LIVE_PLUME_BIB, PLUME_BIB, False )
+
+def copy_cf_logo(cf_release_dir):
+    dev_releases_png = os.path.join(cf_release_dir, "CFLogo.png")
+    cmd="cp %s %s" % (LIVE_CF_LOGO, dev_releases_png)
+    execute(cmd)
 
 def get_afu_date( building_afu ):
     if building_afu:
@@ -85,8 +112,10 @@ def build_jsr308_langtools_release(auto, version, afu_release_date, checker_fram
     #build jsr308 binaries and documents but not website, fail if the tests don't pass
     execute("ant -Dhalt.on.test.failure=true clean-and-build-all-tools build-javadoc build-doclets", True, False, JSR308_MAKE)
 
+    jsr308ZipName = "jsr308-langtools-%s.zip" % version
+
     #zip up jsr308-langtools project and place it in jsr308_interm_dir
-    ant_props = "-Dlangtools=%s  -Dcheckerframework=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (JSR308_LANGTOOLS, CHECKER_FRAMEWORK, jsr308_interm_dir, "jsr308-langtools.zip", version)
+    ant_props = "-Dlangtools=%s  -Dcheckerframework=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (JSR308_LANGTOOLS, CHECKER_FRAMEWORK, jsr308_interm_dir, jsr308ZipName, version)
     ant_cmd   = "ant -f release.xml %s zip-langtools " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -131,7 +160,7 @@ def build_annotation_tools_release( auto, version, afu_interm_dir ):
     execute( ant_cmd )
 
     #Deploy to intermediate site
-    ant_cmd   = "ant -buildfile %s -e web-no-checks -Ddeploy-dir=%s" % ( build, afu_interm_dir )
+    ant_cmd   = "ant -buildfile %s -e web-no-checks -Dafu.version=%s -Ddeploy-dir=%s" % ( build, version, afu_interm_dir )
     execute( ant_cmd )
 
     update_project_symlink( "annotation-file-utilities", afu_interm_dir )
@@ -177,18 +206,28 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
     execute("cp " + os.path.join(SCRIPTS_DIR, "comment.sty") + " .", True, False, checker_manual_dir)
     execute("make manual.pdf manual.html", True, False, checker_manual_dir)
 
+
     #make the dataflow manual
     dataflow_manual_dir = os.path.join(CHECKER_FRAMEWORK, "dataflow", "manual")
-    execute("pdflatex dataflow.tex", True, False, dataflow_manual_dir)
+
+    print("After the upgrade to Fedora 22, the dataflow manual refuses to build.  The manual is rarely updated " +
+          "so we copy the old one from the previous release.  And place it in the correct directory.\n" +
+          "Note: When fixing this, you should remove the failonerror=true in release.xml which copies the dataflow file" +
+          "in target checker-framework-website-docs\n" +
+          "WARNING: This needs to be fixed!\n")
+    print("")
+    #execute("pdflatex dataflow.tex", True, False, dataflow_manual_dir)
     # Yes, run it twice
-    execute("pdflatex dataflow.tex", True, False, dataflow_manual_dir)
+    #execute("pdflatex dataflow.tex", True, False, dataflow_manual_dir)
 
     #make the checker framework tutorial
     checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
     execute("make", True, False, checker_tutorial_dir)
 
+    cfZipName = "checker-framework-%s.zip" % version
+
     #zip up checker-framework.zip and put it in checker_framework_interm_dir
-    ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, "checker-framework.zip", version)
+    ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, cfZipName, version)
     ant_cmd   = "ant -f release.xml %s zip-checker-framework " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -263,25 +302,17 @@ def main(argv):
     # Recall that there are 3 relevant sets of repositories for the release:
     # * build repository - repository where the project is built for release
     # * intermediate repository - repository to which release related changes are pushed after the project is built
-    # * release repository - Google code repositories, the central repository.
+    # * release repository - Github/Bitbucket repositories, the central repository.
 
     # Every time we run release_build, changes are committed to the intermediate repository from build but NOT to
     # the release repositories. If we are running the build script multiple times without actually committing the
-    # release then these changes need to be cleaned before we run the release_build script again. We therefore run
-    # hg strip, hg purge, and hg revert on ALL repositories.
-
-    # NOTE: See README-maintainers.html#fi_bug_fixes for errors you might experience at this step.
-
-    clean_repos( INTERM_REPOS,  not auto )
-    clean_repos( BUILD_REPOS, not auto )
-
-    # The repositories that were cleaned of changes in the previous step need to be updated to the latest revision.
-    # The intermediate repos pull from the release repos and the build repos pull from the intermediate.
-    # All repos are then updated.
+    # release then these changes need to be cleaned before we run the release_build script again.
+    # Since the move to Git, cleaning can be error prone, so we have moved to deleting the repos entirely
+    # and cloning
 
     #check we are cloning LIVE -> INTERM, INTERM -> RELEASE
     print_step("\n1b: Update repositories.") # SEMIAUTO
-    update_repos()
+    delete_and_clone_repos()
 
     # This step ensures the previous 2 steps work. It checks to see if we have any modified files, untracked files,
     # or outgoing changesets. If so, it fails.
@@ -412,22 +443,40 @@ def main(argv):
         print_step("6c: Build Checker Framework.")
         build_checker_framework_release(auto, jsr308_version, afu_date, checker_framework_interm_dir, jsr308_interm_dir)
 
+
+    print_step("Build Step 7: Overwrite .htaccess.")
+    print("The release script will now update %s to redirect any requests for the old unversioned zip files\n" % DEV_HTACCESS)
+    print("e.g., checker-framework/current/checker-framework.zip\n")
+    print("to the new versioned zips.")
+    print("e.g., checker-framework/current/checker-framework-%s.zip\n" % jsr308_version)
+
+    update_htaccess(CHECKER_FRAMEWORK_RELEASE, jsr308_version, afu_version, RELEASE_HTACCESS, DEV_HTACCESS)
+    copy_cf_logo(checker_framework_interm_dir)
+
     # Each project has a set of files that are updated for release. Usually these updates include new
     # release date and version information. All changed files are committed and pushed to the intermediate
     # repositories. Keep this in mind if you have any changed files from steps 1d, 4, or 5. Edits to the
     # scripts in the jsr308-release/scripts directory will never be checked in.
 
-    print_step("Build Step 7: Commit projects to intermediate repos.") # AUTO
+    print_step("Build Step 8: Commit projects to intermediate repos.") # AUTO
     commit_to_interm_projects( jsr308_version, afu_version, projects_to_release )
 
     # Adds read/write/execute group permissions to all of the new dev website directories
     # under http://types.cs.washington.edu/dev/ These directories need group read/execute
     # permissions in order for them to be served.
 
-    print_step("\n\n8: Add permissions to websites.") # AUTO
-    ensure_group_access( jsr308_interm_dir )
-    ensure_group_access( afu_interm_dir )
-    ensure_group_access( checker_framework_interm_dir )
+    print_step("\n\nBuild Step 9: Add group permissions to repos.")
+    for build in BUILD_REPOS:
+        ensure_group_access( build )
+
+    for interm in INTERM_REPOS:
+        ensure_group_access( interm )
+
+    # At the moment, this will lead to output error messages because some metadata in some of the
+    # dirs I think is owned by Mike or Werner.  We should identify these and have them fix it.
+    # But as long as the processes return a zero exit status, we should be ok.
+    print_step("\n\nBuild Step 9: Add permissions to websites.") # AUTO
+    ensure_group_access( FILE_PATH_TO_DEV_SITE )
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

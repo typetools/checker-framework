@@ -586,10 +586,12 @@ for your subtype of
 You can enhance the Checker Framework's built-in flow-sensitive type refinement,
 so that it is more powerful and is customized to your type system. In
 particular, your enhancement will yield a more refined type for certain
-expressions. However, most enhancements to type refinement are based on a
-run-time test specific to the type system and not all type-systems have
+expressions.
+
+Most enhancements to type refinement are based on a
+run-time test specific to the type system, and not all type systems have
 applicable run-time tests.  See
-Section~\refwithpageparen{type-refinement-runtime-tests} to determine if
+Section~\refwithpageparen{type-refinement-runtime-tests} to determine whether
 run-time tests are applicable to your type system.
 
 The Checker Framework's type refinement is implemented with a dataflow algorithm
@@ -610,26 +612,10 @@ The steps to customizing type refinement are:
 \item{\ref{dataflow-implement-refinement}} Implement the refinement
 \end{enumerate}
 
-The Regex Checker's dataflow customization for the \code{RegexUtil.asRegex}
+The Regex Checker's dataflow customization for the
+\refmethod{checker/regex}{RegexUtil}{asRegex}{-java.lang.String-}
 run-time check is used as an example throughout the steps.
 
-The \code{RegexUtil.asRegex} method is declared as:
-
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-  @Regex(0) String asRegex(String s, int groups) { ... }
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
-\noindent
-which means that an expression such as \code{RegexUtil.asRegex(myString, myInt)}
-has type \code{@Regex(0)} String. When \code{int} parameter \code{group} is
-known or can be inferred at compile time, a better estimate can be given.  For
-example, \code{RegexUtil.asRegex(myString, 2)} has type \code{@Regex(2)} String.
 
 \subsection{Create required classes and configure their
   use\label{dataflow-create-classes}}
@@ -714,7 +700,20 @@ types.
 
 A \refclass{dataflow/cfg/node}{Node} is basically equivalent to a javac compiler
 \refTreeclass{tree}{Tree}.  A tree is a node in the abstract syntax tree of the
-program being checked. See \ref{javac-tips} for more information about trees.
+program being checked. See Section~\ref{javac-tips} for more information about trees.
+
+As an example, for the statement \<String a = "";>, the corresponding
+abstract syntax tree structure is:
+\begin{Verbatim}
+VariableTree:
+  name: "a"
+  type: 
+    IdentifierTree
+      name: String
+  initializer:
+    LiteralTree
+      value: ""
+\end{Verbatim}
 
 A \refclass{dataflow/cfg/node}{Node} generally maps one-to-one with a
 \refTreeclass{tree}{Tree}. When dataflow processes a method, it translates
@@ -764,13 +763,30 @@ type) and a map from expressions in scopes to estimates of their types (a
 \refclass{dataflow/analysis}{Store}).
 
 For the program operation \code{op(a,b)}, an enhancement may improve the Checker
-Framework's types by:
+Framework's types in either or both of the following ways:
 \begin{enumerate}
 \item Changing the resulting type to refine the estimate of the type of entire
-    expression \code{op(a,b)}, or
-\item Changing the store to refine the estimate of some other expression, such
-    as \code{a} or \code{b}.
-\end{enumerate}
+    expression \code{op(a,b)}.
+
+As an example (and as the running example of
+implementing a dataflow refinement),
+the \code{RegexUtil.asRegex} method is declared as:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  @Regex(0) String asRegex(String s, int groups) { ... }
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\noindent
+which means that an expression such as \code{RegexUtil.asRegex(myString, myInt)}
+has type \code{@Regex(0) String}. When \code{int} parameter \code{group} is
+known or can be inferred at compile time, a better estimate can be given.  For
+example, \code{RegexUtil.asRegex(myString, 2)} has type \code{@Regex(2) String}.
 
 Changing the \refclass{dataflow/analysis}{TransferResult}'s result type changes
 the type that is returned by the \refclass{framework/type}{AnnotatedTypeFactory}
@@ -778,16 +794,33 @@ for the tree corresponding to the \refclass{dataflow/cfg/node}{Node} that was
 visited.  (Remember that \refclass{common/basetype}{BaseTypeVisitor} uses the
 \refclass{framework/type}{AnnotatedTypeFactory} to look up the type of a
 \refTreeclass{tree}{Tree}, and then performs checks on types of one or more
-\refTreeclass{tree}{Tree}s).
+\refTreeclass{tree}{Tree}s.)
 
 When \refclass{checker/regex/classic}{RegexTransfer} evaluates a
 \code{RegexUtils.asRegex} invocation, it updates the
 \refclass{dataflow/analysis}{TransferResult}'s result type. This changes the
-type of the \code{RegexUtils.asRegex} invocation when it's
+type of the \code{RegexUtils.asRegex} invocation when its
 \refTreeclass{tree}{Tree} is looked up by the
 \refclass{framework/type}{AnnotatedTypeFactory}.  Regex Checker's
 \code{visitMethodInvocation} is shown in more detail in
-\ref{dataflow-implement-refinement}.
+Section~\ref{dataflow-implement-refinement}.
+
+\item Changing the store to refine the estimate of some other expression, such
+    as \code{a} or \code{b}.
+
+As an example, consider an equality test.
+
+\begin{Verbatim}
+  @Nullable String s;
+    if (s != null) {
+    ...
+    }
+\end{Verbatim}
+
+The type of \<s != null> is always \<@NonNull boolean> (dataflow analysis
+does not affect it), but in the true branch, the type of \<s> can be
+refined to \<@NonNull String>.
+
 
 Updating the \refclass{dataflow/analysis}{Store} treats an expression as a
 having a refined type for the remainder of the method or conditional block. For
@@ -800,8 +833,8 @@ the \refclass{dataflow/analysis}{Store}.  Other kinds of expressions, like
 binary expressions or casts, cannot be stored in the
 \refclass{dataflow/analysis}{Store}.
 
-Both the \refclass{dataflow/analysis}{Store} and the result type may be updated
-in the same \refclass{dataflow/analysis}{TransferResult}.
+\end{enumerate}
+
 
 \subsection{Implement the refinement\label{dataflow-implement-refinement}}
 
@@ -810,15 +843,6 @@ This section details implementing the visitor method
 run-time test.  You can find other examples of visitor methods in
 \refclass{checker/lock}{LockTransfer} and
 \refclass{checker/formatter}{FormatterTransfer}.
-
-A general outline of the visit method is to:
-\begin{enumerate}
-\item Determine if the visited \refclass{dataflow/cfg/node}{Node} is of interest
-\item Determine the refined type
-\item Return a \refclass{dataflow/analysis}{TransferResult} with the refined
-    types
-\end{enumerate}
-
 
 \begin{enumerate}
 \item \textbf{Determine if the visited \refclass{dataflow/cfg/node}{Node} is of
@@ -850,9 +874,7 @@ the result of \code{RegexUtils.asRegex} invocations:
       if (isRegexUtil(receiverName)) {
         if (ElementUtils.matchesElement(method,
           null, IS_REGEX_METHOD_NAME, String.class, int.class)) {
-
-          ...
-
+            ...
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
@@ -910,7 +932,7 @@ If the integer argument was not a literal integer, the
 \item \textbf{Return a \refclass{dataflow/analysis}{TransferResult} with the
     refined types}
 
-As discussed in section \ref{dataflow-determine-expressions}, the type of an
+As discussed in Section~\ref{dataflow-determine-expressions}, the type of an
 expression is refined by modifying the
 \refclass{dataflow/analysis}{TransferResult}.  Since the
 \refclass{checker/regex/classic}{RegexTransfer} is updating the type of the run-time
@@ -1353,7 +1375,8 @@ Section~\ref{extending-visitor}.
 
 \item \code{-Aflowdotdir}:
   Directory for .dot files that visualize the control flow graph of all the methods and code fragments
-  analyzed by the dataflow analysis.  The graph also contains information about flow-sensitively refined
+  analyzed by the dataflow analysis (Section~\ref{dataflow}).
+  The graph also contains information about flow-sensitively refined
   types of various expressions at many program points.
 
 \item \code{-AresourceStats}:

@@ -10,15 +10,15 @@ public class EncryptionDemo {
 
 
     public /*@Encrypted*/ String encrypt(String text) {
-        /*@Encrypted*/ String encryptedText= new /*@Encrypted*/ String();
-        for (char character:text.toCharArray()){
+        /*@Encrypted*/ String encryptedText = new /*@Encrypted*/ String();
+        for (char character : text.toCharArray()) {
             encryptedText += encryptCharacter(character);
         }
         return encryptedText;
     }
 
     private /*@Encrypted*/ char encryptCharacter(char character) {
-        /*@Encrypted*/ int encryptInt = (character + OFFSET) % Character.MAX_VALUE ;
+        /*@Encrypted*/ int encryptInt = (character + OFFSET) % Character.MAX_VALUE;
         return (/*@Encrypted*/ char) encryptInt;
     }
 
@@ -28,7 +28,7 @@ public class EncryptionDemo {
     }
 
     public void sendPassword() {
-        String password  = getUserPassword();
+        String password = getUserPassword();
         sendOverInternet(password);
     }
 

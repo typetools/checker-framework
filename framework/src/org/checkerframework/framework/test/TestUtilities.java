@@ -353,15 +353,13 @@ public class TestUtilities {
 
     //We should do this while discovering source file but that would require a
     //refactoring of the test utilities
-    public static void filterOutJdk8Sources(List<Object[]> sources) {
+    public static void filterOutJdk8Sources(List<File> sources) {
         for (int i = 0; i < sources.size(); ) {
-            for (Object sourceObj : sources.get(i)) {
-                File sourceFile = (File) sourceObj;
-                if (sourceFile.getAbsolutePath().contains("java8")) {
-                    sources.remove(i);
-                } else {
-                    i++;
-                }
+            File sourceFile = sources.get(i);
+            if (sourceFile.getAbsolutePath().contains("java8")) {
+                sources.remove(i);
+            } else {
+                i++;
             }
         }
     }

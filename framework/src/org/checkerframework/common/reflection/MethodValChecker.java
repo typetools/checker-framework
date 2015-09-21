@@ -8,6 +8,7 @@ import org.checkerframework.common.reflection.qual.MethodVal;
 import org.checkerframework.common.reflection.qual.MethodValBottom;
 import org.checkerframework.common.reflection.qual.UnknownMethod;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.qual.TypeQualifiers;
 
 /**
@@ -16,7 +17,7 @@ import org.checkerframework.framework.qual.TypeQualifiers;
  *
  * @checker_framework.manual #methodval-and-classval-checkers MethodVal Checker
  */
-
+@StubFiles({"reflection.astub"})
 @TypeQualifiers({MethodVal.class, MethodValBottom.class, UnknownMethod.class})
 public class MethodValChecker extends BaseTypeChecker {
     @Override
