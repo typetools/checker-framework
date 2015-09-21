@@ -536,56 +536,10 @@ miss a step if you only read the paragraph asking you to say 'yes'.
 <section id="future_improvements">
     <h2>Future Improvements</h2>
     <p>Below is a roughly priority-ordered list of future improvements.  In a perfect world we would do
-        all of these.  At the moment, I believe only the first 3 (Bug Fixes, Open JDK Javadoc Fixes,
+        all of these.  At the moment, I believe only the first 2 (Open JDK Javadoc Fixes,
         and More Sanity Checks) should have any appreciable priority.
     </p>
 
-    <section id="fi_bug_fixes">
-        <h3>Bug Fixes</h3>
-        [We have switched to Git.  Does a similar problem still happen?]
-        A known bug at the moment is a failed 'hg strip' that happens once in a while when the script is
-        cleaning the build/interm repositories.  Running the script a few times clears this.  It happens at the
-        beginning of the script so this doesn't take long but it would be good to figure out why the command
-        fails and fix it up.
-
-        The cause seems to be the following:
-        <ol>
-            <li>A release_build is performed but not pushed to Google code.  Lets say the number for the parent
-            commit of this release is 1 and the commit for the release itself is 2a.
-            </li>
-            <li>One or more pushes are made to the Google Code repositories.  That makes the Google code have
-                a commit 2b which is a child of 1.
-            </li>
-            <li>When we try to strip the changeset 2a, for some reason it works but outputs NO text to
-                standard out and has a return status of 0.  Perhaps we should just expect this behavior as
-                one of the valid outputs of strip.  We check to make sure there are no outgoing or uncommitted
-                changes before building anyways.
-            </li>
-        </ol>
-        <p>
-        <code><pre>
-Traceback (most recent call last):
-File &quot;release_build.py&quot;, line 313, in &lt;module&gt;
-sys.exit(main(sys.argv))
-File &quot;release_build.py&quot;, line 235, in main
-clean_repos( INTERM_REPOS,  not auto )
-File &quot;/scratch/jsr308-release/scripts/release_utils.py&quot;, line 455, in clean_repos
-clean_repo(repo, False)
-File &quot;/scratch/jsr308-release/scripts/release_utils.py&quot;, line 446, in clean_repo
-strip(repo)
-File &quot;/scratch/jsr308-release/scripts/release_utils.py&quot;, line 426, in strip
-raise Exception(&quot;Could not recognize strip output: (%s, %s, %s)&quot; % (process.returncode, out, err))
-Exception: Could not recognize strip output: (0, , )
-        </pre></code>
-        </p>
-
-        <h4>Tasks:</h4>
-        <ul>
-            <li>Test the release script.  Perhaps add some local commits/changes to the build repositories.</li>
-            <li>Once you can get the clean tasks to fail, figure out why they fail and fix the script.</li>
-            <li>Remove this section from this document.</li>
-        </ul>
-    </section>
     <section id="fi_jdk-api_fixup">
         <h3>Open JDK/JSR308 Javadoc</h3>
         Generating the Javadocs for the entire JDK is not simple.  We have previously generated these but have

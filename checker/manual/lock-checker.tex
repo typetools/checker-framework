@@ -115,7 +115,7 @@ held.  The type system conservatively prohibits this in order to prevent
 type-checking loopholes that would result from aliasing and side effects
 --- that is, from having two mutable references, of different types, to the
 same data. See
-Section~\ref{guardedby-invariant-subtyping} for an example
+Section~\ref{lock-guardedby-invariant-subtyping} for an example
 of a problem that would occur if this rule were relaxed.
 
 
@@ -299,18 +299,6 @@ Assignments:
 Primitive types are treated as being annotated with \<@GuardedBy(\{\})>.
 It is an error for the programmer to annotate any primitive type with an annotation from
 the \<@GuardedBy> type hierarchy.
-\textcolor{red}{JT: I think it would be useful to issue a warning
-even when the user explicitly annotates a primitive type with
-\<@GuardedBy(\{\})>.
-[[MDE: That's fine with me.  It is already implied by the immediately
-preceding sentence.]]
-The warning would indicate that in general, verifying a locking discipline
-involving primitive types is not handled by the Lock Checker.
-The reason to have such a warning is so that in a future version,
-the message for the same warning can be replaced with one indicating that
-\<@GuardedByName> is the appropriate annotation to use for primitive types.
-The user would thus not see a net increase in the number of warnings when
-upgrading to the newer Lock Checker version.}
 
 %  Primitive values are not guarded.  Instead, the variables that store them are.
 %  Therefore, for reads, writes and other operations on primitive values, the Lock Checker requires that

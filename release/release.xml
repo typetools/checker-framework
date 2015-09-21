@@ -84,6 +84,7 @@
         <property name="checker.manual"      value="${checker}/manual"                       />
         <property name="checker.eclipse"     value="${checker}/../eclipse"                   />
         <property name="checker.tutorial"    value="${checker}/../tutorial"                  />
+        <property name="checker.release"     value="${checker}/../release"                   />
         <property name="checkerWebPage"      value="${checker.manual}/checker-framework-webpage.html" />
         <property name="maven.plugin"         value="${checker}/../maven-plugin"             />
         <property name="checker.binary.poms"  value="${maven.plugin}/poms"                   />
@@ -227,6 +228,22 @@
 
     </target>
 
+    <target name="update-htaccess-versions">
+
+        <fail unless="htaccess.file"  message="htaccess.file not set"/>
+        <fail unless="afu.version"    message="afu.version not set"/>
+        <fail unless="cflt.version"   message="cflt.version (checker framework/langtools version) not set!"/>
+
+        <replaceregexp file="${htaccess.file}" byline="true"
+                       match="jsr308-langtools-\S+.zip" replace="jsr308-langtools-${cflt.version}.zip"/>
+
+        <replaceregexp file="${htaccess.file}" byline="true"
+                       match="checker-framework-\S+.zip" replace="checker-framework-${cflt.version}.zip"/>
+
+        <replaceregexp file="${htaccess.file}" byline="true"
+                       match="annotation-tools-\S+.zip" replace="annotation-tools-${afu.version}.zip"/>
+    </target>
+
     <target name="zip-langtools" description="Creates a zip archive for JSR308-Langtools.">
 
         <fail unless="checkerframework" message="checkerframework property is not set!"/>
@@ -245,11 +262,11 @@
 
             <zipfileset dir="${langtools}"
                         includes="dist/lib/javac.jar"
-                        fullpath="jsr308-langtools/binary/javac.jar"/>
+                        fullpath="jsr308-langtools-${version}/binary/javac.jar"/>
 
             <zipfileset dir="${langtools}"
                         includes="dist/lib/javap.jar"
-                        fullpath="jsr308-langtools/binary/javap.jar"/>
+                        fullpath="jsr308-langtools-${version}/binary/javap.jar"/>
 
             <zipfileset dir="${langtools}" prefix="jsr308-langtools-${version}"
                         includes="dist/bin/**" filemode="755"/>
@@ -406,7 +423,9 @@
 
         <copy file="${checker.manual}/manual.html" tofile="${dest.dir}/${manual.name}.html"/>
         <copy file="${checker.manual}/manual.pdf"  tofile="${dest.dir}/${manual.name}.pdf"/>
-        <copy file="${dataflow.manual}/dataflow.pdf"  tofile="${dest.dir}/${dataflow.manual.name}.pdf"/>
+
+        <!-- see the comments on building the dataflow manual in release_build::build_checker_framework_release-->
+        <copy file="${dataflow.manual}/dataflow.pdf"  tofile="${dest.dir}/${dataflow.manual.name}.pdf" failonerror="false"/>
 
         <copy todir="${dest.dir}" flatten="true">
             <fileset dir="${checker.manual}">

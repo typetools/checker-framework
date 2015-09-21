@@ -21,6 +21,7 @@ rebuilding the JDK; for example,
   ant -e -find build.xml nullness-tests
   ant -e -find build.xml all-tests-nojdk
 
+
 How to run just one test for the Checker Framework
 ==================================================
 
@@ -145,7 +146,8 @@ To create tests for a new checker, mimic some existing checker's tests:
  * create a top-level JUnit test, such as:
    checker-framework/checker/tests/src/tests/NullnessReflectionTest.java
    It is a subclass of CheckerFrameworkTest, and its list of checker
-   options must include "-Anomsgtext".
+   options must include "-Anomsgtext".  (See the API documentation for
+   CheckerFrameworkTest for more detailed information.)
  * change checker-framework/checker/build.xml to run those tests
 
 Different test cases may need to pass different command-line arguments

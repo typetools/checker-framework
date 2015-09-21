@@ -521,10 +521,10 @@ public class QualifierDefaults {
 	        	return true;
 	        }
         }
-        
+
         return false;
     }
-    
+
     /**
      * Applies default annotations to a type. Conservative defaults are applied first
      * as appropriate, followed by source code defaults.
