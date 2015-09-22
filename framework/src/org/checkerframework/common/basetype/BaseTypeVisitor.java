@@ -1043,6 +1043,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
 
                     // TODO: Wrap the following 'itself' handling logic into a method that calls FlowExpressionParseUtil.parse
+
                     /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
                     Pattern itselfPattern = Pattern.compile("^itself$");
                     Matcher itselfMatcher = itselfPattern.matcher(expression.trim());
@@ -1051,15 +1052,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             flowExprContext, getCurrentPath());
 
                     if (expr == null && itselfMatcher.matches()) { // There is no variable, class, etc. named "itself"
-                        Node node;
-                        /*if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
-                            node = atypeFactory.getNodeForTree(((JCFieldAccess) tree).getExpression());
-                        } else {*/
-                            node = nodeNode;
-                        //}
-
                         expr = FlowExpressions.internalReprOf(atypeFactory,
-                                node);
+                                nodeNode);
                     }
 
                     CFAbstractValue<?> value = store.getValue(expr);

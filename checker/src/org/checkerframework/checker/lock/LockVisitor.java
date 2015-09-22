@@ -341,41 +341,21 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             AnnotatedDeclaredType overriddenType,
             Void p) {
 
+        // Check @Holding overrides
+
         List<String> overriderLocks = atypeFactory.methodHolding(TreeUtils.elementFromDeclaration(overriderTree));
         List<String> overriddenLocks = atypeFactory.methodHolding(overridden.getElement());
 
-        //List<String> overriderHoldingOnEntryLocks = methodHoldingOnEntry(TreeUtils.elementFromDeclaration(overriderTree));
-        //List<String> overriddenHoldingOnEntryLocks = methodHoldingOnEntry(overridden.getElement());
-
-        /*
-         *  @Holding is a stronger requirement than @HoldingOnEntry, since it has both pre- and postconditions. Therefore:
-         *
-         *  If the overridden method uses @HoldingOnEntry, the overrider method can only use @HoldingOnEntry.
-         *  If the overridden method uses @Holding, the overrider method can use either @Holding or @HoldingOnEntry.
-         *
-         */
-
         boolean isValid = true;
 
-        /*if (!overriddenHoldingOnEntryLocks.isEmpty()) {
-            if (!overriderLocks.isEmpty()) {
+        if (!overriderLocks.isEmpty()) {
+            if (!overriddenLocks.containsAll(overriderLocks)) {
                 isValid = false;
-                reportFailure("override.holding.invalid.holdingonentry", overriderTree, enclosingType, overridden, overriddenType, null, null);
-            } else if (!overriddenHoldingOnEntryLocks.containsAll(overriderHoldingOnEntryLocks)) {
-                isValid = false;
-                reportFailure("override.holding.invalid", overriderTree, enclosingType, overridden, overriddenType, overriderHoldingOnEntryLocks, overriddenHoldingOnEntryLocks);
+                reportFailure("override.holding.invalid", overriderTree, enclosingType, overridden, overriddenType, overriderLocks, overriddenLocks);
             }
-        } else {*/
-            if (!overriderLocks.isEmpty()) {
-                if (!overriddenLocks.containsAll(overriderLocks)) {
-                    isValid = false;
-                    reportFailure("override.holding.invalid", overriderTree, enclosingType, overridden, overriddenType, overriderLocks, overriddenLocks);
-                }
-            }/* else if (!overriddenLocks.containsAll(overriderHoldingOnEntryLocks)) {
-                isValid = false;
-                reportFailure("override.holding.invalid", overriderTree, enclosingType, overridden, overriddenType, overriderHoldingOnEntryLocks, overriddenLocks);
-            }*/
-        //}
+        }
+
+        // Check side effect annotation overrides
 
         SideEffectAnnotation seaOfOverriderMethod = atypeFactory.methodSideEffectAnnotation(TreeUtils.elementFromDeclaration(overriderTree), false);
         SideEffectAnnotation seaOfOverridenMethod = atypeFactory.methodSideEffectAnnotation(overridden.getElement(), false);

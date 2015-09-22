@@ -18,11 +18,8 @@ import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.*;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
-import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
@@ -149,34 +146,6 @@ public class LockAnnotatedTypeFactory
     @Override
     public LockTransfer createFlowTransferFunction(CFAbstractAnalysis<CFValue, LockStore, LockTransfer> analysis) {
         return new LockTransfer((LockAnalysis) analysis,(LockChecker)this.checker);
-    }
-
-    @Override
-    protected TypeAnnotator createTypeAnnotator() {
-        return new ListTypeAnnotator(
-                new LockTypeAnnotator(this),
-                super.createTypeAnnotator()
-        );
-    }
-
-
-    private class LockTypeAnnotator extends TypeAnnotator {
-
-        LockTypeAnnotator(LockAnnotatedTypeFactory atypeFactory) {
-            super(atypeFactory);
-        }
-
-        @Override
-        public Void visitExecutable(AnnotatedExecutableType t, Void p) {
-            /*AnnotatedDeclaredType type = t.getReceiverType();
-            if (type != null) {
-                if (type.getAnnotationInHierarchy(GUARDEDBY) == null) {
-                    type.replaceAnnotation(GUARDSATISFIED);
-                }
-            }*/
-
-            return super.visitExecutable(t, p);
-        }
     }
 
     protected AnnotationMirror getDeclAnnotationNoAliases(Element elt,

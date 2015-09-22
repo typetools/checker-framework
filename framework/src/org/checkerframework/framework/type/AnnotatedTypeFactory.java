@@ -2419,9 +2419,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         Set<AnnotationMirror> results = AnnotationUtils.createAnnotationSet();
         // Retrieving the annotations from the element.
-        if (elt == null) {
-          Object o = null;	
-        }
         results.addAll(elt.getAnnotationMirrors());
         // If indexDeclAnnos == null, return the annotations in the element.
         if (indexDeclAnnos != null) {

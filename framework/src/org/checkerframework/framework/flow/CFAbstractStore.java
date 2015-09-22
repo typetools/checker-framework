@@ -384,25 +384,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         return isMonotonic;
     }
 
-    /*public void insertValueToLocalVariableByName(String identifier, AnnotationMirror a) {
-        if (a == null) {
-            return;
-        }
-
-        for (Entry<Element, V> e : localVariableValues.entrySet()) {
-            Element localVar = e.getKey();
-            if (localVar.getSimpleName().toString().equals(identifier)) {
-                V value = analysis.createSingleAnnotationValue(a, localVar.asType());
-
-                V oldValue = localVariableValues.get(localVar);
-                V newValue = value.mostSpecific(oldValue, null);
-                if (newValue != null) {
-                    localVariableValues.put(localVar, newValue);
-                }
-            }
-        }
-    }*/
-
     public void insertThisValue(AnnotationMirror a, TypeMirror underlyingType) {
         if (a == null) {
             return;

@@ -288,8 +288,8 @@ public class FlowExpressionParseUtil {
 
                     if (!recursiveCall && itselfMatcher.matches()) {
                         return null; // Don't throw an exception if 'itself' does not match an identifier.
-                        // The callee is aware that it passed in 'itself' and will handle the null return value.
-                        // DO however throw an exception if the call is recursive and 'itself' matches,
+                        // The callee knows that it passed in 'itself' and will handle the null return value.
+                        // DO however throw an exception below if the call is recursive and 'itself' matches,
                         // because that might mean that the original expression was "classname.itself",
                         // which means a field named itself was explicitly sought.
                     }
