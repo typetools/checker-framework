@@ -34,7 +34,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * @checker_framework.manual #lock-checker Lock Checker
  */
 @TypeQualifier
-@SubtypeOf(GuardedByInaccessible.class) // TODO: As an implementation detail, should this be in its own hierarchy?
+@SubtypeOf(GuardedByInaccessible.class) // TODO: Should @GuardSatisfied be in its own hierarchy?
 @Documented
 @DefaultFor({DefaultLocation.RECEIVERS, DefaultLocation.PARAMETERS})
 @Retention(RetentionPolicy.RUNTIME)

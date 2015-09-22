@@ -91,7 +91,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     public Void visitVariable(VariableTree node, Void p) { // visit a variable declaration
         if (node.getType().getKind() == Kind.PRIMITIVE_TYPE &&
             (node.toString().contains("GuardSatisfied") ||
-             node.toString().contains("GuardedBy"))){ // HACK!!! TODO
+             node.toString().contains("GuardedBy"))){ // HACK!!! TODO: Fix.
             checker.report(Result.failure("primitive.type.guardedby"), node);
         }
         return super.visitVariable(node, p);
@@ -225,8 +225,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         switch(valueTreeKind) {
             case NEW_CLASS:
             case NEW_ARRAY:
-                // Avoid issuing warnings when: @GuardedBy("this") Object guardedThis = new Object();
-                // TODO: This is too broad and should be fixed to work the way it will work in the hacks repo.
+                // Avoid issuing warnings for: @GuardedBy(<something>) Object o = new Object();
                 // Do NOT do this if the LHS is @GuardedByBottom.
                 if (!AnnotationUtils.areSameIgnoringValues(varType.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE), GUARDEDBYBOTTOM))
                     return;
@@ -238,10 +237,12 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             case BOOLEAN_LITERAL:
             case CHAR_LITERAL:
             case STRING_LITERAL:
-            //case NULL_LITERAL: // Don't return in the case of NULL_LITERAL since the check must be made that the LHS is @GuardedByBottom.
-                // Avoid issuing warnings when: guardedThis = "m";
-                // TODO: This is too broad and should be fixed to work the way it will work in the hacks repo.
+                // Avoid issuing warnings for: @GuardedBy(<something>) Object o; o = <some literal>;
+                // Do NOT do this if the LHS is @GuardedByBottom.
+                if (!AnnotationUtils.areSameIgnoringValues(varType.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE), GUARDEDBYBOTTOM))
+                    return;
                 return;
+            case NULL_LITERAL: // Don't return in the case of NULL_LITERAL since the check must be made that the LHS is @GuardedByBottom.
             default:
         }
 
@@ -516,16 +517,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     FlowExpressions.Receiver fieldExpr = FlowExpressionParseUtil.parse(fieldName,
                             flowExprContext, getCurrentPath());
 
-                    // TODO: Is this still needed? Everything may just work without this:
                     if (fieldExpr.equals(expr)) {
                         // Avoid issuing warnings when accessing the field that is guarding the receiver.
                         // e.g. avoid issuing a warning when accessing bar below:
                         // void foo(@GuardedBy("bar") myClass this) { synchronized(bar) { ... }}
-
-                        // Also avoid issuing a warning in this scenario:
-                        // @GuardedBy("bar") Object bar;
-                        // ...
-                        // synchronized(bar) { ... }
 
                         // Cover only the most common case: synchronized(variableName).
                         // If the expression in the synchronized statement is more complex,
@@ -573,7 +568,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         SideEffectAnnotation seaOfContainingMethod = atypeFactory.methodSideEffectAnnotation(methodElement, false);
-        // TODO: Think about methods enclosing other methods
 
         if (seaOfInvokedMethod.ordinal() < seaOfContainingMethod.ordinal()) {
             checker.report(Result.failure(

@@ -434,6 +434,18 @@ void method3() {
     // filename = filename.append(extension);
 }
 
+@ReleasesNoLocks
+void innerClassTest() {
+   class InnerClass {
+       @MayReleaseLocks
+       void innerClassMethod() {
+       }
+   }
+
+   InnerClass ic = new InnerClass();
+   //:: error: (method.guarantee.violated)
+   ic.innerClassMethod();
+}
 
 //@LockingFree
 //public @GuardSatisfied(1) StringBuffer append(@GuardSatisfied(1) StringBuffer this,
