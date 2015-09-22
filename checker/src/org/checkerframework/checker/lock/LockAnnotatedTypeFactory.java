@@ -38,7 +38,6 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
@@ -62,13 +61,17 @@ public class LockAnnotatedTypeFactory
     protected final AnnotationMirror LOCKHELD, LOCKPOSSIBLYHELD, SIDEEFFECTFREE, GUARDEDBY, JCIPGUARDEDBY, JAVAXGUARDEDBY, GUARDSATISFIED;
 
     private final Class<? extends Annotation> checkerHoldingClass = Holding.class;
-    //private final Class<? extends Annotation> checkerHoldingOnEntryClass = org.checkerframework.checker.lock.qual.HoldingOnEntry.class;
 
     // Note that Javax and JCIP @GuardedBy is used on both methods and objects. For methods they are
     // equivalent to the Checker Framework @Holding annotation.
     private final Class<? extends Annotation> javaxGuardedByClass = javax.annotation.concurrent.GuardedBy.class;
     private final Class<? extends Annotation> jcipGuardedByClass = net.jcip.annotations.GuardedBy.class;
     
+    private final Class<? extends Annotation> checkerLockingFreeClass = LockingFree.class;
+    private final Class<? extends Annotation> checkerReleasesNoLocksClass = ReleasesNoLocks.class;
+    private final Class<? extends Annotation> checkerMayReleaseLocksClass = MayReleaseLocks.class;
+    private final Class<? extends Annotation> sideEffectFreeClass = SideEffectFree.class;
+    private final Class<? extends Annotation> pureClass = Pure.class;
     
     // Cache for the lock annotations
     protected final Set<Class<? extends Annotation>> lockAnnos;
@@ -241,18 +244,6 @@ public class LockAnnotatedTypeFactory
         }
     }
     
-    /*@Override
-    protected AnnotationMirror getDeclAnnotation(Element elt,
-            /*@Interned*//* String annoName, boolean checkAliases) {
-        Set<AnnotationMirror> declAnnos = getDeclAnnotations(elt);
-
-        if (checkAliases && annoName.equals(SideEffectFree.class.getCanonicalName().intern())) {
-        
-        }
-        
-        return super.getDeclAnnotation(elt, annoName, checkAliases);
-    }*/
-
     protected List<String> methodHolding(ExecutableElement element) {
         AnnotationMirror holding = getDeclAnnotation(element, checkerHoldingClass);
         AnnotationMirror guardedBy
@@ -281,18 +272,60 @@ public class LockAnnotatedTypeFactory
         return locks;
     }
 
-    /*protected List<String> methodHoldingOnEntry(ExecutableElement element) {
-        AnnotationMirror holdingOnEntry = atypeFactory.getDeclAnnotation(element, checkerHoldingOnEntryClass);
+    enum SideEffectAnnotation {
+        MAYRELEASELOCKS,
+        RELEASESNOLOCKS,
+        LOCKINGFREE,
+        SIDEEFFECTFREE,
+        PURE
+    }
 
-        if (holdingOnEntry == null)
-            return Collections.emptyList();
+    SideEffectAnnotation methodSideEffectAnnotation(Element element, boolean errorIfMoreThanOnePresent) {
+    	if (element == null) {
+    		return SideEffectAnnotation.MAYRELEASELOCKS;
+    	}
 
-        List<String> locks = new ArrayList<String>();
+    	// If more than one annotation is present, this method issues a warning and returns
+    	// the most annotation providing the weakest guarantee.
 
-        List<String> holdingOnEntryValue = AnnotationUtils.getElementValueArray(holdingOnEntry, "value", String.class, false);
-        locks.addAll(holdingOnEntryValue);
+    	// If no annotation is present, return RELEASESNOLOCKS as the default, and MAYRELEASELOCKS
+    	// as the default for unannotated code.
 
-        return locks;
-    }*/
+    	boolean[] sideEffectAnnotationPresent = new boolean[5];
+    	
+    	sideEffectAnnotationPresent[0] = getDeclAnnotationNoAliases(element, checkerMayReleaseLocksClass) != null;
+    	sideEffectAnnotationPresent[1] = getDeclAnnotationNoAliases(element, checkerReleasesNoLocksClass) != null;
+    	sideEffectAnnotationPresent[2] = getDeclAnnotationNoAliases(element, checkerLockingFreeClass) != null;
+    	sideEffectAnnotationPresent[3] = getDeclAnnotationNoAliases(element, sideEffectFreeClass) != null;
+    	sideEffectAnnotationPresent[4] = getDeclAnnotationNoAliases(element, pureClass) != null;
+        
+        int count = 0;
+        
+        for(int i = 0; i < 5; i++) {
+        	if (sideEffectAnnotationPresent[i])
+        		count++;
+        }
+        
+        if (count == 0) {
+        	if (getQualifierDefaults().applyUnannotatedDefaults(element)) {
+        		return SideEffectAnnotation.MAYRELEASELOCKS;
+        	}
+        	else {
+        	    return SideEffectAnnotation.RELEASESNOLOCKS;
+        	}
+        }
+        
+        if (count > 1 && errorIfMoreThanOnePresent) {
+            // TODO: Turn on after figuring out how this interacts with inherited annotations.
+        	// checker.report(Result.failure("multiple.sideeffect.annotations"), element);
+        }
+        
+        for(int i = 0; i < 5; i++) {
+        	if (sideEffectAnnotationPresent[i])
+        		return SideEffectAnnotation.values()[i];
+        }
+        
+        return SideEffectAnnotation.MAYRELEASELOCKS;
+    }
     
 }

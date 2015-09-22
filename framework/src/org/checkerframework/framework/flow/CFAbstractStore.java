@@ -25,8 +25,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
-import com.sun.tools.javac.code.Symbol;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,6 +140,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             thisValue = analysis.createSingleAnnotationValue(a, underlyingType);
         }
     }
+    
+    protected boolean isSideEffectFree(AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
+        return PurityUtils.isSideEffectFree(atypeFactory, method);
+    }
 
     /* --------------------------------------------------------- */
     /* Handling of fields */
@@ -172,7 +174,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
         // case 1: remove information if necessary
         if (!(analysis.checker.hasOption("assumeSideEffectFree")
-              || PurityUtils.isSideEffectFree(atypeFactory, method))) {
+              || isSideEffectFree(atypeFactory, method))) {
             // update field values
             Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
             for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
