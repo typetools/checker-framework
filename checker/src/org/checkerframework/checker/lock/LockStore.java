@@ -69,10 +69,10 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
             // Expressions containing unknown expressions are not stored.
             return;
         }
-        if (r instanceof FlowExpressions.LocalVariable) {
+/*        if (r instanceof FlowExpressions.LocalVariable) {
             FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) r;
             localVariableValues.put(localVar, value);
-        } else if (r instanceof FlowExpressions.FieldAccess) {
+        } else*/ if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
             // Only store information about final fields (where the receiver is
             // also fixed) if concurrent semantics are enabled.
