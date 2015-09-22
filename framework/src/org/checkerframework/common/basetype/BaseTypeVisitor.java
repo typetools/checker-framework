@@ -2141,6 +2141,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
     */
+    
+    protected boolean skipReceiverSubtypeCheck(MethodInvocationTree node,
+    		AnnotatedTypeMirror methodDefinitionReceiver,
+    		AnnotatedTypeMirror methodCallReceiver) {
+    	return false;
+    }
 
     /**
      * Tests whether the method can be invoked using the receiver of the 'node'
@@ -2173,7 +2179,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
 
-        if (!atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver)) {
+        if (!skipReceiverSubtypeCheck(node, methodReceiver, rcv) &&
+            !atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver)) {
             checker.report(Result.failure("method.invocation.invalid",
                 TreeUtils.elementFromUse(node),
                 treeReceiver.toString(), methodReceiver.toString()), node);

@@ -17,7 +17,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 
-import com.sun.source.tree.ClassTree;	
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -49,7 +49,7 @@ public class LockTransfer extends
         this.analysis = analysis;
         this.checker = checker;
         this.checker.setAnalysis(analysis);
-        
+
         LOCKHELD = AnnotationUtils.fromClass(analysis.getTypeFactory()
                 .getElementUtils(), LockHeld.class);
         LOCKPOSSIBLYHELD = AnnotationUtils.fromClass(analysis.getTypeFactory()
@@ -182,6 +182,6 @@ public class LockTransfer extends
 
         return result;
     }
-    
-   
+
+
 }

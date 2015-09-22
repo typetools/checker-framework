@@ -23,7 +23,7 @@ public class ReentrantLock {
     @EnsuresLockHeldIf(expression="this", result=true)
     @ReleasesNoLocks
     boolean isHeldByCurrentThread();
-    
+
     @MayReleaseLocks
     void unlock();
 }
@@ -71,7 +71,7 @@ public class ReentrantReadWriteLock$WriteLock {
     @EnsuresLockHeldIf(expression="this", result=true)
     @ReleasesNoLocks
     boolean isHeldByCurrentThread();
-    
+
     @MayReleaseLocks
     void unlock();
 }

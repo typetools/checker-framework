@@ -81,20 +81,20 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         GUARDEDBYINACCESSIBLE = AnnotationUtils.fromClass(elements, GuardedByInaccessible.class);
         GUARDEDBY = AnnotationUtils.fromClass(elements, GuardedBy.class);
-        GUARDSATISFIED = AnnotationUtils.fromClass(elements, GuardSatisfied.class); 
+        GUARDSATISFIED = AnnotationUtils.fromClass(elements, GuardSatisfied.class);
         GUARDEDBYBOTTOM = AnnotationUtils.fromClass(elements, GuardedByBottom.class);
 
         checkForAnnotatedJdk();
     }
-    
+
     @Override
     public Void visitVariable(VariableTree node, Void p) { // visit a variable declaration
-    	if (node.getType().getKind() == Kind.PRIMITIVE_TYPE &&
-    		(node.toString().contains("GuardSatisfied") ||
-    		 node.toString().contains("GuardedBy"))){ // HACK!!! TODO
+        if (node.getType().getKind() == Kind.PRIMITIVE_TYPE &&
+            (node.toString().contains("GuardSatisfied") ||
+             node.toString().contains("GuardedBy"))){ // HACK!!! TODO
             checker.report(Result.failure("primitive.type.guardedby"), node);
-    	}
-    	return super.visitVariable(node, p);
+        }
+        return super.visitVariable(node, p);
     }
 
     @Override
@@ -104,77 +104,62 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // yet. Oh the pain.
         return new LockAnnotatedTypeFactory(checker, true);
     }
-    
+
     @Override
     public Void visitMethod(MethodTree node, Void p) {
 
         SideEffectAnnotation sea = atypeFactory.methodSideEffectAnnotation(TreeUtils.elementFromDeclaration(node), true);
 
-    	if (sea == SideEffectAnnotation.MAYRELEASELOCKS) {
-    		/* Skip checking whether the receiver is @GuardSatisfied because it may not be the right design.
-    		 *
-    		 * if (AnnotationUtils.areSameByClass(atypeFactory.getAnnotatedType(node.getReceiverParameter()).getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE),
-    				checkerGuardSatisfiedClass)){
+        if (sea == SideEffectAnnotation.MAYRELEASELOCKS) {
+            boolean issueGSwithMRLWarning = false;
+
+            VariableTree receiver = node.getReceiverParameter();
+            if (receiver != null) {
+                if (AnnotationUtils.areSameByClass(atypeFactory.getAnnotatedType(receiver).getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE),
+                        checkerGuardSatisfiedClass)){
+                    issueGSwithMRLWarning = true;
+                }
+            }
+
+            if (!issueGSwithMRLWarning) { // Skip this loop if it is already known that the warning must be issued.
+                for(VariableTree vt : node.getParameters()) {
+                    if (AnnotationUtils.areSameByClass(atypeFactory.getAnnotatedType(vt).getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE),
+                            checkerGuardSatisfiedClass)){
+                        issueGSwithMRLWarning = true;
+                        break;
+                    }
+                }
+            }
+
+            if (issueGSwithMRLWarning) {
                 checker.report(Result.failure("guardsatisfied.with.mayreleaselocks"), node);
-    		}*/
-
-    		for(VariableTree vt : node.getParameters()) {
-        		if (AnnotationUtils.areSameByClass(atypeFactory.getAnnotatedType(vt).getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE),
-        				checkerGuardSatisfiedClass)){
-                    checker.report(Result.failure("guardsatisfied.with.mayreleaselocks"), node);
-        		}
-    		}
-    	}
-    	
-    	return super.visitMethod(node, p);
-    }
-
-    // Hack: this is only for a paper deadline. Do it right. TODO
-    @Override
-    protected void checkMethodInvocability(AnnotatedExecutableType method,
-            MethodInvocationTree node) {
-        if (method.getReceiverType() == null) {
-            // Static methods don't have a receiver.
-            return;
-        }
-        if (method.getElement().getKind() == ElementKind.CONSTRUCTOR) {
-            // TODO: Explicit "this()" calls of constructors have an implicit passed
-            // from the enclosing constructor. We must not use the self type, but
-            // instead should find a way to determine the receiver of the enclosing constructor.
-            // rcv = ((AnnotatedExecutableType)atypeFactory.getAnnotatedType(atypeFactory.getEnclosingMethod(node))).getReceiverType();
-            return;
-        }
-
-        AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
-        AnnotatedTypeMirror treeReceiver = methodReceiver.shallowCopy(false);
-        AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(node);
-
-        treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
-
-        boolean receiverGuardSatisfied = false;
-
-        Set<AnnotationMirror> annos = methodReceiver.getAnnotations();
-        for(AnnotationMirror anno : annos) {
-        	if (AnnotationUtils.areSameByClass(anno, checkerGuardSatisfiedClass)) {
-        		receiverGuardSatisfied = true;
-        	}
-        }
-
-        if (receiverGuardSatisfied) {
-            Element invokedElement = TreeUtils.elementFromUse(node);
-
-            if (invokedElement != null) {
-    	        checkPreconditions(node,
-    	                invokedElement,
-    	                true,
-    	                generatePreconditionsBasedOnGuards(rcv, false));
             }
         }
-        else if (!atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver)) {
-            checker.report(Result.failure("method.invocation.invalid",
-                TreeUtils.elementFromUse(node),
-                treeReceiver.toString(), methodReceiver.toString()), node);
+
+        return super.visitMethod(node, p);
+    }
+
+    @Override
+    protected boolean skipReceiverSubtypeCheck(MethodInvocationTree node,
+            AnnotatedTypeMirror methodDefinitionReceiver,
+            AnnotatedTypeMirror methodCallReceiver) {
+        Set<AnnotationMirror> annos = methodDefinitionReceiver.getAnnotations();
+        for(AnnotationMirror anno : annos) {
+            if (AnnotationUtils.areSameByClass(anno, checkerGuardSatisfiedClass)) {
+                Element invokedElement = TreeUtils.elementFromUse(node);
+
+                if (invokedElement != null) {
+                    checkPreconditions(node,
+                            invokedElement,
+                            true,
+                            generatePreconditionsBasedOnGuards(methodCallReceiver, false));
+                }
+
+                return true;
+            }
         }
+
+        return false;
     }
 
     @Override
@@ -213,7 +198,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
                         for(String lockExpression : guardedByValue) {
                             if (translateItselfToThis && lockExpression.equals("itself")) {
-                            	lockExpression = "this";
+                                lockExpression = "this";
                             }
                             preconditions.add(Pair.of(lockExpression, checkerLockHeldClass.toString().substring(10 /* "interface " */)));
                         }
@@ -242,10 +227,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             case NEW_ARRAY:
                 // Avoid issuing warnings when: @GuardedBy("this") Object guardedThis = new Object();
                 // TODO: This is too broad and should be fixed to work the way it will work in the hacks repo.
-            	// Do NOT do this if the LHS is @GuardedByBottom.
-            	if (!AnnotationUtils.areSameIgnoringValues(varType.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE), GUARDEDBYBOTTOM))
+                // Do NOT do this if the LHS is @GuardedByBottom.
+                if (!AnnotationUtils.areSameIgnoringValues(varType.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE), GUARDEDBYBOTTOM))
                     return;
-            	break;
+                break;
             case INT_LITERAL:
             case LONG_LITERAL:
             case FLOAT_LITERAL:
@@ -261,14 +246,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         boolean skipSubtypeCheck = false;
-        
+
         // Assigning a value with a @GuardedBy annotation to a variable with a @GuardedByInaccessible annotation is always
         // legal. However as a precaution we verify that the locks specified in the @GuardedBy annotation are held,
         // since this is our last chance to check anything before the @GuardedBy information is lost in the
         // assignment to the variable annotated with @GuardedByInaccessible. See the Lock Checker manual chapter discussion
         // on the @GuardedByInaccessible annotation for more details.
-        // The same behavior applies to @GuardSatisfied.        
-        if (AnnotationUtils.areSameIgnoringValues(varType.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE), GUARDEDBYINACCESSIBLE) || 
+        // The same behavior applies to @GuardSatisfied.
+        if (AnnotationUtils.areSameIgnoringValues(varType.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE), GUARDEDBYINACCESSIBLE) ||
             AnnotationUtils.areSameIgnoringValues(varType.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE), GUARDSATISFIED)) {
             if (AnnotationUtils.areSameIgnoringValues(valueType.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE), GUARDEDBY)) {
                 ExpressionTree tree = (ExpressionTree) valueTree;
@@ -276,12 +261,12 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 checkPreconditions(tree,
                         TreeUtils.elementFromUse(tree),
                         tree.getKind() == Tree.Kind.METHOD_INVOCATION,
-                      	generatePreconditionsBasedOnGuards(valueType, false));
-                
+                          generatePreconditionsBasedOnGuards(valueType, false));
+
                 skipSubtypeCheck = true;
             }
         }
-        
+
         if (!skipSubtypeCheck) {
             super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, isLocalVariableAssignement);
         }
@@ -394,10 +379,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         SideEffectAnnotation seaOfOverriderMethod = atypeFactory.methodSideEffectAnnotation(TreeUtils.elementFromDeclaration(overriderTree), false);
         SideEffectAnnotation seaOfOverridenMethod = atypeFactory.methodSideEffectAnnotation(overridden.getElement(), false);
 
-    	if (seaOfOverriderMethod.ordinal() < seaOfOverridenMethod.ordinal()) {
+        if (seaOfOverriderMethod.ordinal() < seaOfOverridenMethod.ordinal()) {
             isValid = false;
             reportFailure("override.sideeffect.invalid", overriderTree, enclosingType, overridden, overriddenType, null, null);
-    	}
+        }
 
         return super.checkOverride(overriderTree, enclosingType, overridden, overriddenType, p) && isValid;
     }
@@ -409,7 +394,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     protected void checkAccessOfExpression(ExpressionTree tree) {
         boolean isMethodCall = false;
 
-    	Kind treeKind = tree.getKind();
+        Kind treeKind = tree.getKind();
         assert(treeKind == Kind.ARRAY_ACCESS ||
                treeKind == Kind.MEMBER_SELECT ||
                treeKind == Kind.IDENTIFIER);
@@ -417,83 +402,83 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         if (treeKind == Kind.MEMBER_SELECT) {
             Element treeElement = TreeUtils.elementFromUse(tree);
 
-        	if (treeElement != null && treeElement.getKind() == ElementKind.METHOD) { // Method calls are not dereferences.
-        		isMethodCall = true;
-        	}
+            if (treeElement != null && treeElement.getKind() == ElementKind.METHOD) { // Method calls are not dereferences.
+                isMethodCall = true;
+            }
         }
 
         if (!isMethodCall) {
-	        ExpressionTree expr = null;
-	        
-	        switch(treeKind) {
-	            case ARRAY_ACCESS:
-	                expr = ((ArrayAccessTree) tree).getExpression();
-	                break;
-	            case MEMBER_SELECT:
-	                expr = ((MemberSelectTree) tree).getExpression();
-	                break;
-	            default:
-	                expr = tree;
-	                break;
-	        }
+            ExpressionTree expr = null;
 
-	        Element invokedElement = TreeUtils.elementFromUse(expr);
+            switch(treeKind) {
+                case ARRAY_ACCESS:
+                    expr = ((ArrayAccessTree) tree).getExpression();
+                    break;
+                case MEMBER_SELECT:
+                    expr = ((MemberSelectTree) tree).getExpression();
+                    break;
+                default:
+                    expr = tree;
+                    break;
+            }
 
-	        AnnotatedTypeMirror receiverAtm = atypeFactory.getReceiverType(tree);
-	        Node node = atypeFactory.getNodeForTree(tree);
+            Element invokedElement = TreeUtils.elementFromUse(expr);
 
-	        // Is the receiver of the expression being accessed the same as the receiver of the enclosing method?
-	        boolean receiverIsThatOfEnclosingMethod = false;
-	        
-	        if (node instanceof FieldAccessNode) {
-	        	Node receiverNode = ((FieldAccessNode) node).getReceiver();
-	        	if (receiverNode instanceof ExplicitThisLiteralNode ||
-	                receiverNode instanceof ImplicitThisLiteralNode ||
-	        		receiverNode instanceof ThisLiteralNode) {
-	        		receiverIsThatOfEnclosingMethod = true;
-	        	}
-	        }
+            AnnotatedTypeMirror receiverAtm = atypeFactory.getReceiverType(tree);
+            Node node = atypeFactory.getNodeForTree(tree);
 
-	        if (expr != null && invokedElement != null && receiverAtm != null) {
-	        	boolean skipCheckPreconditions = false;
-	        	
-	        	AnnotationMirror gb = receiverAtm.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE);
-	        	if (gb != null) {
-	                if (AnnotationUtils.areSameByClass( gb, checkerGuardedByClass) ||
-	                    AnnotationUtils.areSameByClass( gb, javaxGuardedByClass) ||
-	                    AnnotationUtils.areSameByClass( gb, jcipGuardedByClass)) {
-	                	// Do nothing.
-	        	    } else if (AnnotationUtils.areSameByClass(gb, checkerGuardSatisfiedClass)){
-	        	    	skipCheckPreconditions = true; // Can always dereference if type is @GuardSatisfied        	    	
-	        	    } else {
-	        	    	// Can never dereference for any other types in the @GuardedBy hierarchy
-	                    String annotationName = gb.toString();
-	                    annotationName = annotationName.substring(annotationName.lastIndexOf('.') + 1 /* +1 to skip the last . as well */);
-	        	    	checker.report(Result.failure(
-	                            "cannot.dereference",
-	                            tree.toString(),
-	                            annotationName), tree);
-	                    return;
-	        	    }
-	        	}
+            // Is the receiver of the expression being accessed the same as the receiver of the enclosing method?
+            boolean receiverIsThatOfEnclosingMethod = false;
 
-	        	if (skipCheckPreconditions == false) {
+            if (node instanceof FieldAccessNode) {
+                Node receiverNode = ((FieldAccessNode) node).getReceiver();
+                if (receiverNode instanceof ExplicitThisLiteralNode ||
+                    receiverNode instanceof ImplicitThisLiteralNode ||
+                    receiverNode instanceof ThisLiteralNode) {
+                    receiverIsThatOfEnclosingMethod = true;
+                }
+            }
+
+            if (expr != null && invokedElement != null && receiverAtm != null) {
+                boolean skipCheckPreconditions = false;
+
+                AnnotationMirror gb = receiverAtm.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE);
+                if (gb != null) {
+                    if (AnnotationUtils.areSameByClass( gb, checkerGuardedByClass) ||
+                        AnnotationUtils.areSameByClass( gb, javaxGuardedByClass) ||
+                        AnnotationUtils.areSameByClass( gb, jcipGuardedByClass)) {
+                        // Do nothing.
+                    } else if (AnnotationUtils.areSameByClass(gb, checkerGuardSatisfiedClass)){
+                        skipCheckPreconditions = true; // Can always dereference if type is @GuardSatisfied
+                    } else {
+                        // Can never dereference for any other types in the @GuardedBy hierarchy
+                        String annotationName = gb.toString();
+                        annotationName = annotationName.substring(annotationName.lastIndexOf('.') + 1 /* +1 to skip the last . as well */);
+                        checker.report(Result.failure(
+                                "cannot.dereference",
+                                tree.toString(),
+                                annotationName), tree);
+                        return;
+                    }
+                }
+
+                if (skipCheckPreconditions == false) {
                     // It is critical that if receiverIsThatOfEnclosingMethod is true,
-	        		// generatePreconditionsBasedOnGuards translate the expression
-	        		// "itself" to "this". That's because right now we know that, since
+                    // generatePreconditionsBasedOnGuards translate the expression
+                    // "itself" to "this". That's because right now we know that, since
                     // we are dealing with the receiver of the method, "itself" corresponds
                     // to "this". However once checkPreconditions is called, that
                     // knowledge is lost and it will regards "itself" as referring to
                     // the variable the precondition we are about to add is attached to.
 
-	        		checkPreconditions(expr, invokedElement, expr.getKind() == Tree.Kind.METHOD_INVOCATION,
-	        		generatePreconditionsBasedOnGuards(receiverAtm,
-	        				receiverIsThatOfEnclosingMethod /* see comment above */));
-	        	}
-	        }
+                    checkPreconditions(expr, invokedElement, expr.getKind() == Tree.Kind.METHOD_INVOCATION,
+                    generatePreconditionsBasedOnGuards(receiverAtm,
+                            receiverIsThatOfEnclosingMethod /* see comment above */));
+                }
+            }
         }
     }
-    
+
     @Override
     public Void visitArrayAccess(ArrayAccessTree node, Void p) {
         checkAccessOfExpression(node);
@@ -578,32 +563,32 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
 
-    	SideEffectAnnotation seaOfInvokedMethod = atypeFactory.methodSideEffectAnnotation(TreeUtils.elementFromUse(node), false);
+        SideEffectAnnotation seaOfInvokedMethod = atypeFactory.methodSideEffectAnnotation(TreeUtils.elementFromUse(node), false);
 
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(node));
 
         ExecutableElement methodElement = null;
         if (enclosingMethod != null) {
-        	methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
+            methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
         }
-    	
-    	SideEffectAnnotation seaOfContainingMethod = atypeFactory.methodSideEffectAnnotation(methodElement, false);
-    	// TODO: Think about methods enclosing other methods
-    	
-    	if (seaOfInvokedMethod.ordinal() < seaOfContainingMethod.ordinal()) {
-	    	checker.report(Result.failure(
+
+        SideEffectAnnotation seaOfContainingMethod = atypeFactory.methodSideEffectAnnotation(methodElement, false);
+        // TODO: Think about methods enclosing other methods
+
+        if (seaOfInvokedMethod.ordinal() < seaOfContainingMethod.ordinal()) {
+            checker.report(Result.failure(
                     "method.guarantee.violated",
                     methodElement.toString(),
                     TreeUtils.elementFromUse(node).toString()), node);
-    	}
+        }
 
-    	return super.visitMethodInvocation(node, p);
+        return super.visitMethodInvocation(node, p);
     }
-    
+
     @Override
     public Void visitSynchronized(SynchronizedTree node, Void p) {
-    	LockAnalysis analysis = ((LockChecker)checker).getAnalysis();
-    	
+        LockAnalysis analysis = ((LockChecker)checker).getAnalysis();
+
         javax.lang.model.util.Types types = analysis.getTypes();
 
         TypeMirror lockInterfaceTypeMirror = TypesUtils.typeFromClass(types, analysis.getEnv().getElementUtils(), Lock.class);
@@ -611,18 +596,18 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         TypeMirror expressionType = types.erasure(atypeFactory.getAnnotatedType(node.getExpression()).getUnderlyingType());
 
         if (types.isSubtype(expressionType, lockInterfaceTypeMirror)) {
-	    	checker.report(Result.failure(
+            checker.report(Result.failure(
                     "explicit.lock.synchronized"), node);
         }
 
-    	return super.visitSynchronized(node, p);
+        return super.visitSynchronized(node, p);
     }
 
     @Override
     public Void visitIdentifier(IdentifierTree node, Void p) {
-    	
-    	checkAccessOfExpression(node);
-    	
-    	return super.visitIdentifier(node, p);
+
+        checkAccessOfExpression(node);
+
+        return super.visitIdentifier(node, p);
     }
 }

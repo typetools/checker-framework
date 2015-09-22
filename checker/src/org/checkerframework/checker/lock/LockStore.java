@@ -141,11 +141,11 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
                 + "\\n");
         super.internalDotOutput(result);
     }
-    
+
     @Override
     protected boolean isSideEffectFree(AnnotatedTypeFactory atypeFactory,
-    		ExecutableElement method) {
-    	return ((LockAnnotatedTypeFactory) atypeFactory).methodSideEffectAnnotation(method, false) == SideEffectAnnotation.RELEASESNOLOCKS ||
-    		   super.isSideEffectFree(atypeFactory, method);
+            ExecutableElement method) {
+        return ((LockAnnotatedTypeFactory) atypeFactory).methodSideEffectAnnotation(method, false) == SideEffectAnnotation.RELEASESNOLOCKS ||
+               super.isSideEffectFree(atypeFactory, method);
     }
 }

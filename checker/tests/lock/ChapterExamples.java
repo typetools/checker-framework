@@ -309,6 +309,11 @@ void myReleaseLocksEmptyMethod() {
 
 @MayReleaseLocks
 //:: error: (guardsatisfied.with.mayreleaselocks)
+void methodGuardSatisfiedReceiver(@GuardSatisfied ChapterExamples this) {
+}
+
+@MayReleaseLocks
+//:: error: (guardsatisfied.with.mayreleaselocks)
 void methodGuardSatisfiedParameter(@GuardSatisfied Object o) {
 }
 
