@@ -58,7 +58,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Information collected about local variables, which are identified by the
      * corresponding element.
      */
-    protected final Map<Element, V> localVariableValues;
+    protected final Map<FlowExpressions.LocalVariable, V> localVariableValues;
 
     /**
      * Information collected about the current object.
@@ -127,7 +127,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public void initializeMethodParameter(LocalVariableNode p, /*@Nullable*/ V value) {
         if (value != null) {
-            localVariableValues.put(p.getElement(), value);
+            localVariableValues.put(new FlowExpressions.LocalVariable(p.getElement()), value);
         }
     }
 
@@ -223,8 +223,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             methodValues.clear();
 
             arrayValues.clear();
-            
-            //localVariableValues.clear();
         }
 
         // store information about method call if possible
@@ -294,7 +292,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             return;
         }
         if (r instanceof FlowExpressions.LocalVariable) {
-            Element localVar = ((FlowExpressions.LocalVariable) r).getElement();
+            FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) r;
             V oldValue = localVariableValues.get(localVar);
             V newValue = value.mostSpecific(oldValue, null);
             if (newValue != null) {
@@ -449,8 +447,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public /*@Nullable*/ V getValue(FlowExpressions.Receiver expr) {
         if (expr instanceof FlowExpressions.LocalVariable) {
-            Element localVar = ((FlowExpressions.LocalVariable) expr)
-                    .getElement();
+            FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) expr;
             return localVariableValues.get(localVar);
         } else if (expr instanceof FlowExpressions.ThisReference) {
             return thisValue;
@@ -474,8 +471,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     public V getValueOfLocalVariableByName(String identifier)
     {
-        for (Entry<Element, V> e : localVariableValues.entrySet()) {
-            if (e.getKey().getSimpleName().toString().equals(identifier)) {
+        for (Entry<FlowExpressions.LocalVariable, V> e : localVariableValues.entrySet()) {
+            if (e.getKey().getElement().getSimpleName().toString().equals(identifier)) {
                 return e.getValue();
             }
         }
@@ -591,7 +588,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             /*@Nullable*/ V val) {
         removeConflicting(receiver);
         if (val != null) {
-            localVariableValues.put(receiver.getElement(), val);
+            localVariableValues.put(receiver, val);
         }
     }
 
@@ -835,17 +832,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     public S leastUpperBound(S other) {
         S newStore = analysis.createEmptyStore(sequentialSemantics);
 
-        for (Entry<Element, V> e : other.localVariableValues.entrySet()) {
+        for (Entry<FlowExpressions.LocalVariable, V> e : other.localVariableValues.entrySet()) {
             // local variables that are only part of one store, but not the
             // other are discarded, as one of store implicitly contains 'top'
             // for that variable.
-            Element el = e.getKey();
-            if (localVariableValues.containsKey(el)) {
+            FlowExpressions.LocalVariable localVar = e.getKey();
+            if (localVariableValues.containsKey(localVar)) {
                 V otherVal = e.getValue();
-                V thisVal = localVariableValues.get(el);
+                V thisVal = localVariableValues.get(localVar);
                 V mergedVal = thisVal.leastUpperBound(otherVal);
                 if (mergedVal != null) {
-                    newStore.localVariableValues.put(el, mergedVal);
+                    newStore.localVariableValues.put(localVar, mergedVal);
                 }
             }
         }
@@ -927,8 +924,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * predicate.
      */
     protected boolean supersetOf(CFAbstractStore<V, S> other) {
-        for (Entry<Element, V> e : other.localVariableValues.entrySet()) {
-            Element key = e.getKey();
+        for (Entry<FlowExpressions.LocalVariable, V> e : other.localVariableValues.entrySet()) {
+            FlowExpressions.LocalVariable key = e.getKey();
             if (!localVariableValues.containsKey(key)
                     || !localVariableValues.get(key).equals(e.getValue())) {
                 return false;
@@ -1019,7 +1016,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * {@code result}.
      */
     protected void internalDotOutput(StringBuilder result) {
-        for (Entry<Element, V> entry : localVariableValues.entrySet()) {
+        for (Entry<FlowExpressions.LocalVariable, V> entry : localVariableValues.entrySet()) {
             result.append("  " + entry.getKey() + " > " + toStringEscapeDoubleQuotes(entry.getValue())
                     + "\\n");
         }
