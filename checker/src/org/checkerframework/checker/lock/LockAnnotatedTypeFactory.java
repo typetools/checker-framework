@@ -18,8 +18,6 @@ import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.*;
-import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
@@ -29,9 +27,7 @@ import org.checkerframework.javacutil.Pair;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -68,9 +64,6 @@ public class LockAnnotatedTypeFactory
     private final Class<? extends Annotation> sideEffectFreeClass = SideEffectFree.class;
     private final Class<? extends Annotation> pureClass = Pure.class;
 
-    // Cache for the lock annotations
-    protected final Set<Class<? extends Annotation>> lockAnnos;
-
     public LockAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
         super(checker, useFlow);
 
@@ -81,11 +74,6 @@ public class LockAnnotatedTypeFactory
         JCIPGUARDEDBY = AnnotationUtils.fromClass(elements, net.jcip.annotations.GuardedBy.class);
         JAVAXGUARDEDBY = AnnotationUtils.fromClass(elements, javax.annotation.concurrent.GuardedBy.class);
         GUARDSATISFIED = AnnotationUtils.fromClass(elements, GuardSatisfied.class);
-
-        Set<Class<? extends Annotation>> tempLockAnnos = new HashSet<>();
-        tempLockAnnos.add(LockHeld.class);
-        tempLockAnnos.add(LockPossiblyHeld.class);
-        lockAnnos = Collections.unmodifiableSet(tempLockAnnos);
 
         addAliasedAnnotation(javax.annotation.concurrent.GuardedBy.class, GUARDEDBY);
         addAliasedAnnotation(net.jcip.annotations.GuardedBy.class, GUARDEDBY);
@@ -125,20 +113,6 @@ public class LockAnnotatedTypeFactory
     }
 
     @Override
-    public TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                super.createTreeAnnotator(),
-                new LockTreeAnnotator(this)
-        );
-    }
-
-    private class LockTreeAnnotator extends TreeAnnotator {
-        public LockTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
-            super(atypeFactory);
-        }
-    }
-
-    @Override
     protected LockAnalysis createFlowAnalysis(List<Pair<VariableElement, CFValue>> fieldValues) {
         return new LockAnalysis(checker, this, fieldValues);
     }
@@ -156,13 +130,6 @@ public class LockAnnotatedTypeFactory
 
     protected QualifierDefaults getQualifierDefaults() {
         return defaults;
-    }
-
-    /**
-     * @return The list of annotations of the lock type system.
-     */
-    public Set<Class<? extends Annotation>> getLockAnnotations() {
-        return lockAnnos;
     }
 
     class LockQualifierHierarchy extends MultiGraphQualifierHierarchy {
@@ -201,6 +168,8 @@ public class LockAnnotatedTypeFactory
         }
     }
 
+    // Returns the list of expressions specified in the @Holding (or equivalent) annotation on a method.
+    // Returns an empty list if such an annotation is not present.
     protected List<String> methodHolding(ExecutableElement element) {
         AnnotationMirror holding = getDeclAnnotation(element, checkerHoldingClass);
         AnnotationMirror guardedBy
@@ -229,6 +198,8 @@ public class LockAnnotatedTypeFactory
         return locks;
     }
 
+    // The side effect annotations processed by the Lock Checker,
+    // in order of increasingly strong guarantees.
     enum SideEffectAnnotation {
         MAYRELEASELOCKS,
         RELEASESNOLOCKS,
@@ -237,51 +208,53 @@ public class LockAnnotatedTypeFactory
         PURE
     }
 
-    SideEffectAnnotation methodSideEffectAnnotation(Element element, boolean errorIfMoreThanOnePresent) {
-        if (element == null) {
-            return SideEffectAnnotation.MAYRELEASELOCKS;
-        }
+    // Indicates which side effect annotation is present on the given method.
+    // If more than one annotation is present, this method issues an error (if issueErrorIfMoreThanOnePresent is true)
+    // and returns the annotation providing the weakest guarantee.
+    // If no annotation is present, return RELEASESNOLOCKS as the default, and MAYRELEASELOCKS
+    // as the default for unannotated code.
+    SideEffectAnnotation methodSideEffectAnnotation(Element element, boolean issueErrorIfMoreThanOnePresent) {
+        if (element != null) {
+            final int countSideEffectAnnotations = SideEffectAnnotation.values().length;
 
-        // If more than one annotation is present, this method issues a warning and returns
-        // the most annotation providing the weakest guarantee.
+            boolean[] sideEffectAnnotationPresent = new boolean[countSideEffectAnnotations];
 
-        // If no annotation is present, return RELEASESNOLOCKS as the default, and MAYRELEASELOCKS
-        // as the default for unannotated code.
+            sideEffectAnnotationPresent[0] = getDeclAnnotationNoAliases(element, checkerMayReleaseLocksClass) != null;
+            sideEffectAnnotationPresent[1] = getDeclAnnotationNoAliases(element, checkerReleasesNoLocksClass) != null;
+            sideEffectAnnotationPresent[2] = getDeclAnnotationNoAliases(element, checkerLockingFreeClass) != null;
+            sideEffectAnnotationPresent[3] = getDeclAnnotationNoAliases(element, sideEffectFreeClass) != null;
+            sideEffectAnnotationPresent[4] = getDeclAnnotationNoAliases(element, pureClass) != null;
+            assert(countSideEffectAnnotations == 5); // If this assertion fails, the assignments above need to be updated.
 
-        boolean[] sideEffectAnnotationPresent = new boolean[5];
+            int count = 0;
 
-        sideEffectAnnotationPresent[0] = getDeclAnnotationNoAliases(element, checkerMayReleaseLocksClass) != null;
-        sideEffectAnnotationPresent[1] = getDeclAnnotationNoAliases(element, checkerReleasesNoLocksClass) != null;
-        sideEffectAnnotationPresent[2] = getDeclAnnotationNoAliases(element, checkerLockingFreeClass) != null;
-        sideEffectAnnotationPresent[3] = getDeclAnnotationNoAliases(element, sideEffectFreeClass) != null;
-        sideEffectAnnotationPresent[4] = getDeclAnnotationNoAliases(element, pureClass) != null;
-
-        int count = 0;
-
-        for(int i = 0; i < 5; i++) {
-            if (sideEffectAnnotationPresent[i])
-                count++;
-        }
-
-        if (count == 0) {
-            if (getQualifierDefaults().applyUnannotatedDefaults(element)) {
-                return SideEffectAnnotation.MAYRELEASELOCKS;
+            for(int i = 0; i < countSideEffectAnnotations; i++) {
+                if (sideEffectAnnotationPresent[i]) {
+                    count++;
+                }
             }
-            else {
-                return SideEffectAnnotation.RELEASESNOLOCKS;
+
+            if (count == 0) {
+                return getQualifierDefaults().applyUnannotatedDefaults(element) ?
+                    SideEffectAnnotation.MAYRELEASELOCKS :
+                    SideEffectAnnotation.RELEASESNOLOCKS;
+            }
+
+            if (count > 1 && issueErrorIfMoreThanOnePresent) {
+                // TODO: Turn on after figuring out how this interacts with inherited annotations.
+                // checker.report(Result.failure("multiple.sideeffect.annotations"), element);
+            }
+
+            // If at least one side effect annotation was found, return the weakest.
+            for(int i = 0; i < countSideEffectAnnotations; i++) {
+                if (sideEffectAnnotationPresent[i]) {
+                    return SideEffectAnnotation.values()[i];
+                }
             }
         }
 
-        if (count > 1 && errorIfMoreThanOnePresent) {
-            // TODO: Turn on after figuring out how this interacts with inherited annotations.
-            // checker.report(Result.failure("multiple.sideeffect.annotations"), element);
-        }
-
-        for(int i = 0; i < 5; i++) {
-            if (sideEffectAnnotationPresent[i])
-                return SideEffectAnnotation.values()[i];
-        }
-
+        // When there is not enough information to determine the correct side effect annotation,
+        // return the weakest one.
         return SideEffectAnnotation.MAYRELEASELOCKS;
     }
 

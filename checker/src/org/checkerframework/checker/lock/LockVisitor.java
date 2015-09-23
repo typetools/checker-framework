@@ -56,11 +56,9 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 
 /**
- * The LockVisitor enforces the subtyping rules of LockHeld and LockPossiblyHeld
- * (via BaseTypeVisitor). It also manually verifies that @Holding
- * annotations are properly used on overridden methods.
- * Finally, it ensures that we avoid doing any lock checking
- * when visiting initializers.
+ * The LockVisitor enforces the special type-checking rules described in the Lock Checker manual chapter.
+ *
+ * @checker_framework.manual #lock-checker Lock Checker
  */
 
 public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
@@ -89,9 +87,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitVariable(VariableTree node, Void p) { // visit a variable declaration
+        // A user may not annotate a primitive type with any qualifier from the @GuardedBy hierarchy.
         if (node.getType().getKind() == Kind.PRIMITIVE_TYPE &&
             (node.toString().contains("GuardSatisfied") ||
-             node.toString().contains("GuardedBy"))){ // HACK!!! TODO: Fix.
+             node.toString().contains("GuardedBy"))){ // HACK!!! TODO: Fix once there is a way to reliably retrieve user-written qualifiers.
             checker.report(Result.failure("primitive.type.guardedby"), node);
         }
         return super.visitVariable(node, p);
@@ -105,6 +104,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return new LockAnnotatedTypeFactory(checker, true);
     }
 
+    // Issue an error if a method (explicitly or implicitly) annotated with @MayReleaseLocks has a formal parameter
+    // or receiver (explicitly or implicitly) annotated with @GuardSatisfied.
     @Override
     public Void visitMethod(MethodTree node, Void p) {
 
@@ -139,6 +140,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return super.visitMethod(node, p);
     }
 
+    // When visiting a method call, if the receiver formal parameter
+    // has type @GuardSatisfied, skip the receiver subtype check and instead
+    // verify that the guard is satisfied.
     @Override
     protected boolean skipReceiverSubtypeCheck(MethodInvocationTree node,
             AnnotatedTypeMirror methodDefinitionReceiver,
@@ -275,22 +279,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
-        // Just check the precondition on the expression of the member select tree.
-        // It doesn't matter if the identifier is a method or field.
-        // Here, we are checking that the lock must be held on the
-        // expression.
-
-        // Keep in mind, the expression itself may or may not be a
-        // method call. Simple examples of expression.identifier :
-        // myObject.field
-        // myMethod().field
-        // myObject.method()
-        // myMethod().method()
-
-        // by-value semantics require preconditions to be checked
-        // on all value dereferences, including dereferences of method
-        // return values.
-
         checkAccessOfExpression(node);
 
         return super.visitMemberSelect(node, p);
@@ -330,7 +318,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
     }
 
-
     // Ensures that subclass methods require a subset of the locks that a parent class method requires
     // Additionally ensures that subclass methods use @HoldingOnEntry (and not @Holding) if the parent
     // class method uses @HoldingOnEntry.
@@ -368,7 +355,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return super.checkOverride(overriderTree, enclosingType, overridden, overriddenType, p) && isValid;
     }
 
-    // We check the access of the expression of an ArrayAccessTree or
+    // Check the access of the expression of an ArrayAccessTree or
     // a MemberSelectTree, both of which happen to implement ExpressionTree.
     // The 'Expression' in checkAccessOfExpression is not the same as that in
     // 'Expression'Tree - the naming is a coincidence.
@@ -535,6 +522,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return super.isValidUse(declarationType, useType, tree);
     }
 
+    // When visiting a method invocation, issue an error if the side effect annotation
+    // on the called method causes the side effect guarantee of the enclosing method
+    // to be violated. For example, a method annotated with @ReleasesNoLocks may not
+    // call a method annotated with @MayReleaseLocks.
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
 
@@ -559,6 +550,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return super.visitMethodInvocation(node, p);
     }
 
+    // When visiting a synchronized block, issue an error if the expression
+    // has a type that implements the java.util.concurrent.locks.Lock inteface.
     @Override
     public Void visitSynchronized(SynchronizedTree node, Void p) {
         LockAnalysis analysis = ((LockChecker)checker).getAnalysis();
