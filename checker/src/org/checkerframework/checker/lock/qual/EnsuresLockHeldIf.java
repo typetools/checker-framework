@@ -10,11 +10,10 @@ import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
- * Indicates that the given expressions are @LockHeld
+ * Indicates that the value expressions are held
  * if the method returns the given result (either true or false).
  * <p>
  *
- * @see LockHeld
  * @see EnsuresLockHeld
  * @checker_framework.manual #lock-checker Lock Checker
  */
@@ -25,7 +24,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @InheritedAnnotation
 public @interface EnsuresLockHeldIf {
     /**
-     * Java expression(s) that are LockHeld after the method returns the
+     * Java value expression(s) that are held after the method returns the
      * given result.
      * @see <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax of Java expressions</a>
      */

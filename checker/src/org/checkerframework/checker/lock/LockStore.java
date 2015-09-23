@@ -5,14 +5,15 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 
+import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
-import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /*
@@ -27,12 +28,12 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
 
     protected final AnnotationMirror LOCKHELD = AnnotationUtils.fromClass(analysis.getTypeFactory().getElementUtils(), LockHeld.class);
 
-    public LockStore(CFAbstractAnalysis<CFValue, LockStore, ?> analysis, boolean sequentialSemantics) {
+    public LockStore(LockAnalysis analysis, boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
     }
 
     /** Copy constructor. */
-    public LockStore(CFAbstractAnalysis<CFValue, LockStore, ?> analysis,
+    public LockStore(LockAnalysis analysis,
             CFAbstractStore<CFValue, LockStore> other) {
         super(other);
         inConstructorOrInitializer = ((LockStore)other).inConstructorOrInitializer;
@@ -69,7 +70,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
             return;
         }
         if (r instanceof FlowExpressions.LocalVariable) {
-            Element localVar = ((FlowExpressions.LocalVariable) r).getElement();
+            FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) r;
             localVariableValues.put(localVar, value);
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
@@ -96,6 +97,11 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
             if (sequentialSemantics || thisRef.isUnmodifiableByOtherCode()) {
                 thisValue = value;
             }
+        } else if (r instanceof FlowExpressions.ClassName) {
+            FlowExpressions.ClassName className = (FlowExpressions.ClassName) r;
+            if (sequentialSemantics || className.isUnmodifiableByOtherCode()) {
+                classValues.put(className, value);
+            }
         } else {
             // No other types of expressions need to be stored.
         }
@@ -114,13 +120,11 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         if (inConstructorOrInitializer) {
             if (expr instanceof FlowExpressions.ThisReference) {
                 initializeThisValue(LOCKHELD, expr.getType());
-                return thisValue;
             } else if (expr instanceof FlowExpressions.FieldAccess) {
                 FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) expr;
                 if (!fieldAcc.isStatic() && // Static fields are not automatically considered synchronized within a constructor or initializer
                     fieldAcc.getReceiver() instanceof FlowExpressions.ThisReference) {
-                    insertValue(fieldAcc, LOCKHELD);
-                    return fieldValues.get(fieldAcc);
+                    insertValue(fieldAcc.getReceiver(), LOCKHELD);
                 }
             }
         }
@@ -136,5 +140,12 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         result.append("  inConstructorOrInitializer = " + inConstructorOrInitializer
                 + "\\n");
         super.internalDotOutput(result);
+    }
+
+    @Override
+    protected boolean isSideEffectFree(AnnotatedTypeFactory atypeFactory,
+            ExecutableElement method) {
+        return ((LockAnnotatedTypeFactory) atypeFactory).methodSideEffectAnnotation(method, false) == SideEffectAnnotation.RELEASESNOLOCKS ||
+               super.isSideEffectFree(atypeFactory, method);
     }
 }

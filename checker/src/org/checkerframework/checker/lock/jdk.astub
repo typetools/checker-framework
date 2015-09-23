@@ -1,54 +1,86 @@
-package java.util.concurrent.locks;
-
 import org.checkerframework.checker.lock.qual.*;
+
+package java.util.concurrent.locks;
 
 public class ReentrantLock {
 
     @EnsuresLockHeld("this")
+    @ReleasesNoLocks
     void lock();
 
     @EnsuresLockHeld("this")
+    @ReleasesNoLocks
     void lockInterruptibly();
 
     @EnsuresLockHeldIf(expression="this", result=true)
+    @ReleasesNoLocks
     boolean tryLock();
 
     @EnsuresLockHeldIf(expression="this", result=true)
+    @ReleasesNoLocks
     boolean tryLock(long timeout, TimeUnit unit);
 
     @EnsuresLockHeldIf(expression="this", result=true)
+    @ReleasesNoLocks
     boolean isHeldByCurrentThread();
+
+    @MayReleaseLocks
+    void unlock();
 }
 
 public class ReentrantReadWriteLock$ReadLock {
 
     @EnsuresLockHeld("this")
+    @ReleasesNoLocks
     void lock();
 
     @EnsuresLockHeld("this")
+    @ReleasesNoLocks
     void lockInterruptibly();
 
     @EnsuresLockHeldIf(expression="this", result=true)
+    @ReleasesNoLocks
     boolean tryLock();
 
     @EnsuresLockHeldIf(expression="this", result=true)
+    @ReleasesNoLocks
     boolean tryLock(long timeout, TimeUnit unit);
+
+    @MayReleaseLocks
+    void unlock();
 }
 
 public class ReentrantReadWriteLock$WriteLock {
 
     @EnsuresLockHeld("this")
+    @ReleasesNoLocks
     void lock();
 
     @EnsuresLockHeld("this")
+    @ReleasesNoLocks
     void lockInterruptibly();
 
     @EnsuresLockHeldIf(expression="this", result=true)
+    @ReleasesNoLocks
     boolean tryLock();
 
     @EnsuresLockHeldIf(expression="this", result=true)
+    @ReleasesNoLocks
     boolean tryLock(long timeout, TimeUnit unit);
 
     @EnsuresLockHeldIf(expression="this", result=true)
+    @ReleasesNoLocks
     boolean isHeldByCurrentThread();
+
+    @MayReleaseLocks
+    void unlock();
+}
+
+package java.lang;
+
+public class Thread {
+
+    @EnsuresLockHeldIf(expression="#1", result=true)
+    @ReleasesNoLocks
+    static boolean holdsLock(Object obj);
 }
