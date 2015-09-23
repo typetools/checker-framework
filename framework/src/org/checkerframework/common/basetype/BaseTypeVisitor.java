@@ -1069,7 +1069,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 expr == null ? expression : expr.toString()), tree);
                     }
                 } catch (FlowExpressionParseException e) {
-                    // errors are reported at method declaration site (I always thought this meant at the site WHERE ERRORS ARE DECLARED AND REPORTED) //checker.report(e.getResult(), tree);
+                    // errors are reported at declaration site
                 }
             }
         }
