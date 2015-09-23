@@ -1,0 +1,21 @@
+package tests.jaifinference.qual:
+annotation @JaifBottom:
+
+package tests.jaifinference.qual:
+annotation @Top:
+
+package tests.jaifinference.qual:
+annotation @Sibling2:
+
+package :
+class AnotherClass:
+
+    method getBottom()I:
+        return: @tests.jaifinference.qual.JaifBottom
+
+    method getTop()I:
+        return: @tests.jaifinference.qual.Top
+
+    method getSibling2()I:
+        return: @tests.jaifinference.qual.Sibling2
+

@@ -1,0 +1,13 @@
+package tests.jaifinference.qual:
+annotation @JaifBottom:
+
+package :
+class TopBottomTest:
+
+    field privateField: @tests.jaifinference.qual.JaifBottom
+
+    field publicField: @tests.jaifinference.qual.JaifBottom
+
+    method getBottom()I:
+        return: @tests.jaifinference.qual.JaifBottom
+

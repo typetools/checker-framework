@@ -1,0 +1,18 @@
+package tests.jaifinference.qual:
+annotation @Sibling1:
+
+package tests.jaifinference.qual:
+annotation @Parent:
+
+package :
+class MethodReturnTest:
+
+    method getSibling1()I:
+        return: @tests.jaifinference.qual.Sibling1
+
+    method getSibling1NotAnnotated()I:
+        return: @tests.jaifinference.qual.Sibling1
+
+    method lubTest()I:
+        return: @tests.jaifinference.qual.Parent
+

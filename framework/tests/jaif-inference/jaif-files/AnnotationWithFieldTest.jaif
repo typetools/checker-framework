@@ -1,0 +1,12 @@
+package tests.jaifinference.qual:
+annotation @SiblingWithFields:
+    String value2
+    String[] value
+
+package :
+class AnnotationWithFieldTest:
+
+    field fields: @tests.jaifinference.qual.SiblingWithFields(value2="test3",value={"test","test2"})
+
+    field emptyFields: @tests.jaifinference.qual.SiblingWithFields(value2="",value={})
+

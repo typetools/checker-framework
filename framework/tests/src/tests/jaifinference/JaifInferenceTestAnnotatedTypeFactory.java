@@ -1,0 +1,156 @@
+package tests.jaifinference;
+
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
+
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.jaifinference.JaifInferenceTransfer;
+import org.checkerframework.common.reflection.qual.UnknownClass;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
+import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.qual.TypeQualifiers;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationUtils;
+
+import tests.jaifinference.qual.JaifBottom;
+import tests.jaifinference.qual.Parent;
+import tests.jaifinference.qual.Sibling1;
+import tests.jaifinference.qual.Sibling2;
+import tests.jaifinference.qual.SiblingWithFields;
+import tests.jaifinference.qual.Top;
+/**
+ * AnnotatedTypeFactory to test a whole-program type inference using .jaif
+ * files.
+ * <p>
+ * The used qualifier hierarchy is straightforward and only intended for test
+ * purposes.
+ * 
+ * @author pbsf
+ */
+@TypeQualifiers({Parent.class, Top.class, Sibling1.class, Sibling2.class,
+        JaifBottom.class, SiblingWithFields.class})
+public class JaifInferenceTestAnnotatedTypeFactory
+        extends
+            BaseAnnotatedTypeFactory {
+
+    private final AnnotationMirror PARENT = new AnnotationBuilder(
+            processingEnv, Parent.class).build();
+
+    public JaifInferenceTestAnnotatedTypeFactory(BaseTypeChecker checker) {
+        super(checker);
+        postInit();
+        AnnotationMirror bottom = AnnotationUtils.fromClass(elements,
+                JaifBottom.class);
+        addTypeNameImplicit(java.lang.Void.class, bottom);
+    }
+
+    @Override
+    public TreeAnnotator createTreeAnnotator() {
+        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(
+                this);
+        AnnotationMirror bottom = AnnotationUtils.fromClass(elements,
+                JaifBottom.class);
+        implicitsTreeAnnotator.addTreeKind(
+                com.sun.source.tree.Tree.Kind.NULL_LITERAL, bottom);
+        implicitsTreeAnnotator.addTreeKind(
+                com.sun.source.tree.Tree.Kind.INT_LITERAL, bottom);
+
+        return new ListTreeAnnotator(new PropagationTreeAnnotator(this),
+                implicitsTreeAnnotator);
+    }
+
+    @Override
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new JaifTestQualifierHierarchy(factory);
+    }
+
+    @Override
+    public CFTransfer createFlowTransferFunction(
+            CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+        return new JaifInferenceTransfer(analysis);
+    }
+
+    /**
+     * Using a MultiGraphQualifierHierarchy to enable tests with Annotations
+     * that contain fields. @see SiblingWithFields.
+     * @author pbsf
+     *
+     */
+    protected class JaifTestQualifierHierarchy extends
+                MultiGraphQualifierHierarchy {
+
+        public JaifTestQualifierHierarchy(MultiGraphFactory f) {
+            super(f);
+        }
+
+        @Override
+        public AnnotationMirror leastUpperBound(AnnotationMirror a1,
+                AnnotationMirror a2) {
+            if ((AnnotationUtils.areSameByClass(a1, Sibling1.class)
+                    && AnnotationUtils.areSameByClass(a2, Sibling2.class)) 
+                    || (AnnotationUtils.areSameByClass(a1, Sibling2.class)
+                    && AnnotationUtils.areSameByClass(a2, Sibling1.class))
+                    || (AnnotationUtils.areSameByClass(a1, Sibling1.class)
+                    && AnnotationUtils.areSameByClass(a2, SiblingWithFields.class))
+                    || (AnnotationUtils.areSameByClass(a1, SiblingWithFields.class)
+                    && AnnotationUtils.areSameByClass(a2, Sibling2.class))
+                    || (AnnotationUtils.areSameByClass(a1, Sibling2.class)
+                    && AnnotationUtils.areSameByClass(a2, SiblingWithFields.class))) {
+                return PARENT;
+            }
+            return super.leastUpperBound(a1, a2);
+        }
+        @Override
+        public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
+            if (AnnotationUtils.areSame(sub, sup)
+                    || AnnotationUtils.areSameByClass(sup, UnknownClass.class)
+                    || AnnotationUtils.areSameByClass(sub, JaifBottom.class)
+                    || AnnotationUtils.areSameByClass(sup, Top.class)) {
+                return true;
+            }
+
+            if (AnnotationUtils.areSameByClass(sub, UnknownClass.class)
+                    || AnnotationUtils
+                            .areSameByClass(sup, JaifBottom.class)) {
+                return false;
+            }
+
+            if (AnnotationUtils.areSameByClass(sub, Top.class)) {
+                return false;
+            }
+
+            if ((AnnotationUtils.areSameByClass(sub, Sibling1.class)
+                    || AnnotationUtils.areSameByClass(sub, Sibling2.class)
+                    || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class))
+                    && AnnotationUtils.areSameByClass(sup, Parent.class)) {
+                return true;
+            }
+
+            if (AnnotationUtils.areSameByClass(sub, SiblingWithFields.class)
+                    && AnnotationUtils.areSameByClass(sup, SiblingWithFields.class)) {
+                List<String> subVal1 = AnnotationUtils.getElementValueArray(sub,
+                        "value", String.class, true);
+                List<String> supVal1 = AnnotationUtils.getElementValueArray(sup,
+                        "value", String.class, true);
+                String subVal2 = AnnotationUtils.getElementValue(sub, "value2",
+                        String.class, true);
+                String supVal2 = AnnotationUtils.getElementValue(sup, "value2",
+                        String.class, true);
+                return subVal1.equals(supVal1) && subVal2.equals(supVal2);
+            }
+            return false;
+        }
+    }
+
+}

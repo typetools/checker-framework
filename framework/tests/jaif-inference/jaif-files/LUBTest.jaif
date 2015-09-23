@@ -1,0 +1,19 @@
+package tests.jaifinference.qual:
+annotation @JaifBottom:
+
+package tests.jaifinference.qual:
+annotation @Parent:
+
+package :
+class LUBTest:
+
+    field privateField: @tests.jaifinference.qual.Parent
+
+    field publicField: @tests.jaifinference.qual.Parent
+
+    method getSibling1()I:
+        return: @tests.jaifinference.qual.JaifBottom
+
+    method getSibling2()I:
+        return: @tests.jaifinference.qual.JaifBottom
+

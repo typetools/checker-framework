@@ -1,0 +1,11 @@
+package tests.jaifinference.qual:
+annotation @Sibling1:
+
+package :
+class FieldInferenceTest:
+
+    field refinedField: @tests.jaifinference.qual.Sibling1
+
+    method getSiblingRefined()I:
+        return: @tests.jaifinference.qual.Sibling1
+

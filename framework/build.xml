@@ -155,7 +155,7 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-framework.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${stubparser.lib}:${javacutil.lib}:${dataflow.lib}:${junit.lib}"
+              classpath="${javac.lib}:${stubparser.lib}:${javacutil.lib}:${dataflow.lib}:${junit.lib}:${afu.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -204,7 +204,7 @@
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${javac.lib}:${javadoc.lib}:${junit.lib}"
+                 classpath="${build}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${javac.lib}:${javadoc.lib}:${junit.lib}:${afu.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
             <package name="org.checkerframework.javacutil.*"/>
@@ -256,7 +256,7 @@
 
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${junit.lib}:${build}:${javacutil.lib}:${dataflow.lib}"
+              classpath="${javac.lib}:${junit.lib}:${build}:${javacutil.lib}:${dataflow.lib}:${afu.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -285,13 +285,13 @@
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="-ea"/>
             <jvmarg line="-Dorg.checkerframework.common.reflection.debug=false"/>
-
             <classpath>
                 <pathelement path="${build}"/>
                 <pathelement path="${javac.lib}"/>
                 <pathelement path="${framework.lib}"/>
                 <pathelement path="${tests.build}"/>
                 <pathelement path="${junit.lib}"/>
+                <pathelement path="${afu.lib}"/>
             </classpath>
 
             <formatter type="xml"/>
@@ -322,6 +322,7 @@
               <pathelement path="${javac.lib}"/>
               <pathelement path="${framework.lib}"/>
               <pathelement path="${tests.build}"/>
+              <pathelement path="${afu.lib}"/>
               <pathelement path="${junit.lib}"/>
           </classpath>
 
@@ -359,6 +360,13 @@
             description="Run tests for the Checker Framework">
         <antcall target="-run-tests">
             <param name="param" value="tests.AnnotationBuilderTest"/>
+        </antcall>
+    </target>
+
+    <target name="jaif-inference-tests" depends="jar,build-tests"
+            description="Run tests for the whole-program type inference using .jaif files">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.JaifInferenceTest"/>
         </antcall>
     </target>
 
@@ -577,7 +585,7 @@
         <echo message="${src.files}" file="${tmpdir}/srcfiles-framework.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${afu.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
