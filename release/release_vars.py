@@ -193,7 +193,7 @@ LIVE_CF_LOGO = os.path.join(CHECKER_LIVE_SITE, "CFLogo.png")
 CURRENT_DATE=datetime.date.today()
 
 os.environ['CHECKERFRAMEWORK'] = CHECKER_FRAMEWORK
-perl_libs = "/homes/gws/jburke/perl_lib/:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
+perl_libs = "/scratch/jsr308-release/perl_lib:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
 #Environment variables for tools needed during the build
 os.environ['PLUME_LIB'] =  PLUME_LIB
 os.environ['BIBINPUTS']=  '.:' + PLUME_BIB
