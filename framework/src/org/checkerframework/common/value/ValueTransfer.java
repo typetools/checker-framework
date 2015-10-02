@@ -636,6 +636,16 @@ public class ValueTransfer extends CFTransfer {
     }
 
     @Override
+    public List<AnnotationMirror> getJaifInferenceIgnoredAnnotations() {
+        List<AnnotationMirror> out = super.getJaifInferenceIgnoredAnnotations();
+        out.add(AnnotationUtils.fromClass(analysis.getEnv().getElementUtils(),
+                UnknownVal.class));
+        out.add(AnnotationUtils.fromClass(analysis.getEnv().getElementUtils(),
+                BottomVal.class));
+        return out;
+    }
+
+    @Override
     public TransferResult<CFValue, CFStore> visitConditionalNot(
             ConditionalNotNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> transferResult = super
