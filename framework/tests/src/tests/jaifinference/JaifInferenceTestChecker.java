@@ -14,5 +14,4 @@ public class JaifInferenceTestChecker extends BaseTypeChecker {
     protected BaseTypeVisitor<?> createSourceVisitor() {
         return new JaifInferenceTestVisitor(this);
     }
-
 }

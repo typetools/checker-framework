@@ -13,7 +13,9 @@ public class TopBottomTest {
 
     // Testing the refinement above.
     void testFields() {
+        //:: error: (argument.type.incompatible)
         expectsBottom(privateField);
+        //:: error: (argument.type.incompatible)
         expectsBottom(publicField);
     }
 

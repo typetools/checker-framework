@@ -1,29 +1,19 @@
+import tests.jaifinference.qual.Sibling2;
+import tests.jaifinference.qual.Parent;
 import tests.jaifinference.qual.*;
 public class PublicFieldTest {
-    public static int field1;
-    public static int field2;
+    @Parent
+    public static int field1; // parent
+    @Sibling2
+    public static int field2; // sib2
 
     public PublicFieldTest() {
         field1 = getSibling1();
     }
 
     void testPublicInference() {
-        //:: error: (argument.type.incompatible)
-        expectsBottom(field1);
-        //:: error: (argument.type.incompatible)
-        expectsBottom(field2);
-    }
-
-    void testPublicInference2() {
-        //:: error: (argument.type.incompatible)
-        expectsSibling1(field1);
-        //:: error: (argument.type.incompatible)
-        expectsSibling1(field2);
-    }
-
-    void testPublicInference3() {
+        expectsSibling2(field2);
         expectsParent(field1);
-        //:: error: (argument.type.incompatible)
         expectsParent(field2);
     }
 
@@ -42,7 +32,7 @@ class AnotherClass {
 
     public AnotherClass() {
         PublicFieldTest.field1 = getSibling2();
-//        PublicFieldTest.field2 = getSibling2();
+        PublicFieldTest.field2 = getSibling2();
     }
 
     @JaifBottom int getBottom() {

@@ -1,8 +1,6 @@
 package tests;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
@@ -17,23 +15,17 @@ import org.junit.runners.Parameterized.Parameters;
  *
  * @author pbsf
  */
-public class JaifInferenceTest extends CheckerFrameworkTest {
+public class JaifInferenceValidationTest extends CheckerFrameworkTest {
 
-    public JaifInferenceTest(File testFile) {
+
+    public JaifInferenceValidationTest(File testFile) {
         super(testFile, tests.jaifinference.JaifInferenceTestChecker.class,
                 "value", "-Anomsgtext");
     }
 
     @Parameters
     public static String [] getTestDirs() {
-        return new String[]{"jaif-inference/non-annotated"};
-    }
-
-    @Override
-    public List<String> customizeOptions(List<String> previousOptions) {
-        final List<String> options = new ArrayList<>(previousOptions);
-        options.add("-AuseJaifInference");
-        return options;
+        return new String[]{"jaif-inference/annotated/"};
     }
 
 }

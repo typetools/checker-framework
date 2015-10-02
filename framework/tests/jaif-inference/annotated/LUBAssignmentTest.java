@@ -1,7 +1,10 @@
+import tests.jaifinference.qual.Parent;
 import tests.jaifinference.qual.*;
-public class LUBTest {
+public class LUBAssignmentTest {
     // The default type for fields is @Top.
+    @Parent
     private static int privateField;
+    @Parent
     public static int publicField;
 
     void assignFieldsToSibling1() {
@@ -29,23 +32,6 @@ public class LUBTest {
         expectsParent(publicField);
     }
 
-    void testFields2() {
-        //:: error: (argument.type.incompatible)
-        expectsSibling1(privateField);
-        //:: error: (argument.type.incompatible)
-        expectsSibling1(publicField);
-    }
-
-    void testFields3() {
-        //:: error: (argument.type.incompatible)
-        expectsSibling2(privateField);
-        // public fields are not refined.
-        //:: error: (argument.type.incompatible)
-        expectsSibling2(publicField);
-    }
-
-    void expectsSibling1(@Sibling1 int t) {}
-    void expectsSibling2(@Sibling2 int t) {}
     void expectsParent(@Parent int t) {}
     static @Sibling1 int getSibling1() {
         return 0;

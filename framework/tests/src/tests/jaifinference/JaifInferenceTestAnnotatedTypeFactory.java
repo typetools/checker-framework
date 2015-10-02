@@ -6,12 +6,7 @@ import javax.lang.model.element.AnnotationMirror;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.jaifinference.JaifInferenceTransfer;
 import org.checkerframework.common.reflection.qual.UnknownClass;
-import org.checkerframework.framework.flow.CFAbstractAnalysis;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFTransfer;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
@@ -73,12 +68,6 @@ public class JaifInferenceTestAnnotatedTypeFactory
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new JaifTestQualifierHierarchy(factory);
-    }
-
-    @Override
-    public CFTransfer createFlowTransferFunction(
-            CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
-        return new JaifInferenceTransfer(analysis);
     }
 
     /**
