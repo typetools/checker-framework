@@ -13,12 +13,13 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -44,11 +45,16 @@ import annotations.io.IndexFileParser;
 import annotations.io.IndexFileWriter;
 import annotations.util.JVMNames;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Attribute.Array;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
+import com.sun.tools.javac.code.Type.ClassType;
 /**
  * The purpose of this class is to allow a whole-program type inference with
  * the aid of .jaif files.
@@ -63,7 +69,18 @@ import com.sun.tools.javac.code.Type.ArrayType;
  */
 public class JaifInferenceUtils {
 
+    /**
+     * Path to where .jaif files will be written to and read from.
+     * This path is relative to where the CF's javac command is executed.
+     */
     public final static String JAIF_FILES_PATH = "build/jaif-files/";
+
+    /**
+     * List of annotations that are ignored - not written into .jaif
+     * files.
+     */
+    private static List<AnnotationMirror> annotationsToIgnore =
+            new ArrayList<AnnotationMirror>();
 
     /**
      * @param classSymbol is the symbol representing the class containing the method.
@@ -78,7 +95,6 @@ public class JaifInferenceUtils {
         if (classSymbol == null) return null; // Static block.
         String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString().
                 replaceAll("\\.", "/") + ".jaif";
-
         try {
             AClass clazz = getJaifClass(classSymbol, jaifPath, new AScene());
             if (clazz == null) return null;
@@ -139,20 +155,25 @@ public class JaifInferenceUtils {
      * that contains the field.
      * @param atf is the annotated type factory.
      */
-    public static void updateFieldTypeInJaif(Node lhs, Node rhs,
+    public static void updateFieldTypeInJaif(FieldAccessNode lhs, Node rhs,
             ClassSymbol classSymbol, AnnotatedTypeFactory atf) {
         if (classSymbol == null) return;
         String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString().
                 replaceAll("\\.", "/") + ".jaif";
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
+        if (lhsATM.getExplicitAnnotations().size() > 0) {
+            // We do not infer types if there are explicit annotations.
+            // See https://github.com/typetools/annotation-tools/issues/105
+            return;
+        }
         AnnotatedTypeMirror prevATM = null;
 
         AScene scene = new AScene();
         try {
             AClass clazz = getJaifClass(classSymbol, jaifPath, scene);
             if (clazz == null) return;
-            String fieldName = TreeUtils.getFieldName(lhs.getTree());
+            String fieldName = lhs.getFieldName();
             AField field = clazz.fields.get(fieldName);
             if (field == null) {
                 field = clazz.fields.vivify(fieldName);
@@ -161,11 +182,11 @@ public class JaifInferenceUtils {
             if (prevAnnos != null && prevAnnos.size() > 0) {
                 prevATM = setOfAnnotationsToATM(prevAnnos, atf, false,
                         rhsATM.getUnderlyingType());
-            }
-            if (prevATM != null) {
-                // If there was a type previously, we must do the LUB to keep soundness.
-                rhsATM = AnnotatedTypes.leastUpperBound(atf.getProcessingEnv(),
-                        atf, rhsATM, prevATM);
+                if (prevATM != null) {
+                    // If there was a type previously, we must do the LUB to keep soundness.
+                    rhsATM = AnnotatedTypes.leastUpperBound(atf.getProcessingEnv(),
+                            atf, rhsATM, prevATM);
+                }
             }
             // Write into .jaif file ONLY IF refined type is a subtype of the current type.
             if (atf.getTypeHierarchy().isSubtype(rhsATM, lhsATM)) {
@@ -188,7 +209,7 @@ public class JaifInferenceUtils {
      * type and the type of lhs. If the new type is not a subtype of the type of
      * lhs, no refinement is made.
      * @param retNode is the node representing the return node.
-     * @param methodTree is the method's tre.
+     * @param methodTree is the method's tree.
      * @param classSymbol is the symbol of the class representing the class 
      * that contains the method.
      * @param atf is the annotated type factory.
@@ -204,6 +225,11 @@ public class JaifInferenceUtils {
                 getTree().getExpression());
         AnnotatedTypeMirror methodReturnType = atf.getAnnotatedType(methodTree).
                 getReturnType();
+        if (methodReturnType.getExplicitAnnotations().size() > 0) {
+            // We do not infer types if there are explicit annotations.
+            // See https://github.com/typetools/annotation-tools/issues/105
+            return;
+        }
         AnnotatedTypeMirror prevATM = null;
 
         try {
@@ -219,13 +245,13 @@ public class JaifInferenceUtils {
                 if (prevAnnos != null && prevAnnos.size() > 0) {
                     prevATM = setOfAnnotationsToATM(prevAnnos, atf, false,
                             returnExprATM.getUnderlyingType());
+                    if (prevATM != null) {
+                        returnExprATM = AnnotatedTypes.leastUpperBound(atf.
+                                getProcessingEnv(), atf, returnExprATM, prevATM);
+                    }
                 }
             }
-            if (prevATM != null) {
-                returnExprATM = AnnotatedTypes.leastUpperBound(atf.
-                        getProcessingEnv(), atf, returnExprATM, prevATM);
-            }
-         // Write into .jaif file ONLY IF refined type is a subtype of the declared type.
+            // Write into .jaif file ONLY IF refined type is a subtype of the declared type.
             if (atf.getTypeHierarchy().isSubtype(returnExprATM, methodReturnType)) {
                 Set<Annotation> setOfAnnos = atmToSetOfAnnotations(returnExprATM, atf);
                 method.returnType.tlAnnotationsHere.clear();
@@ -247,7 +273,7 @@ public class JaifInferenceUtils {
         } else {
             jaifFile.getParentFile().mkdirs();
         }
-        String className = classSymbol.getSimpleName().toString();
+        String className = classSymbol.getQualifiedName().toString();
         AClass clazz = scene.classes.get(className);
         if (clazz == null) {
             clazz = scene.classes.vivify(className);
@@ -269,8 +295,12 @@ public class JaifInferenceUtils {
         AnnotatedTypeMirror atm = AnnotatedTypeMirror.createType(tm, atf,
                 isDeclaration);
         for (Annotation anno : annotations) {
-            atm.addAnnotation(annotationToAnnotationMirror(anno,
-                    atf.getProcessingEnv()));
+            AnnotationMirror am = annotationToAnnotationMirror(anno,
+                    atf.getProcessingEnv());
+            if (!AnnotationUtils.containsSameIgnoringValues(
+                    annotationsToIgnore, am)) {
+                atm.addAnnotation(am);
+            }
         }
         return atm;
     }
@@ -279,7 +309,13 @@ public class JaifInferenceUtils {
             AnnotatedTypeFactory atf) {
         Set<Annotation> output = new HashSet<Annotation>();
         for (AnnotationMirror am : atm.getAnnotations()) {
-            output.add(annotationMirrorToAnnotation(am));
+            if (!AnnotationUtils.containsSameIgnoringValues(
+                    annotationsToIgnore, am)) {
+                Annotation anno = annotationMirrorToAnnotation(am);
+                if (anno != null) {
+                    output.add(anno);
+                }
+            }
         }
         return output;
     }
@@ -291,6 +327,7 @@ public class JaifInferenceUtils {
         for (ExecutableElement ee : am.getElementValues().keySet()) {
             AnnotationFieldType aft = getAnnotationFieldType(ee, am.
                     getElementValues().get(ee).getValue());
+            if (aft == null) return null;
             // Here we just add the type of the field into fieldTypes.
             fieldTypes.put(ee.getSimpleName().toString(), aft);
         }
@@ -325,8 +362,15 @@ public class JaifInferenceUtils {
             ee, Object value) {
         if (value instanceof List<?>) {
             // Handling cases of empty arrays was a bit troublesome here.
-            // TODO: Improve this ugly code.
             AnnotationValue defaultValue = ee.getDefaultValue();
+            if (defaultValue == null || ((ArrayType)((Array)defaultValue).type) == null) {
+                List<?> listV = (List<?>)value;
+                if (!listV.isEmpty()) {
+                    return new ArrayAFT((ScalarAFT) getAnnotationFieldType(ee,
+                            ((AnnotationValue)((List<?>)value).get(0)).getValue()));
+                }
+                return null;
+            }
             Type elemType = ((ArrayType)((Array)defaultValue).type).elemtype;
             try {
                 return new ArrayAFT((ScalarAFT) BasicAFT.
@@ -408,4 +452,34 @@ public class JaifInferenceUtils {
         }
     }
 
+    /**
+     * Auxiliary method that returns the ClassSymbol of the class encapsulating
+     * the node n passed as parameter.
+     * TODO: This method could be moved somewhere else.
+     */
+    public static ClassSymbol getClassSymbol(ClassTree classTree,
+            Node n, Node receiverNode) {
+        if (receiverNode instanceof ImplicitThisLiteralNode
+                && classTree != null) {
+            return (ClassSymbol) InternalUtils.symbol(classTree);
+        }
+        TypeMirror type = receiverNode.getType();
+        if (type instanceof ClassType) {
+            TypeSymbol tsym = ((ClassType) type).asElement();
+            return tsym.enclClass();
+        }
+        Tree tree = receiverNode.getTree();
+        Element symbol = InternalUtils.symbol(tree);
+        if (symbol instanceof ClassSymbol) {
+            return (ClassSymbol) symbol;
+        } else if (symbol instanceof VarSymbol) {
+            return ((VarSymbol)symbol).enclClass();
+        }
+        return null;
+    }
+
+    public static void setAnnotationsToIgnore(
+            List<AnnotationMirror> annosToIgnore) {
+        annotationsToIgnore = annosToIgnore;
+    }
 }
