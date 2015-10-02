@@ -354,6 +354,7 @@ public class CheckerMain {
             args.add(quote(PluginUtil.join(File.pathSeparator, cpOpts)));
         }
 
+        args.add("-XDcompilePolicy=byfile");
         args.addAll(toolOpts);
         return args;
     }
