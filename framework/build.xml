@@ -365,8 +365,35 @@
 
     <target name="jaif-inference-tests" depends="jar,build-tests"
             description="Run tests for the whole-program type inference using .jaif files">
+        <delete dir="build/jaif-inference"/>
+        <!--Runs the checker on test files to find expected errors and generate-
+                .jaif files.-->
         <antcall target="-run-tests">
             <param name="param" value="tests.JaifInferenceTest"/>
+        </antcall>
+        <delete dir="tests/jaif-inference/annotated"/>
+        <!-- Copying all test files to another directory, removing expected errors. -->
+        <copy todir="tests/jaif-inference/annotated">
+            <fileset dir="tests/jaif-inference/non-annotated"/>
+            <filterchain>
+                <linecontains negate="true">
+                    <contains value="//:: error:"/>
+                </linecontains>
+            </filterchain>
+        </copy>
+        <!-- Copying a file while maintaining expected errors, to test soundness.-->
+        <delete file="tests/jaif-inference/annotated/ExpectedErrors.java"/>
+        <copy file="tests/jaif-inference/non-annotated/ExpectedErrors.java"
+            todir="tests/jaif-inference/annotated"/>
+        <!-- Inserting annotations from .jaif files. -->
+        <exec executable="/bin/bash">
+            <arg value="jaif-inference-scripts/insert-annotations.sh"/>
+            <arg value="tests/jaif-inference/annotated"/>
+            <arg value="build/jaif-files/"/>
+        </exec>
+        <!-- Running the checker again on the final .java files. -->
+        <antcall target="-run-tests">
+            <param name="param" value="tests.JaifInferenceValidationTest"/>
         </antcall>
     </target>
 
