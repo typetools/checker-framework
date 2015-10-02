@@ -193,9 +193,8 @@ import com.sun.tools.javac.util.Log;
     // to be output.
     "resolveReflection",
 
-    // Additional path to a folder containing .jaif files to use.
-    // Those files are simply copied to the defaulf .jaif files location.
-    "jaifFilesFolder",
+    // Whether to use .jaif files inference
+    "useJaifInference",
 
     ///
     /// Stub libraries

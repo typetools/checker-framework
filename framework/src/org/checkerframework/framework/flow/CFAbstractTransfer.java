@@ -1,6 +1,7 @@
 package org.checkerframework.framework.flow;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.jaifinference.JaifInferenceUtils;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -30,6 +31,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
+import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
@@ -74,6 +76,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 
 /**
  * The default analysis transfer function for the Checker Framework propagates
@@ -99,6 +102,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         extends AbstractNodeVisitor<TransferResult<V, S>, TransferInput<V, S>>
         implements TransferFunction<V, S> {
 
+    private final boolean useJaifInference;
     /**
      * The analysis class this store belongs to.
      */
@@ -113,6 +117,12 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
+        useJaifInference = analysis.getTypeFactory().getProcessingEnv().
+                getOptions().containsKey("useJaifInference");
+        // If a folder containing .jaif files is passed as argument, use it.
+        if (useJaifInference) {
+            JaifInferenceUtils.setAnnotationsToIgnore(getJaifInferenceIgnoredAnnotations());
+        }
     }
 
     /**
@@ -534,6 +544,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         // non-null type systems)
         V factoryValue = getValueFromFactory(n.getTree(), n);
         V value = moreSpecificValue(factoryValue, storeValue);
+
         return new RegularTransferResult<>(finishValue(value, store), store);
     }
 
@@ -721,9 +732,38 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         S info = in.getRegularStore();
         V rhsValue = in.getValueOfSubNode(rhs);
+
+        Receiver expr = FlowExpressions.internalReprOf(analysis.getTypeFactory(),
+                n.getTarget());
+
+        if (useJaifInference && !expr.containsUnknown()
+                && expr instanceof FieldAccess) {
+            // Updates .jaif file
+            ClassSymbol clazzSymbol = JaifInferenceUtils.getClassSymbol(analysis.
+                    getContainingClass(n.getTree()), lhs, ((FieldAccessNode)lhs)
+                    .getReceiver());
+            JaifInferenceUtils.updateFieldTypeInJaif((FieldAccessNode) lhs,
+                    rhs, clazzSymbol, analysis.getTypeFactory());
+        }
+
         processCommonAssignment(in, lhs, rhs, info, rhsValue);
 
         return new RegularTransferResult<>(finishValue(rhsValue, info), info);
+    }
+
+    @Override
+    public TransferResult<V, S> visitReturn(ReturnNode n, TransferInput<V, S> p) {
+        if (useJaifInference) {
+            // Updates the return type of the method on the respective .jaif file.
+            ClassTree classTree = analysis.getContainingClass(n.getTree());
+            if (classTree != null) {
+                ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(classTree);
+                JaifInferenceUtils.updateMethodReturnTypeInJaif(n, classSymbol,
+                        analysis.getContainingMethod(n.getTree()),
+                        analysis.getTypeFactory());
+            }
+        }
+        return super.visitReturn(n, p);
     }
 
     @Override
@@ -1012,6 +1052,18 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         }
 
         return result;
+    }
+
+    /**
+     * This method returns a list of annotations that are ignored during
+     * the .jaif whole-program type inference. I.E. the annotations on this set
+     * won't be written into .jaif files.
+     *
+     * Any type system that wants to ensure this property for certain
+     * annotations must override this method.
+     */
+    public List<AnnotationMirror> getJaifInferenceIgnoredAnnotations() {
+        return new ArrayList<AnnotationMirror>();
     }
 
     /**
