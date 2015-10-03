@@ -328,8 +328,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 org.checkerframework.dataflow.qual.Deterministic.class));
         addInheritedAnnotation(AnnotationUtils.fromClass(elements,
                 org.checkerframework.dataflow.qual.TerminatesExecution.class));
-        addInheritedAnnotation(AnnotationUtils.fromClass(elements,
-                org.checkerframework.dataflow.qual.LockingFree.class));
 
         initilizeReflectionResolution();
 
@@ -2377,9 +2375,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Returns the actual annotation mirror used to annotate this type, whose
      * name equals the passed annotationName if one exists, null otherwise. This
-     * is the private implementation of the same-named, public method.
+     * is the protected implementation of the same-named, public method.
+     * It is protected rather than private because the Lock Checker needs to
+     * override it.
      */
-    private AnnotationMirror getDeclAnnotation(Element elt,
+    protected AnnotationMirror getDeclAnnotation(Element elt,
             /*@Interned*/ String annoName, boolean checkAliases) {
         Set<AnnotationMirror> declAnnos = getDeclAnnotations(elt);
 

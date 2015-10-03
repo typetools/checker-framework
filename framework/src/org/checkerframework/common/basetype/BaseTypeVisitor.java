@@ -12,12 +12,14 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
+import org.checkerframework.dataflow.cfg.node.ExplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
@@ -120,6 +122,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment
@@ -292,7 +295,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // annotated type of the ClassTree before checking the type of any
         // code within the class.  The call below causes flow analysis to
         // be run over the class.  See GenericAnnotatedTypeFactory
-        // .annotateImplicit where analysis is performed.
+        // .annotateImplicitWithFlow where analysis is performed.
         visitorState.setClassType(atypeFactory.getAnnotatedType(node));
         visitorState.setClassTree(node);
         visitorState.setMethodReceiver(null);
@@ -964,7 +967,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected void checkPreconditions(Tree tree,
             Element invokedElement, boolean methodCall, Set<Pair<String, String>> additionalPreconditions) {
-        Set<Pair<String, String>> preconditions =
+        Set<Pair<String, String>> preconditions = invokedElement == null ?
+        		new HashSet<Pair<String, String>>() :
                 contractsUtils.getPreconditions(invokedElement);
 
         if (additionalPreconditions != null) {
@@ -982,8 +986,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 return;
             }
 
+            Node nodeNode = atypeFactory.getNodeForTree(tree);
+
             if (flowExprContext == null) {
-                Node nodeNode = atypeFactory.getNodeForTree(tree);
                 if (methodCall) {
                     flowExprContext = FlowExpressionParseUtil
                             .buildFlowExprContextForUse(
@@ -1022,6 +1027,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     flowExprContext = new FlowExpressionContext(
                             internalReceiver, null, checker.getContext());
                 }
+                else if (nodeNode instanceof ExplicitThisLiteralNode ||
+                		 nodeNode instanceof ImplicitThisLiteralNode ||
+                		 nodeNode instanceof ThisLiteralNode) {
+                	Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory, nodeNode, false);
+                	
+                    flowExprContext = new FlowExpressionContext(
+                            internalReceiver, null, checker.getContext());
+                }
             }
 
             if (flowExprContext != null) {
@@ -1029,24 +1042,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 try {
                     CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
 
-                    String s = expression.trim();
+                    // TODO: Wrap the following 'itself' handling logic into a method that calls FlowExpressionParseUtil.parse
 
-                    Pattern selfPattern = Pattern.compile("^(this)$");
-                    Matcher selfMatcher = selfPattern.matcher(s);
-                    if (selfMatcher.matches()) {
-                        s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
+                    /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
+                    Pattern itselfPattern = Pattern.compile("^itself$");
+                    Matcher itselfMatcher = itselfPattern.matcher(expression.trim());
+
+                    expr = FlowExpressionParseUtil.parse(expression,
+                            flowExprContext, getCurrentPath());
+
+                    if (expr == null && itselfMatcher.matches()) { // There is no variable, class, etc. named "itself"
+                        expr = FlowExpressions.internalReprOf(atypeFactory,
+                                nodeNode);
                     }
 
-                    // Try local variables first
-                    CFAbstractValue<?> value = store.getValueOfLocalVariableByName(s);
-
-                    if (value == null) // Not a recognized local variable
-                    {
-                        expr = FlowExpressionParseUtil.parse(expression,
-                                flowExprContext, getCurrentPath());
-
-                        value = store.getValue(expr);
-                    }
+                    CFAbstractValue<?> value = store.getValue(expr);
 
                     AnnotationMirror inferredAnno = value == null ? null : value
                             .getType().getAnnotationInHierarchy(anno);
@@ -2126,6 +2136,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     */
 
+    // Overridden in the Lock Checker. This method is needed so that the
+    // Lock Checker does not need to override the checkMethodInvocability
+    // method as a whole. The Lock Checker needs the functionality in
+    // checkMethodInvocability, such as the receiver subtype checks.
+    protected boolean skipReceiverSubtypeCheck(MethodInvocationTree node,
+    		AnnotatedTypeMirror methodDefinitionReceiver,
+    		AnnotatedTypeMirror methodCallReceiver) {
+    	return false;
+    }
+
     /**
      * Tests whether the method can be invoked using the receiver of the 'node'
      * method invocation, and issues a "method.invocation.invalid" if the
@@ -2157,7 +2177,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
 
-        if (!atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver)) {
+        if (!skipReceiverSubtypeCheck(node, methodReceiver, rcv) &&
+            !atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver)) {
             checker.report(Result.failure("method.invocation.invalid",
                 TreeUtils.elementFromUse(node),
                 treeReceiver.toString(), methodReceiver.toString()), node);
