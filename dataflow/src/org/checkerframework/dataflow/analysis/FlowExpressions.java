@@ -472,6 +472,34 @@ public class FlowExpressions {
             this.element = elem;
         }
 
+        /*
+         * Note that local variables are compared by their string values
+         * rather than their elements because
+         * org.checkerframework.javacutil.Resolver.findLocalVariableOrParameter,
+         * which is called when performing flow expression parsing,
+         * returns a different element depending on the scope the parsing
+         * is being performed from. For example, when looking up the local
+         * variable "c" in code below, different elements for "c" are retrieved
+         * when the preconditions on the first and second instances of m.field
+         * are being checked.
+         * 
+         *    class MyClass {
+         *        public Object field;
+         *    }
+         *
+         *    private @GuardedBy({"c"}) MyClass m;
+         *
+         *    public void method() {
+         *        Object d = new Object();
+         *        Object c = new Object();
+         *        synchronized(d){
+         *            m.field = new Object();
+         *        }
+         *        synchronized(c){
+         *            m.field = new Object();
+         *        }
+         *    }
+         */
         @Override
         public boolean equals(Object obj) {
             if (obj == null || !(obj instanceof LocalVariable)) {
@@ -485,6 +513,8 @@ public class FlowExpressions {
             return element;
         }
 
+        // The result of toString() is used to compute the hash code instead of the element.
+        // Please see the comment above the LocalVariable.equals method definition for more details.
         @Override
         public int hashCode() {
             return HashCodeUtils.hash(toString());

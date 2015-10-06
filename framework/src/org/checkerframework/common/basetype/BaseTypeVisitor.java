@@ -2136,10 +2136,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     */
 
-    // Overridden in the Lock Checker. This method is needed so that the
-    // Lock Checker does not need to override the checkMethodInvocability
-    // method as a whole. The Lock Checker needs the functionality in
-    // checkMethodInvocability, such as the receiver subtype checks.
+    /**
+     * Indicates whether to skip subtype checks on the receiver when
+     * checking method invocability. A visitor may, for example,
+     * allow a method to be invoked even if the receivers are siblings
+     * in a hierarchy, provided that some other condition (implemented
+     * by the visitor) is satisfied.
+     *
+     * @param node                        the method invocation node
+     * @param methodDefinitionReceiver    the ATM of the receiver of the method definition
+     * @param methodCallReceiver          the ATM of the receiver of the method call
+     * 
+     * @return whether to skip subtype checks on the receiver
+     */    
     protected boolean skipReceiverSubtypeCheck(MethodInvocationTree node,
     		AnnotatedTypeMirror methodDefinitionReceiver,
     		AnnotatedTypeMirror methodCallReceiver) {
@@ -2152,7 +2161,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * invocation is invalid.
      *
      * This implementation tests whether the receiver in the method invocation
-     * is a subtype of the method receiver type.
+     * is a subtype of the method receiver type. This behavior can be specialized
+     * by overriding skipReceiverSubtypeCheck.
      *
      * @param method    the type of the invoked method
      * @param node      the method invocation node

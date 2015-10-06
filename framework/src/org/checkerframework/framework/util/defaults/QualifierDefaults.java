@@ -500,6 +500,10 @@ public class QualifierDefaults {
         }
     }
 
+    /*
+     * Given an element, returns whether the unannotated (i.e. conservative defaults)
+     * should be applied for it. Handles elements from bytecode or source code.
+     */
     public boolean applyUnannotatedDefaults(final Element annotationScope) {
         boolean annotatedForThisChecker = isElementAnnotatedForThisChecker(annotationScope);
 
@@ -512,14 +516,12 @@ public class QualifierDefaults {
             // (That whole @FromStubFile and @FromByteCode annotation
             // logic should be replaced by something sensible.)
 	        SourceChecker checker = atypeFactory.getContext().getChecker();
-	        if ((checker.hasOption("safeDefaultsForUnannotatedBytecode") &&
-	             ElementUtils.isElementFromByteCode(annotationScope) &&
-	             atypeFactory.declarationFromElement(annotationScope) == null &&
-	             !atypeFactory.isFromStubFile(annotationScope)) ||
-	            (checker.hasOption("useSafeDefaultsForUnannotatedSourceCode") &&
-	             !annotatedForThisChecker)) {
-	        	return true;
-	        }
+	        return (checker.hasOption("safeDefaultsForUnannotatedBytecode") &&
+	                ElementUtils.isElementFromByteCode(annotationScope) &&
+	                atypeFactory.declarationFromElement(annotationScope) == null &&
+	                !atypeFactory.isFromStubFile(annotationScope)) ||
+	               (checker.hasOption("useSafeDefaultsForUnannotatedSourceCode") &&
+	                !annotatedForThisChecker);
         }
 
         return false;

@@ -2376,8 +2376,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns the actual annotation mirror used to annotate this type, whose
      * name equals the passed annotationName if one exists, null otherwise. This
      * is the protected implementation of the same-named, public method.
-     * It is protected rather than private because the Lock Checker needs to
-     * override it.
+     * The method is protected rather than private so that classes overriding
+     * the same-named public method can call this method.
+     * An option is provided to not to check for aliases of annotations.
+     * For example, an annotated type factory may use aliasing for a pair of
+     * annotations for convenience while needing in some cases to determine
+     * a strict ordering between them, such as when determining whether
+     * the annotations on an overrider method are more specific than the
+     * annotations of an overridden method.
+     *
+     * @param elt           the element to retrieve the annotation from
+     * @param annoName      the class name of the annotation to retrieve
+     * @param checkAliases  whether to return an annotation mirror for an alias of the requested annotation class name
+     *
+     * @return the annotation mirror for the requested annotation or null if not found
      */
     protected AnnotationMirror getDeclAnnotation(Element elt,
             /*@Interned*/ String annoName, boolean checkAliases) {
