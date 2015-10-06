@@ -968,7 +968,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected void checkPreconditions(Tree tree,
             Element invokedElement, boolean methodCall, Set<Pair<String, String>> additionalPreconditions) {
         Set<Pair<String, String>> preconditions = invokedElement == null ?
-        		new HashSet<Pair<String, String>>() :
+                new HashSet<Pair<String, String>>() :
                 contractsUtils.getPreconditions(invokedElement);
 
         if (additionalPreconditions != null) {
@@ -1028,10 +1028,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             internalReceiver, null, checker.getContext());
                 }
                 else if (nodeNode instanceof ExplicitThisLiteralNode ||
-                		 nodeNode instanceof ImplicitThisLiteralNode ||
-                		 nodeNode instanceof ThisLiteralNode) {
-                	Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory, nodeNode, false);
-                	
+                         nodeNode instanceof ImplicitThisLiteralNode ||
+                         nodeNode instanceof ThisLiteralNode) {
+                    Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory, nodeNode, false);
+
                     flowExprContext = new FlowExpressionContext(
                             internalReceiver, null, checker.getContext());
                 }
@@ -2146,13 +2146,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param node                        the method invocation node
      * @param methodDefinitionReceiver    the ATM of the receiver of the method definition
      * @param methodCallReceiver          the ATM of the receiver of the method call
-     * 
+     *
      * @return whether to skip subtype checks on the receiver
-     */    
+     */
     protected boolean skipReceiverSubtypeCheck(MethodInvocationTree node,
-    		AnnotatedTypeMirror methodDefinitionReceiver,
-    		AnnotatedTypeMirror methodCallReceiver) {
-    	return false;
+            AnnotatedTypeMirror methodDefinitionReceiver,
+            AnnotatedTypeMirror methodCallReceiver) {
+        return false;
     }
 
     /**

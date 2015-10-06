@@ -482,7 +482,7 @@ public class FlowExpressions {
          * variable "c" in code below, different elements for "c" are retrieved
          * when the preconditions on the first and second instances of m.field
          * are being checked.
-         * 
+         *
          *    class MyClass {
          *        public Object field;
          *    }
