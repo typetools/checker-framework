@@ -275,6 +275,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Root can be {@code null} if the factory does not operate on trees.
      *
      * A subclass must call postInit at the end of its constructor.
+     * postInit must be the last call in the constructor or else types
+     * from stub files may not be created as expected.
+     *
      *
      * @param checker the {@link SourceChecker} to which this factory belongs
      * @throws IllegalArgumentException if either argument is {@code null}
@@ -1923,6 +1926,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * annotations that should be inherited. A declaration annotation
      * will be inherited if it is in this list,  or if it has the
      * meta-annotation @InheritedAnnotation.
+     * The meta-annotation @InheritedAnnotation should be used instead of this
+     * method, if possible.
      */
     protected void addInheritedAnnotation(AnnotationMirror annotation) {
         inheritedAnnotations.add(annotation);
