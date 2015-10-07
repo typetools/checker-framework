@@ -55,8 +55,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     protected final CFAbstractAnalysis<V, S, ?> analysis;
 
     /**
-     * Information collected about local variables, which are identified by the
-     * corresponding element.
+     * Information collected about local variables.
+     * FlowExpressions.LocalVariable is used as the key instead of
+     * Element because distinct elements may refer to the
+     * same local variable and Element.hashCode cannot thus
+     * be reliably used to look up a local variable.
+     * FlowExpressions.LocalVariable uses an Element to
+     * store information about a local variable but it implements
+     * its own versions of the hashCode and equals methods.
      */
     protected final Map<FlowExpressions.LocalVariable, V> localVariableValues;
 
@@ -141,8 +147,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
     }
 
-    // Overridden by the Lock Checker. Needed so the Lock Checker does
-    // not need to override the entire updateForMethodCall method.
+    /*
+     * Indicates whether the given method is side-effect-free as far as the
+     * current store is concerned.
+     * In some cases, a store for a checker allows for other mechanisms to specify
+     * whether a method is side-effect-free. For example, unannotated methods may
+     * be considered side-effect-free by default.
+     *
+     * @param atypeFactory     the type factory used to retrieve annotations on the method element
+     * @param method           the method element
+     *
+     * @return whether the method is side-effect-free
+     */
     protected boolean isSideEffectFree(AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
         return PurityUtils.isSideEffectFree(atypeFactory, method);
     }
