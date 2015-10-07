@@ -69,7 +69,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
             return;
         }
         if (r instanceof FlowExpressions.LocalVariable) {
-            FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) r;
+            Element localVar = ((FlowExpressions.LocalVariable) r).getElement();
             localVariableValues.put(localVar, value);
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
