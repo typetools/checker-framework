@@ -357,8 +357,8 @@ directories and files:
 
 \begin{itemize}
 \item \<changelog.txt> The changelog.
-\item \<checker/bin/javac> A replacement for the \<javac> compiler that
-  enables use of the Checker Framework.
+\item \<checker/bin/javac> A drop-in replacement for the \<javac> compiler that
+  simplifies use of the Checker Framework.
 \item \<checker/manual/> A local copy of this manual in PDF and HTML formats.
 \item \<tutorial/> The Checker Framework tutorial.
 \item \<checker/dist/> Contains jar files for use by advanced users:
@@ -469,7 +469,22 @@ Section~\ref{annotations-in-comments}.
 To run a checker plugin, run the compiler \code{javac} as usual,
 but pass the \code{-processor \emph{plugin\_class}} command-line
 option.
-(You can run a checker from within your favorite IDE or build system.  See
+A concrete example (using the Nullness Checker) is:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  javac -processor NullnessChecker MyFile.java
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+Remember that you must be using the
+Type Annotations version of \<javac>, which you already installed (see Section~\ref{installation}).
+
+You can also run a checker from within your favorite IDE or build system.  See
 Chapter~\ref{external-tools} for details about
 Ant (Section~\ref{ant-task}),
 Maven (Section~\ref{maven}),
@@ -477,26 +492,8 @@ Gradle (Section~\ref{gradle}),
 IntelliJ IDEA (Section~\ref{intellij}),
 Eclipse (Section~\ref{eclipse}),
 and
-tIDE (Section~\ref{tide}), and about customizing other IDEs and build tools.)
-Remember that you must be using the
-Type Annotations version of \<javac>, which you already installed (see Section~\ref{installation}).
-
-A concrete example (using the Nullness Checker) is:
-
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-  javac -processor org.checkerframework.checker.nullness.NullnessChecker MyFile.java
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
-Since the \code{-processor} expects a fully-qualified class name,
-its argument can often be verbose.  There is shorthand for invoking
-checkers that are built into the Checker Framework.
-See Section~\ref{shorthand-for-checkers}.
+tIDE (Section~\ref{tide}),
+and about customizing other IDEs and build tools.
 
 The checker is run on only the Java files that javac compiles.
 This includes all Java files specified on the command line (or
@@ -774,10 +771,11 @@ annotation processing including all pluggable type-checking.
 % TODO: this feature only works for our javac script, not when using
 % the standard javac. Should this be explained?
 
-The \code{-processor} flag expects fully-qualified class names.
+Ordinarily, the \code{-processor} flag expects fully-qualified class names.
 For checkers that are packaged with the Checker Framework, the fully-qualified
 name can be quite long.  Therefore, when running a built-in checker, you may
-omit the package name and the \<Checker> suffix.  The following three commands are equivalent:
+omit the package name and the \<Checker> suffix.
+The following three commands are equivalent:
 
 \begin{alltt}
   javac -processor \textbf{org.checkerframework.checker.nullness.NullnessChecker} MyFile.java
