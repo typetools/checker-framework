@@ -275,6 +275,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Root can be {@code null} if the factory does not operate on trees.
      *
      * A subclass must call postInit at the end of its constructor.
+     * postInit must be the last call in the constructor or else types
+     * from stub files may not be created as expected.
+     *
      *
      * @param checker the {@link SourceChecker} to which this factory belongs
      * @throws IllegalArgumentException if either argument is {@code null}
@@ -1923,6 +1926,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * annotations that should be inherited. A declaration annotation
      * will be inherited if it is in this list,  or if it has the
      * meta-annotation @InheritedAnnotation.
+     * The meta-annotation @InheritedAnnotation should be used instead of this
+     * method, if possible.
      */
     protected void addInheritedAnnotation(AnnotationMirror annotation) {
         inheritedAnnotations.add(annotation);
@@ -2376,8 +2381,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns the actual annotation mirror used to annotate this type, whose
      * name equals the passed annotationName if one exists, null otherwise. This
      * is the protected implementation of the same-named, public method.
-     * It is protected rather than private because the Lock Checker needs to
-     * override it.
+     * The method is protected rather than private so that classes overriding
+     * the same-named public method can call this method.
+     * An option is provided to not to check for aliases of annotations.
+     * For example, an annotated type factory may use aliasing for a pair of
+     * annotations for convenience while needing in some cases to determine
+     * a strict ordering between them, such as when determining whether
+     * the annotations on an overrider method are more specific than the
+     * annotations of an overridden method.
+     *
+     * @param elt           the element to retrieve the annotation from
+     * @param annoName      the class name of the annotation to retrieve
+     * @param checkAliases  whether to return an annotation mirror for an alias of the requested annotation class name
+     *
+     * @return the annotation mirror for the requested annotation or null if not found
      */
     protected AnnotationMirror getDeclAnnotation(Element elt,
             /*@Interned*/ String annoName, boolean checkAliases) {

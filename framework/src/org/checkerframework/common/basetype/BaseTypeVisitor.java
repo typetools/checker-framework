@@ -968,7 +968,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected void checkPreconditions(Tree tree,
             Element invokedElement, boolean methodCall, Set<Pair<String, String>> additionalPreconditions) {
         Set<Pair<String, String>> preconditions = invokedElement == null ?
-        		new HashSet<Pair<String, String>>() :
+                new HashSet<Pair<String, String>>() :
                 contractsUtils.getPreconditions(invokedElement);
 
         if (additionalPreconditions != null) {
@@ -1027,14 +1027,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     flowExprContext = new FlowExpressionContext(
                             internalReceiver, null, checker.getContext());
                 }
-                else if (nodeNode instanceof ExplicitThisLiteralNode ||
-                		 nodeNode instanceof ImplicitThisLiteralNode ||
-                		 nodeNode instanceof ThisLiteralNode) {
-                	Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory, nodeNode, false);
-                	
-                    flowExprContext = new FlowExpressionContext(
-                            internalReceiver, null, checker.getContext());
-                }
             }
 
             if (flowExprContext != null) {
@@ -1042,21 +1034,35 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 try {
                     CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
 
-                    // TODO: Wrap the following 'itself' handling logic into a method that calls FlowExpressionParseUtil.parse
-
-                    /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
-                    Pattern itselfPattern = Pattern.compile("^itself$");
-                    Matcher itselfMatcher = itselfPattern.matcher(expression.trim());
-
-                    expr = FlowExpressionParseUtil.parse(expression,
-                            flowExprContext, getCurrentPath());
-
-                    if (expr == null && itselfMatcher.matches()) { // There is no variable, class, etc. named "itself"
-                        expr = FlowExpressions.internalReprOf(atypeFactory,
-                                nodeNode);
+                    String s = expression.trim();
+                    Pattern selfPattern = Pattern.compile("^(this)$");
+                    Matcher selfMatcher = selfPattern.matcher(s);
+                    if (selfMatcher.matches()) {
+                        s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
                     }
 
-                    CFAbstractValue<?> value = store.getValue(expr);
+                    // Try local variables first
+                    CFAbstractValue<?> value = store.getValueOfLocalVariableByName(s);
+
+                    if (value == null) { // Not a recognized local variable
+                        expr = FlowExpressionParseUtil.parse(expression,
+                                flowExprContext, getCurrentPath());
+
+                        if (expr == null) {
+                            // TODO: Wrap the following 'itself' handling logic into a method that calls FlowExpressionParseUtil.parse
+
+                            /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
+                            Pattern itselfPattern = Pattern.compile("^itself$");
+                            Matcher itselfMatcher = itselfPattern.matcher(expression.trim());
+
+                            if (itselfMatcher.matches()) { // There is no variable, class, etc. named "itself"
+                                expr = FlowExpressions.internalReprOf(atypeFactory,
+                                        nodeNode);
+                            }
+                        }
+
+                        value = store.getValue(expr);
+                    }
 
                     AnnotationMirror inferredAnno = value == null ? null : value
                             .getType().getAnnotationInHierarchy(anno);
@@ -2136,14 +2142,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     */
 
-    // Overridden in the Lock Checker. This method is needed so that the
-    // Lock Checker does not need to override the checkMethodInvocability
-    // method as a whole. The Lock Checker needs the functionality in
-    // checkMethodInvocability, such as the receiver subtype checks.
+    /**
+     * Indicates whether to skip subtype checks on the receiver when
+     * checking method invocability. A visitor may, for example,
+     * allow a method to be invoked even if the receivers are siblings
+     * in a hierarchy, provided that some other condition (implemented
+     * by the visitor) is satisfied.
+     *
+     * @param node                        the method invocation node
+     * @param methodDefinitionReceiver    the ATM of the receiver of the method definition
+     * @param methodCallReceiver          the ATM of the receiver of the method call
+     *
+     * @return whether to skip subtype checks on the receiver
+     */
     protected boolean skipReceiverSubtypeCheck(MethodInvocationTree node,
-    		AnnotatedTypeMirror methodDefinitionReceiver,
-    		AnnotatedTypeMirror methodCallReceiver) {
-    	return false;
+            AnnotatedTypeMirror methodDefinitionReceiver,
+            AnnotatedTypeMirror methodCallReceiver) {
+        return false;
     }
 
     /**
@@ -2152,7 +2167,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * invocation is invalid.
      *
      * This implementation tests whether the receiver in the method invocation
-     * is a subtype of the method receiver type.
+     * is a subtype of the method receiver type. This behavior can be specialized
+     * by overriding skipReceiverSubtypeCheck.
      *
      * @param method    the type of the invoked method
      * @param node      the method invocation node
