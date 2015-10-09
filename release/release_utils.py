@@ -389,9 +389,9 @@ def is_git_bare( repo_root ): # Bare git repos have no .git directory but they h
 
 def hg_push_or_fail( repo_root ):
     if is_git(repo_root):
-        cmd = 'git -C %s push' % repo_root
+        cmd = 'git -C %s push --tags' % repo_root
     else:
-        cmd = 'hg -R %s push --tags' % repo_root
+        cmd = 'hg -R %s push' % repo_root
     result = os.system(cmd)
     if result is not 0:
         raise Exception("Could not push to: " + repo_root)

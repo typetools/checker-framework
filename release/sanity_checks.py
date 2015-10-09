@@ -23,7 +23,7 @@ def javac_sanity_check( checker_framework_website, release_version ):
        Fails if the expected errors are not found in the output.
     """
 
-    new_checkers_release_zip = os.path.join( checker_framework_website, "releases", release_version, "checker-framework.zip" )
+    new_checkers_release_zip = os.path.join( checker_framework_website, "releases", release_version, "checker-framework-" + release_version + ".zip" )
 
     javac_sanity_dir = os.path.join( SANITY_DIR, "javac" )
 

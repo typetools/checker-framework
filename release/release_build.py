@@ -444,7 +444,7 @@ def main(argv):
         build_checker_framework_release(auto, jsr308_version, afu_date, checker_framework_interm_dir, jsr308_interm_dir)
 
 
-    print_step("Build Step 7: Overwrite .htaccess.")
+    print_step("Build Step 7: Overwrite .htaccess.") # SEMIAUTO
     print("The release script will now update %s to redirect any requests for the old unversioned zip files\n" % DEV_HTACCESS)
     print("e.g., checker-framework/current/checker-framework.zip\n")
     print("to the new versioned zips.")
@@ -475,7 +475,7 @@ def main(argv):
     # At the moment, this will lead to output error messages because some metadata in some of the
     # dirs I think is owned by Mike or Werner.  We should identify these and have them fix it.
     # But as long as the processes return a zero exit status, we should be ok.
-    print_step("\n\nBuild Step 9: Add permissions to websites.") # AUTO
+    print_step("\n\nBuild Step 10: Add permissions to websites.") # AUTO
     ensure_group_access( FILE_PATH_TO_DEV_SITE )
 
 if __name__ == "__main__":
