@@ -6,10 +6,7 @@ import java.util.Arrays;
 enum Issue448 {
   ONE;
 
-  static Issue448 getFor(int index) {
-    return Arrays.stream(values())
-        .filter(key -> key.ordinal() == index)
-        .findFirst()
-        .orElseThrow(IllegalArgumentException::new);
+  void method() {
+    Arrays.stream(values()).filter(key -> true);
   }
 }
