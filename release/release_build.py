@@ -202,8 +202,6 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
 
     #make the Checker Framework Manual
     checker_manual_dir = os.path.join(checker_dir, "manual")
-    execute("cp " + os.path.join(SCRIPTS_DIR, "hevea.sty") + " .", True, False, checker_manual_dir)
-    execute("cp " + os.path.join(SCRIPTS_DIR, "comment.sty") + " .", True, False, checker_manual_dir)
     execute("make manual.pdf manual.html", True, False, checker_manual_dir)
 
 
