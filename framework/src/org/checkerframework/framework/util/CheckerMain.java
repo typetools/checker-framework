@@ -561,7 +561,7 @@ public class CheckerMain {
             while ((entry = checkerJarIs.getNextEntry()) != null) {
                 final String name = entry.getName();
                 if (name.startsWith(CHECKER_BASE_DIR_NAME) && name.endsWith("Checker.class")) { // Checkers ending in "Subchecker" are not included in this list used by CheckerMain.
-                    checkerClassNames.add(PluginUtil.join(".", name.substring(0, name.length() - ".class".length()).split("/")));
+                    checkerClassNames.add(PluginUtil.join(".", name.substring(0, name.length() - ".class".length()).split(File.separator)));
                 }
             }
             checkerJarIs.close();

@@ -94,7 +94,7 @@ public class FlowExpressions {
      *         {@link Node}. Might contain {@link Unknown}.
      */
     public static Receiver internalReprOf(AnnotationProvider provider,
-            Node receiverNode, boolean allowNonDeterminitic) {
+            Node receiverNode, boolean allowNonDeterministic) {
         Receiver receiver = null;
         if (receiverNode instanceof FieldAccessNode) {
             FieldAccessNode fan = (FieldAccessNode) receiverNode;
@@ -103,7 +103,13 @@ public class FlowExpressions {
                 // For some reason, "className.this" is considered a field access.
                 // We right this wrong here.
                 receiver = new ThisReference(fan.getReceiver().getType());
-            } else {
+            } else if (fan.getFieldName().equals("class")) {
+                // "className.class" is considered a field access. This makes sense,
+                // since .class is similar to a field access which is the equivalent
+                // of a call to getClass(). However for the purposes of dataflow
+                // analysis, and value stores, this is the equivalent of a ClassNameNode.
+                receiver = new ClassName(fan.getReceiver().getType());
+            }  else {
                 receiver = internalReprOfFieldAccess(provider, fan);
             }
         } else if (receiverNode instanceof ExplicitThisLiteralNode) {
@@ -156,7 +162,7 @@ public class FlowExpressions {
                 }
             }
 
-            if (PurityUtils.isDeterministic(provider, invokedMethod) || allowNonDeterminitic || considerDeterministic) {
+            if (PurityUtils.isDeterministic(provider, invokedMethod) || allowNonDeterministic || considerDeterministic) {
                 List<Receiver> parameters = new ArrayList<>();
                 for (Node p : mn.getArguments()) {
                     parameters.add(internalReprOf(provider, p));

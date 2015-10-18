@@ -115,8 +115,11 @@ def read_auto( argv ):
 #=========================================================================================
 # Command utils
 
-#Execute the given command
 def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=None):
+    """Execute the given command.
+If capture_output is true, then return the output (and ignore the halt_if_fail argument).
+If capture_output is not true, return the return code of the subprocess call."""
+
     print("Executing: %s" % (command_args))
     import shlex
     args = shlex.split(command_args) if isinstance(command_args, str) else command_args
@@ -389,9 +392,9 @@ def is_git_bare( repo_root ): # Bare git repos have no .git directory but they h
 
 def hg_push_or_fail( repo_root ):
     if is_git(repo_root):
-        cmd = 'git -C %s push' % repo_root
+        cmd = 'git -C %s push --tags' % repo_root
     else:
-        cmd = 'hg -R %s push --tags' % repo_root
+        cmd = 'hg -R %s push' % repo_root
     result = os.system(cmd)
     if result is not 0:
         raise Exception("Could not push to: " + repo_root)

@@ -425,12 +425,12 @@ def main(argv):
     # A prompt describes the email you should send to all relevant mailing lists.
     # Please fill out the email and announce the release.
 
-    print_step( "Push Step 12. Announce the release." ) # MANUAL
+    print_step( "Push Step 11. Announce the release." ) # MANUAL
     continue_or_exit( "Please announce the release using the email structure below.\n" +
 		      "Note that this text may have changed since the last time a release was performed.\n" +
                        get_announcement_email( new_checker_version ) )
 
-    print_step( "Push Step 13. Push Eclipse plugin files." ) # MANUAL
+    print_step( "Push Step 12. Push Eclipse plugin files." ) # MANUAL
     if test_mode:
         msg = ( "Test Mode: You are in test_mode.  If you built the Eclipse plugin on"   +
                 "your local machine, you may want to revert any files that were modified." )
