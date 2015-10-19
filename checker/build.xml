@@ -1189,14 +1189,16 @@
 
     <target name="dist-all"
             depends="-prep-dist,jar,all.jdks.jar,dist-nojdk"
-            description="Build checker.jar, checker-qual.jar, jdkX.jar(s).  This comprises all jars needed to run the framework.">
+            description="Build checker.jar, checker-qual.jar, and all jdkX.jar(s).  This comprises all jars needed to run the framework.">
     </target>
 
-    <target name="dist" depends="-prep-dist,jar,jdk.jar,dist-nojdk"
-            description="Build checker.jar, checker-qual.jar, and jdkX.jar where X is the major version number of java in JAVA_HOME (only Java 7/8/9 are currently supported).  This comprises all jars needed to run the framework.">
+    <target name="dist"
+	    depends="-prep-dist,jar,jdk.jar,dist-nojdk"
+            description="Build checker.jar, checker-qual.jar, and one jdkX.jar where X is the major version number of java in JAVA_HOME (only Java 7/8/9 are currently supported).  This comprises all jars needed to run the framework.">
     </target>
 
-    <target name="dist-nojdk" depends="-prep-dist,jar,jdk.jar.exists"
+    <target name="dist-nojdk"
+	    depends="-prep-dist,jar,jdk.jar.exists"
             description="Build checker.jar, checker-qual.jar WITHOUT updating jdkX.jar.  Move all relevant files to the binary directory.">
 
         <mkdir dir="dist" />
