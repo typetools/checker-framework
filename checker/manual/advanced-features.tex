@@ -1317,35 +1317,7 @@ class @Marsupial-Animal {
 }
 \end{Verbatim}
 
-\section{Whole-program type inference using .jaif files\label{jaif-inference}}
 
-To reduce the amount of manually added annotations required to
-type-check a program, you can run the \code{infer-and-annotate} script.
-The script performs a whole-program type inference using .jaif files and is
-able to infer types for class fields and method return types.
-The script receives as arguments:
-
-\begin{enumerate}
-\item Processor's name.
-\item Target project's classpath.
-\item Target project's source folder path.
-\item Extra processor arguments (optional).
-\end{enumerate}
-
-The script outputs a folder named "annotated" on the project's root.
-This folder contains annotated files for the target project passed as argument.
-
-Example of usage for the Constant Value Checker (Section~\ref{constant-value-checker}):
-\begin{Verbatim}
-$CHECKERFRAMEWORK/framework/jaif-inference-scripts/infer-and-annotate.sh \
-org.checkerframework.common.value.ValueChecker PROJECT_CP PROJECT_SRC EXTRA_PROCESSOR_ARGS
-\end{Verbatim}
-
-Instead of using this script, you are also able to generate .jaif files that
-contain inferred types during the type-checking process. To do that, supply
-the \code{-auseJaifInference} command-line option to javac.
-The output .jaif files are located in the folder \code{build/jaif-files},
-relative to where you executed the javac command.
 
 % \subsection{Dependent types\label{dependent-types}}
 %
