@@ -201,7 +201,7 @@ public class CheckerMain {
     }
 
     /**
-     * Construct a file path from files nad prepend it to previous (if previous is not null)
+     * Construct a file path from files and prepend it to previous (if previous is not null)
      * @param previous The previous file path to append to (can be null)
      * @param files    The files used to construct a path using File.pathSeparator
      * @return previous with the conjoined file path appended to it or just the conjoined file path if previous is null
@@ -531,7 +531,8 @@ public class CheckerMain {
      * Framework Checkers, except for SubtypingChecker are excluded from processor shorthand
      */
     protected static final String CHECKER_BASE_PACKAGE = "org.checkerframework.checker";
-    protected static final String CHECKER_BASE_DIR_NAME = CHECKER_BASE_PACKAGE.replace(".", File.separator);
+    // Forward slash is used instead of File.separator because checker.jar uses / as the separator.
+    protected static final String CHECKER_BASE_DIR_NAME = CHECKER_BASE_PACKAGE.replace(".", "/");
 
     protected static final String FULLY_QUALIFIED_SUBTYPING_CHECKER =
             org.checkerframework.common.subtyping.SubtypingChecker.class.getCanonicalName();
@@ -561,7 +562,8 @@ public class CheckerMain {
             while ((entry = checkerJarIs.getNextEntry()) != null) {
                 final String name = entry.getName();
                 if (name.startsWith(CHECKER_BASE_DIR_NAME) && name.endsWith("Checker.class")) { // Checkers ending in "Subchecker" are not included in this list used by CheckerMain.
-                    checkerClassNames.add(PluginUtil.join(".", name.substring(0, name.length() - ".class".length()).split(File.separator)));
+                    // Forward slash is used instead of File.separator because checker.jar uses / as the separator.
+                    checkerClassNames.add(PluginUtil.join(".", name.substring(0, name.length() - ".class".length()).split("/")));
                 }
             }
             checkerJarIs.close();
