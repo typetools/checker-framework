@@ -44,7 +44,7 @@ import javax.lang.model.type.TypeMirror;
  *
  */
 // TODO: Add a more descriptive description.
-// TODO: Use the Value Checker instead of just allowing int literals.
+// TODO: Use the Constant Value Checker instead of just allowing int literals.
 public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
 
     private static final String IS_REGEX_METHOD_NAME = "isRegex";
@@ -55,6 +55,11 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
         super(analysis);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * Handle invocations of {@link org.checkerframework.checker.regex.RegexUtil} methods.
+     */
     @Override
     public TransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> in) {
@@ -76,6 +81,14 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
         return result;
     }
 
+    /**
+     * Handle invocations of isRegex and asRegex on RegexUtil.
+     *
+     * @param n The method invocation.
+     * @param method The method element.
+     * @param resultIn the input {@link org.checkerframework.dataflow.analysis.TransferResult}
+     * @return the possibly refined output {@link org.checkerframework.dataflow.analysis.TransferResult}
+     */
     private TransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> handleRegexUtil(
             MethodInvocationNode n, ExecutableElement method,
             TransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> resultIn) {
@@ -102,14 +115,7 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
 
             // add annotation with correct group count (if possible,
             // regex annotation without count otherwise)
-            Node count = n.getArgument(1);
-            int groupCount;
-            if (count instanceof IntegerLiteralNode) {
-                IntegerLiteralNode iln = (IntegerLiteralNode) count;
-                groupCount = iln.getValue();
-            } else {
-                groupCount = 0;
-            }
+            int groupCount = determineIntValue(n.getArgument(1));
             Regex regex = new RegexVal(groupCount);
             thenStore.insertValue(firstParam, new QualParams<>(new GroundQual<>(regex)));
             return newResult;
@@ -120,20 +126,30 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
 
             // add annotation with correct group count (if possible,
             // regex annotation without count otherwise)
-            Node count = n.getArgument(1);
-            int groupCount;
-            if (count instanceof IntegerLiteralNode) {
-                IntegerLiteralNode iln = (IntegerLiteralNode) count;
-                groupCount = iln.getValue();
-            } else {
-                groupCount = 0;
-            }
+            int groupCount = determineIntValue(n.getArgument(1));
             QualParams<Regex> regex = new QualParams<>(new GroundQual<Regex>(new RegexVal(groupCount)));
             QualValue<QualParams<Regex>> newResultValue = analysis.createSingleAnnotationValue(regex,
                     resultIn.getResultValue().getType().getUnderlyingType().getOriginalType());
             return new RegularTransferResult<>(newResultValue, resultIn.getRegularStore());
         }
         return resultIn;
+    }
+
+    /** Determine the int value of the given Node.
+     *
+     * @param num Input Node.
+     * @return The int value of num. 0 if num is not an int literal.
+     */
+    
+    private int determineIntValue(Node num) {
+        int groupCount;
+        if (num instanceof IntegerLiteralNode) {
+            IntegerLiteralNode iln = (IntegerLiteralNode) num;
+            groupCount = iln.getValue();
+        } else {
+            groupCount = 0;
+        }
+        return groupCount;
     }
 
     /**
@@ -144,52 +160,68 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
     }
 
 
+    /**
+     * {@inheritDoc}
+     *
+     * Look for: {@code constant < matcher.groupCount()} and, if found,
+     * annotate {@code matcher} as {@code @Regex(constant + 1)}
+     */
     @Override
     public
     TransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>>
     visitLessThan(LessThanNode n,
             TransferInput<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> in) {
-        // Look for: constant < mat.groupCount()
-        // Make mat be @Regex(constant + 1)
         TransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> res;
         res = super.visitLessThan(n, in);
         res = handleMatcherGroupCount(n.getRightOperand(), n.getLeftOperand(), false, in, res);
         return res;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * Look for: {@code constant <= matcher.groupCount()} and, if found,
+     * annotate {@code matcher} as {@code @Regex(constant)}
+     */
     @Override
     public
     TransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>>
     visitLessThanOrEqual(LessThanOrEqualNode n,
             TransferInput<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> in) {
-        // Look for: constant <= mat.groupCount()
-        // Make mat be @Regex(constant)
         TransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> res;
         res = super.visitLessThanOrEqual(n, in);
         res = handleMatcherGroupCount(n.getRightOperand(), n.getLeftOperand(), true, in, res);
         return res;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * Look for: {@code matcher.groupCount() > constant} and, if found,
+     * annotate {@code matcher} as {@code @Regex(constant + 1)}
+     */
     @Override
     public
     TransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>>
     visitGreaterThan(GreaterThanNode n,
             TransferInput<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> in) {
-        // Look for: mat.groupCount() > constant
-        // Make mat be @Regex(constant + 1)
         TransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> res;
         res = super.visitGreaterThan(n, in);
         res = handleMatcherGroupCount(n.getLeftOperand(), n.getRightOperand(), false, in, res);
         return res;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * Look for: {@code matcher.groupCount() >= constant} and, if found,
+     * annotate {@code matcher} as {@code @Regex(constant)}
+     */
     @Override
     public
     TransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>>
     visitGreaterThanOrEqual(GreaterThanOrEqualNode n,
             TransferInput<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> in) {
-        // Look for: mat.groupCount() >= constant
-        // Make mat be @Regex(constant)
         TransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> res;
         res = super.visitGreaterThanOrEqual(n, in); 
         res = handleMatcherGroupCount(n.getLeftOperand(), n.getRightOperand(), true, in, res);
@@ -197,17 +229,17 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
     }
 
     /**
-     * See whether possibleMatcher is a call of groupCount on a Matcher and
-     * possibleConstant is a constant.
-     * If so, annotate the matcher as
-     * constant + 1 if !isAlsoEqual
-     * constant if isAlsoEqual
+     * See whether {@code possibleMatcher} is a call of {@link java.util.regex.Matcher#groupCount()} and
+     * {@code possibleConstant} is an int literal.
+     * If so, annotate the matcher as {@code @Regex(n)} with <br>
+     * {@code n == constant + 1}   if {@code !isAlsoEqual} <br>
+     * {@code n == constant}       if {@code isAlsoEqual}
      *
-     * @param possibleMatcher the Node that might be a call of Matcher.groupCount()
+     * @param possibleMatcher the Node that might be a call of {@link java.util.regex.Matcher#groupCount()}
      * @param possibleConstant the Node that might be a constant
      * @param isAlsoEqual whether the comparison operation is strict or reflexive
-     * @param in the input TransferResult
-     * @return the possibly refined output TransferResult
+     * @param in the input {@link org.checkerframework.dataflow.analysis.TransferResult}
+     * @return the possibly refined output {@link org.checkerframework.dataflow.analysis.TransferResult}
      */
     private
     TransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>>
