@@ -24,7 +24,7 @@ public class RegexQualTest extends CheckerFrameworkTest {
         return new String[]{"regex", "all-systems"};
     }
     */
-    
+
     @Parameters
     public static List<File> getTestFiles() {
         return filter(TestUtilities.findNestedJavaTestFiles("regex", "all-systems"));
