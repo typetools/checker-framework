@@ -1,6 +1,6 @@
-Version 1.9.7, 23 October 2015
+Version 1.9.7, 24 October 2015
 
-Fixed issue:  291.
+Fixed issues:  291, 474.
 
 ----------------------------------------------------------------------
 Version 1.9.6, 8 October 2015
