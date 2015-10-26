@@ -1,7 +1,6 @@
 package org.checkerframework.checker.regex.qual;
 
 import org.checkerframework.checker.regex.classic.qual.UnknownRegex;
-import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
