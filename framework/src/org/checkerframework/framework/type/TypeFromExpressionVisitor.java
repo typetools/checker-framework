@@ -195,6 +195,11 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             if (t instanceof AnnotatedDeclaredType || t instanceof AnnotatedArrayType || t instanceof AnnotatedTypeVariable) {
                 return AnnotatedTypes.asMemberOf(f.types, f, t, elt).asUse();
             }
+        } else {
+            if(node.getIdentifier().contentEquals("class")){
+                // Handle class literals for primitive types (as in int.class)
+                return f.getAnnotatedType(elt);
+            }
         }
 
         return f.fromElement(elt);
