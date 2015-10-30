@@ -184,7 +184,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         if (elt.getKind().isClass() || elt.getKind().isInterface())
             return f.fromElement(elt);
 
-        // The expression might be a primitive type (as in "int.class").
         if (!(node.getExpression() instanceof PrimitiveTypeTree)) {
             // TODO: why don't we use getSelfType here?
             if (node.getIdentifier().contentEquals("this")) {
@@ -367,14 +366,16 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitPrimitiveType(PrimitiveTypeTree node,
                                                   AnnotatedTypeFactory f) {
-        // for e.g. "int.class"
+        // Node is the primitive type when primitive class literals are visited.
+        // for e.g. "int" when "int.class" is visited
         return f.fromTypeTree(node);
     }
 
     @Override
     public AnnotatedTypeMirror visitArrayType(ArrayTypeTree node,
                                               AnnotatedTypeFactory f) {
-        // for e.g. "int[].class"
+        // Node is the array type when array class literals are visited.
+        // for e.g. "int[]" in "int[].class" or "Object[]" in "Object[].class"
         return f.fromTypeTree(node);
     }
 
