@@ -349,7 +349,9 @@ public class InternalUtils {
         if (t2.getKind() == TypeKind.WILDCARD) {
             return t1;
         }
-        return types.glb(t1, t2);
+        // call glb on unannotatedType, otherwise glb may cause a stack overflow error
+        // See Issue #500
+        return types.glb(t1.unannotatedType(), t2.unannotatedType());
     }
 
     /**
