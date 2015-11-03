@@ -781,7 +781,11 @@ Run \code{ant} to create \<checker.jar>:
 \begin{enumerate}
 \item
 To build the manual you will need
-{\hevea} (\myurl{http://hevea.inria.fr/}) installed.
+{\hevea} (\myurl{http://hevea.inria.fr/}) installed, and either
+\<rsvg-convert> or \<convert>.  If you use the Ubuntu operating system, do
+\begin{Verbatim}
+sudo apt-get install hevea librsvg2-bin
+\end{Verbatim}
 
 \item
 Run \code{make} in the \code{checker/manual} directory to build both the PDF and HTML versions of the manual.
