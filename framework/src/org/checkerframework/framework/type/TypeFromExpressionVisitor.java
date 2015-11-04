@@ -8,6 +8,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ConstructorReturnUtil;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -179,29 +180,32 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitMemberSelect(MemberSelectTree node,
                                                  AnnotatedTypeFactory f) {
-
         Element elt = TreeUtils.elementFromUse(node);
-        if (elt.getKind().isClass() || elt.getKind().isInterface())
-            return f.fromElement(elt);
-
-        if (!(node.getExpression() instanceof PrimitiveTypeTree)) {
+        switch (elt.getKind()){
+            case METHOD:
+            case PACKAGE: // "java.lang" in new java.lang.Short("2")
+            case CLASS:  // o instanceof MyClass.InnerClass
+            case ENUM:
+            case INTERFACE: // o instanceof MyClass.InnerInterface
+            case ANNOTATION_TYPE:
+                return f.fromElement(elt);
+        }
+        if (node.getExpression().getKind() ==  Tree.Kind.PRIMITIVE_TYPE) {
+            // Handle class literals for primitive types (as in int.class)
+            return f.getAnnotatedType(elt);
+        } else if (node.getIdentifier().contentEquals("this")) {
             // TODO: why don't we use getSelfType here?
-            if (node.getIdentifier().contentEquals("this")) {
-                return f.getEnclosingType((TypeElement) InternalUtils.symbol(node.getExpression()), node);
-            }
+            return f.getEnclosingType((TypeElement) InternalUtils.symbol(node.getExpression()), node);
+        } else {
             // We need the original t with the implicit annotations
             AnnotatedTypeMirror t = f.getAnnotatedType(node.getExpression());
-            if (t instanceof AnnotatedDeclaredType || t instanceof AnnotatedArrayType || t instanceof AnnotatedTypeVariable) {
+            if (t instanceof AnnotatedDeclaredType || t instanceof AnnotatedArrayType
+                    || t instanceof AnnotatedTypeVariable) {
                 return AnnotatedTypes.asMemberOf(f.types, f, t, elt).asUse();
             }
-        } else {
-            if(node.getIdentifier().contentEquals("class")){
-                // Handle class literals for primitive types (as in int.class)
-                return f.getAnnotatedType(elt);
-            }
         }
-
-        return f.fromElement(elt);
+        ErrorReporter.errorAbort("TypeFromExpressionVisitor.visitMemberSelect unexpected element or type: " + node.toString());
+        return null; //dead code
     }
 
     @Override

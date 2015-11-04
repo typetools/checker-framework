@@ -393,6 +393,13 @@
         </antcall>
     </target>
 
+    <target name="defaulting-field-tests" depends="jar,build-tests"
+            description="Run tests for the Checker Framework">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.DefaultingFieldTest"/>
+        </antcall>
+    </target>
+
 
     <target name="lubglb-tests" depends="jar,build-tests"
             description="Run tests for the Lubglb Checker">
