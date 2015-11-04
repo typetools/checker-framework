@@ -248,7 +248,11 @@ public class InternalUtils {
     }
 
     /**
-     * Returns the least upper bound of two {@link TypeMirror}s.
+     * Returns the least upper bound of two {@link TypeMirror}s,
+     * ignoring any annotations on the types.
+     *
+     * Wrapper around Types.lub to add special handling for
+     * null types, primitives, and wildcards.
      *
      * @param processingEnv The {@link ProcessingEnvironment} to use.
      * @param tm1 A {@link TypeMirror}.
@@ -306,7 +310,12 @@ public class InternalUtils {
     }
 
     /**
-     * Returns the greatest lower bound of two {@link TypeMirror}s.
+     * Returns the greatest lower bound of two {@link TypeMirror}s,
+     * ignoring any annotations on the types.
+     *
+     * Wrapper around Types.glb to add special handling for
+     * null types, primitives, and wildcards.
+     *
      *
      * @param processingEnv The {@link ProcessingEnvironment} to use.
      * @param tm1 A {@link TypeMirror}.
