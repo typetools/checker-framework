@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -234,30 +235,48 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     @SideEffectFree
     @Override
     public String toString() {
-        // TODO: it would be easier to debug if the graph and map were sorted by the key.
-        // Simply creating a TreeMap here doesn't work, because AnnotationMirrors are not comparable.
+        StringBuilder sb = new StringBuilder();
+        sb.append("Supertypes Graph: ");
 
-        String output = "Supertypes Graph: ";
-        for (AnnotationMirror key : supertypesGraph.keySet()) {
-            output += "\n\t" + key.toString() + "=" + supertypesGraph.get(key);
+        for (Entry<AnnotationMirror, Set<AnnotationMirror>> qual : supertypesGraph.entrySet()) {
+            sb.append("\n\t");
+            sb.append(qual.getKey());
+            sb.append(" = ");
+            sb.append(qual.getValue());
         }
 
-        output += "\nSupertypes Map: ";
-        for (AnnotationMirror mapKey : supertypesMap.keySet()) {
-            output += "\n\t" + mapKey.toString() + "=[";
-            if (!supertypesMap.get(mapKey).isEmpty()) {
-                for (AnnotationMirror mapValKey : supertypesMap.get(mapKey)) {
-                    output += mapValKey.toString() + ", ";
-                }
-                output = output.substring(0, output.length() - 2);
+        sb.append("\nSupertypes Map: ");
+
+        for (Entry<AnnotationMirror, Set<AnnotationMirror>> qual : supertypesMap.entrySet()) {
+            sb.append("\n\t");
+            sb.append(qual.getKey());
+            sb.append(" = [");
+
+            Set<AnnotationMirror> supertypes = qual.getValue();
+
+            // if there's only 1 supertype for this qual, then directly display that in the same row
+            if (supertypes.size() == 1) {
+                sb.append(supertypes.iterator().next());
             }
-            output += "]";
+            // otherwise, display each supertype in its own row
+            else {
+                for (Iterator<AnnotationMirror> iterator = supertypes.iterator(); iterator.hasNext(); ) {
+                    sb.append("\n\t\t");                            // new line and tabbing
+                    sb.append(iterator.next());                     // display the supertype
+                    sb.append(iterator.hasNext() ? ", " : "");      // add a comma delimiter if it isn't the last value
+                }
+                sb.append("\n\t\t");    // new line and tab indentation for the trailing bracket
+            }
+
+            sb.append("]");
         }
 
-        output += "\nTops: " + tops +
-                "\nBottoms: " + bottoms;
+        sb.append("\nTops: ");
+        sb.append(tops);
+        sb.append("\nBottoms: ");
+        sb.append(bottoms);
 
-        return output;
+        return sb.toString();
     }
 
     @Override
