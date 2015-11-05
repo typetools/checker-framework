@@ -710,6 +710,7 @@
 
         <exec executable="make" failonerror="${halt.on.test.failure}">
             <env key="JAVAC" value="${basedir}/bin/javac"/>
+            <env key="JAVAP" value="${jsr308.langtools.dist}/bin/javap"/>
             <arg line="-C tests/nullness-extra/"/>
         </exec>
     </target>
