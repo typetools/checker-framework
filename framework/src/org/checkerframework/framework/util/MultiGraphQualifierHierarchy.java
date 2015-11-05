@@ -236,10 +236,28 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     public String toString() {
         // TODO: it would be easier to debug if the graph and map were sorted by the key.
         // Simply creating a TreeMap here doesn't work, because AnnotationMirrors are not comparable.
-        return "Supertypes Graph: " + supertypesGraph.toString() +
-                "\nSupertypes Map: " + String.valueOf(supertypesMap) +
-                "\nTops: " + tops +
+
+        String output = "Supertypes Graph: ";
+        for (AnnotationMirror key : supertypesGraph.keySet()) {
+            output += "\n\t" + key.toString() + "=" + supertypesGraph.get(key);
+        }
+
+        output += "\nSupertypes Map: ";
+        for (AnnotationMirror mapKey : supertypesMap.keySet()) {
+            output += "\n\t" + mapKey.toString() + "=[";
+            if (!supertypesMap.get(mapKey).isEmpty()) {
+                for (AnnotationMirror mapValKey : supertypesMap.get(mapKey)) {
+                    output += mapValKey.toString() + ", ";
+                }
+                output = output.substring(0, output.length() - 2);
+            }
+            output += "]";
+        }
+
+        output += "\nTops: " + tops +
                 "\nBottoms: " + bottoms;
+
+        return output;
     }
 
     @Override
