@@ -1,3 +1,13 @@
+Version 1.9.8, 9 November 2015
+
+Updated Maven instructions to no longer require a script.
+Added an example of how to use the instructions under
+checker/examples/MavenExample.
+
+The javac_maven script (and batch file) are deprecated and will be
+removed as of the December 1, 2015 release.
+
+----------------------------------------------------------------------
 Version 1.9.7, 24 October 2015
 
 Fixed issues:  291, 474.
