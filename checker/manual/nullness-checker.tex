@@ -1621,6 +1621,8 @@ initialization was actually complete, then the receiver should have type
 \begin{sloppypar}
 You can suppress warnings related to partially-initialized objects with
 \<@SuppressWarnings("initialization")>.
+This can be placed on a single field; on a constructor; or on a class to
+suppress all initialization warnings for all construtors.
 \end{sloppypar}
 
 \paragraph{Checking initialization of all fields, not just \code{@NonNull} ones\label{initialization-checking-all-fields}}

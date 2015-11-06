@@ -1266,7 +1266,8 @@ public abstract class SourceChecker
         return false;
     }
 
-    private boolean shouldSuppressWarnings(/*@Nullable*/ Element elt, String err) {
+    // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
+    public boolean shouldSuppressWarnings(/*@Nullable*/ Element elt, String err) {
 
         if (elt == null)
             return false;
