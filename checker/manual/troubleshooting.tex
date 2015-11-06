@@ -683,11 +683,6 @@ Compile the Type Annotations tools:
   export PATH=$JSR308/jsr308-langtools/dist/bin:${PATH}
 \end{Verbatim}
 
-You may wish to later put the Checker Framework \<javac> even earlier on
-your path.  The Checker Framework's \<javac> ensures that the Checker
-Framework is on your classpath and bootclasspath, but is otherwise
-identical to the Type Annotations compiler.
-
 \end{enumerate}
 
 % Java 8 extends the Java language to permit annotations to appear on types,
@@ -741,9 +736,32 @@ Run \code{ant} to create \<checker.jar>:
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
+Once \<checker.jar> is built, you may wish to put the Checker Framework \<javac> even earlier on
+your path. The Checker Framework's \code{javac} ensures that \<checker.jar> 
+is on your classpath and bootclasspath, but is otherwise
+identical to the Type Annotations compiler:
+
+\begin{Verbatim}
+export PATH=$JSR308/checker-framework/checker/bin:$JSR308/jsr308-langtools/dist/bin:${PATH}
+\end{Verbatim}
+
+If you are developing Checkers and wish to use the latest builds of your source files compiled by
+Eclipse, you can use the development version of javac instead. This version will use compiled
+classes from \<dataflow/build>, \<javacutil/build>, \<framework/build>, and \<checker/build>
+in the \<checker-framework> directory instead of checker.jar, and by default will print stack 
+traces for all errors:
+\begin{Verbatim}
+export PATH=$JSR308/checker-framework/checker/bin-devel:$JSR308/jsr308-langtools/dist/bin:${PATH}
+\end{Verbatim}
+
 \item Add \code{tools.jar} and \code{checker.jar} to your classpath.
-  (If you do not do this, you will have to supply the \code{-cp} option
-  whenever you run \code{javac} and use a checker plugin.)
+
+If you use the Checker Framework's \code{javac} compiler, this step is optional.
+
+However, if you use the Type Annotations \code{javac} compiler you will have to supply both of these
+jars in the classpath using the \code{-cp} option whenever you run \code{javac} and use a checker
+plugin. Adding the two jars to the classpath makes it easier to use.
+
   Example command:
 
 %BEGIN LATEX
