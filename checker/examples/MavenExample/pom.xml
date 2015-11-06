@@ -13,8 +13,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- These properties will be set by the Maven Dependency plugin -->
-    <!-- Change to jdk8 if using Java 8 -->
-    <annotatedJdk>${org.checkerframework:jdk7:jar}</annotatedJdk>
+    <!-- Change to jdk7 if using Java 7 -->
+    <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
     <jsr308Javac>${org.checkerframework:compiler:jar}</jsr308Javac>
   </properties>
 
@@ -41,10 +41,10 @@
       <artifactId>compiler</artifactId>
       <version><!-- checker-framework-version -->1.9.7<!-- /checker-framework-version --></version>
     </dependency>
-    <!-- The annotated JDK to use (change to jdk8 if using Java 8) -->
+    <!-- The annotated JDK to use (change to jdk7 if using Java 7) -->
     <dependency>
       <groupId>org.checkerframework</groupId>
-      <artifactId>jdk7</artifactId>
+      <artifactId>jdk8</artifactId>
       <version><!-- checker-framework-version -->1.9.7<!-- /checker-framework-version --></version>
     </dependency>
     <dependency>
@@ -79,9 +79,9 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.3</version>
           <configuration>
-              <!-- Change source and target to 1.8 if using Java 8 -->
-              <source>1.7</source>
-              <target>1.7</target>
+              <!-- Change source and target to 1.7 if using Java 7 -->
+              <source>1.8</source>
+              <target>1.8</target>
               <fork>true</fork>
               <!-- should an error reported by a checker cause a build failure, or only be logged as a warning; defaults to true -->
               <failOnError>false</failOnError>

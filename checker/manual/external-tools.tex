@@ -312,6 +312,14 @@ See the demonstration \code{examples/MavenExample/} for an example of the use of
 these instructions in a Maven project.  This example can be used to verify that
 the Maven artifacts are retrieved correctly.
 
+Please note that the \<-AoutputArgsToFile> command-line option
+(see Section~\ref{debugging-options-output-args}) and shorthands for built-in checkers
+(see Section~\ref{shorthand-for-checkers}) are not available when
+following these instructions.  Both these features are available only when a checker is
+launched via \<checker.jar> such as when \code{\$CHECKERFRAMEWORK/checker/bin/javac}
+is run.  These instructions bypass \<checker.jar> and cause the compiler to run a
+checker as an annotation processor directly.
+
 \begin{enumerate}
 
 \item Declare a dependency on the Checker Framework artifacts.  Find the
