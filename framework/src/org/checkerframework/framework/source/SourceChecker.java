@@ -1266,6 +1266,19 @@ public abstract class SourceChecker
         return false;
     }
 
+    /**
+     * Determines whether all the warnings pertaining to a given tree
+     * should be suppressed.  Returns true if the element is within the scope
+     * of a @SuppressWarnings annotation, one of whose values suppresses
+     * the checker's warnings.  The list of keys that suppress a checker's
+     * warnings is provided by the {@link
+     * SourceChecker#getSuppressWarningsKey} method.
+     *
+     * @param elt the Element that might be a source of, or related to, a warning
+     * @return true if no warning should be emitted for the given tree because
+     *         it is contained by a declaration with an appropriately-valued
+     *         @SuppressWarnings annotation; false otherwise
+     */
     // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
     public boolean shouldSuppressWarnings(/*@Nullable*/ Element elt, String err) {
 
