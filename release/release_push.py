@@ -357,6 +357,21 @@ def main(argv):
     else:
         print( "Test mode: Skipping copy to live site!" )
 
+    # This step downloads the checker-framework.zip file of the newly live release and ensures we
+    # can run the Nullness Checker. If this step fails, you should backout the release.
+
+    print_step( "Push Step 6: Run javac sanity test on the live release." ) # SEMIAUTO
+    if prompt_yes_no( "Run javac sanity test on live release?", True ):
+        javac_sanity_check( live_checker_website, new_checker_version )
+
+    # You must manually deploy the Eclipse plugin. Follow the instructions at the prompt.
+
+    print_step("Push Step 7: Deploy the Eclipse Plugin to the live site." ) # MANUAL
+    continue_or_exit( "Follow the instruction under 'Releasing the Plugin' in checker-framework/eclipse/README-developers.html to " +
+                      "deploy the Eclipse plugin to the live website.  Please install the plugin from the new " +
+                      "live repository and run it on a file in which you expect a type error.  If you run into errors, " +
+                      "back out the release!" )
+
     # Runs the link the checker on all websites at:
     # http://types.cs.washington.edu/
     # The output of the link checker is written to files in the /tmp directory whose locations
@@ -370,24 +385,9 @@ def main(argv):
 
     # NOTE: There will be many broken links within the jdk-api directory see Open JDK/JSR308 Javadoc
 
-    print( "Push Step 6. Check live site links" ) # SEMIAUTO
+    print( "Push Step 8. Check live site links" ) # SEMIAUTO
     if prompt_yes_no( "Run link Checker on LIVE site?", True ):
         check_all_links( live_jsr308_website, live_afu_website, live_checker_website, "live" )
-
-    # This step downloads the checker-framework.zip file of the newly live release and ensures we
-    # can run the Nullness Checker. If this step fails, you should backout the release.
-
-    print_step( "Push Step 7: Run javac sanity test on the live release." ) # SEMIAUTO
-    if prompt_yes_no( "Run javac sanity test on live release?", True ):
-        javac_sanity_check( live_checker_website, new_checker_version )
-
-    # You must manually deploy the Eclipse plugin. Follow the instructions at the prompt.
-
-    print_step("Push Step 8: Deploy the Eclipse Plugin to the live site." ) # MANUAL
-    continue_or_exit( "Follow the instruction under 'Releasing the Plugin' in checker-framework/eclipse/README-developers.html to " +
-                      "deploy the Eclipse plugin to the live website.  Please install the plugin from the new " +
-                      "live repository and run it on a file in which you expect a type error.  If you run into errors, " +
-                      "back out the release!" )
 
     # This step pushes the changes committed to the interm repositories to the Google Code
     # repositories. This is the first irreversible change. After this point, you can no longer
