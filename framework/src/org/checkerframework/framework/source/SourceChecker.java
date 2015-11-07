@@ -1214,12 +1214,12 @@ public abstract class SourceChecker
      * of a @SuppressWarnings annotation, one of whose values suppresses
      * the checker's warnings.  The list of keys that suppress a checker's
      * warnings is provided by the {@link
-     * SourceChecker#getSuppressWarningsKey} method.
+     * SourceChecker#getSuppressWarningsKeys} method.
      *
      * @param tree the tree that might be a source of a warning
      * @return true if no warning should be emitted for the given tree because
      *         it is contained by a declaration with an appropriately-valued
-     *         @SuppressWarnings annotation; false otherwise
+     *         {@literal @}SuppressWarnings annotation; false otherwise
      */
     private boolean shouldSuppressWarnings(Tree tree, String err) {
 
@@ -1272,12 +1272,12 @@ public abstract class SourceChecker
      * of a @SuppressWarnings annotation, one of whose values suppresses
      * the checker's warnings.  The list of keys that suppress a checker's
      * warnings is provided by the {@link
-     * SourceChecker#getSuppressWarningsKey} method.
+     * SourceChecker#getSuppressWarningsKeys} method.
      *
      * @param elt the Element that might be a source of, or related to, a warning
      * @return true if no warning should be emitted for the given tree because
      *         it is contained by a declaration with an appropriately-valued
-     *         @SuppressWarnings annotation; false otherwise
+     *         {@literal @}SuppressWarnings annotation; false otherwise
      */
     // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
     public boolean shouldSuppressWarnings(/*@Nullable*/ Element elt, String err) {
