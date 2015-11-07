@@ -188,12 +188,14 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
     /**
      * TODO: RETHINK THESE WHEN WE ACTUALLY CONSIDER THE INTENDED SEMANTICS OF INTERSECTIONS
      * When data flow encounters the following:
+     * <pre>{@code
      * <T> void method(T t) {
      *     if (t instance of Cloneable) {
      *     }
      * }
+     * }</pre>
      *
-     * We will take glb(T, Cloneable) and it will yield T & Cloneable
+     * We will take glb(T, Cloneable) and it will yield T &amp; Cloneable
      * Much of our handling of intersection types relies on the fact that you cannot write a
      * type variable in an intersection bound.  This will cause many errors.
      *

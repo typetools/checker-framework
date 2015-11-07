@@ -79,6 +79,14 @@
     </ant>
   </target>
 
+  <target name="javadoc-private"
+          description="Generate javadoc, inculding private classes/members, for all subprojects">
+    <ant dir=".">
+      <property name="javadoc.private" value="true"/>
+      <target name="javadoc"/>
+    </ant>
+  </target>
+
   <target name="dist-release">
       <ant dir="checker">
           <target name="dist-release"/>

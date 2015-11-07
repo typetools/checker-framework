@@ -13,6 +13,7 @@
 
     <import file="${basedir}/../build-common.xml"/>
 
+    <property name="javadoc.private" value="false"/>
 
     <!-- Dependendencies on other projects (such as javacutil)
          mirrors javadoc dependencies. If changing project
@@ -142,6 +143,7 @@
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
         <javadoc sourcepath="${src}:${javacutil.loc}/${src}" destdir="${api.doc}"
+                 private="${javadoc.private}"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"

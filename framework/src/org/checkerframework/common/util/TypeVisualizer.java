@@ -192,7 +192,7 @@ public class TypeVisualizer {
      * data structures to hold the intermediate dot information before printing.
      */
     private static class Drawing {
-        /** A map of Node (type) -> dot string declaring that node */
+        /** A map from Node (type) to a dot string declaring that node */
         private final Map<Node, String> nodes = new LinkedHashMap<>();
 
         /** list of connections between nodes.  Lines will refer to identifiers in nodes.values() */
