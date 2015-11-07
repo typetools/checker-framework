@@ -15,7 +15,7 @@ import java.util.Map;
 public class ImmutableTestConfiguration implements TestConfiguration {
 
     /**
-     * Options that should be passed to the compiler.  This a Map(optionName -> optionArgumentIfAny).  E.g.,
+     * Options that should be passed to the compiler.  This a {@code Map(optionName &rarr; optionArgumentIfAny)}.  E.g.,
      * {@code
      *     Map(
      *       "-AprintAllQualifiers" -> null

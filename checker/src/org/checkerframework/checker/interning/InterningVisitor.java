@@ -72,7 +72,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     /**
      * @return  true if interning should be verified for the input expression.  By default, all classes are checked
      * for interning unless -Acheckclass is specified.
-     * {@see http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#interning-checks}.
+     * @see <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#interning-checks">What the Interning Checker checks</a>
     */
     private boolean shouldCheckExpression(ExpressionTree tree) {
         if (typeToCheck == null) return true;
@@ -270,10 +270,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * {@link #equals} that overrides or hides {@link Object#equals(Object)}.
      * <p>
      *
-     * Returns true even if a method does not override {@link Object.equals},
+     * Returns true even if a method does not override {@link Object#equals(Object)},
      * because of the common idiom of writing an equals method with a non-Object
      * parameter, in addition to the equals method that overrides
-     * {@link Object.equals}.
+     * {@link Object#equals(Object)}.
      *
      * @param node a method invocation node
      * @return true iff {@code node} is a invocation of {@code equals()}
@@ -478,7 +478,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * <pre>
      *   (a == b) || a.equals(b)
      *   (a == b) || (a != null ? a.equals(b) : false)
-     *   (a == b) || (a != null && a.equals(b))
+     *   (a == b) || (a != null &amp;&amp; a.equals(b))
      * </pre>
      * Returns true iff the given node fits this pattern.
      *
@@ -698,7 +698,6 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * is annotated with @Interned
      * because <code>a == b</code> will be true only if a's run-time type is B (or
      * lower), in which case a is actually interned.
-     * <p>
      */
     private boolean suppressEqualsIfClassIsAnnotated(AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
         // It would be better to just test their greatest lower bound.

@@ -302,7 +302,6 @@ public class TypeAnnotationUtils {
      * Catch all exceptions and abort if one occurs - the reflection code should
      * never break once fully debugged.
      *
-     * @param ver The SourceVersion to decide what API to use.
      * @param tc The TAPCall abstraction to encapsulate two methods.
      * @return The created TypeAnnotationPosition.
      */

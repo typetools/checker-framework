@@ -94,7 +94,7 @@ public class RegexClassicAnnotatedTypeFactory extends GenericAnnotatedTypeFactor
     /**
      * The value method of the PartialRegex qualifier.
      *
-     * @see org.checkerframework.checker.regex.qual.PartialRegex
+     * @see org.checkerframework.checker.regex.classic.qual.PartialRegex
      */
     private final ExecutableElement partialRegexValue;
 
