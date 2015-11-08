@@ -15,7 +15,7 @@
     <!-- These properties will be set by the Maven Dependency plugin -->
     <!-- Change to jdk7 if using Java 7 -->
     <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
-    <jsr308Javac>${org.checkerframework:compiler:jar}</jsr308Javac>
+    <typeAnnotationsJavac>${org.checkerframework:compiler:jar}</typeAnnotationsJavac>
   </properties>
 
   <dependencies>
@@ -92,7 +92,7 @@
               <compilerArgs>
                   <!-- location of the annotated JDK, which comes from a Maven dependency -->
                   <arg>-Xbootclasspath/p:${annotatedJdk}</arg>
-                  <arg>-J-Xbootclasspath/p:${jsr308Javac}</arg>
+                  <arg>-J-Xbootclasspath/p:${typeAnnotationsJavac}</arg>
                   <arg>-Alint</arg>
               </compilerArgs>
           </configuration>

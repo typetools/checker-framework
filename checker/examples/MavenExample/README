@@ -6,10 +6,8 @@ the three locations in the pom.xml that mention "if using Java 7".
 
 To run the example, simply execute:
 mvn compile
-or
-mvn package
 
 You should see output that includes:
 
-MavenExample.java:[28,29] error: [assignment.type.incompatible] incompatible types in assignment.
+MavenExample.java:[26,29] error: [assignment.type.incompatible] incompatible types in assignment.
 

@@ -310,7 +310,7 @@ These instructions use the artifacts from
 
 See the demonstration \code{examples/MavenExample/} for an example of the use of
 these instructions in a Maven project.  This example can be used to verify that
-the Maven artifacts are retrieved correctly.
+Maven is correctly downloading and executing the Checker Framework on your machine.
 
 Please note that the \<-AoutputArgsToFile> command-line option
 (see Section~\ref{debugging-options-output-args}) and shorthands for built-in checkers
@@ -341,11 +341,12 @@ checker as an annotation processor directly.
             <artifactId>checker</artifactId>
             <version>\ReleaseVersion{}</version>
         </dependency>
-        <dependency>
+        <!-- The type annotations compiler - uncomment if using Java 7 -->
+        <!-- <dependency>
             <groupId>org.checkerframework</groupId>
             <artifactId>compiler</artifactId>
             <version>\ReleaseVersion{}</version>
-        </dependency>
+        </dependency> -->
         <!-- The annotated JDK to use (change to jdk7 if using Java 7) -->
         <dependency>
             <groupId>org.checkerframework</groupId>
@@ -355,18 +356,20 @@ checker as an annotation processor directly.
     </dependencies>
 \end{alltt}
 
-\item Use a Maven property to hold the location of the
-  annotated JDK (which was declared as a Maven dependency above).
-To set the value of this property automaticaly, use the Maven Dependency plugin.
+\item Use Maven properties to hold the locations of the
+  annotated JDK and, if using Java 7, the type annotations compiler.  Both were declared as Maven dependencies above.
+To set the value of these properties automatically, use the Maven Dependency plugin.
 
-First, create the property in the \code{properties} section of the POM:
+First, create the properties in the \code{properties} section of the POM:
 
 \begin{alltt}
 <properties>
     <!-- These properties will be set by the Maven Dependency plugin -->
     <!-- Change to jdk7 if using Java 7 -->
     <annotatedJdk>$\{org.checkerframework:jdk8:jar\}</annotatedJdk>
-    <jsr308Javac>$\{org.checkerframework:compiler:jar\}</jsr308Javac>
+    <!-- The type annotations compiler is required if using Java 7. -->
+    <!-- Uncomment the following line if using Java 7. -->
+    <!-- <typeAnnotationsJavac>$\{org.checkerframework:compiler:jar\}</typeAnnotationsJavac> -->
 </properties>
 \end{alltt}
 
@@ -412,7 +415,8 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
             <compilerArgs>
                 <!-- location of the annotated JDK, which comes from a Maven dependency -->
                 <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
-                <arg>-J-Xbootclasspath/p:$\{jsr308Javac\}</arg>
+                <!-- Uncomment the following line if using Java 7. -->
+                <!-- <arg>-J-Xbootclasspath/p:$\{typeAnnotationsJavac\}</arg> -->
             </compilerArgs>
         </configuration>
     </plugin>
@@ -421,18 +425,13 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
 Now, building with Maven should run the checkers during compilation.
 
 Notice that using this approach, no external setup is necessary,
-so your Maven build should be reproducible in any server.
+so your Maven build should be reproducible on any server.
 
 If you want to allow Maven to compile your code without running the checkers, you may
 want to move the declarations above to within a Maven profile, so that the checkers
 would only run if the profile was enabled.
 
 \end{enumerate}
-
-%% Of historical interest only.
-% Note: On June 2, 2014, the separate Maven plugin for the Checker
-% Framework was deprecated in favor of a script. That in turn
-% was deprecated in favor of the above approach in November 2015.
 
 
 \section{Gradle\label{gradle}}

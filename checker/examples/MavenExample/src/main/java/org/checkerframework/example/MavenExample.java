@@ -9,8 +9,6 @@ import org.apache.commons.lang3.text.StrBuilder;
 /**
  * If you run:
  * mvn compile
- * or
- * mvn package
  *
  * The build for this project should fail with a warning for the line:
  * @NonNull Object nn = nullable;

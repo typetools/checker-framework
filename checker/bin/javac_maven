@@ -16,5 +16,5 @@ eval "java" "-jar" "${mydir}"/../dist/checker.jar -processorpath "${mydir}"/../d
 
 echo
 echo
-echo NOTE: The javac_maven script is deprecated and will be removed in the December 1, 2015 release.
+echo NOTE: The javac_maven script is deprecated and will be removed in December 2015.
 echo

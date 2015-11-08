@@ -1,7 +1,3 @@
-NOTE: javac_maven and javac_maven.bat are deprecated and will be removed
-in the December 1, 2015 release.
-
-
 This directory, "checker/bin", contains scripts to run the Checker Framework.
 
 javac - Is a shell script that runs the Checker Framework in *nix systems
