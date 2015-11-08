@@ -254,12 +254,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
             Set<AnnotationMirror> supertypes = qual.getValue();
 
-            // if there's only 1 supertype for this qual, then directly display that in the same row
             if (supertypes.size() == 1) {
+                // if there's only 1 supertype for this qual, then directly display that in the same row
                 sb.append(supertypes.iterator().next());
-            }
-            // otherwise, display each supertype in its own row
-            else {
+            } else {
+                // otherwise, display each supertype in its own row
                 for (Iterator<AnnotationMirror> iterator = supertypes.iterator(); iterator.hasNext(); ) {
                     sb.append("\n\t\t");                            // new line and tabbing
                     sb.append(iterator.next());                     // display the supertype
