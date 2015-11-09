@@ -683,11 +683,6 @@ Compile the Type Annotations tools:
   export PATH=$JSR308/jsr308-langtools/dist/bin:${PATH}
 \end{Verbatim}
 
-You may wish to later put the Checker Framework \<javac> even earlier on
-your path.  The Checker Framework's \<javac> ensures that the Checker
-Framework is on your classpath and bootclasspath, but is otherwise
-identical to the Type Annotations compiler.
-
 \end{enumerate}
 
 % Java 8 extends the Java language to permit annotations to appear on types,
@@ -733,7 +728,7 @@ the Checker Framework build finds it using relative paths.
 % siblings, then you don't need to edit \code{checker/build.properties}.)
 
 \item
-Run \code{ant} to create \<checker.jar>:
+Run \code{ant} to build the Checker Framework:
 
 \begin{Verbatim}
   cd $JSR308/checker-framework/checker
@@ -741,22 +736,41 @@ Run \code{ant} to create \<checker.jar>:
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
-\item Add \code{tools.jar} and \code{checker.jar} to your classpath.
-  (If you do not do this, you will have to supply the \code{-cp} option
-  whenever you run \code{javac} and use a checker plugin.)
-  Example command:
+\item
+Once it is built, you may wish to put the Checker Framework's \<javac>
+even earlier in your \<PATH>:
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
 \begin{Verbatim}
-  export CLASSPATH=${CLASSPATH}:$JAVA_HOME/lib/tools.jar:$JSR308/checker-framework/checker/dist/checker.jar
+export PATH=$JSR308/checker-framework/checker/bin:$JSR308/jsr308-langtools/dist/bin:${PATH}
 \end{Verbatim}
-% $ to unconfuse Emacs LaTeX mode
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-  %% In Cygwin, are reversed slashes required?
+
+The Checker Framework's \code{javac} ensures that all required
+libraries are on your classpath and boot classpath, but is otherwise
+identical to the Type Annotations compiler.
+
+Putting the Checker Framework's \<javac> earlier in your \<PATH> will
+ensure that the Checker Framework's version is used.
+
+\item
+If you are developing a checker within the Checker Framework, there is
+a developer version of \<javac> in the \<bin-devel> directory. This
+version will use compiled classes from \<dataflow/build>,
+\<javacutil/build>, \<stubparser/build>, \<framework/build>,
+and \<checker/build> in the \<checker-framework> directory instead of
+the compiled jar files, and by default will print stack traces for all
+errors.
+
+To use it, set your \<PATH> to use \<javac> in the \<bin-devel> directory:
+
+\begin{Verbatim}
+export PATH=$JSR308/checker-framework/checker/bin-devel:$JSR308/jsr308-langtools/dist/bin:${PATH}
+\end{Verbatim}
+
+The developer version of \<javac> allows you to not have to rebuild
+the jar files after every code change, in turn allowing you to test
+your changes faster. Source files can be compiled using command \<ant
+build> in the \<checker> folder, or can be automatically compiled by
+an IDE such as Eclipse.
 
 \item Test that everything works:
 
