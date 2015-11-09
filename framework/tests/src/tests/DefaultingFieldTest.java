@@ -5,9 +5,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import java.io.File;
 
-/**
- * Created by jburke on 9/29/14.
- */
 public class DefaultingFieldTest extends CheckerFrameworkTest {
 
     public DefaultingFieldTest(File testFile) {
