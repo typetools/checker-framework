@@ -11,3 +11,5 @@ checker/examples/JavariExample.java
 checker/examples/NullnessExample.java
 checker/examples/NullnessExampleWithWarnings.java
 checker/examples/NullnessReleaseTests.java
+checker/examples/MavenExample/pom.xml
+checker/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java

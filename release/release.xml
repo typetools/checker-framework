@@ -82,6 +82,7 @@
         <fail unless="afu.release.date"    message="afu.release.date property is not set!"/>
 
         <property name="checker.manual"      value="${checker}/manual"                       />
+        <property name="checker.examples"    value="${checker}/examples"                     />
         <property name="checker.eclipse"     value="${checker}/../eclipse"                   />
         <property name="checker.tutorial"    value="${checker}/../tutorial"                  />
         <property name="checker.release"     value="${checker}/../release"                   />
@@ -222,7 +223,7 @@
                 with="${release.ver}"/>
 
         <!-- examples -->
-        <update file="${maven.plugin}/mvn-examples/HelloGalaxy/pom.xml"
+        <update file="${checker.examples}/MavenExample/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
@@ -341,14 +342,14 @@
         </zip>
     </target>
 
-    <target name="zip-maven-examples" description="Create a zip archive for the directory maven-plugin/mvn-examples.">
+    <target name="zip-maven-examples" description="Create a zip archive for the directory checker/examples/MavenExample.">
         <fail unless="checker"    message="checker property is not set!" />
         <fail unless="dest.dir"    message="dest.dir property is not set!"  />
         <fail unless="file.name"   message="file.name property is not set!" />
         <fail unless="version"     message="version is not set!" />
 
         <zip destfile="${dest.dir}/${file.name}">
-            <zipfileset dir="${checker}/../maven-plugin/mvn-examples" filemode="755" prefix="maven-examples-${version}"/>
+            <zipfileset dir="${checker}/examples/MavenExample" filemode="755" prefix="maven-examples-${version}"/>
         </zip>
     </target>
 
@@ -460,22 +461,22 @@
 
     </target>
 
-    <target name="update-and-copy-hello-galaxy" description="Update version/repo information of the HelloGalaxy Maven example and copy it do dest.dir">
+    <target name="update-and-copy-maven-example" description="Update version/repo information of the Maven example and copy it to dest.dir">
 
         <fail unless="dest.dir"   message="dest.dir property is not set!" />
         <fail unless="checker"    message="checker property is not set!" />
         <fail unless="version"    message="version is not set!" />
 
-        <property name="maven.plugin"         value="${checker}/../maven-plugin"             />
+        <property name="checker.examples"         value="${checker}/examples"             />
 
-        <copy todir="${dest.dir}/HelloGalaxy" flatten="false">
-            <fileset dir="${maven.plugin}/mvn-examples/HelloGalaxy">
+        <copy todir="${dest.dir}/MavenExample" flatten="false">
+            <fileset dir="${checker.examples}/MavenExample">
                 <include name="**" />
             </fileset>
         </copy>
 
         <!-- examples -->
-        <update file="${dest.dir}/HelloGalaxy/pom.xml"
+        <update file="${dest.dir}/MavenExample/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${version}"/>
     </target>
