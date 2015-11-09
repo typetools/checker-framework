@@ -16,6 +16,7 @@
 
     <property name="run.tests.should.fork" value="true"/>
     <property name="halt.on.test.failure" value="true"/>
+    <property name="javadoc.private" value="false"/>
 
     <property environment="env"/>
 
@@ -342,6 +343,7 @@
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
         <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}" destdir="${api.doc}"
+                 private="${javadoc.private}"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
@@ -662,21 +664,21 @@
     </target>
 
     <target name="nullness-base-tests" depends="jar,build-tests"
-            description="Run base tests for the Nullness Checker">
+            description="Run base tests for the FBC Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessFbcTest"/>
         </antcall>
     </target>
 
     <target name="nullness-uninit-tests" depends="jar,build-tests"
-            description="Run uninit tests for the Nullness Checker">
+            description="Run base tests for the rawness Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessRawnessTest"/>
         </antcall>
     </target>
 
     <target name="nullness-base-tests-with-asserts" depends="jar,build-tests"
-            description="Run base tests for the Nullness Checker">
+            description="Run base tests for the FBC Nullness Checker, with assertions">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessFbcTestWithAsserts"/>
         </antcall>
@@ -684,14 +686,14 @@
 
 
     <target name="nullness-assume-assertions-are-enabled-tests" depends="jar,build-tests"
-            description="Run uninit tests for the Nullness Checker">
+            description="Run base tests for the Nullness Checker, assuming assertions are disabled">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessAssumeAssertionsAreDisabled"/>
         </antcall>
     </target>
 
     <target name="nullness-uninit-tests-with-asserts" depends="jar,build-tests"
-            description="Run uninit tests for the Nullness Checker">
+            description="Run base tests for the rawness Nullness Checker, with assertions">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessRawnessTestWithAsserts"/>
         </antcall>
@@ -710,6 +712,7 @@
 
         <exec executable="make" failonerror="${halt.on.test.failure}">
             <env key="JAVAC" value="${basedir}/bin/javac"/>
+            <env key="JAVAP" value="${jsr308.langtools.dist}/bin/javap"/>
             <arg line="-C tests/nullness-extra/"/>
         </exec>
     </target>

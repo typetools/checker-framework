@@ -190,7 +190,8 @@ public class InitializationTransfer<V extends CFAbstractValue<V>,
                 && n.getReceiver() instanceof ThisLiteralNode) {
             AnnotatedTypeMirror fieldAnno = analysis.getTypeFactory()
                     .getAnnotatedType(n.getElement());
-            // Only if the field has the 'invariant' annotation.
+            // Only if the field has the type system's invariant annotation,
+            // such as @NonNull.
             if (fieldAnno.hasAnnotation(atypeFactory.getFieldInvariantAnnotation())) {
                 AnnotationMirror inv = atypeFactory.getFieldInvariantAnnotation();
                 V oldResultValue = result.getResultValue();

@@ -17,6 +17,7 @@
     <property environment="env"/>
 
     <property name="javacc.home" value="${env.JAVACC_HOME}"/>
+    <property name="javadoc.private" value="false"/>
 
     <!-- If adding dependencies to other projects, ensure
          the Javadoc dependencies are also updated accordingly
@@ -56,6 +57,7 @@
              there is likely also a build dependency to that project.
              Please add it as well and keep both in sync. -->
         <javadoc destdir="${api.doc}"
+                 private="${javadoc.private}"
                  failonerror="true">
             <!-- To add later:    additionalParam="-Xdoclint:all,-missing" -->
             <fileset dir="src">

@@ -682,8 +682,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Simple method to take a MemberSelectTree representing a method call
          * and determine if the method's return is annotated with
-         * @StaticallyExecutable.
-         *
+         * {@code @StaticallyExecutable}.
          */
         private boolean methodIsStaticallyExecutable(Element method) {
             return getDeclAnnotation(method, StaticallyExecutable.class) != null;

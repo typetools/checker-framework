@@ -866,11 +866,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * those type arguments should come from the original subtype's type arguments then we copy the
      * original type arguments to the converted type.
      * e.g.
-     * We have a type W, that "wasRaw" ArrayList<? extends Object>
+     * We have a type W, that "wasRaw" {@code ArrayList<? extends Object>}
      * When W is converted to type A, List, using asSuper it no longer has its type argument.
      * But since the type argument to List should be the same as that to ArrayList we copy over
      * the type argument of W to A.
-     * A becomes List<? extends Object>
+     * A becomes {@code List<? extends Object>}
      *
      * @param originalSubtype The subtype before being converted by asSuper
      * @param asSuperType he subtype after being converted by asSuper

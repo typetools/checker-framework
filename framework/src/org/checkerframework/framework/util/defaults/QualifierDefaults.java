@@ -69,9 +69,11 @@ public class QualifierDefaults {
      * This field indicates whether or not a default should be applied to type vars
      * located in the type being default.  This should only ever be true when the type variable
      * is a local variable, non-component use, i.e.
+     * <pre>{@code
      * <T> void method(@NOT_HERE T tIn) {
      *     T t = tIn;
      * }
+     * }</pre>
      *
      * The local variable T will be defaulted in order to allow dataflow to refine T.
      * This variable will be false if dataflow is not in use.
@@ -98,7 +100,7 @@ public class QualifierDefaults {
     private final Map<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
 
     /**
-     * A mapping of Element -> Whether or not that element is AnnotatedFor this type system.
+     * A mapping of Element &rarr; Whether or not that element is AnnotatedFor this type system.
      */
     private final Map<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
 

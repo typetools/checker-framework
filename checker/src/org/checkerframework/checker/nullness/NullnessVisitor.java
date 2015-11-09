@@ -447,12 +447,10 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
      * Issues a 'dereference.of.nullable' if the type is not of a
      * {@link NonNull} type.
      *
-     * @param type
-     *            type to be checked nullability
-     * @param errMsg
-     *            the error message (must be {@link CompilerMessageKey})
      * @param tree
      *            the tree where the error is to reported
+     * @param errMsg
+     *            the error message (must be {@link CompilerMessageKey})
      */
     private void checkForNullability(ExpressionTree tree,
             /*@CompilerMessageKey*/ String errMsg) {

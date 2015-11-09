@@ -248,7 +248,11 @@ public class InternalUtils {
     }
 
     /**
-     * Returns the least upper bound of two {@link TypeMirror}s.
+     * Returns the least upper bound of two {@link TypeMirror}s,
+     * ignoring any annotations on the types.
+     *
+     * Wrapper around Types.lub to add special handling for
+     * null types, primitives, and wildcards.
      *
      * @param processingEnv The {@link ProcessingEnvironment} to use.
      * @param tm1 A {@link TypeMirror}.
@@ -257,8 +261,8 @@ public class InternalUtils {
      */
     public static TypeMirror leastUpperBound(
             ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
-        Type t1 = (Type) tm1;
-        Type t2 = (Type) tm2;
+        Type t1 = ((Type) tm1).unannotatedType();
+        Type t2 = ((Type) tm2).unannotatedType();
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
         Types types = Types.instance(javacEnv.getContext());
         if (types.isSameType(t1, t2)) {
@@ -306,7 +310,12 @@ public class InternalUtils {
     }
 
     /**
-     * Returns the greatest lower bound of two {@link TypeMirror}s.
+     * Returns the greatest lower bound of two {@link TypeMirror}s,
+     * ignoring any annotations on the types.
+     *
+     * Wrapper around Types.glb to add special handling for
+     * null types, primitives, and wildcards.
+     *
      *
      * @param processingEnv The {@link ProcessingEnvironment} to use.
      * @param tm1 A {@link TypeMirror}.
@@ -315,8 +324,8 @@ public class InternalUtils {
      */
     public static TypeMirror greatestLowerBound(
             ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
-        Type t1 = (Type) tm1;
-        Type t2 = (Type) tm2;
+        Type t1 = ((Type) tm1).unannotatedType();
+        Type t2 = ((Type) tm2).unannotatedType();
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
         Types types = Types.instance(javacEnv.getContext());
         if (types.isSameType(t1, t2)) {
@@ -349,6 +358,9 @@ public class InternalUtils {
         if (t2.getKind() == TypeKind.WILDCARD) {
             return t1;
         }
+
+        // If neither type is a primitive type, null type, or wildcard
+        // and if the types are not the same, use javac types.glb
         return types.glb(t1, t2);
     }
 

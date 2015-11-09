@@ -941,7 +941,7 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * arguments to change while maintaining subtype relationship.
          *
          * This allows for subtyping relationships of the kind:
-         * <pre>  @Mutable List&lt;@Mutable Date&gt; &lt;: @ReadOnly List&lt;@ReadOnly Date&gt;<\pre>
+         * <pre>  @Mutable List&lt;@Mutable Date&gt; &lt;: @ReadOnly List&lt;@ReadOnly Date&gt;</pre>
          */
         @Override
         public Boolean visitTypeArgs(final AnnotatedDeclaredType subtype, final AnnotatedDeclaredType supertype,

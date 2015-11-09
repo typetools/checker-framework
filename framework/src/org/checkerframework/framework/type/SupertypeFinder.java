@@ -77,15 +77,19 @@ class SupertypeFinder {
         /**
          * Primitive Rules:
          *
+         * <pre>{@code
          * double >1 float
          * float >1 long
          * long >1 int
          * int >1 char
          * int >1 short
          * short >1 byte
+         * }</pre>
          *
          * For easiness:
+         * <pre>{@code
          * boxed(primitiveType) >: primitiveType
+         * }</pre>
          */
         @Override
         public List<AnnotatedTypeMirror> visitPrimitive(AnnotatedPrimitiveType type, Void p) {
@@ -274,6 +278,7 @@ class SupertypeFinder {
         }
 
         /**
+         * <pre>{@code
          * For type = A[ ] ==>
          *  Object >: A[ ]
          *  Clonable >: A[ ]
@@ -281,6 +286,7 @@ class SupertypeFinder {
          *
          * if A is reference type, then also
          *  B[ ] >: A[ ] for any B[ ] >: A[ ]
+         * }</pre>
          */
         @Override
         public List<AnnotatedTypeMirror> visitArray(AnnotatedArrayType type, Void p) {
@@ -335,11 +341,11 @@ class SupertypeFinder {
          *
          * Classes may have type parameters that are used in extends or implements clauses.
          * E.g.
-         * class MyList<T> extends List<T>
+         * {@code class MyList<T> extends List<T>}
          *
-         * Direct supertypes will contain a type List<T> but the type T may become out of sync with
-         * the annotations on type MyList<T>.  To keep them in-sync, we substitute out the copy of T
-         * with the same reference to T that is on MyList<T>
+         * Direct supertypes will contain a type {@code List<T>} but the type T may become out of sync with
+         * the annotations on type {@code MyList<T>}.  To keep them in-sync, we substitute out the copy of T
+         * with the same reference to T that is on {@code MyList<T>}
          */
         private class TypeParamReplacer extends AnnotatedTypeScanner<Void, Map<TypeParameterElement, AnnotatedTypeMirror>> {
             private final Types types;

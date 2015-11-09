@@ -2480,7 +2480,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
          *            the declared type enclosing the overridden method
          * @param overriddenReturnType
          *            the return type of the overridden method
-         * @return true if the override check passed, false otherwise
          */
         OverrideChecker(Tree overriderTree,
                 AnnotatedExecutableType overrider,
