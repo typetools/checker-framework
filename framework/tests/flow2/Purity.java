@@ -58,6 +58,10 @@ class Purity {
     @Pure String t3() {
       //:: error: (purity.not.deterministic.not.sideeffectfree.call)
       nonpure();
+      //:: error: (purity.not.deterministic.call)
+      t16b(); // Calling a @SideEffectFree method
+      //:: error: (purity.not.sideeffectfree.call)
+      t16c(); // Calling a @Deterministic method
       return "";
     }
 
@@ -180,6 +184,26 @@ class Purity {
         //:: error: (purity.not.deterministic.not.sideeffectfree.object.creation)
         NonPureClass p = new NonPureClass();
         return "";
+    }
+
+    @Deterministic String t17a(Purity l) {
+      //:: error: (purity.not.deterministic.assign.field)
+      f1 = "";
+      //:: error: (purity.not.deterministic.assign.array)
+      l.a[0] = "";
+      //:: error: (purity.not.deterministic.call)
+      nonpure();
+      //:: error: (purity.not.deterministic.call)
+      return t16b(); // Calling a @SideEffectFree method
+    }
+
+    @SideEffectFree String t17b() {
+      //:: error: (purity.not.sideeffectfree.object.creation)
+      NonPureClass p = new NonPureClass();
+      //:: error: (purity.not.sideeffectfree.call)
+      nonpure();
+      //:: error: (purity.not.sideeffectfree.call)
+      return t16c(); // Calling a @Deterministic method
     }
 
      // @Pure annotations on the overridden implementation.
