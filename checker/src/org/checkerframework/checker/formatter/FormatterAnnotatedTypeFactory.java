@@ -4,6 +4,7 @@ import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatBottom;
 import org.checkerframework.checker.formatter.qual.InvalidFormat;
+import org.checkerframework.checker.formatter.qual.UnknownFormat;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -17,7 +18,9 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+import java.lang.annotation.Annotation;
 import java.util.IllegalFormatException;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
@@ -52,6 +55,12 @@ public class FormatterAnnotatedTypeFactory extends
 
         this.treeUtil = new FormatterTreeUtil(checker);
         this.postInit();
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return getBundledTypeQualifiersWithoutPolyAll(
+                UnknownFormat.class, FormatBottom.class);
     }
 
     @Override

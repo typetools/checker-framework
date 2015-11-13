@@ -35,6 +35,8 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -148,6 +150,13 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         BOTTOM_QUAL = AnnotationUtils.fromClass(elements, OIGJMutabilityBottom.class);
 
         this.postInit();
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return Collections.unmodifiableSet(
+                new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(ReadOnly.class, Mutable.class, Immutable.class, I.class, AssignsFields.class, OIGJMutabilityBottom.class)));
     }
 
     @Override

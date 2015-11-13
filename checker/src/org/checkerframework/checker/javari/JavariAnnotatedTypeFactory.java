@@ -1,5 +1,6 @@
 package org.checkerframework.checker.javari;
 
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -116,6 +117,12 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.typePost = new JavariTypePostAnnotator();
 
         postInit();
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return getBundledTypeQualifiersWithPolyAll(
+                ThisMutable.class);
     }
 
     /**

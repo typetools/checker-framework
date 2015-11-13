@@ -4,6 +4,7 @@ import org.checkerframework.checker.regex.RegexUtil;
 import org.checkerframework.checker.regex.classic.qual.PartialRegex;
 import org.checkerframework.checker.regex.classic.qual.PolyRegex;
 import org.checkerframework.checker.regex.classic.qual.RegexBottom;
+import org.checkerframework.checker.regex.classic.qual.UnknownRegex;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFStore;
@@ -26,7 +27,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
+import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -140,6 +143,13 @@ public class RegexClassicAnnotatedTypeFactory extends GenericAnnotatedTypeFactor
          */
 
         this.postInit();
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return getBundledTypeQualifiersWithPolyAll(
+                Regex.class, PartialRegex.class,
+                RegexBottom.class, UnknownRegex.class);
     }
 
     @Override
