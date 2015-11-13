@@ -23,6 +23,7 @@ import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -30,6 +31,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -425,6 +427,17 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
                 // initializer block
                 violatingFields.removeAll(initializedFields);
             }
+
+            // Remove fields with a relevant @SuppressWarnings annotation.
+            Iterator<VariableTree> itor = violatingFields.iterator();
+            while (itor.hasNext()) {
+                VariableTree f = itor.next();
+                Element e = InternalUtils.symbol(f);
+                if (checker.shouldSuppressWarnings(e, COMMITMENT_FIELDS_UNINITIALIZED)) {
+                    itor.remove();
+                }
+            }
+
             if (!violatingFields.isEmpty()) {
                 StringBuilder fieldsString = new StringBuilder();
                 boolean first = true;

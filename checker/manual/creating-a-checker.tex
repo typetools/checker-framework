@@ -1358,12 +1358,8 @@ Section~\ref{extending-visitor}.
   This saves the final command-line parameters as passed to the compiler in a file.
   This file can be used as a script (if the file is marked as executable on Unix, or
   if it includes a \code{.bat} extension on Windows) to re-execute the same compilation command.
-  This is useful, for example, when debugging problems running the Checker Framework from
-  Maven, since normally the command-line parameters used by Maven are not user-visible.
   Note that this argument cannot be included in a file containing command-line arguments
-  passed to the compiler using the @argfile syntax.  Please see
-  Section~\ref{debugging-maven-args} for more details on how to use this command-line
-  parameter to debug compilation using Maven.
+  passed to the compiler using the @argfile syntax.
 
   Example usage: \code{-AoutputArgsToFile=/home/username/scriptfile}
 

@@ -15,6 +15,7 @@
 
     <property name="run.tests.should.fork" value="true"/>
     <property name="halt.on.test.failure" value="true"/>
+    <property name="javadoc.private" value="false"/>
 
 
     <!-- Dependendencies on other projects (such as dataflow)
@@ -201,6 +202,7 @@
              dependencies, change the Javadoc dependencies to keep
              them in sync (and vice versa). -->
         <javadoc sourcepath="${src}:${checker.loc}/${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}" destdir="${api.doc}"
+                 private="${javadoc.private}"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"

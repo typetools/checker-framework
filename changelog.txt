@@ -1,8 +1,25 @@
+Version 1.9.8, 9 November 2015
+
+Field initialization warnings can now be suppressed for a single field at a
+time, by placing @SuppressWarnings("initialization") on the field declaration.
+
+Updated Maven instructions to no longer require a script.
+Added an example of how to use the instructions under
+checker/examples/MavenExample.
+
+The javac_maven script (and batch file) are deprecated and will be
+removed as of the December 1, 2015 release.
+
+Fixed issues: 487, 500, 502.
+
+---------------------------------------------------------------------------
+
 Version 1.9.7, 24 October 2015
 
 Fixed issues:  291, 474.
 
 ----------------------------------------------------------------------
+
 Version 1.9.6, 8 October 2015
 
 Fixed issue:  460.

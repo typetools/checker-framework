@@ -8,15 +8,6 @@ OpenJDK.
 
 javac.bat - Is the equivalent of the javac script for Windows systems.
 
-javac_maven - Similar to the javac script, but meant for use with Maven
-pom files.  It requires a file name 'argfile' to be in the same directory
-as the pom file - this file must contain the command-line arguments
-to be passed to javac indicating the checker to be used and optional
-parameters to the Checker Framework.
-
-javac_maven.bat - Is the equivalent of the javac_maven script for Windows
-systems.
-
 
 The directory "checker/dist/" houses all jars built for the binary distribution.
 To build these jars, run "ant clean dist" from the "checker" directory.

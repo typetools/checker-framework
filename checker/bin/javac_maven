@@ -13,3 +13,8 @@ case `uname -s` in
 esac
 
 eval "java" "-jar" "${mydir}"/../dist/checker.jar -processorpath "${mydir}"/../dist/checker.jar "\@argfile" "$@"
+
+echo
+echo
+echo NOTE: The javac_maven script is deprecated and will be removed in December 2015.
+echo

@@ -11,6 +11,6 @@ Redirect /checker-framework/current/checkers-manual.html /checker-framework/curr
 # We should add a similar rule for every other type system.
 Redirect /checker-framework/current/api/checkers/nullness/quals/ /checker-framework/current/api/org/checkerframework/checker/nullness/qual/
 
-RedirectMatch 302 /jsr308/current/jsr308-langtools.zip /jsr308/current/jsr308-langtools-1.9.7.zip
-RedirectMatch 302 /annotation-file-utilities/annotation-tools.zip /annotation-file-utilities/releases/annotation-tools-3.6.21.zip
-RedirectMatch 302 /checker-framework/current/checker-framework.zip /checker-framework/current/checker-framework-1.9.7.zip
+RedirectMatch 302 /jsr308/current/jsr308-langtools.zip /jsr308/current/jsr308-langtools-1.9.8.zip
+RedirectMatch 302 /annotation-file-utilities/annotation-tools.zip /annotation-file-utilities/releases/annotation-tools-3.6.22.zip
+RedirectMatch 302 /checker-framework/current/checker-framework.zip /checker-framework/current/checker-framework-1.9.8.zip

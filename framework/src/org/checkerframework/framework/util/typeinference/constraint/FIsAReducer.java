@@ -65,7 +65,7 @@ public class FIsAReducer implements AFReducer {
      *  If F = Tj, then the constraint Tj = A is implied.
      *  If F = U[], where the type U involves Tj, then if A is an array type V[], or a type variable with an
      *  upper bound that is an array type V[], where V is a reference type, this algorithm is applied recursively
-     *  to the constraint V >> U. Otherwise, no constraint is implied on Tj.
+     *  to the constraint {@code V >> U}. Otherwise, no constraint is implied on Tj.
      *
      *  Since both F and A may have component types this visitor delves into their components
      *  and applies these rules to the components.  However, only one step is taken at a time (i.e. this

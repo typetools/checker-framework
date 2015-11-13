@@ -144,12 +144,14 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      *
      * 4.  Combine the solutions from steps 2.b and 3.  This handles cases like the following:
      *
+     * <pre>{@code
      *        <T> List<T> method(T t1) {}
      *        List<@Nullable String> nl = method("");
+     * }</pre>
      *
      *  If we use just the arguments to infer T we will infer @NonNull String (since the lub of all arguments would
      *  be @NonNull String).  However, this would cause the assignment to fail.
-     *  Instead, since @NonNull String <: @Nullable String, we can safely infer T to be @Nullable String and
+     *  Instead, since {@literal @NonNull String <: @Nullable String}, we can safely infer T to be @Nullable String and
      *  both the argument types and the assignment types are compatible.
      *  In step 4, we combine the results of Step 2.b (which came from lubbing argument and argument component types)
      *  with the solution from equality constraints via the assignment context.
@@ -157,8 +159,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      *  Note, we always give preference to the results inferred from method arguments if there is a conflict between
      *  the steps 2 and 4.  For example:
      *
+     * <pre>{@code
      *        <T> List<T> method(T t1) {}
      *        List<@NonNull String> nl = method(null);
+     * }</pre>
      *
      *  In the above example, the null argument requires that T must be @Nullable String.  But the assignment
      *  context requires that the T must be @NonNull String.  But, in this case if we use @NonNull String
@@ -168,22 +172,28 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      * 5. Combine the result from 2.a and step 4, if there is a conflict use the result from step 2.a
      *
      * Suppose we have the following:
+     * <pre>{@code
      *       <T> void method(List<@NonNull T> t, @Initialized Tt) { ... }
      *       List<@FBCBottom String> lBottom = ...;
      *       method( lbBottom, "nonNullString" );
+     * }</pre>
      *
      * From the first argument we can infer that T must be exactly @FBCBottom String but we cannot infer anything
      * for the Nullness hierarchy.  For the second argument we can infer that T is at most @NonNull String but
      * we can infer nothing in the initialization hierarchy.  In this step we combine these two results, always
      * favoring the equality constraints if there is a conflict.  For the above example we would infer
      * the following:
+     * <pre>{@code
      *     T -> @FBCBottom @NonNull String
+     * }</pre>
      *
      * Another case covered in this step is:
      *
+     * <pre>{@code
      *        <T> List<T> method(List<T> t1) {}
      *        List<@NonNull String> nonNullList = new ArrayList<>();
      *        List<@Nullable String> nl = method(nonNullList);
+     * }</pre>
      *
      *  The above assignment should fail because T is forced to be both @NonNull and @Nullable.  In cases like these,
      *  we use @NonNull String becasue we always favor constraints from the arguments over the assignment context.
@@ -192,7 +202,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      * Finally, the JLS states that we should substitute the types we have inferred up until this point back
      * into the original argument constraints.  We should then combine the constraints we get from the
      * assignment context and solve using the greatest lower bounds of all of the constraints of the form:
-     * F :> U  (these are referred to as "subtypes" in the ConstraintMap.TargetConstraints).
+     * {@literal F :> U}  (these are referred to as "subtypes" in the ConstraintMap.TargetConstraints).
      *
      * 7. Merge the result from steps 5 and 6 giving preference to 5 (the argument constraints).
      * Return the result.

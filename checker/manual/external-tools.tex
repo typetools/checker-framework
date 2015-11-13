@@ -54,13 +54,13 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-1.9.7/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-1.9.8/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.  Now, whenever
     you run \code{javac}, you will use the updated compiler.  If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.7
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.8
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -76,7 +76,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.7
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.8
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -84,7 +84,7 @@ use the last one.
     indicate:
 
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.7
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.8
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac -source 7 -target 7'
 \end{Verbatim}
 
@@ -110,11 +110,11 @@ UnsupportedClassVersionError: ... : Unsupported major.minor version 52.0
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.7
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.8
   alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.9.7\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.9.8\
   doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
 \end{Verbatim}
 
@@ -136,7 +136,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-1.9.7
+  javac 1.8.0-jsr308-1.9.8
 \end{Verbatim}
 
 
@@ -302,17 +302,29 @@ run.  You can supply additional arguments to the checker as well.
 \section{Maven\label{maven}}
 
 If you use the \href{http://maven.apache.org/}{Maven} tool,
-then you can specify pluggable type-checking as part of your build
-process. This is done by pointing Maven to a script that
-makes Maven use the Type Annotations compiler.
+then you can enable Checker Framework checkers by following the
+instructions below.
+
 These instructions use the artifacts from
 \href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven Central}.
 
+See the demonstration \code{examples/MavenExample/} for an example of the use of
+these instructions in a Maven project.  This example can be used to verify that
+Maven is correctly downloading and executing the Checker Framework on your machine.
+
+Please note that the \<-AoutputArgsToFile> command-line option
+(see Section~\ref{debugging-options-output-args}) and shorthands for built-in checkers
+(see Section~\ref{shorthand-for-checkers}) are not available when
+following these instructions.  Both these features are available only when a checker is
+launched via \<checker.jar> such as when \code{\$CHECKERFRAMEWORK/checker/bin/javac}
+is run.  These instructions bypass \<checker.jar> and cause the compiler to run a
+checker as an annotation processor directly.
+
 \begin{enumerate}
 
-\item Declare a dependency on the type qualifier annotations.  Find the
-  existing \code{<dependencies>} section and add a new
-  \code{<dependencies>} item:
+\item Declare a dependency on the Checker Framework artifacts.  Find the
+  existing \code{<dependencies>} section and add the following new
+  \code{<dependency>} items:
 
 \begin{alltt}
     <dependencies>
@@ -324,87 +336,102 @@ These instructions use the artifacts from
             <artifactId>checker-qual</artifactId>
             <version>\ReleaseVersion{}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker</artifactId>
+            <version>\ReleaseVersion{}</version>
+        </dependency>
+        <!-- The type annotations compiler - uncomment if using Java 7 -->
+        <!-- <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>compiler</artifactId>
+            <version>\ReleaseVersion{}</version>
+        </dependency> -->
+        <!-- The annotated JDK to use (change to jdk7 if using Java 7) -->
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>jdk8</artifactId>
+            <version>\ReleaseVersion{}</version>
+        </dependency>
     </dependencies>
 \end{alltt}
 
-\item Direct the Maven compiler plugin to use the \code{javac\_maven} script.
-Change the reference to the \code{maven-compiler-plugin} within the \code{<plugins>}
+\item Use Maven properties to hold the locations of the
+  annotated JDK and, if using Java 7, the type annotations compiler.  Both were declared as Maven dependencies above.
+To set the value of these properties automatically, use the Maven Dependency plugin.
+
+First, create the properties in the \code{properties} section of the POM:
+
+\begin{alltt}
+<properties>
+    <!-- These properties will be set by the Maven Dependency plugin -->
+    <!-- Change to jdk7 if using Java 7 -->
+    <annotatedJdk>$\{org.checkerframework:jdk8:jar\}</annotatedJdk>
+    <!-- The type annotations compiler is required if using Java 7. -->
+    <!-- Uncomment the following line if using Java 7. -->
+    <!-- <typeAnnotationsJavac>$\{org.checkerframework:compiler:jar\}</typeAnnotationsJavac> -->
+</properties>
+\end{alltt}
+
+Change the reference to the \code{maven-dependency-plugin} within the \code{<plugins>}
 section, or add it if it is not present.
 
 \begin{alltt}
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-          <fork>true</fork>
-          <executable>${env.CHECKERFRAMEWORK}/checker/bin/javac_maven</executable>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+    <plugin>
+        <!-- This plugin will set properties values using dependency information -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.3</version>
+        <executions>
+            <execution>
+                <goals>
+                    <goal>properties</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
 \end{alltt}
 
-On Windows, the \code{javac\_maven.bat} script is automatically used instead
-of the \code{javac\_maven} script -- it is not necessary to include the \code{.bat}
-extension in the absolute path above.
 
-This script assumes that the Checker Framework is the only annotation processor being run.
-If this is not the case, please modify the \code{javac\_maven} script accordingly.
+\item Direct the Maven compiler plugin to use the desired checkers.
+Change the reference to the \code{maven-compiler-plugin} within the \code{<plugins>}
+section, or add it if it is not present.
 
-\item Create a text file named \code{argfile} in the same directory as the \code{pom.xml}
-and include in it the command-line parameters to pass to the Java compiler.
-
-Example contents of \code{argfile}:
+For example, to use the \code{org.checkerframework.checker.nullness.NullnessChecker}:
 
 \begin{alltt}
--processor org.checkerframework.checker.nullness.NullnessChecker
--AsuppressWarnings=purity.invalid.overriding
--Alint
--AprintErrorStack
--Awarns
--Xmaxwarns 10000
+    <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.3</version>
+        <configuration>
+            <!-- Change source and target to 1.7 if using Java 7 -->
+            <source>1.8</source>
+            <target>1.8</target>
+            <fork>true</fork>
+            <annotationProcessors>
+                <!-- Add all the checkers you want to enable here -->
+                <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
+            </annotationProcessors>
+            <compilerArgs>
+                <!-- location of the annotated JDK, which comes from a Maven dependency -->
+                <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
+                <!-- Uncomment the following line if using Java 7. -->
+                <!-- <arg>-J-Xbootclasspath/p:$\{typeAnnotationsJavac\}</arg> -->
+            </compilerArgs>
+        </configuration>
+    </plugin>
 \end{alltt}
 
-Due to limitations of the \code{pom.xml} syntax, some command-line options are
-difficult or impossible to pass via the \code{pom.xml}, hence the need for this file.
+Now, building with Maven should run the checkers during compilation.
 
-If you would like to call this file something other than \code{argfile},
-please modify the \code{javac\_maven} script accordingly.
+Notice that using this approach, no external setup is necessary,
+so your Maven build should be reproducible on any server.
+
+If you want to allow Maven to compile your code without running the checkers, you may
+want to move the declarations above to within a Maven profile, so that the checkers
+would only run if the profile was enabled.
 
 \end{enumerate}
-
-%% Of historical interest only.
-% Note: On June 2, 2014, the separate Maven plugin for the Checker
-% Framework was deprecated in favor of the above  approach.
-
-
-\subsection{Debugging the Maven compiler command-line arguments\label{debugging-maven-args}}
-
-Maven will sometimes hide important Checker Framework and/or Java compiler debugging output.
-If Maven is not producing the expected output when using it with the Type Annotations compiler
-and Checker Framework, it is possible to output the compiler command-line arguments produced
-by Maven to a file.  This file can then be used as a script to execute the compiler in the
-same way Maven would have but without running Maven.  This is done through the
-\<-AoutputArgsToFile> command-line parameter.  To use it with Maven, modify (or copy) the
-\code{javac\_maven} script such that the last line in the script ends with:
-
-\begin{verbatim}
-[...] "-AoutputArgsToFile=<path to filename>" "$@"
-\end{verbatim}
-
-For \code{javac\_maven.bat}, modify (or copy) it such that the last line ends with:
-
-\begin{verbatim}
-[...] -AoutputArgsToFile=<path to filename> %*
-\end{verbatim}
-
-Please see Section~\ref{debugging-options-output-args} for more details on how to use
-the resulting file.
-
 
 
 \section{Gradle\label{gradle}}
