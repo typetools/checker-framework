@@ -2,7 +2,6 @@ import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.*;
 import java.lang.annotation.*;
 
-@TypeQualifier
 @SubtypeOf({})
 @Target(ElementType.TYPE_USE)
 @interface DoesNotUseF {}

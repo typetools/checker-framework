@@ -7,14 +7,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Annotation for the UI effect.
  *
  * @checker_framework.manual #guieffect-checker GUI Effect Checker
  */
-@TypeQualifier
 @SubtypeOf({})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

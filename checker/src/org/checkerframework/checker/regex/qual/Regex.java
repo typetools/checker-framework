@@ -2,7 +2,6 @@ package org.checkerframework.checker.regex.qual;
 
 import org.checkerframework.checker.regex.classic.qual.UnknownRegex;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 import org.checkerframework.qualframework.poly.qual.Wildcard;
 
@@ -28,7 +27,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Repeatable(MultiRegex.class)
 // Needed for classic checker
-@TypeQualifier
 @SubtypeOf(UnknownRegex.class)
 public @interface Regex {
     /**

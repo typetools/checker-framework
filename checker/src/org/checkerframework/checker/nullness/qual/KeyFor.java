@@ -26,7 +26,6 @@ import org.checkerframework.framework.qual.*;
  *
  * @checker_framework.manual #map-key-checker Map Key Checker
  */
-@TypeQualifier
 @SubtypeOf(UnknownKeyFor.class)
 @Documented
 @FieldIsExpression

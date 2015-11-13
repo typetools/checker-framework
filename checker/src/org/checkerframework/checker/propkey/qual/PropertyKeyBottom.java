@@ -4,14 +4,12 @@ import java.lang.annotation.*;
 
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * The bottom qualifier for the PropertyKeyChecker and associated checkers.
  *
  * @checker_framework.manual #propkey-checker Property File Checker
  */
-@TypeQualifier
 @SubtypeOf(PropertyKey.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

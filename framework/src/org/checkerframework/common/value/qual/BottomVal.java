@@ -10,7 +10,6 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TargetLocations;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Represents the bottom of the Constant Value qualifier hierarchy.  It means that
@@ -22,7 +21,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
-@TypeQualifier
 @InvisibleQualifier
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
 @SubtypeOf({ ArrayLen.class, BoolVal.class, DoubleVal.class,

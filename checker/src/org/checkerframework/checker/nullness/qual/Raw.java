@@ -13,7 +13,6 @@ import org.checkerframework.checker.nullness.qual.Raw;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * This type qualifier belongs to the rawness type-system for tracking
@@ -92,7 +91,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
-@TypeQualifier
 @SubtypeOf({})
 @DefaultFor({ DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE })
 @Documented

@@ -35,7 +35,7 @@ import org.checkerframework.framework.util.QualifierPolymorphism;
  * {@code @PolyNull} or {@code @PolyRegex}.
  * Therefore, every type system should define a polymorphic qualifier.
  * Then, to support <tt>@PolyAll</tt> in a type system, simply add it to the
- * list of <tt>@TypeQualifiers</tt>.
+ * list of supported type qualifiers.
  *
  * @see org.checkerframework.checker.nullness.qual.PolyNull
  * @see org.checkerframework.checker.interning.qual.PolyInterned

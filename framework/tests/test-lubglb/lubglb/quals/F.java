@@ -10,9 +10,7 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultForUnannotatedCode;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
-@TypeQualifier
 @SubtypeOf({D.class, E.class})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

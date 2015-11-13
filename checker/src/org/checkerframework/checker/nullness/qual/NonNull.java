@@ -18,7 +18,6 @@ import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
@@ -50,7 +49,6 @@ import com.sun.source.tree.Tree;
  * @see AbstractNullnessChecker
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
-@TypeQualifier
 @SubtypeOf(MonotonicNonNull.class)
 @ImplicitFor(types = { TypeKind.PACKAGE },
     typeClasses = { AnnotatedPrimitiveType.class, AnnotatedNoType.class },

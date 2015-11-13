@@ -7,7 +7,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Indicates that the annotated method could assign (but not mutate) the fields
@@ -20,7 +19,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  */
 // TODO: Document this
 
-@TypeQualifier // (for now)
 @SubtypeOf( ReadOnly.class )
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

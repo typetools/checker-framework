@@ -11,7 +11,6 @@ import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * This type qualifier belongs to the freedom-before-commitment initialization
@@ -27,7 +26,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #initialization-checker Initialization Checker
  */
-@TypeQualifier
 @SubtypeOf(UnknownInitialization.class)
 @DefaultQualifierInHierarchy
 @Documented
