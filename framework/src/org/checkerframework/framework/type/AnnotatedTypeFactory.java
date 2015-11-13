@@ -15,6 +15,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.FromByteCode;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.qual.InheritedAnnotation;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -54,6 +55,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -267,6 +269,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected ReflectionResolver reflectionResolver;
 
     /**
+     * Annotated Type Loader used to load annotation classes via reflective lookup
+     */
+    protected AnnotatedTypeLoader loader;
+
+    /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
      * instance and syntax tree root. (These parameters are required so that
      * the factory may conduct the appropriate annotation-gathering analyses on
@@ -292,6 +299,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.types = processingEnv.getTypeUtils();
         this.visitorState = new VisitorState();
 
+        this.loader = new AnnotatedTypeLoader(checker);
         this.supportedQuals = createSupportedTypeQualifiers();
 
         this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
@@ -529,32 +537,142 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * If the type factory or checker class is annotated with {@link
-     * TypeQualifiers}, return an immutable set with the same set
-     * of classes as the annotation.  If the class is not so annotated,
-     * return an empty set.
+     * Returns an immutable set of annotation classes that are supported by a checker
      * <p>
      *
-     * Subclasses may override this method to return an immutable set
-     * of their supported type qualifiers, in which case their checker
-     * class needs no <tt>@TypeQualifiers</tt> annotation.
+     * Subclasses may override this method and to return an immutable set
+     * of their supported type qualifiers through one of the 5 approaches shown below.
      * <p>
      *
      * Subclasses should not call this method; they should call
-     * {@link #getSupportedTypeQualifiers getSupportedTypeQualifiers}
-     * instead.
+     * {@link #getSupportedTypeQualifiers} instead.
+     * <p>
      *
-     * @return the type qualifiers supported this processor, or an empty
-     * set if none
+     * By default, a checker supports {@link PolyAll}, and all annotations located
+     * in a subdirectory called {@literal qual} that's located in the same directory
+     * as the checker. Note that only annotations defined with the
+     * {@code @Target({ElementType.TYPE_USE})} meta-annotation (and optionally with
+     * the additional value of {@code ElementType.TYPE_PARAMETER}, but no other
+     * {@code ElementType} values) are automatically considered as supported
+     * annotations.
+     * <p>
+     *
+     * Annotations located outside the {@literal qual} subdirectory, or has other
+     * {@code ElementType} values must be explicitly listed in code by overriding
+     * the
+     * {@link #createSupportedTypeQualifiers()}
+     * method, as shown below.
+     * <p>
+     *
+     * Lastly, for checkers that do not want to support {@link PolyAll}, it must
+     * also be explicitly written in code, as shown below.
+     * <p>
+     *
+     * In total, there are 5 ways to indicate annotations that are supported by a
+     * checker:
+     * <p>
+     *
+     * 1) Only support annotations located in a checker's {@literal qual} directory,
+     * and {@link PolyAll}:
+     * <p>
+     *
+     * This is the default behavior. Simply place those annotations within the
+     * {@literal qual} directory.
+     * <p>
+     *
+     * 2) Support annotations located in a checker's {@literal qual} directory, but
+     * without {@link PolyAll}:
+     * <p>
+     *
+     * Place those annotations within the {@literal qual} directory, and override
+     * {@link #createSupportedTypeQualifiers()} by calling
+     * {@link #getBundledTypeQualifiersWithPolyAll(Class...)} with no
+     * parameters passed in. Code example:
+     *
+     * <pre>
+     * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+     *      return getBundledTypeQualifiersWithoutPolyAll();
+     *  } }
+     * </pre>
+     *
+     * 3) Support annotations located in a checker's {@literal qual} directory,
+     * {@link PolyAll}, and a list of other annotations:
+     * <p>
+     *
+     * Place those annotations within the {@literal qual} directory, and override
+     * {@link #createSupportedTypeQualifiers()} by calling
+     * {@link #getBundledTypeQualifiersWithPolyAll(Class...)} with a
+     * varargs parameter list of the other annotations. Code example:
+     *
+     * <pre>
+     * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+     *      return getBundledTypeQualifiersWithPolyAll(Regex.class, PartialRegex.class, RegexBottom.class, UnknownRegex.class);
+     *  } }
+     * </pre>
+     *
+     * 4) Support annotations located in a checker's {@literal qual} directory and a
+     * list of other annotations, but without supporting {@link PolyAll}:
+     * <p>
+     *
+     * Place those annotations within the {@literal qual} directory, and override
+     * {@link #createSupportedTypeQualifiers()} by calling
+     * {@link #getBundledTypeQualifiersWithoutPolyAll(Class...)} with a
+     * varargs parameter list of the other annotations. Code example:
+     *
+     * <pre>
+     * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+     *      return getBundledTypeQualifiersWithoutPolyAll(UnknownFormat.class, FormatBottom.class);
+     *  } }
+     * </pre>
+     *
+     * 5) Supporting only annotations that are explicitly listed:
+     *
+     * Override
+     * {@link #createSupportedTypeQualifiers()} and return an immutable
+     * set of the supported annotations. Code example:
+     *
+     * <pre>
+     * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+     *      return Collections.unmodifiableSet(
+     *          new HashSet<Class<? extends Annotation>>(
+     *              Arrays.asList(A.class, B.class)));
+     *  } }
+     * </pre>
+     *
+     * The set of qualifiers returned by
+     * {@link #createSupportedTypeQualifiers()} must be an immutable
+     * set. The methods
+     * {@link #getBundledTypeQualifiersWithoutPolyAll(Class...)} and
+     * {@link #getBundledTypeQualifiersWithPolyAll(Class...)} each
+     * return an immutable set.
+     * <p>
+     *
+     * Temporary support for deprecated meta-annotation {@link TypeQualifiers}:
+     * <p>
+     *
+     * If the set is empty, and if the type factory or checker class is
+     * annotated with {@link TypeQualifiers}, return an immutable set with the
+     * same set of classes as the annotation. If the class is not so annotated,
+     * it will return an empty set.
+     * <p>
+     *
+     * @return the type qualifiers supported this processor, or an empty set if
+     *         none
      *
      * @see TypeQualifiers
      */
+    @SuppressWarnings("deprecation")
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        Class<?> classType;
+        Set<Class<? extends Annotation>> typeQualifiers = new HashSet<Class<? extends Annotation>>();
+        // by default support PolyAll
+        typeQualifiers.addAll(getBundledTypeQualifiersWithPolyAll());
+
+        // temporary support for deprecated @TypeQualifiers annotation
+        // TODO: This support will be removed in the next version of the checker framework
         TypeQualifiers typeQualifiersAnnotation;
 
         // First see if the AnnotatedTypeFactory has @TypeQualifiers
-        classType = this.getClass();
+        Class<?> classType = this.getClass();
         typeQualifiersAnnotation = classType.getAnnotation(TypeQualifiers.class);
 
         if (typeQualifiersAnnotation == null) {
@@ -564,14 +682,86 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         if (typeQualifiersAnnotation != null) {
-            Set<Class<? extends Annotation>> typeQualifiers = new HashSet<Class<? extends Annotation>>();
             for (Class<? extends Annotation> qualifier : typeQualifiersAnnotation.value()) {
                 typeQualifiers.add(qualifier);
             }
-            return Collections.unmodifiableSet(typeQualifiers);
         }
 
-        return Collections.emptySet();
+        return Collections.unmodifiableSet(typeQualifiers);
+    }
+
+    /**
+     * Loads all annotations contained in the qual directory of a checker via
+     * reflection, and adds {@link PolyAll} and an explicit array of annotations
+     * to the set of annotation classes.
+     *
+     * This method can be called in the overridden versions of
+     * {@link #createSupportedTypeQualifiers()} in each checker.
+     *
+     * @param explicitlyListedAnnotations
+     *            a varargs array of explicitly listed annotation classes to be
+     *            added to the returned set. For example, it is used frequently
+     *            to add Bottom qualifiers.
+     * @return an immutable set of the loaded and listed annotation classes, as
+     *         well as {@link PolyAll}.
+     */
+    @SafeVarargs
+    protected final Set<Class<? extends Annotation>> getBundledTypeQualifiersWithPolyAll(Class<? extends Annotation>... explicitlyListedAnnotations) {
+        Set<Class<? extends Annotation>> annotations = loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations);
+        annotations.add(PolyAll.class);
+        return Collections.unmodifiableSet(annotations);
+    }
+
+    /**
+     * Loads all annotations contained in the qual directory of a checker via
+     * reflection, and an explicit list of annotations to the set of annotation
+     * classes.
+     *
+     * This method can be called in the overridden versions of
+     * {@link #createSupportedTypeQualifiers()} in each checker.
+     *
+     * @param explicitlyListedAnnotations
+     *            a varargs array of explicitly listed annotation classes to be
+     *            added to the returned set. For example, it is used frequently
+     *            to add Bottom qualifiers.
+     * @return an immutable set of the loaded, and listed annotation classes.
+     */
+    @SafeVarargs
+    protected final Set<Class<? extends Annotation>> getBundledTypeQualifiersWithoutPolyAll(Class<? extends Annotation>... explicitlyListedAnnotations) {
+        return Collections.unmodifiableSet(loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations));
+    }
+
+    /**
+     * Loads all annotations contained in the qual directory of a checker via
+     * reflection, and has the option to include an explicitly stated list of
+     * annotations (eg ones found in a different directory than the checker).
+     *
+     * The annotations that are automatically loaded must have the
+     * {@link java.lang.annotation.Target Target} meta-annotation with the value
+     * of {@link ElementType#TYPE_USE} (and optionally
+     * {@link ElementType#TYPE_PARAMETER}). If it has other {@link ElementType}
+     * values, it won't be loaded. Other annotation classes must be explicitly
+     * listed even if they are in the same directory as the checker's qual
+     * directory.
+     *
+     * @param explicitlyListedAnnotations
+     *            a set of explicitly listed annotation classes to be added to
+     *            the returned set, for example, it is used frequently to add
+     *            Bottom qualifiers
+     * @return a set of annotation class instances
+     */
+    @SafeVarargs
+    @SuppressWarnings("varargs")
+    private final Set<Class<? extends Annotation>> loadTypeAnnotationsFromQualDir(Class<? extends Annotation>... explicitlyListedAnnotations) {
+        // add the loaded annotations to the annotation set
+        Set<Class<? extends Annotation>> annotations = loader.getLoadedAnnotationClasses();
+
+        // add in all explicitly Listed qualifiers
+        if (explicitlyListedAnnotations != null) {
+            annotations.addAll(Arrays.asList(explicitlyListedAnnotations));
+        }
+
+        return annotations;
     }
 
     /**
