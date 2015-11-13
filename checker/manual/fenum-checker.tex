@@ -64,15 +64,13 @@ The checker supports two ways to introduce a new fake enum (fenum):
 file \code{\emph{MyFenum}.java}:
 
 \begin{alltt}
-package \textit{myproject}.qual;
+package \textit{myModule}.qual;
 
 import java.lang.annotation.*;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@TypeQualifier
 @SubtypeOf( \ttlcb{} FenumTop.class \ttrcb{} )
 public @interface \textit{MyFenum} \ttlcb\ttrcb
 \end{alltt}
@@ -119,14 +117,39 @@ If you define your own annotation, provide the name of the annotation using the
 \code{-Aquals} option:
 
 \begin{alltt}
-  javac -processor org.checkerframework.checker.fenum.FenumChecker
-        \textit{-Aquals=myproject.qual.MyFenum} MyFile.java ...
+  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+        -processor org.checkerframework.checker.fenum.FenumChecker \ttbs
+        -Aquals=\textit{myModule.qual.MyFenum} MyFile.java ...
 \end{alltt}
 
+This option specifies a list of the fully-qualified class names of annotations,
+using a comma-no-space-separated notation. The annotations listed in
+\code{-Aquals} must be accessible to the compiler during compilation in the
+classpath. In other words, they must already be compiled (and, typically, be on
+the javac bootclasspath) before you run the Fenum Checker with \code{javac}. It
+is not sufficient to supply their source files on the command line.
+
+You can also provide the fully-qualified paths to a set of directories
+that contain the qualifiers using the \code{-AqualDirs} option, for example:
+
+\begin{alltt}
+  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+        -processor org.checkerframework.checker.fenum.FenumChecker \ttbs
+        -AqualDirs=\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} MyFile.java ...
+\end{alltt}
+
+Note that in these two examples, the compiled class file of the
+\<myModule.qual.MyFenum> annotation must exist in either the \<myProject/bin>
+directory or the \<myLibrary/bin> directory. The following placement of
+the class file will work with the above commands:
+
+\begin{alltt}
+  .../myProject/bin/myModule/qual/MyFenum.class
+\end{alltt}
 
 \item
 If your code uses the \refqualclass{checker/fenum/qual}{Fenum} annotation, you do
-not need the \code{-Aquals} option:
+not need the \code{-Aquals} or \code{-AqualDirs} option:
 
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.fenum.FenumChecker MyFile.java ...
@@ -205,6 +228,6 @@ class FenumUser {
 \end{itemize}
 
 % LocalWords:  enums typesafe Fenum Fenums fenum MyFenum quals fenums Aquals
-% LocalWords:  TestStatic FenumC FenumD myproject RetentionPolicy TypeQualifier
+% LocalWords:  TestStatic FenumC FenumD myModule RetentionPolicy
 % LocalWords:  SubtypeOf FenumTop MyFile Enum enum AWT 5cm java jls qual
 %  LocalWords:  FenumUnqualified FenumBottom
