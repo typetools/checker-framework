@@ -2,6 +2,8 @@ language: java
 
 script: travis_wait 120 ./.travis-build.sh
 
+sudo: false
+
 jdk:
   - oraclejdk8
   - oraclejdk7
