@@ -28,7 +28,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
  *
  * @checker_framework.manual #subtyping-checker Subtying Checker
  */
-@SupportedOptions( { "quals" })
+@SupportedOptions( { "quals", "qualDirs" })
 public final class SubtypingChecker extends BaseTypeChecker {
     @Override
     public Collection<String> getSuppressWarningsKeys() {
