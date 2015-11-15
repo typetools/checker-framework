@@ -654,12 +654,12 @@
     </target>
 
     <target name="nullness-tests"
-            depends="jar,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-assume-assertions-are-enabled-tests,nullness-extra-tests,nullness-reflection-tests,nullness-invariantarrays-tests,nullness-safedefaults-tests"
+            depends="jar,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-assume-assertions-are-enabled-tests,nullness-extra-tests,nullness-reflection-tests,nullness-invariantarrays-tests,nullness-safedefaultsbytecode-tests,nullness-safedefaultssourcecode-tests"
             description="Run tests for the Nullness Checker">
     </target>
 
     <target name="nullness-tests-nojdk"
-            depends="jar,jdk.jar.exists,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-assume-assertions-are-enabled-tests,nullness-extra-tests-nojdk,nullness-reflection-tests,nullness-invariantarrays-tests,nullness-safedefaults-tests"
+            depends="jar,jdk.jar.exists,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-assume-assertions-are-enabled-tests,nullness-extra-tests-nojdk,nullness-reflection-tests,nullness-invariantarrays-tests,nullness-safedefaultsbytecode-tests,nullness-safedefaultssourcecode-tests"
             description="Run tests for the Nullness Checker, WITHOUT updating jdkX.jar">
     </target>
 
@@ -752,10 +752,24 @@
         </antcall>
     </target>
 
-    <target name="nullness-safedefaults-tests" depends="jar,build-tests"
+    <target name="nullness-safedefaultsbytecode-tests" depends="jar,build-tests"
             description="Run tests for the Nullness Checker using -AsafeDefaultsForUnannotatedBytecode">
         <antcall target="-run-tests">
-            <param name="param" value="tests.NullnessSafeDefaultsTest"/>
+            <param name="param" value="tests.NullnessSafeDefaultsBytecodeTest"/>
+        </antcall>
+    </target>
+
+    <target name="nullness-safedefaultssourcecodelib-tests" depends="jar,build-tests"
+            description="Create libraries for tests for the Nullness Checker using -AuseSafeDefaultsForUnannotatedSourceCode">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessSafeDefaultsSourceCodeLibTest"/>
+        </antcall>
+    </target>
+
+    <target name="nullness-safedefaultssourcecode-tests" depends="jar,build-tests,nullness-safedefaultssourcecodelib-tests"
+            description="Run tests for the Nullness Checker using -AuseSafeDefaultsForUnannotatedSourceCode">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessSafeDefaultsSourceCodeTest"/>
         </antcall>
     </target>
 

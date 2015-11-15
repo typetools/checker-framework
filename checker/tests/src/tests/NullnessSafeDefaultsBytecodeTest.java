@@ -9,9 +9,9 @@ import org.junit.runners.Parameterized.Parameters;
 /**
  * JUnit tests for the Nullness checker when using safe defaults for unannotated bytecode.
  */
-public class NullnessSafeDefaultsTest extends CheckerFrameworkTest {
+public class NullnessSafeDefaultsBytecodeTest extends CheckerFrameworkTest {
 
-    public NullnessSafeDefaultsTest(File testFile) {
+    public NullnessSafeDefaultsBytecodeTest(File testFile) {
         super(testFile,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
@@ -21,7 +21,7 @@ public class NullnessSafeDefaultsTest extends CheckerFrameworkTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"nullness-safedefaults"};
+        return new String[]{"nullness-safedefaultsbytecode"};
     }
 
 }
