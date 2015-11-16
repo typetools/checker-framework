@@ -759,6 +759,20 @@
         </antcall>
     </target>
 
+    <target name="nullness-genericwildcardlib-tests" depends="jar,build-tests"
+            description="Create libraries for tests for the Nullness Checker for issue #511">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessGenericWildcardLibTest"/>
+        </antcall>
+    </target>
+
+    <target name="nullness-genericwildcard-tests" depends="jar,build-tests,nullness-genericwildcardlib-tests"
+            description="Run tests for the Nullness Checker for issue #511">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessGenericWildcardTest"/>
+        </antcall>
+    </target>
+
     <target name="stubfile-tests" depends="jar,build-tests"
             description="Run stubfile tests for the Nullness Checker">
         <antcall target="-run-tests">
