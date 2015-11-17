@@ -137,12 +137,12 @@ Note that a three-step process is required:
 \end{enumerate}
 \noindent
 A good approach is to repeatedly run the above process until there are no
-more changes to the infernce results (that is, the \<.jaif> file is
+more changes to the inference results (that is, the \<.jaif> file is
 unchanged between two runs), before you begin to change annotations in the
 program source code.
-[TO DO: Automating this process would be helpful to users.  Could that be
-  done within the Checker Framework, or would it need to iteratively call
-  the Checker Framework?]
+%[TO DO: Automating this process would be helpful to users.  Could that be
+  %done within the Checker Framework, or would it need to iteratively call
+  %the Checker Framework?]
 
 This slightly clumsy process is required because type-checking is modular:
 it processes each class only once, independently.  This means that it is
@@ -174,34 +174,9 @@ currently written but may not be as general as possible and may not
 accommodate future program changes.
 
 
-[TO DO:  Does .jaif file inference always result in a new type that is a
-  subtype of the declared type, or might it result in a supertype?  For
-  starting from an unannotated program, supertypes could be useful to infer
-  @Nullable which is different from the default which is @NonNull.  Could
-  this be controlled by a command-line option or two?]
+%[TO DO:  Does .jaif file inference always result in a new type that is a
+  %subtype of the declared type, or might it result in a supertype?  For
+  %starting from an unannotated program, supertypes could be useful to infer
+  %@Nullable which is different from the default which is @NonNull.  Could
+  %this be controlled by a command-line option or two?]
 
-
-\subsection{Older text}
-
-To reduce the amount of manually added annotations required to
-type-check a program, you can run the \code{infer-and-annotate} script.
-The script performs a whole-program type inference using .jaif files and is
-able to infer types for class fields and method return types.
-The script receives as arguments:
-
-\begin{enumerate}
-\item Processor's name.
-\item Target project's classpath.
-\item Target project's source folder path.
-\item Extra processor arguments (optional).
-\end{enumerate}
-
-The script outputs a folder named "annotated" on the project's root.
-This folder contains annotated versions of files in the source folder that
-was passed as an argument.
-
-Example of usage for the Constant Value Checker (Chapter~\ref{constant-value-checker}):
-\begin{Verbatim}
-$CHECKERFRAMEWORK/framework/jaif-inference-scripts/infer-and-annotate.sh \
-org.checkerframework.common.value.ValueChecker PROJECT_CP PROJECT_SRC EXTRA_PROCESSOR_ARGS
-\end{Verbatim}

@@ -3,6 +3,7 @@ package org.checkerframework.common.jaifinference;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +28,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -56,18 +58,24 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 /**
+ * This class is used to read from and write into .jaif files.
+ * It contains public methods
+ * {@link JaifFileUtils#updateFieldTypeInJaif} and
+ * {@link JaifFileUtils#updateMethodReturnTypeInJaif} that write into
+ * .jaif files, updating field types and method return types of classes
+ * according to their ATM. The types are always updated to be the LUB between
+ * the previous type and the current type.
+ * The types written into .jaif files can be retrieved by the methods
+ * {@link JaifFileUtils#getFieldTypeInJaif} and
+ * {@link JaifFileUtils#getMethodReturnTypeInJaif}
+ *
  * The purpose of this class is to allow a whole-program type inference with
  * the aid of .jaif files.
- *
- * This class has public methods that writes into .jaif files updating
- * field types and method return types of classes according to their ATM.
- * The types are always updated to be the LUB between the previous type and
- * the current type.
  *
  * @author pbsf
  *
  */
-public class JaifInferenceUtils {
+public class JaifFileUtils {
 
     /**
      * Path to where .jaif files will be written to and read from.
@@ -75,12 +83,68 @@ public class JaifInferenceUtils {
      */
     public final static String JAIF_FILES_PATH = "build/jaif-files/";
 
+    // Maps file paths (Strings) to Scenes.
+    private static Map<String, AScene> scenes = new HashMap<String, AScene>();
+
+    // Set containing all modified scenes in the current ClassTree.
+    private static Set<String> modifiedScenes = new HashSet<String>();
+
     /**
-     * List of annotations that are ignored - not written into .jaif
-     * files.
+     * Returns the scene related to a .jaif file path passed as input.
      */
-    private static List<AnnotationMirror> annotationsToIgnore =
-            new ArrayList<AnnotationMirror>();
+    private static AScene getScene(String jaifPath) {
+        if (!scenes.containsKey(jaifPath)) {
+            File jaifFile = new File(jaifPath);
+            AScene scene = new AScene();
+            if (jaifFile.exists()) {
+                try {
+                    IndexFileParser.parseFile(jaifPath, scene);
+                } catch (IOException e) {
+                    ErrorReporter.errorAbort("Could not open file in: " + jaifPath + "."
+                            + " Exception message: " + e.getMessage());
+                }
+            }
+            scenes.put(jaifPath, scene);
+        }
+        return scenes.get(jaifPath);
+    }
+
+    /**
+     * Clears the set of modified scenes.
+     */
+    public static void clearModifiedScenes() {
+        modifiedScenes.clear();
+    }
+
+    /**
+     * Adds an identifier of a Scene in the set of modified scenes.
+     */
+    private static void addModifiedScene(String scene) {
+        modifiedScenes.add(scene);
+    }
+
+    /**
+     * Write all modified scenes into .jaif files.
+     */
+    public static void writeScenesToJaif() {
+        for (String jaifPath : modifiedScenes) {
+            try {
+                File jaifFile = new File(jaifPath);
+                if (!jaifFile.exists()) {
+                    jaifFile.getParentFile().mkdirs();
+                }
+                AScene scene = scenes.get(jaifPath);
+                IndexFileWriter.write(scene, new FileWriter(jaifPath));
+            } catch (IOException e) {
+                ErrorReporter.errorAbort("Could not open file in: " + jaifPath
+                        + ". Exception message: " + e.getMessage());
+            } catch (DefException e) {
+                ErrorReporter.errorAbort(e.getMessage());
+            } catch (Exception e) {
+                System.out.println();
+            }
+        }
+    }
 
     /**
      * @param classSymbol is the symbol representing the class containing the method.
@@ -94,9 +158,9 @@ public class JaifInferenceUtils {
             AnnotatedTypeFactory atf) {
         if (classSymbol == null) return null; // Static block.
         String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString().
-                replaceAll("\\.", "/") + ".jaif";
+                replaceAll("\\.", File.separator) + ".jaif";
         try {
-            AClass clazz = getJaifClass(classSymbol, jaifPath, new AScene());
+            AClass clazz = getJaifClass(classSymbol, getScene(jaifPath));
             if (clazz == null) return null;
             String methodName = JVMNames.getJVMMethodName(methodElt);
             AMethod method = clazz.methods.get(methodName);
@@ -106,14 +170,16 @@ public class JaifInferenceUtils {
                             methodElt.getReturnType());
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            ErrorReporter.errorAbort("Could not open file in: " + jaifPath + "."
+                    + " Exception message: " + e.getMessage());
         }
         return null;
     }
 
     /**
      * @param classSymbol is the symbol representing the class containing the method.
-     * @param fieldNode is the node representing the field.
+     * @param fieldNode is the node representing the field. It is used to get
+     * the name and type from the node.
      * @param atf is the annotated type factory.
      * @return the ATM of fieldNode in the .jaif file of the class with symbol
      * classSymbol, or null if it can't be found.
@@ -123,12 +189,12 @@ public class JaifInferenceUtils {
             AnnotatedTypeFactory atf) {
         if (classSymbol == null) return null; // Static block.
         String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString().
-                replaceAll("\\.", "/") + ".jaif";
+                replaceAll("\\.", File.separator) + ".jaif";
 
-        AScene scene = new AScene();
+        AScene scene = getScene(jaifPath);
         try {
-            AClass clazz = getJaifClass(classSymbol, jaifPath, scene);
-            if (clazz == null) return null;
+            AClass clazz = getJaifClass(classSymbol, scene);
+            if (clazz == null) return null; // Anonymous class => Ignore, for now.
             String fieldName = TreeUtils.getFieldName(fieldNode.getTree());
             AField field = clazz.fields.get(fieldName);
             if (field == null) {
@@ -139,7 +205,8 @@ public class JaifInferenceUtils {
                 return setOfAnnotationsToATM(annos, atf, false, fieldNode.getType());
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            ErrorReporter.errorAbort("Could not open file in: " + jaifPath + "."
+                    + " Exception message: " + e.getMessage());
         }
         return null;
     }
@@ -159,7 +226,7 @@ public class JaifInferenceUtils {
             ClassSymbol classSymbol, AnnotatedTypeFactory atf) {
         if (classSymbol == null) return;
         String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString().
-                replaceAll("\\.", "/") + ".jaif";
+                replaceAll("\\.", File.separator) + ".jaif";
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
         if (lhsATM.getExplicitAnnotations().size() > 0) {
@@ -169,10 +236,10 @@ public class JaifInferenceUtils {
         }
         AnnotatedTypeMirror prevATM = null;
 
-        AScene scene = new AScene();
+        AScene scene = getScene(jaifPath);
         try {
-            AClass clazz = getJaifClass(classSymbol, jaifPath, scene);
-            if (clazz == null) return;
+            AClass clazz = getJaifClass(classSymbol, scene);
+            if (clazz == null) return; // Anonymous class => Ignore, for now.
             String fieldName = lhs.getFieldName();
             AField field = clazz.fields.get(fieldName);
             if (field == null) {
@@ -193,12 +260,11 @@ public class JaifInferenceUtils {
                 Set<Annotation> setOfAnnos = atmToSetOfAnnotations(rhsATM, atf);
                 field.tlAnnotationsHere.clear();
                 field.tlAnnotationsHere.addAll(setOfAnnos);
-                IndexFileWriter.write(scene, new FileWriter(jaifPath));
+                addModifiedScene(jaifPath);
             }
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (DefException e) {
-            e.printStackTrace();
+            ErrorReporter.errorAbort("Could not open file in: " + jaifPath + "."
+                    + " Exception message: " + e.getMessage());
         }
     }
 
@@ -219,8 +285,8 @@ public class JaifInferenceUtils {
             AnnotatedTypeFactory atf) {
         if (classSymbol == null) return;
         String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString().
-                replaceAll("\\.", "/") + ".jaif";
-        AScene scene = new AScene();
+                replaceAll("\\.", File.separator) + ".jaif";
+        AScene scene = getScene(jaifPath);
         AnnotatedTypeMirror returnExprATM = atf.getAnnotatedType(retNode.
                 getTree().getExpression());
         AnnotatedTypeMirror methodReturnType = atf.getAnnotatedType(methodTree).
@@ -233,8 +299,8 @@ public class JaifInferenceUtils {
         AnnotatedTypeMirror prevATM = null;
 
         try {
-            AClass clazz = getJaifClass(classSymbol, jaifPath, scene);
-            if (clazz == null) return;
+            AClass clazz = getJaifClass(classSymbol, scene);
+            if (clazz == null) return; // Anonymous class => Ignore, for now.
             String methodName = JVMNames.getJVMMethodName(methodTree);
             AMethod method = clazz.methods.get(methodName);
             if (method == null) {
@@ -256,23 +322,19 @@ public class JaifInferenceUtils {
                 Set<Annotation> setOfAnnos = atmToSetOfAnnotations(returnExprATM, atf);
                 method.returnType.tlAnnotationsHere.clear();
                 method.returnType.tlAnnotationsHere.addAll(setOfAnnos);
-                IndexFileWriter.write(scene, new FileWriter(jaifPath));
+                addModifiedScene(jaifPath);
             }
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (DefException e) {
-            e.printStackTrace();
+            ErrorReporter.errorAbort("Could not open file in: " + jaifPath + "."
+                    + " Exception message: " + e.getMessage());
         }
     }
 
-    private static AClass getJaifClass(ClassSymbol classSymbol, String jaifPath,
+    /**
+     * Gets the AClass in an AScene, given a ClassSymbol.
+     */
+    private static AClass getJaifClass(ClassSymbol classSymbol,
             AScene scene) throws IOException {
-        File jaifFile = new File(jaifPath);
-        if (jaifFile.exists()) {
-            IndexFileParser.parseFile(jaifPath, scene);
-        } else {
-            jaifFile.getParentFile().mkdirs();
-        }
         String className = classSymbol.getQualifiedName().toString();
         AClass clazz = scene.classes.get(className);
         if (clazz == null) {
@@ -287,7 +349,26 @@ public class JaifInferenceUtils {
         return clazz;
     }
 
+
+    /**
+     * Returns true if am should not be inserted in source code,
+     * but is rather an implementation detail.
+     * I.E. {@link org.checkerframework.common.value.qual.BottomVal}.
+     * Returns false otherwise.
+     */
+    private static boolean ignoreAnnotation(AnnotationMirror am) {
+        Target target = am.getAnnotationType().asElement().
+                getAnnotation(Target.class);
+        return target.value().length == 0;
+    }
+
     // The four conversion methods below could be somewhere else. Maybe in AFU?
+
+    /**
+     * Converts a set of {@link annotations.Annotation} into an 
+     * {@link org.checkerframework.framework.type.AnnotatedTypeMirror} that
+     * contains all annotations in the original set.
+     */
     private static AnnotatedTypeMirror setOfAnnotationsToATM(
             Set<Annotation> annotations, AnnotatedTypeFactory atf,
             boolean isDeclaration, TypeMirror tm) {
@@ -295,22 +376,24 @@ public class JaifInferenceUtils {
         AnnotatedTypeMirror atm = AnnotatedTypeMirror.createType(tm, atf,
                 isDeclaration);
         for (Annotation anno : annotations) {
-            AnnotationMirror am = annotationToAnnotationMirror(anno,
-                    atf.getProcessingEnv());
-            if (!AnnotationUtils.containsSameIgnoringValues(
-                    annotationsToIgnore, am)) {
+            AnnotationMirror am = annotationToAnnotationMirror(
+                    anno, atf.getProcessingEnv());
+            if (!ignoreAnnotation(am)) {
                 atm.addAnnotation(am);
             }
         }
         return atm;
     }
 
+    /**
+     * Converts an {@link org.checkerframework.framework.type.AnnotatedTypeMirror}
+     * into a set of {@link annotations.Annotation}.
+     */
     private static Set<Annotation> atmToSetOfAnnotations(AnnotatedTypeMirror atm,
             AnnotatedTypeFactory atf) {
         Set<Annotation> output = new HashSet<Annotation>();
         for (AnnotationMirror am : atm.getAnnotations()) {
-            if (!AnnotationUtils.containsSameIgnoringValues(
-                    annotationsToIgnore, am)) {
+            if (!ignoreAnnotation(am)) {
                 Annotation anno = annotationMirrorToAnnotation(am);
                 if (anno != null) {
                     output.add(anno);
@@ -320,6 +403,10 @@ public class JaifInferenceUtils {
         return output;
     }
 
+    /**
+     * Converts an {@link javax.lang.model.element.AnnotationMirror}
+     * into an {@link annotations.Annotation}.
+     */
     private static Annotation annotationMirrorToAnnotation(AnnotationMirror am) {
         AnnotationDef def = new AnnotationDef(AnnotationUtils.annotationName(am));
         Map<String, AnnotationFieldType> fieldTypes = new HashMap<String, AnnotationFieldType>();
@@ -356,8 +443,24 @@ public class JaifInferenceUtils {
         return out;
     }
 
-    // Maybe move this auxiliar method to AFU?
-    // TODO: Clean-up this method.
+    /**
+     * Converts an {@link annotations.Annotation} into an
+     * {@link javax.lang.model.element.AnnotationMirror}.
+     */
+    private static AnnotationMirror annotationToAnnotationMirror(
+            Annotation anno, ProcessingEnvironment processingEnv) {
+        final AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
+                anno.def().name);
+        for (String fieldKey : anno.fieldValues.keySet()) {
+            addFieldToAnnotationBuilder(fieldKey,
+                    anno.fieldValues.get(fieldKey), builder);
+        }
+        return builder.build();
+    }
+
+    /**
+     * Returns an AnnotationFieldType given an ExecutableElement or value.
+     */
     private static AnnotationFieldType getAnnotationFieldType(ExecutableElement
             ee, Object value) {
         if (value instanceof List<?>) {
@@ -376,7 +479,7 @@ public class JaifInferenceUtils {
                 return new ArrayAFT((ScalarAFT) BasicAFT.
                         forType(Class.forName(elemType.toString())));
             } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+                ErrorReporter.errorAbort(e.getMessage());
             }
         } else if (value instanceof Boolean)
             return BasicAFT.forType(boolean.class);
@@ -397,18 +500,15 @@ public class JaifInferenceUtils {
         return null;
     }
 
-    private static AnnotationMirror annotationToAnnotationMirror(
-            Annotation anno, ProcessingEnvironment processingEnv) {
-        final AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
-                anno.def().name);
-        for (String fieldKey : anno.fieldValues.keySet()) {
-            addFieldToAnnotationBuilder(fieldKey,
-                    anno.fieldValues.get(fieldKey), builder);
-        }
-        return builder.build();
-    }
 
-    @SuppressWarnings("unchecked")
+    /**
+     *  Adds a field to an AnnotationBuilder.
+     * @param fieldKey is the name of the field
+     * @param obj is the value of the field
+     * @param builder is the AnnotationBuilder
+     */
+    @SuppressWarnings("unchecked") // This is actually checked in the first
+    //instanceOf call.
     private static void addFieldToAnnotationBuilder(String fieldKey, Object obj,
             AnnotationBuilder builder) {
         if (obj instanceof List<?>) {
@@ -448,16 +548,16 @@ public class JaifInferenceUtils {
         } else if (obj instanceof VariableElement[]) {
             builder.setValue(fieldKey, (VariableElement[])obj);
         } else {
-            throw new RuntimeException("Unrecognized type: " + obj.getClass());
+            ErrorReporter.errorAbort("Unrecognized type: " + obj.getClass());
         }
     }
 
     /**
-     * Auxiliary method that returns the ClassSymbol of the class encapsulating
+     * Returns the ClassSymbol of the class encapsulating
      * the node n passed as parameter.
      * TODO: This method could be moved somewhere else.
      */
-    public static ClassSymbol getClassSymbol(ClassTree classTree,
+    public static ClassSymbol getEnclosingClassSymbol(ClassTree classTree,
             Node n, Node receiverNode) {
         if (receiverNode instanceof ImplicitThisLiteralNode
                 && classTree != null) {
@@ -478,8 +578,4 @@ public class JaifInferenceUtils {
         return null;
     }
 
-    public static void setAnnotationsToIgnore(
-            List<AnnotationMirror> annosToIgnore) {
-        annotationsToIgnore = annosToIgnore;
-    }
 }

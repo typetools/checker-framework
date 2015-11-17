@@ -32,7 +32,7 @@ public class JaifInferenceTest extends CheckerFrameworkTest {
     @Override
     public List<String> customizeOptions(List<String> previousOptions) {
         final List<String> options = new ArrayList<>(previousOptions);
-        options.add("-AuseJaifInference");
+        options.add("-AperformWholeProgramInference");
         return options;
     }
 

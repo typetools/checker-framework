@@ -386,8 +386,8 @@
         <copy file="tests/jaif-inference/non-annotated/ExpectedErrors.java"
             todir="tests/jaif-inference/annotated"/>
         <!-- Inserting annotations from .jaif files. -->
-        <exec executable="/bin/bash">
-            <arg value="jaif-inference-scripts/insert-annotations.sh"/>
+        <exec executable="/bin/sh">
+            <arg value="tests/jaif-inference/scripts/insert-annotations.sh"/>
             <arg value="tests/jaif-inference/annotated"/>
             <arg value="build/jaif-files/"/>
         </exec>

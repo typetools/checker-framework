@@ -1,7 +1,7 @@
 package org.checkerframework.framework.flow;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.jaifinference.JaifInferenceUtils;
+import org.checkerframework.common.jaifinference.JaifFileUtils;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -102,7 +102,11 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         extends AbstractNodeVisitor<TransferResult<V, S>, TransferInput<V, S>>
         implements TransferFunction<V, S> {
 
-    private final boolean useJaifInference;
+    /**
+     * Indicates that the whole-program inference is on.
+     */
+    private final boolean performWholeProgramInference;
+
     /**
      * The analysis class this store belongs to.
      */
@@ -117,12 +121,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
-        useJaifInference = analysis.getTypeFactory().getProcessingEnv().
-                getOptions().containsKey("useJaifInference");
-        // If a folder containing .jaif files is passed as argument, use it.
-        if (useJaifInference) {
-            JaifInferenceUtils.setAnnotationsToIgnore(getJaifInferenceIgnoredAnnotations());
-        }
+        performWholeProgramInference = analysis.getTypeFactory().getProcessingEnv().
+                getOptions().containsKey("performWholeProgramInference");
     }
 
     /**
@@ -736,13 +736,13 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         Receiver expr = FlowExpressions.internalReprOf(analysis.getTypeFactory(),
                 n.getTarget());
 
-        if (useJaifInference && !expr.containsUnknown()
+        if (performWholeProgramInference && !expr.containsUnknown()
                 && expr instanceof FieldAccess) {
             // Updates .jaif file
-            ClassSymbol clazzSymbol = JaifInferenceUtils.getClassSymbol(analysis.
-                    getContainingClass(n.getTree()), lhs, ((FieldAccessNode)lhs)
-                    .getReceiver());
-            JaifInferenceUtils.updateFieldTypeInJaif((FieldAccessNode) lhs,
+            ClassSymbol clazzSymbol = JaifFileUtils.getEnclosingClassSymbol
+                    (analysis.getContainingClass(n.getTree()), lhs,
+                            ((FieldAccessNode)lhs).getReceiver());
+            JaifFileUtils.updateFieldTypeInJaif((FieldAccessNode) lhs,
                     rhs, clazzSymbol, analysis.getTypeFactory());
         }
 
@@ -753,12 +753,12 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
     @Override
     public TransferResult<V, S> visitReturn(ReturnNode n, TransferInput<V, S> p) {
-        if (useJaifInference) {
+        if (performWholeProgramInference) {
             // Updates the return type of the method on the respective .jaif file.
             ClassTree classTree = analysis.getContainingClass(n.getTree());
             if (classTree != null) {
                 ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(classTree);
-                JaifInferenceUtils.updateMethodReturnTypeInJaif(n, classSymbol,
+                JaifFileUtils.updateMethodReturnTypeInJaif(n, classSymbol,
                         analysis.getContainingMethod(n.getTree()),
                         analysis.getTypeFactory());
             }
@@ -1052,18 +1052,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         }
 
         return result;
-    }
-
-    /**
-     * This method returns a list of annotations that are ignored during
-     * the .jaif whole-program type inference. I.E. the annotations on this set
-     * won't be written into .jaif files.
-     *
-     * Any type system that wants to ensure this property for certain
-     * annotations must override this method.
-     */
-    public List<AnnotationMirror> getJaifInferenceIgnoredAnnotations() {
-        return new ArrayList<AnnotationMirror>();
     }
 
     /**
