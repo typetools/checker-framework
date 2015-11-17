@@ -182,7 +182,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
                                                  AnnotatedTypeFactory f) {
         Element elt = TreeUtils.elementFromUse(node);
 
-        if(TreeUtils.isClassLiteral(node)){
+        if (TreeUtils.isClassLiteral(node)) {
             // the type of a class literal is the type of the "class" element.
             return f.getAnnotatedType(elt);
         }
