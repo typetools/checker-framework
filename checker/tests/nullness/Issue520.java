@@ -12,21 +12,21 @@ public class Issue520 {
 }
 
 abstract class Parent<T> {
-	protected final List<? super @KeyForBottom T> list;
+    protected final List<? super @KeyForBottom T> list;
 
-	public Parent(List<? super @KeyForBottom T> list) {
-		this.list = list;
-	}
+    public Parent(List<? super @KeyForBottom T> list) {
+        this.list = list;
+    }
 }
 
 abstract class Child extends Parent<CharSequence> {
-	public Child(List<? super CharSequence> list) {
-		super(list);
-	}
+    public Child(List<? super CharSequence> list) {
+        super(list);
+    }
 
-	public void add(CharSequence seq) {
-		list.add(seq);
-	}
+    public void add(CharSequence seq) {
+        list.add(seq);
+    }
 }
 
 class WildCardAdd {

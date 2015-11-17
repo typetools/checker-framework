@@ -10,6 +10,7 @@ import org.checkerframework.framework.util.Heuristics;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 import java.util.Comparator;
 import java.util.List;
@@ -40,7 +41,6 @@ import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Typechecks source code for interning violations.  A type is considered interned
@@ -357,9 +357,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         MethodTree methodTree = null;
         while ((tree = parentPath.getLeaf()) != null) {
             if (tree.getKind() == Tree.Kind.IF) {
-            	ifStatementTree = tree;
+                ifStatementTree = tree;
             } else if (tree.getKind() == Tree.Kind.METHOD) {
-            	methodTree = (MethodTree) tree;
+                methodTree = (MethodTree) tree;
                 break;
             }
 
@@ -373,7 +373,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         assert stmnt != null; // The call to Heuristics.matchParents already ensured the enclosing method has at least one statement (an if statement) in the body
 
         if (stmnt != ifStatementTree) {
-        	return false; // The if statement is not the first statement in the method.
+            return false; // The if statement is not the first statement in the method.
         }
 
         ExecutableElement enclosing = TreeUtils.elementFromDeclaration(visitorState.getMethodTree());
