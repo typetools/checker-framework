@@ -181,6 +181,11 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     public AnnotatedTypeMirror visitMemberSelect(MemberSelectTree node,
                                                  AnnotatedTypeFactory f) {
         Element elt = TreeUtils.elementFromUse(node);
+
+        if(TreeUtils.isClassLiteral(node)){
+            // the type of a class literal is the type of the "class" element.
+            return f.getAnnotatedType(elt);
+        }
         switch (elt.getKind()) {
             case METHOD:
             case PACKAGE: // "java.lang" in new java.lang.Short("2")
@@ -194,9 +199,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         if (node.getIdentifier().contentEquals("this")) {
             // TODO: why don't we use getSelfType here?
             return f.getEnclosingType((TypeElement) InternalUtils.symbol(node.getExpression()), node);
-        } else if (node.getExpression().getKind() == Tree.Kind.PRIMITIVE_TYPE) {
-            // Handle class literals for primitive types (as in int.class)
-            return f.getAnnotatedType(elt);
         } else {
             // We need the original t with the implicit annotations
             AnnotatedTypeMirror t = f.getAnnotatedType(node.getExpression());
