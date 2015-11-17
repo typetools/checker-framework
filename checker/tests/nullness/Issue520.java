@@ -28,3 +28,12 @@ abstract class Child extends Parent<CharSequence> {
 		list.add(seq);
 	}
 }
+
+class WildCardAdd {
+    List<@UnknownKeyFor ? super @KeyForBottom CharSequence> wildCardList = new ArrayList<@KeyForBottom CharSequence>();
+
+    void foo(List<@KeyFor("m") CharSequence> keyForMCharSeq, @UnknownKeyFor CharSequence unknownCharSeq) {        wildCardList = keyForMCharSeq;
+        wildCardList.add(unknownCharSeq);
+        @KeyFor("y") Object o = wildCardList.get(0);
+    }
+}
