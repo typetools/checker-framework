@@ -739,8 +739,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         if (performWholeProgramInference && !expr.containsUnknown()
                 && expr instanceof FieldAccess) {
             // Updates .jaif file
-            ClassSymbol clazzSymbol = JaifFileUtils.getEnclosingClassSymbol
-                    (analysis.getContainingClass(n.getTree()), lhs,
+            ClassSymbol clazzSymbol = JaifFileUtils.getEnclosingClassSymbol(
+                    analysis.getContainingClass(n.getTree()), lhs,
                             ((FieldAccessNode)lhs).getReceiver());
             JaifFileUtils.updateFieldTypeInJaif((FieldAccessNode) lhs,
                     rhs, clazzSymbol, analysis.getTypeFactory());
