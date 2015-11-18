@@ -16,6 +16,7 @@ public class NullnessSafeDefaultsSourceCodeTest extends CheckerFrameworkTest {
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
                 "-AuseSafeDefaultsForUnannotatedSourceCode",
+                // This test reads bytecode .class files created by NullnessSafeDefaultsSourceCodeLibTest
                 "-cp", "dist/checker.jar:tests/build/testclasses/",
                 "-Anomsgtext");
     }

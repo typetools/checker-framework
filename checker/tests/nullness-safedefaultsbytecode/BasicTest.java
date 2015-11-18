@@ -11,7 +11,7 @@ class BasicTest {
   void g(String s) {}
 }
 
-// @AnnotatedFor("nullness")
+@AnnotatedFor("nullness")
 class HasErrors {
   Object f() {
     //:: error: (return.type.incompatible)
