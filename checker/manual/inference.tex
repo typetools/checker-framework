@@ -93,8 +93,8 @@ Advantages of this variety of type inference include:
 This section lists tools that take a program and output a set of
 annotations for it.
 
-Every type-checker can infer annotations when you supply the
-\<-AuseJaifInference> command-line option.  See Section~\ref{jaif-inference}.
+By supplying the \<-AperformWholeProgramInference> command-line option,
+any type-checker can infer annotations. See Section~\ref{jaif-inference}.
 
 Section~\ref{nullness-inference} lists several tools that infer
 annotations for the Nullness Checker.
@@ -118,7 +118,7 @@ You can find installation instructions and a video tutorial at \url{https://gith
 Elsewhere in this manual, type refinement (Section~\ref{type-refinement})
 has been described as working only within a method.  In fact, it can also
 infer types for fields, method parameters, and method return types.  If you
-supply the \code{-AuseJaifInference} command-line option to javac, then the
+supply to javac the command-line option \code{-AperformWholeProgramInference}, then the
 checker outputs \<.jaif> files with refined types for the entire program.
 The output .jaif files are located in the folder \code{build/jaif-files},
 relative to where you executed the javac command.
@@ -130,7 +130,7 @@ run type-checking, there are likely to be fewer type-checking warnings.
 
 Note that a three-step process is required:
 \begin{enumerate}
-\item Run the checker with the \<-AuseJaifInference> command-line option to
+\item Run the checker with the \<-AperformWholeProgramInference> command-line option to
   produce a \<.jaif> file.  Some type-checking errors may result.
 \item Insert the \<.jaif> file's annotations in the program.
 \item Run the checker again.  Fewer type-checking errors may result.
@@ -140,9 +140,15 @@ A good approach is to repeatedly run the above process until there are no
 more changes to the inference results (that is, the \<.jaif> file is
 unchanged between two runs), before you begin to change annotations in the
 program source code.
-%[TO DO: Automating this process would be helpful to users.  Could that be
-  %done within the Checker Framework, or would it need to iteratively call
-  %the Checker Framework?]
+The script \<framework/whole-program-inference-script/infer-and-annotate.sh>
+automates this process. This script runs inference consecutive times and adds
+annotations in the program. It receives as input:
+\begin{enumerate}
+\item Processor's name.
+\item Target program's classpath).
+\item Extra processor arguments which will be passed to the checker.
+\item List of paths to .java files in the program.
+\end{enumerate}
 
 This slightly clumsy process is required because type-checking is modular:
 it processes each class only once, independently.  This means that it is
@@ -173,10 +179,11 @@ no errors) the result is a typing that is legal for the program as
 currently written but may not be as general as possible and may not
 accommodate future program changes.
 
-
-%[TO DO:  Does .jaif file inference always result in a new type that is a
-  %subtype of the declared type, or might it result in a supertype?  For
-  %starting from an unannotated program, supertypes could be useful to infer
-  %@Nullable which is different from the default which is @NonNull.  Could
-  %this be controlled by a command-line option or two?]
+When performing inference for a program considering a pluggable type system's
+processor, expressions that have a declared type for that type system don't have
+their type inferred. Also, for expressions that do not have a declared type,
+the result of the inference process is only considered when the inferred type
+is a subtype of the default type of that expression. It is possible to bypass
+that later requirement by passing to the javac process the
+\<-ArelaxedInference> flag.
 
