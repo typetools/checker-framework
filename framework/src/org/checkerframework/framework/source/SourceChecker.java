@@ -197,6 +197,9 @@ import com.sun.tools.javac.util.Log;
     // Whether to use .jaif files whole-program inference
     "performWholeProgramInference",
 
+    // Whether .jaif files whole-program inference should ignore default types
+    "relaxedInference",
+
     ///
     /// Stub libraries
     ///

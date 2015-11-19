@@ -77,6 +77,9 @@ import com.sun.tools.javac.code.Type.ClassType;
  */
 public class JaifFileUtils {
 
+    // If true, default types are ignored during type inference.
+    private static boolean relaxedMode = false;
+
     /**
      * Path to where .jaif files will be written to and read from.
      * This path is relative to where the CF's javac command is executed.
@@ -88,6 +91,13 @@ public class JaifFileUtils {
 
     // Set containing all modified scenes in the current ClassTree.
     private static Set<String> modifiedScenes = new HashSet<String>();
+
+    /**
+     * Sets relaxed mode based on the input.
+     */
+    public static void setRelaxedMode(boolean mode) {
+        relaxedMode = mode;
+    }
 
     /**
      * Returns the scene related to a .jaif file path passed as input.
@@ -157,8 +167,8 @@ public class JaifFileUtils {
             ClassSymbol classSymbol, ExecutableElement methodElt,
             AnnotatedTypeFactory atf) {
         if (classSymbol == null) return null; // Static block.
-        String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString().
-                replaceAll("\\.", File.separator) + ".jaif";
+        String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString() +
+                 ".jaif";
         try {
             AClass clazz = getJaifClass(classSymbol, getScene(jaifPath));
             if (clazz == null) return null;
@@ -188,8 +198,8 @@ public class JaifFileUtils {
             ClassSymbol classSymbol, FieldAccessNode fieldNode,
             AnnotatedTypeFactory atf) {
         if (classSymbol == null) return null; // Static block.
-        String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString().
-                replaceAll("\\.", File.separator) + ".jaif";
+        String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString()
+                + ".jaif";
 
         AScene scene = getScene(jaifPath);
         try {
@@ -225,8 +235,8 @@ public class JaifFileUtils {
     public static void updateFieldTypeInJaif(FieldAccessNode lhs, Node rhs,
             ClassSymbol classSymbol, AnnotatedTypeFactory atf) {
         if (classSymbol == null) return;
-        String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString().
-                replaceAll("\\.", File.separator) + ".jaif";
+        String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString() +
+                ".jaif";
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
         if (lhsATM.getExplicitAnnotations().size() > 0) {
@@ -255,8 +265,9 @@ public class JaifFileUtils {
                             atf, rhsATM, prevATM);
                 }
             }
-            // Write into .jaif file ONLY IF refined type is a subtype of the current type.
-            if (atf.getTypeHierarchy().isSubtype(rhsATM, lhsATM)) {
+            // Write into .jaif file ONLY IF refined type is a subtype of the
+            // default type or if relaxedMode is true.
+            if (relaxedMode || atf.getTypeHierarchy().isSubtype(rhsATM, lhsATM)) {
                 Set<Annotation> setOfAnnos = atmToSetOfAnnotations(rhsATM, atf);
                 field.tlAnnotationsHere.clear();
                 field.tlAnnotationsHere.addAll(setOfAnnos);
@@ -284,8 +295,8 @@ public class JaifFileUtils {
             ClassSymbol classSymbol, MethodTree methodTree,
             AnnotatedTypeFactory atf) {
         if (classSymbol == null) return;
-        String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString().
-                replaceAll("\\.", File.separator) + ".jaif";
+        String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString() +
+                ".jaif";
         AScene scene = getScene(jaifPath);
         AnnotatedTypeMirror returnExprATM = atf.getAnnotatedType(retNode.
                 getTree().getExpression());
@@ -317,9 +328,12 @@ public class JaifFileUtils {
                     }
                 }
             }
-            // Write into .jaif file ONLY IF refined type is a subtype of the declared type.
-            if (atf.getTypeHierarchy().isSubtype(returnExprATM, methodReturnType)) {
-                Set<Annotation> setOfAnnos = atmToSetOfAnnotations(returnExprATM, atf);
+            // Write into .jaif file only if refined type is a subtype of the
+            // default type or if in relaxed mode.
+            if (relaxedMode || atf.getTypeHierarchy().isSubtype(
+                    returnExprATM, methodReturnType)) {
+                Set<Annotation> setOfAnnos = atmToSetOfAnnotations(
+                        returnExprATM, atf);
                 method.returnType.tlAnnotationsHere.clear();
                 method.returnType.tlAnnotationsHere.addAll(setOfAnnos);
                 addModifiedScene(jaifPath);
@@ -365,7 +379,7 @@ public class JaifFileUtils {
     // The four conversion methods below could be somewhere else. Maybe in AFU?
 
     /**
-     * Converts a set of {@link annotations.Annotation} into an
+     * Converts a set of  into an
      * {@link org.checkerframework.framework.type.AnnotatedTypeMirror} that
      * contains all annotations in the original set.
      */
@@ -387,7 +401,7 @@ public class JaifFileUtils {
 
     /**
      * Converts an {@link org.checkerframework.framework.type.AnnotatedTypeMirror}
-     * into a set of {@link annotations.Annotation}.
+     * into a set of .
      */
     private static Set<Annotation> atmToSetOfAnnotations(AnnotatedTypeMirror atm,
             AnnotatedTypeFactory atf) {
@@ -405,7 +419,7 @@ public class JaifFileUtils {
 
     /**
      * Converts an {@link javax.lang.model.element.AnnotationMirror}
-     * into an {@link annotations.Annotation}.
+     * into an .
      */
     private static Annotation annotationMirrorToAnnotation(AnnotationMirror am) {
         AnnotationDef def = new AnnotationDef(AnnotationUtils.annotationName(am));
@@ -444,7 +458,7 @@ public class JaifFileUtils {
     }
 
     /**
-     * Converts an {@link annotations.Annotation} into an
+     * Converts an  into an
      * {@link javax.lang.model.element.AnnotationMirror}.
      */
     private static AnnotationMirror annotationToAnnotationMirror(

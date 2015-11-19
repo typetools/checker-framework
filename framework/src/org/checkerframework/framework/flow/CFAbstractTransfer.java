@@ -123,6 +123,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
         performWholeProgramInference = analysis.getTypeFactory().getProcessingEnv().
                 getOptions().containsKey("performWholeProgramInference");
+        JaifFileUtils.setRelaxedMode(analysis.getTypeFactory().getProcessingEnv().
+                getOptions().containsKey("relaxedInference"));
     }
 
     /**
