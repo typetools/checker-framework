@@ -1,5 +1,6 @@
+import tests.jaifinference.qual.SiblingWithFields;
+import tests.jaifinference.qual.DefaultType;
 import tests.jaifinference.qual.Parent;
-import tests.jaifinference.qual.Top;
 import tests.jaifinference.qual.*;
 /**
  * This file contains expected errors that should exist even after the jaif type
@@ -88,7 +89,7 @@ public class ExpectedErrors {
         expectsSibling2(lubPublicField);
     }
 
-    @Top
+    @DefaultType
     private static boolean bool = false;
 
     public static @Parent int lubTest() {

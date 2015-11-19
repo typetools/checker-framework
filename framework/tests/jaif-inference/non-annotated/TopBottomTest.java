@@ -1,6 +1,6 @@
 import tests.jaifinference.qual.*;
 public class TopBottomTest {
-    // The default type for fields is @Top.
+    // The default type for fields is @DefaultType.
     private int privateField;
     public int publicField;
 

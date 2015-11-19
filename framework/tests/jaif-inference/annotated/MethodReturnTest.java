@@ -1,5 +1,6 @@
+import tests.jaifinference.qual.SiblingWithFields;
+import tests.jaifinference.qual.DefaultType;
 import tests.jaifinference.qual.Parent;
-import tests.jaifinference.qual.Top;
 import tests.jaifinference.qual.Sibling1;
 import tests.jaifinference.qual.*;
 public class MethodReturnTest {
@@ -12,7 +13,7 @@ public class MethodReturnTest {
         return getSibling1();
     }
 
-    @Top
+    @DefaultType
     public static boolean bool = false;
 
     public static @Parent int lubTest() {

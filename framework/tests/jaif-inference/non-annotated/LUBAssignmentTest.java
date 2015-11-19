@@ -1,6 +1,6 @@
 import tests.jaifinference.qual.*;
 public class LUBAssignmentTest {
-    // The default type for fields is @Top.
+    // The default type for fields is @DefaultType.
     private static int privateField;
     public static int publicField;
 

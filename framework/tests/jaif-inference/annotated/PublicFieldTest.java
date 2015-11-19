@@ -1,5 +1,8 @@
-import tests.jaifinference.qual.Sibling2;
+import tests.jaifinference.qual.SiblingWithFields;
+import tests.jaifinference.qual.DefaultType;
 import tests.jaifinference.qual.Parent;
+import tests.jaifinference.qual.Sibling1;
+import tests.jaifinference.qual.Sibling2;
 import tests.jaifinference.qual.*;
 public class PublicFieldTest {
     @Parent

@@ -1,7 +1,9 @@
+import tests.jaifinference.qual.SiblingWithFields;
+import tests.jaifinference.qual.DefaultType;
 import tests.jaifinference.qual.Parent;
 import tests.jaifinference.qual.*;
 public class LUBAssignmentTest {
-    // The default type for fields is @Top.
+    // The default type for fields is @DefaultType.
     @Parent
     private static int privateField;
     @Parent

@@ -1,7 +1,12 @@
+import tests.jaifinference.qual.SiblingWithFields;
+import tests.jaifinference.qual.DefaultType;
+import tests.jaifinference.qual.Parent;
+import tests.jaifinference.qual.Sibling1;
+import tests.jaifinference.qual.Sibling2;
 import tests.jaifinference.qual.JaifBottom;
 import tests.jaifinference.qual.*;
 public class TopBottomTest {
-    // The default type for fields is @Top.
+    // The default type for fields is @DefaultType.
     @JaifBottom
     private int privateField;
     @JaifBottom

@@ -1,12 +1,12 @@
 import tests.jaifinference.qual.SiblingWithFields;
-import tests.jaifinference.qual.Top;
+import tests.jaifinference.qual.DefaultType;
 import tests.jaifinference.qual.*;
 public class AnnotationWithFieldTest {
 
-    @Top
+    @DefaultType
     private String fields;
 
-    @Top
+    @DefaultType
     private String emptyFields;
 
     void testAnnotationWithFields() {
