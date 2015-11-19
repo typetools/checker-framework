@@ -379,7 +379,7 @@ public class JaifFileUtils {
     // The four conversion methods below could be somewhere else. Maybe in AFU?
 
     /**
-     * Converts a set of  into an
+     * Converts a set of {@link annotations.Annotation} into an
      * {@link org.checkerframework.framework.type.AnnotatedTypeMirror} that
      * contains all annotations in the original set.
      */
@@ -401,7 +401,7 @@ public class JaifFileUtils {
 
     /**
      * Converts an {@link org.checkerframework.framework.type.AnnotatedTypeMirror}
-     * into a set of .
+     * into a set of {@link annotations.Annotation}.
      */
     private static Set<Annotation> atmToSetOfAnnotations(AnnotatedTypeMirror atm,
             AnnotatedTypeFactory atf) {
@@ -419,7 +419,7 @@ public class JaifFileUtils {
 
     /**
      * Converts an {@link javax.lang.model.element.AnnotationMirror}
-     * into an .
+     * into an {@link annotations.Annotation}.
      */
     private static Annotation annotationMirrorToAnnotation(AnnotationMirror am) {
         AnnotationDef def = new AnnotationDef(AnnotationUtils.annotationName(am));
@@ -458,7 +458,7 @@ public class JaifFileUtils {
     }
 
     /**
-     * Converts an  into an
+     * Converts an {@link annotations.Annotation} into an
      * {@link javax.lang.model.element.AnnotationMirror}.
      */
     private static AnnotationMirror annotationToAnnotationMirror(
