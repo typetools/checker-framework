@@ -18,12 +18,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 
-import tests.jaifinference.qual.JaifBottom;
-import tests.jaifinference.qual.Parent;
-import tests.jaifinference.qual.Sibling1;
-import tests.jaifinference.qual.Sibling2;
-import tests.jaifinference.qual.SiblingWithFields;
-import tests.jaifinference.qual.Top;
+import tests.jaifinference.qual.*;
 /**
  * AnnotatedTypeFactory to test a whole-program type inference using .jaif
  * files.
@@ -33,8 +28,8 @@ import tests.jaifinference.qual.Top;
  * 
  * @author pbsf
  */
-@TypeQualifiers({Parent.class, Top.class, Sibling1.class, Sibling2.class,
-        JaifBottom.class, SiblingWithFields.class})
+@TypeQualifiers({Parent.class, DefaultType.class, Top.class, Sibling1.class,
+        Sibling2.class, JaifBottom.class, SiblingWithFields.class})
 public class JaifInferenceTestAnnotatedTypeFactory
         extends
             BaseAnnotatedTypeFactory {
@@ -123,6 +118,14 @@ public class JaifInferenceTestAnnotatedTypeFactory
                     || AnnotationUtils.areSameByClass(sub, Sibling2.class)
                     || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class))
                     && AnnotationUtils.areSameByClass(sup, Parent.class)) {
+                return true;
+            }
+
+            if ((AnnotationUtils.areSameByClass(sub, Sibling1.class)
+                    || AnnotationUtils.areSameByClass(sub, Sibling2.class)
+                    || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class)
+                    || AnnotationUtils.areSameByClass(sub, Parent.class)) 
+                    && AnnotationUtils.areSameByClass(sup, DefaultType.class)){
                 return true;
             }
 

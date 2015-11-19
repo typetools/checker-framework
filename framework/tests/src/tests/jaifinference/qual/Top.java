@@ -14,5 +14,4 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @TypeQualifier
 @SubtypeOf({})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@DefaultQualifierInHierarchy
 public @interface Top {}
