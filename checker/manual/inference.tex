@@ -108,13 +108,57 @@ Framework.
 You can find installation instructions and a video tutorial at \url{https://github.com/reprogrammer/cascade}.
 
 
-\subsection{Interprocedural type refinement during type-checking\label{jaif-inference}}
+\subsection{Signature inference (interprocedural type refinement)\label{jaif-inference}}
 
 Elsewhere in this manual, type refinement (Section~\ref{type-refinement})
 has been described as working only within a method.  In fact, it can also
-infer types for fields, method parameters, and method return types.  If you
+infer types for fields, method parameters, and method return types, and it
+can insert these inferred types into your program.
+
+To do so, run the script
+\<framework/whole-program-inference-script/infer-and-annotate.sh>.
+Its command-line arguments are:
+
+\begin{enumerate}
+\item Processor's name.
+\item Target program's classpath.
+\item Extra processor arguments which will be passed to the checker.
+\item List of paths to \<.java> files in the program.
+\end{enumerate}
+
+
+As with any type inference tool, it is a good idea to double-check the
+results.  In particular, this type inference may yield results that are too
+specific.  For example, suppose that your program currently calls
+method \<m> non-null
+arguments.  This tool will infer that \<m>'s parameter has
+\<@NonNull> type.  If you had intended the method to be able to
+take \<null> as an argument and you later add such a call, the type-checker
+will issue a warning because the automatically-inserted \<@NonNull>
+annotation is inconsistent with the new call.
+
+Another way of explaining the issue is that the tool determines a method parameter's type
+annotation based on what arguments are passed to the method but not on how the
+parameter is used within the method body.  If the program contains
+no errors, the tool's annotations are legal for the program as
+currently written but may not be as general as possible and may not
+accommodate future program changes.
+
+The tool only infers annotations for type uses that have no user-written
+annotation (for the given type system).
+Furthermore, for unannotated locations, the tool only infers a qualifier
+that is a subtype of the default type qualifier
+(Section~\ref{effective-qualifier}).
+You can permit it to infer supertypes
+by passing javac the \<-ArelaxedInference> flag, and this is desirable when
+the default type annotation is not the top type annotation.
+
+
+\subsubsection{How signature inference works\label{how-signature-inference-works}}
+
+If you
 supply to javac the command-line option \code{-AinferSignatures}, then the
-checker outputs \<.jaif> files with refined types for the entire program.
+checker outputs \<.jaif> files with refined types for fields and method signatures.
 The output .jaif files are located in the folder \code{build/jaif-files},
 relative to where you executed the javac command.
 
@@ -133,52 +177,26 @@ Note that a three-step process is required:
 \noindent
 A good approach is to repeatedly run the above process until there are no
 more changes to the inference results (that is, the \<.jaif> file is
-unchanged between two runs), before you begin to change annotations in the
-program source code.
-The script \<framework/whole-program-inference-script/infer-and-annotate.sh>
-automates this process. This script runs inference consecutive times and adds
-annotations in the program. It receives as input:
-\begin{enumerate}
-\item Processor's name.
-\item Target program's classpath).
-\item Extra processor arguments which will be passed to the checker.
-\item List of paths to .java files in the program.
-\end{enumerate}
+unchanged between two runs).  That is exactly what the
+\<infer-and-annotate.sh> script does.
 
-This slightly clumsy process is required because type-checking is modular:
-it processes each class only once, independently.  This means that it is
-possible to run type-checking on only part of your program, and
-type-checking is fast.
+The \<infer-and-annotate.sh> script insulates you from the
+clumsy multi-step process.  The multi-step process
+is required because type-checking is modular:
+it processes each class only once, independently.  Modularity enables you
+to run type-checking on only part of your program, and
+it makes type-checking fast.  However, it has some disadvantages:
 \begin{itemize}
 \item
-  The reason that the first run of the type-checker does not take advantage
-  of the inference results is that the inference is only complete at the
-  end of type-checking, and type-checking does not revisit any
+  The first run of the type-checker cannot not take advantage
+  of signature inference results because signature inference is only complete at the
+  end of type-checking, and modular type-checking does not revisit any
   already-processed classes.
 \item
   The reason that multiple executions are required is that revisiting an
   already-processed class may result in a better estimate.
 \end{itemize}
 
-As with any type inference tool, it is a good idea to double-check the
-results.  In particular, this type inference may yield results that are too
-specific.  For example, if a particular method is only called with non-null
-arguments, then this process will infer that the method's parameter has
-@NonNull type.  If the programmer had intended the method to be able to
-take \<null> as an argument and later adds such a call, the type-checker
-will issue a warning until you manually change the method parameter's type
-annotation.  Another way of saying this is that a method parameter's type
-annotation depends on what arguments are passed to it but not on how the
-parameter is used within the method body, and that (if the program contains
-no errors) the result is a typing that is legal for the program as
-currently written but may not be as general as possible and may not
-accommodate future program changes.
 
-When performing inference for a program considering a pluggable type system's
-processor, expressions that have a declared type for that type system don't have
-their type inferred. Also, for expressions that do not have a declared type,
-the result of the inference process is only considered when the inferred type
-is a subtype of the default type of that expression. It is possible to bypass
-that later requirement by passing to the javac process the
-\<-ArelaxedInference> flag.
 
+%%  LocalWords:  AinferSignatures java jaif
