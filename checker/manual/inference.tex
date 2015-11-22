@@ -5,8 +5,8 @@ There are two different tasks that are commonly called ``type inference'':
 \begin{enumerate}
 \item
   Type inference during type-checking:
-  the type-checker fills in an appropriate type where the programmer didn't
-  write one, but never tells the programmer what it was.
+  The type-checker fills in an appropriate type where the programmer didn't
+  write one, but does not change the source code.
   See Section~\ref{type-inference-refinement}.
 \item
   Type inference to annotate a program:
@@ -16,13 +16,13 @@ There are two different tasks that are commonly called ``type inference'':
 \end{enumerate}
 
 Each variety has its own advantages, discussed below.
-Advantages of \emph{all} varieties of inference include:
+Advantages of \emph{all} varieties of type inference include:
 \begin{itemize}
 \item
   Less work for the programmer.
 \item
   The tool chooses the most general type, whereas a programmer might
-  accidentally write a more specific, less generally-useful annotation.
+  accidentally write a more-specific, less-generally-useful annotation.
 \end{itemize}
 
 
@@ -31,18 +31,18 @@ Advantages of \emph{all} varieties of inference include:
 During type-checking, if certain variables have no type qualifier, the
 type-checker determines whether there is some type qualifier that would
 permit the program to type-check.  If so, the type-checker uses that type
-qualifier, but never tells the programmer what it was.  Each time the
+qualifier, but does not change the source code.  Each time the
 type-checker runs, it re-infers the type qualifier for that variable.  If
 no type qualifier exists that permits the program to type-check, the
 type-checker issues a warning.
 
-This variety of type inference is built into the Checker Framework.
+Local type inference is built into the Checker Framework.
 Every checker automatically uses it.  As a result, a programmer typically
 does not have to write any qualifiers inside the body of a method.
 However, it primarily
-works within a method, not across method boundaries.  Method
-signatures (arguments and return values) and fields must have already been
-explicitly annotated.
+works within a method, not across method boundaries.
+The source code must already contain annotations for method
+signatures (arguments and return values) and fields.
 
 Advantages of this variety of type inference include:
 \begin{itemize}
@@ -50,9 +50,7 @@ Advantages of this variety of type inference include:
   If the type qualifier is obvious to the programmer, then omitting it
   can reduce annotation clutter in the program.
 \item
-  The type inference can take advantage of only the code currently being
-  compiled, rather than having to be correct for all possible calls.
-  Additionally, if the code changes, then there is no old annotation that
+  If the code changes, then there is no old annotation that
   might need to be updated.
 \item
   Within-method type inference occurs automatically.
@@ -68,7 +66,8 @@ Section~\ref{type-refinement}.
 
 As a separate step before type-checking, a type inference tool takes the
 program as input, and outputs a set of type qualifiers that would
-type-check.  These qualifiers are inserted into the source code or the
+make the program type-check.
+These qualifiers are inserted into the source code or the
 class file.  They can be viewed and adjusted by the programmer, and can
 be used by tools such as the type-checker.
 
@@ -79,12 +78,8 @@ Advantages of this variety of type inference include:
   rather than just reasoning one method at a time.
 \item
   The program source code contains documentation in the form of type
-  qualifiers, which can aid programmer understanding.
-\item
-  Error messages may be more comprehensible.  With type inference
-  during type-checking, error messages can be obscure, because the
-  compiler has already inferred (possibly incorrect) types for a number
-  of variables.
+  qualifiers, which can aid programmer understanding and may make
+  type-checking warnings more comprehensible.
 \end{itemize}
 
 
@@ -93,7 +88,7 @@ Advantages of this variety of type inference include:
 This section lists tools that take a program and output a set of
 annotations for it.
 
-By supplying the \<-AperformWholeProgramInference> command-line option,
+By supplying the \<-AinferSignatures> command-line option,
 any type-checker can infer annotations. See Section~\ref{jaif-inference}.
 
 Section~\ref{nullness-inference} lists several tools that infer
@@ -118,7 +113,7 @@ You can find installation instructions and a video tutorial at \url{https://gith
 Elsewhere in this manual, type refinement (Section~\ref{type-refinement})
 has been described as working only within a method.  In fact, it can also
 infer types for fields, method parameters, and method return types.  If you
-supply to javac the command-line option \code{-AperformWholeProgramInference}, then the
+supply to javac the command-line option \code{-AinferSignatures}, then the
 checker outputs \<.jaif> files with refined types for the entire program.
 The output .jaif files are located in the folder \code{build/jaif-files},
 relative to where you executed the javac command.
@@ -130,7 +125,7 @@ run type-checking, there are likely to be fewer type-checking warnings.
 
 Note that a three-step process is required:
 \begin{enumerate}
-\item Run the checker with the \<-AperformWholeProgramInference> command-line option to
+\item Run the checker with the \<-AinferSignatures> command-line option to
   produce a \<.jaif> file.  Some type-checking errors may result.
 \item Insert the \<.jaif> file's annotations in the program.
 \item Run the checker again.  Fewer type-checking errors may result.
