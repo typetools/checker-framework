@@ -584,7 +584,7 @@ reduces your burden of annotating types in your program and
 eliminates some false positive warnings, but it
 never introduces unsoundness nor causes an error to be missed.
 
-By default all checkers, 
+By default all checkers
 automatically incorporate type refinement.  Most of the time, users don't
 have to think about, and may not even notice, type refinement.
 (And most readers can skip reading this section of the manual, except
@@ -643,7 +643,7 @@ Here is another example:
 
 \noindent
 The Nullness Checker does not issue a warning for
-the call <myVar.hashCode()> above because after the assignment,
+the call \<myVar.hashCode()> above because after the assignment,
 the type-checker
 treats \<myVar> as having type \<@NonNull String>, which is more precise
 than the programmer-written type.
@@ -687,7 +687,7 @@ This example shows the general rules for when
 the Nullness Checker (Chapter~\ref{nullness-checker}) can automatically
 determine that certain variables are non-null, even if they were explicitly
 or by default annotated as nullable.
-The checker treats a variable or expression as \refqualclass{checker/nullness/qual}{NonNull}
+The checker treats a variable or expression as \refqualclass{checker/nullness/qual}{NonNull}:
 \begin{itemize}
 \item
 starting at the time that it is either
@@ -859,8 +859,8 @@ is \code{@NonNull String} in the following declaration:
     public final String protocol = "https";
 \end{Verbatim}
 
-Please note that such inferred type may leak to the public interface of the
-class.  To override such behavior, you can explicitly insert the desired
+Such an inferred type may leak to the public interface of the class.
+If you wish to override such behavior, you can explicitly insert the desired
 annotation, e.g.,
 
 \begin{Verbatim}
@@ -870,28 +870,23 @@ annotation, e.g.,
 \item
 Within method bodies:
 Type inference is performed for fields in the context of method bodies,
-like local variables, but method invocations invalidate any inferred
-information.  Consider the following example, where \code{updatedAt} is a nullable
+like local variables.
+Consider the following example, where \code{updatedAt} is a nullable
 field:
 
 \begin{Verbatim}
 class DBObject {
   @Nullable Date updatedAt;
 
-  void persistData() {
-    ... // write to disk or other non-volatile memory
-    updatedAt = null;
-  }
+  void m() {
+    // updatedAt is @Nullable, so warning about .getTime()
+    ... updatedAt.getTime() ... // warning about possible NullPointerException
 
-  void update() {
     if (updatedAt == null)
         updatedAt = new Date();
-    // updatedAt is nonnull
-    log("Updating object at " + updatedAt.getTime());
 
-    persistData();
-    // updatedAt is nullable again
-    log.debug("Saved object updated at " + updatedAt.getTime()); // invalid!
+    // updatedAt is now @NonNull, so .getTime() call is OK
+    ... updatedAt.getTime() ...
   }
 }
 \end{Verbatim}
@@ -899,12 +894,8 @@ class DBObject {
 Here the call to \code{persistData()} invalidates the inferred non-null type
 of \code{updatedAt}.
 
-When methods do not modify any object state or have any identity side
-effects (e.g., \code{log()} method here), you can annotate these methods as
-\code{SideEffectFree} or \code{Pure} (see
-Section~\ref{type-refinement-purity}).  When a method is annotated as
-\code{SideEffectFree}, the flow analyzer carries the inferred types across
-the method invocation boundary.
+A method call may invalidate inferences about field types; see 
+Section~\ref{type-refinement-purity}.
 
 \end{itemize}
 
@@ -917,7 +908,7 @@ until the checker can no longer support that inference.
 
 The refined type begins at a test (such as \<if (myvar != null) ...>) or
 an assignment.  If the assignment occurs within a method body,
-write a postcondition annotation such as
+you can write a postcondition annotation such as
 \refqualclass{checker/nullness/qual}{EnsuresNonNull}.
 
 The refined type ends at an assignment or possible assignment.  Any method
@@ -933,11 +924,11 @@ Usually, you only need to use \refqualclass{dataflow/qual}{SideEffectFree}.
 \begin{description}
 
 \item[\refqualclass{dataflow/qual}{SideEffectFree}]
-  indicates that the method has no (visible) side effects.
+  indicates that the method has no externally-visible side effects.
 
 \item[\refqualclass{dataflow/qual}{Deterministic}]
-  indicates that if the method is called multiple times with the same
-  arguments, then it returns the same result.
+  indicates that if the method is called multiple times with identical
+  arguments, then it returns the identical result.
 
 \item[\refqualclass{dataflow/qual}{Pure}]
   indicates that the method is both @SideEffectFree and @Deterministic.
@@ -951,15 +942,17 @@ For example, consider the
 following declarations and uses:
 
 \begin{Verbatim}
-        @Nullable Object myField;
+  @Nullable Object myField;
 
-        int computeValue() { ... }
+  int computeValue() { ... }
 
-        ...
-        if (myField != null) {
-          int result = computeValue();
-          myField.toString();
-        }
+  void m() {
+    ...
+    if (myField != null) {
+      int result = computeValue();
+      myField.toString();
+    }
+  }
 \end{Verbatim}
 
 \noindent
@@ -967,11 +960,12 @@ Ordinarily, the Nullness Checker would issue a warning regarding the
 \code{toString()} call, because the receiver \code{myField} might be
 \code{null}, according to the \code{@Nullable} annotation on the
 declaration of \code{myField}.  Even though the code checked the value of
-\code{myField}, the call to \<computeValue> might have re-set it to null.
+\<myField>, the call to \<computeValue> might have re-set \<myField> to null.
 If you change the declaration of \code{computeValue} to
 
 \begin{Verbatim}
-        @SideEffectFree int computeValue() { ... }
+  @SideEffectFree
+  int computeValue() { ... }
 \end{Verbatim}
 
 \noindent
@@ -983,12 +977,14 @@ As a more complex example, consider the
 following declaration and uses:
 
 \begin{Verbatim}
-        @Nullable Object getField(Object arg) { ... }
+  @Nullable Object getField(Object arg) { ... }
 
-        ...
-        if (x.getField(y) != null) {
-          x.getField(y).toString();
-        }
+  void m() {
+    ...
+    if (x.getField(y) != null) {
+      x.getField(y).toString();
+    }
+  }
 \end{Verbatim}
 
 Ordinarily, the Nullness Checker would issue a warning regarding the
@@ -998,7 +994,8 @@ declaration of \code{getField}.  If you change the declaration of
 \code{getField} to
 
 \begin{Verbatim}
-        @Pure @Nullable Object getField(Object arg) { ... }
+  @Pure
+  @Nullable Object getField(Object arg) { ... }
 \end{Verbatim}
 
 \noindent
@@ -1046,6 +1043,9 @@ exist of the given type.
 
 A common error is:
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
 MyClass.java:1465: error: int hashCode() in MyClass cannot override int hashCode(Object this) in java.lang.Object; attempting to use an incompatible purity declaration
     public int hashCode() {
@@ -1053,6 +1053,9 @@ MyClass.java:1465: error: int hashCode() in MyClass cannot override int hashCode
   found   : []
   required: [SIDE_EFFECT_FREE, DETERMINISTIC]
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 \noindent
 The reason for the error is that the \<Object> class is annotated as:
