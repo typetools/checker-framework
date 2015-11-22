@@ -53,7 +53,7 @@ function infer_and_annotate() {
         cp -r build/jaif-files prev-jaif 2>/dev/null || :
 
         # Runs CF's javac
-        ${CHECKERFRAMEWORK}/checker/bin/javac -cp $cp -processor $processor -AperformWholeProgramInference $extra_args $java_files
+        ${CHECKERFRAMEWORK}/checker/bin/javac -cp $cp -processor $processor -AinferSignatures $extra_args $java_files
 
         # Deletes .unannotated backup files. This is necessary otherwise the
         # insert-annotations-to-source tool will use this file instead of the

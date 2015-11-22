@@ -361,7 +361,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.root = root;
         treePathCache.clear();
         pathHack.clear();
-        if (checker.getOptions().containsKey("performWholeProgramInference")) {
+        if (checker.getOptions().containsKey("inferSignatures")) {
             // Clear modified .jaif files in previous CompilationUnit.
             JaifFileUtils.clearModifiedScenes();
         }
@@ -754,7 +754,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected void postProcessClassTree(ClassTree tree) {
         TypesIntoElements.store(processingEnv, this, tree);
         DeclarationsIntoElements.store(processingEnv, this, tree);
-        if (checker.getOptions().containsKey("performWholeProgramInference")) {
+        if (checker.getOptions().containsKey("inferSignatures")) {
             // Write scenes into .jaif files. In order to perform the write
             // operation only once for each .jaif file, the best location to
             // do so is here.

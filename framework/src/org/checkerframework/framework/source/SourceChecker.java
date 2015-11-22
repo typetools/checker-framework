@@ -195,7 +195,7 @@ import com.sun.tools.javac.util.Log;
     "resolveReflection",
 
     // Whether to use .jaif files whole-program inference
-    "performWholeProgramInference",
+    "inferSignatures",
 
     // Whether .jaif files whole-program inference should ignore default types
     "relaxedInference",
@@ -809,7 +809,7 @@ public abstract class SourceChecker
      */
     protected boolean shouldAddShutdownHook() {
         return getOptions().containsKey("resourceStats") ||
-                getOptions().containsKey("performWholeProgramInference");
+                getOptions().containsKey("inferSignatures");
     }
 
     /**
