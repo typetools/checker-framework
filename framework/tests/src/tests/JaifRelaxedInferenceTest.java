@@ -33,7 +33,7 @@ public class JaifRelaxedInferenceTest extends CheckerFrameworkTest {
     public List<String> customizeOptions(List<String> previousOptions) {
         final List<String> options = new ArrayList<>(previousOptions);
         options.add("-AinferSignatures");
-        options.add("-ArelaxedInference");
+        options.add("-ArelaxedSignatureInference");
         return options;
     }
 

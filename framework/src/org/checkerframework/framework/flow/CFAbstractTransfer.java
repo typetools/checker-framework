@@ -125,7 +125,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 getOptions().containsKey("inferSignatures");
         if (inferSignatures) {
             JaifFileUtils.setRelaxedMode(analysis.getTypeFactory().getProcessingEnv().
-                    getOptions().containsKey("relaxedInference"));
+                    getOptions().containsKey("relaxedSignatureInference"));
         }
     }
 

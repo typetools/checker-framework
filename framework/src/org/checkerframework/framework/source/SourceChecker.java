@@ -198,7 +198,7 @@ import com.sun.tools.javac.util.Log;
     "inferSignatures",
 
     // Whether .jaif files whole-program inference should ignore default types
-    "relaxedInference",
+    "relaxedSignatureInference",
 
     ///
     /// Stub libraries
