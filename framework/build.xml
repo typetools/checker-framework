@@ -366,9 +366,9 @@
         </antcall>
     </target>
 
-    <target name="jaif-inference-tests" depends="jar,build-tests"
+    <target name="signature-inference-tests" depends="jar,build-tests"
             description="Run tests for the whole-program type inference using .jaif files">
-        <delete dir="build/jaif-inference"/>
+        <delete dir="build/signature-inference"/>
         <!--Runs the checker on test files to find expected errors and generate-
                 .jaif files.-->
         <antcall target="-run-tests">
@@ -378,12 +378,12 @@
             <param name="param" value="tests.JaifRelaxedInferenceTest"/>
         </antcall>
 
-        <delete dir="tests/jaif-inference/annotated"/>
-        <delete dir="tests/jaif-inference/relaxed-annotated"/>
+        <delete dir="tests/signature-inference/annotated"/>
+        <delete dir="tests/signature-inference/relaxed-annotated"/>
 
         <!-- Copying all test files to another directory, removing expected errors. -->
-        <copy todir="tests/jaif-inference/annotated">
-            <fileset dir="tests/jaif-inference/non-annotated"/>
+        <copy todir="tests/signature-inference/annotated">
+            <fileset dir="tests/signature-inference/non-annotated"/>
             <filterchain>
                 <linecontains negate="true">
                     <contains value="//:: error:"/>
@@ -391,8 +391,8 @@
             </filterchain>
         </copy>
 
-        <copy todir="tests/jaif-inference/relaxed-annotated">
-            <fileset dir="tests/jaif-inference/relaxed-non-annotated"/>
+        <copy todir="tests/signature-inference/relaxed-annotated">
+            <fileset dir="tests/signature-inference/relaxed-non-annotated"/>
             <filterchain>
                 <linecontains negate="true">
                     <contains value="//:: error:"/>
@@ -401,22 +401,22 @@
         </copy>
 
         <!-- Copying a file while maintaining expected errors. -->
-        <delete file="tests/jaif-inference/annotated/ExpectedErrors.java"/>
-        <copy file="tests/jaif-inference/non-annotated/ExpectedErrors.java"
-            todir="tests/jaif-inference/annotated"/>
+        <delete file="tests/signature-inference/annotated/ExpectedErrors.java"/>
+        <copy file="tests/signature-inference/non-annotated/ExpectedErrors.java"
+            todir="tests/signature-inference/annotated"/>
 
         <!-- Inserting annotations from .jaif files in-place. -->
         <apply executable="insert-annotations-to-source" parallel="true">
             <srcfile/>
             <fileset dir="build/jaif-files/" includes="*.jaif"/>
-            <fileset dir="tests/jaif-inference/annotated/" includes="*.java"/>
-            <arg value="--outdir=tests/jaif-inference/annotated/"/>
+            <fileset dir="tests/signature-inference/annotated/" includes="*.java"/>
+            <arg value="--outdir=tests/signature-inference/annotated/"/>
         </apply>
         <apply executable="insert-annotations-to-source" parallel="true">
             <srcfile/>
             <fileset dir="build/jaif-files/" includes="*.jaif"/>
-            <fileset dir="tests/jaif-inference/relaxed-annotated/" includes="*.java"/>
-            <arg value="--outdir=tests/jaif-inference/relaxed-annotated/"/>
+            <fileset dir="tests/signature-inference/relaxed-annotated/" includes="*.java"/>
+            <arg value="--outdir=tests/signature-inference/relaxed-annotated/"/>
         </apply>
 
         <!-- Running the checker again on the final .java files. -->
