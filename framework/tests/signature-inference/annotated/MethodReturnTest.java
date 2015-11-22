@@ -1,8 +1,8 @@
-import tests.jaifinference.qual.SiblingWithFields;
-import tests.jaifinference.qual.DefaultType;
-import tests.jaifinference.qual.Parent;
-import tests.jaifinference.qual.Sibling1;
-import tests.jaifinference.qual.*;
+import tests.signatureinference.qual.SiblingWithFields;
+import tests.signatureinference.qual.DefaultType;
+import tests.signatureinference.qual.Parent;
+import tests.signatureinference.qual.Sibling1;
+import tests.signatureinference.qual.*;
 public class MethodReturnTest {
 
     static @Sibling1 int getSibling1() {

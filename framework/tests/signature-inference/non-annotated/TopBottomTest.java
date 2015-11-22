@@ -1,10 +1,10 @@
-import tests.jaifinference.qual.*;
+import tests.signatureinference.qual.*;
 public class TopBottomTest {
     // The default type for fields is @DefaultType.
     private int privateField;
     public int publicField;
 
-    // The type of privateField is refined to @JaifBottom
+    // The type of privateField is refined to @SignatureInferenceBottom
     // because of the first method call in the method below.
     void assignFieldsToBottom() {
         privateField = getBottom();
@@ -19,8 +19,8 @@ public class TopBottomTest {
         expectsBottom(publicField);
     }
 
-    void expectsBottom(@JaifBottom int t) {}
-    @JaifBottom int getBottom() {
+    void expectsBottom(@SignatureInferenceBottom int t) {}
+    @SignatureInferenceBottom int getBottom() {
         return 0;
     }
 }

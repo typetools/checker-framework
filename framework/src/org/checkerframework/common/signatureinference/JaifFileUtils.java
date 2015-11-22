@@ -1,4 +1,4 @@
-package org.checkerframework.common.jaifinference;
+package org.checkerframework.common.signatureinference;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -69,7 +69,7 @@ import com.sun.tools.javac.code.Type.ClassType;
  * {@link JaifFileUtils#getFieldTypeInJaif} and
  * {@link JaifFileUtils#getMethodReturnTypeInJaif}
  *
- * The purpose of this class is to allow a whole-program type inference with
+ * The purpose of this class is to allow signature inference with
  * the aid of .jaif files.
  *
  * @author pbsf

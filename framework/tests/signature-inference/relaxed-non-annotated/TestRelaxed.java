@@ -1,4 +1,4 @@
-import tests.jaifinference.qual.*;
+import tests.signatureinference.qual.*;
 public class TestRelaxed {
 
     private int field;

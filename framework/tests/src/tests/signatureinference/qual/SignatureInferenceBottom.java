@@ -1,8 +1,10 @@
-package tests.jaifinference.qual;
+package tests.signatureinference.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
@@ -11,6 +13,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * @see Sibling1, Sibling2, Parent
  */
 @TypeQualifier
-@SubtypeOf(Parent.class)
+@SubtypeOf({Sibling1.class, Sibling2.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface Sibling2 {}
+@DefaultFor(DefaultLocation.LOWER_BOUNDS)
+public @interface SignatureInferenceBottom {}

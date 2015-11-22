@@ -1,5 +1,5 @@
-import tests.jaifinference.qual.Top;
-import tests.jaifinference.qual.*;
+import tests.signatureinference.qual.Top;
+import tests.signatureinference.qual.*;
 public class TestRelaxed {
 
     @Top

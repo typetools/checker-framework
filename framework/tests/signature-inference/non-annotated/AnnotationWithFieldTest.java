@@ -1,4 +1,4 @@
-import tests.jaifinference.qual.*;
+import tests.signatureinference.qual.*;
 public class AnnotationWithFieldTest {
 
     private String fields;

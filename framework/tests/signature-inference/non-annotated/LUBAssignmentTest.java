@@ -1,4 +1,4 @@
-import tests.jaifinference.qual.*;
+import tests.signatureinference.qual.*;
 public class LUBAssignmentTest {
     // The default type for fields is @DefaultType.
     private static int privateField;

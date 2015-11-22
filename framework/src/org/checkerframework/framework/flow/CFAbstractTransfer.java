@@ -1,7 +1,7 @@
 package org.checkerframework.framework.flow;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.jaifinference.JaifFileUtils;
+import org.checkerframework.common.signatureinference.JaifFileUtils;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;

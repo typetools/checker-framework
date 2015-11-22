@@ -1,7 +1,7 @@
-import tests.jaifinference.qual.SiblingWithFields;
-import tests.jaifinference.qual.DefaultType;
-import tests.jaifinference.qual.Parent;
-import tests.jaifinference.qual.*;
+import tests.signatureinference.qual.SiblingWithFields;
+import tests.signatureinference.qual.DefaultType;
+import tests.signatureinference.qual.Parent;
+import tests.signatureinference.qual.*;
 public class LUBAssignmentTest {
     // The default type for fields is @DefaultType.
     @Parent

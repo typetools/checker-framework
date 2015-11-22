@@ -1,4 +1,4 @@
-package tests.jaifinference;
+package tests.signatureinference;
 
 import java.util.List;
 
@@ -18,9 +18,9 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 
-import tests.jaifinference.qual.*;
+import tests.signatureinference.qual.*;
 /**
- * AnnotatedTypeFactory to test a whole-program type inference using .jaif
+ * AnnotatedTypeFactory to test signaature inference using .jaif
  * files.
  * <p>
  * The used qualifier hierarchy is straightforward and only intended for test
@@ -29,19 +29,19 @@ import tests.jaifinference.qual.*;
  * @author pbsf
  */
 @TypeQualifiers({Parent.class, DefaultType.class, Top.class, Sibling1.class,
-        Sibling2.class, JaifBottom.class, SiblingWithFields.class})
-public class JaifInferenceTestAnnotatedTypeFactory
+        Sibling2.class, SignatureInferenceBottom.class, SiblingWithFields.class})
+public class SignatureInferenceTestAnnotatedTypeFactory
         extends
             BaseAnnotatedTypeFactory {
 
     private final AnnotationMirror PARENT = new AnnotationBuilder(
             processingEnv, Parent.class).build();
 
-    public JaifInferenceTestAnnotatedTypeFactory(BaseTypeChecker checker) {
+    public SignatureInferenceTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         postInit();
         AnnotationMirror bottom = AnnotationUtils.fromClass(elements,
-                JaifBottom.class);
+                SignatureInferenceBottom.class);
         addTypeNameImplicit(java.lang.Void.class, bottom);
     }
 
@@ -50,7 +50,7 @@ public class JaifInferenceTestAnnotatedTypeFactory
         ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(
                 this);
         AnnotationMirror bottom = AnnotationUtils.fromClass(elements,
-                JaifBottom.class);
+                SignatureInferenceBottom.class);
         implicitsTreeAnnotator.addTreeKind(
                 com.sun.source.tree.Tree.Kind.NULL_LITERAL, bottom);
         implicitsTreeAnnotator.addTreeKind(
@@ -62,7 +62,7 @@ public class JaifInferenceTestAnnotatedTypeFactory
 
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new JaifTestQualifierHierarchy(factory);
+        return new SignatureTestQualifierHierarchy(factory);
     }
 
     /**
@@ -71,10 +71,10 @@ public class JaifInferenceTestAnnotatedTypeFactory
      * @author pbsf
      *
      */
-    protected class JaifTestQualifierHierarchy extends
+    protected class SignatureTestQualifierHierarchy extends
                 MultiGraphQualifierHierarchy {
 
-        public JaifTestQualifierHierarchy(MultiGraphFactory f) {
+        public SignatureTestQualifierHierarchy(MultiGraphFactory f) {
             super(f);
         }
 
@@ -99,14 +99,14 @@ public class JaifInferenceTestAnnotatedTypeFactory
         public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
             if (AnnotationUtils.areSame(sub, sup)
                     || AnnotationUtils.areSameByClass(sup, UnknownClass.class)
-                    || AnnotationUtils.areSameByClass(sub, JaifBottom.class)
+                    || AnnotationUtils.areSameByClass(sub, SignatureInferenceBottom.class)
                     || AnnotationUtils.areSameByClass(sup, Top.class)) {
                 return true;
             }
 
             if (AnnotationUtils.areSameByClass(sub, UnknownClass.class)
                     || AnnotationUtils
-                            .areSameByClass(sup, JaifBottom.class)) {
+                            .areSameByClass(sup, SignatureInferenceBottom.class)) {
                 return false;
             }
 

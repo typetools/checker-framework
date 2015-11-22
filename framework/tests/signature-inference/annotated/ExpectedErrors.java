@@ -1,7 +1,7 @@
-import tests.jaifinference.qual.SiblingWithFields;
-import tests.jaifinference.qual.DefaultType;
-import tests.jaifinference.qual.Parent;
-import tests.jaifinference.qual.*;
+import tests.signatureinference.qual.SiblingWithFields;
+import tests.signatureinference.qual.DefaultType;
+import tests.signatureinference.qual.Parent;
+import tests.signatureinference.qual.*;
 /**
  * This file contains expected errors that should exist even after the jaif type
  * inference occurs.
@@ -13,7 +13,7 @@ public class ExpectedErrors {
     public @Top int publicDeclaredField;
 
     // The type of both privateDeclaredField and publicDeclaredField are
-    // not refined to @JaifBottom.
+    // not refined to @SignatureInferenceBottom.
     void assignFieldsToBottom() {
         privateDeclaredField = getBottom();
         publicDeclaredField = getBottom();
@@ -27,8 +27,8 @@ public class ExpectedErrors {
     }
 
     // Case where the declared type is a subtype of the refined type.
-    private @JaifBottom int privateDeclaredField2;
-    public @JaifBottom int publicDeclaredField2;
+    private @SignatureInferenceBottom int privateDeclaredField2;
+    public @SignatureInferenceBottom int publicDeclaredField2;
 
     // The refinement cannot happen and an assignemnt type incompatible error occurs.
     void assignFieldsToTop() {
@@ -114,7 +114,7 @@ public class ExpectedErrors {
 
     void expectsSibling1(@Sibling1 int t) {}
     void expectsSibling2(@Sibling2 int t) {}
-    void expectsBottom(@JaifBottom int t) {}
+    void expectsBottom(@SignatureInferenceBottom int t) {}
     void expectsTop(@Top int t) {}
     void expectsParent(@Parent int t) {}
     static @Sibling1 int getSibling1() {
@@ -124,7 +124,7 @@ public class ExpectedErrors {
         return 0;
     }
     
-    @JaifBottom int getBottom() {
+    @SignatureInferenceBottom int getBottom() {
         return 0;
     }
     @Top int getTop() {

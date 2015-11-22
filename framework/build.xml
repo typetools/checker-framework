@@ -367,15 +367,15 @@
     </target>
 
     <target name="signature-inference-tests" depends="jar,build-tests"
-            description="Run tests for the whole-program type inference using .jaif files">
+            description="Run tests for signature inference using .jaif files">
         <delete dir="build/signature-inference"/>
-        <!--Runs the checker on test files to find expected errors and generate-
+        <!--Runs the checker on test files to find expected errors and generate
                 .jaif files.-->
         <antcall target="-run-tests">
-            <param name="param" value="tests.JaifInferenceTest"/>
+            <param name="param" value="tests.SignatureInferenceTest"/>
         </antcall>
         <antcall target="-run-tests">
-            <param name="param" value="tests.JaifRelaxedInferenceTest"/>
+            <param name="param" value="tests.RelaxedSignatureInferenceTest"/>
         </antcall>
 
         <delete dir="tests/signature-inference/annotated"/>
@@ -421,10 +421,10 @@
 
         <!-- Running the checker again on the final .java files. -->
         <antcall target="-run-tests">
-            <param name="param" value="tests.JaifInferenceValidationTest"/>
+            <param name="param" value="tests.SignatureInferenceValidationTest"/>
         </antcall>
         <antcall target="-run-tests">
-            <param name="param" value="tests.JaifRelaxedInferenceValidationTest"/>
+            <param name="param" value="tests.RelaxedSignatureInferenceValidationTest"/>
         </antcall>
     </target>
 

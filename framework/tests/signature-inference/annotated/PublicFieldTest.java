@@ -1,9 +1,9 @@
-import tests.jaifinference.qual.SiblingWithFields;
-import tests.jaifinference.qual.DefaultType;
-import tests.jaifinference.qual.Parent;
-import tests.jaifinference.qual.Sibling1;
-import tests.jaifinference.qual.Sibling2;
-import tests.jaifinference.qual.*;
+import tests.signatureinference.qual.SiblingWithFields;
+import tests.signatureinference.qual.DefaultType;
+import tests.signatureinference.qual.Parent;
+import tests.signatureinference.qual.Sibling1;
+import tests.signatureinference.qual.Sibling2;
+import tests.signatureinference.qual.*;
 public class PublicFieldTest {
     @Parent
     public static int field1; // parent
@@ -20,7 +20,7 @@ public class PublicFieldTest {
         expectsParent(field2);
     }
 
-    void expectsBottom(@JaifBottom int t) {}
+    void expectsBottom(@SignatureInferenceBottom int t) {}
     void expectsSibling1(@Sibling1 int t) {}
     void expectsSibling2(@Sibling2 int t) {}
     void expectsTop(@Top int t) {}
@@ -38,8 +38,8 @@ class AnotherClass {
         PublicFieldTest.field2 = getSibling2();
     }
 
-    @JaifBottom int getBottom() {
-        return (@JaifBottom int) 0;
+    @SignatureInferenceBottom int getBottom() {
+        return (@SignatureInferenceBottom int) 0;
     }
     @Top int getTop() {
         return (@Top int) 0;

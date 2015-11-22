@@ -7,7 +7,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.jaifinference.JaifFileUtils;
+import org.checkerframework.common.signatureinference.JaifFileUtils;
 import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;

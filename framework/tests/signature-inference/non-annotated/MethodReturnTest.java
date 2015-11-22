@@ -1,4 +1,4 @@
-import tests.jaifinference.qual.*;
+import tests.signatureinference.qual.*;
 public class MethodReturnTest {
 
     static int getSibling1() {

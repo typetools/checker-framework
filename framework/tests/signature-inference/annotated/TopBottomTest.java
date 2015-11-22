@@ -1,18 +1,18 @@
-import tests.jaifinference.qual.SiblingWithFields;
-import tests.jaifinference.qual.DefaultType;
-import tests.jaifinference.qual.Parent;
-import tests.jaifinference.qual.Sibling1;
-import tests.jaifinference.qual.Sibling2;
-import tests.jaifinference.qual.JaifBottom;
-import tests.jaifinference.qual.*;
+import tests.signatureinference.qual.SiblingWithFields;
+import tests.signatureinference.qual.DefaultType;
+import tests.signatureinference.qual.Parent;
+import tests.signatureinference.qual.Sibling1;
+import tests.signatureinference.qual.Sibling2;
+import tests.signatureinference.qual.SignatureInferenceBottom;
+import tests.signatureinference.qual.*;
 public class TopBottomTest {
     // The default type for fields is @DefaultType.
-    @JaifBottom
+    @SignatureInferenceBottom
     private int privateField;
-    @JaifBottom
+    @SignatureInferenceBottom
     public int publicField;
 
-    // The type of privateField is refined to @JaifBottom
+    // The type of privateField is refined to @SignatureInferenceBottom
     // because of the first method call in the method below.
     void assignFieldsToBottom() {
         privateField = getBottom();
@@ -25,8 +25,8 @@ public class TopBottomTest {
         expectsBottom(publicField);
     }
 
-    void expectsBottom(@JaifBottom int t) {}
-    @JaifBottom int getBottom() {
+    void expectsBottom(@SignatureInferenceBottom int t) {}
+    @SignatureInferenceBottom int getBottom() {
         return 0;
     }
 }
