@@ -57,27 +57,20 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
+
 /**
- * This class is used to read from and write into .jaif files.
- * It contains public methods
- * {@link JaifFileUtils#updateFieldTypeInJaif} and
- * {@link JaifFileUtils#updateMethodReturnTypeInJaif} that write into
- * .jaif files, updating field types and method return types of classes
- * according to their ATM. The types are always updated to be the LUB between
- * the previous type and the current type.
- * The types written into .jaif files can be retrieved by the methods
- * {@link JaifFileUtils#getFieldTypeInJaif} and
- * {@link JaifFileUtils#getMethodReturnTypeInJaif}
- *
- * The purpose of this class is to allow signature inference with
- * the aid of .jaif files.
+ * This class writes inferred types for fields and method return types to a
+ * .jaif file.  Calling an update method
+ * ({@link JaifFileUtils#updateFieldTypeInJaif updateFieldTypeInJaif} or
+ * {@link JaifFileUtils#updateMethodReturnTypeInJaif updateMethodReturnType})
+ * reads the currently-stored type, if any, and replaces it by the LUB of
+ * it and the update method's argument.
  *
  * @author pbsf
- *
  */
 public class JaifFileUtils {
 
-    // If true, default types are ignored during type inference.
+    /** If true, default types are ignored during type inference. */
     private static boolean relaxedMode = false;
 
     /**
@@ -86,10 +79,10 @@ public class JaifFileUtils {
      */
     public final static String JAIF_FILES_PATH = "build/jaif-files/";
 
-    // Maps file paths (Strings) to Scenes.
+    /** Maps file paths (Strings) to Scenes. */
     private static Map<String, AScene> scenes = new HashMap<String, AScene>();
 
-    // Set containing all modified scenes in the current ClassTree.
+    /** Set containing all modified scenes in the current ClassTree. */
     private static Set<String> modifiedScenes = new HashSet<String>();
 
     /**
