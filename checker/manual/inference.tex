@@ -88,14 +88,33 @@ Advantages of this variety of type inference include:
 This section lists tools that take a program and output a set of
 annotations for it.
 
-By supplying the \<-AinferSignatures> command-line option,
-any type-checker can infer annotations. See Section~\ref{signature-inference}.
+
+\subsubsection{Type inference for specific type systems\label{type-inference-tools-specialized}}
+
+This section lists type inference tools that work for only a single type system.
+Also see Section~\ref{type-inference-tools-general}, for type inference
+tools that work for any type system.
 
 Section~\ref{nullness-inference} lists several tools that infer
 annotations for the Nullness Checker.
 
 Section~\ref{javari-inference} lists a tool that infers
 annotations for the Javari Checker, which detects mutation errors.
+
+If you run the Checker Framework with the \<-AsuggestPureMethods>
+command-line option, it will suggest methods that can be marked as
+\<@SideEffectFree>, \<@Deterministic>, or \<@Pure>; see
+Section~\ref{type-refinement-purity}.
+
+
+\subsubsection{Type inference for any type system\label{type-inference-tools-general}}
+
+This section lists type inference tools that work for any type system.
+Also see Section~\ref{type-inference-tools-specialized}, for type inference
+tools that work for only a single type system.
+
+By supplying the \<-AinferSignatures> command-line option,
+any type-checker can infer annotations. See Section~\ref{signature-inference}.
 
 \href{https://github.com/reprogrammer/cascade/}{Cascade}~\cite{VakilianPEJ2014}
 is an Eclipse plugin that implements interactive type qualifier inference.
@@ -204,5 +223,5 @@ it makes type-checking fast.  However, it has some disadvantages:
 
 
 
-%%  LocalWords:  AinferSignatures java jaif plugin classpath m2
-%%  LocalWords:  ArelaxedSignatureInference
+%%  LocalWords:  AinferSignatures java jaif plugin classpath m2 m1 multi
+%%  LocalWords:  ArelaxedSignatureInference AsuggestPureMethods
