@@ -18,7 +18,7 @@ public class Methods {
         lockedByThis();     // error
     }
 
-    @HoldingOnEntry("lock")
+    @Holding("lock")
     void usingHolding1() {
         lockedByLock();
         //:: error: (contracts.precondition.not.satisfied)

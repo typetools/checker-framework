@@ -1,54 +1,170 @@
-package java.util.concurrent.locks;
-
 import org.checkerframework.checker.lock.qual.*;
+
+package java.util.concurrent.locks;
 
 public class ReentrantLock {
 
     @EnsuresLockHeld("this")
+    @ReleasesNoLocks
     void lock();
 
     @EnsuresLockHeld("this")
+    @ReleasesNoLocks
     void lockInterruptibly();
 
     @EnsuresLockHeldIf(expression="this", result=true)
+    @ReleasesNoLocks
     boolean tryLock();
 
     @EnsuresLockHeldIf(expression="this", result=true)
+    @ReleasesNoLocks
     boolean tryLock(long timeout, TimeUnit unit);
 
     @EnsuresLockHeldIf(expression="this", result=true)
+    @ReleasesNoLocks
     boolean isHeldByCurrentThread();
+
+    @MayReleaseLocks
+    void unlock();
 }
 
 public class ReentrantReadWriteLock$ReadLock {
 
     @EnsuresLockHeld("this")
+    @ReleasesNoLocks
     void lock();
 
     @EnsuresLockHeld("this")
+    @ReleasesNoLocks
     void lockInterruptibly();
 
     @EnsuresLockHeldIf(expression="this", result=true)
+    @ReleasesNoLocks
     boolean tryLock();
 
     @EnsuresLockHeldIf(expression="this", result=true)
+    @ReleasesNoLocks
     boolean tryLock(long timeout, TimeUnit unit);
+
+    @MayReleaseLocks
+    void unlock();
 }
 
 public class ReentrantReadWriteLock$WriteLock {
 
     @EnsuresLockHeld("this")
+    @ReleasesNoLocks
     void lock();
 
     @EnsuresLockHeld("this")
+    @ReleasesNoLocks
     void lockInterruptibly();
 
     @EnsuresLockHeldIf(expression="this", result=true)
+    @ReleasesNoLocks
     boolean tryLock();
 
     @EnsuresLockHeldIf(expression="this", result=true)
+    @ReleasesNoLocks
     boolean tryLock(long timeout, TimeUnit unit);
 
     @EnsuresLockHeldIf(expression="this", result=true)
+    @ReleasesNoLocks
     boolean isHeldByCurrentThread();
+
+    @MayReleaseLocks
+    void unlock();
+}
+
+package java.lang;
+
+public class Thread {
+
+    @EnsuresLockHeldIf(expression="#1", result=true)
+    @ReleasesNoLocks
+    static boolean holdsLock(Object obj);
+}
+
+public interface Iterable<T> {
+  Iterator<T> iterator() @GuardSatisfied;
+}
+
+public class StringBuffer {
+    @ReleasesNoLocks
+    StringBuffer append(@GuardSatisfied StringBuffer sb) @GuardSatisfied;
+}
+
+public class Object {
+  @ReleasesNoLocks
+  String toString();
+  @ReleasesNoLocks
+  int hashCode();
+  @Holding("this") void notifyAll() @GuardSatisfied;
+  void wait() @GuardSatisfied;
+  void wait(long timeout) @GuardSatisfied;
+  void wait(long timeout, int nanos) @GuardSatisfied;
+}
+
+package java.io;
+
+public class PrintStream {
+  void close() @GuardSatisfied;
+  void println() @GuardSatisfied;
+  void println(boolean a1) @GuardSatisfied;
+  void println(char a1) @GuardSatisfied;
+  void println(int a1) @GuardSatisfied;
+  void println(long a1) @GuardSatisfied;
+  void println(float a1) @GuardSatisfied;
+  void println(double a1) @GuardSatisfied;
+  void println(char[] a1) @GuardSatisfied;
+  void println(String a1) @GuardSatisfied;
+  void println(Object a1) @GuardSatisfied;
+  PrintStream printf(String a1, Object ... a2) @GuardSatisfied;
+  PrintStream printf(java.util. Locale a1, String a2, @Nullable Object... a3) @GuardSatisfied;
+}
+
+package java.util;
+
+public interface List<E> {
+  boolean add(E e) @GuardSatisfied;
+  E get(int index) @GuardSatisfied;
+  boolean isEmpty() @GuardSatisfied;
+  int size() @GuardSatisfied;
+  E remove(int index) @GuardSatisfied;
+}
+
+public abstract class AbstractList<E> {
+  E get(int index) @GuardSatisfied;
+  int size() @GuardSatisfied;
+}
+
+public abstract class AbstractMap<K,V> {
+  V get(Object key) @GuardSatisfied;
+  V put(K key, V value) @GuardSatisfied;
+  int size() @GuardSatisfied;
+}
+
+public interface Map<K,V> {
+  V get(Object key) @GuardSatisfied;
+  V put(K key, V value) @GuardSatisfied;
+  int size() @GuardSatisfied;
+}
+
+public class Stack<E> {
+  E pop() @GuardSatisfied;
+}
+
+public abstract class AbstractCollection<E> {
+  int size() @GuardSatisfied;
+  abstract Iterator<E> 	iterator() @GuardSatisfied;
+}
+
+public interface Collection<E> {
+  int size() @GuardSatisfied;
+  Iterator<E> iterator() @GuardSatisfied;
+}
+
+public interface Set<E> {
+  int size() @GuardSatisfied;
+  Iterator<E> iterator() @GuardSatisfied;
 }

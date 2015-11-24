@@ -371,7 +371,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     private boolean isMonotonicUpdate(FieldAccess fieldAcc, V value) {
         boolean isMonotonic = false;
-        if (!sequentialSemantics) { // only compute if necessary
+        if (!sequentialSemantics) { // only compute if necessary // TODO: this is an optimization that breaks the contract of the method. This check should be outside of this method.
             AnnotatedTypeFactory atypeFactory = this.analysis.atypeFactory;
             List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
                     atypeFactory.getAnnotationWithMetaAnnotation(

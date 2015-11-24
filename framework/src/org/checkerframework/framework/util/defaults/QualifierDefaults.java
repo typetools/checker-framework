@@ -869,7 +869,7 @@ public class QualifierDefaults {
         }
     }
 
-    enum BoundType {
+    public enum BoundType {
 
         /**
          * Indicates an upper bounded type variable or wildcard
