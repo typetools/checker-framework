@@ -571,10 +571,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         if (atypeFactory.isWeaker(seaOfInvokedMethod, seaOfContainingMethod)) {
             checker.report(Result.failure(
                     "method.guarantee.violated",
-                    atypeFactory.getNameOfSideEffectAnnotation(seaOfContainingMethod),
+                    seaOfContainingMethod.getNameOfSideEffectAnnotation(),
                     methodElement.toString(),
                     TreeUtils.elementFromUse(node).toString(),
-                    atypeFactory.getNameOfSideEffectAnnotation(seaOfInvokedMethod)), node);
+                    seaOfInvokedMethod.getNameOfSideEffectAnnotation()), node);
         }
 
         // Check that matching @GuardSatisfied(index) on a method's formal receiver/parameters matches

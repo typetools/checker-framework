@@ -261,31 +261,24 @@ public class LockAnnotatedTypeFactory
     }
 
     // The side effect annotations processed by the Lock Checker.
-    // Keep in sync with the SideEffectAnnotationName string array.
     enum SideEffectAnnotation {
-        MAYRELEASELOCKS,
-        RELEASESNOLOCKS,
-        LOCKINGFREE,
-        SIDEEFFECTFREE,
-        PURE
-    }
-    
-    // Keep in sync with the SideEffectAnnotation enum.
-    private String[] SideEffectAnnotationName = {
-        "@MayReleaseLocks",
-        "@ReleasesNoLocks",
-        "@LockingFree",
-        "@SideEffectFree",
-        "@Pure"
-    };
+        MAYRELEASELOCKS("@MayReleaseLocks"),
+        RELEASESNOLOCKS("@ReleasesNoLocks"),
+        LOCKINGFREE("@LockingFree"),
+        SIDEEFFECTFREE("@SideEffectFree"),
+        PURE("@Pure");
+        final String annotation;
 
-    /*
-     * Returns the annotation name (not including the package name)
-     * of the side effect annotation corresponding to parameter a.
-     */
-    String getNameOfSideEffectAnnotation(SideEffectAnnotation a) {
-        return SideEffectAnnotationName[a.ordinal()];
+        SideEffectAnnotation(String annotation) {
+            this.annotation = annotation;
+        }
+
+        public String getNameOfSideEffectAnnotation() {
+            return annotation;
+        }
     }
+
+
 
     /**
      * Given side effect annotations a and b, returns true if a
