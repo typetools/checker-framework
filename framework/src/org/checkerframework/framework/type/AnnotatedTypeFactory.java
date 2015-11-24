@@ -7,7 +7,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.jaifinference.JaifFileUtils;
+import org.checkerframework.common.signatureinference.JaifFileUtils;
 import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
@@ -361,7 +361,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.root = root;
         treePathCache.clear();
         pathHack.clear();
-        if (checker.getOptions().containsKey("performWholeProgramInference")) {
+        if (checker.getOptions().containsKey("inferSignatures")) {
             // Clear modified .jaif files in previous CompilationUnit.
             JaifFileUtils.clearModifiedScenes();
         }
@@ -754,7 +754,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected void postProcessClassTree(ClassTree tree) {
         TypesIntoElements.store(processingEnv, this, tree);
         DeclarationsIntoElements.store(processingEnv, this, tree);
-        if (checker.getOptions().containsKey("performWholeProgramInference")) {
+        if (checker.getOptions().containsKey("inferSignatures")) {
             // Write scenes into .jaif files. In order to perform the write
             // operation only once for each .jaif file, the best location to
             // do so is here.

@@ -1,7 +1,7 @@
 package org.checkerframework.framework.flow;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.jaifinference.JaifFileUtils;
+import org.checkerframework.common.signatureinference.JaifFileUtils;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -105,7 +105,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     /**
      * Indicates that the whole-program inference is on.
      */
-    private final boolean performWholeProgramInference;
+    private final boolean inferSignatures;
 
     /**
      * The analysis class this store belongs to.
@@ -121,11 +121,11 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
-        performWholeProgramInference = analysis.getTypeFactory().getProcessingEnv().
-                getOptions().containsKey("performWholeProgramInference");
-        if (performWholeProgramInference) {
+        inferSignatures = analysis.getTypeFactory().getProcessingEnv().
+                getOptions().containsKey("inferSignatures");
+        if (inferSignatures) {
             JaifFileUtils.setRelaxedMode(analysis.getTypeFactory().getProcessingEnv().
-                    getOptions().containsKey("relaxedInference"));
+                    getOptions().containsKey("relaxedSignatureInference"));
         }
     }
 
@@ -740,7 +740,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         Receiver expr = FlowExpressions.internalReprOf(analysis.getTypeFactory(),
                 n.getTarget());
 
-        if (performWholeProgramInference && !expr.containsUnknown()
+        if (inferSignatures && !expr.containsUnknown()
                 && expr instanceof FieldAccess) {
             // Updates .jaif file
             ClassSymbol clazzSymbol = JaifFileUtils.getEnclosingClassSymbol(
@@ -757,7 +757,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
     @Override
     public TransferResult<V, S> visitReturn(ReturnNode n, TransferInput<V, S> p) {
-        if (performWholeProgramInference) {
+        if (inferSignatures) {
             // Updates the return type of the method on the respective .jaif file.
             ClassTree classTree = analysis.getContainingClass(n.getTree());
             if (classTree != null) {

@@ -6,7 +6,7 @@ import org.checkerframework.checker.nullness.qual.*;
 */
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.jaifinference.JaifFileUtils;
+import org.checkerframework.common.signatureinference.JaifFileUtils;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -194,11 +194,11 @@ import com.sun.tools.javac.util.Log;
     // to be output.
     "resolveReflection",
 
-    // Whether to use .jaif files whole-program inference
-    "performWholeProgramInference",
+    // Whether to use .jaif files signature inference
+    "inferSignatures",
 
-    // Whether .jaif files whole-program inference should ignore default types
-    "relaxedInference",
+    // Whether .jaif files signature inference should ignore default types
+    "relaxedSignatureInference",
 
     ///
     /// Stub libraries
@@ -809,7 +809,7 @@ public abstract class SourceChecker
      */
     protected boolean shouldAddShutdownHook() {
         return getOptions().containsKey("resourceStats") ||
-                getOptions().containsKey("performWholeProgramInference");
+                getOptions().containsKey("inferSignatures");
     }
 
     /**
