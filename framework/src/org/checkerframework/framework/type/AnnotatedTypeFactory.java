@@ -2653,6 +2653,48 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return wctype;
     }
 
+    /**
+     * Returns the most specific base type of {@code annotatedTypeMirror} whose erasure type
+     * is the upper bound of {@code wildcard}, if {@code wildcard}'s upper
+     * bound is a super type of {@code annotatedTypeMirror}.
+     *
+     * Otherwise, returns {@code annotatedTypeMirror} unmodified.
+     *
+     * @param annotatedTypeMirror AnnotatedTypeMirror to widen
+     * @param wildcard AnnotatedWildcardType whose upper bound is used to widen
+     * @return {@code annotatedTypeMirror} widen to the upper bound of {@code wildcard}
+     */
+    public AnnotatedTypeMirror widenToUpperBound(final AnnotatedTypeMirror annotatedTypeMirror,
+                                                 final AnnotatedWildcardType wildcard) {
+        /**
+         * This method is needed because,
+         * the java compiler allows wildcards to have upper bounds above the type variable upper bounds
+         * for which they are type arguments.  For example, given the following parametric type:
+         * {@code class MyClass<T extends Number>}
+         * the following is legal:
+         * {@code MyClass<? extends Object>}
+         *
+         * This is sound because the wildcard is capture converted to:
+         *  CAP#1 extends Number from capture of ? extends Object
+         *
+         *  Because the Checker Framework does not implement capture conversion, wildcard upper bounds may
+         *  cause spurious errors in subtyping checks.  This method prevents those errors by
+         *  widening the upper bound of the type parameter.
+         *
+         *  This method widens the underlying java type of the upper bound of the type parameter rather
+         *  than narrowing the bound of the wildcard in order to avoid issuing an error with an upper
+         *  bound that is not in source code.
+         */
+        final TypeMirror toModifyTypeMirror = annotatedTypeMirror.getUnderlyingType();
+        final TypeMirror typeArgUPTypeMirror = wildcard.getExtendsBound().getUnderlyingType();
+        if (!types.isSubtype(typeArgUPTypeMirror, toModifyTypeMirror)
+                && types.isSubtype(toModifyTypeMirror, typeArgUPTypeMirror)) {
+            return AnnotatedTypes.asSuper(types, this, annotatedTypeMirror, wildcard);
+        }
+
+        return annotatedTypeMirror;
+    }
+
     public Pair<AnnotatedDeclaredType, AnnotatedExecutableType> getFnInterfaceFromTree(MemberReferenceTree tree) {
         return getFnInterfaceFromTree((Tree)tree);
     }
