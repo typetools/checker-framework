@@ -8,7 +8,7 @@ Added an example of how to use the instructions under
 checker/examples/MavenExample.
 
 The javac_maven script (and batch file) are deprecated and will be
-removed as of the December 1, 2015 release.
+removed as of December 2015.
 
 Fixed issues: 487, 500, 502.
 
