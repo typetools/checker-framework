@@ -375,7 +375,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         SideEffectAnnotation seaOfOverriderMethod = atypeFactory.methodSideEffectAnnotation(TreeUtils.elementFromDeclaration(overriderTree), false);
         SideEffectAnnotation seaOfOverridenMethod = atypeFactory.methodSideEffectAnnotation(overridden.getElement(), false);
 
-        if (atypeFactory.isWeaker(seaOfOverriderMethod, seaOfOverridenMethod)) {
+        if (seaOfOverriderMethod.isWeaker(seaOfOverridenMethod)) {
             isValid = false;
             reportFailure("override.sideeffect.invalid", overriderTree, enclosingType, overridden, overriddenType, null, null);
         }
@@ -568,7 +568,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         SideEffectAnnotation seaOfContainingMethod = atypeFactory.methodSideEffectAnnotation(methodElement, false);
 
-        if (atypeFactory.isWeaker(seaOfInvokedMethod, seaOfContainingMethod)) {
+        if (seaOfInvokedMethod.isWeaker(seaOfContainingMethod)) {
             checker.report(Result.failure(
                     "method.guarantee.violated",
                     seaOfContainingMethod.getNameOfSideEffectAnnotation(),

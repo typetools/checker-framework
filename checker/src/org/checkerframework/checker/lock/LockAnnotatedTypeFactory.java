@@ -31,11 +31,8 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.lang.annotation.Annotation;
+import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -262,72 +259,89 @@ public class LockAnnotatedTypeFactory
 
     // The side effect annotations processed by the Lock Checker.
     enum SideEffectAnnotation {
-        MAYRELEASELOCKS("@MayReleaseLocks"),
-        RELEASESNOLOCKS("@ReleasesNoLocks"),
-        LOCKINGFREE("@LockingFree"),
-        SIDEEFFECTFREE("@SideEffectFree"),
-        PURE("@Pure");
+        MAYRELEASELOCKS("@MayReleaseLocks", MayReleaseLocks.class),
+        RELEASESNOLOCKS("@ReleasesNoLocks", ReleasesNoLocks.class),
+        LOCKINGFREE("@LockingFree",LockingFree.class),
+        SIDEEFFECTFREE("@SideEffectFree",SideEffectFree.class),
+        PURE("@Pure",Pure.class);
         final String annotation;
+        final  Class<? extends Annotation> annotationClass;
 
-        SideEffectAnnotation(String annotation) {
+        SideEffectAnnotation(String annotation, Class<? extends Annotation> annotationClass) {
             this.annotation = annotation;
+            this.annotationClass=annotationClass;
         }
 
         public String getNameOfSideEffectAnnotation() {
             return annotation;
         }
-    }
 
-
-
-    /**
-     * Given side effect annotations a and b, returns true if a
-     * is a strictly weaker side effect annotation than b.
-     */
-    boolean isWeaker(SideEffectAnnotation a, SideEffectAnnotation b) {
-        boolean weaker = false;
-
-        switch(b) {
-            case MAYRELEASELOCKS:
-                break;
-            case RELEASESNOLOCKS:
-                if (a == SideEffectAnnotation.MAYRELEASELOCKS) {
-                    weaker = true;
-                }
-                break;
-            case LOCKINGFREE:
-                switch(a) {
-                    case MAYRELEASELOCKS:
-                    case RELEASESNOLOCKS:
-                        weaker = true;
-                        break;
-                    default:
-                }
-                break;
-            case SIDEEFFECTFREE:
-                switch(a) {
-                    case MAYRELEASELOCKS:
-                    case RELEASESNOLOCKS:
-                    case LOCKINGFREE:
-                        weaker = true;
-                        break;
-                    default:
-                }
-                break;
-            case PURE:
-                switch(a) {
-                    case MAYRELEASELOCKS:
-                    case RELEASESNOLOCKS:
-                    case LOCKINGFREE:
-                    case SIDEEFFECTFREE:
-                        weaker = true;
-                        break;
-                    default:
-                }
-                break;
+        public Class<? extends Annotation> getAnnotationClass() {
+            return annotationClass;
         }
 
-        return weaker;
+        /**
+         * Given side effect annotations a and b, returns true if a
+         * is a strictly weaker side effect annotation than b.
+         */
+        boolean isWeaker(SideEffectAnnotation other) {
+            boolean weaker = false;
+
+            switch (other) {
+                case MAYRELEASELOCKS:
+                    break;
+                case RELEASESNOLOCKS:
+                    if (this == SideEffectAnnotation.MAYRELEASELOCKS) {
+                        weaker = true;
+                    }
+                    break;
+                case LOCKINGFREE:
+                    switch (this) {
+                        case MAYRELEASELOCKS:
+                        case RELEASESNOLOCKS:
+                            weaker = true;
+                            break;
+                        default:
+                    }
+                    break;
+                case SIDEEFFECTFREE:
+                    switch (this) {
+                        case MAYRELEASELOCKS:
+                        case RELEASESNOLOCKS:
+                        case LOCKINGFREE:
+                            weaker = true;
+                            break;
+                        default:
+                    }
+                    break;
+                case PURE:
+                    switch (this) {
+                        case MAYRELEASELOCKS:
+                        case RELEASESNOLOCKS:
+                        case LOCKINGFREE:
+                        case SIDEEFFECTFREE:
+                            weaker = true;
+                            break;
+                        default:
+                    }
+                    break;
+            }
+
+            return weaker;
+        }
+
+        static SideEffectAnnotation weakest = null;
+        public static SideEffectAnnotation weakest() {
+            if(weakest == null) {
+                for (SideEffectAnnotation sea : SideEffectAnnotation.values()) {
+                    if (weakest == null) weakest = sea;
+                    if (sea.isWeaker(weakest)) {
+                        weakest = sea;
+                    }
+                }
+            }
+            return weakest;
+        }
     }
 
     // Indicates which side effect annotation is present on the given method.
@@ -339,23 +353,14 @@ public class LockAnnotatedTypeFactory
         if (element != null) {
             final int countSideEffectAnnotations = SideEffectAnnotation.values().length;
 
-            boolean[] sideEffectAnnotationPresent = new boolean[countSideEffectAnnotations];
-
-            // It is important that these are ordered from weaker to stronger. A for loop below relies on this.
-            sideEffectAnnotationPresent[0] = getDeclAnnotationNoAliases(element, MayReleaseLocks.class) != null;
-            sideEffectAnnotationPresent[1] = getDeclAnnotationNoAliases(element, ReleasesNoLocks.class) != null;
-            sideEffectAnnotationPresent[2] = getDeclAnnotationNoAliases(element, LockingFree.class) != null;
-            sideEffectAnnotationPresent[3] = getDeclAnnotationNoAliases(element, SideEffectFree.class) != null;
-            sideEffectAnnotationPresent[4] = getDeclAnnotationNoAliases(element, Pure.class) != null;
-            assert(countSideEffectAnnotations == 5); // If this assertion fails, the assignments above need to be updated.
-
-            int count = 0;
-
-            for(int i = 0; i < countSideEffectAnnotations; i++) {
-                if (sideEffectAnnotationPresent[i]) {
-                    count++;
+            List<SideEffectAnnotation> sideEffectAnnotationPresent = new ArrayList<>();
+            for (SideEffectAnnotation sea:SideEffectAnnotation.values()){
+                if(getDeclAnnotationNoAliases(element, sea.getAnnotationClass()) != null){
+                    sideEffectAnnotationPresent.add(sea);
                 }
             }
+
+            int count = sideEffectAnnotationPresent.size();
 
             if (count == 0) {
                 return defaults.applyUnannotatedDefaults(element) ?
@@ -368,17 +373,19 @@ public class LockAnnotatedTypeFactory
                 // checker.report(Result.failure("multiple.sideeffect.annotations"), element);
             }
 
-            // If at least one side effect annotation was found, return the weakest.
-            for(int i = 0; i < countSideEffectAnnotations; i++) {
-                if (sideEffectAnnotationPresent[i]) {
-                    return SideEffectAnnotation.values()[i];
+            SideEffectAnnotation weakest = sideEffectAnnotationPresent.get(0);
+            // At least one side effect annotation was found. Return the weakest.
+            for(SideEffectAnnotation sea :sideEffectAnnotationPresent) {
+                if (sea.isWeaker(weakest)) {
+                    weakest = sea;
                 }
             }
+            return weakest;
         }
 
         // When there is not enough information to determine the correct side effect annotation,
         // return the weakest one.
-        return SideEffectAnnotation.MAYRELEASELOCKS;
+        return SideEffectAnnotation.weakest();
     }
 
     private static class AnnotationPair { // Same contents as in AnnotatedTypeFactory.java
