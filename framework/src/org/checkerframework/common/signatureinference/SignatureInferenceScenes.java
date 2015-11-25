@@ -60,15 +60,17 @@ import com.sun.tools.javac.code.Type.ClassType;
 
 /**
  * This class writes inferred types for fields, method return types and method
- * parameters to a .jaif file.  Calling an update method
- * ({@link SignatureInferenceScenes#updateFieldTypeInJaif updateFieldTypeInJaif},
- * {@link SignatureInferenceScenes#updateMethodParameterTypeInJaif updateMethodParameterTypeInJaif} or
- * {@link SignatureInferenceScenes#updateMethodReturnTypeInJaif updateMethodReturnTypeInJaif}) 
+ * parameters to a .jaif file.  Calling an update* method
+ * ({@link SignatureInferenceScenes#updateFieldTypeInScene updateFieldTypeInScene},
+ * {@link SignatureInferenceScenes#updateMethodParameterTypeInScene updateMethodParameterTypeInScene} or
+ * {@link SignatureInferenceScenes#updateMethodReturnTypeInScene updateMethodReturnTypeInScene}) 
  * reads the currently-stored type, if any, and replaces it by the LUB of
  * it and the update method's argument.
  *
- * Explicitly annotated fields, method return types and method parameter types
- * will not have inferred types written into a .jaif file. 
+ * This class does not perform inference for elements that have explicit
+ * annotations - an explicitly annotated field type, method return type or
+ * method parameter type will not have its respective inferred type written
+ * into a .jaif file.
  *
  * @author pbsf
  */
@@ -86,10 +88,8 @@ public class SignatureInferenceScenes {
     /** Set containing all Scenes that were modified in the current ClassTree.
      * Modifying a Scene means adding (or changing) a type annotation for a
      * field, method return type or method parameter type in the Scene.
-     * (Scenes are modified by the following methods:
-     * {@link SignatureInferenceScenes#updateFieldTypeInJaif updateFieldTypeInJaif},
-     * {@link SignatureInferenceScenes#updateMethodParameterTypeInJaif updateMethodParameterTypeInJaif},
-     * {@link SignatureInferenceScenes#updateMethodReturnTypeInJaif updateMethodReturnTypeInJaif}.)
+     * (Scenes are modified by the method
+     * {@link SignatureInferenceScenes#updateAnnotationSetInScene updateAnnotationSetInScene)
      */
     private static Set<String> modifiedScenes = new HashSet<String>();
 
@@ -115,10 +115,8 @@ public class SignatureInferenceScenes {
 
     /**
      * Clears the set of modified scenes.
-     * (Scenes are modified by the following methods:
-     * {@link SignatureInferenceScenes#updateFieldTypeInJaif updateFieldTypeInJaif},
-     * {@link SignatureInferenceScenes#updateMethodParameterTypeInJaif updateMethodParameterTypeInJaif},
-     * {@link SignatureInferenceScenes#updateMethodReturnTypeInJaif updateMethodReturnTypeInJaif}.)
+     * (Scenes are modified by the method
+     * {@link SignatureInferenceScenes#updateAnnotationSetInScene updateAnnotationSetInScene)
      */
     public static void clearModifiedScenes() {
         modifiedScenes.clear();
@@ -126,10 +124,8 @@ public class SignatureInferenceScenes {
 
     /**
      * Adds the identifier of a Scene in the set of modified scenes.
-     * (Scenes are modified by the following methods:
-     * {@link SignatureInferenceScenes#updateFieldTypeInJaif updateFieldTypeInJaif},
-     * {@link SignatureInferenceScenes#updateMethodParameterTypeInJaif updateMethodParameterTypeInJaif},
-     * {@link SignatureInferenceScenes#updateMethodReturnTypeInJaif updateMethodReturnTypeInJaif}.)
+     * (Scenes are modified by the method
+     * {@link SignatureInferenceScenes#updateAnnotationSetInScene updateAnnotationSetInScene)
      */
     private static void addModifiedScene(String scene) {
         modifiedScenes.add(scene);
@@ -137,10 +133,8 @@ public class SignatureInferenceScenes {
 
     /**
      * Write all modified scenes into .jaif files.
-     * (Scenes are modified by the following methods:
-     * {@link SignatureInferenceScenes#updateFieldTypeInJaif updateFieldTypeInJaif},
-     * {@link SignatureInferenceScenes#updateMethodParameterTypeInJaif updateMethodParameterTypeInJaif},
-     * {@link SignatureInferenceScenes#updateMethodReturnTypeInJaif updateMethodReturnTypeInJaif}.)
+     * (Scenes are modified by the method
+     * {@link SignatureInferenceScenes#updateAnnotationSetInScene updateAnnotationSetInScene)
      */
     public static void writeScenesToJaif() {
         for (String jaifPath : modifiedScenes) {
@@ -162,7 +156,26 @@ public class SignatureInferenceScenes {
         }
     }
 
-    public static void updateMethodParameterTypeInJaif(
+    /**
+     * Updates the parameters' types of the method methodElt in the Scene of the
+     * class with symbol classSymbol.
+     *
+     * For each method parameter in methodElt:
+     *   If the Scene does not contain an annotated type for that parameter,
+     *   then the type of the respective value passed as argument in the
+     *   method call methodInvNode will be added to the parameter in the Scene.
+     *   If the Scene previously contained an annotated type for that parameter,
+     *   then its new type will be the LUB between the previous type and the
+     *   type of the respective value passed as argument in the method call.
+     *
+     * @param methodInvNode the node representing a method invocation.
+     * @param classSymbol the symbol of the class that contains the method being
+     * invoked.
+     * @param methodElt the element of the method being invoked.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the method parameters' types.
+     */
+    public static void updateMethodParameterTypeInScene(
             MethodInvocationNode methodInvNode, ClassSymbol classSymbol,
             ExecutableElement methodElt, AnnotatedTypeFactory atf) {
         if (classSymbol == null) return;
@@ -184,72 +197,67 @@ public class SignatureInferenceScenes {
             Node arg = methodInvNode.getArgument(i);
             AnnotatedTypeMirror argType = atf.getAnnotatedType(arg.getTree());
             AField param = method.parameters.vivify(i);
-            Set<Annotation> prevAnnos = param.type.tlAnnotationsHere;
-            argType = getLubInScene(atf, argType, prevAnnos);
-            Set<Annotation> setOfAnnos = atmToSetOfAnnotations(argType, atf);
-            param.type.tlAnnotationsHere.clear();
-            param.type.tlAnnotationsHere.addAll(setOfAnnos);
-            addModifiedScene(jaifPath);
+            updateAnnotationSetInScene(
+                    param.type.tlAnnotationsHere, atf, jaifPath, argType);
         }
     }
 
     /**
      * Updates the type of the field lhs in the Scene of the class with
-     * symbol classSymbol. If the Scene contained no previous type for lhs, The new type will be the LUB between the previous
-     * type and the type of lhs. If the new type is not a subtype of the type of
-     * lhs, no refinement is made.
-     * @param lhs is the node representing the field.
-     * @param rhs is the node representing the RHS of the assignment.
-     * @param classSymbol is the symbol of the class representing the class 
-     * that contains the field.
-     * @param atf is the annotated type factory.
+     * symbol classSymbol.
+     *
+     * If the Scene contains no entry for the field lhs,
+     * the entry will be created and its type will be the type of rhs. If the
+     * Scene previously contained an entry/type for lhs, its new type will be
+     * the LUB between the previous type and the type of rhs.
+     *
+     * @param lhs the field.
+     * @param rhs the expression being assigned to the field.
+     * @param classSymbol the symbol of the class that contains the field.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the field's type.
      */
-    public static void updateFieldTypeInJaif(FieldAccessNode lhs, Node rhs,
+    public static void updateFieldTypeInScene(FieldAccessNode lhs, Node rhs,
             ClassSymbol classSymbol, AnnotatedTypeFactory atf) {
         if (classSymbol == null) return;
-        String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString() +
-                ".jaif";
-        AScene scene = getScene(jaifPath);
-        AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
         if (lhsATM.getExplicitAnnotations().size() > 0) {
             // We do not infer types if there are explicit annotations.
             // See https://github.com/typetools/annotation-tools/issues/105
             return;
         }
+        String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString() +
+                ".jaif";
+        AScene scene = getScene(jaifPath);
+        AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
 
         AClass clazz = getJaifClass(classSymbol, scene);
         if (clazz == null) return; // Anonymous class => Ignore, for now.
         AField field = getJaifField(clazz, lhs);
-        Set<Annotation> prevAnnos = field.tlAnnotationsHere;
-        rhsATM = getLubInScene(atf, rhsATM, prevAnnos);
-        Set<Annotation> setOfAnnos = atmToSetOfAnnotations(rhsATM, atf);
-        field.tlAnnotationsHere.clear();
-        field.tlAnnotationsHere.addAll(setOfAnnos);
-        addModifiedScene(jaifPath);
+        updateAnnotationSetInScene(
+                field.tlAnnotationsHere, atf, jaifPath, rhsATM);
     }
 
     /**
-     * Updates the return type of the method represented by retNode in the .jaif
-     * file of the class with symbol classSymbol. The new type will be the LUB
-     * between the previous
-     * type and the type of lhs. If the new type is not a subtype of the type of
-     * lhs, no refinement is made.
-     * @param retNode is the node representing the return node.
-     * @param methodTree is the method's tree.
-     * @param classSymbol is the symbol of the class representing the class 
-     * that contains the method.
-     * @param atf is the annotated type factory.
+     * Updates the return type of the method methodTree in the
+     * Scene of the class with symbol classSymbol.
+     *
+     * If the Scene does not contain an annotated return type for the method
+     * methodTree, then the type of the value passed to the return expression
+     * will be added to the return type of that method in the Scene.
+     * If the Scene previously contained an annotated return type for the
+     * method methodTree, its new type will be the LUB between the previous
+     * type and the type of the value passed to the return expression.
+     *
+     * @param retNode the node that contains the expression returned.
+     * @param classSymbol the symbol of the class that contains the method.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the method's return type.
      */
-    public static void updateMethodReturnTypeInJaif(ReturnNode retNode,
+    public static void updateMethodReturnTypeInScene(ReturnNode retNode,
             ClassSymbol classSymbol, MethodTree methodTree,
             AnnotatedTypeFactory atf) {
         if (classSymbol == null) return;
-        String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString() +
-                ".jaif";
-        AScene scene = getScene(jaifPath);
-        AnnotatedTypeMirror returnExprATM = atf.getAnnotatedType(retNode.
-                getTree().getExpression());
         AnnotatedTypeMirror methodReturnType = atf.getAnnotatedType(methodTree).
                 getReturnType();
         if (methodReturnType.getExplicitAnnotations().size() > 0) {
@@ -257,34 +265,53 @@ public class SignatureInferenceScenes {
             // See https://github.com/typetools/annotation-tools/issues/105
             return;
         }
+        String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString() +
+                ".jaif";
+        AScene scene = getScene(jaifPath);
+        AnnotatedTypeMirror returnExprATM = atf.getAnnotatedType(retNode.
+                getTree().getExpression());
 
         AClass clazz = getJaifClass(classSymbol, scene);
         if (clazz == null) return; // Anonymous class => Ignore, for now.
         String methodName = JVMNames.getJVMMethodName(methodTree);
         AMethod method = getJaifMethod(clazz, methodName, scene);
         if (method.returnType != null) {
-            Set<Annotation> prevAnnos = method.returnType.tlAnnotationsHere;
-            returnExprATM = getLubInScene(atf, returnExprATM, prevAnnos);
-            Set<Annotation> setOfAnnos = atmToSetOfAnnotations(
-                    returnExprATM, atf);
-            method.returnType.tlAnnotationsHere.clear();
-            method.returnType.tlAnnotationsHere.addAll(setOfAnnos);
-            addModifiedScene(jaifPath);
+            updateAnnotationSetInScene(
+                    method.returnType.tlAnnotationsHere, atf,
+                    jaifPath, returnExprATM);
         }
     }
 
-    private static AnnotatedTypeMirror getLubInScene(AnnotatedTypeFactory atf,
-            AnnotatedTypeMirror returnExprATM, Set<Annotation> prevAnnos) {
-        if (prevAnnos != null && prevAnnos.size() > 0) {
-            AnnotatedTypeMirror prevATM = setOfAnnotationsToATM(
-                    prevAnnos, atf, false,
-                    returnExprATM.getUnderlyingType());
-            if (prevATM != null) {
-                returnExprATM = AnnotatedTypes.leastUpperBound(atf.
-                        getProcessingEnv(), atf, returnExprATM, prevATM);
+    /**
+     * Updates the set of annotations in a location of a Scene. If the set of
+     * annotations (curAnnos) is empty, then the updated set will be the set of
+     * annotations in newATM.
+     * If curAnnos is not empty, the updated set will be the LUB between
+     * curAnnos and newATM.
+     *
+     * @param curAnnos set of annotations located somewhere in a Scene.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update curAnnos.
+     * @param jaifPath identifies a Scene.
+     * @param newATM the type containing a set of annotations to be
+     * added (or "lubbed") to the Scene.
+     */
+    private static void updateAnnotationSetInScene(Set<Annotation> curAnnos,
+            AnnotatedTypeFactory atf, String jaifPath,
+            AnnotatedTypeMirror newATM) {
+        if (curAnnos != null && curAnnos.size() > 0) {
+            AnnotatedTypeMirror curAnnosATM = setOfAnnotationsToATM(
+                    curAnnos, atf, false, newATM.getUnderlyingType());
+            if (curAnnosATM != null) {
+                newATM = AnnotatedTypes.leastUpperBound(
+                        atf.getProcessingEnv(), atf, newATM, curAnnosATM);
             }
         }
-        return returnExprATM;
+
+        Set<Annotation> setOfAnnos = atmToSetOfAnnotations(newATM, atf);
+        curAnnos.clear();
+        curAnnos.addAll(setOfAnnos);
+        addModifiedScene(jaifPath);
     }
 
     /**

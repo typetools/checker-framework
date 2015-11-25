@@ -742,7 +742,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             ClassSymbol clazzSymbol = SignatureInferenceScenes.getEnclosingClassSymbol(
                     analysis.getContainingClass(n.getTree()), lhs,
                             ((FieldAccessNode)lhs).getReceiver());
-            SignatureInferenceScenes.updateFieldTypeInJaif((FieldAccessNode) lhs,
+            SignatureInferenceScenes.updateFieldTypeInScene((FieldAccessNode) lhs,
                     rhs, clazzSymbol, analysis.getTypeFactory());
         }
 
@@ -758,7 +758,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             ClassTree classTree = analysis.getContainingClass(n.getTree());
             if (classTree != null) {
                 ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(classTree);
-                SignatureInferenceScenes.updateMethodReturnTypeInJaif(n, classSymbol,
+                SignatureInferenceScenes.updateMethodReturnTypeInScene(n, classSymbol,
                         analysis.getContainingMethod(n.getTree()),
                         analysis.getTypeFactory());
             }
@@ -830,7 +830,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             ClassTree classTree = analysis.getContainingClass(n.getTree());
             if (classTree != null) {
                 ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(classTree);
-                SignatureInferenceScenes.updateMethodParameterTypeInJaif(n, classSymbol,
+                SignatureInferenceScenes.updateMethodParameterTypeInScene(n, classSymbol,
                         method,
                         analysis.getTypeFactory());
             }
