@@ -35,3 +35,30 @@ class Utils {
         return l;
     }
 }
+
+class MyGeneric<@NonNull T extends @Nullable Number> {
+}
+
+class UseMyGeneric {
+    MyGeneric<?> wildcardUnbounded = new MyGeneric<>();
+
+    //:: error: (assignment.type.incompatible)
+    MyGeneric<? extends @NonNull Object> wildcardOutsideUB = wildcardUnbounded;
+    MyGeneric<? extends @NonNull Number> wildcardInsideUB = wildcardOutsideUB;
+    //:: error: (assignment.type.incompatible)
+    MyGeneric<? extends @NonNull Number> wildcardInsideUB2 = wildcardUnbounded;
+
+    MyGeneric<? extends @Nullable Number> wildcardInsideUBNullable = wildcardOutsideUB;
+}
+
+class MyGenericExactBounds<@NonNull T extends @NonNull Number> {
+}
+
+class UseMyGenericExactBounds {
+    //:: error: (type.argument.type.incompatible)
+    MyGenericExactBounds<? extends @Nullable Object> wildcardOutsideUBError = new MyGenericExactBounds<>();
+    MyGenericExactBounds<? extends @NonNull Object> wildcardOutside = new MyGenericExactBounds<>();
+    MyGenericExactBounds<? extends @NonNull Number> wildcardInsideUB = wildcardOutside;
+
+    MyGenericExactBounds<?> wildcardOutsideUB = wildcardOutside;
+}
