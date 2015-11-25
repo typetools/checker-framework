@@ -89,7 +89,7 @@ public class SignatureInferenceScenes {
      * Modifying a Scene means adding (or changing) a type annotation for a
      * field, method return type or method parameter type in the Scene.
      * (Scenes are modified by the method
-     * {@link SignatureInferenceScenes#updateAnnotationSetInScene updateAnnotationSetInScene)
+     * {@link SignatureInferenceScenes#updateAnnotationSetInScene updateAnnotationSetInScene)}
      */
     private static Set<String> modifiedScenes = new HashSet<String>();
 
@@ -116,7 +116,7 @@ public class SignatureInferenceScenes {
     /**
      * Clears the set of modified scenes.
      * (Scenes are modified by the method
-     * {@link SignatureInferenceScenes#updateAnnotationSetInScene updateAnnotationSetInScene)
+     * {@link SignatureInferenceScenes#updateAnnotationSetInScene updateAnnotationSetInScene)}
      */
     public static void clearModifiedScenes() {
         modifiedScenes.clear();
@@ -125,7 +125,7 @@ public class SignatureInferenceScenes {
     /**
      * Adds the identifier of a Scene in the set of modified scenes.
      * (Scenes are modified by the method
-     * {@link SignatureInferenceScenes#updateAnnotationSetInScene updateAnnotationSetInScene)
+     * {@link SignatureInferenceScenes#updateAnnotationSetInScene updateAnnotationSetInScene)}
      */
     private static void addModifiedScene(String scene) {
         modifiedScenes.add(scene);
@@ -134,7 +134,7 @@ public class SignatureInferenceScenes {
     /**
      * Write all modified scenes into .jaif files.
      * (Scenes are modified by the method
-     * {@link SignatureInferenceScenes#updateAnnotationSetInScene updateAnnotationSetInScene)
+     * {@link SignatureInferenceScenes#updateAnnotationSetInScene updateAnnotationSetInScene)}
      */
     public static void writeScenesToJaif() {
         for (String jaifPath : modifiedScenes) {
