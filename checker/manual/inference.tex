@@ -149,8 +149,8 @@ Its command-line arguments are:
 As with any type inference tool, it is a good idea to double-check the
 results.
 For example, suppose that your program currently calls
-method \<m1> non-null
-arguments.  This tool will infer that \<m2>'s parameter has
+method \<m1> with non-null
+arguments.  This tool will infer that \<m1>'s parameter has
 \<@NonNull> type.  If you had intended the method to be able to
 take \<null> as an argument and you later add such a call, the type-checker
 will issue a warning because the automatically-inserted \<@NonNull>
@@ -170,13 +170,6 @@ tool's annotations may reflect those errors.
 
 The tool only infers annotations for type uses that have no user-written
 annotation (for the given type system).
-Furthermore, for unannotated locations, the tool only infers a qualifier
-that is a subtype of the default type qualifier
-(Section~\ref{effective-qualifier}).
-You can permit it to infer supertypes
-by passing javac the \<-ArelaxedSignatureInference> flag, and this is desirable when
-the default type annotation is not the top type annotation.
-
 
 \subsubsection{How signature inference works\label{how-signature-inference-works}}
 
@@ -224,4 +217,4 @@ it makes type-checking fast.  However, it has some disadvantages:
 
 
 %%  LocalWords:  AinferSignatures java jaif plugin classpath m2 m1 multi
-%%  LocalWords:  ArelaxedSignatureInference AsuggestPureMethods
+%%  LocalWords:  AsuggestPureMethods
