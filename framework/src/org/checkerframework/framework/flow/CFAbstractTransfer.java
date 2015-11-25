@@ -544,7 +544,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         // non-null type systems)
         V factoryValue = getValueFromFactory(n.getTree(), n);
         V value = moreSpecificValue(factoryValue, storeValue);
-
         return new RegularTransferResult<>(finishValue(value, store), store);
     }
 
@@ -739,11 +738,12 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         if (inferSignatures && !expr.containsUnknown()
                 && expr instanceof FieldAccess) {
             // Updates .jaif file
+            FieldAccessNode lhsNode = ((FieldAccessNode)lhs);
             ClassSymbol clazzSymbol = SignatureInferenceScenes.getEnclosingClassSymbol(
                     analysis.getContainingClass(n.getTree()), lhs,
-                            ((FieldAccessNode)lhs).getReceiver());
-            SignatureInferenceScenes.updateFieldTypeInScene((FieldAccessNode) lhs,
-                    rhs, clazzSymbol, analysis.getTypeFactory());
+                    lhsNode.getReceiver());
+            SignatureInferenceScenes.updateFieldTypeInScene(
+                    lhsNode, rhs, clazzSymbol, analysis.getTypeFactory());
         }
 
         processCommonAssignment(in, lhs, rhs, info, rhsValue);
@@ -757,8 +757,10 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             // Updates the return type of the method on the respective .jaif file.
             ClassTree classTree = analysis.getContainingClass(n.getTree());
             if (classTree != null) {
-                ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(classTree);
-                SignatureInferenceScenes.updateMethodReturnTypeInScene(n, classSymbol,
+                ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
+                        classTree);
+                SignatureInferenceScenes.updateMethodReturnTypeInScene(
+                        n, classSymbol,
                         analysis.getContainingMethod(n.getTree()),
                         analysis.getTypeFactory());
             }
@@ -829,10 +831,10 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             // Updates the parameter type of the invoked method on the respective .jaif file.
             ClassTree classTree = analysis.getContainingClass(n.getTree());
             if (classTree != null) {
-                ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(classTree);
-                SignatureInferenceScenes.updateMethodParameterTypeInScene(n, classSymbol,
-                        method,
-                        analysis.getTypeFactory());
+                ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
+                        classTree);
+                SignatureInferenceScenes.updateMethodParameterTypeInScene(
+                        n, classSymbol, method, analysis.getTypeFactory());
             }
         }
 
