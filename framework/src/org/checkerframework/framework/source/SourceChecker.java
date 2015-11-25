@@ -805,8 +805,7 @@ public abstract class SourceChecker
      * added as a shutdownHook of the JVM.
      */
     protected boolean shouldAddShutdownHook() {
-        return getOptions().containsKey("resourceStats") ||
-                getOptions().containsKey("inferSignatures");
+        return getOptions().containsKey("resourceStats");
     }
 
     /**
