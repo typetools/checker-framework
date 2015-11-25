@@ -28,5 +28,9 @@ public class MethodReturnTest {
         int x = lubTest();
         return x;
     }
+
+    public void voidMethod() {
+        return;
+    }
 }
 

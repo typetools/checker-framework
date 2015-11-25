@@ -7,7 +7,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.signatureinference.JaifFileUtils;
+import org.checkerframework.common.signatureinference.SignatureInferenceScenes;
 import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
@@ -363,7 +363,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         pathHack.clear();
         if (checker.getOptions().containsKey("inferSignatures")) {
             // Clear modified .jaif files in previous CompilationUnit.
-            JaifFileUtils.clearModifiedScenes();
+            SignatureInferenceScenes.clearModifiedScenes();
         }
 
         // There is no need to clear the following caches, they
@@ -758,7 +758,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // Write scenes into .jaif files. In order to perform the write
             // operation only once for each .jaif file, the best location to
             // do so is here.
-            JaifFileUtils.writeScenesToJaif();
+            SignatureInferenceScenes.writeScenesToJaif();
         }
     }
 

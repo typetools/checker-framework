@@ -21,6 +21,7 @@ import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -30,7 +31,6 @@ import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TreeUtils;
 
 import annotations.Annotation;
 import annotations.el.AClass;
@@ -59,19 +59,20 @@ import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 
 /**
- * This class writes inferred types for fields and method return types to a
- * .jaif file.  Calling an update method
- * ({@link JaifFileUtils#updateFieldTypeInJaif updateFieldTypeInJaif} or
- * {@link JaifFileUtils#updateMethodReturnTypeInJaif updateMethodReturnType})
+ * This class writes inferred types for fields, method return types and method
+ * parameters to a .jaif file.  Calling an update method
+ * ({@link SignatureInferenceScenes#updateFieldTypeInJaif updateFieldTypeInJaif},
+ * {@link SignatureInferenceScenes#updateMethodParameterTypeInJaif updateMethodParameterTypeInJaif} or
+ * {@link SignatureInferenceScenes#updateMethodReturnTypeInJaif updateMethodReturnTypeInJaif}) 
  * reads the currently-stored type, if any, and replaces it by the LUB of
  * it and the update method's argument.
  *
+ * Explicitly annotated fields, method return types and method parameter types
+ * will not have inferred types written into a .jaif file. 
+ *
  * @author pbsf
  */
-public class JaifFileUtils {
-
-    /** If true, default types are ignored during type inference. */
-    private static boolean relaxedMode = false;
+public class SignatureInferenceScenes {
 
     /**
      * Path to where .jaif files will be written to and read from.
@@ -82,18 +83,18 @@ public class JaifFileUtils {
     /** Maps file paths (Strings) to Scenes. */
     private static Map<String, AScene> scenes = new HashMap<String, AScene>();
 
-    /** Set containing all modified scenes in the current ClassTree. */
+    /** Set containing all Scenes that were modified in the current ClassTree.
+     * Modifying a Scene means adding (or changing) a type annotation for a
+     * field, method return type or method parameter type in the Scene.
+     * (Scenes are modified by the following methods:
+     * {@link SignatureInferenceScenes#updateFieldTypeInJaif updateFieldTypeInJaif},
+     * {@link SignatureInferenceScenes#updateMethodParameterTypeInJaif updateMethodParameterTypeInJaif},
+     * {@link SignatureInferenceScenes#updateMethodReturnTypeInJaif updateMethodReturnTypeInJaif}.)
+     */
     private static Set<String> modifiedScenes = new HashSet<String>();
 
     /**
-     * Sets relaxed mode based on the input.
-     */
-    public static void setRelaxedMode(boolean mode) {
-        relaxedMode = mode;
-    }
-
-    /**
-     * Returns the scene related to a .jaif file path passed as input.
+     * Returns the Scene related to a .jaif file path passed as input.
      */
     private static AScene getScene(String jaifPath) {
         if (!scenes.containsKey(jaifPath)) {
@@ -114,13 +115,21 @@ public class JaifFileUtils {
 
     /**
      * Clears the set of modified scenes.
+     * (Scenes are modified by the following methods:
+     * {@link SignatureInferenceScenes#updateFieldTypeInJaif updateFieldTypeInJaif},
+     * {@link SignatureInferenceScenes#updateMethodParameterTypeInJaif updateMethodParameterTypeInJaif},
+     * {@link SignatureInferenceScenes#updateMethodReturnTypeInJaif updateMethodReturnTypeInJaif}.)
      */
     public static void clearModifiedScenes() {
         modifiedScenes.clear();
     }
 
     /**
-     * Adds an identifier of a Scene in the set of modified scenes.
+     * Adds the identifier of a Scene in the set of modified scenes.
+     * (Scenes are modified by the following methods:
+     * {@link SignatureInferenceScenes#updateFieldTypeInJaif updateFieldTypeInJaif},
+     * {@link SignatureInferenceScenes#updateMethodParameterTypeInJaif updateMethodParameterTypeInJaif},
+     * {@link SignatureInferenceScenes#updateMethodReturnTypeInJaif updateMethodReturnTypeInJaif}.)
      */
     private static void addModifiedScene(String scene) {
         modifiedScenes.add(scene);
@@ -128,6 +137,10 @@ public class JaifFileUtils {
 
     /**
      * Write all modified scenes into .jaif files.
+     * (Scenes are modified by the following methods:
+     * {@link SignatureInferenceScenes#updateFieldTypeInJaif updateFieldTypeInJaif},
+     * {@link SignatureInferenceScenes#updateMethodParameterTypeInJaif updateMethodParameterTypeInJaif},
+     * {@link SignatureInferenceScenes#updateMethodReturnTypeInJaif updateMethodReturnTypeInJaif}.)
      */
     public static void writeScenesToJaif() {
         for (String jaifPath : modifiedScenes) {
@@ -149,74 +162,40 @@ public class JaifFileUtils {
         }
     }
 
-    /**
-     * @param classSymbol is the symbol representing the class containing the method.
-     * @param methodElt is the method element.
-     * @param atf is the annotated type factory.
-     * @return the ATM of methodElt in the .jaif file of the class with symbol
-     * classSymbol, or null if it can't be found.
-     */
-    public static AnnotatedTypeMirror getMethodReturnTypeInJaif(
-            ClassSymbol classSymbol, ExecutableElement methodElt,
-            AnnotatedTypeFactory atf) {
-        if (classSymbol == null) return null; // Static block.
+    public static void updateMethodParameterTypeInJaif(
+            MethodInvocationNode methodInvNode, ClassSymbol classSymbol,
+            ExecutableElement methodElt, AnnotatedTypeFactory atf) {
+        if (classSymbol == null) return;
         String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString() +
-                 ".jaif";
-        try {
-            AClass clazz = getJaifClass(classSymbol, getScene(jaifPath));
-            if (clazz == null) return null;
-            String methodName = JVMNames.getJVMMethodName(methodElt);
-            AMethod method = clazz.methods.get(methodName);
-            if (method != null && method.returnType != null) {
-                Set<Annotation> prevAnnos = method.returnType.tlAnnotationsHere;
-                return setOfAnnotationsToATM(prevAnnos, atf, false,
-                            methodElt.getReturnType());
-            }
-        } catch (IOException e) {
-            ErrorReporter.errorAbort("Could not open file in: " + jaifPath + "."
-                    + " Exception message: " + e.getMessage());
-        }
-        return null;
-    }
-
-    /**
-     * @param classSymbol is the symbol representing the class containing the method.
-     * @param fieldNode is the node representing the field. It is used to get
-     * the name and type from the node.
-     * @param atf is the annotated type factory.
-     * @return the ATM of fieldNode in the .jaif file of the class with symbol
-     * classSymbol, or null if it can't be found.
-     */
-    public static AnnotatedTypeMirror getFieldTypeInJaif(
-            ClassSymbol classSymbol, FieldAccessNode fieldNode,
-            AnnotatedTypeFactory atf) {
-        if (classSymbol == null) return null; // Static block.
-        String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString()
-                + ".jaif";
-
+                ".jaif";
         AScene scene = getScene(jaifPath);
-        try {
-            AClass clazz = getJaifClass(classSymbol, scene);
-            if (clazz == null) return null; // Anonymous class => Ignore, for now.
-            String fieldName = TreeUtils.getFieldName(fieldNode.getTree());
-            AField field = clazz.fields.get(fieldName);
-            if (field == null) {
-                return null;
+
+        AClass clazz = getJaifClass(classSymbol, scene);
+        if (clazz == null) return; // Anonymous class => Ignore, for now.
+        String methodName = JVMNames.getJVMMethodName(methodElt);
+        AMethod method = getJaifMethod(clazz, methodName, scene);
+        for (int i = 0; i < methodInvNode.getArguments().size(); i++) {
+            VariableElement ve = methodElt.getParameters().get(i);
+            if (atf.getAnnotatedType(ve).getExplicitAnnotations().size() > 0) {
+                // Ignore parameters that have a declared annotated type.
+                continue;
             }
-            Set<Annotation> annos = field.tlAnnotationsHere;
-            if (annos != null && annos.size() > 0) {
-                return setOfAnnotationsToATM(annos, atf, false, fieldNode.getType());
-            }
-        } catch (IOException e) {
-            ErrorReporter.errorAbort("Could not open file in: " + jaifPath + "."
-                    + " Exception message: " + e.getMessage());
+
+            Node arg = methodInvNode.getArgument(i);
+            AnnotatedTypeMirror argType = atf.getAnnotatedType(arg.getTree());
+            AField param = method.parameters.vivify(i);
+            Set<Annotation> prevAnnos = param.type.tlAnnotationsHere;
+            argType = getLubInScene(atf, argType, prevAnnos);
+            Set<Annotation> setOfAnnos = atmToSetOfAnnotations(argType, atf);
+            param.type.tlAnnotationsHere.clear();
+            param.type.tlAnnotationsHere.addAll(setOfAnnos);
+            addModifiedScene(jaifPath);
         }
-        return null;
     }
 
     /**
-     * Updates the type of the field lhs in the .jaif file of the class with
-     * symbol classSymbol. The new type will be the LUB between the previous
+     * Updates the type of the field lhs in the Scene of the class with
+     * symbol classSymbol. If the Scene contained no previous type for lhs, The new type will be the LUB between the previous
      * type and the type of lhs. If the new type is not a subtype of the type of
      * lhs, no refinement is made.
      * @param lhs is the node representing the field.
@@ -230,6 +209,7 @@ public class JaifFileUtils {
         if (classSymbol == null) return;
         String jaifPath = JAIF_FILES_PATH + classSymbol.flatname.toString() +
                 ".jaif";
+        AScene scene = getScene(jaifPath);
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
         if (lhsATM.getExplicitAnnotations().size() > 0) {
@@ -237,39 +217,16 @@ public class JaifFileUtils {
             // See https://github.com/typetools/annotation-tools/issues/105
             return;
         }
-        AnnotatedTypeMirror prevATM = null;
 
-        AScene scene = getScene(jaifPath);
-        try {
-            AClass clazz = getJaifClass(classSymbol, scene);
-            if (clazz == null) return; // Anonymous class => Ignore, for now.
-            String fieldName = lhs.getFieldName();
-            AField field = clazz.fields.get(fieldName);
-            if (field == null) {
-                field = clazz.fields.vivify(fieldName);
-            }
-            Set<Annotation> prevAnnos = field.tlAnnotationsHere;
-            if (prevAnnos != null && prevAnnos.size() > 0) {
-                prevATM = setOfAnnotationsToATM(prevAnnos, atf, false,
-                        rhsATM.getUnderlyingType());
-                if (prevATM != null) {
-                    // If there was a type previously, we must do the LUB to keep soundness.
-                    rhsATM = AnnotatedTypes.leastUpperBound(atf.getProcessingEnv(),
-                            atf, rhsATM, prevATM);
-                }
-            }
-            // Write into .jaif file ONLY IF refined type is a subtype of the
-            // default type or if relaxedMode is true.
-            if (relaxedMode || atf.getTypeHierarchy().isSubtype(rhsATM, lhsATM)) {
-                Set<Annotation> setOfAnnos = atmToSetOfAnnotations(rhsATM, atf);
-                field.tlAnnotationsHere.clear();
-                field.tlAnnotationsHere.addAll(setOfAnnos);
-                addModifiedScene(jaifPath);
-            }
-        } catch (IOException e) {
-            ErrorReporter.errorAbort("Could not open file in: " + jaifPath + "."
-                    + " Exception message: " + e.getMessage());
-        }
+        AClass clazz = getJaifClass(classSymbol, scene);
+        if (clazz == null) return; // Anonymous class => Ignore, for now.
+        AField field = getJaifField(clazz, lhs);
+        Set<Annotation> prevAnnos = field.tlAnnotationsHere;
+        rhsATM = getLubInScene(atf, rhsATM, prevAnnos);
+        Set<Annotation> setOfAnnos = atmToSetOfAnnotations(rhsATM, atf);
+        field.tlAnnotationsHere.clear();
+        field.tlAnnotationsHere.addAll(setOfAnnos);
+        addModifiedScene(jaifPath);
     }
 
     /**
@@ -300,48 +257,64 @@ public class JaifFileUtils {
             // See https://github.com/typetools/annotation-tools/issues/105
             return;
         }
-        AnnotatedTypeMirror prevATM = null;
 
-        try {
-            AClass clazz = getJaifClass(classSymbol, scene);
-            if (clazz == null) return; // Anonymous class => Ignore, for now.
-            String methodName = JVMNames.getJVMMethodName(methodTree);
-            AMethod method = clazz.methods.get(methodName);
-            if (method == null) {
-                method = clazz.methods.vivify(methodName);
-            }
-            if (method.returnType != null) {
-                Set<Annotation> prevAnnos = method.returnType.tlAnnotationsHere;
-                if (prevAnnos != null && prevAnnos.size() > 0) {
-                    prevATM = setOfAnnotationsToATM(prevAnnos, atf, false,
-                            returnExprATM.getUnderlyingType());
-                    if (prevATM != null) {
-                        returnExprATM = AnnotatedTypes.leastUpperBound(atf.
-                                getProcessingEnv(), atf, returnExprATM, prevATM);
-                    }
-                }
-            }
-            // Write into .jaif file only if refined type is a subtype of the
-            // default type or if in relaxed mode.
-            if (relaxedMode || atf.getTypeHierarchy().isSubtype(
-                    returnExprATM, methodReturnType)) {
-                Set<Annotation> setOfAnnos = atmToSetOfAnnotations(
-                        returnExprATM, atf);
-                method.returnType.tlAnnotationsHere.clear();
-                method.returnType.tlAnnotationsHere.addAll(setOfAnnos);
-                addModifiedScene(jaifPath);
-            }
-        } catch (IOException e) {
-            ErrorReporter.errorAbort("Could not open file in: " + jaifPath + "."
-                    + " Exception message: " + e.getMessage());
+        AClass clazz = getJaifClass(classSymbol, scene);
+        if (clazz == null) return; // Anonymous class => Ignore, for now.
+        String methodName = JVMNames.getJVMMethodName(methodTree);
+        AMethod method = getJaifMethod(clazz, methodName, scene);
+        if (method.returnType != null) {
+            Set<Annotation> prevAnnos = method.returnType.tlAnnotationsHere;
+            returnExprATM = getLubInScene(atf, returnExprATM, prevAnnos);
+            Set<Annotation> setOfAnnos = atmToSetOfAnnotations(
+                    returnExprATM, atf);
+            method.returnType.tlAnnotationsHere.clear();
+            method.returnType.tlAnnotationsHere.addAll(setOfAnnos);
+            addModifiedScene(jaifPath);
         }
     }
 
+    private static AnnotatedTypeMirror getLubInScene(AnnotatedTypeFactory atf,
+            AnnotatedTypeMirror returnExprATM, Set<Annotation> prevAnnos) {
+        if (prevAnnos != null && prevAnnos.size() > 0) {
+            AnnotatedTypeMirror prevATM = setOfAnnotationsToATM(
+                    prevAnnos, atf, false,
+                    returnExprATM.getUnderlyingType());
+            if (prevATM != null) {
+                returnExprATM = AnnotatedTypes.leastUpperBound(atf.
+                        getProcessingEnv(), atf, returnExprATM, prevATM);
+            }
+        }
+        return returnExprATM;
+    }
+
     /**
-     * Gets the AClass in an AScene, given a ClassSymbol.
+     * Returns the AField in an AScene, given an AClass and a FieldAccessNode.
      */
-    private static AClass getJaifClass(ClassSymbol classSymbol,
-            AScene scene) throws IOException {
+    private static AField getJaifField(AClass clazz, FieldAccessNode lhs) {
+        String fieldName = lhs.getFieldName();
+        AField field = clazz.fields.get(fieldName);
+        if (field == null) {
+            field = clazz.fields.vivify(fieldName);
+        }
+        return field;
+    }
+
+    /**
+     * Returns the AMethod in an AScene, given an AClass and a MethodTree.
+     */
+    private static AMethod getJaifMethod(AClass clazz, String methodName,
+            AScene scene) {
+        AMethod method = clazz.methods.get(methodName);
+        if (method == null) {
+            method = clazz.methods.vivify(methodName);
+        }
+        return method;
+    }
+
+    /**
+     * Returns the AClass in an AScene, given a ClassSymbol.
+     */
+    private static AClass getJaifClass(ClassSymbol classSymbol, AScene scene) {
         String className = classSymbol.getQualifiedName().toString();
         AClass clazz = scene.classes.get(className);
         if (clazz == null) {

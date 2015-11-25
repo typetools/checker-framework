@@ -1,7 +1,7 @@
 package org.checkerframework.framework.flow;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.signatureinference.JaifFileUtils;
+import org.checkerframework.common.signatureinference.SignatureInferenceScenes;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -123,10 +123,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
         inferSignatures = analysis.getTypeFactory().getProcessingEnv().
                 getOptions().containsKey("inferSignatures");
-        if (inferSignatures) {
-            JaifFileUtils.setRelaxedMode(analysis.getTypeFactory().getProcessingEnv().
-                    getOptions().containsKey("relaxedSignatureInference"));
-        }
     }
 
     /**
@@ -743,10 +739,10 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         if (inferSignatures && !expr.containsUnknown()
                 && expr instanceof FieldAccess) {
             // Updates .jaif file
-            ClassSymbol clazzSymbol = JaifFileUtils.getEnclosingClassSymbol(
+            ClassSymbol clazzSymbol = SignatureInferenceScenes.getEnclosingClassSymbol(
                     analysis.getContainingClass(n.getTree()), lhs,
                             ((FieldAccessNode)lhs).getReceiver());
-            JaifFileUtils.updateFieldTypeInJaif((FieldAccessNode) lhs,
+            SignatureInferenceScenes.updateFieldTypeInJaif((FieldAccessNode) lhs,
                     rhs, clazzSymbol, analysis.getTypeFactory());
         }
 
@@ -762,7 +758,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             ClassTree classTree = analysis.getContainingClass(n.getTree());
             if (classTree != null) {
                 ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(classTree);
-                JaifFileUtils.updateMethodReturnTypeInJaif(n, classSymbol,
+                SignatureInferenceScenes.updateMethodReturnTypeInJaif(n, classSymbol,
                         analysis.getContainingMethod(n.getTree()),
                         analysis.getTypeFactory());
             }
@@ -828,6 +824,17 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         // add new information based on conditional postcondition
         processConditionalPostconditions(n, method, tree, thenStore, elseStore);
+
+        if (inferSignatures) {
+            // Updates the parameter type of the invoked method on the respective .jaif file.
+            ClassTree classTree = analysis.getContainingClass(n.getTree());
+            if (classTree != null) {
+                ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(classTree);
+                SignatureInferenceScenes.updateMethodParameterTypeInJaif(n, classSymbol,
+                        method,
+                        analysis.getTypeFactory());
+            }
+        }
 
         return new ConditionalTransferResult<>(finishValue(resValue, thenStore,
                 elseStore), thenStore, elseStore);

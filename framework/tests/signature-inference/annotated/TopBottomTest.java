@@ -2,8 +2,9 @@ import tests.signatureinference.qual.SiblingWithFields;
 import tests.signatureinference.qual.DefaultType;
 import tests.signatureinference.qual.Parent;
 import tests.signatureinference.qual.Sibling1;
-import tests.signatureinference.qual.Sibling2;
+import tests.signatureinference.qual.Top;
 import tests.signatureinference.qual.SignatureInferenceBottom;
+import tests.signatureinference.qual.Sibling2;
 import tests.signatureinference.qual.*;
 public class TopBottomTest {
     // The default type for fields is @DefaultType.

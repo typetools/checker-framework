@@ -25,5 +25,9 @@ public class MethodReturnTest {
         //:: error: (return.type.incompatible)
         return x;
     }
+
+    public void voidMethod() {
+        return;
+    }
 }
 
