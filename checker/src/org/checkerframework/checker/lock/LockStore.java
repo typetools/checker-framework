@@ -41,7 +41,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       * constructors and initializers are special with regard to
       * the set of locks that is considered to be held. For example,
       * 'this' is considered to be held inside a constructor.
-      */ 
+      */
     protected boolean inConstructorOrInitializer = false;
 
     protected final AnnotationMirror LOCKHELD = AnnotationUtils.fromClass(analysis.getTypeFactory().getElementUtils(), LockHeld.class);
@@ -167,7 +167,8 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
                super.isSideEffectFree(atypeFactory, method);
     }
 
-    // Same as super method, except for localVariableValues.clear();
+    // Same as super method, except for the call to localVariableValues.clear();
+    // See the comment next to the call for more details.
     @Override
     public void updateForMethodCall(MethodInvocationNode n,
             AnnotatedTypeFactory atypeFactory, CFValue val) {
@@ -219,7 +220,11 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
                 newFieldValues.put(fieldAccess, otherVal);
             }
             fieldValues = newFieldValues;
-            
+
+            // Necessary because a method could unlock a lock that is a local variable, e.g.:
+            // ReentrantLock lock = new ReentrantLock();
+            // lock.lock();
+            // unlockMyLock(lock);
             localVariableValues.clear();
 
             // update method values

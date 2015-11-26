@@ -11,9 +11,9 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * lock expressions for {@code x}'s value are held.
  * <p>
  *
- * This annotation is used on a formal parameter to indicate that the
+ * This annotation is used on a formal parameter or receiver to indicate that the
  * {@literal @}{@link GuardedBy} annotation on
- * the corresponding actual parameter at the method call site
+ * the corresponding actual parameter or receiver at the method call site
  * is unknown at the method definition site, but the lock expressions
  * on the {@literal @}{@link GuardedBy} annotation are known to be held
  * prior to the method call.
@@ -39,7 +39,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
 public @interface GuardSatisfied {
     /**
      * The index on the polymorphic qualifier.
-     * Defaults to 0.
+     * Defaults to -1 so that the user can write any index starting from 0.
      */
-    int value() default 0;
+    int value() default -1;
 }

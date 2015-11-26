@@ -112,6 +112,7 @@ public class GuardSatisfiedTest {
        }
    }
 
+   //:: error: (guardsatisfied.return.must.have.index)
    @GuardSatisfied Object testReturnTypesMustMatch1(@GuardSatisfied Object o) {
        return o;
    }
@@ -124,8 +125,9 @@ public class GuardSatisfiedTest {
        return o;
    }
 
-   // @GuardSatisfied is equivalent to @GuardSatisfied(0)
-   @GuardSatisfied Object testReturnTypesMustMatch4(@GuardSatisfied(0) Object o) {
+   // @GuardSatisfied is equivalent to @GuardSatisfied(-1).
+   //:: error: (guardsatisfied.return.must.have.index)
+   @GuardSatisfied Object testReturnTypesMustMatch4(@GuardSatisfied(-1) Object o) {
        return o;
    }
 
@@ -134,6 +136,7 @@ public class GuardSatisfiedTest {
        return o;
    }
 
+   //:: error: (guardsatisfied.return.must.have.index)
    @GuardSatisfied Object testReturnTypesMustMatch6(@GuardSatisfied(2) Object o) {
        //:: error: (return.type.incompatible)
        return o;

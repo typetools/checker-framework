@@ -1,4 +1,4 @@
-// This test contains the sample code from the Lock Checker manual chapter
+  // This test contains the sample code from the Lock Checker manual chapter
 // modified to fit testing instead of illustrative purposes.
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -9,6 +9,11 @@ class ChapterExamples {
      Object field = new Object();
      @LockingFree
      Object method(@GuardSatisfied MyClass this){return new Object();}
+     @LockingFree
+     public @GuardSatisfied(1) MyClass append(@GuardSatisfied(1) MyClass this,
+                                              @GuardSatisfied(2) MyClass m) {
+         return this;
+     }
   }
 
 @MayReleaseLocks
@@ -417,34 +422,46 @@ void boxingUnboxing() {
 
 
 ReentrantLock lock1, lock2;
-@GuardedBy("lock1") StringBuffer filename;
-@GuardedBy("lock2") StringBuffer extension;
+@GuardedBy("lock1") MyClass filename;
+@GuardedBy("lock2") MyClass extension;
 
 void method0() {
     //:: error: (contracts.precondition.not.satisfied) :: error: (contracts.precondition.not.satisfied.field)
-    filename.append(extension);
-    // filename = filename.append(extension);
+    filename = filename.append(extension);
 }
 
 void method1() {
     lock1.lock();
     //:: error: (contracts.precondition.not.satisfied.field)
-    filename.append(extension);
-    // filename = filename.append(extension);
+    filename = filename.append(extension);
 }
 
 void method2() {
     lock2.lock();
     //:: error: (contracts.precondition.not.satisfied)
-    filename.append(extension);
-    // filename = filename.append(extension);
+    filename = filename.append(extension);
 }
 
 void method3() {
     lock1.lock();
     lock2.lock();
-    filename.append(extension);
-    // filename = filename.append(extension);
+    filename = filename.append(extension);
+    filename = filename.append(null);
+    //:: error: (assignment.type.incompatible)
+    filename = extension.append(extension);
+    //:: error: (assignment.type.incompatible)
+    filename = extension.append(filename);
+}
+
+void matchingGSparams(@GuardSatisfied(1) MyClass m1,
+                      @GuardSatisfied(1) MyClass m2) {
+}
+
+void method4() {
+    lock1.lock();
+    lock2.lock();
+    matchingGSparams(filename, null);
+    matchingGSparams(null, filename);
 }
 
 @ReleasesNoLocks
@@ -459,10 +476,5 @@ void innerClassTest() {
    //:: error: (method.guarantee.violated)
    ic.innerClassMethod();
 }
-
-//@LockingFree
-//public @GuardSatisfied(1) StringBuffer append(@GuardSatisfied(1) StringBuffer this,
-//                                              @GuardSatisfied(2) String str)
-
 
 }

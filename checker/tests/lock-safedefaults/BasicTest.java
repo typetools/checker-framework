@@ -15,7 +15,7 @@ public class BasicTest {
     }
 
     @AnnotatedFor("lock")
-    @GuardSatisfied Object myAnnotatedMethod(Object param) {
+    Object myAnnotatedMethod(Object param) {
         return param;
     }
 

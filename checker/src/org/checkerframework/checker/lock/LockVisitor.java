@@ -122,8 +122,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     // or receiver (explicitly or implicitly) annotated with @GuardSatisfied.
     @Override
     public Void visitMethod(MethodTree node, Void p) {
+    	ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
 
-        SideEffectAnnotation sea = atypeFactory.methodSideEffectAnnotation(TreeUtils.elementFromDeclaration(node), true);
+        SideEffectAnnotation sea = atypeFactory.methodSideEffectAnnotation(methodElement, true);
 
         if (sea == SideEffectAnnotation.MAYRELEASELOCKS) {
             boolean issueGSwithMRLWarning = false;
@@ -149,6 +150,20 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             }
         }
 
+        // Issue an error if a non-constructor method definition has a return type of @GuardSatisfied without an index.
+        if (methodElement != null && methodElement.getKind() != ElementKind.CONSTRUCTOR) {
+	        AnnotatedTypeMirror returnTypeATM = atypeFactory.getAnnotatedType(node).getReturnType();
+
+	        if (returnTypeATM != null && returnTypeATM.hasAnnotation(GuardSatisfied.class)) {
+	            int returnGuardSatisfiedIndex = AnnotationUtils.
+	                    getElementValue(returnTypeATM.getAnnotation(GuardSatisfied.class), "value", Integer.class, true);
+
+	            if (returnGuardSatisfiedIndex == -1) {
+	                checker.report(Result.failure("guardsatisfied.return.must.have.index"), node);
+	            }
+	        }
+        }
+
         return super.visitMethod(node, p);
     }
 
@@ -165,16 +180,16 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 Element invokedElement = TreeUtils.elementFromUse(node);
 
                 boolean receiverIsThatOfEnclosingMethod = false;
-                
+
                 MethodInvocationNode nodeNode = (MethodInvocationNode) atypeFactory.getNodeForTree(node);
-                
+
                 Node receiverNode = nodeNode.getTarget().getReceiver();
                 if (receiverNode instanceof ExplicitThisLiteralNode ||
                     receiverNode instanceof ImplicitThisLiteralNode ||
                     receiverNode instanceof ThisLiteralNode) {
                     receiverIsThatOfEnclosingMethod = true;
                 }
-                
+
                 if (invokedElement != null) {
                     checkPreconditions(node,
                             invokedElement,
@@ -375,7 +390,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         SideEffectAnnotation seaOfOverriderMethod = atypeFactory.methodSideEffectAnnotation(TreeUtils.elementFromDeclaration(overriderTree), false);
         SideEffectAnnotation seaOfOverridenMethod = atypeFactory.methodSideEffectAnnotation(overridden.getElement(), false);
 
-        if (seaOfOverriderMethod.isWeaker(seaOfOverridenMethod)) {
+        if (seaOfOverriderMethod.isWeakerThan(seaOfOverridenMethod)) {
             isValid = false;
             reportFailure("override.sideeffect.invalid", overriderTree, enclosingType, overridden, overriddenType, null, null);
         }
@@ -428,7 +443,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             boolean receiverIsThatOfEnclosingMethod = false;
 
             Node receiverNode = null;
-                    
+
             if (node instanceof FieldAccessNode || node instanceof MethodAccessNode) {
                 receiverNode = node instanceof FieldAccessNode ? ((FieldAccessNode) node).getReceiver() : ((MethodAccessNode) node).getReceiver();
                 if (receiverNode instanceof ExplicitThisLiteralNode ||
@@ -568,7 +583,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         SideEffectAnnotation seaOfContainingMethod = atypeFactory.methodSideEffectAnnotation(methodElement, false);
 
-        if (seaOfInvokedMethod.isWeaker(seaOfContainingMethod)) {
+        if (seaOfInvokedMethod.isWeakerThan(seaOfContainingMethod)) {
             checker.report(Result.failure(
                     "method.guarantee.violated",
                     seaOfContainingMethod.getNameOfSideEffectAnnotation(),
@@ -587,11 +602,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
 
         // Index on @GuardSatisfied at each location. -1 when no @GuardSatisfied annotation was present.
-        // Note that @GuardSatisfied with no index is normally represented as having index 0.
-        // We would like to ignore it for these purposes so we convert it to -1.
-        // Unfortunately we don't distinguish between @GS and @GS(0), so if the user wrote @GS(0) we will
-        // lose that information. The user needs to write @GS starting with index 1.
-        // The first two elements of the array are reserved for the return type and the receiver.
+        // Note that @GuardSatisfied with no index is normally represented as having index -1.
+        // We would like to ignore a @GuardSatisfied with no index for these purposes, so if it is encountered we leave its index as -1.
+        // The first element of the array is reserved for the receiver.
         int guardSatisfiedIndex[] = new int[requiredArgs.size() + 1]; // + 1 for the receiver parameter type
 
         // Retrieve receiver types from method definition and method call
@@ -624,14 +637,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 guardSatisfiedIndex[i+1] = AnnotationUtils.getElementValue(arg.getAnnotation(checkerGuardSatisfiedClass), "value", Integer.class, true);
             }
         }
-        
-        // Set any indices of 0 to -1
-        
-        for(int i = 0; i < guardSatisfiedIndex.length; i++) {
-            if (guardSatisfiedIndex[i] == 0) {
-                guardSatisfiedIndex[i] = -1;
-            }
-        }
 
         // Combine all of the actual parameters into one list of AnnotationMirrors
 
@@ -651,8 +656,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                         AnnotationMirror anno1 = passedArgAnnotations.get(i);
                         AnnotationMirror anno2 = passedArgAnnotations.get(j);
                         if (anno1 != null && anno2 != null) {
-                            if (!atypeFactory.getQualifierHierarchy().isSubtype(anno1, anno2) ||
-                                !atypeFactory.getQualifierHierarchy().isSubtype(anno2, anno1)) {
+                            if (!(atypeFactory.getQualifierHierarchy().isSubtype(anno1, anno2) ||
+                                  atypeFactory.getQualifierHierarchy().isSubtype(anno2, anno1))) {
                                 // TODO: allow these strings to be localized
 
                                 String formalParam1 = null;
@@ -679,7 +684,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     // When visiting a synchronized block, issue an error if the expression
-    // has a type that implements the java.util.concurrent.locks.Lock inteface.
+    // has a type that implements the java.util.concurrent.locks.Lock interface.
+    // TODO: make a type declaration annotation for this rather than looking for Lock.class explicitly.
     @Override
     public Void visitSynchronized(SynchronizedTree node, Void p) {
         ProcessingEnvironment processingEnvironment = checker.getProcessingEnvironment();
@@ -709,9 +715,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     @Override
     protected void checkPreconditions(Tree tree,
             Element invokedElement, boolean methodCall, Set<Pair<String, String>> additionalPreconditions) {
-        checkPreconditions(tree, invokedElement, methodCall, additionalPreconditions, false);        
+        checkPreconditions(tree, invokedElement, methodCall, additionalPreconditions, false);
     }
-    
+
     // Same contents as BaseTypeVisitor.checkPreconditions except for the addition of the
     // else if (nodeNode instanceof ExplicitThisLiteralNode || ...
     // block and the special handling under the
