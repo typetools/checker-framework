@@ -24,9 +24,9 @@ public class Issue511 extends MySuperClass {
 }
 
 class Use{
-    MyGeneric<? extends  Object> wildCardExtendsObject;
+    MyGeneric<? extends  Object> wildCardExtendsObject = new MyGeneric<>();
     MyGeneric<? extends Number> wildCardExtendsNumber = wildCardExtendsObject;
-    MyGeneric<?> wildCardNoBound;
+    MyGeneric<?> wildCardNoBound = new MyGeneric<>();
     MyGeneric<? extends Number> wildCardExtendsNumber2 = wildCardNoBound;
 }
 
