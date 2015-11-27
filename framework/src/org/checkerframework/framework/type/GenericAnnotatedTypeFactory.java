@@ -346,11 +346,6 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defs = new QualifierDefaults(elements, this);
-        initializeQualifierDefaults(defs);
-        return defs;
-    }
-
-    protected void initializeQualifierDefaults(QualifierDefaults defs) {
         boolean foundDefaultOtherwise = false;
         boolean foundDefaultOtherwiseForUnannotatedCode = false;
 
@@ -443,6 +438,8 @@ public abstract class GenericAnnotatedTypeFactory<
                 // See: https://groups.google.com/d/msg/checker-framework-dev/vk2V6ZFKPLk/v3hENw-e7gsJ
             }
         }
+
+        return defs;
     }
 
     /**
