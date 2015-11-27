@@ -167,19 +167,57 @@ public class LockAnnotatedTypeFactory
 
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-        	if (AnnotationUtils.areSameIgnoringValues(a1, GUARDEDBYINACCESSIBLE)) {
+        	AnnotationMirror a1top = getTopAnnotation(a1);
+        	AnnotationMirror a2top = getTopAnnotation(a2);
+
+        	if (AnnotationUtils.areSame(a1top, LOCKPOSSIBLYHELD) &&
+                AnnotationUtils.areSame(a2top, LOCKPOSSIBLYHELD)) {
+        		return greatestLowerBoundInLockPossiblyHeldHierarchy(a1, a2);
+        	} else if (AnnotationUtils.areSame(a1top, GUARDEDBYINACCESSIBLE) &&
+                       AnnotationUtils.areSame(a2top, GUARDEDBYINACCESSIBLE)) {
+                return greatestLowerBoundInGuardedByInaccessibleHierarchy(a1, a2);
+        	}
+
+        	return null;
+        }
+
+        private AnnotationMirror greatestLowerBoundInGuardedByInaccessibleHierarchy(AnnotationMirror a1, AnnotationMirror a2) {
+        	if (AnnotationUtils.areSame(a1, GUARDEDBYINACCESSIBLE)) {
         		return a2;
         	}
 
-        	if (AnnotationUtils.areSameIgnoringValues(a2, GUARDEDBYINACCESSIBLE)) {
+        	if (AnnotationUtils.areSame(a2, GUARDEDBYINACCESSIBLE)) {
         		return a1;
         	}
 
-        	if (AnnotationUtils.areSame(a1, a2)) {
+            if (isGuardedBy(a1) && isGuardedBy(a2)) {
+                // Two @GuardedBy annotations are considered subtypes of each other if and only if their values match exactly.
+
+                List<String> a1Values =
+                    AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+                List<String> a2Values =
+                    AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+
+                if (a2Values.containsAll(a1Values) && a1Values.containsAll(a2Values)) {
+                	return a1;
+                }
+            } else if (AnnotationUtils.areSame(a1, a2)) {
         		return a1;
         	}
 
         	return GUARDEDBYBOTTOM;
+        }
+
+        private AnnotationMirror greatestLowerBoundInLockPossiblyHeldHierarchy(AnnotationMirror a1, AnnotationMirror a2) {
+        	if (AnnotationUtils.areSame(a1, LOCKPOSSIBLYHELD)) {
+        		return a2;
+        	}
+
+        	if (AnnotationUtils.areSame(a2, LOCKPOSSIBLYHELD)) {
+        		return a1;
+        	}
+
+        	return LOCKHELD;
         }
     }
 
