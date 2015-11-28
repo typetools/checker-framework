@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
  * Here is an example use:
  *
  * <pre><code>     @AssertNonNullIfNonNull("id")
- *     {@literal @}Pure
+ *    {@literal @}Pure
  *     public @Nullable Long getId() {
  *         return id;
  *     }
