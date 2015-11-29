@@ -1961,12 +1961,12 @@ public final class Locale implements Cloneable, Serializable {
     @SideEffectFree
     public Object clone()
     {
-        try {
+        /*try {
             Locale that = (Locale)super.clone();
             return that;
         } catch (CloneNotSupportedException e) {
             throw new InternalError(e);
-        }
+        }*/
     }
 
     /**
