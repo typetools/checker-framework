@@ -10,6 +10,7 @@
     <property file="build.${os.name}.properties"/>
     <property file="build.properties"/>
     <property file="${basedir}/../build-common.properties"/>
+    <property name="javadoc.private" value="false"/>
 
     <import file="${basedir}/../build-common.xml"/>
 
@@ -120,6 +121,7 @@
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${api.doc}"
+                 private="${javadoc.private}"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"

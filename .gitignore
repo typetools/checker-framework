@@ -90,6 +90,8 @@ checker/tests/nullness-extra/package-anno/Out.txt
 checker/tests/nullness-extra/package-anno/test/*.class
 checker/tests/nullness-extra/shorthand/NullnessRegexWithErrors.class
 checker/tests/nullness-extra/shorthand/Out.txt
+checker/tests/nullness-extra/issue502/Issue502.class
+checker/tests/nullness-extra/issue502/Out.txt
 checker/tests/nullness/generics/*.class
 checker/tests/nullness-temp/*.java
 checker/tests/nullness-temp/*.class

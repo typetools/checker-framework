@@ -146,7 +146,7 @@ public class LubTypeVariableAnnotator {
 
     /**
      *
-     * @param type if lub is a type variable T but type is not, then type is a type variable that extends T (e.g. <E extends T>
+     * @param type if lub is a type variable T but type is not, then type is a type variable that extends T (e.g. {@code <E extends T>}
      * @param lub the type variable that is a supertype of T
      * @return the bound of type that has a underlying type T with the first primary annotation encounter
      *         while finding that bound

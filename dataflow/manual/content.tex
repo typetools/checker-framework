@@ -60,9 +60,9 @@ the transfer function for particular node types.
 % TODO: Update
 
 The source code of the combined Checker Framework and Dataflow
-Framework is divided into three projects: \code{javacutil},
-\code{dataflow}, and \code{checkers}, which can be built into distinct
-jar files.
+Framework is divided into five projects: \code{javacutil},
+\code{dataflow}, \code{stubparser}, \code{framework}, and \code{checker},
+which can be built into distinct jar files.
 
 \code{javacutil} provides convenient interfaces to routines in
 Oracle's javac library.  There are utility classes for interacting
@@ -71,23 +71,29 @@ with annotations, elements, trees and types, as well as
 of javac that are not part of a supported interface.  There are
 interfaces or abstract classes for reporting errors, for processing
 types in an AST, and for providing the annotations present on an
-Element.  The \code{javacutil.trees} package provides a class to
-parse expressions into javac Trees, a class to build new Trees from
-scratch, and a class to represent newly introduced variables that are
-not part of an input program.
+Element.
+The \code{org.checkerframework.javacutil.trees} package provides a
+class to parse expressions into javac Trees (\code{TreeParser}), a
+class to build new Trees from  scratch (\code{TreeBuilder}), and a
+class to represent newly introduced variables that are not part of an
+input program (\code{DetachedVarSymbol}).
 
 \code{dataflow} contains the classes to represent and construct
 control flow graphs and the base classes required for flow analysis.
 These classes are described in detail in \autoref{sec:node_classes}.
 
-\code{checkers} contains the Checker Framework and the type
-system-specific checkers, including the derived classes for flow
-analysis of annotated types which are described later in this
-document.
+\code{stubparser} contains the stub-file parsing project.
 
-The \code{dataflow} project depends on \code{javacutil}, while the
-\code{checkers} project depends on both \code{dataflow} and
-\code{javacutil}.
+\code{framework} contains the framework aspects of the Checker
+Framework, including the derived classes for flow analysis of
+annotated types which are described later in this document.
+
+\code{checker} contains the type system-specific checkers.
+
+The \code{dataflow} project depends on \code{javacutil}, the
+\code{framework} project depends on both \code{dataflow} and
+\code{javacutil}, \code{stubparser} has no dependencies, and
+\code{checker} depends on \code{framework} and \code{stubparser}.
 
 
 \subsection{Classes}
@@ -96,7 +102,7 @@ This section gives an overview of the major Java classes and
 interfaces in the implementation of the Dataflow Framework and the
 flow-sensitive type checking feature of the Checker Framework.  It
 includes both the base classes in the \code{dataflow} project and the
-derived classes in the \code{checkers} project.  The class and
+derived classes in the \code{framework} project.  The class and
 interface declarations are given with full package names to indicate
 which project they belong to.
 
@@ -116,7 +122,12 @@ Need to double-check whether the code adds exceptions properly.  Also, does
 division possibly throw a DivideByZero exception?
 \end{workinprogress}
 
-    \begin{verbatim}class org.checkerframework.dataflow.cfg.node.*Node\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.dataflow.cfg.node;
+
+abstract class Node
+class *Node extends Node
+\end{verbatim}
 
 
 \subsubsection{Blocks}
@@ -126,47 +137,52 @@ Nodes are grouped into basic blocks using a hierarchy of Block
 classes.  The hierarchy is composed of five interfaces, two abstract
 classes, and four concrete classes.
 
-    \begin{verbatim}interface org.checkerframework.dataflow.cfg.block.Block\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.dataflow.cfg.block;
 
-    \begin{verbatim}abstract class org.checkerframework.dataflow.cfg.block.BlockImpl implements Block\end{verbatim}
-
-    \begin{verbatim}interface org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock extends Block\end{verbatim}
-
-    \begin{verbatim}abstract class org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl extends BlockImpl implements
-        SingleSuccessorBlock\end{verbatim}
+interface Block
+abstract class BlockImpl implements Block
+interface SingleSuccessorBlock extends Block
+abstract class SingleSuccessorBlockImpl extends BlockImpl implements SingleSuccessorBlock
+\end{verbatim}
 
 A RegularBlock contains no exception-raising operations and has a
 single control-flow successor.
 
-    \begin{verbatim}interface org.checkerframework.dataflow.cfg.block.RegularBlock extends SingleSuccessorBlock\end{verbatim}
-
-    \begin{verbatim}class org.checkerframework.dataflow.cfg.block.RegularBlockImpl extends SingleSuccessorBlockImpl implements
-        RegularBlock\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.dataflow.cfg.block;
+interface RegularBlock extends SingleSuccessorBlock
+class RegularBlockImpl extends SingleSuccessorBlockImpl implements RegularBlock
+\end{verbatim}
 
 An ExceptionBlock contains a single operation that may raise an
 exception, with one or more exceptional successors and a single normal
 control-flow successor.
 
-    \begin{verbatim}interface org.checkerframework.dataflow.cfg.block.ExceptionBlock extends SingleSuccessorBlock\end{verbatim}
-
-    \begin{verbatim}class org.checkerframework.dataflow.cfg.block.ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
-        ExceptionBlock\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.dataflow.cfg.block;
+interface ExceptionBlock extends SingleSuccessorBlock
+class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements ExceptionBlock
+\end{verbatim}
 
 A SpecialBlock represents method entry or exit, including exceptional
 exit which is represented separately from normal exit.
 
-    \begin{verbatim}interface org.checkerframework.dataflow.cfg.block.SpecialBlock extends SingleSuccessorBlock\end{verbatim}
-
-    \begin{verbatim}class org.checkerframework.dataflow.cfg.block.SpecialBlockImpl extends SingleSuccessorBlockImpl implements
-        SpecialBlock\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.dataflow.cfg.block;
+interface SpecialBlock extends SingleSuccessorBlock
+class SpecialBlockImpl extends SingleSuccessorBlockImpl implements SpecialBlock
+\end{verbatim}
 
 A ConditionalBlock contains no operations at all.  It represents a
 control-flow split to either a `then' or an `else' successor based on
 the immediately preceding boolean-valued Node.
 
-    \begin{verbatim}interface org.checkerframework.dataflow.cfg.block.ConditionalBlock extends Block\end{verbatim}
-
-    \begin{verbatim}class org.checkerframework.dataflow.cfg.block.ConditionalBlockImpl extends BlockImpl implements ConditionalBlock\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.dataflow.cfg.block;
+interface ConditionalBlock extends Block
+class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock
+\end{verbatim}
 
 
 
@@ -178,7 +194,10 @@ expression as a graph of Blocks with distinguished entry, exit, and
 exceptional exit SpecialBlocks.  ControlFlowGraphs are produced by the
 CFGBuilder classes and are treated as immutable once they are built.
 
-    \begin{verbatim}class org.checkerframework.dataflow.cfg.ControlFlowGraph\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.dataflow.cfg;
+class ControlFlowGraph
+\end{verbatim}
 
 \subsubsubsection{CFGBuilder}
 \label{sec:cfg_builder_classes}
@@ -186,13 +205,19 @@ CFGBuilder classes and are treated as immutable once they are built.
 The CFGBuilder classes visit an AST and produce a corresponding
 ControlFlowGraph as described in \autoref{sec:ast_to_cfg_translation}.
 
-    \begin{verbatim}class org.checkerframework.dataflow.cfg.CFGBuilder\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.dataflow.cfg;
+class CFGBuilder
+\end{verbatim}
 
 The Checker Framework derives from CFGBuilder in order to desugar
 enhanced for loops that make explicit use of type annotations provided
 by the checker in use.
 
-    \begin{verbatim}class org.checkerframework.framework.flow.CFCFGBuilder extends CFGBuilder\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.framework.flow;
+class CFCFGBuilder extends CFGBuilder
+\end{verbatim}
 
 
 \subsubsection{FlowExpressions}
@@ -203,7 +228,10 @@ expressions, called FlowExpressions: local variables, field accesses,
 array accesses, references to \code{this}, and pure method calls.
 FlowExpressions are keys in the store of abstract values.
 
-    \begin{verbatim}class org.checkerframework.dataflow.analysis.FlowExpressions\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.dataflow.analysis;
+class FlowExpressions
+\end{verbatim}
 
 Java expressions that appear in method pre- and postconditions are
 parsed into FlowExpressions using helper routines in
@@ -221,16 +249,21 @@ vary widely among different users of the Dataflow Framework, but they
 share a common feature that one can compute the least upper bound of
 two AbstractValues.
 
-    \begin{verbatim}interface org.checkerframework.dataflow.analysis.AbstractValue<V extends AbstractValue<V>>\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.dataflow.analysis;
+interface AbstractValue<V extends AbstractValue<V>>
+\end{verbatim}
 
 For the Checker Framework, abstract values are essentially
 AnnotatedTypeMirrors.
 
-    \begin{verbatim}abstract class org.checkerframework.framework.flow.CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V>\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.framework.flow;
+abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V>
+class CFValue extends CFAbstractValue<CFValue>
+\end{verbatim}
 
-    \begin{verbatim}class org.checkerframework.framework.flow.CFValue extends CFAbstractValue<CFValue>\end{verbatim}
-
-For the NullnessCheckers, abstract values additionally track the
+For the Nullness Checker, abstract values additionally track the
 meaning of PolyNull, which may be either Nullable or NonNull.  The
 meaning of PolyNull can change when a PolyNull value is compared to
 the null literal, which is specific to the NullnessChecker.  Other
@@ -238,7 +271,10 @@ checkers often also support a Poly* qualifier, but only the
 NullnessChecker tracks the meaning of its poly qualifier using the
 dataflow analysis.
 
-        \begin{verbatim}class org.checkerframework.checker.nullness.NullnessValue extends CFAbstractValue<NullnessValue>\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.checker.nullness;
+class NullnessValue extends CFAbstractValue<NullnessValue>
+\end{verbatim}
 
 
 \subsubsection{Store}
@@ -248,28 +284,38 @@ A Store is a set of dataflow facts computed by an analysis, so it is a
 mapping from FlowExpressions to AbstractValues.  As with
 AbstractValues, one can take the least upper bound of two Stores.
 
-    \begin{verbatim}interface org.checkerframework.dataflow.analysis.Store<S extends Store<S>>\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.dataflow.analysis;
+interface Store<S extends Store<S>>
+\end{verbatim}
 
 The Checker Framework store restricts the type of abstract values it
 may contain.
 
-    \begin{verbatim}abstract class org.checkerframework.framework.flow.CFAbstractStore<V extends CFAbstractValue<V>,
+\begin{verbatim}
+package org.checkerframework.framework.flow;
+abstract class CFAbstractStore<V extends CFAbstractValue<V>,
         S extends CFAbstractStore<V, S>>
-    implements Store<S>\end{verbatim}
-
-    \begin{verbatim}class org.checkerframework.framework.flow.CFStore extends CFAbstractStore<CFValue, CFStore>\end{verbatim}
+    implements Store<S>
+class CFStore extends CFAbstractStore<CFValue, CFStore>
+\end{verbatim}
 
 An InitializationStore tracks which fields of the `self' reference
 have been initialized.
 
-    \begin{verbatim}class org.checkerframework.checker.initialization.InitializationStore<
-        V extends CFAbstractValue<V>, S extends InitializationStore<V, S>>
-    extends CFAbstractStore<V, S>\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.checker.initialization;
+class InitializationStore<V extends CFAbstractValue<V>,
+        S extends InitializationStore<V, S>>
+    extends CFAbstractStore<V, S>
+\end{verbatim}
 
 A NullnessStore additionally tracks the meaning of PolyNull.
 
-    \begin{verbatim}class org.checkerframework.checker.nullness.NullnessStore extends
-        InitializationStore<NullnessValue, NullnessStore>\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.checker.nullness;
+class NullnessStore extends InitializationStore<NullnessValue, NullnessStore>
+\end{verbatim}
 
 
 \subsubsection{Transfer functions}
@@ -288,9 +334,11 @@ true immediately before the node to be analyzed.  A TransferInput may
 contain a single store, or a pair of `then' and `else' stores when
 following a boolean-valued expression.
 
-    \begin{verbatim}class org.checkerframework.dataflow.analysis.TransferInput<
-        A extends AbstractValue<A>,
-        S extends Store<S>>\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.dataflow.analysis;
+class TransferInput<A extends AbstractValue<A>,
+        S extends Store<S>>
+\end{verbatim}
 
 \subsubsubsection{TransferResult}
 \label{sec:transfer_result_classes}
@@ -302,59 +350,64 @@ ConditionalTransferResult that contains both a `then' and an `else'
 store, while most other Nodes produce a RegularTransferResult with a
 single store.
 
-    \begin{verbatim}abstract class org.checkerframework.dataflow.analysis.TransferResult<
-        A extends AbstractValue<A>,
-        S extends Store<S>>\end{verbatim}
-
-    \begin{verbatim}class org.checkerframework.dataflow.analysis.ConditionalTransferResult<
-        A extends AbstractValue<A>,
+\begin{verbatim}
+package class org.checkerframework.dataflow.analysis;
+abstract TransferResult<A extends AbstractValue<A>,
         S extends Store<S>>
-    extends TransferResult<A, S>\end{verbatim}
-
-    \begin{verbatim}class org.checkerframework.dataflow.analysis.RegularTransferResult<
-        A extends AbstractValue<A>,
+class ConditionalTransferResult<A extends AbstractValue<A>,
         S extends Store<S>>
-    extends TransferResult<A, S>\end{verbatim}
+    extends TransferResult<A, S>
+class RegularTransferResult<A extends AbstractValue<A>,
+        S extends Store<S>>
+    extends TransferResult<A, S>
+\end{verbatim}
 
 \subsubsubsection{TransferFunction}
 \label{sec:transfer_function_classes}
 
 A TransferFunction is a NodeVisitor that takes an input and produces an output.
 
-    \begin{verbatim}interface org.checkerframework.dataflow.analysis.TransferFunction<
-        A extends AbstractValue<A>,
+\begin{verbatim}
+package org.checkerframework.dataflow.analysis;
+interface TransferFunction<A extends AbstractValue<A>,
         S extends Store<S>>
-    extends NodeVisitor<TransferResult<A, S>, TransferInput<A, S>>\end{verbatim}
+    extends NodeVisitor<TransferResult<A, S>, TransferInput<A, S>>
+\end{verbatim}
 
 The Checker Framework defines a derived class of TransferFunction to
 serve as the default for most checkers.  The class constrains the type
 of abstract values and it overrides many node visitor methods to
 refine the abstract values in their TransferResults.
 
-    \begin{verbatim}abstract class org.checkerframework.framework.flow.CFAbstractTransfer<
-        V extends CFAbstractValue<V>,
+\begin{verbatim}
+package org.checkerframework.framework.flow;
+abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         S extends CFAbstractStore<V, S>,
         T extends CFAbstractTransfer<V, S, T>>
     extends AbstractNodeVisitor<TransferResult<V, S>, TransferInput<V, S>>
-    implements TransferFunction<V, S>\end{verbatim}
+    implements TransferFunction<V, S>
 
-    \begin{verbatim}class org.checkerframework.framework.flow.CFTransfer
-        extends CFAbstractTransfer<CFValue, CFStore, CFTransfer>\end{verbatim}
+class CFTransfer extends CFAbstractTransfer<CFValue, CFStore, CFTransfer>
+\end{verbatim}
 
 The Initialization Checker's transfer function tracks which fields of
 the `self' reference have been initialized.
 
-    \begin{verbatim}class org.checkerframework.checker.initialization.InitializationTransfer<
-        V extends CFAbstractValue<V>,
+\begin{verbatim}
+package org.checkerframework.checker.initialization;
+class InitializationTransfer<V extends CFAbstractValue<V>,
         T extends InitializationTransfer<V, T, S>,
         S extends InitializationStore<V, S>>
-    extends CFAbstractTransfer<V, S, T>\end{verbatim}
+    extends CFAbstractTransfer<V, S, T>
+\end{verbatim}
 
 The Regex Checker's transfer function overrides visitMethodInvocation
 to special case isRegex and asRegex methods.
 
-    \begin{verbatim}class org.checkerframework.checker.regex.RegexTransfer
-       extends CFAbstractTransfer<CFValue, CFStore, RegexTransfer>\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.checker.regex;
+class RegexTransfer extends CFAbstractTransfer<CFValue, CFStore, RegexTransfer>
+\end{verbatim}
 
 
 \subsubsection{Analysis}
@@ -364,36 +417,44 @@ An Analysis performs iterative dataflow analysis over a control flow
 graph using a given transfer function.  Currently only forward
 analyses are supported.
 
-    \begin{verbatim}class org.checkerframework.dataflow.analysis.Analysis<
-        A extends AbstractValue<A>,
+\begin{verbatim}
+package org.checkerframework.dataflow.analysis;
+class Analysis<A extends AbstractValue<A>,
         S extends Store<S>,
-        T extends TransferFunction<A, S>>\end{verbatim}
+        T extends TransferFunction<A, S>>
+\end{verbatim}
 
 The Checker Framework defines a derived class of Analysis for use as
 the default analysis of most checkers.  This class adds information
 about the type hierarchy being analyzed and acts as a factory for
 abstract values, stores, and the transfer function.
 
-    \begin{verbatim}abstract class org.checkerframework.dataflow.analysis.CFAbstractAnalysis<
-        V extends CFAbstractValue<V>,
+\begin{verbatim}
+package org.checkerframework.framework.flow;
+abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
         S extends CFAbstractStore<V, S>,
         T extends CFAbstractTransfer<V, S, T>>
-    extends Analysis<V, S, T>\end{verbatim}
+    extends Analysis<V, S, T>
 
-    \begin{verbatim}class org.checkerframework.framework.flow.CFAnalysis
-    extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer>\end{verbatim}
+class CFAnalysis extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer>
+\end{verbatim}
 
 The Nullness Checkers' analysis overrides the factory methods for
 abstract values, stores, and the transfer function.
 
-    \begin{verbatim}class org.checkerframework.checker.nullness.NullnessAnalysis
-    extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer>\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.checker.nullness;
+class NullnessAnalysis extends CFAbstractAnalysis<NullnessValue,
+        NullnessStore, NullnessTransfer>
+\end{verbatim}
 
 The RegexChecker's analysis overrides the factory methods for abstract
 values, stores, and the transfer function.
 
-    \begin{verbatim}class org.checkerframework.checker.regex.RegexAnalysis
-    extends CFAbstractAnalysis<CFValue, CFStore, RegexTransfer>\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.checker.regex;
+class RegexAnalysis extends CFAbstractAnalysis<CFValue, CFStore, RegexTransfer>
+\end{verbatim}
 
 
 \subsubsection{AnalysisResult}
@@ -407,8 +468,11 @@ AbstractValues for either Nodes or Trees and it can re-run the
 transfer function to compute Stores that are valid immediately before
 or after any Tree.
 
-    \begin{verbatim}class org.checkerframework.dataflow.analysis.AnalysisResult<A extends AbstractValue<A>,
-                                       S extends Store<S>>\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.dataflow.analysis;
+class AnalysisResult<A extends AbstractValue<A>,
+        S extends Store<S>>
+\end{verbatim}
 
 
 \subsubsection{AnnotatedTypeFactory}
@@ -418,8 +482,10 @@ AnnotatedTypeFactorys are not part of the Dataflow Framework, per se,
 but they are parameterized by the Dataflow Framework classes that they
 use.
 
-    \begin{verbatim}class org.checkerframework.framework.type.AnnotatedTypeFactory
-    implements AnnotationProvider\end{verbatim}
+\begin{verbatim}
+package org.checkerframework.framework.type;
+class AnnotatedTypeFactory implements AnnotationProvider
+\end{verbatim}
 
 In the Checker Framework, dataflow analysis is performed on demand,
 one class at a time, the first time that a ClassTree is passed to
@@ -427,19 +493,25 @@ getAnnotatedType.  This is implemented in the abstract class
 GenericAnnotatedTypeFactory with concrete implementation in
 BaseAnnotatedTypeFactory.
 
-    \begin{verbatim}abstract class org.checkerframework.framework.type.GenericAnnotatedTypeFactory<
-        Checker extends BaseTypeChecker<?>,
+\begin{verbatim}
+package org.checkerframework.framework.type;
+abstract class GenericAnnotatedTypeFactory<Checker extends BaseTypeChecker<?>,
         Value extends CFAbstractValue<Value>,
         Store extends CFAbstractStore<Value, Store>,
         TransferFunction extends CFAbstractTransfer<Value, Store, TransferFunction>,
         FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
-    extends AnnotatedTypeFactory\end{verbatim}
+    extends AnnotatedTypeFactory
 
-    \begin{verbatim}class org.checkerframework.common.basetype.BaseAnnotatedTypeFactory
-    extends GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis>\end{verbatim}
+package org.checkerframework.common.basetype;
+class BaseAnnotatedTypeFactory
+    extends GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis>
+\end{verbatim}
 
 
-
+\begin{workinprogress}
+We should investigate whether we can optimize CFG generation for
+aggregate and compound checkers.
+\end{workinprogress}
 
 
 \section{The Control-Flow Graph}
@@ -460,7 +532,7 @@ translation from the AST to the CFG.
 As is standard, a control-flow graph in the framework is a set of
 basic blocks that are linked by control-flow edges. Possibly less
 standard, every basic block consists of a sequence of so-called nodes,
-which correspond to a minimal Java operations or expression.
+which correspond to a minimal Java operation or expression.
 
 
 \flow{Simple}{A simple Java code snippet to introduce the CFG.}
@@ -499,6 +571,11 @@ execution of the method.
 \begin{definition}[Types of Basic Blocks]
     There are four \emph{types} of basic blocks in a control-flow graph:
     \begin{enumerate}
+        \item \textbf{Regular basic block.} A \emph{regular basic
+          block} contains any non-empty sequence of nodes and has
+          exactly one successor.  None of the nodes in the block can
+          throw an exception at runtime.
+
         \item \textbf{Special basic blocks.} A \emph{special basic
           block} contains the empty sequence of nodes (i.e., is empty)
           and denotes either the entry or one of the exit blocks of a
@@ -513,14 +590,14 @@ execution of the method.
               termination of the method. As an exit block, this block
               does not have successors.
         \end{itemize}
-        Every method has exactly one entry, zero or one exit blocks,
+        Every method has exactly one entry block, zero or one exit blocks,
         and zero or one exceptional exit blocks. However, there is
         either an exit block or an exceptional exit block.
-
-        \item \textbf{Regular basic block.} A \emph{regular basic
-          block} contains any non-empty sequence of nodes and has
-          exactly one successor.  None of the nodes in the block can
-          throw an exception at runtime.
+        \begin{workinprogress}
+        Is this an exclusive or? Or can a method have both a regular
+        exit block and an exceptional exit block? I think the latter
+        is true.
+        \end{workinprogress}
 
         \item \textbf{Exception basic block.} An \emph{exception basic
           block} contains exactly one node that \emph{might} throw an
@@ -536,8 +613,8 @@ execution of the method.
           basic block} does not contain any nodes and is used as a
           \emph{split point} after the execution of a node of boolean
           type. It has exactly two successors (both non-exceptional):
-          a then successor that is reached when the previous node
-          evaluates to true and the else successor that is reached
+          the \emph{then} successor that is reached when the previous node
+          evaluates to true and the \emph{else} successor that is reached
           when the previous node evaluates to false.  There is always
           exactly a single predecessor block for every conditional
           basic block, which is either a regular basic block or an
@@ -580,13 +657,18 @@ types of edges:
 There is not necessarily a most specific exception type in the program
 text; in that case, does the translation add a most specific case that will
 never be executed at run time?
+
+In general, what is the relation of the ordering in source code to the
+one here?
 \end{workinprogress}
 
     There is at most one successor for every exception type.
+
     \item \textbf{Conditional edges}. A \emph{conditional edge} is a
       non-exceptional edge that connects a conditional basic block
       with one of its successors, and is labeled with either ``true''
       or ``false''.
+
     \item \textbf{Regular, non-conditional edge.} Any other edge is a
       \emph{regular edge}, and does not carry a label. Only regular
       basic blocks, the entry basic block, and exception basic blocks
@@ -602,7 +684,7 @@ never be executed at run time?
     subparts between which control flow occurs. Examples for such
     nodes include integer literals, an addition node (that performs
     the mathematical addition of two nodes) or a method call.  Control
-    flow such as \code{if} and \code{goto} are not represented as
+    flow such as \code{if} and \code{break} are not represented as
     nodes.  The full list of nodes is given in \autoref{tab:nodes} and
     several of them are described in more detail in
     \autoref{sec:noteworthy-translations}.
@@ -628,8 +710,9 @@ internal names for expression results.
 \autoref{tab:nodes} lists all node types in the framework. We use the
 Java class name of the implementation, but leave out the suffix
 \code{Node}, which is present for every type.
+All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
 
-    \begin{longtable}{lp{0.5\linewidth}l}
+    \begin{longtable}{lp{0.4\linewidth}l}
         \midrule
         \multicolumn{3}{c}{\autoref{tab:nodes}: All node types in the Dataflow Framework.} \\ \\
         \textbf{Node type} & \textbf{Notes} & \textbf{Example} \\ \midrule \endfirsthead
@@ -787,6 +870,25 @@ desugaring in the Dataflow Framework?   Discuss that.  Here, at least
 forward-reference to \autoref{sec:desugaring}, if that's relevant. \\
 More generally, for any cases that will be discussed in the text, add a
 forward reference to the section with the discussion.
+\end{workinprogress}
+
+\begin{workinprogress}
+There is a \code{CaseNode}. How is the default case of a switch
+handled?
+\end{workinprogress}
+
+\begin{workinprogress}
+There is a \code{StringConcatenateAssignmentNode}.
+What about other compound assignments? Are they desugared?
+\end{workinprogress}
+
+\begin{workinprogress}
+When we added Java~8 support, did we add additional nodes that are not
+listed here? Cross-check with implementation.
+\end{workinprogress}
+
+\begin{workinprogress}
+Why is it \code{AssertionErrorNode} instead of \code{AssertNode}?
 \end{workinprogress}
 
 
@@ -973,6 +1075,11 @@ to be disabled.
 How should the user choose between the three possibilities?
 \end{workinprogress}
 
+\begin{workinprogress}
+Why are there two basic blocks for the \code{AssertionError} and then
+the \code{throw}? Why are they not in the same basic block, as there
+is no alternate control flow?
+\end{workinprogress}
 
 
 \subsection{AST to CFG Translation}
@@ -1019,7 +1126,7 @@ successor.
 
 An extended node is temporarily used to keep track of some control flow
 information.  Later, the basic block data structures are created, and they
-represent the control flow.  (And at that point the extended nodes can be
+represent the control flow.  (And at that point the extended nodes are
 discarded.)
 \begin{definition}[Label]
     A \emph{label} is a marker that is used to refer to extended
@@ -1042,7 +1149,7 @@ The process of translating an AST to a CFG proceeds in three distinct phases.
       sequence of extended nodes is created. The control flow is
       implicitly assumed to be sequential through the sequence of
       extended nodes, until a (conditional or unconditional) jump is
-      encountered in an if, for, while or switch statement, in which
+      encountered in an if, for, while, or switch statement, in which
       case the jump target decides where execution proceeds.
 
     The labels used as targets of jumps are associated with positions
@@ -1188,6 +1295,10 @@ Widening and narrowing conversions are still represented as special
 node types, although it would be more consistent to change them into
 type casts.
 
+\begin{workinprogress}
+Is the last point a to-do item?
+\end{workinprogress}
+
 We maintain the invariant that a CFG node maps to zero or one AST tree
 and almost all of them map to a single tree.  But we can't maintain a
 unique inverse mapping because some trees have both pre- and
@@ -1332,9 +1443,7 @@ analysis is complete:
 \begin{enumerate}
     \item For a given AST tree node, what is its abstract value?  Both
       pre- and postconversion values can be retrieved.
-\begin{workinprogress}
-Cross-reference to where more explanation of conversions can be found.
-\end{workinprogress}
+      A discussion of conversions can be found in \autoref{sec:conversions}.
     \item For a given AST tree node, what is the state right after
       this AST tree node?  Examples of questions include:
     \begin{itemize}
@@ -1374,8 +1483,14 @@ A transfer function has to provide the following:
   \code{MethodTree} (useful if the initial store depends on the method
   signature, for instance).
 
-\item A transfer method for every \code{Node} type that takes a store,
-  the node and produces an updated store. This is achieved by
+  \begin{workinprogress}
+    Why are the arguments to the method call LocalVariableNodes? Or
+    should this be parameters? Make clear whether this is about an
+    invocation of a method or a method declaration.
+  \end{workinprogress}
+
+\item A transfer method for every \code{Node} type that takes a store
+  and the node, and produces an updated store. This is achieved by
   implementing the \code{NodeVisitor<S, S>} interface for the store
   type \code{S}.
 
@@ -1422,13 +1537,13 @@ so we define five flow rules that allow more precise propagation.
       then and else stores of the else successor, thereby splitting
       the conditional store to take advantage of the fact that the
       condition is known to be false.
-    \item \code{THEN_TO_THEN} is a special rule for short-circuit edge
+    \item \code{THEN_TO_THEN} is a special rule for a short-circuit edge
       from a \code{ConditionalBlock} to its then successor.  It only
       propagates information from the then store of its predecessor to
       the then store of its successor.  This flow rule is used for
       conditional or expressions because the else store of \code{a ||
         b} is not influenced by the then store of \code{a}.
-    \item \code{ELSE_TO_ELSE} is a special rule for short-circuit edge
+    \item \code{ELSE_TO_ELSE} is a special rule for a short-circuit edge
       from a \code{ConditionalBlock} to its else successor.  It only
       propagates information from the else store of its predecessor to
       the else store of its successor.  This flow rule is used for
@@ -1443,6 +1558,10 @@ else store of its successor by not propagating information to the else
 store which might conflict with information already there, and
 conversely for \code{ELSE_TO_ELSE}.
 
+\begin{workinprogress}
+What happens to the other store in these operations?
+\end{workinprogress}
+
 Currently, we only use flow rules for short-circuiting edges of
 conditional ands and ors.  The CFG builder sets the flow rule of each
 short-circuiting edge as it builds the CFG for the conditional and/or
@@ -1452,6 +1571,10 @@ The dataflow analysis logic requires that both the then and the else
 store of each block contain some information before the block is
 analyzed, so it is a requirement that at least one predecessor block
 writes the then store and at least one writes the else store.
+
+\begin{workinprogress}
+How are these flow rules attached/changed?
+\end{workinprogress}
 
 
 \subsection{Concurrency}
@@ -1470,6 +1593,10 @@ An exception to this are monotonic type properties, such as the
 meta-annotation \code{@MonotonicQualifier} declares that a qualifier
 behaves monotonically, however it is not yet used to preserve dataflow
 information about fields under concurrent semantics.
+
+\begin{workinprogress}
+Do we have an issue filed for the last point above?
+\end{workinprogress}
 
 
 \section{Example: Constant Propagation}
@@ -1512,7 +1639,8 @@ form \code{a == e} for a local variable \code{a} and constant
 \code{e}, passes the correct information to one of the branches. This
 is also shown in the example of \autoref{fig:ConstSimple}.
 
-\text{Example.} A small example is shown in \autoref{fig:ConstSimple}.
+\text{Example.} A small example is shown in \autoref{lst:ConstSimple}
+and \autoref{fig:ConstSimple}.
 
 \constantpropagation{Simple}{Simple sequential program to illustrate constant propagation.}
 
@@ -1541,6 +1669,9 @@ inequality tests to propagate the most precise qualifiers from the
 left or right-hand side to the true (resp. false) successor.  It also
 applies type qualifiers from method postconditions after calls.
 
+\begin{workinprogress}
+Preconditions are not mentioned at all in this manual. How are they handled?
+\end{workinprogress}
 
 
 \subsection{Interaction of the Checker Framework and the Dataflow Analysis}
@@ -1640,6 +1771,12 @@ The store maintains a mapping from field accesses (as defined in
 Section~\ref{sec:field-access}) to abstract values, and the subsequent
 sections describe the operations that keep this mapping up-to-date.
 
+\begin{workinprogress}
+  There hasn't been a good introduction of pure vs. non-pure methods.
+  Maybe this is a good location for a discussion?
+  Introduce the purity annotations somewhere.
+\end{workinprogress}
+
 
 \subsubsection{Internal Representation of field access}
 \label{sec:field-access}
@@ -1687,18 +1824,22 @@ dataflow analysis first determines the abstract value $e_\text{val}$ for $e$.
 Then, it updates the store $S$ as follows.
 \begin{enumerate}
     \item For every field access $o_2.f_2$ that is a key in $S$, remove its
-      information $f_1 = f_2$ and
+      information if $f_1 = f_2$ and
       $o_2$ lexically contains a \nonterminal{Receiver} that \emph{might}
         alias $o_1.f$ as determined by the $\alias$
         predicate.
-      Note that the `` lexically contains'' notion for pure method calls
+      Note that the ``lexically contains'' notion for pure method calls
         includes both the receiver as well as the arguments.
 
-      This includes the case where $o_1 = o_2$ (that is, the are
+      This includes the case where $o_1 = o_2$ (that is, they are
       syntactically the same) and the case where  $o_2$ and $o_1.f$ might be
       aliases.
 
-    \item $S[o_1.f] = e_\text{val}$
+      \begin{workinprogress}
+        Should the two occurrences of field $f$ in this paragraph be $f_1$?
+      \end{workinprogress}
+
+    \item $S[o_1.f_1] = e_\text{val}$
 \end{enumerate}
 
 

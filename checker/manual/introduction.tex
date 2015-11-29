@@ -676,8 +676,11 @@ Progress tracing; see Section~\ref{debugging-options-progress}
 
 \item
 \<-AoutputArgsToFile>
-Output the compiler command-line arguments to a file.  Useful when this is not
-fully in your control, such as when the Checker Framework is run from Maven.
+Output the compiler command-line arguments to a file.  Useful when the command line is generated and executed by a tool and is not
+fully under your control.  A standalone command line that can be executed
+independently of the tool that generated it can make it easier to reproduce
+and debug issues.  For example, the command line can be modified to enable
+attaching a debugger.
 See Section~\ref{debugging-options-output-args}
 
 \item

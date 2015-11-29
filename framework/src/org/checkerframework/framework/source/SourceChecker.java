@@ -362,10 +362,10 @@ public abstract class SourceChecker
     /** The active options for this checker.
      * This is a processed version of {@link ProcessingEnvironment#getOptions()}:
      * If the option is of the form "-ACheckerName@key=value" and the current checker class,
-     * or one of its superclasses is named "CheckerName", then add key -> value.
+     * or one of its superclasses is named "CheckerName", then add key &rarr; value.
      * If the option is of the form "-ACheckerName@key=value" and the current checker class,
-     * and none of its superclasses is named "CheckerName", then do not add key -> value.
-     * If the option is of the form "-Akey=value", then add key -> value.
+     * and none of its superclasses is named "CheckerName", then do not add key &rarr; value.
+     * If the option is of the form "-Akey=value", then add key &rarr; value.
      *
      * Both the simple and the canonical name of the checker can be used.
      * Superclasses of the current checker are also considered.
@@ -1150,7 +1150,7 @@ public abstract class SourceChecker
      *
      * <ol>
      * <li>{@code "suppress-key"}, where suppress-key is a supported warnings
-     * key, as specified by {@link #getSuppressWarningsKey()}
+     * key, as specified by {@link #getSuppressWarningsKeys()}
      * (e.g., {@code "nullness"} for Nullness, {@code "igj"} for IGJ)</li>
      *
      * <li>{@code "suppress-key:error-key}, where the suppress-key
@@ -1214,12 +1214,12 @@ public abstract class SourceChecker
      * of a @SuppressWarnings annotation, one of whose values suppresses
      * the checker's warnings.  The list of keys that suppress a checker's
      * warnings is provided by the {@link
-     * SourceChecker#getSuppressWarningsKey} method.
+     * SourceChecker#getSuppressWarningsKeys} method.
      *
      * @param tree the tree that might be a source of a warning
      * @return true if no warning should be emitted for the given tree because
      *         it is contained by a declaration with an appropriately-valued
-     *         @SuppressWarnings annotation; false otherwise
+     *         {@literal @}SuppressWarnings annotation; false otherwise
      */
     private boolean shouldSuppressWarnings(Tree tree, String err) {
 
@@ -1266,7 +1266,21 @@ public abstract class SourceChecker
         return false;
     }
 
-    private boolean shouldSuppressWarnings(/*@Nullable*/ Element elt, String err) {
+    /**
+     * Determines whether all the warnings pertaining to a given tree
+     * should be suppressed.  Returns true if the element is within the scope
+     * of a @SuppressWarnings annotation, one of whose values suppresses
+     * the checker's warnings.  The list of keys that suppress a checker's
+     * warnings is provided by the {@link
+     * SourceChecker#getSuppressWarningsKeys} method.
+     *
+     * @param elt the Element that might be a source of, or related to, a warning
+     * @return true if no warning should be emitted for the given tree because
+     *         it is contained by a declaration with an appropriately-valued
+     *         {@code @SuppressWarnings} annotation; false otherwise
+     */
+    // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
+    public boolean shouldSuppressWarnings(/*@Nullable*/ Element elt, String err) {
 
         if (elt == null)
             return false;
@@ -1458,10 +1472,12 @@ public abstract class SourceChecker
      * Helper method to find the parent of a lint key.  The lint hierarchy
      * level is donated by a colon ':'.  'all' is the root for all hierarchy.
      *
+     * <pre>
      * Example
-     *    cast:unsafe --> cast
-     *    cast        --> all
-     *    all         --> {@code null}
+     *    cast:unsafe &rarr; cast
+     *    cast        &rarr; all
+     *    all         &rarr; {@code null}
+     * </pre>
      */
     private String parentOfOption(String name) {
         if (name.equals("all"))

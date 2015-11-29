@@ -109,8 +109,6 @@ public class ReflectiveEvalutator {
      *
      * @return the Method object corresponding to the method being invoke in
      *         tree
-     * @throws ClassNotFoundException
-     * @throws NoSuchMethodException
      */
     private Method getMethodObject(MethodInvocationTree tree) {
         try {

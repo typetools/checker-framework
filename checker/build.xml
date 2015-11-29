@@ -16,6 +16,7 @@
 
     <property name="run.tests.should.fork" value="true"/>
     <property name="halt.on.test.failure" value="true"/>
+    <property name="javadoc.private" value="false"/>
 
     <property environment="env"/>
 
@@ -342,6 +343,7 @@
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
         <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}" destdir="${api.doc}"
+                 private="${javadoc.private}"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
@@ -652,31 +654,31 @@
     </target>
 
     <target name="nullness-tests"
-            depends="jar,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-assume-assertions-are-enabled-tests,nullness-extra-tests,nullness-reflection-tests,nullness-invariantarrays-tests,nullness-safedefaults-tests"
+            depends="jdk.jar,nullness-tests-nojdk"
             description="Run tests for the Nullness Checker">
     </target>
 
     <target name="nullness-tests-nojdk"
-            depends="jar,jdk.jar.exists,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-assume-assertions-are-enabled-tests,nullness-extra-tests-nojdk,nullness-reflection-tests,nullness-invariantarrays-tests,nullness-safedefaults-tests"
+            depends="jar,jdk.jar.exists,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-assume-assertions-are-enabled-tests,nullness-extra-tests-nojdk,nullness-reflection-tests,nullness-invariantarrays-tests,nullness-safedefaultsbytecode-tests,nullness-safedefaultssourcecode-tests"
             description="Run tests for the Nullness Checker, WITHOUT updating jdkX.jar">
     </target>
 
     <target name="nullness-base-tests" depends="jar,build-tests"
-            description="Run base tests for the Nullness Checker">
+            description="Run base tests for the FBC Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessFbcTest"/>
         </antcall>
     </target>
 
     <target name="nullness-uninit-tests" depends="jar,build-tests"
-            description="Run uninit tests for the Nullness Checker">
+            description="Run base tests for the rawness Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessRawnessTest"/>
         </antcall>
     </target>
 
     <target name="nullness-base-tests-with-asserts" depends="jar,build-tests"
-            description="Run base tests for the Nullness Checker">
+            description="Run base tests for the FBC Nullness Checker, with assertions">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessFbcTestWithAsserts"/>
         </antcall>
@@ -684,14 +686,14 @@
 
 
     <target name="nullness-assume-assertions-are-enabled-tests" depends="jar,build-tests"
-            description="Run uninit tests for the Nullness Checker">
+            description="Run base tests for the Nullness Checker, assuming assertions are disabled">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessAssumeAssertionsAreDisabled"/>
         </antcall>
     </target>
 
     <target name="nullness-uninit-tests-with-asserts" depends="jar,build-tests"
-            description="Run uninit tests for the Nullness Checker">
+            description="Run base tests for the rawness Nullness Checker, with assertions">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessRawnessTestWithAsserts"/>
         </antcall>
@@ -710,6 +712,7 @@
 
         <exec executable="make" failonerror="${halt.on.test.failure}">
             <env key="JAVAC" value="${basedir}/bin/javac"/>
+            <env key="JAVAP" value="${jsr308.langtools.dist}/bin/javap"/>
             <arg line="-C tests/nullness-extra/"/>
         </exec>
     </target>
@@ -749,10 +752,38 @@
         </antcall>
     </target>
 
-    <target name="nullness-safedefaults-tests" depends="jar,build-tests"
+    <target name="nullness-safedefaultsbytecode-tests" depends="jar,build-tests"
             description="Run tests for the Nullness Checker using -AsafeDefaultsForUnannotatedBytecode">
         <antcall target="-run-tests">
-            <param name="param" value="tests.NullnessSafeDefaultsTest"/>
+            <param name="param" value="tests.NullnessSafeDefaultsBytecodeTest"/>
+        </antcall>
+    </target>
+
+    <target name="nullness-safedefaultssourcecodelib-tests" depends="jar,build-tests"
+            description="Create libraries for tests for the Nullness Checker using -AuseSafeDefaultsForUnannotatedSourceCode">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessSafeDefaultsSourceCodeLibTest"/>
+        </antcall>
+    </target>
+
+    <target name="nullness-safedefaultssourcecode-tests" depends="jar,build-tests,nullness-safedefaultssourcecodelib-tests"
+            description="Run tests for the Nullness Checker using -AuseSafeDefaultsForUnannotatedSourceCode">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessSafeDefaultsSourceCodeTest"/>
+        </antcall>
+    </target>
+
+    <target name="nullness-genericwildcardlib-tests" depends="jar,build-tests"
+            description="Create libraries for tests for the Nullness Checker for issue #511">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessGenericWildcardLibTest"/>
+        </antcall>
+    </target>
+
+    <target name="nullness-genericwildcard-tests" depends="jar,build-tests,nullness-genericwildcardlib-tests"
+            description="Run tests for the Nullness Checker for issue #511">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessGenericWildcardTest"/>
         </antcall>
     </target>
 
@@ -1189,14 +1220,16 @@
 
     <target name="dist-all"
             depends="-prep-dist,jar,all.jdks.jar,dist-nojdk"
-            description="Build checker.jar, checker-qual.jar, jdkX.jar(s).  This comprises all jars needed to run the framework.">
+            description="Build checker.jar, checker-qual.jar, and all jdkX.jar(s).  This comprises all jars needed to run the framework.">
     </target>
 
-    <target name="dist" depends="-prep-dist,jar,jdk.jar,dist-nojdk"
-            description="Build checker.jar, checker-qual.jar, and jdkX.jar where X is the major version number of java in JAVA_HOME (only Java 7/8/9 are currently supported).  This comprises all jars needed to run the framework.">
+    <target name="dist"
+	    depends="-prep-dist,jar,jdk.jar,dist-nojdk"
+            description="Build checker.jar, checker-qual.jar, and one jdkX.jar where X is the major version number of java in JAVA_HOME (only Java 7/8/9 are currently supported).  This comprises all jars needed to run the framework.">
     </target>
 
-    <target name="dist-nojdk" depends="-prep-dist,jar,jdk.jar.exists"
+    <target name="dist-nojdk"
+	    depends="-prep-dist,jar,jdk.jar.exists"
             description="Build checker.jar, checker-qual.jar WITHOUT updating jdkX.jar.  Move all relevant files to the binary directory.">
 
         <mkdir dir="dist" />

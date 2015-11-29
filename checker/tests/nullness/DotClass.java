@@ -1,7 +1,6 @@
-import org.checkerframework.checker.nullness.qual.*;
-import java.lang.annotation.*;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import java.lang.annotation.Annotation;
 
-@org.checkerframework.framework.qual.DefaultQualifier(org.checkerframework.checker.nullness.qual.NonNull.class)
 class DotClass {
 
     void test() {
@@ -12,5 +11,6 @@ class DotClass {
 
     void access() {
         Object.class.toString();
+        int.class.toString();
     }
 }

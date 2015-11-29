@@ -10,7 +10,7 @@ class FromByteCode {
 
     Function<String, String> f1 = String::toString;
 
-    // Make sure there arent any issue's generating an error with a method from byte code
+    // Make sure there aren't any issues generating an error with a method from byte code
     //:: error: (methodref.param.invalid)
     Function<@Nullable String, String> f2 = String::new;
 }

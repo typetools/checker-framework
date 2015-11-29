@@ -90,7 +90,7 @@ public class TypeArgumentMapper {
     }
 
     /**
-     * @return A Map(type parameter symbol -> index in type parameter list)
+     * @return A Map(type parameter symbol &rarr; index in type parameter list)
      */
     private static Map<TypeParameterElement, Integer> getElementToIndex(TypeElement typeElement) {
         Map<TypeParameterElement, Integer> result = new LinkedHashMap<>();
@@ -210,22 +210,28 @@ public class TypeArgumentMapper {
     /**
      * Create a list of TypeRecord's that form a "path" to target from subtype.
      * e.g. Suppose I have the types
+     * <pre>{@code
      * interface Map<M1,M2>
      * class AbstractMap<A1,A2> implements Map<A1,A2>, Iterable<Entry<M1,M2>>
      * class MyMap<Y1,Y2> extends AbstractMap<Y1,Y2> implements List<Entry<Y1,Y2>>
+     * }</pre>
      *
      * The path from MyMap to Map would be:
      *
+     * <pre>{@code
      * TypeRecord(element = MyMap<Y1,Y2>, type = null)
      * TypeRecord(element = AbstractMap<A1,A2>, type = AbstractMap<Y1,Y2>)
      * TypeRecord(element = Map<M1,M2>, type = AbstractMap<A1,A2>)
+     * }</pre>
      *
      * Note: You can have an implementation of the same interface inherited multiple times as long
      * as the parameterization of that interface remains the same
      * e.g.
+     * <pre>{@code
      * interface List<E>
      * class AbstractList<A> implements List<E>
      * class ArrayList<T> extends AbstractList<T> implements List<T>
+     * }</pre>
      * Notice how ArrayList implements list both by inheriting from AbstractList and from explicitly
      * listing it in the implements clause.  We prioritize finding a path through the list of interfaces first
      * since this will be the shorter path.
@@ -290,11 +296,15 @@ public class TypeArgumentMapper {
      *  Maps a class or interface's declaration element to the type it would be if viewed from a subtype class or interface
      *
      * e.g. suppose we have the elements for the declarations:
+     * <pre>{@code
      * class A<Ta>
      * class B<Tb> extends A<Tb>
+     * }</pre>
      *
      * The type record of B if it is viewed as class A would bed:
+     * <pre>{@code
      *    TypeRecord( element = A<Ta>, type = A<Tb> )
+     * }</pre>
      *
      * That is, B can be viewed as an object of type A with an type argument of type parameter Tb
      */

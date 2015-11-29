@@ -106,7 +106,7 @@ public class ElementAnnotationUtil {
      * @param annos The collection of annotations to partition
      * @param unmatched A list to add annotations with unmatched target types to
      * @param targetTypes A list of target types to partition annos with
-     * @return A map from targetType -> List of Annotations that have that targetType
+     * @return A map from targetType &rarr; List of Annotations that have that targetType
      */
     static Map<TargetType, List<TypeCompound>> partitionByTargetType(Collection<TypeCompound> annos,
                                                                      List<TypeCompound> unmatched,
@@ -138,22 +138,28 @@ public class ElementAnnotationUtil {
      *
      * a) If an Annotation is in front of a extends or super bounded wildcard,
      * it applies to the bound that is NOT explicitly present. e.g.
+     * <pre>{@code
      * <@A ? extends Object> - @A is placed on the super bound (Void)
      * <@B ? super CharSequence> - @B is placed on the extends bound (probably Object)
+     * }</pre>
      *
      * b) If an Annotation is on a bound, it applies to that bound.  E.g.
+     * <pre>{@code
      * <? extends @A Object> - @A is placed on the extends bound (Object)
      * <? super @B CharSequence> - @B is placed on the super bound (CharSequence)
+     * }</pre>
      *
      * c) If an Annotation is on an unbounded wildard there are two subcases.
      *    c.1 The user wrote the annotation explicitly - these annotations apply to both bounds
      *    e.g. the user wrote
+     * <pre>{@code
      *    <@C ?> - the annotation is placed on the extends/super bounds
+     * }</pre>
      *
      *    c.2 Previous calls to getAnnotatedType have annotated this wildcard with BOTH bounds
-     *    e.g. the user wrote <?> but the checker framework added <@C ? extends @D Object>
+     *    e.g. the user wrote {@code <?>} but the checker framework added {@code <@C ? extends @D Object>}
      *         to the corresponding element
-     *    <?> - @C is placed on the lower bound and @D is placed on the upper bound
+     *    {@code <?>} - @C is placed on the lower bound and @D is placed on the upper bound
      *          This case is treated just like annotations in cases a/b.
      *
      */
@@ -254,7 +260,7 @@ public class ElementAnnotationUtil {
      * by interpreting the TypeAnnotationPosition.
      *
      * Note: We handle all of the Element annotations on a type at once because we need to identify whether
-     * or not the element annotation in front of an unbound wildcard (e.g. <@HERE ?>) should apply to
+     * or not the element annotation in front of an unbound wildcard (e.g. {@code <@HERE ?>}) should apply to
      * only the super bound or both the super bound and the extends bound.
      * @see org.checkerframework.framework.util.element.ElementAnnotationUtil.WildcardBoundAnnos
      *
@@ -298,7 +304,7 @@ public class ElementAnnotationUtil {
     /**
      * Returns true if the typeCompound is a primary annotation for the type it targets (or lower bound if this
      * is a type variable or wildcard ).  If you think of a type as a tree-like structure then a nested type
-     * any type that is not the root.  E.g. @T List< @N String>,  @T is on a top-level NON-nested type where as
+     * any type that is not the root.  E.g. {@code @T List< @N String>},  @T is on a top-level NON-nested type where as
      * the annotation @N is on a nested type.
      *
      * @param typeCompound The type compound to inspect

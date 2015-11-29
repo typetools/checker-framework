@@ -256,10 +256,9 @@ public class AliasingVisitor extends
     }
 
     /**
-     * Returns true if {@code exp} has type {@literal @}Unique and is not a
+     * Returns true if {@code exp} has type {@code @Unique} and is not a
      * method invocation nor a new class expression.
-     * @param exp
-     * <p>
+     * @param exp the Tree to check
      */
     private boolean canBeLeaked(Tree exp) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);

@@ -1,9 +1,9 @@
 \htmlhr
 \chapter{How to create a new checker\label{writing-a-checker}}
 
-\newcommand{\TreeAPIBase}{https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/com/sun/source/}
+\newcommand{\TreeAPIBase}{https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/com/sun/source}
 \newcommand{\refTreeclass}[2]{\href{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
-\newcommand{\ModelAPIBase}{http://docs.oracle.com/javase/8/docs/api/javax/lang/model/}
+\newcommand{\ModelAPIBase}{http://docs.oracle.com/javase/8/docs/api/javax/lang/model}
 \newcommand{\refModelclass}[2]{\href{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 
 This chapter describes how to create a checker
@@ -1358,12 +1358,8 @@ Section~\ref{extending-visitor}.
   This saves the final command-line parameters as passed to the compiler in a file.
   This file can be used as a script (if the file is marked as executable on Unix, or
   if it includes a \code{.bat} extension on Windows) to re-execute the same compilation command.
-  This is useful, for example, when debugging problems running the Checker Framework from
-  Maven, since normally the command-line parameters used by Maven are not user-visible.
   Note that this argument cannot be included in a file containing command-line arguments
-  passed to the compiler using the @argfile syntax.  Please see
-  Section~\ref{debugging-maven-args} for more details on how to use this command-line
-  parameter to debug compilation using Maven.
+  passed to the compiler using the @argfile syntax.
 
   Example usage: \code{-AoutputArgsToFile=/home/username/scriptfile}
 

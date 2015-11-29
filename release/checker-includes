@@ -11,3 +11,14 @@ checker/examples/JavariExample.java
 checker/examples/NullnessExample.java
 checker/examples/NullnessExampleWithWarnings.java
 checker/examples/NullnessReleaseTests.java
+checker/examples/units-extension/Demo.java
+checker/examples/units-extension/Expected.txt
+checker/examples/units-extension/Frequency.java
+checker/examples/units-extension/FrequencyRelations.java
+checker/examples/units-extension/Hz.java
+checker/examples/units-extension/kHz.java
+checker/examples/units-extension/Makefile
+checker/examples/units-extension/README
+checker/examples/MavenExample/pom.xml
+checker/examples/MavenExample/README
+checker/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java

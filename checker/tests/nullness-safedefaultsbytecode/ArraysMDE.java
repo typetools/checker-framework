@@ -1,5 +1,3 @@
-// @skip-test
-
 // Test case for issue #455: https://github.com/typetools/checker-framework/issues/455
 
 import java.util.Objects;
