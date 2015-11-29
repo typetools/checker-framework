@@ -1,3 +1,4 @@
+// @skip-test
 import net.jcip.annotations.*;
 import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;

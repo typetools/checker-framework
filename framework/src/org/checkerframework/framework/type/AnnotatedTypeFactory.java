@@ -2349,6 +2349,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns the actual annotation mirror used to annotate this element,
      * whose name equals the passed annotation class, if one exists, or null otherwise.
      *
+     * @param elt the element to retrieve the declaration annotation from
      * @param anno annotation class
      * @return the annotation mirror for anno
      */
@@ -2364,6 +2365,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * whose name equals the passed annotation class, if one exists, or null otherwise.
      * Does not check for aliases of the annotation class.
      *
+     * @param elt the element to retrieve the declaration annotation from
      * @param anno annotation class
      * @return the annotation mirror for anno
      */
