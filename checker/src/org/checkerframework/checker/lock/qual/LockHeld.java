@@ -30,11 +30,6 @@ import java.lang.annotation.Target;
 @SubtypeOf(LockPossiblyHeld.class) // This is the bottom type in this hierarchy
 @InvisibleQualifier
 @Documented
-// The following line is counterintuitive but it is needed to avoid errors of the kind:
-// found   : T[ extends @GuardedBy @LockPossiblyHeld Annotation super @GuardedByBottom @LockPossiblyHeld Void]
-// required: T[ extends @GuardedBy @LockPossiblyHeld Annotation super @GuardedByBottom @LockHeld Void]
-// whenever a variable of type T is assigned a null value.
-@ImplicitFor(trees = {Tree.Kind.NULL_LITERAL})
 @Retention(RetentionPolicy.RUNTIME)
 @DefaultFor({DefaultLocation.LOWER_BOUNDS})
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })

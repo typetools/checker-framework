@@ -308,8 +308,8 @@ void testTreeTypes() {
 
     // The following test cases were inspired from annotator.find.ASTPathCriterion.isSatisfiedBy in the Annotation File Utilities
 
-// Hits a bug in dataflow:    do { break; } while(foo != null); // access to guarded object in while condition of do/while loop
-// Hits a bug in dataflow:    for(foo = new MyClass(); foo != null; foo = new MyClass()){ break; } // access to guarded object in condition of for loop
+    // Hits a bug in dataflow:    do { break; } while(foo.field != null); // access to guarded object in while condition of do/while loop
+    for(foo = new MyClass(); foo.field != null; foo = new MyClass()){ break; } // access to guarded object in condition of for loop
     foo = new MyClass(); // assignment to guarded object (OK) --- foo is still refined to @GuardedBy("lock") after this point, though.
     unguardedFoo.method2(); // A simple method call to a guarded object is not considered a dereference (only field accesses are considered dereferences).
     //:: error: (contracts.precondition.not.satisfied)
@@ -391,7 +391,7 @@ void testTreeTypes() {
     if (foo instanceof MyClass){} // access to guarded object in instanceof expression (OK)
     while(foo != null){ break; } // access to guarded object in while condition of while loop (OK)
     if (false){}else if (foo == o){} // binary operator on guarded object in else if condition (OK)
-    // Hits a bug in dataflow:    Runnable rn = () -> { foo.field.toString(); }; // access to guarded object in a lambda expression
+    Runnable rn = () -> { foo.field.toString(); }; // access to guarded object in a lambda expression
     //:: error: (contracts.precondition.not.satisfied.field)
     i = myClassInstance.i; // access to member field of guarded object
     // MemberReferenceTrees? how do they work

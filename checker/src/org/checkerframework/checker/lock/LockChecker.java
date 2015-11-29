@@ -16,8 +16,6 @@ import org.checkerframework.framework.qual.TypeQualifiers;
 // the @LockPossiblyHeld and the @GuardedByInaccessible hierarchies.
 @TypeQualifiers({ LockPossiblyHeld.class, LockHeld.class,
                   GuardedByInaccessible.class, GuardedBy.class,
-                  javax.annotation.concurrent.GuardedBy.class,
-                  net.jcip.annotations.GuardedBy.class,
                   GuardSatisfied.class, GuardedByBottom.class })
 public class LockChecker extends BaseTypeChecker {
 }

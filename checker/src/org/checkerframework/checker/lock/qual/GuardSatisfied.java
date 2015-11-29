@@ -38,7 +38,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @Target({  ElementType.PARAMETER, ElementType.TYPE_USE })
 public @interface GuardSatisfied {
     /**
-     * The index on the polymorphic qualifier.
+     * The index on the GuardSatisfied polymorphic qualifier.
      * Defaults to -1 so that the user can write any index starting from 0.
      */
     int value() default -1;

@@ -163,79 +163,23 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     @Override
     protected boolean isSideEffectFree(AnnotatedTypeFactory atypeFactory,
             ExecutableElement method) {
-        return ((LockAnnotatedTypeFactory) atypeFactory).methodSideEffectAnnotation(method, false) == SideEffectAnnotation.RELEASESNOLOCKS ||
+        LockAnnotatedTypeFactory lockAnnotatedTypeFactory = (LockAnnotatedTypeFactory) atypeFactory;
+        return ((LockChecker) lockAnnotatedTypeFactory.getContext()).hasOption("assumeSideEffectFree") ||
+                lockAnnotatedTypeFactory.methodSideEffectAnnotation(method, false) == SideEffectAnnotation.RELEASESNOLOCKS ||
                super.isSideEffectFree(atypeFactory, method);
     }
 
-    // Same as super method, except for the call to localVariableValues.clear();
-    // See the comment next to the call for more details.
     @Override
     public void updateForMethodCall(MethodInvocationNode n,
-            AnnotatedTypeFactory atypeFactory, CFValue val) {
+        AnnotatedTypeFactory atypeFactory, CFValue val) {
+        super.updateForMethodCall(n, atypeFactory, val);
         ExecutableElement method = n.getTarget().getMethod();
-
-        // case 1: remove information if necessary
-        if (!(((LockChecker) analysis.getTypeFactory().getContext()).hasOption("assumeSideEffectFree")
-              || isSideEffectFree(atypeFactory, method))) {
-            // update field values
-            Map<FlowExpressions.FieldAccess, CFValue> newFieldValues = new HashMap<>();
-            for (Entry<FlowExpressions.FieldAccess, CFValue> e : fieldValues.entrySet()) {
-                FlowExpressions.FieldAccess fieldAccess = e.getKey();
-                CFValue otherVal = e.getValue();
-
-                // case 3:
-                List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations = atypeFactory
-                        .getAnnotationWithMetaAnnotation(
-                                fieldAccess.getField(),
-                                MonotonicQualifier.class);
-                CFValue newOtherVal = null;
-                for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
-                    AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
-                    Name annotation = AnnotationUtils.getElementValueClassName(
-                            monotonicAnnotation, "value", false);
-                    AnnotationMirror target = AnnotationUtils.fromName(
-                            atypeFactory.getElementUtils(), annotation);
-                    AnnotationMirror anno = otherVal.getType()
-                            .getAnnotationInHierarchy(target);
-                    // Make sure the 'target' annotation is present.
-                    if (anno != null && AnnotationUtils.areSame(anno, target)) {
-                        newOtherVal = analysis.createSingleAnnotationValue(
-                                target, otherVal.getType().getUnderlyingType())
-                                .mostSpecific(newOtherVal, null);
-                    }
-                }
-                if (newOtherVal != null) {
-                    // keep information for all hierarchies where we had a
-                    // monotone annotation.
-                    newFieldValues.put(fieldAccess, newOtherVal);
-                    continue;
-                }
-
-                // case 2:
-                if (!fieldAccess.isUnmodifiableByOtherCode()) {
-                    continue; // remove information completely
-                }
-
-                // keep information
-                newFieldValues.put(fieldAccess, otherVal);
-            }
-            fieldValues = newFieldValues;
-
+        if (!isSideEffectFree(atypeFactory, method)) {
             // Necessary because a method could unlock a lock that is a local variable, e.g.:
             // ReentrantLock lock = new ReentrantLock();
             // lock.lock();
             // unlockMyLock(lock);
             localVariableValues.clear();
-
-            // update method values
-            methodValues.clear();
-
-            arrayValues.clear();
         }
-
-        // store information about method call if possible
-        Receiver methodCall = FlowExpressions.internalReprOf(
-                analysis.getTypeFactory(), n);
-        replaceValue(methodCall, val);
     }
 }

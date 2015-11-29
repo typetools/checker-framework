@@ -79,11 +79,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     private final Class<? extends Annotation> checkerGuardedByClass = GuardedBy.class;
     private final Class<? extends Annotation> checkerGuardSatisfiedClass = GuardSatisfied.class;
 
-    // Note that Javax and JCIP @GuardedBy is used on both methods and objects. For methods they are
-    // equivalent to the Checker Framework @Holding annotation.
-    private final Class<? extends Annotation> javaxGuardedByClass = javax.annotation.concurrent.GuardedBy.class;
-    private final Class<? extends Annotation> jcipGuardedByClass = net.jcip.annotations.GuardedBy.class;
-
     /** Annotation constants */
     protected final AnnotationMirror GUARDEDBY, GUARDEDBYINACCESSIBLE, GUARDSATISFIED, GUARDEDBYBOTTOM;
 
@@ -102,6 +97,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     public Void visitVariable(VariableTree node, Void p) { // visit a variable declaration
         // A user may not annotate a primitive type, a boxed primitive type or a String
         // with any qualifier from the @GuardedBy hierarchy.
+
+        // TODO: Note that there is currently no way to reliably retrieve user-written
+        // qualifiers (i.e. there is no way to know whether the qualifier was defaulted by
+        // the Checker Framework) without using the node.toString() hack below.
+
         TypeMirror nodeType = atypeFactory.getAnnotatedType(node).getUnderlyingType();
         if ((TypesUtils.isBoxedPrimitive(nodeType) ||
              TypesUtils.isPrimitive(nodeType) ||
@@ -122,7 +122,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     // or receiver (explicitly or implicitly) annotated with @GuardSatisfied.
     @Override
     public Void visitMethod(MethodTree node, Void p) {
-    	ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
+        ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
 
         SideEffectAnnotation sea = atypeFactory.methodSideEffectAnnotation(methodElement, true);
 
@@ -152,16 +152,16 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         // Issue an error if a non-constructor method definition has a return type of @GuardSatisfied without an index.
         if (methodElement != null && methodElement.getKind() != ElementKind.CONSTRUCTOR) {
-	        AnnotatedTypeMirror returnTypeATM = atypeFactory.getAnnotatedType(node).getReturnType();
+            AnnotatedTypeMirror returnTypeATM = atypeFactory.getAnnotatedType(node).getReturnType();
 
-	        if (returnTypeATM != null && returnTypeATM.hasAnnotation(GuardSatisfied.class)) {
-	            int returnGuardSatisfiedIndex = AnnotationUtils.
-	                    getElementValue(returnTypeATM.getAnnotation(GuardSatisfied.class), "value", Integer.class, true);
+            if (returnTypeATM != null && returnTypeATM.hasAnnotation(GuardSatisfied.class)) {
+                int returnGuardSatisfiedIndex = AnnotationUtils.
+                        getElementValue(returnTypeATM.getAnnotation(GuardSatisfied.class), "value", Integer.class, true);
 
-	            if (returnGuardSatisfiedIndex == -1) {
-	                checker.report(Result.failure("guardsatisfied.return.must.have.index"), node);
-	            }
-	        }
+                if (returnGuardSatisfiedIndex == -1) {
+                    checker.report(Result.failure("guardsatisfied.return.must.have.index"), node);
+                }
+            }
         }
 
         return super.visitMethod(node, p);
@@ -184,9 +184,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 MethodInvocationNode nodeNode = (MethodInvocationNode) atypeFactory.getNodeForTree(node);
 
                 Node receiverNode = nodeNode.getTarget().getReceiver();
-                if (receiverNode instanceof ExplicitThisLiteralNode ||
-                    receiverNode instanceof ImplicitThisLiteralNode ||
-                    receiverNode instanceof ThisLiteralNode) {
+                if (receiverNode instanceof ThisLiteralNode) {
                     receiverIsThatOfEnclosingMethod = true;
                 }
 
@@ -233,13 +231,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         if (amList != null) {
             for (AnnotationMirror annotationMirror : amList) {
 
-                if (AnnotationUtils.areSameByClass( annotationMirror, checkerGuardedByClass) ||
-                    AnnotationUtils.areSameByClass( annotationMirror, javaxGuardedByClass) ||
-                    AnnotationUtils.areSameByClass( annotationMirror, jcipGuardedByClass)) {
+                if (AnnotationUtils.areSameByClass( annotationMirror, checkerGuardedByClass)) {
                     if (AnnotationUtils.hasElementValue(annotationMirror, "value")) {
                         List<String> guardedByValue = AnnotationUtils.getElementValueArray(annotationMirror, "value", String.class, false);
 
-                        for(String lockExpression : guardedByValue) {
+                        for (String lockExpression : guardedByValue) {
                             if (translateItselfToThis && lockExpression.equals("itself")) {
                                 lockExpression = "this";
                             }
@@ -251,16 +247,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         return preconditions;
-    }
-
-    @Override
-    protected void checkAccess(IdentifierTree node, Void p) {
-        AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(node);
-        boolean hasJavaxOrJcipGuardedByAnnotation = atm == null ? false : (atm.hasAnnotation(javaxGuardedByClass) || atm.hasAnnotation(jcipGuardedByClass));
-        // Don't check preconditions for annotations on javax or JCIP @GuardedBy because
-        // those are meant for uses of those annotations when they are acting as the @Holding annotation,
-        // not when they are acting as the Lock Checker's @GuardedBy type qualifier.
-        checkAccess(node, p, !hasJavaxOrJcipGuardedByAnnotation);
     }
 
     @Override
@@ -305,9 +291,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // No need to make the same behavior apply to @GuardedByInaccessible because @GuardedByInaccessible cannot
         // be written by the user and hence an expression of type @GuardedByInaccessible cannot be the LHS of an assignment.
         if (varType.hasAnnotation(GuardSatisfied.class)) {
-            if (valueType.hasAnnotation(GuardedBy.class) ||
-                valueType.hasAnnotation(javaxGuardedByClass) ||
-                valueType.hasAnnotation(jcipGuardedByClass)) {
+            if (valueType.hasAnnotation(GuardedBy.class)) {
                 ExpressionTree tree = (ExpressionTree) valueTree;
 
                 checkPreconditions(tree,
@@ -446,9 +430,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
             if (node instanceof FieldAccessNode || node instanceof MethodAccessNode) {
                 receiverNode = node instanceof FieldAccessNode ? ((FieldAccessNode) node).getReceiver() : ((MethodAccessNode) node).getReceiver();
-                if (receiverNode instanceof ExplicitThisLiteralNode ||
-                    receiverNode instanceof ImplicitThisLiteralNode ||
-                    receiverNode instanceof ThisLiteralNode) {
+                if (receiverNode instanceof ThisLiteralNode) {
                     receiverIsThatOfEnclosingMethod = true;
                 }
             }
@@ -456,9 +438,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             if (expr != null && invokedElement != null && atmOfReceiverOrIdentifier != null) {
                 AnnotationMirror gb = atmOfReceiverOrIdentifier.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE);
                 if (gb != null) {
-                    if (AnnotationUtils.areSameByClass( gb, checkerGuardedByClass) ||
-                        AnnotationUtils.areSameByClass( gb, javaxGuardedByClass) ||
-                        AnnotationUtils.areSameByClass( gb, jcipGuardedByClass)) {
+                    if (AnnotationUtils.areSameByClass( gb, checkerGuardedByClass)) {
                         // It is critical that if receiverIsThatOfEnclosingMethod is true,
                         // generatePreconditionsBasedOnGuards translate the expression
                         // "itself" to "this". That's because right now we know that, since
