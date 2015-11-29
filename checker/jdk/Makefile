@@ -4,7 +4,7 @@
 
 CTSYM ?= $(JAVA_HOME)/lib/ct.sym
 
-CHECKER_DIRS = nullness igj javari lock
+CHECKER_DIRS = lock
 
 all: clean classes
 # Extracts unannotated .class files from $(CTSYM)
