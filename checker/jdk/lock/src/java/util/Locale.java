@@ -1967,6 +1967,7 @@ public final class Locale implements Cloneable, Serializable {
         } catch (CloneNotSupportedException e) {
             throw new InternalError(e);
         }*/
+        return null;
     }
 
     /**
