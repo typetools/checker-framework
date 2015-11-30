@@ -2349,7 +2349,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns the actual annotation mirror used to annotate this element,
      * whose name equals the passed annotation class, if one exists, or null otherwise.
      *
-     * @param elt the element to retrieve the declaration annotation from
      * @param anno annotation class
      * @return the annotation mirror for anno
      */
@@ -2360,21 +2359,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return getDeclAnnotation(elt, annoName, true);
     }
 
-    /**
-     * Returns the actual annotation mirror used to annotate this element,
-     * whose name equals the passed annotation class, if one exists, or null otherwise.
-     * Does not check for aliases of the annotation class.
-     *
-     * @param elt the element to retrieve the declaration annotation from
-     * @param anno annotation class
-     * @return the annotation mirror for anno
-     */
-    public AnnotationMirror getDeclAnnotationNoAliases(Element elt,
-            Class<? extends Annotation> anno) {
-        String annoName = anno.getCanonicalName().intern();
-        return getDeclAnnotation(elt, annoName, false);
-    }
-    
     /**
      * Returns true if the element appears in a stub file
      * (Currently only works for methods, constructors, and fields)
@@ -2396,8 +2380,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Returns the actual annotation mirror used to annotate this type, whose
      * name equals the passed annotationName if one exists, null otherwise. This
-     * is the private implementation of the same-named, public method.
-     *
+     * is the protected implementation of the same-named, public method.
+     * The method is protected rather than private so that classes overriding
+     * the same-named public method can call this method.
      * An option is provided to not to check for aliases of annotations.
      * For example, an annotated type factory may use aliasing for a pair of
      * annotations for convenience while needing in some cases to determine
@@ -2411,7 +2396,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @return the annotation mirror for the requested annotation or null if not found
      */
-    private AnnotationMirror getDeclAnnotation(Element elt,
+    protected AnnotationMirror getDeclAnnotation(Element elt,
             /*@Interned*/ String annoName, boolean checkAliases) {
         Set<AnnotationMirror> declAnnos = getDeclAnnotations(elt);
 

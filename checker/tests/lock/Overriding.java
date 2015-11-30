@@ -1,134 +1,30 @@
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.dataflow.qual.*;
 
 public class Overriding {
 
     class SuperClass {
         protected Object a, b, c;
 
-        @Holding("a")
+        @HoldingOnEntry("a")
         void guardedByOne() { }
 
-        @Holding({"a", "b"})
+        @HoldingOnEntry({"a", "b"})
         void guardedByTwo() { }
 
-        @Holding({"a", "b", "c"})
+        @HoldingOnEntry({"a", "b", "c"})
         void guardedByThree() { }
 
-        @ReleasesNoLocks
-        void rnlMethod(){
-            //:: error: (method.guarantee.violated)
-            mrlMethod();
-            rnlMethod();
-            implicitRnlMethod();
-            lfMethod();
-        }
-
-        void implicitRnlMethod(){
-            //:: error: (method.guarantee.violated)
-            mrlMethod();
-            rnlMethod();
-            implicitRnlMethod();
-            lfMethod();
-        }
-
-        @LockingFree
-        void lfMethod(){
-            //:: error: (method.guarantee.violated)
-            mrlMethod();
-            //:: error: (method.guarantee.violated)
-            rnlMethod();
-            //:: error: (method.guarantee.violated)
-            implicitRnlMethod();
-            lfMethod();
-        }
-
-        @MayReleaseLocks
-        void mrlMethod(){
-            mrlMethod();
-            rnlMethod();
-            implicitRnlMethod();
-            lfMethod();
-        }
-
-        @ReleasesNoLocks
-        void rnlMethod2(){ }
-
-        void implicitRnlMethod2(){ }
-
-        @LockingFree
-        void lfMethod2(){ }
-
-        @MayReleaseLocks
-        void mrlMethod2(){ }
-
-        @ReleasesNoLocks
-        void rnlMethod3(){ }
-
-        void implicitRnlMethod3(){ }
-
-        @LockingFree
-        void lfMethod3(){ }
     }
 
     class SubClass extends SuperClass {
-        @Holding({"a", "b"})  // error
-        //:: error: (contracts.precondition.override.invalid)
+        @HoldingOnEntry({"a", "b"})  // error
+          //:: error: (override.holding.invalid)
         @Override void guardedByOne() { }
 
-        @Holding({"a", "b"})
+        @HoldingOnEntry({"a", "b"})
         @Override void guardedByTwo() { }
 
-        @Holding({"a", "b"})
+        @HoldingOnEntry({"a", "b"})
         @Override void guardedByThree() { }
-
-        @MayReleaseLocks
-        //:: error: (override.sideeffect.invalid)
-        @Override void rnlMethod(){ }
-
-        @MayReleaseLocks
-        //:: error: (override.sideeffect.invalid)
-        @Override void implicitRnlMethod(){ }
-
-        @ReleasesNoLocks
-        //:: error: (override.sideeffect.invalid)
-        @Override void lfMethod(){ }
-
-        @MayReleaseLocks
-        @Override void mrlMethod(){ }
-
-        @ReleasesNoLocks
-        @Override void rnlMethod2(){ }
-
-        @Override void implicitRnlMethod2(){ }
-
-        @LockingFree
-        @Override void lfMethod2(){ }
-
-        @ReleasesNoLocks
-        @Override void mrlMethod2(){ }
-
-        @LockingFree
-        @Override void rnlMethod3(){ }
-
-        @LockingFree
-        @Override void implicitRnlMethod3(){ }
-
-        @SideEffectFree
-        @Override void lfMethod3(){ }
     }
-
-    // Test overriding @Holding with JCIP @GuardedBy.
-    // Disable since JCIP annotations are not supported.
-    /*class SubClassJcip extends SuperClass {
-        @net.jcip.annotations.GuardedBy({"a", "b"})  // error
-        //    error (contracts.precondition.override.invalid)
-        @Override void guardedByOne() { }
-
-        @net.jcip.annotations.GuardedBy({"a", "b"})
-        @Override void guardedByTwo() { }
-
-        @net.jcip.annotations.GuardedBy({"a", "b"})
-        @Override void guardedByThree() { }
-    }*/
 }

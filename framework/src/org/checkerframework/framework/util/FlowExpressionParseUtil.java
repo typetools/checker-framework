@@ -101,8 +101,6 @@ public class FlowExpressionParseUtil {
             .compile("^\"([^\"\\\\]|\\\\.)*\"$");
     /** Matches the null literal */
     protected static final Pattern nullPattern = Pattern.compile("^null$");
-    /** Matches an expression contained in matching start and end parentheses */
-    protected static final Pattern parenthesesPattern = Pattern.compile("^\\((.*)\\)$");
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or
@@ -166,7 +164,6 @@ public class FlowExpressionParseUtil {
         Matcher longMatcher = longPattern.matcher(s);
         Matcher stringMatcher = stringPattern.matcher(s);
         Matcher nullMatcher = nullPattern.matcher(s);
-        Matcher parenthesesMatcher = parenthesesPattern.matcher(s);
 
         ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
         Types types = env.getTypeUtils();
@@ -412,13 +409,6 @@ public class FlowExpressionParseUtil {
             FlowExpressionContext newContext = context.changeReceiver(receiver);
             return parse(remainingString, newContext, path, false, true, false,
                     true, true, false, false, false, true);
-        } else if (parenthesesMatcher.matches()) {
-            String expressionString = parenthesesMatcher.group(1);
-            // Do not modify the value of recursiveCall, since a parenthesis match is essentially a match to a no-op and should not semantically affect the parsing.
-            return parse(expressionString, context, path, allowSelf,
-                    allowIdentifier, allowParameter, allowDot,
-                    allowMethods, allowArrays, allowLiterals,
-                    allowLocalVariables, recursiveCall);
         } else {
             throw constructParserException(s);
         }

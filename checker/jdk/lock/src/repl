@@ -1,4 +1,0 @@
-sed -i "s/@Pure\([^(]*\)[(]/@Pure\1(@GuardSatisfied $2 this,/g" $1/$2.java
-sed -i "s/@SideEffectFree\([^(]*\)[(]/@SideEffectFree\1(@GuardSatisfied $2 this,/g" $1/$2.java
-sed -i "s/,[)]/)/g" $1/$2.java
-

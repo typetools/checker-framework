@@ -1,40 +1,34 @@
 import org.checkerframework.checker.lock.qual.*;
 
 // Initializers and constructors are synchronized over 'this'
-// but not over their class's fields
+// and over all their class's non-static fields
 public class Constructors {
 
-    static class MyClass { public Object field; }
+    Object unlocked;
+    @GuardedBy("this") Object guardedThis = new Object();
+    @GuardedBy("unlocked") Object guardedOther = new Object();
+    static Object unlockedStatic;
+    @GuardedBy("unlockedStatic") Object nonstaticGuardedByStatic = new Object();
+    static @GuardedBy("unlocked") Object staticGuardedByNonStatic = new Object();
+    static @GuardedBy("unlockedStatic") Object staticGuardedByStatic = new Object();
 
-    MyClass unlocked;
-    @GuardedBy("this") MyClass guardedThis = new MyClass();
-    @GuardedBy("unlocked") MyClass guardedOther = new MyClass();
-    static MyClass unlockedStatic;
-    @GuardedBy("unlockedStatic") MyClass nonstaticGuardedByStatic = new MyClass();
-    static @GuardedBy("unlocked") MyClass staticGuardedByNonStatic = new MyClass();
-    static @GuardedBy("unlockedStatic") MyClass staticGuardedByStatic = new MyClass();
-
-    Object initializedObject1 = unlocked.field;
-    Object initializedObject2 = guardedThis.field;
+    Object initializedObject1 = unlocked;
+    Object initializedObject2 = guardedThis;
+    Object initializedObject3 = guardedOther;
+    Object initializedObject4 = staticGuardedByNonStatic;
     //:: error: (contracts.precondition.not.satisfied.field)
-    Object initializedObject3 = guardedOther.field;
+    Object initializedObject5 = nonstaticGuardedByStatic;
     //:: error: (contracts.precondition.not.satisfied.field)
-    Object initializedObject4 = staticGuardedByNonStatic.field;
-    //:: error: (contracts.precondition.not.satisfied.field)
-    Object initializedObject5 = nonstaticGuardedByStatic.field;
-    //:: error: (contracts.precondition.not.satisfied.field)
-    Object initializedObject6 = staticGuardedByStatic.field;
+    Object initializedObject6 = staticGuardedByStatic;
 
     Constructors() {
-        unlocked.field.toString();
-        guardedThis.field.toString();
+        unlocked = "m";
+        guardedThis = "m";
+        guardedOther = "m";
+        staticGuardedByNonStatic = "m";
         //:: error: (contracts.precondition.not.satisfied.field)
-        guardedOther.field.toString();
+        nonstaticGuardedByStatic = "m";
         //:: error: (contracts.precondition.not.satisfied.field)
-        staticGuardedByNonStatic.field.toString();
-        //:: error: (contracts.precondition.not.satisfied.field)
-        nonstaticGuardedByStatic.field.toString();
-        //:: error: (contracts.precondition.not.satisfied.field)
-        staticGuardedByStatic.field.toString();
+        staticGuardedByStatic = "m";
     }
 }

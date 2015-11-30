@@ -10,11 +10,9 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 
 /**
- * Indicates that the value expressions are held if the method
+ * Indicates that the value expressions are {@link LockHeld} if the method
  * terminates successfully.
- * <p>
  *
- * @see EnsuresLockHeldIf
  * @checker_framework.manual #lock-checker Lock Checker
  */
 @Documented
@@ -24,7 +22,7 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @InheritedAnnotation
 public @interface EnsuresLockHeld {
     /**
-     * The Java value expressions that are ensured to be held on successful
+     * The Java expressions that are ensured to be {@link LockHeld} on successful
      * method termination.
      *
      * @see <a
