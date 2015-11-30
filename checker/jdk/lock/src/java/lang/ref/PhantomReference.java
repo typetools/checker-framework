@@ -62,7 +62,7 @@ public class PhantomReference<T> extends Reference<T> {
      *
      * @return  <code>null</code>
      */
-    @SideEffectFree public T get(@GuardSatisfied PhantomReference<T> this) {
+     public T get(@GuardSatisfied PhantomReference<T> this) {
         return null;
     }
 

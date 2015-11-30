@@ -10,5 +10,5 @@ public abstract class AbstractQueue<E extends Object> extends AbstractCollection
   public E element() { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
   public boolean addAll(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
-  //@Pure public abstract boolean isEmpty(@GuardSatisfied AbstractQueue<E> this);
+  // public abstract boolean isEmpty(@GuardSatisfied AbstractQueue<E> this);
 }

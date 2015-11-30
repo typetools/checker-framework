@@ -12,5 +12,5 @@ public final class Currency implements java.io.Serializable {
   public String getSymbol() { throw new RuntimeException("skeleton method"); }
   public String getSymbol(Locale a1) { throw new RuntimeException("skeleton method"); }
   public int getDefaultFractionDigits() { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public String toString(@GuardSatisfied Currency this) { throw new RuntimeException("skeleton method"); }
+   public String toString(@GuardSatisfied Currency this) { throw new RuntimeException("skeleton method"); }
 }

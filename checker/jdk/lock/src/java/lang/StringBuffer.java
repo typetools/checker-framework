@@ -11,7 +11,7 @@ public final class StringBuffer extends AbstractStringBuilder implements java.io
   public StringBuffer(int a1) { throw new RuntimeException("skeleton method"); }
   public StringBuffer(String a1) { throw new RuntimeException("skeleton method"); }
   public StringBuffer(CharSequence a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public synchronized int length(@GuardSatisfied StringBuffer this) { throw new RuntimeException("skeleton method"); }
+   public synchronized int length(@GuardSatisfied StringBuffer this) { throw new RuntimeException("skeleton method"); }
   public synchronized int capacity() { throw new RuntimeException("skeleton method"); }
   public synchronized void ensureCapacity(int a1) { throw new RuntimeException("skeleton method"); }
   public synchronized void trimToSize() { throw new RuntimeException("skeleton method"); }
@@ -55,10 +55,10 @@ public final class StringBuffer extends AbstractStringBuilder implements java.io
   public StringBuffer insert(int a1, long a2) { throw new RuntimeException("skeleton method"); }
   public StringBuffer insert(int a1, float a2) { throw new RuntimeException("skeleton method"); }
   public StringBuffer insert(int a1, double a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public int indexOf(@GuardSatisfied StringBuffer this,String a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public synchronized int indexOf(@GuardSatisfied StringBuffer this,String a1, int a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public int lastIndexOf(@GuardSatisfied StringBuffer this,String a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public synchronized int lastIndexOf(@GuardSatisfied StringBuffer this,String a1, int a2) { throw new RuntimeException("skeleton method"); }
+   public int indexOf(@GuardSatisfied StringBuffer this,String a1) { throw new RuntimeException("skeleton method"); }
+   public synchronized int indexOf(@GuardSatisfied StringBuffer this,String a1, int a2) { throw new RuntimeException("skeleton method"); }
+   public int lastIndexOf(@GuardSatisfied StringBuffer this,String a1) { throw new RuntimeException("skeleton method"); }
+   public synchronized int lastIndexOf(@GuardSatisfied StringBuffer this,String a1, int a2) { throw new RuntimeException("skeleton method"); }
   public synchronized StringBuffer reverse() { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public synchronized String toString(@GuardSatisfied StringBuffer this) { throw new RuntimeException("skeleton method"); }
+   public synchronized String toString(@GuardSatisfied StringBuffer this) { throw new RuntimeException("skeleton method"); }
 }

@@ -28,5 +28,5 @@ public interface NavigableMap<K extends Object, V extends Object> extends Sorted
   public abstract SortedMap<K, V> tailMap(K a1);
 
 
-  @Pure public abstract boolean isEmpty(@GuardSatisfied NavigableMap<K,V> this);
+   public abstract boolean isEmpty(@GuardSatisfied NavigableMap<K,V> this);
 }

@@ -26,8 +26,8 @@ public class Collections {
   public static <T> T max(Collection<? extends T> a1, Comparator<? super T> a2) { throw new RuntimeException("skeleton method"); }
   public static void rotate(List<?> a1, int a2) { throw new RuntimeException("skeleton method"); }
   public static <T> boolean replaceAll(List<T> a1, T a2, T a3) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int indexOfSubList(@GuardSatisfied List<?> a1, @GuardSatisfied List<?> a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int lastIndexOfSubList(@GuardSatisfied List<?> a1, @GuardSatisfied List<?> a2) { throw new RuntimeException("skeleton method"); }
+   public static int indexOfSubList(@GuardSatisfied List<?> a1, @GuardSatisfied List<?> a2) { throw new RuntimeException("skeleton method"); }
+   public static int lastIndexOfSubList(@GuardSatisfied List<?> a1, @GuardSatisfied List<?> a2) { throw new RuntimeException("skeleton method"); }
   public static <T> Collection<T> unmodifiableCollection(Collection<? extends T> a1) { throw new RuntimeException("skeleton method"); }
   public static <T> Set<T> unmodifiableSet(Set<? extends T> a1) { throw new RuntimeException("skeleton method"); }
   public static <T> SortedSet<T> unmodifiableSortedSet(SortedSet<T> a1) { throw new RuntimeException("skeleton method"); }

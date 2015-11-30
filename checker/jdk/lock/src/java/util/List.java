@@ -123,7 +123,7 @@ public interface List<E extends Object> extends Collection<E> {
      *
      * @return the number of elements in this list
      */
-    @Pure
+
     int size();
 
     /**
@@ -131,7 +131,7 @@ public interface List<E extends Object> extends Collection<E> {
      *
      * @return <tt>true</tt> if this list contains no elements
      */
-    @Pure
+
     boolean isEmpty();
 
     /**
@@ -149,7 +149,7 @@ public interface List<E extends Object> extends Collection<E> {
      *         list does not permit null elements
      * (<a href="Collection.html#optional-restrictions">optional</a>)
      */
-    @Pure
+
     boolean contains(Object o);
 
     /**
@@ -293,7 +293,7 @@ public interface List<E extends Object> extends Collection<E> {
      *         or if the specified collection is null
      * @see #contains(Object)
      */
-    @Pure
+
     boolean containsAll(Collection<?> c);
 
     /**
@@ -416,7 +416,7 @@ public interface List<E extends Object> extends Collection<E> {
      * @param o the object to be compared for equality with this list
      * @return <tt>true</tt> if the specified object is equal to this list
      */
-    @Pure
+
     boolean equals(Object o);
 
     /**
@@ -436,7 +436,7 @@ public interface List<E extends Object> extends Collection<E> {
      * @see Object#equals(Object)
      * @see #equals(Object)
      */
-    @Pure
+
     int hashCode();
 
 
@@ -450,7 +450,7 @@ public interface List<E extends Object> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    @Pure
+
     E get(int index);
 
     /**
@@ -529,7 +529,7 @@ public interface List<E extends Object> extends Collection<E> {
      *         list does not permit null elements
      *         (<a href="Collection.html#optional-restrictions">optional</a>)
      */
-    @Pure
+
     int indexOf(Object o);
 
     /**
@@ -549,7 +549,7 @@ public interface List<E extends Object> extends Collection<E> {
      *         list does not permit null elements
      *         (<a href="Collection.html#optional-restrictions">optional</a>)
      */
-    @Pure
+
     int lastIndexOf(Object o);
 
 
@@ -617,6 +617,6 @@ public interface List<E extends Object> extends Collection<E> {
      *         (<tt>fromIndex &lt; 0 || toIndex &gt; size ||
      *         fromIndex &gt; toIndex</tt>)
      */
-    @SideEffectFree
+
     List<E> subList(int fromIndex, int toIndex);
 }

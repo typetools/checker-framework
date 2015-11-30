@@ -18,10 +18,10 @@ public class File implements Serializable, Comparable<File> {
   public File(File a1, String a2) { throw new RuntimeException("skeleton method"); }
   public File(java.net.URI a1) { throw new RuntimeException("skeleton method"); }
   public String getName() { throw new RuntimeException("skeleton method"); }
-  @Pure public String getParent(@GuardSatisfied File this) { throw new RuntimeException("skeleton method"); }
-  @Pure public File getParentFile(@GuardSatisfied File this) { throw new RuntimeException("skeleton method"); }
+   public String getParent(@GuardSatisfied File this) { throw new RuntimeException("skeleton method"); }
+   public File getParentFile(@GuardSatisfied File this) { throw new RuntimeException("skeleton method"); }
   public String getPath() { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean isAbsolute(@GuardSatisfied File this) { throw new RuntimeException("skeleton method"); }
+   public boolean isAbsolute(@GuardSatisfied File this) { throw new RuntimeException("skeleton method"); }
   public String getAbsolutePath() { throw new RuntimeException("skeleton method"); }
   public File getAbsoluteFile() { throw new RuntimeException("skeleton method"); }
   public String getCanonicalPath() throws IOException { throw new RuntimeException("skeleton method"); }
@@ -31,9 +31,9 @@ public class File implements Serializable, Comparable<File> {
   public boolean canRead() { throw new RuntimeException("skeleton method"); }
   public boolean canWrite() { throw new RuntimeException("skeleton method"); }
   public boolean exists() { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean isDirectory(@GuardSatisfied File this) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean isFile(@GuardSatisfied File this) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean isHidden(@GuardSatisfied File this) { throw new RuntimeException("skeleton method"); }
+   public boolean isDirectory(@GuardSatisfied File this) { throw new RuntimeException("skeleton method"); }
+   public boolean isFile(@GuardSatisfied File this) { throw new RuntimeException("skeleton method"); }
+   public boolean isHidden(@GuardSatisfied File this) { throw new RuntimeException("skeleton method"); }
   public long lastModified() { throw new RuntimeException("skeleton method"); }
   public long length() { throw new RuntimeException("skeleton method"); }
   public boolean createNewFile() throws IOException { throw new RuntimeException("skeleton method"); }
@@ -62,8 +62,8 @@ public class File implements Serializable, Comparable<File> {
   public long getUsableSpace() { throw new RuntimeException("skeleton method"); }
   public static File createTempFile(String a1, String a2, File a3) throws IOException { throw new RuntimeException("skeleton method"); }
   public static File createTempFile(String a1, String a2) throws IOException { throw new RuntimeException("skeleton method"); }
-  @Pure public int compareTo(@GuardSatisfied File this,@GuardSatisfied File a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean equals(@GuardSatisfied File this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int hashCode(@GuardSatisfied File this) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public String toString(@GuardSatisfied File this) { throw new RuntimeException("skeleton method"); }
+   public int compareTo(@GuardSatisfied File this,@GuardSatisfied File a1) { throw new RuntimeException("skeleton method"); }
+   public boolean equals(@GuardSatisfied File this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public int hashCode(@GuardSatisfied File this) { throw new RuntimeException("skeleton method"); }
+   public String toString(@GuardSatisfied File this) { throw new RuntimeException("skeleton method"); }
 }

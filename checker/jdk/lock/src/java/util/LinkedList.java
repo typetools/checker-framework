@@ -18,19 +18,19 @@ public class LinkedList<E extends Object> extends AbstractSequentialList<E> impl
   public E removeLast() { throw new RuntimeException("skeleton method"); }
   public void addFirst(E a1) { throw new RuntimeException("skeleton method"); }
   public void addLast(E a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean contains(@GuardSatisfied LinkedList<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int size(@GuardSatisfied LinkedList<E> this) { throw new RuntimeException("skeleton method"); }
+   public boolean contains(@GuardSatisfied LinkedList<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public int size(@GuardSatisfied LinkedList<E> this) { throw new RuntimeException("skeleton method"); }
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public boolean remove(Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean addAll(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
   public boolean addAll(int a1, Collection<? extends E> a2) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
-  @Pure public E get(@GuardSatisfied LinkedList<E> this,int a1) { throw new RuntimeException("skeleton method"); }
+   public E get(@GuardSatisfied LinkedList<E> this,int a1) { throw new RuntimeException("skeleton method"); }
   public E set(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public void add(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public E remove(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int indexOf(@GuardSatisfied LinkedList<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int lastIndexOf(@GuardSatisfied LinkedList<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public int indexOf(@GuardSatisfied LinkedList<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public int lastIndexOf(@GuardSatisfied LinkedList<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
   public E peek() { throw new RuntimeException("skeleton method"); }
   public E element() { throw new RuntimeException("skeleton method"); }
   public E poll() { throw new RuntimeException("skeleton method"); }
@@ -50,7 +50,7 @@ public class LinkedList<E extends Object> extends AbstractSequentialList<E> impl
   public Iterator<E> descendingIterator() { throw new RuntimeException("skeleton method"); }
   public Object [] toArray() { throw new RuntimeException("skeleton method"); }
   public <T extends Object> T [] toArray(T [] a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Object clone(@GuardSatisfied LinkedList<E> this) { throw new RuntimeException("skeleton method"); }
+   public Object clone(@GuardSatisfied LinkedList<E> this) { throw new RuntimeException("skeleton method"); }
 
-  //@Pure public boolean isEmpty(@GuardSatisfied LinkedList<E> this) { throw new RuntimeException("skeleton method"); }
+  // public boolean isEmpty(@GuardSatisfied LinkedList<E> this) { throw new RuntimeException("skeleton method"); }
 }

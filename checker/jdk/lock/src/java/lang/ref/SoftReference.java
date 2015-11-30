@@ -110,7 +110,7 @@ public class SoftReference<T> extends Reference<T> {
      * @return   The object to which this reference refers, or
      *           <code>null</code> if this reference object has been cleared
      */
-    @SideEffectFree public T get(@GuardSatisfied SoftReference<T> this) {
+     public T get(@GuardSatisfied SoftReference<T> this) {
         T o = super.get();
         if (o != null && this.timestamp != clock)
             this.timestamp = clock;

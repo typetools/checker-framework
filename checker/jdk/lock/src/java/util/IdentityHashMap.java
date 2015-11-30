@@ -11,19 +11,19 @@ public class IdentityHashMap<K extends Object, V extends Object> extends Abstrac
   public IdentityHashMap() { throw new RuntimeException("skeleton method"); }
   public IdentityHashMap(int a1) { throw new RuntimeException("skeleton method"); }
   public IdentityHashMap(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int size(@GuardSatisfied IdentityHashMap<K,V> this) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean isEmpty(@GuardSatisfied IdentityHashMap<K,V> this) { throw new RuntimeException("skeleton method"); }
-  @Pure public V get(@GuardSatisfied IdentityHashMap<K,V> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean containsKey(@GuardSatisfied IdentityHashMap<K,V> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean containsValue(@GuardSatisfied IdentityHashMap<K,V> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public int size(@GuardSatisfied IdentityHashMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public boolean isEmpty(@GuardSatisfied IdentityHashMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public V get(@GuardSatisfied IdentityHashMap<K,V> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public boolean containsKey(@GuardSatisfied IdentityHashMap<K,V> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public boolean containsValue(@GuardSatisfied IdentityHashMap<K,V> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
   public V put(K a1, V a2) { throw new RuntimeException("skeleton method"); }
   public void putAll(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public V remove(Object a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean equals(@GuardSatisfied IdentityHashMap<K,V> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int hashCode(@GuardSatisfied IdentityHashMap<K,V> this) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Set<K> keySet(@GuardSatisfied IdentityHashMap<K,V> this) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Collection<V> values(@GuardSatisfied IdentityHashMap<K,V> this) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Set<Map.Entry<K,V>> entrySet(@GuardSatisfied IdentityHashMap<K,V> this) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Object clone(@GuardSatisfied IdentityHashMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public boolean equals(@GuardSatisfied IdentityHashMap<K,V> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public int hashCode(@GuardSatisfied IdentityHashMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public Set<K> keySet(@GuardSatisfied IdentityHashMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public Collection<V> values(@GuardSatisfied IdentityHashMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public Set<Map.Entry<K,V>> entrySet(@GuardSatisfied IdentityHashMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public Object clone(@GuardSatisfied IdentityHashMap<K,V> this) { throw new RuntimeException("skeleton method"); }
 }

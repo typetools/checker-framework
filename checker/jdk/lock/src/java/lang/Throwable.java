@@ -253,7 +253,7 @@ public class Throwable implements Serializable {
      * <p>The {@link #fillInStackTrace()} method is called to initialize
      * the stack trace data in the newly created throwable.
      */
-    @SideEffectFree public Throwable() {
+     public Throwable() {
         fillInStackTrace();
     }
 
@@ -268,7 +268,7 @@ public class Throwable implements Serializable {
      * @param   message   the detail message. The detail message is saved for
      *          later retrieval by the {@link #getMessage()} method.
      */
-    @SideEffectFree public Throwable(String message) {
+     public Throwable(String message) {
         fillInStackTrace();
         detailMessage = message;
     }
@@ -290,7 +290,7 @@ public class Throwable implements Serializable {
      *         unknown.)
      * @since  1.4
      */
-    @SideEffectFree public Throwable(String message, Throwable cause) {
+     public Throwable(String message, Throwable cause) {
         fillInStackTrace();
         detailMessage = message;
         this.cause = cause;
@@ -313,7 +313,7 @@ public class Throwable implements Serializable {
      *         unknown.)
      * @since  1.4
      */
-    @SideEffectFree public Throwable(Throwable cause) {
+     public Throwable(Throwable cause) {
         fillInStackTrace();
         detailMessage = (cause==null ? null : cause.toString());
         this.cause = cause;
@@ -360,7 +360,7 @@ public class Throwable implements Serializable {
      * @see ArithmeticException
      * @since 1.7
      */
-    @SideEffectFree protected Throwable(String message, Throwable cause,
+     protected Throwable(String message, Throwable cause,
                         boolean enableSuppression,
                         boolean writableStackTrace) {
         if (writableStackTrace) {
@@ -380,7 +380,7 @@ public class Throwable implements Serializable {
      * @return  the detail message string of this {@code Throwable} instance
      *          (which may be {@code null}).
      */
-    @Pure public String getMessage(@GuardSatisfied Throwable this) {
+     public String getMessage(@GuardSatisfied Throwable this) {
         return detailMessage;
     }
 
@@ -394,7 +394,7 @@ public class Throwable implements Serializable {
      * @return  The localized description of this throwable.
      * @since   JDK1.1
      */
-    @SideEffectFree public String getLocalizedMessage(@GuardSatisfied Throwable this) {
+     public String getLocalizedMessage(@GuardSatisfied Throwable this) {
         return getMessage();
     }
 
@@ -418,7 +418,7 @@ public class Throwable implements Serializable {
      *          cause is nonexistent or unknown.
      * @since 1.4
      */
-    @Pure public synchronized Throwable getCause(@GuardSatisfied Throwable this) {
+     public synchronized Throwable getCause(@GuardSatisfied Throwable this) {
         return (cause==this ? null : cause);
     }
 
@@ -483,7 +483,7 @@ public class Throwable implements Serializable {
      *
      * @return a string representation of this throwable.
      */
-    @SideEffectFree public String toString(@GuardSatisfied Throwable this) {
+     public String toString(@GuardSatisfied Throwable this) {
         String s = getClass().getName();
         String message = getLocalizedMessage();
         return (message != null) ? (s + ": " + message) : s;

@@ -16,5 +16,5 @@ public class ObjectStreamClass implements Serializable {
   public Class<?> forClass() { throw new RuntimeException("skeleton method"); }
   public ObjectStreamField[] getFields() { throw new RuntimeException("skeleton method"); }
   public ObjectStreamField getField(String a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public String toString(@GuardSatisfied ObjectStreamClass this) { throw new RuntimeException("skeleton method"); }
+   public String toString(@GuardSatisfied ObjectStreamClass this) { throw new RuntimeException("skeleton method"); }
 }

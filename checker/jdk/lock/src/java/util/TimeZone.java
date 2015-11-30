@@ -26,5 +26,5 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable{
   public static TimeZone getDefault() { throw new RuntimeException("skeleton method"); }
   public static void setDefault(TimeZone a1) { throw new RuntimeException("skeleton method"); }
   public boolean hasSameRules(TimeZone a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Object clone(@GuardSatisfied TimeZone this) { throw new RuntimeException("skeleton method"); }
+   public Object clone(@GuardSatisfied TimeZone this) { throw new RuntimeException("skeleton method"); }
 }

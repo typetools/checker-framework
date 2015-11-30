@@ -57,7 +57,7 @@ public final class Objects {
      * and {@code false} otherwise
      * @see Object#equals(Object)
      */
-    @Pure public static boolean equals(@GuardSatisfied Object a, @GuardSatisfied Object b) { throw new RuntimeException(); }
+     public static boolean equals(@GuardSatisfied Object a, @GuardSatisfied Object b) { throw new RuntimeException(); }
 
    /**
     * Returns {@code true} if the arguments are deeply equal to each other
@@ -76,7 +76,7 @@ public final class Objects {
     * @see Arrays#deepEquals(Object[], Object[])
     * @see Objects#equals(Object, Object)
     */
-    @Pure public static boolean deepEquals(@GuardSatisfied Object a, @GuardSatisfied Object b) { throw new RuntimeException(); }
+     public static boolean deepEquals(@GuardSatisfied Object a, @GuardSatisfied Object b) { throw new RuntimeException(); }
 
     /**
      * Returns the hash code of a non-{@code null} argument and 0 for
@@ -87,7 +87,7 @@ public final class Objects {
      * a {@code null} argument
      * @see Object#hashCode
      */
-    @Pure public static int hashCode(@GuardSatisfied Object o) { throw new RuntimeException(); }
+     public static int hashCode(@GuardSatisfied Object o) { throw new RuntimeException(); }
 
    /**
     * Generates a hash code for a sequence of input values. The hash
@@ -113,7 +113,7 @@ public final class Objects {
     * @see Arrays#hashCode(Object[])
     * @see List#hashCode
     */
-    @Pure public static int hash(@GuardSatisfied Object... values) { throw new RuntimeException(); }
+     public static int hash(@GuardSatisfied Object... values) { throw new RuntimeException(); }
 
     /**
      * Returns the result of calling {@code toString} for a non-{@code
@@ -125,7 +125,7 @@ public final class Objects {
      * @see Object#toString
      * @see String#valueOf(Object)
      */
-    @SideEffectFree public static String toString(Object o) { throw new RuntimeException(); }
+     public static String toString(Object o) { throw new RuntimeException(); }
 
     /**
      * Returns the result of calling {@code toString} on the first
@@ -140,7 +140,7 @@ public final class Objects {
      * otherwise.
      * @see Objects#toString(Object)
      */
-    @SideEffectFree public static String toString(@GuardSatisfied Object o, String nullDefault) { throw new RuntimeException(); }
+     public static String toString(@GuardSatisfied Object o, String nullDefault) { throw new RuntimeException(); }
 
     /**
      * Returns 0 if the arguments are identical and {@code
@@ -162,7 +162,7 @@ public final class Objects {
      * @see Comparable
      * @see Comparator
      */
-    @Pure public static <T> int compare(@GuardSatisfied T a, @GuardSatisfied T b, @GuardSatisfied Comparator<? super T> c) { throw new RuntimeException(); }
+     public static <T> int compare(@GuardSatisfied T a, @GuardSatisfied T b, @GuardSatisfied Comparator<? super T> c) { throw new RuntimeException(); }
 
     /**
      * Checks that the specified object reference is not {@code null}. This
@@ -177,7 +177,7 @@ public final class Objects {
      * @return {@code obj} if not {@code null}
      * @throws NullPointerException if {@code obj} is {@code null}
      */
-    @SideEffectFree public static <T> T requireNonNull(T obj) { throw new RuntimeException(); }
+     public static <T> T requireNonNull(T obj) { throw new RuntimeException(); }
 
     /**
      * Checks that the specified object reference is not {@code null} and
@@ -195,7 +195,7 @@ public final class Objects {
      * @return {@code obj} if not {@code null}
      * @throws NullPointerException if {@code obj} is {@code null}
      */
-    @SideEffectFree public static <T> T requireNonNull(@GuardSatisfied T obj, String message) { throw new RuntimeException(); }
+     public static <T> T requireNonNull(@GuardSatisfied T obj, String message) { throw new RuntimeException(); }
 
     /**
      * Returns {@code true} if the provided reference is {@code null} otherwise
@@ -211,7 +211,7 @@ public final class Objects {
      * @see java.util.function.Predicate
      * @since 1.8
      */
-    @Pure public static boolean isNull(@GuardSatisfied Object obj) { throw new RuntimeException(); }
+     public static boolean isNull(@GuardSatisfied Object obj) { throw new RuntimeException(); }
 
     /**
      * Returns {@code true} if the provided reference is non-{@code null}
@@ -227,7 +227,7 @@ public final class Objects {
      * @see java.util.function.Predicate
      * @since 1.8
      */
-    @Pure public static boolean nonNull(@GuardSatisfied Object obj) { throw new RuntimeException(); }
+     public static boolean nonNull(@GuardSatisfied Object obj) { throw new RuntimeException(); }
 
 // TODO: reinstate
 //     /**
@@ -251,5 +251,5 @@ public final class Objects {
 //      * @since 1.8
 //      */
 //     // TODO: treat like other nullness assertion methods in the Checker Framework.
-//     @Pure public static <T> T requireNonNull(@GuardSatisfied T obj, @GuardSatisfied Supplier<String> messageSupplier) { throw new RuntimeException(); }
+//      public static <T> T requireNonNull(@GuardSatisfied T obj, @GuardSatisfied Supplier<String> messageSupplier) { throw new RuntimeException(); }
 }

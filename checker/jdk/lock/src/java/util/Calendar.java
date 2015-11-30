@@ -60,28 +60,28 @@ public abstract class Calendar implements java.io.Serializable, Cloneable, Compa
   public final void setTime(Date a1) { throw new RuntimeException("skeleton method"); }
   public long getTimeInMillis() { throw new RuntimeException("skeleton method"); }
   public void setTimeInMillis(long a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int get(@GuardSatisfied Calendar this,int a1) { throw new RuntimeException("skeleton method"); }
+   public int get(@GuardSatisfied Calendar this,int a1) { throw new RuntimeException("skeleton method"); }
   public void set(int a1, int a2) { throw new RuntimeException("skeleton method"); }
   public final void set(int a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   public final void set(int a1, int a2, int a3, int a4, int a5) { throw new RuntimeException("skeleton method"); }
   public final void set(int a1, int a2, int a3, int a4, int a5, int a6) { throw new RuntimeException("skeleton method"); }
   public final void clear() { throw new RuntimeException("skeleton method"); }
   public final void clear(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public final boolean isSet(@GuardSatisfied Calendar this,int a1) { throw new RuntimeException("skeleton method"); }
+   public final boolean isSet(@GuardSatisfied Calendar this,int a1) { throw new RuntimeException("skeleton method"); }
   public String getDisplayName(int a1, int a2, Locale a3) { throw new RuntimeException("skeleton method"); }
   public Map<String, Integer> getDisplayNames(int a1, int a2, Locale a3) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean equals(@GuardSatisfied Calendar this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int hashCode(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
+   public boolean equals(@GuardSatisfied Calendar this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public int hashCode(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
   public boolean before(Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean after(Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int compareTo(@GuardSatisfied Calendar this,@GuardSatisfied Calendar a1) { throw new RuntimeException("skeleton method"); }
+   public int compareTo(@GuardSatisfied Calendar this,@GuardSatisfied Calendar a1) { throw new RuntimeException("skeleton method"); }
   public abstract void add(int a1, int a2);
   public abstract void roll(int a1, boolean a2);
   public void roll(int a1, int a2) { throw new RuntimeException("skeleton method"); }
   public void setTimeZone(TimeZone a1) { throw new RuntimeException("skeleton method"); }
   public TimeZone getTimeZone() { throw new RuntimeException("skeleton method"); }
   public void setLenient(boolean a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean isLenient(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
+   public boolean isLenient(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
   public void setFirstDayOfWeek(int a1) { throw new RuntimeException("skeleton method"); }
   public int getFirstDayOfWeek() { throw new RuntimeException("skeleton method"); }
   public void setMinimalDaysInFirstWeek(int a1) { throw new RuntimeException("skeleton method"); }
@@ -92,7 +92,7 @@ public abstract class Calendar implements java.io.Serializable, Cloneable, Compa
   public abstract int getLeastMaximum(int a1);
   public int getActualMinimum(int a1) { throw new RuntimeException("skeleton method"); }
   public int getActualMaximum(int a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Object clone(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
+   public Object clone(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
   private static final String[] FIELD_NAME = {
         "ERA", "YEAR", "MONTH", "WEEK_OF_YEAR", "WEEK_OF_MONTH", "DAY_OF_MONTH",
         "DAY_OF_YEAR", "DAY_OF_WEEK", "DAY_OF_WEEK_IN_MONTH", "AM_PM", "HOUR",
@@ -100,5 +100,5 @@ public abstract class Calendar implements java.io.Serializable, Cloneable, Compa
         "DST_OFFSET"
   };
   static final String getFieldName(int field)  { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public String toString(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
+   public String toString(@GuardSatisfied Calendar this) { throw new RuntimeException("skeleton method"); }
 }

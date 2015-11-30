@@ -11,8 +11,8 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
   public final String getName() { throw new RuntimeException("skeleton method"); }
   public final  ThreadGroup getParent() { throw new RuntimeException("skeleton method"); }
   public final int getMaxPriority() { throw new RuntimeException("skeleton method"); }
-  @Pure public final boolean isDaemon(@GuardSatisfied ThreadGroup this) { throw new RuntimeException("skeleton method"); }
-  @Pure public synchronized boolean isDestroyed(@GuardSatisfied ThreadGroup this) { throw new RuntimeException("skeleton method"); }
+   public final boolean isDaemon(@GuardSatisfied ThreadGroup this) { throw new RuntimeException("skeleton method"); }
+   public synchronized boolean isDestroyed(@GuardSatisfied ThreadGroup this) { throw new RuntimeException("skeleton method"); }
   public final void setDaemon(boolean a1) { throw new RuntimeException("skeleton method"); }
   public final void setMaxPriority(int a1) { throw new RuntimeException("skeleton method"); }
   public final boolean parentOf(ThreadGroup a1) { throw new RuntimeException("skeleton method"); }
@@ -31,5 +31,5 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
   public void list() { throw new RuntimeException("skeleton method"); }
   public void uncaughtException(Thread a1, Throwable a2) { throw new RuntimeException("skeleton method"); }
   public boolean allowThreadSuspension(boolean a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public String toString(@GuardSatisfied ThreadGroup this) { throw new RuntimeException("skeleton method"); }
+   public String toString(@GuardSatisfied ThreadGroup this) { throw new RuntimeException("skeleton method"); }
 }

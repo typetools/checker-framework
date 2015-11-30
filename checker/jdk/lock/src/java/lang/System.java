@@ -33,12 +33,12 @@ public final class System {
   public static SecurityManager getSecurityManager() { throw new RuntimeException("skeleton method"); }
   public static native long currentTimeMillis();
   public static native long nanoTime();
-  @SideEffectFree public static native void arraycopy(@GuardSatisfied Object src, int srcPos, @GuardSatisfied Object dest, int destPos, int length);
-  @Pure public static native int identityHashCode(Object x);
+   public static native void arraycopy(@GuardSatisfied Object src, int srcPos, @GuardSatisfied Object dest, int destPos, int length);
+   public static native int identityHashCode(Object x);
   public static Properties getProperties() { throw new RuntimeException("skeleton method"); }
   public static void setProperties(Properties props) { throw new RuntimeException("skeleton method"); }
-  @Pure public static String getProperty(String key) { throw new RuntimeException("skeleton method"); }
-  @Pure public static String getProperty(String key, String def) { throw new RuntimeException("skeleton method"); }
+   public static String getProperty(String key) { throw new RuntimeException("skeleton method"); }
+   public static String getProperty(String key, String def) { throw new RuntimeException("skeleton method"); }
   public static String setProperty(String key, String value) { throw new RuntimeException("skeleton method"); }
   public static String clearProperty(String key) { throw new RuntimeException("skeleton method"); }
   public static String getenv(String name) { throw new RuntimeException("skeleton method"); }

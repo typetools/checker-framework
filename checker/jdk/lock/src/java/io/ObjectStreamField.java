@@ -13,8 +13,8 @@ public class ObjectStreamField implements Comparable<Object> {
   public char getTypeCode() { throw new RuntimeException("skeleton method"); }
   public String getTypeString() { throw new RuntimeException("skeleton method"); }
   public int getOffset() { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean isPrimitive(@GuardSatisfied ObjectStreamField this) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean isUnshared(@GuardSatisfied ObjectStreamField this) { throw new RuntimeException("skeleton method"); }
-  @Pure public int compareTo(@GuardSatisfied ObjectStreamField this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public String toString(@GuardSatisfied ObjectStreamField this) { throw new RuntimeException("skeleton method"); }
+   public boolean isPrimitive(@GuardSatisfied ObjectStreamField this) { throw new RuntimeException("skeleton method"); }
+   public boolean isUnshared(@GuardSatisfied ObjectStreamField this) { throw new RuntimeException("skeleton method"); }
+   public int compareTo(@GuardSatisfied ObjectStreamField this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public String toString(@GuardSatisfied ObjectStreamField this) { throw new RuntimeException("skeleton method"); }
 }

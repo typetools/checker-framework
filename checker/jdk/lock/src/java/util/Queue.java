@@ -12,5 +12,5 @@ public interface Queue<E extends Object> extends Collection<E> {
   public abstract E element();
   public abstract E peek();
 
-  @Pure public abstract boolean isEmpty(@GuardSatisfied Queue<E> this);
+   public abstract boolean isEmpty(@GuardSatisfied Queue<E> this);
 }

@@ -30,12 +30,12 @@ public class Date implements java.io.Serializable, Cloneable, Comparable<Date> {
   public void setTime(long a1) { throw new RuntimeException("skeleton method"); }
   public boolean before(Date a1) { throw new RuntimeException("skeleton method"); }
   public boolean after(Date a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean equals(@GuardSatisfied Date this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int compareTo(@GuardSatisfied Date this,@GuardSatisfied Date a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int hashCode(@GuardSatisfied Date this) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public String toString(@GuardSatisfied Date this) { throw new RuntimeException("skeleton method"); }
+   public boolean equals(@GuardSatisfied Date this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public int compareTo(@GuardSatisfied Date this,@GuardSatisfied Date a1) { throw new RuntimeException("skeleton method"); }
+   public int hashCode(@GuardSatisfied Date this) { throw new RuntimeException("skeleton method"); }
+   public String toString(@GuardSatisfied Date this) { throw new RuntimeException("skeleton method"); }
   public String toLocaleString() { throw new RuntimeException("skeleton method"); }
   public String toGMTString() { throw new RuntimeException("skeleton method"); }
   public int getTimezoneOffset() { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Object clone(@GuardSatisfied Date this) { throw new RuntimeException("skeleton method"); }
+   public Object clone(@GuardSatisfied Date this) { throw new RuntimeException("skeleton method"); }
 }

@@ -43,15 +43,15 @@ public class Arrays {
   public static int binarySearch(Object[] a1, int a2, int a3, Object a4) { throw new RuntimeException("skeleton method"); }
   public static <T> int binarySearch(T[] a1, T a2, Comparator<? super T> a3) { throw new RuntimeException("skeleton method"); }
   public static <T> int binarySearch(T[] a1, int a2, int a3, T a4, Comparator<? super T> a5) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean equals(long [] a1, long [] a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean equals(int [] a1, int [] a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean equals(short [] a1, short [] a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean equals(char [] a1, char [] a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean equals(byte [] a1, byte [] a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean equals(boolean [] a1, boolean [] a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean equals(double [] a1, double [] a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean equals(float [] a1, float [] a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean equals(@GuardSatisfied Object [] a1, @GuardSatisfied Object [] a2) { throw new RuntimeException("skeleton method"); }
+   public static boolean equals(long [] a1, long [] a2) { throw new RuntimeException("skeleton method"); }
+   public static boolean equals(int [] a1, int [] a2) { throw new RuntimeException("skeleton method"); }
+   public static boolean equals(short [] a1, short [] a2) { throw new RuntimeException("skeleton method"); }
+   public static boolean equals(char [] a1, char [] a2) { throw new RuntimeException("skeleton method"); }
+   public static boolean equals(byte [] a1, byte [] a2) { throw new RuntimeException("skeleton method"); }
+   public static boolean equals(boolean [] a1, boolean [] a2) { throw new RuntimeException("skeleton method"); }
+   public static boolean equals(double [] a1, double [] a2) { throw new RuntimeException("skeleton method"); }
+   public static boolean equals(float [] a1, float [] a2) { throw new RuntimeException("skeleton method"); }
+   public static boolean equals(@GuardSatisfied Object [] a1, @GuardSatisfied Object [] a2) { throw new RuntimeException("skeleton method"); }
   public static void fill(long[] a1, long a2) { throw new RuntimeException("skeleton method"); }
   public static void fill(long[] a1, int a2, int a3, long a4) { throw new RuntimeException("skeleton method"); }
   public static void fill(int[] a1, int a2) { throw new RuntimeException("skeleton method"); }
@@ -93,25 +93,25 @@ public class Arrays {
   // In JDK7, should instead be: @SafeVarargs
   @SuppressWarnings({"varargs","unchecked"})
   public static <T> List<T> asList(T... a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int hashCode(long [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int hashCode(int [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int hashCode(short [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int hashCode(char [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int hashCode(byte [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int hashCode(boolean [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int hashCode(float [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int hashCode(double [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int hashCode(@GuardSatisfied Object [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static int deepHashCode(@GuardSatisfied Object [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static boolean deepEquals(@GuardSatisfied Object [] a1, @GuardSatisfied Object [] a2) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public static String toString(long [] a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public static String toString(int [] a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public static String toString(short [] a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public static String toString(char [] a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public static String toString(byte [] a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public static String toString(boolean [] a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public static String toString(float [] a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public static String toString(double [] a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public static String toString(Object [] a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public static String deepToString(Object [] a1) { throw new RuntimeException("skeleton method"); }
+   public static int hashCode(long [] a1) { throw new RuntimeException("skeleton method"); }
+   public static int hashCode(int [] a1) { throw new RuntimeException("skeleton method"); }
+   public static int hashCode(short [] a1) { throw new RuntimeException("skeleton method"); }
+   public static int hashCode(char [] a1) { throw new RuntimeException("skeleton method"); }
+   public static int hashCode(byte [] a1) { throw new RuntimeException("skeleton method"); }
+   public static int hashCode(boolean [] a1) { throw new RuntimeException("skeleton method"); }
+   public static int hashCode(float [] a1) { throw new RuntimeException("skeleton method"); }
+   public static int hashCode(double [] a1) { throw new RuntimeException("skeleton method"); }
+   public static int hashCode(@GuardSatisfied Object [] a1) { throw new RuntimeException("skeleton method"); }
+   public static int deepHashCode(@GuardSatisfied Object [] a1) { throw new RuntimeException("skeleton method"); }
+   public static boolean deepEquals(@GuardSatisfied Object [] a1, @GuardSatisfied Object [] a2) { throw new RuntimeException("skeleton method"); }
+   public static String toString(long [] a1) { throw new RuntimeException("skeleton method"); }
+   public static String toString(int [] a1) { throw new RuntimeException("skeleton method"); }
+   public static String toString(short [] a1) { throw new RuntimeException("skeleton method"); }
+   public static String toString(char [] a1) { throw new RuntimeException("skeleton method"); }
+   public static String toString(byte [] a1) { throw new RuntimeException("skeleton method"); }
+   public static String toString(boolean [] a1) { throw new RuntimeException("skeleton method"); }
+   public static String toString(float [] a1) { throw new RuntimeException("skeleton method"); }
+   public static String toString(double [] a1) { throw new RuntimeException("skeleton method"); }
+   public static String toString(Object [] a1) { throw new RuntimeException("skeleton method"); }
+   public static String deepToString(Object [] a1) { throw new RuntimeException("skeleton method"); }
 }

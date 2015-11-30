@@ -13,11 +13,11 @@ public class TreeMap<K extends Object, V extends Object> extends AbstractMap<K, 
   public TreeMap(Comparator<? super K> a1) { throw new RuntimeException("skeleton method"); }
   public TreeMap(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public TreeMap(SortedMap<K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int size(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean containsKey(@GuardSatisfied TreeMap<K,V> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean containsValue(@GuardSatisfied TreeMap<K,V> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public V get(@GuardSatisfied TreeMap<K,V> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Comparator<? super K> comparator(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public int size(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public boolean containsKey(@GuardSatisfied TreeMap<K,V> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public boolean containsValue(@GuardSatisfied TreeMap<K,V> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public V get(@GuardSatisfied TreeMap<K,V> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public Comparator<? super K> comparator(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
   public K firstKey() { throw new RuntimeException("skeleton method"); }
   public K lastKey() { throw new RuntimeException("skeleton method"); }
   public void putAll(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
@@ -36,20 +36,20 @@ public class TreeMap<K extends Object, V extends Object> extends AbstractMap<K, 
   public K ceilingKey(K a1) { throw new RuntimeException("skeleton method"); }
   public Map. Entry<K, V> higherEntry(K a1) { throw new RuntimeException("skeleton method"); }
   public K higherKey(K a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Set<K> keySet(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public NavigableSet<K> navigableKeySet(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public NavigableSet<K> descendingKeySet(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Collection<V> values(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Set<Map.Entry<K,V>> entrySet(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public NavigableMap<K, V> descendingMap(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public NavigableMap<K, V> subMap(@GuardSatisfied TreeMap<K,V> this,@GuardSatisfied K a1, boolean a2, @GuardSatisfied K a3, boolean a4) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public NavigableMap<K, V> headMap(@GuardSatisfied TreeMap<K,V> this,@GuardSatisfied K a1, boolean a2) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public NavigableMap<K, V> tailMap(@GuardSatisfied TreeMap<K,V> this,@GuardSatisfied K a1, boolean a2) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public SortedMap<K, V> subMap(@GuardSatisfied TreeMap<K,V> this,@GuardSatisfied K a1, @GuardSatisfied K a2) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public SortedMap<K, V> headMap(@GuardSatisfied TreeMap<K,V> this,K a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public SortedMap<K, V> tailMap(@GuardSatisfied TreeMap<K,V> this,K a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Object clone(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public Set<K> keySet(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public NavigableSet<K> navigableKeySet(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public NavigableSet<K> descendingKeySet(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public Collection<V> values(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public Set<Map.Entry<K,V>> entrySet(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public NavigableMap<K, V> descendingMap(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public NavigableMap<K, V> subMap(@GuardSatisfied TreeMap<K,V> this,@GuardSatisfied K a1, boolean a2, @GuardSatisfied K a3, boolean a4) { throw new RuntimeException("skeleton method"); }
+   public NavigableMap<K, V> headMap(@GuardSatisfied TreeMap<K,V> this,@GuardSatisfied K a1, boolean a2) { throw new RuntimeException("skeleton method"); }
+   public NavigableMap<K, V> tailMap(@GuardSatisfied TreeMap<K,V> this,@GuardSatisfied K a1, boolean a2) { throw new RuntimeException("skeleton method"); }
+   public SortedMap<K, V> subMap(@GuardSatisfied TreeMap<K,V> this,@GuardSatisfied K a1, @GuardSatisfied K a2) { throw new RuntimeException("skeleton method"); }
+   public SortedMap<K, V> headMap(@GuardSatisfied TreeMap<K,V> this,K a1) { throw new RuntimeException("skeleton method"); }
+   public SortedMap<K, V> tailMap(@GuardSatisfied TreeMap<K,V> this,K a1) { throw new RuntimeException("skeleton method"); }
+   public Object clone(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
 
 
-  @Pure public boolean isEmpty(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
+   public boolean isEmpty(@GuardSatisfied TreeMap<K,V> this) { throw new RuntimeException("skeleton method"); }
 }

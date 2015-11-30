@@ -42,10 +42,10 @@ public final class StringBuilder
   public StringBuilder insert(int a1, long a2) { throw new RuntimeException("skeleton method"); }
   public StringBuilder insert(int a1, float a2) { throw new RuntimeException("skeleton method"); }
   public StringBuilder insert(int a1, double a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public int indexOf(@GuardSatisfied StringBuilder this,String a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int indexOf(@GuardSatisfied StringBuilder this,String a1, int a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public int lastIndexOf(@GuardSatisfied StringBuilder this,String a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int lastIndexOf(@GuardSatisfied StringBuilder this,String a1, int a2) { throw new RuntimeException("skeleton method"); }
+   public int indexOf(@GuardSatisfied StringBuilder this,String a1) { throw new RuntimeException("skeleton method"); }
+   public int indexOf(@GuardSatisfied StringBuilder this,String a1, int a2) { throw new RuntimeException("skeleton method"); }
+   public int lastIndexOf(@GuardSatisfied StringBuilder this,String a1) { throw new RuntimeException("skeleton method"); }
+   public int lastIndexOf(@GuardSatisfied StringBuilder this,String a1, int a2) { throw new RuntimeException("skeleton method"); }
   public StringBuilder reverse() { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public String toString(@GuardSatisfied StringBuilder this) { throw new RuntimeException("skeleton method"); }
+   public String toString(@GuardSatisfied StringBuilder this) { throw new RuntimeException("skeleton method"); }
 }

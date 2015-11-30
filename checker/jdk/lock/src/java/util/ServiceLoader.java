@@ -10,5 +10,5 @@ public final class ServiceLoader<S> implements Iterable<S> {
   public static <S> ServiceLoader<S> load(Class<S> a1, ClassLoader a2) { throw new RuntimeException("skeleton method"); }
   public static <S> ServiceLoader<S> load(Class<S> a1) { throw new RuntimeException("skeleton method"); }
   public static <S> ServiceLoader<S> loadInstalled(Class<S> a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public String toString(@GuardSatisfied ServiceLoader<S> this) { throw new RuntimeException("skeleton method"); }
+   public String toString(@GuardSatisfied ServiceLoader<S> this) { throw new RuntimeException("skeleton method"); }
 }

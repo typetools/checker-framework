@@ -10,11 +10,11 @@ public class HashSet<E extends Object> extends AbstractSet<E> implements Set<E>,
   public HashSet(int a1, float a2) { throw new RuntimeException("skeleton method"); }
   public HashSet(int a1) { throw new RuntimeException("skeleton method"); }
   public Iterator<E> iterator() { throw new RuntimeException("skeleton method"); }
-  @Pure public int size(@GuardSatisfied HashSet<E> this) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean isEmpty(@GuardSatisfied HashSet<E> this) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean contains(@GuardSatisfied HashSet<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public int size(@GuardSatisfied HashSet<E> this) { throw new RuntimeException("skeleton method"); }
+   public boolean isEmpty(@GuardSatisfied HashSet<E> this) { throw new RuntimeException("skeleton method"); }
+   public boolean contains(@GuardSatisfied HashSet<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public boolean remove(Object a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Object clone(@GuardSatisfied HashSet<E> this) { throw new RuntimeException("skeleton method"); }
+   public Object clone(@GuardSatisfied HashSet<E> this) { throw new RuntimeException("skeleton method"); }
 }

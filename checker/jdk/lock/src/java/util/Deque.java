@@ -29,10 +29,10 @@ public interface Deque<E extends Object> extends Queue<E> {
   public abstract void push(E a1);
   public abstract E pop();
   public abstract boolean remove(Object a1);
-  @Pure public abstract boolean contains(@GuardSatisfied Deque<E> this,Object a1);
-  @Pure public abstract int size(@GuardSatisfied Deque<E> this);
+   public abstract boolean contains(@GuardSatisfied Deque<E> this,Object a1);
+   public abstract int size(@GuardSatisfied Deque<E> this);
   public abstract Iterator<E> iterator();
   public abstract Iterator<E> descendingIterator();
 
-  @Pure public abstract boolean isEmpty(@GuardSatisfied Deque<E> this);
+   public abstract boolean isEmpty(@GuardSatisfied Deque<E> this);
 }

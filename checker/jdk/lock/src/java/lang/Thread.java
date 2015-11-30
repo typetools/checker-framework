@@ -36,7 +36,7 @@ public void run() { throw new RuntimeException("skeleton method"); }
   public final synchronized void stop(Throwable a1) { throw new RuntimeException("skeleton method"); }
   public void interrupt() { throw new RuntimeException("skeleton method"); }
   public static boolean interrupted() { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean isInterrupted(@GuardSatisfied Thread this) { throw new RuntimeException("skeleton method"); }
+   public boolean isInterrupted(@GuardSatisfied Thread this) { throw new RuntimeException("skeleton method"); }
   public void destroy() { throw new RuntimeException("skeleton method"); }
   public final void suspend() { throw new RuntimeException("skeleton method"); }
   public final void resume() { throw new RuntimeException("skeleton method"); }
@@ -52,10 +52,10 @@ public void run() { throw new RuntimeException("skeleton method"); }
   public final void join() throws InterruptedException { throw new RuntimeException("skeleton method"); }
   public static void dumpStack() { throw new RuntimeException("skeleton method"); }
   public final void setDaemon(Thread this, boolean a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public final boolean isDaemon(@GuardSatisfied Thread this) { throw new RuntimeException("skeleton method"); }
+   public final boolean isDaemon(@GuardSatisfied Thread this) { throw new RuntimeException("skeleton method"); }
   public final void checkAccess() { throw new RuntimeException("skeleton method"); }
   @Override
-  @SideEffectFree public String toString(@GuardSatisfied Thread this) { throw new RuntimeException("skeleton method"); }
+   public String toString(@GuardSatisfied Thread this) { throw new RuntimeException("skeleton method"); }
   public ClassLoader getContextClassLoader() { throw new RuntimeException("skeleton method"); }
   public void setContextClassLoader(ClassLoader a1) { throw new RuntimeException("skeleton method"); }
   public StackTraceElement[] getStackTrace() { throw new RuntimeException("skeleton method"); }
@@ -68,6 +68,6 @@ public void run() { throw new RuntimeException("skeleton method"); }
   public void setUncaughtExceptionHandler(Thread. UncaughtExceptionHandler a1) { throw new RuntimeException("skeleton method"); }
 
   public static boolean holdsLock(Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public final native boolean isAlive(@GuardSatisfied Thread this);
+   public final native boolean isAlive(@GuardSatisfied Thread this);
   public native int countStackFrames();
 }

@@ -496,12 +496,12 @@ public class Logger {
      *
      * @param record the LogRecord to be published
      */
-    @SideEffectFree public void log(@GuardSatisfied Logger this,LogRecord record) { throw new RuntimeException(); }
+     public void log(@GuardSatisfied Logger this,LogRecord record) { throw new RuntimeException(); }
 
     // private support method for logging.
     // We fill in the logger name, resource bundle name, and
     // resource bundle and then call "void log(LogRecord)".
-    @SideEffectFree private void doLog(@GuardSatisfied Logger this,LogRecord lr) { throw new RuntimeException(); }
+     private void doLog(@GuardSatisfied Logger this,LogRecord lr) { throw new RuntimeException(); }
 
 
     //================================================================
@@ -518,7 +518,7 @@ public class Logger {
      * @param   level   One of the message level identifiers, e.g., SEVERE
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void log(@GuardSatisfied Logger this,@GuardSatisfied Level level, String msg) { throw new RuntimeException(); }
+     public void log(@GuardSatisfied Logger this,@GuardSatisfied Level level, String msg) { throw new RuntimeException(); }
 
     /**
      * Log a message, which is only to be constructed if the logging level
@@ -533,7 +533,7 @@ public class Logger {
      * @param   msgSupplier   A function, which when called, produces the
      *                        desired log message
      */
-//    @SideEffectFree public void log(@GuardSatisfied Logger this,@GuardSatisfied Level level, @GuardSatisfied Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//     public void log(@GuardSatisfied Logger this,@GuardSatisfied Level level, @GuardSatisfied Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a message, with one object parameter.
@@ -546,7 +546,7 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   param1  parameter to the message
      */
-    @SideEffectFree public void log(@GuardSatisfied Logger this,@GuardSatisfied Level level, String msg, @GuardSatisfied Object param1) { throw new RuntimeException(); }
+     public void log(@GuardSatisfied Logger this,@GuardSatisfied Level level, String msg, @GuardSatisfied Object param1) { throw new RuntimeException(); }
 
     /**
      * Log a message, with an array of object arguments.
@@ -559,7 +559,7 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   params  array of parameters to the message
      */
-    @SideEffectFree public void log(@GuardSatisfied Logger this,@GuardSatisfied Level level, String msg, @GuardSatisfied Object params[]) { throw new RuntimeException(); }
+     public void log(@GuardSatisfied Logger this,@GuardSatisfied Level level, String msg, @GuardSatisfied Object params[]) { throw new RuntimeException(); }
 
     /**
      * Log a message, with associated Throwable information.
@@ -577,7 +577,7 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   thrown  Throwable associated with log message.
      */
-    @SideEffectFree public void log(@GuardSatisfied Logger this,@GuardSatisfied Level level, String msg, @GuardSatisfied Throwable thrown) { throw new RuntimeException(); }
+     public void log(@GuardSatisfied Logger this,@GuardSatisfied Level level, String msg, @GuardSatisfied Throwable thrown) { throw new RuntimeException(); }
 
     /**
      * Log a lazily constructed message, with associated Throwable information.
@@ -598,7 +598,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void log(@GuardSatisfied Logger this,@GuardSatisfied Level level, @GuardSatisfied Throwable thrown, @GuardSatisfied Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//     public void log(@GuardSatisfied Logger this,@GuardSatisfied Level level, @GuardSatisfied Throwable thrown, @GuardSatisfied Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     //================================================================
     // Start of convenience methods WITH className and methodName
@@ -617,7 +617,7 @@ public class Logger {
      * @param   sourceMethod   name of method that issued the logging request
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void logp(@GuardSatisfied Logger this,@GuardSatisfied Level level, String sourceClass, String sourceMethod, String msg) { throw new RuntimeException(); }
+     public void logp(@GuardSatisfied Logger this,@GuardSatisfied Level level, String sourceClass, String sourceMethod, String msg) { throw new RuntimeException(); }
 
     /**
      * Log a lazily constructed message, specifying source class and method,
@@ -635,7 +635,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void logp(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
+//     public void logp(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
 //                     Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     /**
@@ -652,7 +652,7 @@ public class Logger {
      * @param   msg      The string message (or a key in the message catalog)
      * @param   param1    Parameter to the log message.
      */
-    @SideEffectFree public void logp(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
+     public void logp(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
                      String msg, Object param1) { throw new RuntimeException(); }
 
     /**
@@ -669,7 +669,7 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   params  Array of parameters to the message
      */
-    @SideEffectFree public void logp(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
+     public void logp(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
                      String msg, Object params[]) { throw new RuntimeException(); }
 
     /**
@@ -691,7 +691,7 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   thrown  Throwable associated with log message.
      */
-    @SideEffectFree public void logp(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
+     public void logp(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
                      String msg, Throwable thrown) { throw new RuntimeException(); }
 
     /**
@@ -716,7 +716,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void logp(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
+//     public void logp(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
 //                     Throwable thrown, Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
 
@@ -727,7 +727,7 @@ public class Logger {
     // Private support method for logging for "logrb" methods.
     // We fill in the logger name, resource bundle name, and
     // resource bundle and then call "void log(LogRecord)".
-    @SideEffectFree private void doLog(@GuardSatisfied Logger this,@GuardSatisfied LogRecord lr, String rbname) { throw new RuntimeException(); }
+     private void doLog(@GuardSatisfied Logger this,@GuardSatisfied LogRecord lr, String rbname) { throw new RuntimeException(); }
 
     /**
      * Log a message, specifying source class, method, and resource bundle name
@@ -748,7 +748,7 @@ public class Logger {
      *                         can be null
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void logrb(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
+     public void logrb(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
                       String bundleName, String msg) { throw new RuntimeException(); }
 
     /**
@@ -771,7 +771,7 @@ public class Logger {
      * @param   msg      The string message (or a key in the message catalog)
      * @param   param1    Parameter to the log message.
      */
-    @SideEffectFree public void logrb(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
+     public void logrb(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
                       String bundleName, String msg, Object param1) { throw new RuntimeException(); }
 
     /**
@@ -794,7 +794,7 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   params  Array of parameters to the message
      */
-    @SideEffectFree public void logrb(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
+     public void logrb(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
                       String bundleName, String msg, Object params[]) { throw new RuntimeException(); }
 
     /**
@@ -822,7 +822,7 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   thrown  Throwable associated with log message.
      */
-    @SideEffectFree public void logrb(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
+     public void logrb(@GuardSatisfied Logger this,Level level, String sourceClass, String sourceMethod,
                       String bundleName, String msg, Throwable thrown) { throw new RuntimeException(); }
 
 
@@ -840,7 +840,7 @@ public class Logger {
      * @param   sourceClass    name of class that issued the logging request
      * @param   sourceMethod   name of method that is being entered
      */
-    @SideEffectFree public void entering(@GuardSatisfied Logger this,String sourceClass, String sourceMethod) { throw new RuntimeException(); }
+     public void entering(@GuardSatisfied Logger this,String sourceClass, String sourceMethod) { throw new RuntimeException(); }
 
     /**
      * Log a method entry, with one parameter.
@@ -854,7 +854,7 @@ public class Logger {
      * @param   sourceMethod   name of method that is being entered
      * @param   param1         parameter to the method being entered
      */
-    @SideEffectFree public void entering(@GuardSatisfied Logger this,String sourceClass, String sourceMethod, @GuardSatisfied Object param1) { throw new RuntimeException(); }
+     public void entering(@GuardSatisfied Logger this,String sourceClass, String sourceMethod, @GuardSatisfied Object param1) { throw new RuntimeException(); }
 
     /**
      * Log a method entry, with an array of parameters.
@@ -869,7 +869,7 @@ public class Logger {
      * @param   sourceMethod   name of method that is being entered
      * @param   params         array of parameters to the method being entered
      */
-    @SideEffectFree public void entering(@GuardSatisfied Logger this,String sourceClass, String sourceMethod, @GuardSatisfied Object params[]) { throw new RuntimeException(); }
+     public void entering(@GuardSatisfied Logger this,String sourceClass, String sourceMethod, @GuardSatisfied Object params[]) { throw new RuntimeException(); }
 
     /**
      * Log a method return.
@@ -881,7 +881,7 @@ public class Logger {
      * @param   sourceClass    name of class that issued the logging request
      * @param   sourceMethod   name of the method
      */
-    @SideEffectFree public void exiting(@GuardSatisfied Logger this,String sourceClass, String sourceMethod) { throw new RuntimeException(); }
+     public void exiting(@GuardSatisfied Logger this,String sourceClass, String sourceMethod) { throw new RuntimeException(); }
 
 
     /**
@@ -896,7 +896,7 @@ public class Logger {
      * @param   sourceMethod   name of the method
      * @param   result  Object that is being returned
      */
-    @SideEffectFree public void exiting(@GuardSatisfied Logger this,String sourceClass, String sourceMethod, @GuardSatisfied Object result) { throw new RuntimeException(); }
+     public void exiting(@GuardSatisfied Logger this,String sourceClass, String sourceMethod, @GuardSatisfied Object result) { throw new RuntimeException(); }
 
     /**
      * Log throwing an exception.
@@ -919,7 +919,7 @@ public class Logger {
      * @param   sourceMethod  name of the method.
      * @param   thrown  The Throwable that is being thrown.
      */
-    @SideEffectFree public void throwing(@GuardSatisfied Logger this,String sourceClass, String sourceMethod, @GuardSatisfied Throwable thrown) { throw new RuntimeException(); }
+     public void throwing(@GuardSatisfied Logger this,String sourceClass, String sourceMethod, @GuardSatisfied Throwable thrown) { throw new RuntimeException(); }
 
     //=======================================================================
     // Start of simple convenience methods using level names as method names
@@ -934,7 +934,7 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void severe(@GuardSatisfied Logger this,String msg) { throw new RuntimeException(); }
+     public void severe(@GuardSatisfied Logger this,String msg) { throw new RuntimeException(); }
 
     /**
      * Log a WARNING message.
@@ -945,7 +945,7 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void warning(@GuardSatisfied Logger this,String msg) { throw new RuntimeException(); }
+     public void warning(@GuardSatisfied Logger this,String msg) { throw new RuntimeException(); }
 
     /**
      * Log an INFO message.
@@ -956,7 +956,7 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void info(@GuardSatisfied Logger this,String msg) { throw new RuntimeException(); }
+     public void info(@GuardSatisfied Logger this,String msg) { throw new RuntimeException(); }
 
     /**
      * Log a CONFIG message.
@@ -967,7 +967,7 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void config(@GuardSatisfied Logger this,String msg) { throw new RuntimeException(); }
+     public void config(@GuardSatisfied Logger this,String msg) { throw new RuntimeException(); }
 
     /**
      * Log a FINE message.
@@ -978,7 +978,7 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void fine(@GuardSatisfied Logger this,String msg) { throw new RuntimeException(); }
+     public void fine(@GuardSatisfied Logger this,String msg) { throw new RuntimeException(); }
 
     /**
      * Log a FINER message.
@@ -989,7 +989,7 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void finer(@GuardSatisfied Logger this,String msg) { throw new RuntimeException(); }
+     public void finer(@GuardSatisfied Logger this,String msg) { throw new RuntimeException(); }
 
     /**
      * Log a FINEST message.
@@ -1000,7 +1000,7 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void finest(@GuardSatisfied Logger this,String msg) { throw new RuntimeException(); }
+     public void finest(@GuardSatisfied Logger this,String msg) { throw new RuntimeException(); }
 
     //=======================================================================
     // Start of simple convenience methods using level names as method names
@@ -1020,7 +1020,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void severe(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//     public void severe(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a WARNING message, which is only to be constructed if the logging
@@ -1035,7 +1035,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void warning(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//     public void warning(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a INFO message, which is only to be constructed if the logging
@@ -1050,7 +1050,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void info(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//     public void info(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a CONFIG message, which is only to be constructed if the logging
@@ -1065,7 +1065,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void config(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//     public void config(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a FINE message, which is only to be constructed if the logging
@@ -1080,7 +1080,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void fine(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//     public void fine(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a FINER message, which is only to be constructed if the logging
@@ -1095,7 +1095,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void finer(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//     public void finer(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a FINEST message, which is only to be constructed if the logging
@@ -1110,7 +1110,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void finest(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//     public void finest(@GuardSatisfied Logger this,Supplier<String> msgSupplier) { throw new RuntimeException(); }
 
     //================================================================
     // End of convenience methods

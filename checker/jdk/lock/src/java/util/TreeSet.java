@@ -14,28 +14,28 @@ public class TreeSet<E extends Object> extends AbstractSet<E> implements Navigab
   public Iterator<E> iterator() { throw new RuntimeException("skeleton method"); }
   public Iterator<E> descendingIterator() { throw new RuntimeException("skeleton method"); }
   public NavigableSet<E> descendingSet() { throw new RuntimeException("skeleton method"); }
-  @Pure public int size(@GuardSatisfied TreeSet<E> this) { throw new RuntimeException("skeleton method"); }
+   public int size(@GuardSatisfied TreeSet<E> this) { throw new RuntimeException("skeleton method"); }
 
-  @Pure public boolean isEmpty(@GuardSatisfied TreeSet<E> this) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean contains(@GuardSatisfied TreeSet<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public boolean isEmpty(@GuardSatisfied TreeSet<E> this) { throw new RuntimeException("skeleton method"); }
+   public boolean contains(@GuardSatisfied TreeSet<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public boolean remove(Object a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
   public boolean addAll(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public NavigableSet<E> subSet(@GuardSatisfied TreeSet<E> this,@GuardSatisfied E a1, boolean a2, @GuardSatisfied E a3, boolean a4) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public NavigableSet<E> headSet(@GuardSatisfied TreeSet<E> this,@GuardSatisfied E a1, boolean a2) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public NavigableSet<E> tailSet(@GuardSatisfied TreeSet<E> this,@GuardSatisfied E a1, boolean a2) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public SortedSet<E> subSet(@GuardSatisfied TreeSet<E> this,@GuardSatisfied E a1, @GuardSatisfied E a2) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public SortedSet<E> headSet(@GuardSatisfied TreeSet<E> this,E a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public SortedSet<E> tailSet(@GuardSatisfied TreeSet<E> this,E a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Comparator<? super E> comparator(@GuardSatisfied TreeSet<E> this) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public E first(@GuardSatisfied TreeSet<E> this) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public E last(@GuardSatisfied TreeSet<E> this) { throw new RuntimeException("skeleton method"); }
+   public NavigableSet<E> subSet(@GuardSatisfied TreeSet<E> this,@GuardSatisfied E a1, boolean a2, @GuardSatisfied E a3, boolean a4) { throw new RuntimeException("skeleton method"); }
+   public NavigableSet<E> headSet(@GuardSatisfied TreeSet<E> this,@GuardSatisfied E a1, boolean a2) { throw new RuntimeException("skeleton method"); }
+   public NavigableSet<E> tailSet(@GuardSatisfied TreeSet<E> this,@GuardSatisfied E a1, boolean a2) { throw new RuntimeException("skeleton method"); }
+   public SortedSet<E> subSet(@GuardSatisfied TreeSet<E> this,@GuardSatisfied E a1, @GuardSatisfied E a2) { throw new RuntimeException("skeleton method"); }
+   public SortedSet<E> headSet(@GuardSatisfied TreeSet<E> this,E a1) { throw new RuntimeException("skeleton method"); }
+   public SortedSet<E> tailSet(@GuardSatisfied TreeSet<E> this,E a1) { throw new RuntimeException("skeleton method"); }
+   public Comparator<? super E> comparator(@GuardSatisfied TreeSet<E> this) { throw new RuntimeException("skeleton method"); }
+   public E first(@GuardSatisfied TreeSet<E> this) { throw new RuntimeException("skeleton method"); }
+   public E last(@GuardSatisfied TreeSet<E> this) { throw new RuntimeException("skeleton method"); }
   public E lower(E a1) { throw new RuntimeException("skeleton method"); }
   public E floor(E a1) { throw new RuntimeException("skeleton method"); }
   public E ceiling(E a1) { throw new RuntimeException("skeleton method"); }
   public E higher(E a1) { throw new RuntimeException("skeleton method"); }
   public E pollFirst() { throw new RuntimeException("skeleton method"); }
   public E pollLast() { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Object clone(@GuardSatisfied TreeSet<E> this) { throw new RuntimeException("skeleton method"); }
+   public Object clone(@GuardSatisfied TreeSet<E> this) { throw new RuntimeException("skeleton method"); }
 }

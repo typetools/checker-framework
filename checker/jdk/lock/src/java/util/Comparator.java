@@ -10,7 +10,7 @@ import java.util.function.Function;
 // arguments, while maintaining the requirements for an equivalence relation."
 public interface Comparator<T extends Object> {
     public abstract int compare(T a1, T a2);
-    @Pure public abstract boolean equals(@GuardSatisfied Comparator<T> this, @GuardSatisfied Object a1);
+     public abstract boolean equals(@GuardSatisfied Comparator<T> this, @GuardSatisfied Object a1);
 
     public static <T extends Comparable<? super T>> Comparator<T> naturalOrder(){
         throw new RuntimeException("skeleton method");

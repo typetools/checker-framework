@@ -5,9 +5,9 @@ import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.dataflow.qual.Pure;
 
 public interface ClassDoc extends ProgramElementDoc, Type {
-    @Pure boolean isAbstract(@GuardSatisfied ClassDoc this);
-    @Pure boolean isSerializable(@GuardSatisfied ClassDoc this);
-    @Pure boolean isExternalizable(@GuardSatisfied ClassDoc this);
+     boolean isAbstract(@GuardSatisfied ClassDoc this);
+     boolean isSerializable(@GuardSatisfied ClassDoc this);
+     boolean isExternalizable(@GuardSatisfied ClassDoc this);
     MethodDoc[] serializationMethods();
     FieldDoc[] serializableFields();
     boolean definesSerializableFields();

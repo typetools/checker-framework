@@ -15,14 +15,14 @@ public interface NavigableSet<E extends Object> extends SortedSet<E> {
   public abstract Iterator<E> iterator();
   public abstract NavigableSet<E> descendingSet();
   public abstract Iterator<E> descendingIterator();
-  @SideEffectFree public abstract NavigableSet<E> subSet(@GuardSatisfied NavigableSet<E> this,@GuardSatisfied E a1, boolean a2, @GuardSatisfied E a3, boolean a4);
-  @SideEffectFree public abstract NavigableSet<E> headSet(@GuardSatisfied NavigableSet<E> this,@GuardSatisfied E a1, boolean a2);
-  @SideEffectFree public abstract NavigableSet<E> tailSet(@GuardSatisfied NavigableSet<E> this,@GuardSatisfied E a1, boolean a2);
-  @SideEffectFree public abstract SortedSet<E> subSet(@GuardSatisfied NavigableSet<E> this,@GuardSatisfied E a1, @GuardSatisfied E a2);
-  @SideEffectFree public abstract SortedSet<E> headSet(@GuardSatisfied NavigableSet<E> this,E a1);
-  @SideEffectFree public abstract SortedSet<E> tailSet(@GuardSatisfied NavigableSet<E> this,E a1);
+   public abstract NavigableSet<E> subSet(@GuardSatisfied NavigableSet<E> this,@GuardSatisfied E a1, boolean a2, @GuardSatisfied E a3, boolean a4);
+   public abstract NavigableSet<E> headSet(@GuardSatisfied NavigableSet<E> this,@GuardSatisfied E a1, boolean a2);
+   public abstract NavigableSet<E> tailSet(@GuardSatisfied NavigableSet<E> this,@GuardSatisfied E a1, boolean a2);
+   public abstract SortedSet<E> subSet(@GuardSatisfied NavigableSet<E> this,@GuardSatisfied E a1, @GuardSatisfied E a2);
+   public abstract SortedSet<E> headSet(@GuardSatisfied NavigableSet<E> this,E a1);
+   public abstract SortedSet<E> tailSet(@GuardSatisfied NavigableSet<E> this,E a1);
 
 
-  @Pure public abstract boolean isEmpty(@GuardSatisfied NavigableSet<E> this);
+   public abstract boolean isEmpty(@GuardSatisfied NavigableSet<E> this);
 
 }

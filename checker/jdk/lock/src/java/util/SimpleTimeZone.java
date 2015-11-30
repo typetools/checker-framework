@@ -27,10 +27,10 @@ public class SimpleTimeZone extends TimeZone {
   public int getDSTSavings() { throw new RuntimeException("skeleton method"); }
   public boolean useDaylightTime() { throw new RuntimeException("skeleton method"); }
   public boolean inDaylightTime(Date a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public synchronized int hashCode(@GuardSatisfied SimpleTimeZone this) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean equals(@GuardSatisfied SimpleTimeZone this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public synchronized int hashCode(@GuardSatisfied SimpleTimeZone this) { throw new RuntimeException("skeleton method"); }
+   public boolean equals(@GuardSatisfied SimpleTimeZone this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean hasSameRules(TimeZone a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public String toString(@GuardSatisfied SimpleTimeZone this) { throw new RuntimeException("skeleton method"); }
+   public String toString(@GuardSatisfied SimpleTimeZone this) { throw new RuntimeException("skeleton method"); }
 
-  @SideEffectFree public Object clone(@GuardSatisfied SimpleTimeZone this) { throw new RuntimeException("skeleton method"); }
+   public Object clone(@GuardSatisfied SimpleTimeZone this) { throw new RuntimeException("skeleton method"); }
 }

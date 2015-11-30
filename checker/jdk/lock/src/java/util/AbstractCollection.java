@@ -13,11 +13,11 @@ public abstract class AbstractCollection<E extends Object> implements Collection
   @Override
   public abstract Iterator<E> iterator();
   @Override
-  @Pure public abstract int size(@GuardSatisfied AbstractCollection<E> this);
+   public abstract int size(@GuardSatisfied AbstractCollection<E> this);
   @Override
-  @Pure public boolean isEmpty(@GuardSatisfied AbstractCollection<E> this) { throw new RuntimeException("skeleton method"); }
+   public boolean isEmpty(@GuardSatisfied AbstractCollection<E> this) { throw new RuntimeException("skeleton method"); }
   @Override
-  @Pure public boolean contains(@GuardSatisfied AbstractCollection<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public boolean contains(@GuardSatisfied AbstractCollection<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
   @Override
   public Object [] toArray() { throw new RuntimeException("skeleton method"); }
   @Override
@@ -27,7 +27,7 @@ public abstract class AbstractCollection<E extends Object> implements Collection
   @Override
   public boolean remove(Object a1) { throw new RuntimeException("skeleton method"); }
   @Override
-  @Pure public boolean containsAll(@GuardSatisfied AbstractCollection<E> this,@GuardSatisfied Collection<?> a1) { throw new RuntimeException("skeleton method"); }
+   public boolean containsAll(@GuardSatisfied AbstractCollection<E> this,@GuardSatisfied Collection<?> a1) { throw new RuntimeException("skeleton method"); }
   @Override
   public boolean addAll(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
   @Override
@@ -37,5 +37,5 @@ public abstract class AbstractCollection<E extends Object> implements Collection
   @Override
   public void clear() { throw new RuntimeException("skeleton method"); }
   @Override
-  @SideEffectFree public String toString(@GuardSatisfied AbstractCollection<E> this) { throw new RuntimeException("skeleton method"); }
+   public String toString(@GuardSatisfied AbstractCollection<E> this) { throw new RuntimeException("skeleton method"); }
 }

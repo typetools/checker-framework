@@ -30,5 +30,5 @@ public class StreamTokenizer{
   public int nextToken() throws IOException { throw new RuntimeException("skeleton method"); }
   public void pushBack() { throw new RuntimeException("skeleton method"); }
   public int lineno() { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public String toString(@GuardSatisfied StreamTokenizer this) { throw new RuntimeException("skeleton method"); }
+   public String toString(@GuardSatisfied StreamTokenizer this) { throw new RuntimeException("skeleton method"); }
 }

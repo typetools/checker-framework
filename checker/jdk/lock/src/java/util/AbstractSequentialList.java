@@ -6,7 +6,7 @@ import org.checkerframework.checker.lock.qual.*;
 // Subclasses of this interface/class may opt to prohibit null elements
 public abstract class AbstractSequentialList<E extends Object> extends AbstractList<E> {
   protected AbstractSequentialList() {}
-  @Pure public E get(@GuardSatisfied AbstractSequentialList<E> this,int a1) { throw new RuntimeException("skeleton method"); }
+   public E get(@GuardSatisfied AbstractSequentialList<E> this,int a1) { throw new RuntimeException("skeleton method"); }
   public E set(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public void add(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public E remove(int a1) { throw new RuntimeException("skeleton method"); }

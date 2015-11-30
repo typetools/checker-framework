@@ -16,9 +16,9 @@ public class GregorianCalendar extends Calendar {
   public GregorianCalendar(int a1, int a2, int a3, int a4, int a5, int a6) { throw new RuntimeException("skeleton method"); }
   public void setGregorianChange(Date a1) { throw new RuntimeException("skeleton method"); }
   public final Date getGregorianChange() { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean isLeapYear(@GuardSatisfied GregorianCalendar this,int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean equals(@GuardSatisfied GregorianCalendar this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int hashCode(@GuardSatisfied GregorianCalendar this) { throw new RuntimeException("skeleton method"); }
+   public boolean isLeapYear(@GuardSatisfied GregorianCalendar this,int a1) { throw new RuntimeException("skeleton method"); }
+   public boolean equals(@GuardSatisfied GregorianCalendar this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public int hashCode(@GuardSatisfied GregorianCalendar this) { throw new RuntimeException("skeleton method"); }
   public void add(int a1, int a2) { throw new RuntimeException("skeleton method"); }
   public void roll(int a1, boolean a2) { throw new RuntimeException("skeleton method"); }
   public void roll(int a1, int a2) { throw new RuntimeException("skeleton method"); }
@@ -30,5 +30,5 @@ public class GregorianCalendar extends Calendar {
   public int getActualMaximum(int a1) { throw new RuntimeException("skeleton method"); }
   public TimeZone getTimeZone() { throw new RuntimeException("skeleton method"); }
   public void setTimeZone(TimeZone a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Object clone(@GuardSatisfied GregorianCalendar this) { throw new RuntimeException("skeleton method"); }
+   public Object clone(@GuardSatisfied GregorianCalendar this) { throw new RuntimeException("skeleton method"); }
 }

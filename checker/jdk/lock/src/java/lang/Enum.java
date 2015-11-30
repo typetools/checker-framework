@@ -130,7 +130,7 @@ public abstract class Enum<E extends Enum<E>>
      *
      * @return the name of this enum constant
      */
-    @SideEffectFree public String toString(@GuardSatisfied Enum<E> this) {
+     public String toString(@GuardSatisfied Enum<E> this) {
         return name;
     }
 
@@ -142,7 +142,7 @@ public abstract class Enum<E extends Enum<E>>
      * @return  true if the specified object is equal to this
      *          enum constant.
      */
-    @Pure public final boolean equals(@GuardSatisfied Enum<E> this,@GuardSatisfied Object other) {
+     public final boolean equals(@GuardSatisfied Enum<E> this,@GuardSatisfied Object other) {
         return this==other;
     }
 
@@ -151,7 +151,7 @@ public abstract class Enum<E extends Enum<E>>
      *
      * @return a hash code for this enum constant.
      */
-    @Pure public final int hashCode(@GuardSatisfied Enum<E> this) {
+     public final int hashCode(@GuardSatisfied Enum<E> this) {
         return super.hashCode();
     }
 
@@ -162,7 +162,7 @@ public abstract class Enum<E extends Enum<E>>
      *
      * @return (never returns)
      */
-    @SideEffectFree protected final Object clone(@GuardSatisfied Enum<E> this) throws CloneNotSupportedException {
+     protected final Object clone(@GuardSatisfied Enum<E> this) throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }
 

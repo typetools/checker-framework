@@ -1287,7 +1287,7 @@ public final class Locale implements Cloneable, Serializable {
      * @see #toLanguageTag
      */
     @Override
-    @SideEffectFree
+
     public final String toString() {
         boolean l = (baseLocale.getLanguage().length() != 0);
         boolean s = (baseLocale.getScript().length() != 0);
@@ -1958,7 +1958,7 @@ public final class Locale implements Cloneable, Serializable {
      * Overrides Cloneable.
      */
     @Override
-    @SideEffectFree
+
     public Object clone()
     {
         /*try {
@@ -1976,7 +1976,7 @@ public final class Locale implements Cloneable, Serializable {
      * for speed.
      */
     @Override
-    @Pure
+
     public int hashCode() {
         int hc = hashCodeValue;
         if (hc == 0) {
@@ -1999,7 +1999,7 @@ public final class Locale implements Cloneable, Serializable {
      * @return true if this Locale is equal to the specified object.
      */
     @Override
-    @Pure
+
     public boolean equals(Object obj) {
         if (this == obj)                      // quick check
             return true;
@@ -3105,7 +3105,7 @@ public final class Locale implements Cloneable, Serializable {
          *     otherwise.
          */
         @Override
-        @Pure
+
         public boolean equals(Object obj) {
             if (this == obj) {
                 return true;

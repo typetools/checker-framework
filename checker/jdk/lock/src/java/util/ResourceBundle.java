@@ -36,7 +36,7 @@ public abstract class ResourceBundle{
   public static ResourceBundle getBundle(String a1, Locale a2, ClassLoader a3, ResourceBundle.Control a4) { throw new RuntimeException("skeleton method"); }
   public final static void clearCache() { throw new RuntimeException("skeleton method"); }
   public final static void clearCache(ClassLoader a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public abstract Enumeration<String> getKeys(@GuardSatisfied ResourceBundle this);
-  @Pure public boolean containsKey(@GuardSatisfied ResourceBundle this,String a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Set<String> keySet(@GuardSatisfied ResourceBundle this) { throw new RuntimeException("skeleton method"); }
+   public abstract Enumeration<String> getKeys(@GuardSatisfied ResourceBundle this);
+   public boolean containsKey(@GuardSatisfied ResourceBundle this,String a1) { throw new RuntimeException("skeleton method"); }
+   public Set<String> keySet(@GuardSatisfied ResourceBundle this) { throw new RuntimeException("skeleton method"); }
 }

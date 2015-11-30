@@ -72,7 +72,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @return  the length of the sequence of characters currently
      *          represented by this object
      */
-    @Pure public int length(@GuardSatisfied AbstractStringBuilder this) {
+     public int length(@GuardSatisfied AbstractStringBuilder this) {
         return count;
     }
 
@@ -1216,7 +1216,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @throws  NullPointerException if <code>str</code> is
      *          <code>null</code>.
      */
-    @Pure public int indexOf(@GuardSatisfied AbstractStringBuilder this,String str) {
+     public int indexOf(@GuardSatisfied AbstractStringBuilder this,String str) {
         return indexOf(str, 0);
     }
 
@@ -1237,7 +1237,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @throws  NullPointerException if <code>str</code> is
      *            <code>null</code>.
      */
-    @Pure public int indexOf(@GuardSatisfied AbstractStringBuilder this,String str, int fromIndex) {
+     public int indexOf(@GuardSatisfied AbstractStringBuilder this,String str, int fromIndex) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -1259,7 +1259,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @throws  NullPointerException  if <code>str</code> is
      *          <code>null</code>.
      */
-    @Pure public int lastIndexOf(@GuardSatisfied AbstractStringBuilder this,String str) {
+     public int lastIndexOf(@GuardSatisfied AbstractStringBuilder this,String str) {
         return lastIndexOf(str, count);
     }
 
@@ -1280,7 +1280,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @throws  NullPointerException if <code>str</code> is
      *          <code>null</code>.
      */
-    @Pure public int lastIndexOf(@GuardSatisfied AbstractStringBuilder this,String str, int fromIndex) {
+     public int lastIndexOf(@GuardSatisfied AbstractStringBuilder this,String str, int fromIndex) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -1345,7 +1345,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *
      * @return  a string representation of this sequence of characters.
      */
-    @SideEffectFree public abstract String toString(@GuardSatisfied AbstractStringBuilder this);
+     public abstract String toString(@GuardSatisfied AbstractStringBuilder this);
 
     /**
      * Needed by <tt>String</tt> for the contentEquals method.

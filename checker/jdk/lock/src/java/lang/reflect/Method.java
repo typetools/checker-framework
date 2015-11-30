@@ -86,17 +86,17 @@ public final
     }
 
 
-    @Pure public boolean equals(@GuardSatisfied Method this,@GuardSatisfied Object obj) {
+     public boolean equals(@GuardSatisfied Method this,@GuardSatisfied Object obj) {
         throw new RuntimeException("skeleton method");
     }
 
 
-    @Pure public int hashCode(@GuardSatisfied Method this) {
+     public int hashCode(@GuardSatisfied Method this) {
         throw new RuntimeException("skeleton method");
     }
 
 
-    @SideEffectFree public String toString(@GuardSatisfied Method this) {
+     public String toString(@GuardSatisfied Method this) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -119,17 +119,17 @@ public final
     }
 
 
-    @Pure public boolean isBridge(@GuardSatisfied Method this) {
+     public boolean isBridge(@GuardSatisfied Method this) {
         throw new RuntimeException("skeleton method");
     }
 
 
-    @Pure public boolean isVarArgs(@GuardSatisfied Method this) {
+     public boolean isVarArgs(@GuardSatisfied Method this) {
         throw new RuntimeException("skeleton method");
     }
 
 
-    @Pure public boolean isSynthetic(@GuardSatisfied Method this) {
+     public boolean isSynthetic(@GuardSatisfied Method this) {
         throw new RuntimeException("skeleton method");
     }
 

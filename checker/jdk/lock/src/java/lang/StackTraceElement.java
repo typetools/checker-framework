@@ -12,8 +12,8 @@ public final class StackTraceElement implements java.io.Serializable {
   public int getLineNumber() { throw new RuntimeException("skeleton method"); }
   public String getClassName() { throw new RuntimeException("skeleton method"); }
   public String getMethodName() { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean isNativeMethod(@GuardSatisfied StackTraceElement this) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public String toString(@GuardSatisfied StackTraceElement this) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean equals(@GuardSatisfied StackTraceElement this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int hashCode(@GuardSatisfied StackTraceElement this) { throw new RuntimeException("skeleton method"); }
+   public boolean isNativeMethod(@GuardSatisfied StackTraceElement this) { throw new RuntimeException("skeleton method"); }
+   public String toString(@GuardSatisfied StackTraceElement this) { throw new RuntimeException("skeleton method"); }
+   public boolean equals(@GuardSatisfied StackTraceElement this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public int hashCode(@GuardSatisfied StackTraceElement this) { throw new RuntimeException("skeleton method"); }
 }

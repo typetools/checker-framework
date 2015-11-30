@@ -19,15 +19,15 @@ public class PriorityQueue<E extends Object> extends AbstractQueue<E> implements
   public boolean offer(E a1) { throw new RuntimeException("skeleton method"); }
   public E peek() { throw new RuntimeException("skeleton method"); }
   public boolean remove(Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean contains(@GuardSatisfied PriorityQueue<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public boolean contains(@GuardSatisfied PriorityQueue<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
   public Object [] toArray() { throw new RuntimeException("skeleton method"); }
   public <T> T [] toArray(T [] a1) { throw new RuntimeException("skeleton method"); }
   public Iterator<E> iterator() { throw new RuntimeException("skeleton method"); }
-  @Pure public int size(@GuardSatisfied PriorityQueue<E> this) { throw new RuntimeException("skeleton method"); }
+   public int size(@GuardSatisfied PriorityQueue<E> this) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
   public E poll() { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Comparator<? super E> comparator(@GuardSatisfied PriorityQueue<E> this) { throw new RuntimeException("skeleton method"); }
+   public Comparator<? super E> comparator(@GuardSatisfied PriorityQueue<E> this) { throw new RuntimeException("skeleton method"); }
 
 
-  @Pure public boolean isEmpty(@GuardSatisfied PriorityQueue<E> this) { throw new RuntimeException("skeleton method"); }
+   public boolean isEmpty(@GuardSatisfied PriorityQueue<E> this) { throw new RuntimeException("skeleton method"); }
 }

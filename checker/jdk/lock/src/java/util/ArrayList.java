@@ -13,14 +13,14 @@ public class ArrayList<E extends Object> extends AbstractList<E> implements List
   public ArrayList(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
   public void trimToSize() { throw new RuntimeException("skeleton method"); }
   public void ensureCapacity(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int size(@GuardSatisfied ArrayList<E> this) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean isEmpty(@GuardSatisfied ArrayList<E> this) { throw new RuntimeException("skeleton method"); }
-  @Pure public boolean contains(@GuardSatisfied ArrayList<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int indexOf(@GuardSatisfied ArrayList<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public int lastIndexOf(@GuardSatisfied ArrayList<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public int size(@GuardSatisfied ArrayList<E> this) { throw new RuntimeException("skeleton method"); }
+   public boolean isEmpty(@GuardSatisfied ArrayList<E> this) { throw new RuntimeException("skeleton method"); }
+   public boolean contains(@GuardSatisfied ArrayList<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public int indexOf(@GuardSatisfied ArrayList<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
+   public int lastIndexOf(@GuardSatisfied ArrayList<E> this,@GuardSatisfied Object a1) { throw new RuntimeException("skeleton method"); }
   public Object [] toArray() { throw new RuntimeException("skeleton method"); }
   public <T> T [] toArray(T [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public E get(@GuardSatisfied ArrayList<E> this,int a1) { throw new RuntimeException("skeleton method"); }
+   public E get(@GuardSatisfied ArrayList<E> this,int a1) { throw new RuntimeException("skeleton method"); }
   public E set(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public void add(int a1, E a2) { throw new RuntimeException("skeleton method"); }
@@ -29,5 +29,5 @@ public class ArrayList<E extends Object> extends AbstractList<E> implements List
   public void clear() { throw new RuntimeException("skeleton method"); }
   public boolean addAll(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
   public boolean addAll(int a1, Collection<? extends E> a2) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public Object clone(@GuardSatisfied ArrayList<E> this) { throw new RuntimeException("skeleton method"); }
+   public Object clone(@GuardSatisfied ArrayList<E> this) { throw new RuntimeException("skeleton method"); }
 }
