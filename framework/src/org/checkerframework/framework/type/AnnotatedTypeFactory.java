@@ -2662,12 +2662,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * For example:
      * <pre>
-     * {@code wildcard := @NonNull ? extends @NonNull Object}
-     * {@code annotatedTypeMirror := @Nullable String}
+     * wildcard := @NonNull ? extends @NonNull Object
+     * annotatedTypeMirror := @Nullable String
      *
-     * {@code widenToUpperBound(annotatedTypeMirror, wildcard) returns @Nullable String}
+     * widenToUpperBound(annotatedTypeMirror, wildcard) returns @Nullable String
      * </pre>
-     * The widened type should only be used for typeing checks that require it. Using the widened type
+     * The widened type should only be used for typing checks that require it. Using the widened type
      * elsewhere would cause confusing error messages with types not in the source code.
      *
      * @param annotatedTypeMirror AnnotatedTypeMirror to widen
@@ -2694,8 +2694,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
          *  This method widens the underlying Java type of the upper bound of the type parameter rather
          *  than narrowing the bound of the wildcard in order to avoid issuing an error with an upper
          *  bound that is not in source code.
-         *
-
          */
         final TypeMirror toModifyTypeMirror = annotatedTypeMirror.getUnderlyingType();
         final TypeMirror typeArgUpperBoundTypeMirror = wildcard.getExtendsBound().getUnderlyingType();
