@@ -7,7 +7,6 @@
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack ClientBuilder.java Module.java
  *
  * @compile -XDrawDiagnostics ClientBuilder.java
- * @compile/fail/ref=Module-err.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext -AprintErrorStack Module.java
  */
 class Module {
   void buildClient() {
