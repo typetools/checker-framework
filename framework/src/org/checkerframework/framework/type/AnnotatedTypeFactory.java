@@ -2654,9 +2654,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the most specific base type of {@code annotatedTypeMirror} whose erasure type
-     * is the upper bound of {@code wildcard}, if {@code wildcard}'s upper
-     * bound is a super type of {@code annotatedTypeMirror}.
+     * If {@code wildcard}'s upper bound is a super type of {@code annotatedTypeMirror},
+     * this method returns an AnnotatedTypeMirror with the same qualfiers as {@code annotatedTypeMirror}, but
+     * the underlying Java type is the the most specific base type of {@code annotatedTypeMirror} whose erasure type
+     * is equivalent to the upper bound of {@code wildcard}.
      *
      * Otherwise, returns {@code annotatedTypeMirror} unmodified.
      *
@@ -2665,35 +2666,40 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * wildcard := @NonNull ? extends @NonNull Object
      * annotatedTypeMirror := @Nullable String
      *
-     * widenToUpperBound(annotatedTypeMirror, wildcard) returns @Nullable String
+     * widenToUpperBound(annotatedTypeMirror, wildcard) returns @Nullable Object
      * </pre>
+     * This method is needed because,
+     * the Java compiler allows wildcards to have upper bounds above the type variable upper bounds
+     * for which they are type arguments.  For example, given the following parametric type:
+     * <pre>
+     * {@code class MyClass<T extends Number>}
+     * </pre>
+     * the following is legal:
+     * <pre>
+     * {@code MyClass<? extends Object>}
+     * </pre>
+     * This is sound because in Java the wildcard is capture converted to:
+     * {@code CAP#1 extends Number from capture of ? extends Object}.
+     *
+     * Because the Checker Framework does not implement capture conversion, wildcard upper bounds may
+     * cause spurious errors in subtyping checks.  This method prevents those errors by
+     * widening the upper bound of the type parameter.
+     *
+     * This method widens the underlying Java type of the upper bound of the type parameter rather
+     * than narrowing the bound of the wildcard in order to avoid issuing an error with an upper
+     * bound that is not in source code.
+     *
      * The widened type should only be used for typing checks that require it. Using the widened type
      * elsewhere would cause confusing error messages with types not in the source code.
      *
      * @param annotatedTypeMirror AnnotatedTypeMirror to widen
-     * @param wildcard AnnotatedWildcardType whose upper bound is used to widen
+     * @param wildcard            AnnotatedWildcardType whose upper bound is used to widen
      * @return {@code annotatedTypeMirror} widen to the upper bound of {@code wildcard}
      */
     public AnnotatedTypeMirror widenToUpperBound(final AnnotatedTypeMirror annotatedTypeMirror,
                                                  final AnnotatedWildcardType wildcard) {
         /**
-         * This method is needed because,
-         * the Java compiler allows wildcards to have upper bounds above the type variable upper bounds
-         * for which they are type arguments.  For example, given the following parametric type:
-         * {@code class MyClass<T extends Number>}
-         * the following is legal:
-         * {@code MyClass<? extends Object>}
-         *
-         * This is sound because in Java the wildcard is capture converted to:
-         *  {@code CAP#1 extends Number from capture of ? extends Object}
-         *
-         *  Because the Checker Framework does not implement capture conversion, wildcard upper bounds may
-         *  cause spurious errors in subtyping checks.  This method prevents those errors by
-         *  widening the upper bound of the type parameter.
-         *
-         *  This method widens the underlying Java type of the upper bound of the type parameter rather
-         *  than narrowing the bound of the wildcard in order to avoid issuing an error with an upper
-         *  bound that is not in source code.
+
          */
         final TypeMirror toModifyTypeMirror = annotatedTypeMirror.getUnderlyingType();
         final TypeMirror typeArgUpperBoundTypeMirror = wildcard.getExtendsBound().getUnderlyingType();
