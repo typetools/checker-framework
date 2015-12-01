@@ -448,7 +448,7 @@ def main(argv):
     print("to the new versioned zips.")
     print("e.g., checker-framework/current/checker-framework-%s.zip\n" % jsr308_version)
 
-    update_htaccess(CHECKER_FRAMEWORK_RELEASE, jsr308_version, afu_version, RELEASE_HTACCESS, DEV_HTACCESS)
+    update_htaccess(CHECKER_FRAMEWORK_RELEASE, jsr308_version, afu_version, RELEASE_DEV_HTACCESS, DEV_HTACCESS)
     copy_cf_logo(checker_framework_interm_dir)
 
     # Each project has a set of files that are updated for release. Usually these updates include new
