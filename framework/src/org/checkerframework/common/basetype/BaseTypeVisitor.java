@@ -1997,7 +1997,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 continue;
             }
 
-            final AnnotatedTypeMirror paramUpperBound = replaceMalformedWildcards(bounds.getUpperBound(), typeArg);
+            AnnotatedTypeMirror paramUpperBound = bounds.getUpperBound();
+            if (typeArg.getKind() == TypeKind.WILDCARD) {
+                paramUpperBound = atypeFactory.widenToUpperBound(paramUpperBound, (AnnotatedWildcardType) typeArg);
+            }
 
             if (typeargTrees == null || typeargTrees.isEmpty()) {
                 // The type arguments were inferred and we mark the whole method.
@@ -2040,30 +2043,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return typeArg.getKind() == TypeKind.WILDCARD && bounds.getUpperBound().getKind() == TypeKind.WILDCARD;
     }
 
-    //If we have a declaration:
-    // class MyClass<T extends String> ...
-    //
-    //the javac compiler allows wildcard type arguments that have Java types OUTSIDE of the
-    //bounds of T, i.e:
-    // MyClass<? extends Object>
-    //
-    //This is sound because every NON-WILDCARD reference to MyClass MUST obey those bounds
-    //This leads to cases where the type parameter's upper bound is actually a subtype of typeArg
-    //In this case, we convert the upper bound to the type of typeArg and use that for checks
-    //against the parameter's upper bound
-    private AnnotatedTypeMirror replaceMalformedWildcards(final AnnotatedTypeMirror paramUpperBound,
-                                                          final AnnotatedTypeMirror typeArg) {
-        if (typeArg.getKind() == TypeKind.WILDCARD) {
-            final TypeMirror varUnderlyingUb = paramUpperBound.getUnderlyingType();
-            final TypeMirror argUnderlyingUb = ((AnnotatedWildcardType) typeArg).getExtendsBound().getUnderlyingType();
-            if (!types.isSubtype(argUnderlyingUb, varUnderlyingUb)
-                    && types.isSubtype(varUnderlyingUb, argUnderlyingUb)) {
-                return AnnotatedTypes.asSuper(types, atypeFactory,paramUpperBound, typeArg);
-            }
-        } //else
-
-        return paramUpperBound;
-    }
 
     /* Updated version that performs more well-formedness checks.
 
