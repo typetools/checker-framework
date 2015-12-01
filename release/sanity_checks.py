@@ -113,9 +113,11 @@ def maven_sanity_check( sub_sanity_dir_name, repo_url, release_version ):
         maven_example_pom = os.path.join( maven_example_dir, "pom.xml" )
         add_repo_information( maven_example_pom, repo_url )
 
+        os.environ['JAVA_HOME']   =  os.environ['JAVA_8_HOME']
         execute_write_to_file( "mvn compile", output_log, False, maven_example_dir )
+        os.environ['JAVA_HOME']   =  os.environ['JAVA_7_HOME']
         check_results( "Maven sanity check", output_log, [
-            "MavenExample.java:[26,29] [assignment.type.incompatible] incompatible types in assignment."
+            "MavenExample.java:[26,29] error: [assignment.type.incompatible] incompatible types in assignment."
         ])
 
         delete_path( path_to_artifacts )
