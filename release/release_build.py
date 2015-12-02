@@ -319,20 +319,6 @@ def main(argv):
     check_repos( INTERM_REPOS, False )
     check_repos( BUILD_REPOS,  False )
 
-    # You may wish to experiment with the build (for instance testing changes before committing them to the
-    # repository). The above 3 steps will revert any of those changes you previously wrote to the build
-    # repositories. At this step, the script pauses to allow you to replace any files you wish before
-    # actually executing the build.
-
-    # Note that any changes you make in this step are lost if you restart the release_build process and
-    # instruct it to clean the repositories (which you should say yes to). That's why it's a good idea
-    # to keep copies of the work you do here readily available in your home directory.
-
-    print_step("1d: Optionally replace files.") # MANUAL
-    if not auto:
-        if not prompt_yes_no("Replace any files you would like then type yes to continue"):
-            raise Exception("No prompt")
-
     # The release script requires a number of common tools (Ant, Maven, make, etc...). This step checks
     # to make sure all tools are available on the command line in order to avoid wasting time in the
     # event a tool is missing late in execution.
