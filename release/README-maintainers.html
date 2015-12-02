@@ -228,9 +228,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
 
 <section id="release_process_overview">
     <h2>Release Process Overview</h2>
-    <p>The release process consists of running two scripts, release_build.py and release_push.py,
-        and a few manual steps (prompted by the release scripts).  However, before releasing, it would be beneficial
-        to first understand the structure of the projects on disk on Buffalo.</p>
+    <p>This section first explains the structure of the projects on disk on Buffalo, then lists scripts used during the release process.</p>
 
     <section id="file_layout">
         <h3>File Layout</h3>
@@ -424,7 +422,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
 	      Examine the version control logs since the last release tag:<br/>
 	      <code>cd $CHECKERFRAMEWORK && git log checker-framework-1.9.8..</code><br/>
 	      <code>cd $CHECKERFRAMEWORK/../annotation-tools && git log 3.6.22..</code><br/>
-	      <code>cd $CHECKERFRAMEWORK/../jsr308-langtools && hg log -r 'jsr308-1.9.8:'</code><br/>
+	      <code>cd $CHECKERFRAMEWORK/../jsr308-langtools && hg log -r jsr308-1.9.8:</code><br/>
             </li>
 	    <li>
 	      Even if some code has been committed to the repository, don't
