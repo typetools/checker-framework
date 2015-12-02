@@ -1,31 +1,23 @@
 import tests.signatureinference.qual.SiblingWithFields;
 import tests.signatureinference.qual.DefaultType;
+import tests.signatureinference.qual.Sibling2;
+import tests.signatureinference.qual.Sibling1;
 import tests.signatureinference.qual.Parent;
 import tests.signatureinference.qual.*;
 public class LUBAssignmentTest {
     // The default type for fields is @DefaultType.
-    @Parent
-    private static int privateField;
-    @Parent
-    public static int publicField;
+    private static @Parent int privateField;
+    public static @Parent int publicField;
 
     void assignFieldsToSibling1() {
         privateField = getSibling1();
         publicField = getSibling1();
     }
 
-    void assignFieldsToSibling2() {
+    static {
         privateField = getSibling2();
         publicField = getSibling2();
     }
-
-    // TODO: Add support to static blocks. The static block below should replace
-// the method above. Problem: It returns null when retrieving the class of the
-// elements in the static block below.
-//    static {
-//        privateField = getSibling2();
-//        publicField = getSibling2();
-//    }
 
     // LUB between @Sibling1 and @Sibling2 is @Parent, therefore the assignments
     // above refine the type of privateField to @Parent.

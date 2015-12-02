@@ -1,16 +1,14 @@
 import tests.signatureinference.qual.SiblingWithFields;
 import tests.signatureinference.qual.DefaultType;
-import tests.signatureinference.qual.Parent;
+import tests.signatureinference.qual.Sibling2;
 import tests.signatureinference.qual.Sibling1;
+import tests.signatureinference.qual.Parent;
 import tests.signatureinference.qual.Top;
 import tests.signatureinference.qual.SignatureInferenceBottom;
-import tests.signatureinference.qual.Sibling2;
 import tests.signatureinference.qual.*;
 public class PublicFieldTest {
-    @Parent
-    public static int field1; // parent
-    @Sibling2
-    public static int field2; // sib2
+    public static @Parent int field1; // parent
+    public static @Sibling2 int field2; // sib2
 
     public PublicFieldTest() {
         field1 = getSibling1();

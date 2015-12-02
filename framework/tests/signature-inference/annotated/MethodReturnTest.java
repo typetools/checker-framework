@@ -1,7 +1,8 @@
 import tests.signatureinference.qual.SiblingWithFields;
 import tests.signatureinference.qual.DefaultType;
-import tests.signatureinference.qual.Parent;
+import tests.signatureinference.qual.Sibling2;
 import tests.signatureinference.qual.Sibling1;
+import tests.signatureinference.qual.Parent;
 import tests.signatureinference.qual.*;
 public class MethodReturnTest {
 
@@ -13,8 +14,7 @@ public class MethodReturnTest {
         return getSibling1();
     }
 
-    @DefaultType
-    public static boolean bool = false;
+    public static @DefaultType boolean bool = false;
 
     public static @Parent int lubTest() {
         if (bool) {

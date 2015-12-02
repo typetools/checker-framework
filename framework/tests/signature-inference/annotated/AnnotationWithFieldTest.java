@@ -3,11 +3,9 @@ import tests.signatureinference.qual.DefaultType;
 import tests.signatureinference.qual.*;
 public class AnnotationWithFieldTest {
 
-    @DefaultType
-    private String fields;
+    private @DefaultType String fields;
 
-    @DefaultType
-    private String emptyFields;
+    private @DefaultType String emptyFields;
 
     void testAnnotationWithFields() {
         fields = getSiblingWithFields();

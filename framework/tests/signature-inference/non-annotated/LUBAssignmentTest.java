@@ -9,18 +9,10 @@ public class LUBAssignmentTest {
         publicField = getSibling1();
     }
 
-    void assignFieldsToSibling2() {
+    static {
         privateField = getSibling2();
         publicField = getSibling2();
     }
-
-    // TODO: Add support to static blocks. The static block below should replace
-// the method above. Problem: It returns null when retrieving the class of the
-// elements in the static block below.
-//    static {
-//        privateField = getSibling2();
-//        publicField = getSibling2();
-//    }
 
     // LUB between @Sibling1 and @Sibling2 is @Parent, therefore the assignments
     // above refine the type of privateField to @Parent.

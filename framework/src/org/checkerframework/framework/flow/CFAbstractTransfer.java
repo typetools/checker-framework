@@ -103,7 +103,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         implements TransferFunction<V, S> {
 
     /**
-     * Indicates that the whole-program inference is on.
+     * Indicates that the signature inference is on.
      */
     private final boolean inferSignatures;
 
@@ -737,13 +737,10 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         if (inferSignatures && !expr.containsUnknown()
                 && expr instanceof FieldAccess) {
-            // Updates .jaif file
-            FieldAccessNode lhsNode = ((FieldAccessNode)lhs);
-            ClassSymbol clazzSymbol = SignatureInferenceScenes.getEnclosingClassSymbol(
-                    analysis.getContainingClass(n.getTree()), lhs,
-                    lhsNode.getReceiver());
-            SignatureInferenceScenes.updateFieldTypeInScene(
-                    lhsNode, rhs, clazzSymbol, analysis.getTypeFactory());
+            // Updates inferred field type
+            SignatureInferenceScenes.updateInferredFieldType(
+                    lhs, rhs, analysis.getContainingClass(n.getTree()),
+                    analysis.getTypeFactory());
         }
 
         processCommonAssignment(in, lhs, rhs, info, rhsValue);
@@ -754,16 +751,14 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     @Override
     public TransferResult<V, S> visitReturn(ReturnNode n, TransferInput<V, S> p) {
         if (inferSignatures) {
-            // Updates the return type of the method on the respective .jaif file.
+            // Updates the inferred return type of the method
             ClassTree classTree = analysis.getContainingClass(n.getTree());
-            if (classTree != null) {
-                ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
-                        classTree);
-                SignatureInferenceScenes.updateMethodReturnTypeInScene(
-                        n, classSymbol,
-                        analysis.getContainingMethod(n.getTree()),
-                        analysis.getTypeFactory());
-            }
+            ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
+                    classTree);
+            SignatureInferenceScenes.updateInferredMethodReturnType(
+                    n, classSymbol,
+                    analysis.getContainingMethod(n.getTree()),
+                    analysis.getTypeFactory());
         }
         return super.visitReturn(n, p);
     }
@@ -828,12 +823,12 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         processConditionalPostconditions(n, method, tree, thenStore, elseStore);
 
         if (inferSignatures) {
-            // Updates the parameter type of the invoked method on the respective .jaif file.
+            // Updates the inferred parameter type of the invoked method
             ClassTree classTree = analysis.getContainingClass(n.getTree());
-            if (classTree != null) {
+            if (classTree != null) { // If method is invoked from a static context, classTree == null.
                 ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
                         classTree);
-                SignatureInferenceScenes.updateMethodParameterTypeInScene(
+                SignatureInferenceScenes.updateInferredMethodParametersTypes(
                         n, classSymbol, method, analysis.getTypeFactory());
             }
         }

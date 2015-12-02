@@ -361,10 +361,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.root = root;
         treePathCache.clear();
         pathHack.clear();
-        if (checker.getOptions().containsKey("inferSignatures")) {
-            // Clear modified .jaif files in previous CompilationUnit.
-            SignatureInferenceScenes.clearModifiedScenes();
-        }
 
         // There is no need to clear the following caches, they
         // are all limited by CACHE_SIZE.

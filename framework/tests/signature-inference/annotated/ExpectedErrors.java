@@ -1,5 +1,7 @@
 import tests.signatureinference.qual.SiblingWithFields;
 import tests.signatureinference.qual.DefaultType;
+import tests.signatureinference.qual.Sibling2;
+import tests.signatureinference.qual.Sibling1;
 import tests.signatureinference.qual.Parent;
 import tests.signatureinference.qual.*;
 /**
@@ -52,10 +54,8 @@ public class ExpectedErrors {
 
     // LUB TEST
  // The default type for fields is @Top.
-    @Parent
-    private static int lubPrivateField;
-    @Parent
-    public static int lubPublicField;
+    private static @Parent int lubPrivateField;
+    public static @Parent int lubPublicField;
 
     void assignFieldsToSibling1() {
         lubPrivateField = getSibling1();
@@ -89,8 +89,7 @@ public class ExpectedErrors {
         expectsSibling2(lubPublicField);
     }
 
-    @DefaultType
-    private static boolean bool = false;
+    private static @DefaultType boolean bool = false;
 
     public static @Parent int lubTest() {
         if (bool) {
