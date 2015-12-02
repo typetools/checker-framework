@@ -68,12 +68,13 @@ def jsr308_checker_framework_version( auto ):
 
     print "Current JSR308/Checker Framework: " + curr_version
     suggested_version = increment_version( curr_version )
-    new_version = suggested_version
 
-    if not auto:
-        new_version = prompt_w_suggestion( "Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$" )
+    if auto:
+        new_version = suggested_version
     else:
-        print "New version: " + new_version
+        new_version = prompt_w_suggestion( "Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$" )
+
+    print "New version: " + new_version
 
     return (curr_version, new_version)
 
@@ -369,7 +370,7 @@ def main(argv):
 
     if not auto:
         if projects_to_release[LT_OPT]:
-            propose_changelog_edit( "JSR308 Type Annotations Compiler", JSR308_CHANGELOG, "/tmp/jsr308.changes",
+            propose_changelog_edit( "jsr308-langtools Type Annotations Compiler", JSR308_CHANGELOG, "/tmp/jsr308.changes",
                                     old_jsr308_version, JSR308_LANGTOOLS , JSR308_TAG_PREFIXES )
 
         if projects_to_release[AFU_OPT]:

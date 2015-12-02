@@ -227,23 +227,63 @@ def match_one(toTest, patternStrings):
 #=========================================================================================
 # Version Utils
 
+# From http://stackoverflow.com/a/1714190/173852, but doesn't strip trailing zeroes
+def version_number_to_array(versionNum):
+    """Given a version number, return an array of the elements, as integers."""
+    return [int(x) for x in versionNum.split(".")]
+
+def version_array_to_string(versionArray):
+    return ".".join(str(x) for x in versionArray)
+
+# From http://stackoverflow.com/a/1714190/173852
+def compare_version_numbers(version1, version2):
+    return cmp(version_number_to_array(version1), version_number_to_array(version2))
+
 def max_version( strs ):
-    pattern = re.compile(r"""^\d+\.\d+(\.\d+)?(\.\d+)?""")
-    version_as_str = None
-    version_as_int = None
+    """Given a list of version number strings, returns the largest one."""
+    return max(strs, key = version_number_to_array)
 
-    for str in strs:
-        if pattern.match( str ) is not None:
-            if version_as_str == None:
-                version_as_str = str
-                version_as_int = version_to_integer( str )
-            else:
-                cur_version_as_int = version_to_integer( str )
-                if cur_version_as_int > version_as_int:
-                    version_as_str = str
-                    version_as_int = cur_version_as_int
+def test_max_version():
+    assert max_version(["3.1.4", "4.2"]) == '4.2'
+    assert max_version(["3.1.4", "14.2"]) == '14.2'
 
-    return version_as_str
+def increment_version(versionNum, single_digits=False):
+    """
+    Returns the next incremental version after the argument.
+    If single_digits is true, do not permit any part to grow greater than 9.
+    """
+    # Drop the fourth and subsequent parts if present
+    versionArray = version_number_to_array(versionNum)[:3]
+    versionArray[-1] = versionArray[-1] + 1
+    if single_digits and versionArray[-1] > 9:
+        return increment_version(version_array_to_string(versionArray[0:-1]), single_digits) + ".0"
+    return version_array_to_string(versionArray)
+
+def test_increment_version():
+    assert increment_version('1.0.3') == '1.0.4'
+    assert increment_version('1.0.9') == '1.0.10'
+    assert increment_version('1.1.9') == '1.1.10'
+    assert increment_version('1.3.0') == '1.3.1'
+    assert increment_version('1.3.1') == '1.3.2'
+    assert increment_version('1.9.9') == '1.9.10'
+    assert increment_version('3.6.22') == '3.6.23'
+    assert increment_version('3.22.6') == '3.22.7'
+    assert increment_version('1.0.3.1') == '1.0.4'
+    assert increment_version('1.0.9.1') == '1.0.10'
+    assert increment_version('1.1.9.1') == '1.1.10'
+    assert increment_version('1.3.0.1') == '1.3.1'
+    assert increment_version('1.3.1.1') == '1.3.2'
+    assert increment_version('1.9.9.1') == '1.9.10'
+    assert increment_version('3.6.22.1') == '3.6.23'
+    assert increment_version('3.22.6.1') == '3.22.7'
+    assert increment_version('1.0.3', True) == '1.0.4'
+    assert increment_version('1.0.9', True) == '1.1.0'
+    assert increment_version('1.1.9', True) == '1.2.0'
+    assert increment_version('1.3.0', True) == '1.3.1'
+    assert increment_version('1.3.1', True) == '1.3.2'
+    assert increment_version('1.9.9', True) == '2.0.0'
+    assert increment_version('3.6.22', True) == '3.7.0'
+    assert increment_version('3.22.6', True) == '3.22.7'
 
 
 def current_distribution_by_website(site):
@@ -292,59 +332,6 @@ def latest_openjdk(site):
     result = ver_re.search(text)
     return result.group(1)
 
-def increment_version(version):
-    """
-    Returns a recommendation of the next incremental version based on the
-    passed one.
-
-    >>> increment_version('1.0.3')
-    '1.0.4'
-    >>> increment_version('1.0.9')
-    '1.1.0'
-    >>> increment_version('1.1.9')
-    '1.2.0'
-    >>> increment_version('1.3.1')
-    '1.3.2'
-
-    """
-    parts = [int(x) for x in version.split('.')]
-
-    #We suggest only 3 part versions with the fourth part dropped if present
-    intVer = version_to_integer(version)
-    return integer_to_version(intVer + 10)
-
-def version_to_integer(version):
-    parts = version.split('.')
-    iVer  = int(parts[0]) * 1000
-    iVer += int(parts[1]) * 100
-    if len(parts) > 2:
-        iVer += int(parts[2]) * 10
-    if len(parts) > 3:
-        iVer += int(parts[3])
-    return iVer
-
-def integer_to_version(intVer):
-    parts = [0,0,0]
-    if intVer >= 1000:
-        parts[0] = intVer / 1000
-        intVer = intVer % 1000
-
-    if intVer >= 100:
-        parts[1] = intVer / 100
-        intVer = intVer % 100
-
-    if intVer >= 10:
-        parts[2] = intVer / 10
-        intVer = intVer % 10
-
-    version = ".".join([str(x) for x in parts])
-    if intVer > 0:
-        version = version + "." + str(intVer)
-
-    return version
-
-def is_version_increased(old_version, new_version):
-    return version_to_integer(new_version) > version_to_integer(old_version)
 
 def find_latest_version( version_dir ):
     return max_version( filter( os.path.isdir, os.listdir(version_dir) ) )
@@ -643,7 +630,7 @@ def propose_changelog_edit( project_name, changelog_file_path, changeset_output_
                             old_version, repository_path, tag_prefixes ):
     if prompt_yes_no( "Review changelog for %s ?" % project_name, True ):
         write_changesets_since( old_version, repository_path, tag_prefixes, changeset_output_file )
-        print( "Please review the " + project_name + "changelog and compare it to the list of changesets.  Add any " +
+        print( "Please review the " + project_name + " changelog and compare it to the list of changesets.  Add any " +
                "changes you feel are missing.  In the README-maintainers.html there is a section "  +
                "Changelog Style Guidelines.  Please be sure the changelog meets these guidelines.\n"  +
                "changelog : "  + changelog_file_path + "\n" +
@@ -1052,3 +1039,13 @@ def get_announcement_email( version ):
     Changes for the Checker Framework
     <<Insert latest Checker Framework changelog entry>>
     """ % ( version )
+
+#=========================================================================================
+# Testing
+
+def test_release_utils():
+    test_max_version()
+    test_increment_version()
+
+# Tests run every time this file is loaded
+test_release_utils()

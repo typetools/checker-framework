@@ -18,7 +18,7 @@ import zipfile
 
 #ensure that the latest built version is
 def check_release_version( previous_release, new_release ):
-    if version_to_integer( previous_release ) >= version_to_integer( new_release ):
+    if compare_version_numbers( previous_release, new_release ) >= 0:
         raise Exception( "Previous release version ( " + previous_release + " ) should be less than " +
                          "the new release version( " + new_release + " )" )
 
