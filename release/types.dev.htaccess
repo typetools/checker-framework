@@ -5,12 +5,12 @@
 
 Options +FollowSymlinks
 
-Redirect /specification/java-annotation-design.html /jsr308/specification/java-annotation-design.html
+Redirect /dev/specification/java-annotation-design.html /dev/jsr308/specification/java-annotation-design.html
 Redirect /checker-framework/current/checkers-manual.html /checker-framework/current/checker-framework-manual.html
 
 # We should add a similar rule for every other type system.
 Redirect /checker-framework/current/api/checkers/nullness/quals/ /checker-framework/current/api/org/checkerframework/checker/nullness/qual/
 
 RedirectMatch 302 /dev/jsr308/current/jsr308-langtools.zip /dev/jsr308/current/jsr308-langtools-1.9.8.zip
-RedirectMatch 302 /dev/annotation-file-utilities/annotation-tools.zip /dev/annotation-file-utilities/releases/current/annotation-tools-3.6.22.zip
+RedirectMatch 302 /dev/annotation-file-utilities/annotation-tools.zip /dev/annotation-file-utilities/current/annotation-tools-3.6.22.zip
 RedirectMatch 302 /dev/checker-framework/current/checker-framework.zip /dev/checker-framework/current/checker-framework-1.9.8.zip

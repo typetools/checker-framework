@@ -973,7 +973,7 @@ def update_htaccess(releaseDir, cfLtVersion, afuVersion, htAccessTemplate, htAcc
 
     cmd = "ant -f release.xml update-htaccess-versions -Dhtaccess.file=%s -Dcflt.version=%s -Dafu.version=%s" % (htAccessTemplate, cfLtVersion, afuVersion)
     execute(cmd, True, False, releaseDir)
-    execute("cp %s %s" % (htAccessTemplate, htAccessToReplace))
+    execute("cp -p %s %s" % (htAccessTemplate, htAccessToReplace))
 
 def print_step( step ):
     print( "\n" )

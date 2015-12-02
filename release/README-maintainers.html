@@ -109,13 +109,21 @@ miss a step if you only read the paragraph asking you to say 'yes'.
   </li>
   <li>Update the <a href="#changelog_guide">changelogs</a> for the Checker Framework, Annotation File Utilities, and jsr308-langtools.
   </li>
-  <li><strong>Copy latest release scripts to the scripts directory</strong><br/>
-            <code>scp -r $CHECKERFRAMEWORK/release/* $USER@buffalo.cs.washington.edu:///scratch/jsr308-release/scripts</code>
+  <li>
+            <strong>Log into Buffalo</strong><br/>
+            <code>ssh $USER@buffalo.cs.washington.edu<br/></code>
   </li>
   <li>
-            <strong>Log into Buffalo and cd to a temporary directory</strong><br/>
-            <code>ssh $USER@buffalo.cs.washington.edu<br/></code>
-            <code>cd /scratch/jsr308-release/scripts<br/></code>
+            <strong>In a user-specific temporary directory, clone the Checker Framework repository (it contains the release scripts).</strong><br/>
+            <strong>If the repository exists, update it instead.</strong><br/>
+            <code>mkdir /scratch/$USER<br/></code>
+            <code>mkdir /scratch/$USER/jsr308-release<br/></code>
+            <code>cd /scratch/$USER/jsr308-release<br/></code>
+            <code>git clone https://github.com/typetools/checker-framework.git<br/></code>
+            <code>cd checker-framework/release<br/></code>
+            or<br/>
+            <code>cd /scratch/$USER/jsr308-release/checker-framework/release<br/></code>
+            <code>git pull<br/></code>
   </li>
   <li><strong>Run release_build</strong><br/>
             <code>python release_build.py all<br/><br/></code>
