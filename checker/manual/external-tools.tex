@@ -66,9 +66,11 @@ use the last one.
     then log out and back in to ensure that the environment variable
     setting takes effect.
   \item
+    \begin{sloppypar}
     Option 2:
     Whenever this document tells you to run \code{javac}, you
     can instead run \code{\$CHECKERFRAMEWORK/checker/bin/javac}.
+    \end{sloppypar}
 
     You can simplify this by introducing an alias.  Then,
     whenever this document tells you to run \code{javac}, instead use that
@@ -244,7 +246,9 @@ indicated in this example:
     <!-- use jsr308.javac instead of javac -->
     <jsr308.javac ... >
       <compilerarg line="-processor org.checkerframework.checker.nullness.NullnessChecker"/>
-      <!-- optional, to not check uses of library methods: <compilerarg value="-AskipUses=^(java\.awt\.|javax\.swing\.)"/> -->
+      <!-- optional, to not check uses of library methods:
+        <compilerarg value="-AskipUses=^(java\.awt\.|javax\.swing\.)"/>
+      -->
       <compilerarg line="-Xmaxerrs 10000"/>
       ...
     </jsr308.javac>
@@ -399,6 +403,9 @@ section, or add it if it is not present.
 
 For example, to use the \code{org.checkerframework.checker.nullness.NullnessChecker}:
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{alltt}
     <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -421,6 +428,9 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
         </configuration>
     </plugin>
 \end{alltt}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 Now, building with Maven should run the checkers during compilation.
 

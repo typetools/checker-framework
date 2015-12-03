@@ -170,6 +170,9 @@ capability of any realistic type system.
   \code{@Encrypted} annotation using the \code{-Aquals} option.
   You should add the \code{Encrypted} classfile to the processor classpath:
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
 $ javac -processorpath myqualpath -processor org.checkerframework.common.subtyping.SubtypingChecker \
         -Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted YourProgram.java
@@ -180,6 +183,9 @@ required: @myqual.Encrypted java.lang.String
     sendOverInternet(password);
                      ^
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 \end{enumerate}
 

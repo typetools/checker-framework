@@ -66,11 +66,13 @@ We now explain these mechanisms in turn.
 
 \section{\code{@SuppressWarnings} annotation\label{suppresswarnings-annotation}}
 
+\begin{sloppypar}
 You can suppress specific errors and warnings by use of the
 \code{@SuppressWarnings} annotation, for example
 \code{@SuppressWarnings("interning")} or \code{@SuppressWarnings("nullness")}.
 Section~\ref{suppresswarnings-annotation-syntax} explains the syntax of the
 argument string.
+\end{sloppypar}
 
 A \sunjavadocanno{java/lang/SuppressWarnings.html}{SuppressWarnings}
 annotation may be placed on program declarations such as a local
@@ -691,6 +693,7 @@ but your code will still compile with any Java compiler.
 % In a single program, you may write some annotations in comments, and others
 % outside of comments.  There is not much point in doing so, however.
 
+\begin{sloppypar}
 By default, the Checker Framework compiler ignores any comment that contains spaces at the
 beginning or end, or between the \code{@} and the annotation name.
 In other words, it reads \code{/*@NonNull*/} as an annotation but ignores
@@ -709,6 +712,7 @@ Indentation'' command, since it inserts space in comments.  But the
 annotation comments are less readable with spaces, so it's even better to disable
 inserting spaces:  in the Formatter preferences, in the Comments tab,
 unselect the ``enable block comment formatting'' checkbox.
+\end{sloppypar}
 
 Compiler flag \code{-XDTA:noannotationsincomments} causes the compiler
 to ignore annotation comments.  With this compiler flag, the
@@ -924,6 +928,7 @@ use aliased annotations from other projects.  For example, the aliased
 annotations for the Nullness Checker are listed in
 Section~\ref{nullness-related-work}.
 
+\begin{sloppypar}
 At locations where only type annotations are possible, use the
 ``\<*Type>'' compatibility annotations from package
 \<org.checkerframework.checker.nullness.compatqual>
@@ -934,6 +939,7 @@ declares these declaration annotations:
 \refqualclass{checker/nullness/compatqual}{PolyNullType},
 \refqualclass{checker/nullness/compatqual}{MonotonicNonNullType}, and
 \refqualclass{checker/nullness/compatqual}{KeyForType}.
+\end{sloppypar}
 
 \item
 At locations where declaration annotations are possible,

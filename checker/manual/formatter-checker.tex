@@ -50,8 +50,11 @@ Section~\ref{formatter-guarantees} provides more details.
 \end{Verbatim}
 
 
+\begin{sloppypar}
 To run the Format String Checker, supply the
 \code{-processor org.checkerframework.checker.formatter.FormatterChecker} command-line option to javac.
+\end{sloppypar}
+
 
 \section{Formatting terminology\label{formatter-terminology}}
 
@@ -557,32 +560,32 @@ The following code examples may fail at run time, and therefore they do not
 type check.  The type-checking errors are indicated by comments.
 
 \begin{Verbatim}
-    Scanner s = new Scanner(System.in);
-    String fs = s.next();
-    System.out.printf(fs, "hello", 1337);          // error: fs is not known to be a format string
+Scanner s = new Scanner(System.in);
+String fs = s.next();
+System.out.printf(fs, "hello", 1337);          // error: fs is not known to be a format string
 \end{Verbatim}
 
 \begin{Verbatim}
-    Scanner s = new Scanner(System.in);
-    @Format({GENERAL, INT}) String fs = s.next();  // error: fs is not known to have the given type
-    System.out.printf(fs, "hello", 1337);          // OK
+Scanner s = new Scanner(System.in);
+@Format({GENERAL, INT}) String fs = s.next();  // error: fs is not known to have the given type
+System.out.printf(fs, "hello", 1337);          // OK
 \end{Verbatim}
 
 \noindent The following variant does not throw a run-time error, and
 therefore passes the type-checker:
 
 \begin{Verbatim}
-    Scanner s = new Scanner(System.in);
-    String format = s.next()
-    try {
-        format = FormatUtil.asFormat(format, GENERAL, INT);
-    } catch (IllegalFormatException e) {
-        // Replace this by your own error handling.
-        System.err.println("The user entered the following invalid format string: " + format);
-        System.exit(2);
-    }
-    // fs is now known to be of type: @Format({GENERAL, INT}) String
-    System.out.printf(format,"hello",1337);
+Scanner s = new Scanner(System.in);
+String format = s.next()
+try {
+    format = FormatUtil.asFormat(format, GENERAL, INT);
+} catch (IllegalFormatException e) {
+    // Replace this by your own error handling.
+    System.err.println("The user entered the following invalid format string: " + format);
+    System.exit(2);
+}
+// fs is now known to be of type: @Format({GENERAL, INT}) String
+System.out.printf(format,"hello",1337);
 \end{Verbatim}
 
 \noindent A potential disadvantage of using the \code{FormatUtil} class is that your code becomes

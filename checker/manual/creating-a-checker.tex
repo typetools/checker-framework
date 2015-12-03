@@ -280,10 +280,11 @@ hierarchy.
     public @interface Nullable { }
   \end{Verbatim}
 
+  \begin{sloppypar}
   If the top qualifier of the hierarchy is the unqualified type, then its children
-  will use \code{@SubtypeOf(Unqualified.class)}, but no \code{@SubtypeOf(
-    \{ \} )} annotation on the top qualifier is necessary.  For an example, see the
+  will use \code{@SubtypeOf(Unqualified.class)}, but no \code{@SubtypeOf(\{\})} annotation on the top qualifier is necessary.  For an example, see the
   \<Encrypted> type system of Section~\ref{encrypted-example}.
+  \end{sloppypar}
 
 \item \refqualclass{framework/qual}{PolymorphicQualifier} denotes that a qualifier is a
   polymorphic qualifier.  For example:
@@ -405,9 +406,11 @@ will not type-check unless \<null> has the bottom type:
 }
 \end{Verbatim}
 
+\begin{sloppypar}
 You don't necessarily have to define a new bottom qualifier.  You can
 use \<org.checkerframework.framework.qual.Bottom> if your type system does not already have an
 appropriate bottom qualifier.
+\end{sloppypar}
 
 If your type system has a special bottom type that is used \emph{only} for
 the \code{null} value, then users should never write the bottom qualifier
@@ -638,17 +641,21 @@ be included on the classpath like other components of your checker.
     \refclass{framework/flow}{CFAbstractAnalysis} and uses the extended
     \refclass{framework/flow}{CFAbstractTransfer}}
 
+  \begin{sloppypar}
   \refclass{framework/flow}{CFAbstractTransfer} and its superclass,
   \refclass{dataflow/analysis}{Analysis}, are the central coordinating classes
   in the Checker Framework's dataflow algorithm. The
   \code{createTransferFunction} method must be overridden in an extended
   \refclass{framework/flow}{CFAbstractTransfer} to return a new instance of the
   extended \refclass{framework/flow}{CFAbstractTransfer}.
+  \end{sloppypar}
 
+  \begin{sloppypar}
   The Regex Checker's extended \refclass{framework/flow}{CFAbstractAnalysis} is
   \refclass{checker/regex/classic}{RegexAnalysis}, which overrides the
   \code{createTransferFunction} to return a new
   \refclass{checker/regex/classic}{RegexTransfer} instance:
+  \end{sloppypar}
 
 %BEGIN LATEX
 \begin{smaller}
@@ -666,10 +673,12 @@ be included on the classpath like other components of your checker.
 \item \textbf{Configure the checker's type factory to use the extended
     \refclass{framework/flow}{CFAbstractAnalysis}}
 
+\begin{sloppypar}
 To configure your checker's type factory to use the new extended
 \refclass{framework/flow}{CFAbstractAnalysis}, override the
 \code{createFlowAnalysis} method in your type factory to return a new instance
 of the extended \refclass{framework/flow}{CFAbstractAnalysis}.
+\end{sloppypar}
 
 %BEGIN LATEX
 \begin{smaller}
@@ -753,6 +762,7 @@ There are usually multiple expressions used in a run-time check or run-time
 operation; determine which expression the customization will refine.  This is
 usually specific to the type system and run-time test.
 
+\begin{sloppypar}
 Expressions are refined by modifying the return value of a visitor method in
 \refclass{framework/flow}{CFAbstractTransfer}.
 \refclass{framework/flow}{CFAbstractTransfer} visitor methods return a
@@ -761,6 +771,7 @@ Expressions are refined by modifying the return value of a visitor method in
 type for the \refclass{dataflow/cfg/node}{Node} being evaluated (the result
 type) and a map from expressions in scopes to estimates of their types (a
 \refclass{dataflow/analysis}{Store}).
+\end{sloppypar}
 
 For the program operation \code{op(a,b)}, an enhancement may improve the Checker
 Framework's types in either or both of the following ways:
@@ -788,6 +799,7 @@ has type \code{@Regex(0) String}. When \code{int} parameter \code{group} is
 known or can be inferred at compile time, a better estimate can be given.  For
 example, \code{RegexUtil.asRegex(myString, 2)} has type \code{@Regex(2) String}.
 
+\begin{sloppypar}
 Changing the \refclass{dataflow/analysis}{TransferResult}'s result type changes
 the type that is returned by the \refclass{framework/type}{AnnotatedTypeFactory}
 for the tree corresponding to the \refclass{dataflow/cfg/node}{Node} that was
@@ -795,6 +807,7 @@ visited.  (Remember that \refclass{common/basetype}{BaseTypeVisitor} uses the
 \refclass{framework/type}{AnnotatedTypeFactory} to look up the type of a
 \refTreeclass{tree}{Tree}, and then performs checks on types of one or more
 \refTreeclass{tree}{Tree}s.)
+\end{sloppypar}
 
 When \refclass{checker/regex/classic}{RegexTransfer} evaluates a
 \code{RegexUtils.asRegex} invocation, it updates the
@@ -838,11 +851,13 @@ binary expressions or casts, cannot be stored in the
 
 \subsection{Implement the refinement\label{dataflow-implement-refinement}}
 
+\begin{sloppypar}
 This section details implementing the visitor method
 \code{RegexTransfer.visitMethodInvocation} for the \code{RegexUtil.asRegex}
 run-time test.  You can find other examples of visitor methods in
 \refclass{checker/lock}{LockTransfer} and
 \refclass{checker/formatter}{FormatterTransfer}.
+\end{sloppypar}
 
 \begin{enumerate}
 \item \textbf{Determine if the visited \refclass{dataflow/cfg/node}{Node} is of
@@ -1281,13 +1296,15 @@ required parsing of the option.
 
 \section{Testing framework\label{testing-framework}}
 
+\begin{sloppypar}
 The Checker Framework provides a convenient way to write tests for your
 checker.
 % Don't repeat the information here, to prevent them from getting out of sync.
 It is extensively documented in file \<checker-framework/checker/tests/README>.
 Also see the API documentation for
-\mbox{\code{org.checkerframework.framework.test.CheckerFrameworkTest}},
+\refclass{framework/test}{CheckerFrameworkTest},
 which all test classes should extend.
+\end{sloppypar}
 
 
 \section{Debugging options\label{debugging-options}}
@@ -1413,12 +1430,14 @@ examples/InterningExampleWithWarnings.java:21: (not.interned)
 
 \subsection{Using an external debugger\label{debugging-options-external}}
 
+\begin{sloppypar}
 You can use any standard debugger to observe the execution of your checker.
 Set the execution main class to \code{com.sun.tools.javac.Main}, and insert
 the Checker Framework javac.jar (resides in
-\code{.../checker-framework/checker/dist/javac.jar}).  If using an IDE, it is
+\code{\$CHECKERFRAMEWORK/checker/dist/javac.jar}).  If using an IDE, it is
 recommended that you add \code{.../jsr308-langtools} as a project, so you
 can step into its source code if needed.
+\end{sloppypar}
 
 You can also set up remote (or local) debugging using the following command as a template:
 
