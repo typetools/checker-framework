@@ -1,11 +1,13 @@
 package org.checkerframework.checker.i18nformatter.qual;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 import com.sun.source.tree.Tree;
@@ -23,8 +25,9 @@ import com.sun.source.tree.Tree;
  */
 @TypeQualifier
 @SubtypeOf({ I18nFormat.class, I18nInvalidFormat.class, I18nFormatFor.class })
-@Target({})
-// empty target prevents programmers from writing this in a program
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
+    DefaultLocation.EXPLICIT_UPPER_BOUNDS})
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
 @DefaultFor(value = {DefaultLocation.LOWER_BOUNDS})
 public @interface I18nFormatBottom {

@@ -5,6 +5,7 @@ import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 
 import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -29,7 +30,8 @@ import com.sun.source.tree.Tree;
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-// empty target prevents programmers from writing this in a program
-@Target({})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
+    DefaultLocation.EXPLICIT_UPPER_BOUNDS})
 public @interface FBCBottom {
 }
