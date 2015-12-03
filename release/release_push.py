@@ -138,7 +138,7 @@ def is_file_empty( filename ):
     return os.path.getsize(filename) == 0
 
 def run_link_checker( site, output ):
-    delete( output )
+    delete_if_exists( output )
     check_links_script = os.path.join(CHECKER_FRAMEWORK_RELEASE, "checkLinks.sh")
     cmd = ["sh", check_links_script, site]
 
@@ -163,7 +163,7 @@ def check_all_links( jsr308_website, afu_website, checker_website, suffix ):
            "\t" + jsr308Check  + "\n" +
            "\t" + afuCheck     + "\n" +
            "\t" + checkerCheck + "\n" )
-    if (not is_file_empty( jsr308Check ) or not is_file_empty( afuCheck ) or not is_file_empty( checkerCheck ))
+    if (not is_file_empty( jsr308Check ) or not is_file_empty( afuCheck ) or not is_file_empty( checkerCheck )):
         raise Exception("The link checker reported errors.  Please fix them and run release_push again.")
 
 def push_interm_to_release_repos():
@@ -364,6 +364,22 @@ def main(argv):
     # This step downloads the checker-framework.zip file of the newly live release and ensures we
     # can run the Nullness Checker. If this step fails, you should backout the release.
 
+    print("TODO: Fix: At this point the dataflow manual needs to be copied from an old")
+    print("live web site version, such as")
+    print("/cse/www2/types/checker-framework/releases/1.9.8/checker-framework-dataflow-manual.pdf")
+    print("to")
+    print("/cse/www2/types/checker-framework/releases/current")
+    print("and then appropriate permissions need to be given with")
+    print("chmod 664 /cse/www2/types/checker-framework/releases/current/checker-framework-dataflow-manual.pdf")
+    print("These steps will no longer be needed once the dataflow manual builds automatically")
+    print("again in release_build.")
+    print("")
+
+    print("TODO: Fix: The .htaccess file is not updated correctly for the live web site.")
+    print("At this point, /cse/www2/types/.htaccess needs to be manually updated to have")
+    print("the right paths (i.e. /dev prefixes are removed and product versions are correct).")
+    print("")
+
     print_step( "Push Step 6: Run javac sanity test on the live release." ) # SEMIAUTO
     if prompt_yes_no( "Run javac sanity test on live release?", True ):
         javac_sanity_check( live_checker_website, new_checker_version )
@@ -386,22 +402,6 @@ def main(argv):
     # relative links. Therefore, some links from the development site actually point to the
     # live site (the previous release). After step 5, these links point to the current
     # release and may be broken.
-
-    # NOTE: There will be many broken links within the jdk-api directory see Open JDK/JSR308 Javadoc
-
-    print("TODO: Fix: At this point the dataflow manual needs to be copied from an old")
-    print("live web site version, such as")
-    print("/cse/www2/types/checker-framework/releases/1.9.8/checker-framework-dataflow-manual.pdf")
-    print("to")
-    print("/cse/www2/types/checker-framework/releases/current")
-    print("and then appropriate permissions need to be given with")
-    print("chmod 664 /cse/www2/types/checker-framework/releases/current/checker-framework-dataflow-manual.pdf")
-    print("These steps will no longer be needed once the dataflow manual builds automatically")
-    print("again in release_build.")
-
-    print("TODO: Fix: The .htaccess file is not updated correctly for the live web site.")
-    print("At this point, /cse/www2/types/.htaccess needs to be manually updated to have")
-    print("the right paths (i.e. /dev prefixes are removed and product versions are correct).")
 
     print( "Push Step 8. Check live site links" ) # SEMIAUTO
     if prompt_yes_no( "Run link checker on LIVE site?", True ):

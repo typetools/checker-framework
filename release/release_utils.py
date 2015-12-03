@@ -739,6 +739,10 @@ def find_first_instance(regex, file, delim=""):
 def delete( file ):
     os.remove(file)
 
+def delete_if_exists( file ):
+    if os.path.exists(file):
+        os.remove(file)
+
 def delete_path( path ):
     shutil.rmtree(path)
 
