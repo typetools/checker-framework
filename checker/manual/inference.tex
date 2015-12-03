@@ -145,6 +145,12 @@ Its command-line arguments are:
 \item List of paths to \<.java> files in the program.
 \end{enumerate}
 
+For example:
+\begin{Verbatim}
+    ./infer-and-annotate.sh "LockChecker,NullnessChecker"       \
+        $JSR308/plume-lib/java/plume.jar -AprintErrorStack      \
+        `find $JSR308/plume-lib/java/src/plume/ -name "*.java"`
+\end{Verbatim}
 
 As with any type inference tool, it is a good idea to double-check the
 results.
