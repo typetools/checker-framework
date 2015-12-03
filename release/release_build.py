@@ -53,7 +53,7 @@ The following repositories will be deleted then re-cloned from their origins:
 
 def copy_cf_logo(cf_release_dir):
     dev_releases_png = os.path.join(cf_release_dir, "CFLogo.png")
-    cmd="cp -p %s %s" % (LIVE_CF_LOGO, dev_releases_png)
+    cmd="rsync --times %s %s" % (LIVE_CF_LOGO, dev_releases_png)
     execute(cmd)
 
 def get_afu_date( building_afu ):
