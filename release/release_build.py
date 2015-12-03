@@ -53,7 +53,7 @@ The following repositories will be deleted then re-cloned from their origins:
 
 def copy_cf_logo(cf_release_dir):
     dev_releases_png = os.path.join(cf_release_dir, "CFLogo.png")
-    cmd="cp %s %s" % (LIVE_CF_LOGO, dev_releases_png)
+    cmd="cp -p %s %s" % (LIVE_CF_LOGO, dev_releases_png)
     execute(cmd)
 
 def get_afu_date( building_afu ):
@@ -68,12 +68,13 @@ def jsr308_checker_framework_version( auto ):
 
     print "Current JSR308/Checker Framework: " + curr_version
     suggested_version = increment_version( curr_version )
-    new_version = suggested_version
 
-    if not auto:
-        new_version = prompt_w_suggestion( "Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$" )
+    if auto:
+        new_version = suggested_version
     else:
-        print "New version: " + new_version
+        new_version = prompt_w_suggestion( "Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$" )
+
+    print "New version: " + new_version
 
     return (curr_version, new_version)
 
@@ -208,8 +209,9 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
     #make the dataflow manual
     dataflow_manual_dir = os.path.join(CHECKER_FRAMEWORK, "dataflow", "manual")
 
-    print("After the upgrade to Fedora 22, the dataflow manual refuses to build.  The manual is rarely updated " +
-          "so we copy the old one from the previous release.  And place it in the correct directory.\n" +
+    print("TODO: Fix: After the upgrade to Fedora 22, the dataflow manual refuses to build.  The manual is rarely updated " +
+          "so we copy the old one from the previous release's live web site and place it in" +
+          "the current release's live web site before step 8 (check live site links) of release_push.\n" +
           "Note: When fixing this, you should remove the failonerror=true in release.xml which copies the dataflow file" +
           "in target checker-framework-website-docs\n" +
           "WARNING: This needs to be fixed!\n")
@@ -293,9 +295,10 @@ def main(argv):
     print( "NOTE: Please read all the prompts printed by this script very carefully, as their" )
     print( "contents may have changed since the last time you ran it." )
 
-    print_step("Build Step 1: Clean and update the build and intermediate repositories.") # SEMIAUTO
+    print( "TODO: Fix: Unfortunately this script often (but not always) exits if you say no to" )
+    print( "performing a given step." )
 
-    print_step("1a: Clean repositories.")
+    print_step("Build Step 1: Clone the build and intermediate repositories.") # SEMIAUTO
 
     # Recall that there are 3 relevant sets of repositories for the release:
     # * build repository - repository where the project is built for release
@@ -306,32 +309,18 @@ def main(argv):
     # the release repositories. If we are running the build script multiple times without actually committing the
     # release then these changes need to be cleaned before we run the release_build script again.
     # Since the move to Git, cleaning can be error prone, so we have moved to deleting the repos entirely
-    # and cloning
+    # and cloning.
 
     #check we are cloning LIVE -> INTERM, INTERM -> RELEASE
-    print_step("\n1b: Update repositories.") # SEMIAUTO
+    print_step("\n1a: Clone repositories.") # SEMIAUTO
     delete_and_clone_repos()
 
-    # This step ensures the previous 2 steps work. It checks to see if we have any modified files, untracked files,
+    # This step ensures the previous step worked. It checks to see if we have any modified files, untracked files,
     # or outgoing changesets. If so, it fails.
 
-    print_step("1c: Verify repositories.") # SEMIAUTO
+    print_step("1b: Verify repositories.") # SEMIAUTO
     check_repos( INTERM_REPOS, False )
     check_repos( BUILD_REPOS,  False )
-
-    # You may wish to experiment with the build (for instance testing changes before committing them to the
-    # repository). The above 3 steps will revert any of those changes you previously wrote to the build
-    # repositories. At this step, the script pauses to allow you to replace any files you wish before
-    # actually executing the build.
-
-    # Note that any changes you make in this step are lost if you restart the release_build process and
-    # instruct it to clean the repositories (which you should say yes to). That's why it's a good idea
-    # to keep copies of the work you do here readily available in your home directory.
-
-    print_step("1d: Optionally replace files.") # MANUAL
-    if not auto:
-        if not prompt_yes_no("Replace any files you would like then type yes to continue"):
-            raise Exception("No prompt")
 
     # The release script requires a number of common tools (Ant, Maven, make, etc...). This step checks
     # to make sure all tools are available on the command line in order to avoid wasting time in the
@@ -353,6 +342,12 @@ def main(argv):
     print_step("Build Step 3: Determine release versions.") # SEMIAUTO
     (old_jsr308_version, jsr308_version) = jsr308_checker_framework_version( auto )
     (old_afu_version, afu_version)       = get_afu_version( auto )
+
+    print("If you get a warning about deleting existing directories,")
+    print("it is most likely because you previously ran this script")
+    print("for the same release versions - please consider whether")
+    print("you may have any unsaved work in these directories.")
+
     version_dirs = create_interm_version_dirs( jsr308_version, afu_version, auto )
     jsr308_interm_dir            = version_dirs[0]
     afu_interm_dir               = version_dirs[1]
@@ -366,6 +361,8 @@ def main(argv):
     # the release_push.py script.
 
     print_step("Build Step 4: Review changelogs.") # SEMIAUTO
+
+    print("TODO: Fix: The commit history retrieval is not working, so the changelogs generated in this step are empty.")
 
     print( "Verify that all changelog messages follow the guidelines found in README-maintainers.html#changelog_guide\n" )
 
@@ -383,15 +380,15 @@ def main(argv):
 
     if not auto:
         if projects_to_release[LT_OPT]:
-            propose_changelog_edit( "JSR308 Type Annotations Compiler", JSR308_CHANGELOG, "/tmp/jsr308.changes",
+            propose_changelog_edit( "jsr308-langtools Type Annotations Compiler", JSR308_CHANGELOG, TMP_DIR + "/jsr308.changes",
                                     old_jsr308_version, JSR308_LANGTOOLS , JSR308_TAG_PREFIXES )
 
         if projects_to_release[AFU_OPT]:
-            propose_changelog_edit( "Annotation File Utilities", AFU_CHANGELOG, "/tmp/afu.changes",
+            propose_changelog_edit( "Annotation File Utilities", AFU_CHANGELOG, TMP_DIR + "/afu.changes",
                                     old_afu_version, ANNO_TOOLS, AFU_TAG_PREFIXES  )
 
         if projects_to_release[CF_OPT]:
-            propose_changelog_edit( "Checker Framework", CHECKER_CHANGELOG, "/tmp/checker-framework.changes",
+            propose_changelog_edit( "Checker Framework", CHECKER_CHANGELOG, TMP_DIR + "/checker-framework.changes",
                                     old_jsr308_version, CHECKER_FRAMEWORK, CHECKER_TAG_PREFIXES )
 
     # This step will write out all of the changes that happened to the individual projects' manuals
@@ -411,15 +408,15 @@ def main(argv):
     if not auto:
         if projects_to_release[LT_OPT]:
             propose_change_review( "the JSR308 manual", old_jsr308_version, JSR308_LANGTOOLS,
-                                   JSR308_TAG_PREFIXES, JSR308_LT_DOC, "/tmp/jsr308.manual" )
+                                   JSR308_TAG_PREFIXES, JSR308_LT_DOC, TMP_DIR + "/jsr308.manual" )
 
         if projects_to_release[AFU_OPT]:
             propose_change_review( "the Annotation File Utilities manual", old_afu_version, ANNO_TOOLS,
-                                   AFU_TAG_PREFIXES, AFU_MANUAL, "/tmp/afu.manual"  )
+                                   AFU_TAG_PREFIXES, AFU_MANUAL, TMP_DIR + "/afu.manual"  )
 
         if projects_to_release[CF_OPT]:
             propose_change_review( "the Checker Framework", old_jsr308_version, CHECKER_FRAMEWORK,
-                                   CHECKER_TAG_PREFIXES, CHECKER_MANUAL, "/tmp/checker-framework.manual"  )
+                                   CHECKER_TAG_PREFIXES, CHECKER_MANUAL, TMP_DIR + "/checker-framework.manual"  )
 
     # The projects are built in the following order: JSR308-Langtools, Annotation File Utilities,
     # and Checker Framework. Furthermore, their manuals and websites are also built and placed in
@@ -448,7 +445,7 @@ def main(argv):
     print("to the new versioned zips.")
     print("e.g., checker-framework/current/checker-framework-%s.zip\n" % jsr308_version)
 
-    update_htaccess(CHECKER_FRAMEWORK_RELEASE, jsr308_version, afu_version, RELEASE_HTACCESS, DEV_HTACCESS)
+    update_htaccess(CHECKER_FRAMEWORK_RELEASE, jsr308_version, afu_version, RELEASE_DEV_HTACCESS, DEV_HTACCESS)
     copy_cf_logo(checker_framework_interm_dir)
 
     # Each project has a set of files that are updated for release. Usually these updates include new

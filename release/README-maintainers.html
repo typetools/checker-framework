@@ -89,25 +89,12 @@
 <section id="step_by_step">
 <h2>Step by Step</h2>
 
-<p> A brief description of the release steps is given below. For the most part you should just
-    be able to run the commands below manually and follow the prompts. More information is
+<p>
+    More information about the steps is
     provided in the code comments of the <code>main()</code> functions of the <code>release_build</code>
     and <code>release_push</code> scripts. Please read those comments if you have never done so before.
 </p>
 
-<p><b>Summary of steps:</b></p>
-<p class="well">
-    <code>
-        scp -r $CHECKERFRAMEWORK/release/* $USER@buffalo.cs.washington.edu:///scratch/jsr308-release/scripts<br/>
-        ssh $USER@buffalo.cs.washington.edu<br/>
-        cd /scratch/jsr308-release/scripts<br/>
-        python release_build.py all<br/>
-        python release_push.py<br/>
-    </code>
-
-    <br/>
-</p>
-<p>If you have not run the scripts before, please review the steps below.</p>
 
 <b>Note that many prompts will cause scripts to exit if you say 'no'.</b> This will require you to re-run
 the script from the beginning, which may take a long time.  It is better to say 'yes' to
@@ -116,40 +103,38 @@ already. Also, be sure to carefully read all instructions on the command-line be
 This is because the scripts do not ask you to say 'yes' after each step, so you may
 miss a step if you only read the paragraph asking you to say 'yes'.
 
-<table class="table">
-    <tr>
-        <td colspan="2">
-            <strong>Copy latest release scripts to the scripts directory</strong><br/>
-            Until the improvement <a href="#fi_auto-copy_release_scripts">Auto-copy Release Scripts</a>
-            is handled, you need to copy the latest version of the release scripts to the jsr308-release/scripts
-            directory.  Assuming $CF points to a checkout of the latest Checker Framework repo, run: <br/>
-            <code>scp -r $CF/release/* $USER@buffalo.cs.washington.edu:///scratch/jsr308-release/scripts<br/><br/></code>
-        </td>
-    </tr>
-    <tr>
-        <td colspan="2">
+<ol>
+  <li>If you have never made a release before, follow the instructions in the
+    <a href="#pre_release_checklist">Pre-release Checklist</a>.
+  </li>
+  <li>Update the <a href="#changelog_guide">changelogs</a> for the Checker Framework, Annotation File Utilities, and jsr308-langtools.
+  </li>
+  <li>
             <strong>Log into Buffalo</strong><br/>
-            Run the following commands:<br/>
             <code>ssh $USER@buffalo.cs.washington.edu<br/></code>
-            <code>cd /scratch/jsr308-release/scripts<br/></code>
-        </td>
-    </tr>
-    <tr>
-        <td colspan="2">
-            <strong>Run release_build</strong><br/>
-            Run the following command: <br/>
+  </li>
+  <li>
+            <strong>In a user-specific temporary directory, clone the Checker Framework repository (it contains the release scripts).</strong><br/>
+            <strong>If the repository exists, update it instead.</strong><br/>
+            <code>mkdir /scratch/$USER<br/></code>
+            <code>mkdir /scratch/$USER/jsr308-release<br/></code>
+            <code>cd /scratch/$USER/jsr308-release<br/></code>
+            <code>git clone https://github.com/typetools/checker-framework.git<br/></code>
+            <code>cd checker-framework/release<br/></code>
+            or<br/>
+            <code>cd /scratch/$USER/jsr308-release/checker-framework/release<br/></code>
+            <code>git pull<br/></code>
+  </li>
+  <li><strong>Run release_build</strong><br/>
             <code>python release_build.py all<br/><br/></code>
             <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
             There has been some work done in order to select only specific projects (jsr308, AFU, Checker Framework)
             to be built but more work still needs to be done.  Just pass &quot;all&quot; for now.
             See also <a href="#fi_buffalo_integeration">Buffalo Integration</a> for more information
             on the option &quot;--auto&quot;
-        </td>
-    </tr>
-    <tr>
-        <td colspan="2">
+  </li>
+  <li>
             <strong>Run release_push</strong><br/>
-            Run the following command:<br/>
             <code>python release_push.py release</code><br/><br/>
             <div class="alert alert-danger">
                 <strong>Note:</strong> The &quot;<strong>release</strong>&quot; argument states that you intend
@@ -160,10 +145,8 @@ miss a step if you only read the paragraph asking you to say 'yes'.
             If you get an obscure error about permissions, try running the release_push script several times
             in a row. This will sometimes update the repository permissions such that the script can proceed
             further each time.
-
-        </td>
-    </tr>
-</table>
+  </li>
+</ol>
 
 </section>
 
@@ -194,20 +177,20 @@ miss a step if you only read the paragraph asking you to say 'yes'.
             <td>3.</td>
             <td><strong>Sign up for a Sonatypes Account</strong><br/>
                 You will likely want to do this a few days in advance.
-                Directions can be found <a href="https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-2.Signup">here</a>.
+                Directions can be found <a href="http://central.sonatype.org/pages/ossrh-guide.html">here</a>.
                 Remember to be asked to be added to the org.checkerframework repository by creating
                 a ticket (see the note at the bottom of
-                <a href="https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-3.CreateaJIRAticket">section 3</a>).
+                <a href="http://central.sonatype.org/pages/ossrh-guide.html#create-a-ticket-with-sonatype">section 3</a>).
                 You may be able to sign up but then not sign in.  If that happens, instead of creating a ticket, Jonathan Burke or Javier Thaine can add you to the existing ticket.
             </td>
         </tr>
         <tr>
             <td>4.</td>
             <td><strong>Add your account information to settings.xml in your home directory.</strong><br/>
-                You will need to create a ~/.m2/settings.xml file similar to the one found
-                <a href="https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-Changesto%EF%BB%BF%7B%7Bsettings.xml%7D%7D">here</a>
+                Create a ~/.m2/settings.xml file similar to the one found
+                <a href="http://central.sonatype.org/pages/apache-maven.html">here</a>
                 using the information you just created for your Sonatypes Account on Buffalo or other
-                network host.
+                network host.  Since the file contains your password, make it non-readable:  <code>chmod og-rw ~/.m2/settings.xml</code>
             </td>
         </tr>
         <tr>
@@ -224,14 +207,15 @@ miss a step if you only read the paragraph asking you to say 'yes'.
             <td><strong>Install Eclipse with RCP</strong><br/>
                 On your local machine, you will need a copy of Eclipse with support for
                 developing Rich Client Platform (RCP) applications.<br/>
-                I downloaded a version of Eclipse that includes RCP at:<br/>
+		On Ubuntu, run <code>sudo apt-get install eclipse-rcp eclipse-platform</code><br/>
+                Or, download a version of Eclipse that includes RCP at:<br/>
                 <a href="http://www.eclipse.org/downloads/">http://www.eclipse.org/downloads/</a>
             </td>
         </tr>
         <tr>
             <td>7.</td>
             <td><strong>Get edit privileges for Checker Framework, JSR308, Annotation Tools</strong><br/>
-                Once a release has been completed, you will be prompted to update issues in the Google Code
+                Once a release has been completed, you will be prompted to update issues in the
                 issue tracker for each project that has been released.
                 You will need to be a "developer" for each project so that you have update privileges for
                 the issue trackers.
@@ -252,9 +236,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
 
 <section id="release_process_overview">
     <h2>Release Process Overview</h2>
-    <p>The release process consists of running two scripts, release_build.py and release_push.py,
-        and a few manual steps (prompted by the release scripts).  However, before releasing, it would be beneficial
-        to first understand the structure of the projects on disk on Buffalo.</p>
+    <p>This section first explains the structure of the projects on disk on Buffalo, then lists scripts used during the release process.</p>
 
     <section id="file_layout">
         <h3>File Layout</h3>
@@ -442,15 +424,17 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         <ul>
             <li>Only (and all) changes that affect users go into the changelog.
                 If a change is breaking, no matter how small, mention it.</li>
-            <li>List all issues (in Google Code issue trackers) resolved in this release.
-	      See the closed issues, sorted by date on which they were closed:
-<a href="https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aclosed">query</a>.
+            <li>List all issues (in issue trackers) resolved since the previous release, for the Checker Framework (<a href="http://types.cs.washington.edu/checker-framework/current/changelog.txt">previous release</a>, <a href="https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>), Annotation File Utilities (<a href="http://types.cs.washington.edu/annotation-file-utilities/changelog.html">previous release</a>, <a href="https://github.com/typetools/annotation-tools/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>), and jsr308-langtools (<a href="http://types.cs.washington.edu/jsr308/current/changelog-jsr308.txt">previous release</a>, <a href="https://bitbucket.org/typetools/jsr308-langtools/issues?&sort=-updated_on">issues query</a>).
             </li>
-
-            <li>You may need to be aware of projects for which we don't want an announcement.  For instance,
-                the GuiEffectsChecker was added a few months before we finished writing a manual section for it.
-                We did not announce it until this section was written.  If you have questions, ask the relevant
-                developer whether or not something should be mentioned.
+	    <li>
+	      Examine the version control logs since the last release tag:<br/>
+	      <code>cd $CHECKERFRAMEWORK && git log checker-framework-1.9.8..</code><br/>
+	      <code>cd $CHECKERFRAMEWORK/../annotation-tools && git log 3.6.22..</code><br/>
+	      <code>cd $CHECKERFRAMEWORK/../jsr308-langtools && hg log -r jsr308-1.9.8:</code><br/>
+            </li>
+	    <li>
+	      Even if some code has been committed to the repository, don't
+	      announce the feature until it has been documented in the manual.
             </li>
         </ul>
     </section>

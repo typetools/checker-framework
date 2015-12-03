@@ -296,7 +296,6 @@
         <fail unless="${checker.excludes.available}" message="${checker.excludes} excludes file not available"/>
 
         <chmod file="${checker}/bin/javac" perm="+x"/>
-        <chmod file="${checker}/bin/javac_maven" perm="+x"/>
 
         <delete file="${dest.file}"/>
 
@@ -308,9 +307,6 @@
                         includes="checker/bin/javac" filemode="755"/>
 
             <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
-                        includes="checker/bin/javac_maven" filemode="755"/>
-
-                        <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
                         includes="changelog.txt README.html LICENSE.txt" excludes="api/**"/>
 
             <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"

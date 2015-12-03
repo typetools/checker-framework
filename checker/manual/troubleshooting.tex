@@ -582,12 +582,20 @@ helpful if you:
   Include all files that are necessary to reproduce the problem.  This
   includes every file that is used by any of the commands you reported, and
   possibly other files as well.  Please attach the files, rather than
-  pasting their contents into the body of your bug report or email message.
+  pasting their contents into the body of your bug report or email message,
+  because some mailers mangle formatting of pasted text.
 \item
   Indicate exactly what the result was by attaching a file or using
   cut-and-paste from your command shell (don't merely describe it in
-  words).  Also indicate what you expected the result to be, and why ---
-  remember, a bug is a difference between desired and actual outcomes.
+  words).
+\item
+  Indicate what you expected the result to be, since a bug is a difference
+  between desired and actual outcomes.  Also, please indicate \textbf{why}
+  you expected that result --- explaining your reasoning can help you
+  understand how your reasoning is different than the checker's and which
+  one is wrong.  Remember that the checker reasons modularly and
+  intraprocedurally:  it examines one method at a time, using only the
+  method signatures of other methods.
 \item
   Indicate what you have already done to try to understand the problem.
   Did you do any additional experiments?  What parts of the manual did
