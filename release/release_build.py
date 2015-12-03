@@ -397,13 +397,13 @@ def main(argv):
 
     print_step("Build Step 5: Review manual changes.") # SEMIAUTO
 
-    print("Please verify that the lists of checkers in these Checker Framework chapter sections are\n" )
-    print("up to date: Introduction, Run-time tests and type refinement\n" )
+    print("If any checkers have been added or removed, then verify that the lists")
+    print("of checkers in these manual sections are up to date:")
+    print(" * Introduction")
+    print(" * Run-time tests and type refinement")
 
-    print("Please also build the manual on your local machine's enlistment and verify that the PDF\n" )
-    print("does not have lines that are longer than the page width (some lines go beyond the right margin -\n")
-    print("this is acceptable), except for lines containing command lines or code - some of these inevitably\n")
-    print("are longer than the page width.\n")
+    print("Verify that the manual PDF has no lines that are longer than the page width")
+    print("(it is acceptable for some lines to extend into the right margin).")
 
     if not auto:
         if projects_to_release[LT_OPT]:
@@ -415,7 +415,7 @@ def main(argv):
                                    AFU_TAG_PREFIXES, AFU_MANUAL, TMP_DIR + "/afu.manual"  )
 
         if projects_to_release[CF_OPT]:
-            propose_change_review( "the Checker Framework", old_jsr308_version, CHECKER_FRAMEWORK,
+            propose_change_review( "the Checker Framework manual", old_jsr308_version, CHECKER_FRAMEWORK,
                                    CHECKER_TAG_PREFIXES, CHECKER_MANUAL, TMP_DIR + "/checker-framework.manual"  )
 
     # The projects are built in the following order: JSR308-Langtools, Annotation File Utilities,
