@@ -183,8 +183,9 @@ def prompt_until_yes():
         pass
 
 def prompt_w_suggestion(msg, suggestion, validRegex=None):
+    "Only accepts answers that match validRegex."
     answer = None
-    while(answer is None):
+    while (answer is None):
         answer = raw_input(msg + " (%s): " % suggestion)
 
         if answer is None or answer == "":
@@ -977,7 +978,8 @@ def update_htaccess(releaseDir, cfLtVersion, afuVersion, htAccessTemplate, htAcc
 
     cmd = "ant -f release.xml update-htaccess-versions -Dhtaccess.file=%s -Dcflt.version=%s -Dafu.version=%s" % (htAccessTemplate, cfLtVersion, afuVersion)
     execute(cmd, True, False, releaseDir)
-    execute("cp -p %s %s" % (htAccessTemplate, htAccessToReplace))
+    # Not "cp -p" because that does not work across filesystems whereas rsync does
+    execute("rsync --times %s %s" % (htAccessTemplate, htAccessToReplace))
 
 def print_step( step ):
     print( "\n" )
