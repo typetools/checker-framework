@@ -1,5 +1,6 @@
 package org.checkerframework.checker.regex.classic.qual;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 import org.checkerframework.checker.regex.qual.Regex;
@@ -23,5 +24,7 @@ import com.sun.source.tree.Tree;
   typeNames = {java.lang.Void.class})
 @SubtypeOf({Regex.class, PartialRegex.class})
 @DefaultFor(value={DefaultLocation.LOWER_BOUNDS})
-@Target({}) // empty target prevents programmers from writing this in a program
+@Target({ElementType.TYPE_USE})
+@TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
+    DefaultLocation.EXPLICIT_UPPER_BOUNDS})
 public @interface RegexBottom {}
