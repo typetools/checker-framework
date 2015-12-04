@@ -13,12 +13,13 @@ Copyright (c) 2015 University of Washington. All rights reserved.
 from release_vars  import *
 from release_utils import *
 from sanity_checks import *
+import os
 import urllib
 import zipfile
 
 #ensure that the latest built version is
 def check_release_version( previous_release, new_release ):
-    if version_to_integer( previous_release ) >= version_to_integer( new_release ):
+    if compare_version_numbers( previous_release, new_release ) >= 0:
         raise Exception( "Previous release version ( " + previous_release + " ) should be less than " +
                          "the new release version( " + new_release + " )" )
 
@@ -32,13 +33,13 @@ def copy_release_dir( path_to_dev, path_to_live, release_version ):
     if os.path.exists( dest_location ):
         raise Exception( "Destination location exists: " + dest_location )
 
-    cmd = "cp -r %s %s" % ( source_location, dest_location )
+    cmd = "cp -rp %s %s" % ( source_location, dest_location )
     execute( cmd )
 
     return dest_location
 
 def copy_htaccess():
-    execute("cp %s %s" % (DEV_HTACCESS, LIVE_HTACCESS))
+    execute("rsync --times %s %s" % (DEV_HTACCESS, LIVE_HTACCESS))
     ensure_group_access(LIVE_HTACCESS)
 
 def copy_releases_to_live_site( checker_version, afu_version):
@@ -133,7 +134,11 @@ def stage_maven_artifacts_in_maven_central( new_checker_version ):
 
     delete_path( mvn_dist )
 
+def is_file_empty( filename ):
+    return os.path.getsize(filename) == 0
+
 def run_link_checker( site, output ):
+    delete_if_exists( output )
     check_links_script = os.path.join(CHECKER_FRAMEWORK_RELEASE, "checkLinks.sh")
     cmd = ["sh", check_links_script, site]
 
@@ -151,19 +156,15 @@ def run_link_checker( site, output ):
     return output
 
 def check_all_links( jsr308_website, afu_website, checker_website, suffix ):
-    jsr308Check  = run_link_checker( jsr308_website,  "/tmp/jsr308." + suffix + ".check" )
-    afuCheck     = run_link_checker( afu_website,     "/tmp/afu." + suffix + ".check" )
-    checkerCheck = run_link_checker( checker_website, "/tmp/checker-framework." + suffix + ".check" )
+    jsr308Check  = run_link_checker( jsr308_website,  TMP_DIR + "/jsr308." + suffix + ".check" )
+    afuCheck     = run_link_checker( afu_website,     TMP_DIR + "/afu." + suffix + ".check" )
+    checkerCheck = run_link_checker( checker_website, TMP_DIR + "/checker-framework." + suffix + ".check" )
     print( "Link checker results can be found at:\n" +
            "\t" + jsr308Check  + "\n" +
            "\t" + afuCheck     + "\n" +
            "\t" + checkerCheck + "\n" )
-
-    continue_script = prompt_w_suggestion("Delete " + suffix + " site link checker results?", "yes", "^(Yes|yes|No|no)$")
-    if is_yes(continue_script):
-        delete( jsr308Check )
-        delete( afuCheck )
-        delete( checkerCheck )
+    if (not is_file_empty( jsr308Check ) or not is_file_empty( afuCheck ) or not is_file_empty( checkerCheck )):
+        raise Exception("The link checker reported errors.  Please fix them and run release_push again.")
 
 def push_interm_to_release_repos():
     hg_push_or_fail( INTERM_JSR308_REPO )
@@ -231,6 +232,9 @@ def main(argv):
     print( "\nNOTE: Please read all the prompts printed by this script very carefully, as their" )
     print( "contents may have changed since the last time you ran it." )
 
+    print( "TODO: Fix: Unfortunately this script often (but not always) exits if you say no to" )
+    print( "performing a given step." )
+
     print_step( "Push Step 0: Verify Requirements\n" ) # MANUAL
     print( " If this is your first time running the release_push script, please verify that you have met " +
            "all the requirements specified in README-maintainers.html \"Pre-release Checklist\"\n" )
@@ -266,7 +270,7 @@ def main(argv):
 
     # Runs the link the checker on all websites at:
     # http://types.cs.washington.edu/dev/
-    # The output of the link checker is written to files in the /tmp directory
+    # The output of the link checker is written to files in the /scratch/$USER/jsr308-release directory
     # whose locations will be output at the command prompt.
 
     # It is ok for there to be broken links in JSR308 referring to ../../specification.
@@ -279,7 +283,7 @@ def main(argv):
 
     print_step( "Push Step 2: Check links on development site" ) # SEMIAUTO
 
-    if prompt_yes_no( "Run link-checker on DEV site?", True ):
+    if prompt_yes_no( "Run link checker on DEV site?", True ):
         check_all_links( dev_jsr308_website, dev_afu_website, dev_checker_website, "dev" )
 
     # Runs sanity tests on the development release. Later, we will run a smaller set of sanity
@@ -360,6 +364,22 @@ def main(argv):
     # This step downloads the checker-framework.zip file of the newly live release and ensures we
     # can run the Nullness Checker. If this step fails, you should backout the release.
 
+    print("TODO: Fix: At this point the dataflow manual needs to be copied from an old")
+    print("live web site version, such as")
+    print("/cse/www2/types/checker-framework/releases/1.9.8/checker-framework-dataflow-manual.pdf")
+    print("to")
+    print("/cse/www2/types/checker-framework/releases/current")
+    print("and then appropriate permissions need to be given with")
+    print("chmod 664 /cse/www2/types/checker-framework/releases/current/checker-framework-dataflow-manual.pdf")
+    print("These steps will no longer be needed once the dataflow manual builds automatically")
+    print("again in release_build.")
+    print("")
+
+    print("TODO: Fix: The .htaccess file is not updated correctly for the live web site.")
+    print("At this point, /cse/www2/types/.htaccess needs to be manually updated to have")
+    print("the right paths (i.e. /dev prefixes are removed and product versions are correct).")
+    print("")
+
     print_step( "Push Step 6: Run javac sanity test on the live release." ) # SEMIAUTO
     if prompt_yes_no( "Run javac sanity test on live release?", True ):
         javac_sanity_check( live_checker_website, new_checker_version )
@@ -374,7 +394,7 @@ def main(argv):
 
     # Runs the link the checker on all websites at:
     # http://types.cs.washington.edu/
-    # The output of the link checker is written to files in the /tmp directory whose locations
+    # The output of the link checker is written to files in the /scratch/$USER/jsr308-release directory whose locations
     # will be output at the command prompt. Review the link checker output.
 
     # The set of broken links that is displayed by this check will differ from those in push
@@ -383,10 +403,8 @@ def main(argv):
     # live site (the previous release). After step 5, these links point to the current
     # release and may be broken.
 
-    # NOTE: There will be many broken links within the jdk-api directory see Open JDK/JSR308 Javadoc
-
     print( "Push Step 8. Check live site links" ) # SEMIAUTO
-    if prompt_yes_no( "Run link Checker on LIVE site?", True ):
+    if prompt_yes_no( "Run link checker on LIVE site?", True ):
         check_all_links( live_jsr308_website, live_afu_website, live_checker_website, "live" )
 
     # This step pushes the changes committed to the interm repositories to the Google Code

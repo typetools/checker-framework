@@ -172,7 +172,7 @@ and \<@MethodValBottom>) should never be written in source code; they are used i
 \end{figure}
 
 \subsubsection{Subtyping rules\label{methodval-subtyping-rules}}
-Figure~\ref{fig-methodval-hierarchy} show part of the type hierarchy of  the
+Figure~\ref{fig-methodval-hierarchy} shows part of the type hierarchy of  the
 MethodVal type system.  \<@MethodVal(classname=CA, methodname=MA, params=PA)> is a subtype of
 \<@MethodVal(classname=CB, methodname=MB, params=PB)> if
 
@@ -253,7 +253,9 @@ error: [dereference.of.nullable] dereference of possibly-null reference currentL
 1 error
 \end{Verbatim}
 
+\begin{sloppypar}
 When reflection resolution is enabled, the MethodVal Checker infers that the \<@MethodVal> annotation for \<getCurrentLocationObj>  is:
+\end{sloppypar}
 \begin{center}
 \<@MethodVal(className="LocationInfo", methodName="getCurrentLocation", params=0)>
 \end{center}

@@ -79,9 +79,11 @@ If the error is
 package org.checkerframework.checker.nullness.qual does not exist
 \end{Verbatim}
 
+\begin{sloppypar}
 \noindent
 (note the extra apostrophe!), then you have probably misused quoting when
 supplying the (deprecated) \code{jsr308\_imports} environment variable.
+\end{sloppypar}
 
 \item
 If you get an error like one of the following,
@@ -115,10 +117,12 @@ The type com.sun.source.util.AbstractTypeProcessor cannot be resolved.
   It is indirectly referenced from required .class files
 \end{alltt}
 
+\begin{sloppypar}
 \noindent
 then you are likely \textbf{not} using the Checker Framework compiler.  Use
 either \code{\$CHECKERFRAMEWORK/checker/bin/javac} one of the alternatives
 described in Section~\ref{installation}.
+\end{sloppypar}
 
 
 \item
@@ -540,9 +544,15 @@ classfile that targets an earlier JVM by supplying arguments such as
 The following warning is innocuous and you can ignore it, or you can
 suppress it using the \<-Xlint:-classfile> command-line argument to javac:
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
 warning: [classfile] RuntimeVisibleTypeAnnotations attribute introduced in version 52.0 class files is ignored in version 51.0 class files
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 This warning results when you compile a library using the Checker Framework
 compiler, then use a normal Java compiler to compile client code that uses
@@ -670,9 +680,15 @@ variable might already be set, because it is needed for Ant to work.)
 In the bash shell, the following command \emph{sometimes} works (it might
 not because \<java> might be the version in the JDK or in the JRE):
 % Can someone give a simpler command?
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
   export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 \item
 Compile the Type Annotations tools:

@@ -1,6 +1,9 @@
 Version 1.9.9, 1 December 2015
 
-Fixed issue:  511.
+Fixed issues:  511, 513, 514, 455, 527.
+
+Removed the javac_maven script and batch file,
+which had been previously deprecated.
 
 ---------------------------------------------------------------------------
 
