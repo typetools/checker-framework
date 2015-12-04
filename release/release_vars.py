@@ -51,8 +51,8 @@ LIVE_HTACCESS = os.path.join(FILE_PATH_TO_LIVE_SITE, ".htaccess")
 PGP_PASSPHRASE_FILE = "/projects/swlab1/checker-framework/release-private.password"
 SONATYPE_OSS_URL = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 SONATYPE_STAGING_REPO_ID = "sonatype-nexus-staging"
-SONATYPE_CLOSING_DIRECTIONS_URL = "https://central.sonatype.org/pages/releasing-the-deployment.html"
-SONATYPE_RELEASE_DIRECTIONS_URL = "https://central.sonatype.org/pages/releasing-the-deployment.html"
+SONATYPE_CLOSING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
+SONATYPE_RELEASE_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
 SONATYPE_DROPPING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
 
 # "USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566
