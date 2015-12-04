@@ -30,7 +30,7 @@ import com.sun.source.tree.Tree.Kind;
 @TypeQualifier
 @SubtypeOf({Mutable.class, Immutable.class, I.class,
     Modifier.class, O.class})
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE})
 @TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
     DefaultLocation.EXPLICIT_UPPER_BOUNDS})
 @ImplicitFor(

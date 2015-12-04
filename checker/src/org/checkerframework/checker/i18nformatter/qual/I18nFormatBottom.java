@@ -25,7 +25,7 @@ import com.sun.source.tree.Tree;
  */
 @TypeQualifier
 @SubtypeOf({ I18nFormat.class, I18nInvalidFormat.class, I18nFormatFor.class })
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE})
 @TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
     DefaultLocation.EXPLICIT_UPPER_BOUNDS})
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })

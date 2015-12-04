@@ -26,7 +26,7 @@ import com.sun.source.tree.Tree;
 @InvisibleQualifier
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
 @SubtypeOf({ MethodVal.class })
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE})
 @TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
     DefaultLocation.EXPLICIT_UPPER_BOUNDS})
 public @interface MethodValBottom {

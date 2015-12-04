@@ -20,7 +20,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @Documented
 @TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
     DefaultLocation.EXPLICIT_UPPER_BOUNDS})
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE})
 @SubtypeOf({}) //subtype relationships are set up by passing this class as a bottom
                //to the multigraph hierarchy constructor
 @Retention(RetentionPolicy.RUNTIME)
