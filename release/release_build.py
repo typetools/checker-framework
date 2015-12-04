@@ -53,7 +53,7 @@ The following repositories will be deleted then re-cloned from their origins:
 
 def copy_cf_logo(cf_release_dir):
     dev_releases_png = os.path.join(cf_release_dir, "CFLogo.png")
-    cmd="cp -p %s %s" % (LIVE_CF_LOGO, dev_releases_png)
+    cmd="rsync --times %s %s" % (LIVE_CF_LOGO, dev_releases_png)
     execute(cmd)
 
 def get_afu_date( building_afu ):
@@ -63,10 +63,10 @@ def get_afu_date( building_afu ):
         afu_site = os.path.join( HTTP_PATH_TO_LIVE_SITE, "annotation-file-utilities" )
         return extract_from_site( afu_site, "<!-- afu-date -->", "<!-- /afu-date -->" )
 
-def jsr308_checker_framework_version( auto ):
-    curr_version = current_distribution( CHECKER_FRAMEWORK )
+def get_new_version( project_name, curr_version, auto ):
+    "Queries the user for the new version number; returns old and new version numbers."
 
-    print "Current JSR308/Checker Framework: " + curr_version
+    print "Current " + project_name + " version: " + curr_version
     suggested_version = increment_version( curr_version )
 
     if auto:
@@ -75,6 +75,10 @@ def jsr308_checker_framework_version( auto ):
         new_version = prompt_w_suggestion( "Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$" )
 
     print "New version: " + new_version
+
+    if curr_version == new_version:
+        curr_version = prompt_w_suggestion( "Enter current version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$" )
+        print "Current version: " + curr_version
 
     return (curr_version, new_version)
 
@@ -136,20 +140,6 @@ def build_jsr308_langtools_release(auto, version, afu_release_date, checker_fram
 def get_current_date():
     return CURRENT_DATE.strftime("%d %b %Y")
 
-def get_afu_version( auto ):
-    anno_html = os.path.join(ANNO_FILE_UTILITIES, "annotation-file-utilities.html")
-    version = get_afu_version_from_html( anno_html )
-
-    print "Current Annotation File Utilities Version: " + version
-    suggested_version = increment_version( version )
-    new_version = suggested_version
-
-    if not auto:
-        new_version = prompt_w_suggestion("Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
-    else:
-        print "New version: " + new_version
-
-    return (version, new_version)
 
 def build_annotation_tools_release( auto, version, afu_interm_dir ):
     jv = execute( 'java -version', True )
@@ -340,8 +330,12 @@ def main(argv):
     # NOTE: If you pass --auto on the command line then the next logical version will be chosen automatically
 
     print_step("Build Step 3: Determine release versions.") # SEMIAUTO
-    (old_jsr308_version, jsr308_version) = jsr308_checker_framework_version( auto )
-    (old_afu_version, afu_version)       = get_afu_version( auto )
+
+    old_jsr308_version = current_distribution( CHECKER_FRAMEWORK )
+    (old_jsr308_version, jsr308_version) = get_new_version( "JSR308/Checker Framework", old_jsr308_version, auto )
+    anno_html = os.path.join(ANNO_FILE_UTILITIES, "annotation-file-utilities.html")
+    old_afu_version = get_afu_version_from_html( anno_html )
+    (old_afu_version, afu_version)       = get_new_version( "Annotation File Utilities", old_afu_version, auto )
 
     print("If you get a warning about deleting existing directories,")
     print("it is most likely because you previously ran this script")

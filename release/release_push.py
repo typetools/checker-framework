@@ -39,7 +39,7 @@ def copy_release_dir( path_to_dev, path_to_live, release_version ):
     return dest_location
 
 def copy_htaccess():
-    execute("cp -p %s %s" % (DEV_HTACCESS, LIVE_HTACCESS))
+    execute("rsync --times %s %s" % (DEV_HTACCESS, LIVE_HTACCESS))
     ensure_group_access(LIVE_HTACCESS)
 
 def copy_releases_to_live_site( checker_version, afu_version):
