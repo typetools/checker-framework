@@ -305,7 +305,7 @@ def main(argv):
         maven_sanity_check( "maven-dev", MAVEN_DEV_REPO, new_checker_version )
 
     print_step( "3c: Build the Eclipse plugin and test." )
-    print("Please download: http://types.cs.washington.edu/dev/checker-framework/current/checker-framework.zip")
+    print("Please download: http://types.cs.washington.edu/dev/checker-framework/current/checker-framework-%s.zip" % checker_version)
     print("Use the jars in the dist directory along with the instructions at " +
           "checker-framework/eclipse/README-developers.html to build the Eclipse plugin." +
           "Please install this version in the latest version of Eclipse and follow the tutorial at:\n" +
@@ -361,7 +361,7 @@ def main(argv):
     else:
         print( "Test mode: Skipping copy to live site!" )
 
-    # This step downloads the checker-framework.zip file of the newly live release and ensures we
+    # This step downloads the checker-framework-X.Y.Z.zip file of the newly live release and ensures we
     # can run the Nullness Checker. If this step fails, you should backout the release.
 
     print("TODO: Fix: At this point the dataflow manual needs to be copied from an old")
