@@ -195,20 +195,9 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
     checker_manual_dir = os.path.join(checker_dir, "manual")
     execute("make manual.pdf manual.html", True, False, checker_manual_dir)
 
-
     #make the dataflow manual
     dataflow_manual_dir = os.path.join(CHECKER_FRAMEWORK, "dataflow", "manual")
-
-    print("TODO: Fix: After the upgrade to Fedora 22, the dataflow manual refuses to build.  The manual is rarely updated " +
-          "so we copy the old one from the previous release's live web site and place it in" +
-          "the current release's live web site before step 8 (check live site links) of release_push.\n" +
-          "Note: When fixing this, you should remove the failonerror=true in release.xml which copies the dataflow file" +
-          "in target checker-framework-website-docs\n" +
-          "WARNING: This needs to be fixed!\n")
-    print("")
-    #execute("pdflatex dataflow.tex", True, False, dataflow_manual_dir)
-    # Yes, run it twice
-    #execute("pdflatex dataflow.tex", True, False, dataflow_manual_dir)
+    execute("make", True, False, dataflow_manual_dir)
 
     #make the checker framework tutorial
     checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")

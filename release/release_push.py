@@ -364,17 +364,8 @@ def main(argv):
     # This step downloads the checker-framework-X.Y.Z.zip file of the newly live release and ensures we
     # can run the Nullness Checker. If this step fails, you should backout the release.
 
-    print("TODO: Fix: At this point the dataflow manual needs to be copied from an old")
-    print("live web site version, such as")
-    print("/cse/www2/types/checker-framework/releases/1.9.8/checker-framework-dataflow-manual.pdf")
-    print("to")
-    print("/cse/www2/types/checker-framework/releases/current")
-    print("and then appropriate permissions need to be given with")
-    print("chmod 664 /cse/www2/types/checker-framework/releases/current/checker-framework-dataflow-manual.pdf")
-    print("These steps will no longer be needed once the dataflow manual builds automatically")
-    print("again in release_build.")
-    print("")
-
+    print("TODO: A better solution to the .htaccess issue is to have a single .htaccess file")
+    print("rather than two different ones.")
     print("TODO: Fix: The .htaccess file is not updated correctly for the live web site.")
     print("At this point, /cse/www2/types/.htaccess needs to be manually updated to have")
     print("the right paths (i.e. /dev prefixes are removed and product versions are correct).")
