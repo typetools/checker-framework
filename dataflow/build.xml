@@ -126,6 +126,11 @@
     <!-- TODO: add a type-checking target that doesn't use
          -XDTA:noannotations in comments. -->
 
+    <target name="manual" depends="prep" description="Create PDF manual">
+        <exec executable="make" dir="manual" failonerror="true">
+        </exec>
+    </target>
+
     <!--
     This target seems to only work if tools.jar is already in the
     classpath (despite the attempt in the body to add tools.jar to the

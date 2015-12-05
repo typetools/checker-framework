@@ -216,7 +216,7 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
 
     cfZipName = "checker-framework-%s.zip" % version
 
-    #zip up checker-framework.zip and put it in checker_framework_interm_dir
+    # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
     ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, cfZipName, version)
     ant_cmd   = "ant -f release.xml %s zip-checker-framework " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
@@ -434,10 +434,6 @@ def main(argv):
 
 
     print_step("Build Step 7: Overwrite .htaccess.") # SEMIAUTO
-    print("The release script will now update %s to redirect any requests for the old unversioned zip files\n" % DEV_HTACCESS)
-    print("e.g., checker-framework/current/checker-framework.zip\n")
-    print("to the new versioned zips.")
-    print("e.g., checker-framework/current/checker-framework-%s.zip\n" % jsr308_version)
 
     update_htaccess(CHECKER_FRAMEWORK_RELEASE, jsr308_version, afu_version, RELEASE_DEV_HTACCESS, DEV_HTACCESS)
     copy_cf_logo(checker_framework_interm_dir)
