@@ -648,13 +648,6 @@ git clone https://github.com/typetools/annotation-tools.git annotation-tools
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
-\noindent
-(Alternately, you could use the version of the source code that is packaged
-in the Checker Framework release.)
-
-% TODO: the AFU and JSR 308 source code is not included in the
-% checker-framework.zip file!
-
 
 \subsection{Build the Type Annotations compiler\label{building-compiler}}
 
@@ -828,83 +821,6 @@ sudo apt-get install hevea librsvg2-bin
 \item
 Run \code{make} in the \code{checker/manual} directory to build both the PDF and HTML versions of the manual.
 \end{enumerate}
-
-% \subsection{Adjust classpath}
-
-% Building the Checker Framework requires use of a Java 8 compiler.  You may
-% use either the OpenJDK compiler or the Checker Framework compiler.  The latter has a
-% few extra features and tends to get bug fixes more quickly.
-
-% The following instructions give detailed steps for installing the source
-% release of the Checker Framework.
-
-
-% \item Download and install the JSR 308 implementation; follow the instructions at
-% % alternative: \urldef{\JsrInstallingUrl}{\url}{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}
-% {\codesize\url{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}}.
-% This creates a \code{jsr308-langtools} directory.
-%
-% \item Download the Checker Framework distribution zipfile from
-% \myurl{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip},
-% and unzip it to create a \code{checkers} directory.  We recommend that the
-% \code{checkers} directory and the \code{jsr308-langtools} directory be siblings.
-% Example commands:
-%
-% \begin{Verbatim}
-%   cd $JSR308
-%   wget http://types.cs.washington.edu/checker-framework/current/checker-framework.zip
-%   unzip checker-framework.zip
-% \end{Verbatim}
-%
-% You will also need to adjust the path to \<javac> in any Ant buildfiles,
-% etc.
-
-% \item Optionally edit property \code{compiler.lib} in file
-%   \code{build-common.properties}.  You don't have to do this if the
-%   \code{checker} directory and the \code{jsr308-langtools} directory are
-%   siblings.
-
-
-% (A checker implementation builds on
-% standard mechanisms such as JSR 269 annotation processing, but also
-% accesses the compiler's AST. In the long run, a checker built using the
-% Checker Framework should not be dependent on any compiler specifics.)
-% If you do not place the annotations in
-% then you should also disable Eclipse's on-the-fly syntax checking.
-
-
-
-
-% \subsection{TO DO:  The short instructions (for Linux only)}
-%
-% %%% This comment does not seem to be correct any longer.
-% %% This text is identically reproduced at ../../jsr308-langtools/README-jsr308.html
-% %% so if you change either one, change the other also!
-%
-% The following commands install
-% the JSR 308 \code{javac} compiler and the Checker
-% Framework, or update an existing installation.
-% It currently works only on \textbf{Linux}.
-% For more details, or if anything goes wrong, see the comments in the
-% \code{Makefile-jsr308-install} file.
-%
-% \begin{enumerate}
-%
-% \item
-%   Execute the following commands:
-%
-% \begin{Verbatim}
-%   cd
-%   wget -nv -N http://types.cs.washington.edu/jsr308/Makefile-jsr308-install
-%   make -f Makefile-jsr308-install
-% \end{Verbatim}
-%
-% \item
-% Set some environment variables according to the instructions at the top of file
-% \code{Makefile-jsr308-install}.
-%
-% \end{enumerate}
-
 
 
 \section{Publications\label{publications}\label{learning-more}}
