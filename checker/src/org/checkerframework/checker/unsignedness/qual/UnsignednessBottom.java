@@ -6,11 +6,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
-<<<<<<< HEAD
  * UnsignednessBottom is the bottom qualifier in the Unsigned Type
-=======
- * {@link UnsignednessBottom} is the bottom qualifier in the Unsigned Type
->>>>>>> origin/master
  * System, and is only assigned to a value in error.
  */
 
