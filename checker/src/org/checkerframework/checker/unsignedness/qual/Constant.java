@@ -11,7 +11,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
+<<<<<<< HEAD
  * Constant is a type qualifier which indicates that a value
+=======
+ * {@link Constant} is a type qualifier that indicates that a value
+>>>>>>> origin/master
  * is a compile-time constant, and could be {@link Unsigned} or 
  * {@link Signed}.
  */
