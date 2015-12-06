@@ -11,22 +11,23 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.javacutil.Pair;
 
 public class UnsignednessTypeFactory extends 
-				GenericAnnotatedTypeFactory<CFValue, CFStore, 
-					UnsignednessTransfer, UnsignednessAnalysis> {
+                GenericAnnotatedTypeFactory<CFValue, CFStore, 
+                    UnsignednessTransfer, UnsignednessAnalysis> {
 
-	public UnsignednessTypeFactory(BaseTypeChecker checker) {
-		super(checker);
-	}
+    public UnsignednessTypeFactory( BaseTypeChecker checker ) {
+        super( checker );
+    }
 
-	public UnsignednessTypeFactory(BaseTypeChecker checker, 
-		boolean useFlow) {
+    public UnsignednessTypeFactory(BaseTypeChecker checker, 
+        boolean useFlow) {
 
-		super(checker, useFlow);
-	}
+        super(checker, useFlow);
+    }
 
-	@Override
-	protected UnsignednessAnalysis createFlowAnalysis(
-				List<Pair<VariableElement, CFValue>> fieldValues) {
-		return new UnsignednessAnalysis(checker, this, fieldValues);
-	}
+    @Override
+    protected UnsignednessAnalysis createFlowAnalysis(
+                List<Pair<VariableElement, CFValue>> fieldValues ) {
+        
+        return new UnsignednessAnalysis( checker, this, fieldValues );
+    }
 }

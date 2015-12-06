@@ -12,9 +12,9 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.flow.CFStore;
 
 public class UnsignednessTransfer extends
-		CFAbstractTransfer<CFValue, CFStore, UnsignednessTransfer> {
+        CFAbstractTransfer<CFValue, CFStore, UnsignednessTransfer> {
 
-	public UnsignednessTransfer(UnsignednessAnalysis analysis) {
-		super(analysis);
-	}
+    public UnsignednessTransfer( UnsignednessAnalysis analysis ) {
+        super( analysis );
+    }
 }

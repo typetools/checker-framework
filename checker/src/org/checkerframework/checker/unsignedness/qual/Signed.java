@@ -14,15 +14,14 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * be interpreted using two's complement encoding, and should function
  * normally in Java.
  */
-
 @TypeQualifier
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf({UnknownSignedness.class})
+@Target( { ElementType.TYPE_USE, ElementType.TYPE_PARAMETER } )
+@SubtypeOf( { UnknownSignedness.class } )
 @ImplicitFor(
-	types = {
-		TypeKind.BYTE, 
-		TypeKind.INT, 
-		TypeKind.LONG, 
-		TypeKind.SHORT
-	})
-public @interface Signed {}
+    types = {
+        TypeKind.BYTE, 
+        TypeKind.INT, 
+        TypeKind.LONG, 
+        TypeKind.SHORT
+    } )
+public @interface Signed { }

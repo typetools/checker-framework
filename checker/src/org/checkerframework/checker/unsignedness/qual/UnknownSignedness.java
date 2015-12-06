@@ -12,9 +12,8 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * signedness is either not known after some operation, or cannot have
  * a signedness.
  */
-
 @TypeQualifier
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf({})
+@Target( { ElementType.TYPE_USE, ElementType.TYPE_PARAMETER } )
+@SubtypeOf( { } )
 @DefaultQualifierInHierarchy
-public @interface UnknownSignedness {}
+public @interface UnknownSignedness { }

@@ -15,13 +15,12 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * is a compile-time constant, and could be {@link Unsigned} or 
  * {@link Signed}.
  */
-
 @TypeQualifier
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf({Unsigned.class, Signed.class})
+@Target( { ElementType.TYPE_USE, ElementType.TYPE_PARAMETER } )
+@SubtypeOf( { Unsigned.class, Signed.class } )
 @ImplicitFor(
-	trees = {
-		Tree.Kind.INT_LITERAL,
-		Tree.Kind.LONG_LITERAL
-	})
-public @interface Constant {}
+    trees = {
+        Tree.Kind.INT_LITERAL,
+        Tree.Kind.LONG_LITERAL
+    } )
+public @interface Constant { }

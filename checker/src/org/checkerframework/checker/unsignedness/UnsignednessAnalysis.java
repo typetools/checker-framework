@@ -12,31 +12,31 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.Pair;
 
 public class UnsignednessAnalysis extends
-		CFAbstractAnalysis<CFValue, CFStore, UnsignednessTransfer> {
+        CFAbstractAnalysis<CFValue, CFStore, UnsignednessTransfer> {
 
-	public UnsignednessAnalysis(BaseTypeChecker checker,
-			UnsignednessTypeFactory factory,
-			List<Pair<VariableElement, CFValue>> fieldValues) {
-		super(checker, factory, fieldValues);
-	}
+    public UnsignednessAnalysis( BaseTypeChecker checker,
+            UnsignednessTypeFactory factory,
+            List<Pair<VariableElement, CFValue>> fieldValues ) {
+        super( checker, factory, fieldValues );
+    }
 
-	@Override
-	public UnsignednessTransfer createTransferFunction() {
-		return new UnsignednessTransfer(this);
-	}
+    @Override
+    public UnsignednessTransfer createTransferFunction( ) {
+        return new UnsignednessTransfer( this );
+    }
 
-	@Override
-	public CFStore createEmptyStore(boolean sequentialSemantics) {
-		return new CFStore(this, sequentialSemantics);
-	}
+    @Override
+    public CFStore createEmptyStore( boolean sequentialSemantics ) {
+        return new CFStore( this, sequentialSemantics );
+    }
 
-	@Override
-	public CFStore createCopiedStore(CFStore s) {
-		return new CFStore(this, s);
-	}
+    @Override
+    public CFStore createCopiedStore( CFStore s ) {
+        return new CFStore( this, s );
+    }
 
-	@Override
-	public CFValue createAbstractValue(AnnotatedTypeMirror type) {
-		return defaultCreateAbstractValue(this, type);
-	}
+    @Override
+    public CFValue createAbstractValue( AnnotatedTypeMirror type ) {
+        return defaultCreateAbstractValue( this, type );
+    }
 }

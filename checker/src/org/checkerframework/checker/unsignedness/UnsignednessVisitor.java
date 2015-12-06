@@ -13,185 +13,184 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessTypeFactory> {
 
-	public UnsignednessVisitor(BaseTypeChecker checker) {
-		super(checker);
-	}
+    public UnsignednessVisitor(BaseTypeChecker checker) {
+        super(checker);
+    }
 
-	protected UnsignednessVisitor(BaseTypeChecker checker, 
-				UnsignednessTypeFactory factory) {
+    protected UnsignednessVisitor(BaseTypeChecker checker, 
+                UnsignednessTypeFactory factory) {
 
-		super(checker, factory);
-	}
+        super(checker, factory);
+    }
 
-	@Override
-	protected UnsignednessTypeFactory createTypeFactory() {
-		return new UnsignednessTypeFactory(checker);
-	}
+    @Override
+    protected UnsignednessTypeFactory createTypeFactory() {
+        return new UnsignednessTypeFactory(checker);
+    }
 
-	@Override
-	public Void visitBinary(BinaryTree node, Void p) {
+    @Override
+    public Void visitBinary(BinaryTree node, Void p) {
 
-		super.visitBinary(node, p);
+        super.visitBinary(node, p);
 
-		ExpressionTree leftOp = node.getLeftOperand();
-		ExpressionTree rightOp = node.getRightOperand();
-		AnnotatedTypeMirror leftOpType = atypeFactory.getAnnotatedType(leftOp);
-		AnnotatedTypeMirror rightOpType = atypeFactory.getAnnotatedType(rightOp);
+        ExpressionTree leftOp = node.getLeftOperand();
+        ExpressionTree rightOp = node.getRightOperand();
+        AnnotatedTypeMirror leftOpType = atypeFactory.getAnnotatedType(leftOp);
+        AnnotatedTypeMirror rightOpType = atypeFactory.getAnnotatedType(rightOp);
 
-		Kind kind = node.getKind();
+        Kind kind = node.getKind();
 
-		switch(kind) {
-			
-			case DIVIDE:
-			case REMAINDER:
+        switch (kind) {
+            
+            case DIVIDE:
+            case REMAINDER:
 
-				if(leftOpType.hasAnnotation(Unsigned.class)) {
-					
-					checker.report(Result.failure("binary.operation.type.incompatible",
-						kind), node);
-				}
+                if (leftOpType.hasAnnotation( Unsigned.class) ) {
+                    
+                    checker.report(Result.failure("binary.operation.type.incompatible",
+                        kind), node);
+                }
 
-				else if(rightOpType.hasAnnotation(Unsigned.class)) {
-					
-					checker.report(Result.failure("binary.operation.type.incompatible",
-						kind), node);
-				}
-				break;
+                else if (rightOpType.hasAnnotation(Unsigned.class)) {
+                    
+                    checker.report(Result.failure("binary.operation.type.incompatible",
+                        kind), node);
+                }
+                break;
 
-			case RIGHT_SHIFT:
+            case RIGHT_SHIFT:
 
-				if(leftOpType.hasAnnotation(Unsigned.class)) {
-					
-					checker.report(Result.failure("binary.operation.shift.type.incompatible",
-						kind, "unsigned"), node);
-				}
-				break;
+                if (leftOpType.hasAnnotation(Unsigned.class)) {
+                    
+                    checker.report(Result.failure("binary.operation.shift.type.incompatible",
+                        kind, "unsigned"), node);
+                }
+                break;
 
-			case UNSIGNED_RIGHT_SHIFT:
+            case UNSIGNED_RIGHT_SHIFT:
 
-				if(leftOpType.hasAnnotation(Signed.class)) {
+                if (leftOpType.hasAnnotation(Signed.class)) {
 
-					checker.report(Result.failure("binary.operation.shift.type.incompatible",
-						kind, "signed"), node);
-				}
-				break;
+                    checker.report(Result.failure("binary.operation.shift.type.incompatible",
+                        kind, "signed"), node);
+                }
+                break;
 
-			case GREATER_THAN:
-			case GREATER_THAN_EQUAL:
-			case LESS_THAN:
-			case LESS_THAN_EQUAL:
+            case GREATER_THAN:
+            case GREATER_THAN_EQUAL:
+            case LESS_THAN:
+            case LESS_THAN_EQUAL:
 
-				if(leftOpType.hasAnnotation(Unsigned.class)) {
-					
-					checker.report(Result.failure("binary.comparison.type.incompatible",
-						kind), node);
-				}
+                if (leftOpType.hasAnnotation(Unsigned.class)) {
 
-				else if(rightOpType.hasAnnotation(Unsigned.class)) {
-					
-					checker.report(Result.failure("binary.comparison.type.incompatible",
-						kind), node);
-				}
+                    checker.report(Result.failure("binary.comparison.type.incompatible",
+                        kind), node);
+                }
 
-				break;
+                else if (rightOpType.hasAnnotation(Unsigned.class)) {
 
-			case EQUAL_TO:
-			case NOT_EQUAL_TO:
+                    checker.report(Result.failure("binary.comparison.type.incompatible",
+                        kind), node);
+                }
+                break;
 
-				if(leftOpType.hasAnnotation(Unsigned.class) && rightOpType.hasAnnotation(Signed.class)){
+            case EQUAL_TO:
+            case NOT_EQUAL_TO:
 
-					checker.report(Result.failure("binary.comparison.type.incompatible.unsignedlhs",
-						kind), node);
-				}
-				else if(leftOpType.hasAnnotation(Signed.class) && rightOpType.hasAnnotation(Unsigned.class)){
+                if (leftOpType.hasAnnotation(Unsigned.class) && rightOpType.hasAnnotation(Signed.class)){
 
-					checker.report(Result.failure("binary.comparison.type.incomaptible.unsignedrhs",
-						kind), node);
-				}
-				break;
+                    checker.report(Result.failure("binary.comparison.type.incompatible.unsignedlhs",
+                        kind), node);
+                }
+                else if (leftOpType.hasAnnotation(Signed.class) && rightOpType.hasAnnotation(Unsigned.class)){
 
-			default:
+                    checker.report(Result.failure("binary.comparison.type.incomaptible.unsignedrhs",
+                        kind), node);
+                }
+                break;
 
-				if(leftOpType.hasAnnotation(Unsigned.class) && rightOpType.hasAnnotation(Signed.class)){
+            default:
 
-					checker.report(Result.failure("binary.operation.type.incompatible.unsignedlhs",
-						kind), node);
-				}
-				else if(leftOpType.hasAnnotation(Signed.class) && rightOpType.hasAnnotation(Unsigned.class)){
+                if (leftOpType.hasAnnotation(Unsigned.class) && rightOpType.hasAnnotation(Signed.class)){
 
-					checker.report(Result.failure("binary.operation.type.incompatible.unsignedrhs",
-						kind), node);
-				}
-				break;
+                    checker.report(Result.failure("binary.operation.type.incompatible.unsignedlhs",
+                        kind), node);
+                }
+                else if (leftOpType.hasAnnotation(Signed.class) && rightOpType.hasAnnotation(Unsigned.class)){
 
-		}
+                    checker.report(Result.failure("binary.operation.type.incompatible.unsignedrhs",
+                        kind), node);
+                }
+                break;
 
-		return null;
-	}
+        }
 
-	@Override
-	public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-	
-		super.visitCompoundAssignment(node, p);
+        return null;
+    }
 
-		ExpressionTree var = node.getVariable();
-		ExpressionTree expr = node.getExpression();
-		AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(var);
-		AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+    
+        super.visitCompoundAssignment(node, p);
 
-		Kind kind = node.getKind();
+        ExpressionTree var = node.getVariable();
+        ExpressionTree expr = node.getExpression();
+        AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(var);
+        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
 
-		switch(kind) {
-			
-			case DIVIDE_ASSIGNMENT:
-			case REMAINDER_ASSIGNMENT:
+        Kind kind = node.getKind();
 
-				if(varType.hasAnnotation(Unsigned.class)) {
-					
-					checker.report(Result.failure("binary.operation.type.incompatible",
-						kind), node);
-				}
+        switch (kind) {
+            
+            case DIVIDE_ASSIGNMENT:
+            case REMAINDER_ASSIGNMENT:
 
-				else if(exprType.hasAnnotation(Unsigned.class)) {
-					
-					checker.report(Result.failure("binary.operation.type.incompatible",
-						kind), node);
-				}
-				break;
+                if (varType.hasAnnotation(Unsigned.class)) {
+                    
+                    checker.report(Result.failure("binary.operation.type.incompatible",
+                        kind), node);
+                }
 
-			case RIGHT_SHIFT_ASSIGNMENT:
+                else if (exprType.hasAnnotation(Unsigned.class)) {
+                    
+                    checker.report(Result.failure("binary.operation.type.incompatible",
+                        kind), node);
+                }
+                break;
 
-				if(varType.hasAnnotation(Unsigned.class)) {
-					
-					checker.report(Result.failure("binary.operation.type.shift.incompatible",
-						kind, "unsigned"), node);
-				}
-				break;
+            case RIGHT_SHIFT_ASSIGNMENT:
 
-			case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+                if (varType.hasAnnotation(Unsigned.class)) {
+                    
+                    checker.report(Result.failure("binary.operation.type.shift.incompatible",
+                        kind, "unsigned"), node);
+                }
+                break;
 
-				if(varType.hasAnnotation(Signed.class)) {
+            case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
 
-					checker.report(Result.failure("binary.operation.type.shift.incompatible",
-						kind, "signed"), node);
-				}
-				break;
+                if (varType.hasAnnotation(Signed.class)) {
 
-			default:
-				if(varType.hasAnnotation(Unsigned.class) && exprType.hasAnnotation(Signed.class)){
+                    checker.report(Result.failure("binary.operation.type.shift.incompatible",
+                        kind, "signed"), node);
+                }
+                break;
 
-					checker.report(Result.failure("binary.operation.type.incompatible.unsignedlhs",
-						kind), node);
-				}
-				else if(varType.hasAnnotation(Signed.class) && exprType.hasAnnotation(Unsigned.class)){
+            default:
+                if (varType.hasAnnotation(Unsigned.class) && exprType.hasAnnotation(Signed.class)){
 
-					checker.report(Result.failure("binary.operation.type.incompatible.unsignedrhs",
-						kind), node);
-				}
-				break;
+                    checker.report(Result.failure("binary.operation.type.incompatible.unsignedlhs",
+                        kind), node);
+                }
+                else if (varType.hasAnnotation(Signed.class) && exprType.hasAnnotation(Unsigned.class)){
 
-		}
+                    checker.report(Result.failure("binary.operation.type.incompatible.unsignedrhs",
+                        kind), node);
+                }
+                break;
 
-		return null;
-	}
+        }
+
+        return null;
+    }
 }

@@ -9,8 +9,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * UnsignednessBottom is the bottom qualifier in the Unsigned Type
  * System, and is only assigned to a value in error.
  */
-
 @TypeQualifier
-@Target({})
-@SubtypeOf({Constant.class})
-public @interface UnsignednessBottom {}
+@Target( { } )
+@SubtypeOf( { Constant.class } )
+public @interface UnsignednessBottom { }
