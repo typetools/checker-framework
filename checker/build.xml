@@ -706,7 +706,7 @@
 
     <target name="nullness-extra-tests-nojdk" depends="dist-nojdk,jdk.jar.exists,build-tests"
             description="Run extra tests for the Nullness Checker, WITHOUT updating jdkX.jar">
-        <exec executable="chmod">
+        <exec executable="chmod" failonerror="true">
             <arg line="+x ${basedir}/bin/javac"/>
         </exec>
 
@@ -874,7 +874,7 @@
 
     <target name="units-extension-tests" depends="jar,build-tests"
             description="Run tests for the Units Checker extension capabilities">
-        <exec executable="chmod">
+        <exec executable="chmod" failonerror="true">
             <arg line="+x ${basedir}/bin/javac"/>
         </exec>
 
@@ -897,7 +897,7 @@
 
     <target name="example-tests-nojdk" depends="dist-nojdk,jdk.jar.exists,build-tests"
             description="Run tests for the example programs, WITHOUT updating jdkX.jar">
-      <exec executable="chmod">
+      <exec executable="chmod" failonerror="true">
         <arg line="+x ${basedir}/bin/javac"/>
       </exec>
 
