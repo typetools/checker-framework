@@ -79,9 +79,11 @@ If the error is
 package org.checkerframework.checker.nullness.qual does not exist
 \end{Verbatim}
 
+\begin{sloppypar}
 \noindent
 (note the extra apostrophe!), then you have probably misused quoting when
 supplying the (deprecated) \code{jsr308\_imports} environment variable.
+\end{sloppypar}
 
 \item
 If you get an error like one of the following,
@@ -115,10 +117,12 @@ The type com.sun.source.util.AbstractTypeProcessor cannot be resolved.
   It is indirectly referenced from required .class files
 \end{alltt}
 
+\begin{sloppypar}
 \noindent
 then you are likely \textbf{not} using the Checker Framework compiler.  Use
 either \code{\$CHECKERFRAMEWORK/checker/bin/javac} one of the alternatives
 described in Section~\ref{installation}.
+\end{sloppypar}
 
 
 \item
@@ -150,7 +154,9 @@ with a Java 6 or 7 compiler that will ignore the annotations in comments.
 
 \item
 A ``class file for \ldots\ not found'' error, especially for an inner class
-in the JDK, is probably due to a JDK version mismatch.
+in the JDK, is probably due to a JDK version mismatch.  To solve the
+problem, you need to perform compilation with a different Java version or
+different version of the JDK\@.
 
 In general, Java issues a ``class file for \ldots\ not found'' error when
 your classpath contains code that was compiled
@@ -540,9 +546,15 @@ classfile that targets an earlier JVM by supplying arguments such as
 The following warning is innocuous and you can ignore it, or you can
 suppress it using the \<-Xlint:-classfile> command-line argument to javac:
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
 warning: [classfile] RuntimeVisibleTypeAnnotations attribute introduced in version 52.0 class files is ignored in version 51.0 class files
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 This warning results when you compile a library using the Checker Framework
 compiler, then use a normal Java compiler to compile client code that uses
@@ -582,12 +594,20 @@ helpful if you:
   Include all files that are necessary to reproduce the problem.  This
   includes every file that is used by any of the commands you reported, and
   possibly other files as well.  Please attach the files, rather than
-  pasting their contents into the body of your bug report or email message.
+  pasting their contents into the body of your bug report or email message,
+  because some mailers mangle formatting of pasted text.
 \item
   Indicate exactly what the result was by attaching a file or using
   cut-and-paste from your command shell (don't merely describe it in
-  words).  Also indicate what you expected the result to be, and why ---
-  remember, a bug is a difference between desired and actual outcomes.
+  words).
+\item
+  Indicate what you expected the result to be, since a bug is a difference
+  between desired and actual outcomes.  Also, please indicate \textbf{why}
+  you expected that result --- explaining your reasoning can help you
+  understand how your reasoning is different than the checker's and which
+  one is wrong.  Remember that the checker reasons modularly and
+  intraprocedurally:  it examines one method at a time, using only the
+  method signatures of other methods.
 \item
   Indicate what you have already done to try to understand the problem.
   Did you do any additional experiments?  What parts of the manual did
@@ -630,13 +650,6 @@ git clone https://github.com/typetools/annotation-tools.git annotation-tools
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
-\noindent
-(Alternately, you could use the version of the source code that is packaged
-in the Checker Framework release.)
-
-% TODO: the AFU and JSR 308 source code is not included in the
-% checker-framework.zip file!
-
 
 \subsection{Build the Type Annotations compiler\label{building-compiler}}
 
@@ -662,9 +675,15 @@ variable might already be set, because it is needed for Ant to work.)
 In the bash shell, the following command \emph{sometimes} works (it might
 not because \<java> might be the version in the JDK or in the JRE):
 % Can someone give a simpler command?
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
   export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 \item
 Compile the Type Annotations tools:
@@ -804,83 +823,6 @@ sudo apt-get install hevea librsvg2-bin
 \item
 Run \code{make} in the \code{checker/manual} directory to build both the PDF and HTML versions of the manual.
 \end{enumerate}
-
-% \subsection{Adjust classpath}
-
-% Building the Checker Framework requires use of a Java 8 compiler.  You may
-% use either the OpenJDK compiler or the Checker Framework compiler.  The latter has a
-% few extra features and tends to get bug fixes more quickly.
-
-% The following instructions give detailed steps for installing the source
-% release of the Checker Framework.
-
-
-% \item Download and install the JSR 308 implementation; follow the instructions at
-% % alternative: \urldef{\JsrInstallingUrl}{\url}{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}
-% {\codesize\url{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}}.
-% This creates a \code{jsr308-langtools} directory.
-%
-% \item Download the Checker Framework distribution zipfile from
-% \myurl{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip},
-% and unzip it to create a \code{checkers} directory.  We recommend that the
-% \code{checkers} directory and the \code{jsr308-langtools} directory be siblings.
-% Example commands:
-%
-% \begin{Verbatim}
-%   cd $JSR308
-%   wget http://types.cs.washington.edu/checker-framework/current/checker-framework.zip
-%   unzip checker-framework.zip
-% \end{Verbatim}
-%
-% You will also need to adjust the path to \<javac> in any Ant buildfiles,
-% etc.
-
-% \item Optionally edit property \code{compiler.lib} in file
-%   \code{build-common.properties}.  You don't have to do this if the
-%   \code{checker} directory and the \code{jsr308-langtools} directory are
-%   siblings.
-
-
-% (A checker implementation builds on
-% standard mechanisms such as JSR 269 annotation processing, but also
-% accesses the compiler's AST. In the long run, a checker built using the
-% Checker Framework should not be dependent on any compiler specifics.)
-% If you do not place the annotations in
-% then you should also disable Eclipse's on-the-fly syntax checking.
-
-
-
-
-% \subsection{TO DO:  The short instructions (for Linux only)}
-%
-% %%% This comment does not seem to be correct any longer.
-% %% This text is identically reproduced at ../../jsr308-langtools/README-jsr308.html
-% %% so if you change either one, change the other also!
-%
-% The following commands install
-% the JSR 308 \code{javac} compiler and the Checker
-% Framework, or update an existing installation.
-% It currently works only on \textbf{Linux}.
-% For more details, or if anything goes wrong, see the comments in the
-% \code{Makefile-jsr308-install} file.
-%
-% \begin{enumerate}
-%
-% \item
-%   Execute the following commands:
-%
-% \begin{Verbatim}
-%   cd
-%   wget -nv -N http://types.cs.washington.edu/jsr308/Makefile-jsr308-install
-%   make -f Makefile-jsr308-install
-% \end{Verbatim}
-%
-% \item
-% Set some environment variables according to the instructions at the top of file
-% \code{Makefile-jsr308-install}.
-%
-% \end{enumerate}
-
 
 
 \section{Publications\label{publications}\label{learning-more}}

@@ -223,7 +223,7 @@ public class AnnotationUtils {
             Class<? extends Annotation> anno) {
         /*@Interned*/ String canonicalName;
         if (annotationClassNames.containsKey(anno)) {
-            canonicalName = annotationClassNames.get(anno).intern();
+            canonicalName = annotationClassNames.get(anno);
         } else {
             canonicalName = anno.getCanonicalName().intern();
             annotationClassNames.put(anno, canonicalName);

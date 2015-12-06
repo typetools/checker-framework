@@ -51,19 +51,34 @@ LIVE_HTACCESS = os.path.join(FILE_PATH_TO_LIVE_SITE, ".htaccess")
 PGP_PASSPHRASE_FILE = "/projects/swlab1/checker-framework/release-private.password"
 SONATYPE_OSS_URL = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 SONATYPE_STAGING_REPO_ID = "sonatype-nexus-staging"
-SONATYPE_CLOSING_DIRECTIONS_URL = "https://central.sonatype.org/pages/releasing-the-deployment.html"
-SONATYPE_RELEASE_DIRECTIONS_URL = "https://central.sonatype.org/pages/releasing-the-deployment.html"
+SONATYPE_CLOSING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
+SONATYPE_RELEASE_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
 SONATYPE_DROPPING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
 
+# "USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566
+# Another alternative is: USER = os.getenv('USER')
+USER = pwd.getpwuid(os.geteuid())[0]
+
+# Per-user root directory for the files created by the release process
+USER_SCRATCH_DIR = "/scratch/" + USER
+
+# Per-user directory for the temporary files created by the release process
+TMP_DIR = USER_SCRATCH_DIR + "/jsr308-release"
+
 #Location this and other release scripts are contained in
-SCRIPTS_DIR = "/scratch/jsr308-release/scripts"
+
+SCRIPTS_DIR = TMP_DIR + "/checker-framework/release"
 
 #Location in which we will download files to run sanity checks
 SANITY_DIR = "/scratch/jsr308-release/sanity"
+# TODO: Uncomment when the entire release process can be moved to the per-user scratch directory, and delete the line above.
+# SANITY_DIR = TMP_DIR + "/sanity"
 
 #Every time a release is built the changes/tags are pushed here
 #When a release is deployed all INTERM repos get pushed to LIVE_REPOS
 INTERM_REPO_ROOT    = "/scratch/jsr308-release/interm"
+# TODO: Uncomment when the entire release process can be moved to the per-user scratch directory, and delete the line above.
+# INTERM_REPO_ROOT    = TMP_DIR + "/interm"
 INTERM_CHECKER_REPO = os.path.join(INTERM_REPO_ROOT, "checker-framework")
 INTERM_JSR308_REPO  = os.path.join(INTERM_REPO_ROOT, "jsr308-langtools")
 INTERM_ANNO_REPO    = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
@@ -75,10 +90,6 @@ LIVE_ANNO_REPO    = "https://github.com/typetools/annotation-tools"
 LIVE_PLUME_LIB    = "https://github.com/mernst/plume-lib"
 LIVE_PLUME_BIB    = "https://github.com/mernst/plume-bib"
 
-# "USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566
-# Another alternative is: USER = os.getenv('USER')
-USER = pwd.getpwuid(os.geteuid())[0]
-
 OPENJDK_RELEASE_SITE = 'http://jdk8.java.net/download.html'
 
 EMAIL_TO='jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroups.com'
@@ -86,10 +97,13 @@ EMAIL_TO='jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroup
 #Location of the project directories in which we will build the actual projects
 #When we build these projects are pushed to the INTERM repositories
 BUILD_DIR        = "/scratch/jsr308-release/build/"
+# TODO: Uncomment when the entire release process can be moved to the per-user scratch directory, and delete the line above.
+# BUILD_DIR        = TMP_DIR + "/build/"
 CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, 'checker-framework')
 CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, 'release')
 CHECKER_BIN_DIR  = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
 RELEASE_HTACCESS = os.path.join(CHECKER_FRAMEWORK_RELEASE, "types.htaccess")
+RELEASE_DEV_HTACCESS = os.path.join(CHECKER_FRAMEWORK_RELEASE, "types.dev.htaccess")
 CHECKER_TAG_PREFIXES = [ "checker-framework-", "checkers-" , "new release " ]
 
 CHECKER_BINARY   = os.path.join(CHECKER_BIN_DIR, 'checker.jar' )
@@ -194,6 +208,8 @@ CURRENT_DATE=datetime.date.today()
 
 os.environ['CHECKERFRAMEWORK'] = CHECKER_FRAMEWORK
 perl_libs = "/scratch/jsr308-release/perl_lib:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
+# TODO: Uncomment when the entire release process can be moved to the per-user scratch directory, and delete the line above.
+# perl_libs = TMP_DIR + "/perl_lib:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
 #Environment variables for tools needed during the build
 os.environ['PLUME_LIB'] =  PLUME_LIB
 os.environ['BIBINPUTS']=  '.:' + PLUME_BIB

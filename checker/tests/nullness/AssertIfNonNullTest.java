@@ -1,11 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.dataflow.qual.Pure;
 
-// Enable this test once AssertNonNullIfNonNull is implemented
-// @skip-test
-
-/**
- * Documented in Issue 62
- */
 public class AssertIfNonNullTest {
 
     Long id;

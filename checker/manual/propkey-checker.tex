@@ -152,9 +152,15 @@ JDK or other libraries, or in your own code.
 The Internationalization Checker can be invoked by running the following
 command:
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.i18n.I18nChecker -Abundlenames=MyResource MyFile.java ...
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 You must specify the localization resource, which maps keys to user-visible
 strings.  Like the general Property Key Checker, the Internationalization Checker

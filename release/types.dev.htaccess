@@ -1,12 +1,14 @@
+# TODO: merge this file with types.htaccess since we don't need both
+
 # This file is overwritten following each checker-framework release
 # in order to update the redirects to the latest release
 # If you would like to add to this file, edit the file found at:
-# checker-framework/release/types.htaccess
+# checker-framework/release/types.dev.htaccess
 # Most redirects are temporary and can be eventually removed.
 
 Options +FollowSymlinks
 
-# Redirect /specification/java-annotation-design.html /jsr308/specification/java-annotation-design.html
+# Redirect /dev/specification/java-annotation-design.html /dev/jsr308/specification/java-annotation-design.html
 # Redirect /checker-framework/current/checkers-manual.html /checker-framework/current/checker-framework-manual.html
 
 # We could add a similar rule for every other type system.
@@ -16,6 +18,6 @@ Options +FollowSymlinks
 # Therefore, users should see the real file names.
 # With these links, "wget http://types.cs.washington.edu/checker-framework/current/checker-framework.zip"
 # produces a file checker-framework.zip which gives no indication of its version number.
-# RedirectMatch 302 /jsr308/current/jsr308-langtools.zip /jsr308/current/jsr308-langtools-1.9.8.zip
-# RedirectMatch 302 /annotation-file-utilities/annotation-tools.zip /annotation-file-utilities/current/annotation-tools-3.6.22.zip
-# RedirectMatch 302 /checker-framework/current/checker-framework.zip /checker-framework/current/checker-framework-1.9.8.zip
+# RedirectMatch 302 /dev/jsr308/current/jsr308-langtools.zip /dev/jsr308/current/jsr308-langtools-1.9.9.zip
+# RedirectMatch 302 /dev/annotation-file-utilities/annotation-tools.zip /dev/annotation-file-utilities/current/annotation-tools-3.6.23.zip
+# RedirectMatch 302 /dev/checker-framework/current/checker-framework.zip /dev/checker-framework/current/checker-framework-1.9.9.zip

@@ -182,10 +182,12 @@ synonyms.
 
 \section{Installation\label{installation}}
 
+\begin{sloppypar}
 This section describes how to install the Checker Framework.
 (If you wish to use the Checker Framework from Eclipse, see the Checker
 Framework Eclipse Plugin webpage instead:
 \url{http://types.cs.washington.edu/checker-framework/eclipse/}.)
+\end{sloppypar}
 
 The Checker Framework release contains everything that you need, both to
 run checkers and to write your own checkers.  As an alternative, you can
@@ -209,7 +211,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip}
+  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework-1.9.9.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -303,9 +305,15 @@ public class GetStarted {
 \item
   From the command line, run this command:
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.nullness.NullnessChecker GetStarted.java
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 \noindent
 where the \code{javac} command refers to the
@@ -446,6 +454,9 @@ anywhere that you would write a type, including generics and casts.  You
 can also write annotations to indicate type qualifiers for array levels and
 receivers.  Here are a few examples:
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{alltt}
   \underline{@Interned} String intern() \ttlcb{} ... \ttrcb{}               // return value
   int compareTo(\underline{@NonNull} String other) \ttlcb{} ... \ttrcb{}    // parameter
@@ -454,6 +465,9 @@ receivers.  Here are a few examples:
   \underline{@Interned} String \underline{@NonNull} [] messages;          // arrays:  non-null array of interned Strings
   myDate = (\underline{@ReadOnly} Date) readonlyObject;       // cast
 \end{alltt}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 You can also write the annotations within comments, as in
 \code{List</*@NonNull*/ String>}.  The Checker Framework compiler, which is
@@ -471,15 +485,9 @@ but pass the \code{-processor \emph{plugin\_class}} command-line
 option.
 A concrete example (using the Nullness Checker) is:
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
 \begin{Verbatim}
   javac -processor NullnessChecker MyFile.java
 \end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
 
 Remember that you must be using the
 Type Annotations version of \<javac>, which you already installed (see Section~\ref{installation}).
