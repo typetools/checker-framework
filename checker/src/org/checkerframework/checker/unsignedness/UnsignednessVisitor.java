@@ -43,22 +43,18 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessTypeFactory
 		switch(kind) {
 			
 			case DIVIDE:
-			case GREATER_THAN:
-			case GREATER_THAN_EQUAL:
-			case LESS_THAN:
-			case LESS_THAN_EQUAL:
 			case REMAINDER:
 
 				if(leftOpType.hasAnnotation(Unsigned.class)) {
 					
 					checker.report(Result.failure("binary.operation.type.incompatible",
-						kind, leftOpType), node);
+						kind), node);
 				}
 
 				else if(rightOpType.hasAnnotation(Unsigned.class)) {
 					
 					checker.report(Result.failure("binary.operation.type.incompatible",
-						kind, rightOpType), node);
+						kind), node);
 				}
 				break;
 
@@ -66,8 +62,8 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessTypeFactory
 
 				if(leftOpType.hasAnnotation(Unsigned.class)) {
 					
-					checker.report(Result.failure("binary.operation.type.incompatible",
-						kind, leftOpType), node);
+					checker.report(Result.failure("binary.operation.shift.type.incompatible",
+						kind, "unsigned"), node);
 				}
 				break;
 
@@ -75,19 +71,55 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessTypeFactory
 
 				if(leftOpType.hasAnnotation(Signed.class)) {
 
-					checker.report(Result.failure("binary.operation.type.incompatible",
-						kind, leftOpType), node);
+					checker.report(Result.failure("binary.operation.shift.type.incompatible",
+						kind, "signed"), node);
+				}
+				break;
+
+			case GREATER_THAN:
+			case GREATER_THAN_EQUAL:
+			case LESS_THAN:
+			case LESS_THAN_EQUAL:
+
+				if(leftOpType.hasAnnotation(Unsigned.class)) {
+					
+					checker.report(Result.failure("binary.comparison.type.incompatible",
+						kind), node);
+				}
+
+				else if(rightOpType.hasAnnotation(Unsigned.class)) {
+					
+					checker.report(Result.failure("binary.comparison.type.incompatible",
+						kind), node);
+				}
+
+				break;
+
+			case EQUAL_TO:
+			case NOT_EQUAL_TO:
+
+				if(leftOpType.hasAnnotation(Unsigned.class) && rightOpType.hasAnnotation(Signed.class)){
+
+					checker.report(Result.failure("binary.comparison.type.incompatible.unsignedlhs",
+						kind), node);
+				}
+				else if(leftOpType.hasAnnotation(Signed.class) && rightOpType.hasAnnotation(Unsigned.class)){
+
+					checker.report(Result.failure("binary.comparison.type.incomaptible.unsignedrhs",
+						kind), node);
 				}
 				break;
 
 			default:
 
-				if((leftOpType.hasAnnotation(Unsigned.class) && 
-						rightOpType.hasAnnotation(Signed.class)) || 
-					(leftOpType.hasAnnotation(Signed.class) &&
-						rightOpType.hasAnnotation(Unsigned.class))){
+				if(leftOpType.hasAnnotation(Unsigned.class) && rightOpType.hasAnnotation(Signed.class)){
 
-					checker.report(Result.failure("binary.comparison.type.incompatible",
+					checker.report(Result.failure("binary.operation.type.incompatible.unsignedlhs",
+						kind), node);
+				}
+				else if(leftOpType.hasAnnotation(Signed.class) && rightOpType.hasAnnotation(Unsigned.class)){
+
+					checker.report(Result.failure("binary.operation.type.incompatible.unsignedrhs",
 						kind), node);
 				}
 				break;
@@ -117,13 +149,13 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessTypeFactory
 				if(varType.hasAnnotation(Unsigned.class)) {
 					
 					checker.report(Result.failure("binary.operation.type.incompatible",
-						kind, varType), node);
+						kind), node);
 				}
 
 				else if(exprType.hasAnnotation(Unsigned.class)) {
 					
 					checker.report(Result.failure("binary.operation.type.incompatible",
-						kind, exprType), node);
+						kind), node);
 				}
 				break;
 
@@ -131,8 +163,8 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessTypeFactory
 
 				if(varType.hasAnnotation(Unsigned.class)) {
 					
-					checker.report(Result.failure("binary.operation.type.incompatible",
-						kind, varType), node);
+					checker.report(Result.failure("binary.operation.type.shift.incompatible",
+						kind, "unsigned"), node);
 				}
 				break;
 
@@ -140,18 +172,20 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessTypeFactory
 
 				if(varType.hasAnnotation(Signed.class)) {
 
-					checker.report(Result.failure("binary.operation.type.incompatible",
-						kind, varType), node);
+					checker.report(Result.failure("binary.operation.type.shift.incompatible",
+						kind, "signed"), node);
 				}
 				break;
 
 			default:
-				if((varType.hasAnnotation(Unsigned.class) && 
-						exprType.hasAnnotation(Signed.class)) || 
-					(varType.hasAnnotation(Signed.class) && 
-						exprType.hasAnnotation(Unsigned.class))) {
+				if(varType.hasAnnotation(Unsigned.class) && exprType.hasAnnotation(Signed.class)){
 
-					checker.report(Result.failure("binary.comparison.type.incompatible", 
+					checker.report(Result.failure("binary.operation.type.incompatible.unsignedlhs",
+						kind), node);
+				}
+				else if(varType.hasAnnotation(Signed.class) && exprType.hasAnnotation(Unsigned.class)){
+
+					checker.report(Result.failure("binary.operation.type.incompatible.unsignedrhs",
 						kind), node);
 				}
 				break;

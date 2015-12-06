@@ -10,8 +10,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
- * {@link Signed} is a type qualifier which indicates that a value's 
- * signedness is signed.
+ * Signed is a type qualifier which indicates that a value should
+ * be interpreted using two's complement encoding, and should function
+ * normally in Java.
  */
 
 @TypeQualifier

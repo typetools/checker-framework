@@ -11,7 +11,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
- * {@link Constant} is a type qualifier which indicates that a value
+ * Constant is a type qualifier which indicates that a value
  * is a compile-time constant, and could be {@link Unsigned} or 
  * {@link Signed}.
  */

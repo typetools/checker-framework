@@ -7,8 +7,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
- * {@link Unsigned} is a type qualifier which indicates that a value's 
- * signedness is unsigned.
+ * Unsigned is a type qualifier which indicates that a value 
+ * is to be interpreted as unsigned, and requires special care.
  */
 
 @TypeQualifier
