@@ -344,8 +344,10 @@ the whole command on one line).
   \item Not using a property file.  Use this if the programmer hard-coded the
   format patterns without loading them from a property file.
 
-    \code{javac -processor org.checkerframework.checker.i18nformatter.I18nFormatterChecker}
-  \code{MyFile.java}
+    \begin{smaller}
+    \code{javac -processor
+      org.checkerframework.checker.i18nformatter.I18nFormatterChecker MyFile.java}
+    \end{smaller}
 \end{itemize}
 
 
@@ -399,7 +401,10 @@ method to define the type of the string in the scope of a conditional statement.
 \begin{Verbatim}
       static void method(@I18nFormatFor("#2") String f, Object... args) {...}
 
-      method("{0, number} {1} {2, choice,0#zero|1#one|1<greater than one}", 3.14, "Hello", 100); // OK, MessageFormat.format(...) would return "3.14 Hello greater than one"
+      // OK, MessageFormat.format(...) would return "3.14 Hello greater than one"
+      method("{0, number} {1} {2, choice,0#zero|1#one|1<greater than one}",
+             3.14, "Hello", 100);
+
       // error: incompatible types in argument; found String, expected number
       method("{0, number} {1}", "Bye", "Bye");
 \end{Verbatim}
@@ -408,8 +413,7 @@ method to define the type of the string in the scope of a conditional statement.
 \begin{Verbatim}
       @I18nFormat({I18nConversionCategory.DATE}) String;
       s1 = "{0}";
-      // error: incompatible types in assignment
-      s1 = "{0, number}";
+      s1 = "{0, number}";        // error: incompatible types in assignment
 \end{Verbatim}
 \end{itemize}
 

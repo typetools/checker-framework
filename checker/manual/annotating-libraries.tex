@@ -156,12 +156,14 @@ You use \<@AnnotatedFor> to indicate which classes you have annotated.
 \subsection{The \<-AuseSafeDefaultsForUnannotatedSourceCode> command-line
 argument\label{AuseSafeDefaultsForUnannotatedSourceCode}}
 
+\begin{sloppypar}
 When compiling a library that is not fully annotated, use command-line
 argument \<-AuseSafeDefaultsForUnannotatedSourceCode>.  This causes
 the checker to behave normally for classes with a relevant \<@AnnotatedFor>
 annotation.  For all other classes, the checker uses conservative defaults
 (see Section~\ref{defaults-classfile}) for any type use with no explicit
 user-written annotation, and the checker issues no warnings.
+\end{sloppypar}
 
 The \refqualclass{framework/qual}{AnnotatedFor} annotation, written on a
 class, indicates that the class has been annotated for certain type
@@ -177,11 +179,13 @@ may be passed to the \<-processor> command-line argument:  the
 fully-qualified class name for the checker, or a shorthand for built-in
 checkers (see Section~\ref{shorthand-for-checkers}).
 
+\begin{sloppypar}
 Whenever you compile a class using the Checker Framework, including when
 using the \<-AuseSafeDefaultsForUnannotatedSourceCode> command-line
 argument, the resulting \<.class> files are fully-annotated; each type use
 in the \<.class> file has an explicit type qualifier for any checker that
 is run.
+\end{sloppypar}
 
 
 \subsection{Workflow for creating or augmenting a partially-annotated library\label{compiling-libraries-workflow}}
@@ -206,6 +210,7 @@ partially-annotated library.
 
   Adjust the library's
   build process, such as a Maven or Ant buildfile.
+  \begin{sloppypar}
   \begin{enumerate}
   \item
     Every time the build system runs the compiler, it should:
@@ -223,6 +228,7 @@ partially-annotated library.
     file includes the contents of
     \<checker-framework/checker/dist/checker-qual.jar>.
   \end{enumerate}
+  \end{sloppypar}
 
   You are not adding new build targets, but modifying existing targets.
   The reason to run every type-checker is to verify

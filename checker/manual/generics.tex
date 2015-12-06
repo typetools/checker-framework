@@ -147,9 +147,15 @@ To specify an exact bound, place the same annotation on both bounds.  For exampl
 
 It is an error if the lower bound is not a subtype of the upper bound.
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
-  class MyClass<@Nullable T extends @NonNull Object>  // error @Nullable is not a supertype of @NonNull
+  class MyClass<@Nullable T extends @NonNull Object>  // error: @Nullable is not a supertype of @NonNull
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 
 \subsubsection{Defaults\label{generics-defaults}}
@@ -231,7 +237,7 @@ some unknown subtype of \<CharSequence>:
 \begin{Verbatim}
   List<? extends CharSequence> ls;
   ls = new ArrayList<String>();      // OK
-  ls = new ArrayList<Integer>();     // error - Integer is not a subtype of CharSequence
+  ls = new ArrayList<Integer>();     // error: Integer is not a subtype of CharSequence
 \end{Verbatim}
 
 For more details about wildcards, see the
@@ -244,8 +250,8 @@ You can write a type annotation on the bound of a wildcard:
 
 \begin{Verbatim}
   List<? extends @NonNull CharSequence> ls;
-  ls = new ArrayList<@NonNull String>();      // OK
-  ls = new ArrayList<@Nullable String>();     // error - @Nullable is not a subtype of @NonNull
+  ls = new ArrayList<@NonNull String>();    // OK
+  ls = new ArrayList<@Nullable String>();   // error: @Nullable is not a subtype of @NonNull
 \end{Verbatim}
 
 Conceptually, every wildcard has two bounds --- an upper bound and a lower

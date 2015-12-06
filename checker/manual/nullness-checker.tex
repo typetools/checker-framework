@@ -164,6 +164,7 @@ The nullness hierarchy contains these qualifiers:
   assigned, its type is treated as
   \refqualclass{checker/nullness/qual}{NonNull}.
 
+  \begin{sloppypar}
   Because the Nullness Checker works intraprocedurally (it analyzes one
   method at a time), when a \code{MonotonicNonNull} field is first read within a
   method, the field cannot be assumed to be non-null.  The benefit of
@@ -173,6 +174,7 @@ The nullness hierarchy contains these qualifiers:
   field, all subsequent accesses \emph{within that method} can be assumed
   to be NonNull, even after arbitrary external method calls that have
   access to the given field.
+  \end{sloppypar}
 
   It is permitted to initialize a MonotonicNonNull field to null, but the
   field may not be assigned to null anywhere else in the program.  If you
@@ -530,9 +532,11 @@ or its annotations, to eliminate the warning.  Alternately, you can
 suppress the warning, which does not change the code but prevents the
 Nullness Checker from reporting this particular warning to you.
 
+\begin{sloppypar}
 The Checker Framework supplies several ways to suppress warnings, most
 notably the \<@SuppressWarnings("nullness")> annotation (see
 Section~\ref{suppressing-warnings}).  An example use is
+\end{sloppypar}
 
 %BEGIN LATEX
 \begin{smaller}
@@ -612,6 +616,7 @@ code:
   defensive programming.  See Section~\ref{defensive-programming} for an
   explanation of the distinction.
 
+\begin{sloppypar}
 The Nullness Checker introduces a new method, rather than re-using an
 existing method such as \<org.junit.Assert.assertNotNull(Object)> or
 \<com.google.common.base.Preconditions.checkNotNull(Object)>.  Those
@@ -623,6 +628,7 @@ the distinction between warning suppression and defensive programming.
 % Also, different checking tools issue different false warnings that
 % need to be suppressed, so warning suppression needs to be customized for
 % each tool.
+\end{sloppypar}
 
 
 \section{Examples\label{nullness-example}}
@@ -633,9 +639,15 @@ To try the Nullness Checker on a source file that uses the \refqualclass{checker
 use the following command (where \code{javac} is the Checker Framework compiler that
 is distributed with the Checker Framework):
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.nullness.NullnessChecker examples/NullnessExample.java
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 \noindent
 Compilation will complete without warnings.
@@ -643,9 +655,16 @@ Compilation will complete without warnings.
 To see the checker warn about incorrect usage of annotations (and therefore the
 possibility of a null pointer exception at run time), use the following command:
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.nullness.NullnessChecker examples/NullnessExampleWithWarnings.java
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
 
 \noindent
 The compiler will issue two warnings regarding violation of the semantics of
@@ -1235,6 +1254,7 @@ treated as being \refqualclass{checker/nullness/qual}{Nullable}, but when
 written, they are treated as being
 \refqualclass{checker/nullness/qual}{NonNull}.
 
+\begin{sloppypar}
 The initialization hierarchy is orthogonal to the nullness hierarchy.  It
 is legal for a reference to be \<@NonNull @UnderInitialization>, \<@Nullable @UnderInitialization>,
 \<@NonNull @Initialized>, or \<@Nullable @Initialized>.  The nullness hierarchy tells
@@ -1245,6 +1265,7 @@ type annotation?
 % It's a figure rather than appearing inline so as not to span page breaks
 % in the printed manual.
 Figure~\ref{fig-initialization-examples} contains some examples.
+\end{sloppypar}
 
 \begin{figure}
 \begin{tabular}{l|l|l}
@@ -1789,6 +1810,7 @@ uses the two annotations
 The rawness type system is slightly easier to use but slightly less
 expressive.
 
+\begin{sloppypar}
 To run the Nullness Checker with the rawness variant of the Initialization
 Checker, invoke the NullnessRawnessChecker rather than the NullnessChecker;
 that is, supply the \code{-processor org.checkerframework.checker.nullness.NullnessRawnessChecker}
@@ -1797,6 +1819,7 @@ Although \code{@Raw} roughly corresponds to \code{@UnknownInitialization}
 and \code{@NonRaw} roughly corresponds to \code{@Initialized}, the
 annotations are not aliased and you must use the ones that correspond to
 the type-checker that you are running.
+\end{sloppypar}
 
 
 %% TODO: cut much of this, which is redundant with the text above.
@@ -2162,6 +2185,9 @@ as C2 is.  For example, \<nraA>'s type is a supertype of those of \<rB>,
 types, but are not expressible.  The other empty cells are not interesting
 types.)
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \noindent
 \begin{tabular}{|c|c|c|}
 
@@ -2211,6 +2237,9 @@ types.)
 \\
 \hline
 \end{tabular}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 
 

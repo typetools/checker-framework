@@ -53,7 +53,7 @@ The following repositories will be deleted then re-cloned from their origins:
 
 def copy_cf_logo(cf_release_dir):
     dev_releases_png = os.path.join(cf_release_dir, "CFLogo.png")
-    cmd="cp -p %s %s" % (LIVE_CF_LOGO, dev_releases_png)
+    cmd="rsync --times %s %s" % (LIVE_CF_LOGO, dev_releases_png)
     execute(cmd)
 
 def get_afu_date( building_afu ):
@@ -63,10 +63,10 @@ def get_afu_date( building_afu ):
         afu_site = os.path.join( HTTP_PATH_TO_LIVE_SITE, "annotation-file-utilities" )
         return extract_from_site( afu_site, "<!-- afu-date -->", "<!-- /afu-date -->" )
 
-def jsr308_checker_framework_version( auto ):
-    curr_version = current_distribution( CHECKER_FRAMEWORK )
+def get_new_version( project_name, curr_version, auto ):
+    "Queries the user for the new version number; returns old and new version numbers."
 
-    print "Current JSR308/Checker Framework: " + curr_version
+    print "Current " + project_name + " version: " + curr_version
     suggested_version = increment_version( curr_version )
 
     if auto:
@@ -75,6 +75,10 @@ def jsr308_checker_framework_version( auto ):
         new_version = prompt_w_suggestion( "Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$" )
 
     print "New version: " + new_version
+
+    if curr_version == new_version:
+        curr_version = prompt_w_suggestion( "Enter current version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$" )
+        print "Current version: " + curr_version
 
     return (curr_version, new_version)
 
@@ -136,20 +140,6 @@ def build_jsr308_langtools_release(auto, version, afu_release_date, checker_fram
 def get_current_date():
     return CURRENT_DATE.strftime("%d %b %Y")
 
-def get_afu_version( auto ):
-    anno_html = os.path.join(ANNO_FILE_UTILITIES, "annotation-file-utilities.html")
-    version = get_afu_version_from_html( anno_html )
-
-    print "Current Annotation File Utilities Version: " + version
-    suggested_version = increment_version( version )
-    new_version = suggested_version
-
-    if not auto:
-        new_version = prompt_w_suggestion("Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
-    else:
-        print "New version: " + new_version
-
-    return (version, new_version)
 
 def build_annotation_tools_release( auto, version, afu_interm_dir ):
     jv = execute( 'java -version', True )
@@ -205,20 +195,9 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
     checker_manual_dir = os.path.join(checker_dir, "manual")
     execute("make manual.pdf manual.html", True, False, checker_manual_dir)
 
-
     #make the dataflow manual
     dataflow_manual_dir = os.path.join(CHECKER_FRAMEWORK, "dataflow", "manual")
-
-    print("TODO: Fix: After the upgrade to Fedora 22, the dataflow manual refuses to build.  The manual is rarely updated " +
-          "so we copy the old one from the previous release's live web site and place it in" +
-          "the current release's live web site before step 8 (check live site links) of release_push.\n" +
-          "Note: When fixing this, you should remove the failonerror=true in release.xml which copies the dataflow file" +
-          "in target checker-framework-website-docs\n" +
-          "WARNING: This needs to be fixed!\n")
-    print("")
-    #execute("pdflatex dataflow.tex", True, False, dataflow_manual_dir)
-    # Yes, run it twice
-    #execute("pdflatex dataflow.tex", True, False, dataflow_manual_dir)
+    execute("make", True, False, dataflow_manual_dir)
 
     #make the checker framework tutorial
     checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
@@ -226,7 +205,7 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
 
     cfZipName = "checker-framework-%s.zip" % version
 
-    #zip up checker-framework.zip and put it in checker_framework_interm_dir
+    # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
     ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, cfZipName, version)
     ant_cmd   = "ant -f release.xml %s zip-checker-framework " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
@@ -340,8 +319,12 @@ def main(argv):
     # NOTE: If you pass --auto on the command line then the next logical version will be chosen automatically
 
     print_step("Build Step 3: Determine release versions.") # SEMIAUTO
-    (old_jsr308_version, jsr308_version) = jsr308_checker_framework_version( auto )
-    (old_afu_version, afu_version)       = get_afu_version( auto )
+
+    old_jsr308_version = current_distribution( CHECKER_FRAMEWORK )
+    (old_jsr308_version, jsr308_version) = get_new_version( "JSR308/Checker Framework", old_jsr308_version, auto )
+    anno_html = os.path.join(ANNO_FILE_UTILITIES, "annotation-file-utilities.html")
+    old_afu_version = get_afu_version_from_html( anno_html )
+    (old_afu_version, afu_version)       = get_new_version( "Annotation File Utilities", old_afu_version, auto )
 
     print("If you get a warning about deleting existing directories,")
     print("it is most likely because you previously ran this script")
@@ -397,13 +380,13 @@ def main(argv):
 
     print_step("Build Step 5: Review manual changes.") # SEMIAUTO
 
-    print("Please verify that the lists of checkers in these Checker Framework chapter sections are\n" )
-    print("up to date: Introduction, Run-time tests and type refinement\n" )
+    print("If any checkers have been added or removed, then verify that the lists")
+    print("of checkers in these manual sections are up to date:")
+    print(" * Introduction")
+    print(" * Run-time tests and type refinement")
 
-    print("Please also build the manual on your local machine's enlistment and verify that the PDF\n" )
-    print("does not have lines that are longer than the page width (some lines go beyond the right margin -\n")
-    print("this is acceptable), except for lines containing command lines or code - some of these inevitably\n")
-    print("are longer than the page width.\n")
+    print("Verify that the manual PDF has no lines that are longer than the page width")
+    print("(it is acceptable for some lines to extend into the right margin).")
 
     if not auto:
         if projects_to_release[LT_OPT]:
@@ -415,7 +398,7 @@ def main(argv):
                                    AFU_TAG_PREFIXES, AFU_MANUAL, TMP_DIR + "/afu.manual"  )
 
         if projects_to_release[CF_OPT]:
-            propose_change_review( "the Checker Framework", old_jsr308_version, CHECKER_FRAMEWORK,
+            propose_change_review( "the Checker Framework manual", old_jsr308_version, CHECKER_FRAMEWORK,
                                    CHECKER_TAG_PREFIXES, CHECKER_MANUAL, TMP_DIR + "/checker-framework.manual"  )
 
     # The projects are built in the following order: JSR308-Langtools, Annotation File Utilities,
@@ -440,10 +423,6 @@ def main(argv):
 
 
     print_step("Build Step 7: Overwrite .htaccess.") # SEMIAUTO
-    print("The release script will now update %s to redirect any requests for the old unversioned zip files\n" % DEV_HTACCESS)
-    print("e.g., checker-framework/current/checker-framework.zip\n")
-    print("to the new versioned zips.")
-    print("e.g., checker-framework/current/checker-framework-%s.zip\n" % jsr308_version)
 
     update_htaccess(CHECKER_FRAMEWORK_RELEASE, jsr308_version, afu_version, RELEASE_DEV_HTACCESS, DEV_HTACCESS)
     copy_cf_logo(checker_framework_interm_dir)
