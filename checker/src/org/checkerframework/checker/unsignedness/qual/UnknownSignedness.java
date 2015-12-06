@@ -8,7 +8,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
- * {@link UnknownSignedness} is a type qualifier which indicates that a value's 
+ * {@link UnknownSignedness} is a type qualifier that indicates that a value's 
  * signedness is either not known after some operation, or cannot have
  * a signedness.
  */
