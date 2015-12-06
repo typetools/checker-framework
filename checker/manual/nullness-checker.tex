@@ -1444,10 +1444,10 @@ the type of the object being constructed is:
 \subsection{Initialization of Circular Data Structures\label{circular-initialization}}
 
 There is one final aspect of the initialization type system to be considered:
-The rules governing reading and writing to objects that are currently under
-initialization.  By default, only fully initialized objects can be stored in a
+the rules governing reading and writing to objects that are currently under
+initialization.  By default, only fully-initialized objects can be stored in a
 field of another object.  If this was the only option, then it would not be
-possible to set up circular data structures (such as a double linked list) where
+possible to create circular data structures (such as a doubly-linked list) where
 fields have a \refqualclass{checker/nullness/qual}{NonNull} type.
 However, the annotation
 \refqualclass{checker/initialization/qual}{NotOnlyInitialized} can be used to
@@ -1457,7 +1457,7 @@ bit more interesting, to soundly support circular structures.
 
 The rules for reading from a
 \refqualclass{checker/initialization/qual}{NotOnlyInitialized} field
-are summarized in Figure~\ref{fig-init-read-field}.  Essentially there is nothing
+are summarized in Figure~\ref{fig-init-read-field}.  Essentially, nothing is
 known about the initialization status of the value returned unless the receiver
 was \refqualclass{checker/initialization/qual}{Initialized}.
 
