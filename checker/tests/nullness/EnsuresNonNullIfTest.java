@@ -12,7 +12,7 @@ class Node {
 }
 
 class Enumerate {
-    private @Nullable Node current;
+    @Nullable Node current;
 
     public Enumerate(Node node) {
         this.current = node;
