@@ -1445,7 +1445,9 @@ the type of the object being constructed is:
 
 There is one final aspect of the initialization type system to be considered:
 the rules governing reading and writing to objects that are currently under
-initialization.  By default, only fully-initialized objects can be stored in a
+initialization (both reading from fields of objects under initialization, as well as
+writing objects under initialization to fields).
+By default, only fully-initialized objects can be stored in a
 field of another object.  If this was the only option, then it would not be
 possible to create circular data structures (such as a doubly-linked list) where
 fields have a \refqualclass{checker/nullness/qual}{NonNull} type.
