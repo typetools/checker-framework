@@ -11,9 +11,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A declaration annotation for fields that indicates that the values the given
- * field can store might not be {@link Initialized} (but
- * {@link UnderInitialization} or {@link UnknownInitialization} instead). This is
+ * A declaration annotation for fields that indicates that a client might
+ * observe the field storing values that are {@link Initialized},
+ * {@link UnderInitialization}, or {@link UnknownInitialization}, regardless
+ * of the initialization type annotation on the field's type. This is
  * necessary to allow circular initialization as supported by
  * freedom-before-commitment.
  *

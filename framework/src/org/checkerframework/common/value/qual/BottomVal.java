@@ -2,11 +2,14 @@ package org.checkerframework.common.value.qual;
 
 import com.sun.source.tree.Tree;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
@@ -24,7 +27,8 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
 @SubtypeOf({ ArrayLen.class, BoolVal.class, DoubleVal.class,
         IntVal.class, StringVal.class })
-@Target({})
-// empty target prevents programmers from writing this in a program
+@Target({ElementType.TYPE_USE})
+@TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
+    DefaultLocation.EXPLICIT_UPPER_BOUNDS})
 public @interface BottomVal {
 }

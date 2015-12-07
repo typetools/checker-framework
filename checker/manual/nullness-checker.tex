@@ -1440,6 +1440,122 @@ the type of the object being constructed is:
   \<@UnderInitialization(B.class) B>
 \end{enumerate}
 
+
+\subsection{Initialization of circular data structures\label{circular-initialization}}
+
+There is one final aspect of the initialization type system to be considered:
+the rules governing reading and writing to objects that are currently under
+initialization (both reading from fields of objects under initialization, as well as
+writing objects under initialization to fields).
+By default, only fully-initialized objects can be stored in a
+field of another object.  If this was the only option, then it would not be
+possible to create circular data structures (such as a doubly-linked list) where
+fields have a \refqualclass{checker/nullness/qual}{NonNull} type.
+However, the annotation
+\refqualclass{checker/initialization/qual}{NotOnlyInitialized} can be used to
+indicate that a field can store objects that are currently under initialization.
+In this case, the rules for reading and writing to that field become a little
+bit more interesting, to soundly support circular structures.
+
+The rules for reading from a
+\refqualclass{checker/initialization/qual}{NotOnlyInitialized} field
+are summarized in Figure~\ref{fig-init-read-field}.  Essentially, nothing is
+known about the initialization status of the value returned unless the receiver
+was \refqualclass{checker/initialization/qual}{Initialized}.
+
+\begin{figure}
+\centering
+\begin{tabular}{l|l|l}
+  \<x.f>&\<f> is \<@NonNull>& \<f> is \<@Nullable>\\ \hline
+  \<x> is \<@Initialized> & \<@Initialized @NonNull> & \<@Initialized @Nullable> \\
+  \<x> is \<@UnderInitialization> & \<@UnknownInitialization @Nullable> & \<@UnknownInitialization @Nullable> \\
+  \<x> is \<@UnknownInitialization> & \<@UnknownInitialization @Nullable> & \<@UnknownInitialization @Nullable> \\
+\end{tabular}
+\caption{Initialization rules for reading a \refqualclass{checker/initialization/qual}{NotOnlyInitialized} field \<f>.}
+\label{fig-init-read-field}
+\end{figure}
+
+Similarly, Figure~\ref{fig-init-write-field} shows under which conditions
+an assignment \<x.f = y> is allowed for a
+\refqualclass{checker/initialization/qual}{NotOnlyInitialized} field \<f>.
+If the receiver \<x> is
+\refqualclass{checker/initialization/qual}{UnderInitialization}, then any
+\<y> can be of any initialization state.  If \<y> is known to be
+fully initialized, then any receiver is allowed.  All other assignments
+are disallowed.
+
+\begin{figure}
+\centering
+\begin{tabular}{l|ccc}
+  \<x.f = y>&\<y> is \<@Initialized>& \<y> is \<@UnderInitialization>& \<y> is \<@UnknownInitialization>\\ \hline
+  \<x> is \<@Initialized> & yes & no & no \\
+  \<x> is \<@UnderInitialization> & yes & yes & yes \\
+  \<x> is \<@UnknownInitialization> & yes & no & no \\
+\end{tabular}
+\caption{Rules for deciding when an assignment \<x.f = y> is allowed for a
+\refqualclass{checker/initialization/qual}{NotOnlyInitialized} field \<f>.}
+\label{fig-init-write-field}
+\end{figure}
+
+These rules allow for the safe initialization of circular structures.  For instance,
+consider a doubly linked list:
+
+\begin{Verbatim}
+  class List<T> {
+    @NotOnlyInitialized
+    Node<T> sentinel;
+
+    public List() {
+      this.sentinel = new Node<T>(this);
+    }
+
+    void insert(@Nullable T data) {
+      this.sentinel.insertAfter(data);
+    }
+    
+    public static void main() {
+      List<Integer> l = new List<Integer>();
+      l.insert(1);
+      l.insert(2);
+    }
+  }
+
+  class Node<T> {
+    @NotOnlyInitialized
+    Node<T> prev;
+
+    @NotOnlyInitialized
+    Node<T> next;
+
+    @NotOnlyInitialized
+    List parent;
+
+    @Nullable
+    T data;
+
+    // for sentinel construction
+    Node(@UnderInitialization List parent) {
+      this.parent = parent;
+      this.prev = this;
+      this.next = this;
+    }
+
+    // for data node construction
+    Node(Node<T> prev, Node<T> next, @Nullable T data) {
+      this.parent = prev.parent;
+      this.prev = prev;
+      this.next = next;
+      this.data = data;
+    }
+
+    void insertAfter(@Nullable T data) {
+      Node<T> n = new Node<T>(this, this.next, data);
+      this.next.prev = n;
+      this.next = n;
+    }
+  }
+\end{Verbatim}
+
 % \paragraph{Example}
 %
 % As another example, consider the following 12 declarations, where class A

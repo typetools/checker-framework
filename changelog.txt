@@ -1,3 +1,14 @@
+---------------------------------------------------------------------------
+
+Version ??, ?? ?? 2016
+
+The Checker Framework distribution files now contain a version number:  for
+example, checker-framework-1.9.9.zip rather than checker-framework.zip.
+
+Documented how to initialize circular data structures in the Initialization type system.
+
+---------------------------------------------------------------------------
+
 Version 1.9.9, 1 December 2015
 
 Fixed issues:  511, 513, 514, 455, 527.

@@ -31,7 +31,7 @@ def javac_sanity_check( checker_framework_website, release_version ):
         delete_path( javac_sanity_dir )
     execute( "mkdir -p " + javac_sanity_dir )
 
-    javac_sanity_zip = os.path.join( javac_sanity_dir, "checker-framework.zip" )
+    javac_sanity_zip = os.path.join( javac_sanity_dir, "checker-framework-%s.zip" % release_version)
 
     print( "Attempting to download %s to %s" % ( new_checkers_release_zip, javac_sanity_zip ) )
     download_binary( new_checkers_release_zip, javac_sanity_zip, MAX_DOWNLOAD_SIZE )

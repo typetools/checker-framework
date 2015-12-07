@@ -195,20 +195,9 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
     checker_manual_dir = os.path.join(checker_dir, "manual")
     execute("make manual.pdf manual.html", True, False, checker_manual_dir)
 
-
     #make the dataflow manual
     dataflow_manual_dir = os.path.join(CHECKER_FRAMEWORK, "dataflow", "manual")
-
-    print("TODO: Fix: After the upgrade to Fedora 22, the dataflow manual refuses to build.  The manual is rarely updated " +
-          "so we copy the old one from the previous release's live web site and place it in" +
-          "the current release's live web site before step 8 (check live site links) of release_push.\n" +
-          "Note: When fixing this, you should remove the failonerror=true in release.xml which copies the dataflow file" +
-          "in target checker-framework-website-docs\n" +
-          "WARNING: This needs to be fixed!\n")
-    print("")
-    #execute("pdflatex dataflow.tex", True, False, dataflow_manual_dir)
-    # Yes, run it twice
-    #execute("pdflatex dataflow.tex", True, False, dataflow_manual_dir)
+    execute("make", True, False, dataflow_manual_dir)
 
     #make the checker framework tutorial
     checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
@@ -216,7 +205,7 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
 
     cfZipName = "checker-framework-%s.zip" % version
 
-    #zip up checker-framework.zip and put it in checker_framework_interm_dir
+    # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
     ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, cfZipName, version)
     ant_cmd   = "ant -f release.xml %s zip-checker-framework " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
@@ -434,10 +423,6 @@ def main(argv):
 
 
     print_step("Build Step 7: Overwrite .htaccess.") # SEMIAUTO
-    print("The release script will now update %s to redirect any requests for the old unversioned zip files\n" % DEV_HTACCESS)
-    print("e.g., checker-framework/current/checker-framework.zip\n")
-    print("to the new versioned zips.")
-    print("e.g., checker-framework/current/checker-framework-%s.zip\n" % jsr308_version)
 
     update_htaccess(CHECKER_FRAMEWORK_RELEASE, jsr308_version, afu_version, RELEASE_DEV_HTACCESS, DEV_HTACCESS)
     copy_cf_logo(checker_framework_interm_dir)
