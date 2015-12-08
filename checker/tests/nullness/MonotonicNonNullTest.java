@@ -10,7 +10,7 @@ public final class MonotonicNonNullTest {
 
     public boolean new_decl_format = false;
 
-    @RequiresNonNull("InitializationToNonNull.new_decl_format")
+    @RequiresNonNull("MonotonicNonNullTest.new_decl_format")
     public SerialFormat() {
       this.new_decl_format = MonotonicNonNullTest.new_decl_format;
     }
