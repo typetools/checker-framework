@@ -45,7 +45,7 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessTypeFactory
             case DIVIDE:
             case REMAINDER:
 
-                if (leftOpType.hasAnnotation( Unsigned.class) ) {
+                if (leftOpType.hasAnnotation(Unsigned.class)) {
                     
                     checker.report(Result.failure("binary.operation.type.incompatible",
                         kind), node);
@@ -74,6 +74,9 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessTypeFactory
                     checker.report(Result.failure("binary.operation.shift.type.incompatible",
                         kind, "signed"), node);
                 }
+                break;
+
+            case LEFT_SHIFT:
                 break;
 
             case GREATER_THAN:
@@ -147,13 +150,13 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessTypeFactory
 
                 if (varType.hasAnnotation(Unsigned.class)) {
                     
-                    checker.report(Result.failure("binary.operation.type.incompatible",
+                    checker.report(Result.failure("compoundassignment.type.incompatible",
                         kind), node);
                 }
 
                 else if (exprType.hasAnnotation(Unsigned.class)) {
                     
-                    checker.report(Result.failure("binary.operation.type.incompatible",
+                    checker.report(Result.failure("compoundassignment.type.incompatible",
                         kind), node);
                 }
                 break;
@@ -162,7 +165,7 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessTypeFactory
 
                 if (varType.hasAnnotation(Unsigned.class)) {
                     
-                    checker.report(Result.failure("binary.operation.type.shift.incompatible",
+                    checker.report(Result.failure("compoundassignment.type.shift.incompatible",
                         kind, "unsigned"), node);
                 }
                 break;
@@ -171,20 +174,23 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessTypeFactory
 
                 if (varType.hasAnnotation(Signed.class)) {
 
-                    checker.report(Result.failure("binary.operation.type.shift.incompatible",
+                    checker.report(Result.failure("compoundassignment.type.shift.incompatible",
                         kind, "signed"), node);
                 }
+                break;
+
+            case LEFT_SHIFT_ASSIGNMENT:
                 break;
 
             default:
                 if (varType.hasAnnotation(Unsigned.class) && exprType.hasAnnotation(Signed.class)){
 
-                    checker.report(Result.failure("binary.operation.type.incompatible.unsignedlhs",
+                    checker.report(Result.failure("compoundassignment.type.incompatible.unsignedlhs",
                         kind), node);
                 }
                 else if (varType.hasAnnotation(Signed.class) && exprType.hasAnnotation(Unsigned.class)){
 
-                    checker.report(Result.failure("binary.operation.type.incompatible.unsignedrhs",
+                    checker.report(Result.failure("compoundassignment.type.incompatible.unsignedrhs",
                         kind), node);
                 }
                 break;
