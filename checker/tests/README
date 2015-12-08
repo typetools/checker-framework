@@ -8,16 +8,16 @@ instead; see file ../manual/manual.html .
 How to run all the tests for the Checker Framework
 ==================================================
 
-  # Warning: this may rebuild the JDK, which takes a long time
-  # from the checker-framework directory
+  # To run from the checker-framework directory:
+  # (warning: this may rebuild the JDK, which takes a long time)
   ant -e -find build.xml tests
 
-  #from the checker Directory
+  # To run from the checker directory
   ant -e -find build.xml all-tests
 
 Other ant targets also exist to run a subset of the tests, without
 rebuilding the JDK; for example,
-  #from the checker directory
+  # Run from the checker directory:
   ant -e -find build.xml nullness-tests
   ant -e -find build.xml all-tests-nojdk
 
