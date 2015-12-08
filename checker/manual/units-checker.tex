@@ -247,8 +247,9 @@ framework, simply invoke the checker:
 \end{Verbatim}
 
 \item
-If you define your own units, provide the name of the annotations using the
-\code{-Aunits} option:
+If you define your own units, provide the fully-qualified class names of the
+annotations through the \code{-Aunits} option, using a comma-no-space-separated
+notation:
 
 \begin{alltt}
   javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
@@ -256,16 +257,16 @@ If you define your own units, provide the name of the annotations using the
         -Aunits=\textit{myModule.qual.MyUnit},\textit{myModule.qual.MyOtherUnit} MyFile.java ...
 \end{alltt}
 
-This option specifies a list of the fully-qualified class names of annotations,
-using a comma-no-space-separated notation. The annotations listed in
-\code{-Aunits} must be accessible to the compiler during compilation in the
-classpath. In other words, they must already be compiled (and, typically, be on
-the javac bootclasspath) before you run the Units Checker with \code{javac}. It
+The annotations listed in \code{-Aunits} must be accessible to
+the compiler during compilation in the classpath.  In other words, they must
+already be compiled (and, typically, be on the javac bootclasspath)
+before you run the Units Checker with \code{javac}.  It
 is not sufficient to supply their source files on the command line.
 
 \item
 You can also provide the fully-qualified paths to a set of directories
-that contain units qualifiers using the \code{-AunitsDirs} option, for example:
+that contain units qualifiers through the \code{-AunitsDirs} option,
+using a colon-no-space-separated notation. For example:
 
 \begin{alltt}
   javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
@@ -283,6 +284,9 @@ will work with the above commands:
   .../myProject/bin/myModule/qual/MyUnit.class
   .../myProject/bin/myModule/qual/MyOtherUnit.class
 \end{alltt}
+
+The two options can be used at the same time to provide groups of annotations
+from directories, and individually named annotations.
 
 \end{itemize}
 

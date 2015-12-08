@@ -113,8 +113,8 @@ The Fenum Checker can be invoked by running the following commands.
 
 \begin{itemize}
   \item
-If you define your own annotation, provide the name of the annotation using the
-\code{-Aquals} option:
+If you define your own annotation(s), provide the name(s) of the annotation(s)
+through the \code{-Aquals} option, using a comma-no-space-separated notation:
 
 \begin{alltt}
   javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
@@ -122,15 +122,15 @@ If you define your own annotation, provide the name of the annotation using the
         -Aquals=\textit{myModule.qual.MyFenum} MyFile.java ...
 \end{alltt}
 
-This option specifies a list of the fully-qualified class names of annotations,
-using a comma-no-space-separated notation. The annotations listed in
-\code{-Aquals} must be accessible to the compiler during compilation in the
-classpath. In other words, they must already be compiled (and, typically, be on
-the javac bootclasspath) before you run the Fenum Checker with \code{javac}. It
+The annotations listed in \code{-Aquals} must be accessible to
+the compiler during compilation in the classpath.  In other words, they must
+already be compiled (and, typically, be on the javac bootclasspath)
+before you run the Fenum Checker with \code{javac}.  It
 is not sufficient to supply their source files on the command line.
 
 You can also provide the fully-qualified paths to a set of directories
-that contain the qualifiers using the \code{-AqualDirs} option, for example:
+that contain the annotations through the \code{-AqualDirs} option,
+using a colon-no-space-separated notation. For example:
 
 \begin{alltt}
   javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
@@ -146,6 +146,9 @@ the class file will work with the above commands:
 \begin{alltt}
   .../myProject/bin/myModule/qual/MyFenum.class
 \end{alltt}
+
+The two options can be used at the same time to provide groups of annotations
+from directories, and individually named annotations.
 
 \item
 If your code uses the \refqualclass{checker/fenum/qual}{Fenum} annotation, you do

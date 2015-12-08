@@ -36,15 +36,16 @@ extend the framework as discussed in Chapter~\ref{writing-a-checker}.
 The Subtyping Checker is used in the same way as other checkers (using the
 \code{-processor org.checkerframework.common.subtyping.SubtypingChecker} option; see Chapter~\ref{using-a-checker}), except that it
 requires an additional annotation processor argument via the standard
-``\code{-A}'' switch:
+``\code{-A}'' switch. One of the two following arguments must be used with the
+Subtyping Checker:
 \end{sloppypar}
 
 \begin{itemize}
 
 \item
-\code{-Aquals}: This option specifies a list of the fully-qualified class names
-of annotations used as qualifiers in the custom type system, using a
-comma-no-space-separated notation. For example,
+Provide the fully-qualified class name(s) of the annotation(s) in the custom
+type system through the \code{-Aquals} option, using a comma-no-space-separated
+notation:
 
 \begin{alltt}
   javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
@@ -59,9 +60,9 @@ before you run the Subtyping Checker with \code{javac}.  It
 is not sufficient to supply their source files on the command line.
 
 \item
-\code{-AqualDirs}: this option specifies a colon-no-space-separated list of
-the fully-qualified paths to a set of directories that contain the annotations
-in the custom type system. For example:
+Provide the fully-qualified paths to a set of directories that contain the
+annotations in the custom type system through the \code{-AqualDirs} option,
+using a colon-no-space-separated notation. For example:
 
 \begin{alltt}
   javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
@@ -78,6 +79,9 @@ following placement of the class files will work with the above commands:
   .../myProject/bin/myModule/qual/MyQual.class
   .../myLibrary/bin/myModule/qual/OtherQual.class
 \end{alltt}
+
+The two options can be used at the same time to provide groups of annotations
+from directories, and individually named annotations.
 
 \end{itemize}
 
