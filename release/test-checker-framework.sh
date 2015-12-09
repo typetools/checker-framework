@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This script is used by the following Jenkins job:
+# http://tern.cs.washington.edu:8080/job/checker-framework-testinstall/
+
 rm -rf checker-framework.zip
 wget -q http://types.cs.washington.edu/checker-framework/current/checker-framework.zip
 rm -rf checker-framework-*/
