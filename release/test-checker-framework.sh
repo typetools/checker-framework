@@ -3,10 +3,10 @@
 # This script is used by the following Jenkins job:
 # http://tern.cs.washington.edu:8080/job/checker-framework-testinstall/
 
-rm -rf checker-framework.zip
+rm -rf checker-framework*.zip
 wget -q http://types.cs.washington.edu/checker-framework/current/checker-framework.zip
 rm -rf checker-framework-*/
-unzip -q checker-framework.zip
+unzip -q checker-framework*.zip
 
 export CHECKERFRAMEWORK=`pwd`/`ls -d checker-framework-*`
 export ORIG_PATH=$PATH
@@ -16,6 +16,7 @@ function cfruntest() {
   echo `which java`
   java -version
 
+  chmod +x $CHECKERFRAMEWORK/checker/bin/javac
   $CHECKERFRAMEWORK/checker/bin/javac -version
   if (($?)); then exit 6; fi
 
