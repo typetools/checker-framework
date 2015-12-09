@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# This script tests that the Checker Framework release can be downloaded
+# and that a simple sanity test works.
+# It assumes that environment variables JAVA7_HOME and JAVA8_HOME are defined.
+
 # This script is used by the following Jenkins job:
 # http://tern.cs.washington.edu:8080/job/checker-framework-testinstall/
 
