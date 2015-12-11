@@ -72,7 +72,7 @@
     <attribute name="ignore-matching-lines"/>
     <sequential>
       <exec executable="diff" resultproperty="diff-result" failonerror="true">
-        <arg value="-q"/>
+        <!-- <arg value="-q"/> -->
         <arg line="-I '@{ignore-matching-lines}'"/>
         <!-- ignore lint results -->
         <arg line="-I 'Note:'"/>
@@ -83,6 +83,11 @@
         <!-- ignore paths -->
         <arg line="-I '.java'"/>
         <arg line="-I '.xml'"/>
+	<arg line="-I 'Deleting directory'"/>
+	<arg line="-I 'Created dir:'"/>
+	<arg line="-I 'Compiling 2 source files to'"/>
+
+	<!-- the files to compare -->
         <arg line="@{file1}"/>
         <arg line="@{file2}"/>
       </exec>
