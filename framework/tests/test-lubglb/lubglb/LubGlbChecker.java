@@ -9,6 +9,14 @@ import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+// Type hierarchy:
+//    A       <-- @DefaultQualifierInHierarchy
+//   / \
+//  B   C
+//   \ / \
+//    D   E
+//     \ /
+//      F
 import lubglb.quals.A;
 import lubglb.quals.B;
 import lubglb.quals.C;

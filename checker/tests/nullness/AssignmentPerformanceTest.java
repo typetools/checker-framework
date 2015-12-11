@@ -1,4 +1,5 @@
 // @skip-test
+// Test case for issue #536: https://github.com/typetools/checker-framework/issues/536
 
 public class AssignmentPerformanceTest {
   private String s1;

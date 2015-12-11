@@ -11,7 +11,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
 
 @TypeQualifier
 @SubtypeOf({C.class, B.class})
-// @SubtypeOf({B.class})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
