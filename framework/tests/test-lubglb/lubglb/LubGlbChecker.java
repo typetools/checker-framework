@@ -10,7 +10,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 // Type hierarchy:
-//    A
+//    A       <-- @DefaultQualifierInHierarchy
 //   / \
 //  B   C
 //   \ / \
