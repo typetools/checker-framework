@@ -1,14 +1,27 @@
 language: java
 
+install: ./.travis-install-dependencies.sh
+
 script: travis_wait 120 ./.travis-build.sh
 
 sudo: false
+## Reinstate when the build can use a standard jtreg install
+# addons:
+#   apt:
+#     packages:
+#       - jtreg
 
 jdk:
   - oraclejdk8
-  - oraclejdk7
+#  - oraclejdk7
   - openjdk7
 
 notifications:
   email:
     - checker-framework-dev@googlegroups.com 
+
+after_success:
+  - bin/trigger-travis.sh codespecs daikon-typecheck $TRAVISTOKEN
+  - bin/trigger-travis.sh codespecs checker-framework-demos $TRAVISTOKEN
+  - bin/trigger-travis.sh codespecs checker-framework-docs $TRAVISTOKEN
+  - bin/trigger-travis.sh codespecs sparta $TRAVISTOKEN

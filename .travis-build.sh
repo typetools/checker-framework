@@ -1,12 +1,14 @@
 #!/bin/bash
-ROOT=$TRAVIS_BUILD_DIR/..
-cd $ROOT
-git clone https://github.com/typetools/annotation-tools.git
-cd annotation-tools/
-./.travis-build.sh
-# This also builds jsr308-langtools
 
-cd $ROOT/checker-framework
-ant clean
-ant dist
-ant javadoc-private tests-nojdk
+./.travis-build-without-test.sh
+
+## Documentation
+ant javadoc-private
+make -C checker/manual all
+
+## Tests
+# The JDK was built above; there is no need to rebuild it again.
+ant tests-nobuildjdk
+
+(cd checker && ant check-compilermsgs check-purity)
+(cd checker && ant check-tutorial)
