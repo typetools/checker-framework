@@ -909,6 +909,27 @@
 
 
 
+    <target name="jtreg.check">
+      <condition property="jtreg.exists">
+	<available file="${jtreg.home}" type="dir"/>
+      </condition>
+    </target>
+
+    <target name="-jtreg.download" depends="jtreg.check" unless="jtreg.exists">
+      <get
+	  src="https://adopt-openjdk.ci.cloudbees.com/view/OpenJDK/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.1-b12.tar.gz"
+	dest="${jtreg.home}/.." />
+      <untar src="${jtreg.home}/../jtreg-4.1-b12.tar.gz"
+	     dest="${jtreg.home}/../"
+	     compression="gzip" />
+    </target>
+
+
+    <target name="jtreg-tests"
+            depends="-jtreg.download,-def-jtreg,jar,jtreg-tests-checkers,jtreg-tests-framework"
+            description="Run all jtreg tests">
+    </target>
+
     <target name="jtreg-tests-checkers" depends="-def-jtreg,jar"
             description="Run checker jtreg tests">
         <jtreg-tool name="all" tests="."/>
@@ -919,11 +940,6 @@
        <ant dir="${framework.loc}">
            <target name="jtreg-tests" />
        </ant>
-    </target>
-
-    <target name="jtreg-tests"
-            depends="-def-jtreg,jar,jtreg-tests-checkers,jtreg-tests-framework"
-            description="Run all jtreg tests">
     </target>
 
     <target name="-def-check">
