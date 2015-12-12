@@ -135,7 +135,7 @@ ${line.separator}NOTE: Did you run 'ant touch-files'?"/>
     <attribute name="expected"/>
     <sequential>
       <!-- Apply the patch -->
-      <patch patchfile="@{patchfile}" quiet="yes" strip="0"/>
+      <patch patchfile="@{patchfile}" quiet="yes" strip="0" failonerror="true"/>
       <my-ant task="@{task}" logfile="output.tmp"/>
       <my-diff file1="@{expected}" file2="output.tmp"
                ignore-matching-lines="Total time"/>
@@ -161,7 +161,7 @@ ${line.separator}NOTE: Did you run 'ant touch-files'?"/>
       <attribute name="step"/>
       <attribute name="dir" default="testdemo"/>
       <sequential>
-          <patch patchfile="@{dir}/@{target}.@{step}.patch" quiet="yes" reverse="yes" strip="0"/>
+          <patch patchfile="@{dir}/@{target}.@{step}.patch" quiet="yes" reverse="yes" strip="0" failonerror="true"/>
       </sequential>
   </macrodef>
 </project>
