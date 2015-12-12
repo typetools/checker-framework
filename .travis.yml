@@ -1,7 +1,5 @@
 language: java
 
-install: ./.travis-install-dependencies.sh
-
 script: travis_wait 120 ./.travis-build.sh
 
 sudo: false
@@ -21,7 +19,9 @@ notifications:
     - checker-framework-dev@googlegroups.com 
 
 after_success:
-  - bin/trigger-travis.sh codespecs daikon-typecheck $TRAVISTOKEN
+  - curl -s https://raw.githubusercontent.com/mernst/plume-lib/master/bin/trigger-travis.sh > trigger-travis.sh  
   - bin/trigger-travis.sh codespecs checker-framework-demos $TRAVISTOKEN
-  - bin/trigger-travis.sh codespecs checker-framework-docs $TRAVISTOKEN
+  - bin/trigger-travis.sh codespecs checker-framework-inference $TRAVISTOKEN
+  - bin/trigger-travis.sh codespecs daikon-typecheck $TRAVISTOKEN
+  - bin/trigger-travis.sh codespecs plume-lib-typecheck $TRAVISTOKEN
   - bin/trigger-travis.sh codespecs sparta $TRAVISTOKEN
