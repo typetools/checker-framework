@@ -2,22 +2,30 @@ language: java
 
 script: travis_wait 120 ./.travis-build.sh
 
-sudo: false
-addons:
-  apt:
-    packages:
-      - hevea
-      # Reinstate jtreg when the build can use a standard jtreg install
-      # - jtreg
-      # for rsvg-convert
-      - librsvg2-bin
-      # both for ecrm1000 (a font)
-      - texlive-fonts-extra
-      - texlive-fonts-recommended
-      # for url.sty
-      - texlive-latex-base
-      # for fullpage.sty
-      - texlive-latex-extra
+## Version for Ubuntu 14.04 Trusty
+sudo: required
+dist: trusty
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq hevea librsvg2-bin texlive-fonts-recommended texlive-latex-base texlive-latex-extra
+
+## Version for container-based infrastructure: Ubuntu 12.04
+# sudo: false
+# addons:
+#   apt:
+#     packages:
+#       - hevea
+#       # Reinstate jtreg when the build can use a standard jtreg install
+#       # - jtreg
+#       # for rsvg-convert
+#       - librsvg2-bin
+#       # both for ecrm1000 (a font)
+#       # This didn't help: - texlive-fonts-extra
+#       - texlive-fonts-recommended
+#       # for url.sty
+#       - texlive-latex-base
+#       # for fullpage.sty
+#       - texlive-latex-extra
 
 jdk:
   - oraclejdk8
