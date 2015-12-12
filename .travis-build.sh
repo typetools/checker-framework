@@ -17,6 +17,10 @@ ant javadoc-private
 
 (cd checker && ant check-compilermsgs check-purity)
 (cd checker && ant check-tutorial)
+
 # It's cheaper to run the demos test here than to trigger the
 # checker-framework-demos job, which has to build the whole Checker Framework.
+# It would be better for "ant check-demos" to set the environment
+# appropriately, but it's expedient to do it here.
+export CHECKERFRAMEWORK=$TRAVIS_BUILD_DIR
 (cd checker && ant check-demos)
