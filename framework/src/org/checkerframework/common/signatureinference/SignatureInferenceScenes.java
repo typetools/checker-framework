@@ -107,7 +107,7 @@ public class SignatureInferenceScenes {
 
     /** Set containing Scenes that were modified since the last time all
      * Scenes were written into .jaif files. The String argument of this set
-     * is a path to the .jaif file of the corresponding Scene on the set. It
+     * is a path to the .jaif file of the corresponding Scene in the set. It
      * is obtained by passing a class name as argument to the
      * {@link getJaifPath} method.
      *
