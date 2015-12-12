@@ -17,12 +17,12 @@ sudo: false
 addons:
   apt:
     packages:
-      - hevea
       # Reinstate jtreg when the build can use a standard jtreg install
       # - jtreg
       # for rsvg-convert
       - librsvg2-bin
       ## Save time by not installing LaTeX which is needed only for the manual
+      # - hevea
       # # both for ecrm1000 (a font)
       # # This didn't help: - texlive-fonts-extra
       # - texlive-fonts-recommended
