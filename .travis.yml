@@ -3,11 +3,13 @@ language: java
 script: travis_wait 120 ./.travis-build.sh
 
 sudo: false
-## Reinstate when the build can use a standard jtreg install
-# addons:
-#   apt:
-#     packages:
-#       - jtreg
+addons:
+  apt:
+    packages:
+      - hevea
+      # Reinstate jtreg when the build can use a standard jtreg install
+      # - jtreg
+      - texlive
 
 jdk:
   - oraclejdk8
