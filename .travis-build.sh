@@ -10,9 +10,10 @@ ant javadoc-private
 # Skip the manual because it cannot be compiled on Ubuntu 12.04.
 # make -C checker/manual all
 
-## Tests
-# The JDK was built above; there is no need to rebuild it again.
-ant tests-nobuildjdk
+## Temporarily commented out so tests run faster
+# ## Tests
+# # The JDK was built above; there is no need to rebuild it again.
+# ant tests-nobuildjdk
 
 (cd checker && ant check-compilermsgs check-purity)
 (cd checker && ant check-tutorial)
