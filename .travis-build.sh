@@ -10,16 +10,11 @@ ant javadoc-private
 # Skip the manual because it cannot be compiled on Ubuntu 12.04.
 # make -C checker/manual all
 
-## Temporarily commented out so tests run faster
-# ## Tests
-# # The JDK was built above; there is no need to rebuild it again.
-# ant tests-nobuildjdk
+## Tests
+# The JDK was built above; there is no need to rebuild it again.
+ant tests-nobuildjdk
 
 (cd checker && ant check-compilermsgs check-purity)
-## Temporarily commented out
-# # It would be better for "ant check-tutorial" to set the environment
-# # appropriately, but it's expedient to do it here.
-# export CHECKERFRAMEWORK=$TRAVIS_BUILD_DIR
 (cd checker && ant check-tutorial)
 
 # It's cheaper to run the demos test here than to trigger the
