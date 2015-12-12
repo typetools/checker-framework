@@ -71,7 +71,7 @@
     <attribute name="file2"/>
     <attribute name="ignore-matching-lines"/>
     <sequential>
-      <exec executable="diff" resultproperty="diff-result" failonerror="true">
+      <exec executable="diff" resultproperty="diff-result"> <!-- not  failonerror="true because that prevents user-friendly error message below -->
         <!-- <arg value="-q"/> -->
         <arg line="-I '@{ignore-matching-lines}'"/>
         <!-- ignore lint results -->
@@ -148,6 +148,7 @@ ${line.separator}NOTE: Did you run 'ant touch-files'?"/>
     <attribute name="step"/>
     <attribute name="dir" default="testdemo"/>
     <sequential>
+      <echo message="Checking demo target=@{target} step=@{step}"/>
       <check-demo
             task="@{target}"
             patchfile="@{dir}/@{target}.@{step}.patch"
