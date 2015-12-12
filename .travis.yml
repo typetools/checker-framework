@@ -11,6 +11,8 @@ addons:
       # - jtreg
       # for rsvg-convert
       - librsvg2-bin
+      # for ecrm1000 (a font)
+      - texlive-fonts-recommended
       # for url.sty
       - texlive-latex-base
       # for fullpage.sty
