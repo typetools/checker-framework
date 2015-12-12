@@ -7,7 +7,8 @@ set -e
 
 ## Documentation
 ant javadoc-private
-make -C checker/manual all
+# Skip the manual because it cannot be compiled on Ubuntu 12.04.
+# make -C checker/manual all
 
 ## Tests
 # The JDK was built above; there is no need to rebuild it again.
