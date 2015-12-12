@@ -1134,13 +1134,39 @@
     </target>
 
 
-    <target name="check-tutorial" description="Test to see if the tutorial is working as expected">
+    <target name="check-tutorial" description="Test that the tutorial is working as expected">
     <!--The tutorial build file is written relative to its location,
         so useNativeBasedir is required. -->
           <ant dir="${framework.loc}/../tutorial/tests/" useNativeBasedir="true">
               <target name="check-tutorial"/>
           </ant>
     </target>
+
+    <target name="demos.check">
+      <condition property="demos.exists">
+	<available file="${basedir}/../../checker-framework-demos"/>
+      </condition>
+    </target>
+
+    <target name="-demos.pull" depends="demos.check" if="demos.exists">
+      <exec executable="git" dir="${basedir}/../../checker-framework-demos" failonerror="true">
+        <arg line="pull"/>
+      </exec>
+    </target>
+
+    <target name="-demos.clone" depends="demos.check" unless="demos.exists">
+      <exec executable="git" dir="${basedir}/../.." failonerror="true">
+        <arg line="clone https://github.com/typetools/checker-framework.demos.git checker-framework-demos"/>
+      </exec>
+    </target>
+
+    <target name="check-demos" depends="demos.check,-demos.pull,-demos.clone"
+	    description="Test that the demos are working as expected">
+      <ant dir="${basedir}/../../checker-framework-demos">
+      </ant>
+    </target>
+      
+
     <!-- TODO: like for -run-checker this only checks checker/src.
          Improve both. -->
     <!-- Depend on dist-nobuildjdk to make sure everything compiles. -->
