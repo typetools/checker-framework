@@ -9,7 +9,10 @@ addons:
       - hevea
       # Reinstate jtreg when the build can use a standard jtreg install
       # - jtreg
-      - texlive
+      # for rsvg-convert
+      - librsvg2-bin
+      # for url.sty
+      - texlive-latex-base
       # for fullpage.sty
       - texlive-latex-extra
 
