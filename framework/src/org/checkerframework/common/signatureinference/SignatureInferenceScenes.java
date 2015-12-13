@@ -514,7 +514,7 @@ public class SignatureInferenceScenes {
 
 
     /**
-     *  Adds a field to an AnnotationBuilder.
+     * Adds a field to an AnnotationBuilder.
      * @param fieldKey is the name of the field
      * @param obj is the value of the field
      * @param builder is the AnnotationBuilder
