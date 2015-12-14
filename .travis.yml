@@ -34,8 +34,8 @@ addons:
 jdk:
   - oraclejdk8
   - oraclejdk7
-  - openjdk8
   - openjdk7
+  # openjdk8 is not a legal option: - openjdk8
 
 notifications:
   email:
