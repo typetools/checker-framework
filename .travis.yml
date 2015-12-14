@@ -41,9 +41,9 @@ notifications:
     - checker-framework-dev@googlegroups.com 
 
 after_success:
-  - curl -s https://raw.githubusercontent.com/mernst/plume-lib/master/bin/trigger-travis.sh > trigger-travis.sh  
-  - bin/trigger-travis.sh codespecs checker-framework-demos $TRAVISTOKEN
-  - bin/trigger-travis.sh codespecs checker-framework-inference $TRAVISTOKEN
-  - bin/trigger-travis.sh codespecs daikon-typecheck $TRAVISTOKEN
-  - bin/trigger-travis.sh codespecs plume-lib-typecheck $TRAVISTOKEN
-  - bin/trigger-travis.sh codespecs sparta $TRAVISTOKEN
+  - curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
+  - sh trigger-travis.sh typetools checker-framework-demos $TRAVISTOKEN "Triggered by upstream build of typetools/checker-framework"
+  - sh trigger-travis.sh typetools checker-framework-inference $TRAVISTOKEN "Triggered by upstream build of typetools/checker-framework"
+  - sh trigger-travis.sh typetools daikon-typecheck $TRAVISTOKEN "Triggered by upstream build of typetools/checker-framework"
+  - sh trigger-travis.sh typetools plume-lib-typecheck $TRAVISTOKEN "Triggered by upstream build of typetools/checker-framework"
+  - sh trigger-travis.sh typetools sparta $TRAVISTOKEN "Triggered by upstream build of typetools/checker-framework"
