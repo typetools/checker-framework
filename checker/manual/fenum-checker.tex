@@ -67,11 +67,13 @@ file \code{\emph{MyFenum}.java}:
 package \textit{myModule}.qual;
 
 import java.lang.annotation.*;
+import org.checkerframework.checker.fenum.qual.FenumTop;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@SubtypeOf( \ttlcb{} FenumTop.class \ttrcb{} )
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(FenumTop.class)
 public @interface \textit{MyFenum} \ttlcb\ttrcb
 \end{alltt}
 
@@ -211,6 +213,9 @@ class FenumUser {
   }
  }
 \end{Verbatim}
+
+Also, see the example project in the \<checker/examples/fenum-extension> directory.
+
 
 
 \section{References\label{fenum-references}}

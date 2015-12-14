@@ -29,11 +29,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 
 import com.sun.source.tree.NewClassTree;
 
-// @NonLeaked and @LeakedToResult are type qualifiers because of a checker
-// framework limitation (Issue 383). Once the stub parser gets updated to read
-// non-type-qualifers annotations on stub files, this annotation won't be a
-// type qualifier anymore.
-
 public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private final AnnotationMirror MAYBE_ALIASED, NON_LEAKED, UNIQUE, MAYBE_LEAKED;
@@ -49,9 +44,13 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    // @NonLeaked and @LeakedToResult are type qualifiers because of a checker
+    // framework limitation (Issue 383). Once the stub parser gets updated to read
+    // non-type-qualifers annotations on stub files, this annotation won't be a
+    // type qualifier anymore.
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithPolyAll(
+        return getBundledTypeQualifiersWithoutPolyAll(
                 MaybeLeaked.class);
     }
 

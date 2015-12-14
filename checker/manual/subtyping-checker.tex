@@ -109,14 +109,17 @@ type system, follow three steps.
 \begin{Verbatim}
 package \textit{myModule}.qual;
 
-import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.*;
 import java.lang.annotation.ElementType;
-import org.checkerframework.framework.qual.SubtypeOf;
+import java.lang.annotation.Target;
+import com.sun.source.tree.Tree.Kind;
 
 /**
  * Denotes that the representation of an object is encrypted.
  */
 @SubtypeOf(PossiblyUnencrypted.class)
+@ImplicitFor(trees = { Kind.NULL_LITERAL })
+@DefaultFor({DefaultLocation.LOWER_BOUNDS})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Encrypted {}
 \end{Verbatim}
@@ -124,10 +127,10 @@ public @interface Encrypted {}
 \begin{Verbatim}
 package \textit{myModule}.qual;
 
-import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
 /**
  * Denotes that the representation of an object might not be encrypted.
@@ -222,6 +225,7 @@ commands:
 
 \end{enumerate}
 
+Also, see the example project in the \<checker/examples/subtyping-extension> directory.
 
 
 % LocalWords:  TODO ImplicitFor Aquals sourcepath java NonNull

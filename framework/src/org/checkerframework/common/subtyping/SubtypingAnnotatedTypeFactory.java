@@ -9,7 +9,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.type.AnnotatedTypeLoader;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 
 public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -20,7 +20,7 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        AnnotatedTypeLoader loader = new AnnotatedTypeLoader(checker);
+        AnnotationClassLoader loader = new AnnotationClassLoader(checker);
 
         Set<Class<? extends Annotation>> qualSet = new HashSet<Class<? extends Annotation>>();
 

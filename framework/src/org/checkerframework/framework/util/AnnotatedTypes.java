@@ -1402,14 +1402,14 @@ public class AnnotatedTypes {
             return isTypeAnnotationCache.get(elem);
 
         // the annotation is a type annotation if it has the proper ElementTypes in the @Target meta-annotation
-        boolean result = hasTypeTargets(elem.getAnnotation(Target.class).value());
+        boolean result = hasTypeQualifierElementTypes(elem.getAnnotation(Target.class).value());
         isTypeAnnotationCache.put(elem, result);
         return result;
     }
 
     /**
      * Sees if the passed in array of {@link ElementType} values have the correct set of
-     * values which defines a type annotation
+     * values which defines a type qualifier
      *
      * @param elements
      *            an array of {@link ElementType} values
@@ -1417,7 +1417,7 @@ public class AnnotatedTypes {
      *         optionally {@link ElementType#TYPE_PARAMETER}), false if it
      *         contains anything else
      */
-    public static boolean hasTypeTargets(ElementType[] elements) {
+    public static boolean hasTypeQualifierElementTypes(ElementType[] elements) {
         boolean hasTypeUse = false;
         boolean hasOtherElementTypes = false;
 

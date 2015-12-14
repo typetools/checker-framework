@@ -22,7 +22,6 @@ import java.lang.annotation.Target;
  * the {@code Checker}, or override
  * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#createSupportedTypeQualifiers()}
  * to explicitly list the qualifiers it supports.
- * <p>
  *
  * @see AnnotatedTypeFactory#createSupportedTypeQualifiers()
  */

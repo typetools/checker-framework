@@ -271,7 +271,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Annotated Type Loader used to load annotation classes via reflective lookup
      */
-    protected AnnotatedTypeLoader loader;
+    protected AnnotationClassLoader loader;
 
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
@@ -299,7 +299,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.types = processingEnv.getTypeUtils();
         this.visitorState = new VisitorState();
 
-        this.loader = new AnnotatedTypeLoader(checker);
+        this.loader = new AnnotationClassLoader(checker);
         this.supportedQuals = createSupportedTypeQualifiers();
 
         this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
@@ -734,7 +734,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Loads all annotations contained in the qual directory of a checker via
      * reflection, and has the option to include an explicitly stated list of
-     * annotations (eg ones found in a different directory than the checker).
+     * annotations (eg ones found in a different directory than qual).
      *
      * The annotations that are automatically loaded must have the
      * {@link java.lang.annotation.Target Target} meta-annotation with the value

@@ -204,11 +204,20 @@ meta-annotation on the annotation definition to indicate where the annotation
 may be written. All type qualifiers that users can write in source code should
 have the value \<ElementType.TYPE\_USE> (and optionally with the additional value of
 \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values).
-The Checker Framework automatically treats any annotation that has this value
-as a type qualifier. (An annotation that is written on an
-annotation definition, such as
+(An annotation that is written on an annotation definition, such as
 \sunjavadocanno{java/lang/annotation/Target.html}{Target}, is called a
 \emph{meta-annotation}.)
+
+The annotations should be placed within a directory called \<qual>, and this
+directory should be placed in the same directory as your Checker's source file.
+
+For example, the Nullness Checker's source file is located at
+\<.../nullness/NullnessChecker.java>. The \<NonNull> qualifier is located in the
+directory \<.../nullness/qual>.
+
+The Checker Framework automatically treats any annotation that has this value
+and is declared in the qual package as a type qualifier.
+(See Section \ref{indicating-supported-annotations} for more details.)
 
 % \noindent
 % The \<@Target({ElementType.TYPE\_USE})> meta-annotation
@@ -1114,109 +1123,6 @@ checker classes for the Interning Checker and the Nullness Checker:
   public class NullnessChecker extends BaseTypeChecker { }
 \end{Verbatim}
 
-\subsection{Indicating supported annotations\label{indicating-supported-annotations}}
-
-A checker must indicate the annotations that it supports (make up its type
-hierarchy), including whether it supports the polymorphic qualifier
-\refqualclass{framework/qual}{PolyAll}.
-
-By default, a checker supports \<PolyAll>, and all annotations located in a
-subdirectory called \<qual> that's located in the same directory as the checker.
-Note that only annotations defined with the \<@Target({ElementType.TYPE\_USE})>
-meta-annotation (and optionally with the additional value of
-\<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values)
-are automatically considered as supported annotations.
-
-To indicate support for annotations that are located outside of the \<qual>
-subdirectory, annotations that have other \<ElementType> values, or to indicate
-whether a checker supports the polymorphic qualifier
-\refqualclass{framework/qual}{PolyAll}, checker writers can override the
-\refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{--}
-method in one of the ways shown below.
-
-Note that \code{createSupportedTypeQualifiers()} returns an immutable set of the
-annotation classes supported by a checker.
-
-In total, there are 5 ways to indicate annotations that are supported by a
-checker:
-\begin{enumerate}
-\item Only support annotations located in a checker's \<qual> directory, and
-\<PolyAll>:
-
-This is the default behavior. Simply place those annotations within the \<qual>
-directory.
-
-\item Support annotations located in a checker's \<qual> directory, but without
-\<PolyAll>:
-
-Place those annotations within the \<qual>
-directory, and override \<createSupportedTypeQualifiers()> by calling
-\<getBundledTypeQualifiersWithoutPolyAll()> with no parameters passed in.
-Code example:
-
-\begin{Verbatim}
-@Override
-protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    return getBundledTypeQualifiersWithoutPolyAll();
-}
-\end{Verbatim}
-
-\item Support annotations located in a checker's \<qual> directory, \<PolyAll>,
-and a list of other annotations:
-
-Place those annotations within the \<qual>
-directory, and override \<createSupportedTypeQualifiers()> by calling
-\<getBundledTypeQualifiersWithPolyAll()> with a varargs parameter list of the
-other annotations. Code example:
-
-\begin{Verbatim}
-@Override
-protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    return getBundledTypeQualifiersWithPolyAll(
-            Regex.class, PartialRegex.class,
-            RegexBottom.class, UnknownRegex.class);
-}
-\end{Verbatim}
-
-\item Support annotations located in a checker's \<qual> directory and a list
-of other annotations, but without supporting \<PolyAll>:
-
-Place those annotations within the \<qual>
-directory, and override \<createSupportedTypeQualifiers()> by calling
-\<getBundledTypeQualifiersWithoutPolyAll()> with a varargs parameter list of the
-other annotations. Code example:
-
-\begin{Verbatim}
-@Override
-protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    return getBundledTypeQualifiersWithoutPolyAll(
-            UnknownFormat.class, FormatBottom.class);
-}
-\end{Verbatim}
-
-\item Supporting only annotations that are explicitly listed:
-
-Override \<createSupportedTypeQualifiers()> and return an immutable set of the
-supported annotations. Code example:
-\begin{Verbatim}
-@Override
-protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-return Collections.unmodifiableSet(
-    new HashSet<Class<? extends Annotation>>(
-        Arrays.asList(
-            A.class, B.class)));
-}
-\end{Verbatim}
-
-\end{enumerate}
-
-The methods \code{getBundledTypeQualifiersWithoutPolyAll()}
-and \code{getBundledTypeQualifiersWithPolyAll} each return an immutable set.
-
-An aggregate checker (which extends
-\refclass{framework/source}{AggregateChecker}) does not need to specify its
-type qualifiers, but each of its component checkers should do so.
-
 The checker class bridges between the compiler and the rest of the checker.  It
 invokes the type-rule check visitor on every Java source file being
 compiled, and provides a simple API,
@@ -1247,6 +1153,32 @@ It is also allowed to override messages defined in superclasses, but this
 is rarely needed.
 For more details about message keys, see Section~\refwithpageparen{compiler-message-keys}.
 \end{sloppypar}
+
+\subsection{Indicating supported annotations\label{indicating-supported-annotations}}
+
+A checker must indicate the annotations that it supports (make up its type
+hierarchy), including whether it supports the polymorphic qualifier
+\refqualclass{framework/qual}{PolyAll}.
+
+By default, a checker supports \<PolyAll>, and all annotations located in a
+subdirectory called \<qual> that's located in the same directory as the checker.
+Note that only annotations defined with the \<@Target({ElementType.TYPE\_USE})>
+meta-annotation (and optionally with the additional value of
+\<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values)
+are automatically considered as supported annotations.
+
+To indicate support for annotations that are located outside of the \<qual>
+subdirectory, annotations that have other \<ElementType> values, or to indicate
+whether a checker supports the polymorphic qualifier
+\refqualclass{framework/qual}{PolyAll}, checker writers can override the
+\refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{--}
+method (open the link for details).
+
+An aggregate checker (which extends
+\refclass{framework/source}{AggregateChecker}) does not need to specify its
+type qualifiers, but each of its component checkers should do so.
+
+
 
 
 \subsection{Bundling multiple checkers\label{bundling-multiple-checkers}}

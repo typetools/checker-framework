@@ -42,7 +42,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        AnnotatedTypeLoader loader = new AnnotatedTypeLoader(checker);
+        AnnotationClassLoader loader = new AnnotationClassLoader(checker);
 
         Set<Class<? extends Annotation>> qualSet = new HashSet<Class<? extends Annotation>>();
 

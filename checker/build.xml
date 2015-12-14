@@ -870,6 +870,30 @@
         </antcall>
     </target>
 
+	<target name="fenum-extension-tests" depends="jar,build-tests"
+            description="Run tests for the Fenum Checker extension capabilities">
+        <exec executable="chmod" failonerror="true">
+            <arg line="+x ${basedir}/bin/javac"/>
+        </exec>
+
+        <exec executable="make" failonerror="${halt.on.test.failure}">
+            <env key="JAVAC" value="${basedir}/bin/javac"/>
+            <arg line="-C tests/fenum-extension/"/>
+        </exec>
+    </target>
+
+	<target name="subtyping-extension-tests" depends="jar,build-tests"
+            description="Run tests for the Subtyping Checker extension capabilities">
+        <exec executable="chmod" failonerror="true">
+            <arg line="+x ${basedir}/bin/javac"/>
+        </exec>
+
+        <exec executable="make" failonerror="${halt.on.test.failure}">
+            <env key="JAVAC" value="${basedir}/bin/javac"/>
+            <arg line="-C tests/subtyping-extension/"/>
+        </exec>
+    </target>
+
     <target name="units-extension-tests" depends="jar,build-tests"
             description="Run tests for the Units Checker extension capabilities">
         <exec executable="chmod" failonerror="true">

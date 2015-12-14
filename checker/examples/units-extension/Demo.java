@@ -6,7 +6,7 @@ import qual.Hz;
 import qual.kHz;
 import qual.Frequency;
 
-public class Demo {
+class UnitsExtensionDemo {
     @Hz int frq;
 
     void bad() {

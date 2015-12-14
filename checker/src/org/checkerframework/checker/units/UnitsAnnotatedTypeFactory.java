@@ -145,7 +145,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         // Use the Units Annotated Type Loader instead of the default one
-        loader = new UnitsAnnotatedTypeLoader(checker);
+        loader = new UnitsAnnotationClassLoader(checker);
 
         // get all the loaded annotations
         Set<Class<? extends Annotation>> qualSet = new HashSet<Class<? extends Annotation>>();
@@ -274,7 +274,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotationMirror am = AnnotationUtils.fromClass(elements, qual);
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors() ) {
-            if (ama.getAnnotationType().toString().equals(unitsRelationsAnnoClass.getCanonicalName())) {
+            if (AnnotationUtils.areSameByClass(ama, unitsRelationsAnnoClass)) {
                 Class<? extends UnitsRelations> theclass =
                         AnnotationUtils.getElementValueClass(ama, "value", true).asSubclass(UnitsRelations.class);
                 String classname = theclass.getCanonicalName();

@@ -33,6 +33,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * as arguments to checkers that have extension capabilities such as the
  * Subtyping Checker, Fenum Checker, and Units Checker.
  *
+ * To load annotations using this class, their directory structure and package
+ * structure must be identical.
+ *
  * Only annotation classes that have the {@link Target} meta-annotation with the
  * value of {@link ElementType#TYPE_USE} (and optionally
  * {@link ElementType#TYPE_PARAMETER}) are loaded. If it has other
@@ -40,19 +43,16 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * be manually listed in a checker's annotated type factory by overriding
  * {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()}.
  *
- * The methods in this class are called within
- * {@link AnnotatedTypeFactory#loadTypeAnnotationsFromQualDir(Class[])}.
- *
  * Checker writers may wish to subclass this class if they wish to implement
  * some custom rules to filter or process loaded annotation classes, by
  * providing an override implementation of
  * {@link #isSupportedAnnotationClass(Class)}. See
- * {@link org.checkerframework.checker.units.UnitsAnnotatedTypeLoader
- * UnitsAnnotatedTypeLoader} for an example.
+ * {@link org.checkerframework.checker.units.UnitsAnnotationClassLoader
+ * UnitsAnnotationClassLoader} for an example.
  *
  * @author Jeff Luo
  */
-public class AnnotatedTypeLoader {
+public class AnnotationClassLoader {
     // For issuing errors to the user
     private BaseTypeChecker checker;
 
@@ -88,7 +88,7 @@ public class AnnotatedTypeLoader {
      * @param checker
      *            a {@link BaseTypeChecker} or its subclass
      */
-    public AnnotatedTypeLoader(BaseTypeChecker checker) {
+    public AnnotationClassLoader(BaseTypeChecker checker) {
         this.checker = checker;
         processingEnv = checker.getProcessingEnvironment();
 
@@ -133,7 +133,7 @@ public class AnnotatedTypeLoader {
 
     /**
      * Loads type annotations located in the qual directory of a checker
-     * (referenced by the resourceURL) via reflection.
+     * (referenced by the resourceURL) via reflective annotation class name lookup.
      */
     private void loadBundledAnnotationClasses() {
         if (resourceURL == null) {
@@ -375,7 +375,7 @@ public class AnnotatedTypeLoader {
             // retrieve the set of ElementTypes in the @Target
             // meta-annotation and check to see if this annotation is
             // supported for automatic loading
-            if (AnnotatedTypes.hasTypeTargets(cls.getAnnotation(Target.class).value())) {
+            if (AnnotatedTypes.hasTypeQualifierElementTypes(cls.getAnnotation(Target.class).value())) {
                 // if it is supported, then subclass it as an Annotation
                 // class
                 Class<? extends Annotation> annoClass = cls.asSubclass(Annotation.class);

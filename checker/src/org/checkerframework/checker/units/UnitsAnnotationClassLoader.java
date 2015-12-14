@@ -2,7 +2,7 @@ package org.checkerframework.checker.units;
 
 import org.checkerframework.checker.units.qual.UnitsMultiple;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.type.AnnotatedTypeLoader;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -10,9 +10,9 @@ import java.lang.annotation.Annotation;
 
 import javax.lang.model.element.AnnotationMirror;
 
-public class UnitsAnnotatedTypeLoader extends AnnotatedTypeLoader {
+public class UnitsAnnotationClassLoader extends AnnotationClassLoader {
 
-    public UnitsAnnotatedTypeLoader(BaseTypeChecker checker) {
+    public UnitsAnnotationClassLoader(BaseTypeChecker checker) {
         super(checker);
     }
 
