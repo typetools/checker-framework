@@ -33,7 +33,8 @@ addons:
 
 jdk:
   - oraclejdk8
-#  - oraclejdk7
+  - oraclejdk7
+  - openjdk8
   - openjdk7
 
 notifications:
