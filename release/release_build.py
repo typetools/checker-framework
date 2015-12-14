@@ -115,7 +115,7 @@ def build_jsr308_langtools_release(auto, version, afu_release_date, checker_fram
 
     #TODO: perhaps make a "dist" target rather than listing out the relevant targets
     #build jsr308 binaries and documents but not website, fail if the tests don't pass
-    execute("ant -Dhalt.on.test.failure=true clean-and-build-all-tools build-javadoc build-doclets", True, False, JSR308_MAKE)
+    execute("ant -Dhalt.on.test.failure=true -Dlauncher.java=java clean-and-build-all-tools build-javadoc build-doclets", True, False, JSR308_MAKE)
 
     jsr308ZipName = "jsr308-langtools-%s.zip" % version
 

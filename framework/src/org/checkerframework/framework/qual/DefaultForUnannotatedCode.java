@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Applied to the declaration of a type qualifier specifies that
+ * Applied to the declaration of a type qualifier, specifies that
  * the given annotation should be the default for unannotated type uses
  * (in bytecode or source code) at the given location(s).
  * <p>

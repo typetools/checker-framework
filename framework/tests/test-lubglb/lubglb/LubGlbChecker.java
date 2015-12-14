@@ -8,6 +8,15 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+// Type hierarchy:
+//    A       <-- @DefaultQualifierInHierarchy
+//   / \
+//  B   C
+//   \ / \
+//    D   E
+//     \ /
+//      F
+import lubglb.quals.A;
 import lubglb.quals.B;
 import lubglb.quals.C;
 import lubglb.quals.D;
