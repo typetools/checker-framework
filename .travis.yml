@@ -17,7 +17,9 @@ sudo: false
 addons:
   apt:
     packages:
-      # Reinstate jtreg when the build can use a standard jtreg install
+      - junit4
+      # Reinstate jtreg when the build can use a standard Ubuntu jtreg install;
+      # for now, it needs to download and install the jtreg zipfile.
       # - jtreg
       # for rsvg-convert
       - librsvg2-bin

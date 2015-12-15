@@ -488,12 +488,21 @@
         </condition>
 
         <mkdir dir="${build.reports}"/>
+	<!-- non-debugging version:
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
                printsummary="false"
                haltonfailure="${halt.on.test.failure}">
+	       -->
+	<!-- debugging version: -->
+        <junit fork="${run.tests.should.fork}"
+               dir="${basedir}"
+               showoutput="true"
+               printsummary="true"
+               haltonfailure="${halt.on.test.failure}">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="${debugger.str}"/>
+            <jvmarg line="-Xmx2500M"/>
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
             <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
             <jvmarg line="-ea"/>
