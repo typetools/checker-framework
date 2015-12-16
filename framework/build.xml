@@ -227,7 +227,6 @@
     <!-- This creates framework.jar -->
     <target name="jar" depends="build"
             description="Create framework.jar file">
-        <delete dir="${build.reports}"/>
 
         <unjar src="${stubparser.lib}" dest="${build}" />
         <unjar src="${javacutil.lib}" dest="${build}" />
@@ -512,7 +511,7 @@
     <!-- TODO: re-enable -->
     <target name="jtreg-tests" depends="-def-jtreg,jar,build-tests"
             description="Run jtreg tests">
-        <echo message="framework jtreg-tests are currently disabled because they ar failing"/>
+        <echo message="framework jtreg-tests are currently disabled because they are failing"/>
     </target>
 
     <!-- TODO: re-enable -->

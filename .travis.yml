@@ -4,7 +4,7 @@ script: travis_wait 120 ./.travis-build.sh
 
 ## Version for Ubuntu 14.04 Trusty.
 ## Problem: The job times out on travis-ci.org, but the container-based version
-## does not.
+## does not.  Presumably container-based gets a bigger time limit.
 # sudo: required
 # dist: trusty
 # before_install:
@@ -17,7 +17,9 @@ sudo: false
 addons:
   apt:
     packages:
-      # Reinstate jtreg when the build can use a standard jtreg install
+      - junit4
+      # Reinstate jtreg when the build can use a standard Ubuntu jtreg install;
+      # for now, it needs to download and install the jtreg zipfile.
       # - jtreg
       # for rsvg-convert
       - librsvg2-bin
@@ -31,19 +33,28 @@ addons:
       # # for fullpage.sty
       # - texlive-latex-extra
 
+addons:
+  artifacts: true
+  s3_region: "us-west-2" # defaults to "us-east-1"
+
 jdk:
   - oraclejdk8
-#  - oraclejdk7
+  - oraclejdk7
   - openjdk7
+  # openjdk8 is not a legal option: - openjdk8
 
 notifications:
   email:
     - checker-framework-dev@googlegroups.com 
 
 after_success:
-  - curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
-  - sh trigger-travis.sh typetools checker-framework-demos $TRAVISTOKEN "Triggered by upstream build of typetools/checker-framework"
-  - sh trigger-travis.sh typetools checker-framework-inference $TRAVISTOKEN "Triggered by upstream build of typetools/checker-framework"
-  - sh trigger-travis.sh typetools daikon-typecheck $TRAVISTOKEN "Triggered by upstream build of typetools/checker-framework"
-  - sh trigger-travis.sh typetools plume-lib-typecheck $TRAVISTOKEN "Triggered by upstream build of typetools/checker-framework"
-  - sh trigger-travis.sh typetools sparta $TRAVISTOKEN "Triggered by upstream build of typetools/checker-framework"
+  # The vertical bar (pipe) means multi-line command in YAML.
+  - |
+      if [[ "$TRAVIS_JOB_NUMBER" == *.1 ]] ; then
+        curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
+        sh trigger-travis.sh typetools checker-framework-demos $TRAVISTOKEN
+        sh trigger-travis.sh typetools checker-framework-inference $TRAVISTOKEN
+        sh trigger-travis.sh typetools daikon-typecheck $TRAVISTOKEN
+        sh trigger-travis.sh typetools plume-lib-typecheck $TRAVISTOKEN
+        sh trigger-travis.sh typetools sparta $TRAVISTOKEN
+      fi

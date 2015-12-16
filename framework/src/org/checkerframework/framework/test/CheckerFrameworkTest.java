@@ -98,6 +98,7 @@ public abstract class CheckerFrameworkTest {
     /**
      * Override this method if you would like to supply a checker
      * command-line option that depends on the Java file passed to the test.
+     * That file name is available in field {@link #testFile}.
      * <p>
      *
      * If you want to specify the same command-line option for all tests of
