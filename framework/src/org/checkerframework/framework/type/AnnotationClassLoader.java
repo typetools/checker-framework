@@ -121,13 +121,13 @@ public class AnnotationClassLoader {
         // create the data structure to hold all loaded annotation classes
         loadedAnnotations = new HashSet<Class<? extends Annotation>>();
 
-        // see if we can access the application classloader
-        ClassLoader appClassloader = checker.getClass().getClassLoader();
-        if (appClassloader != null) {
+        ClassLoader applicationClassloader = getAppClassLoader();
+
+        if (applicationClassloader != null) {
             // if the application classloader is accessible, then directly
             // retrieve the resource URL of the qual package
             // resource URLs must use slashes
-            resourceURL = appClassloader.getResource(packageName.replace(DOT, SLASH));
+            resourceURL = applicationClassloader.getResource(packageName.replace(DOT, SLASH));
 
             // thread based application classloader, if needed in the future:
             // resourceURL = Thread.currentThread().getContextClassLoader().getResource(packageName.replace(DOT, SLASH));
@@ -153,7 +153,7 @@ public class AnnotationClassLoader {
      *         package's directory, or null if no jar or directory contains the
      *         qual package
      */
-    private final URL getURLFromClasspaths() {
+    private final /*@Nullable*/ URL getURLFromClasspaths() {
         // Debug use, uncomment if needed to see all of the classpaths (boot
         // classpath, extension classpath, and classpath)
         // printPaths();
@@ -173,7 +173,8 @@ public class AnnotationClassLoader {
         // for loading classes from the qual package
 
         // if either a directory or a jar contains the package, resourceURL will
-        // be updated to refer to that source, otherwise resourceURL remains as null
+        // be updated to refer to that source, otherwise resourceURL remains as
+        // null
 
         // TODO: prefer file directory (typically in build directory) over jars?
         // this would help with development builds
@@ -330,7 +331,7 @@ public class AnnotationClassLoader {
      * @param absolutePathToDirectory an absolute path to a directory
      * @return a URL reference to the directory, or null if the URL is malformed
      */
-    private final URL getDirectoryURL(String absolutePathToDirectory) {
+    private final /*@Nullable*/ URL getDirectoryURL(String absolutePathToDirectory) {
         URL directoryURL = null;
 
         try {
@@ -338,6 +339,7 @@ public class AnnotationClassLoader {
         } catch (MalformedURLException e) {
             processingEnv.getMessager().printMessage(Kind.NOTE, "Directory URL " + absolutePathToDirectory + " is malformed");
         }
+
         return directoryURL;
     }
 
@@ -348,7 +350,7 @@ public class AnnotationClassLoader {
      * @param absolutePathToJarFile an absolute path to a jar file
      * @return a URL reference to the jar file, or null if the URL is malformed
      */
-    private final URL getJarURL(String absolutePathToJarFile) {
+    private final /*@Nullable*/ URL getJarURL(String absolutePathToJarFile) {
         URL jarURL = null;
 
         try {
@@ -380,18 +382,39 @@ public class AnnotationClassLoader {
         paths.addAll(Arrays.asList(System.getProperty("java.class.path").split(":")));
 
         // add all paths that are examined by the classloader
-        ClassLoader applicationClassLoader = checker.getClass().getClassLoader();
-        if (applicationClassLoader == null) {
-            // if the application classloader for the checker isn't available,
-            // then use the System application classloader
-            applicationClassLoader = ClassLoader.getSystemClassLoader();
-        }
-        URL[] urls = ((URLClassLoader) applicationClassLoader).getURLs();
-        for (int i = 0; i < urls.length; i++) {
-            paths.add(urls[i].getFile().toString());
+        ClassLoader applicationClassloader = getAppClassLoader();
+
+        if (applicationClassloader != null) {
+            URL[] urls = ((URLClassLoader) applicationClassloader).getURLs();
+            for (int i = 0; i < urls.length; i++) {
+                paths.add(urls[i].getFile().toString());
+            }
         }
 
         return Collections.unmodifiableSet(paths);
+    }
+
+    /**
+     * Obtains the classloader used to load the checker class, if that isn't
+     * available then it will try to obtain the system classloader
+     * 
+     * @return the classloader used to load the checker class, or the system
+     *         classloader, or null if both are unavailable
+     */
+    private final /*@Nullable*/ ClassLoader getAppClassLoader() {
+        ClassLoader applicationClassLoader = checker.getClass().getClassLoader();
+
+        // see if we can access the application classloader
+        if (applicationClassLoader == null) {
+            // if the application classloader for the checker isn't available,
+            // then try to obtain the System application classloader
+            applicationClassLoader = ClassLoader.getSystemClassLoader();
+
+            // Debug use:
+            // processingEnv.getMessager().printMessage(Kind.NOTE, "Using System application classloader!");
+        }
+
+        return applicationClassLoader;
     }
 
     /**
@@ -420,15 +443,15 @@ public class AnnotationClassLoader {
         }
 
         // add all paths that are examined by the classloader
-        ClassLoader applicationClassLoader = this.checker.getClass().getClassLoader();
-        if (applicationClassLoader == null) {
-            processingEnv.getMessager().printMessage(Kind.NOTE, "Using System application classloader!");
-            applicationClassLoader = ClassLoader.getSystemClassLoader();
-        }
+        ClassLoader applicationClassLoader = getAppClassLoader();
         processingEnv.getMessager().printMessage(Kind.NOTE, "classloader examined paths:");
-        URL[] urls = ((URLClassLoader) applicationClassLoader).getURLs();
-        for (int i = 0; i < urls.length; i++) {
-            processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + urls[i].getFile());
+        if (applicationClassLoader != null) {
+            URL[] urls = ((URLClassLoader) applicationClassLoader).getURLs();
+            for (int i = 0; i < urls.length; i++) {
+                processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + urls[i].getFile());
+            }
+        } else {
+            processingEnv.getMessager().printMessage(Kind.NOTE, "classloader unavailable");
         }
     }
 
@@ -464,15 +487,18 @@ public class AnnotationClassLoader {
         // retrieve the annotation class names
         Set<String> annoFiles = getBundledAnnotationNames();
 
-        // loop through each class name & load the class
-        for (String fileName : annoFiles) {
-            String annoName = packageName + DOT + fileName;
+        if (annoFiles != null) {
+            // loop through each class name & load the class
+            for (String fileName : annoFiles) {
+                String annoName = packageName + DOT + fileName;
 
-            Class<? extends Annotation> annoClass = loadAnnotationClass(annoName);
-            if (annoClass != null) {
-                loadedAnnotations.add(annoClass);
+                Class<? extends Annotation> annoClass = loadAnnotationClass(annoName);
+                if (annoClass != null) {
+                    loadedAnnotations.add(annoClass);
+                }
             }
         }
+
     }
 
     /**
@@ -481,7 +507,7 @@ public class AnnotationClassLoader {
      *
      * @return a set of fully qualified class names of the annotations
      */
-    private final Set<String> getBundledAnnotationNames() {
+    private final /*@Nullable*/ Set<String> getBundledAnnotationNames() {
         Set<String> results = null;
 
         // see whether the resource URL has a protocol of jar or file
@@ -589,7 +615,7 @@ public class AnnotationClassLoader {
      * @param dirName absolute path to a directory containing annotation classes
      * @return a set of annotation classes
      */
-    public final /*@Nullable*/ Set<Class<? extends Annotation>> loadExternalAnnotationClassesFromDirectory(String dirName) {
+    public final Set<Class<? extends Annotation>> loadExternalAnnotationClassesFromDirectory(String dirName) {
         File rootDirectory = new File(dirName);
 
         Set<Class<? extends Annotation>> typeQualifiers = loadExternalAnnotationClassesFromDirectory(dirName, rootDirectory);
@@ -610,7 +636,7 @@ public class AnnotationClassLoader {
      * @return a set of annotation classes of the annotations in the root
      *         directory or its subdirectories
      */
-    private final /*@Nullable*/ Set<Class<? extends Annotation>> loadExternalAnnotationClassesFromDirectory(final String rootDirectory, File currentDirectory) {
+    private final Set<Class<? extends Annotation>> loadExternalAnnotationClassesFromDirectory(final String rootDirectory, File currentDirectory) {
         Set<Class<? extends Annotation>> annotations = new HashSet<Class<? extends Annotation>>();
 
         File[] files = currentDirectory.listFiles();
