@@ -4,7 +4,7 @@ script: travis_wait 120 ./.travis-build.sh
 
 ## Version for Ubuntu 14.04 Trusty.
 ## Problem: The job times out on travis-ci.org, but the container-based version
-## does not.
+## does not.  Presumably container-based gets a bigger time limit.
 # sudo: required
 # dist: trusty
 # before_install:
