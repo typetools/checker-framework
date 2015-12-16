@@ -21,19 +21,12 @@ public class SignatureInferenceTest extends CheckerFrameworkTest {
 
     public SignatureInferenceTest(File testFile) {
         super(testFile, tests.signatureinference.SignatureInferenceTestChecker.class,
-                "value", "-Anomsgtext");
+              "value", "-Anomsgtext", "-AinferSignatures");
     }
 
     @Parameters
     public static String [] getTestDirs() {
         return new String[]{"signature-inference/non-annotated"};
-    }
-
-    @Override
-    public List<String> customizeOptions(List<String> previousOptions) {
-        final List<String> options = new ArrayList<>(previousOptions);
-        options.add("-AinferSignatures");
-        return options;
     }
 
 }

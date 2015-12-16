@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # This script runs the Checker Framework's signature inference
-# iteratively on a program, adding type annotations on the program, until the
+# iteratively on a program, adding type annotations to the program, until the
 # .jaif files from one iteration are the same as the .jaif files from the
 # previous iteration.
 

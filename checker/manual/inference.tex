@@ -140,17 +140,25 @@ Its command-line arguments are:
 
 \begin{enumerate}
 \item Processor's name.
-\item Target program's classpath.
-\item Extra processor arguments which will be passed to the checker.
+\item Target program's classpath.  This argument is required; pass "" if it
+  is empty.
+\item Extra processor arguments which will be passed to the checker, if any.
+  You may supply any number of such arguments, or none.  Each such argument
+  must start with a hyphen.
 \item List of paths to \<.java> files in the program.
 \end{enumerate}
 
-For example:
+For example, from the \<plume-lib> directory:
 \begin{Verbatim}
-    ./infer-and-annotate.sh "LockChecker,NullnessChecker"       \
-        $JSR308/plume-lib/java/plume.jar -AprintErrorStack      \
-        `find $JSR308/plume-lib/java/src/plume/ -name "*.java"`
+git clone https://github.com/mernst/plume-lib.git
+cd plume-lib
+$CHECKERFRAMEWORK/framework/signature-inference-scripts/infer-and-annotate.sh \
+    "LockChecker,NullnessChecker" java/plume.jar    \
+    -AprintErrorStack  \
+    `find java/src/plume/ -name "*.java"`
 \end{Verbatim}
+
+You may need to wait a few minutes for the command to complete.
 
 As with any type inference tool, it is a good idea to double-check the
 results.
@@ -178,6 +186,10 @@ The tool only infers annotations for type uses that have no user-written
 annotation (for the given type system).
 
 \subsubsection{How signature inference works\label{how-signature-inference-works}}
+
+This section explains how the \<infer-and-annotate.sh> script works.  If you
+merely want to run the script and you are not encountering trouble, you can
+skip this section.
 
 If you
 supply to javac the command-line option \code{-AinferSignatures}, then the
