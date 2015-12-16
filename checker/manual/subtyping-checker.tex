@@ -104,7 +104,7 @@ type system, follow three steps.
 
 \begin{enumerate}
 \item
- Define two annotations for the \code{Encrypted} and \code{PossiblyUnencrypted} qualifiers:
+Define two annotations for the \code{Encrypted} and \code{PossiblyUnencrypted} qualifiers:
 
 \begin{Verbatim}
 package \textit{myModule}.qual;
@@ -140,6 +140,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface PossiblyUnencrypted {}
 \end{Verbatim}
+
+Note that all custom annotations must have the
+\<@Target({ElementType.TYPE\_USE})> meta-annotation. See section
+\ref{define-type-qualifiers}.
 
 Don't forget to compile these classes:
 

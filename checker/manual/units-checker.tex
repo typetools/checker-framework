@@ -182,6 +182,9 @@ should be a nano multiple of the basic unit \code{@s}:  \code{@ns} and
 behave equivalently and interchangeably.
 Most annotation definitions do not have a \<@UnitsMultiple> meta-annotation.
 
+Note that all custom annotations must have the
+\<@Target({ElementType.TYPE\_USE})> meta-annotation. See section
+\ref{define-type-qualifiers}.
 
 To take full advantage of the additional unit qualifier, you need to
 do two additional steps.
