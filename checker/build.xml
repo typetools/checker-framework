@@ -388,7 +388,6 @@
     <!-- This creates checker.jar -->
     <target name="jar" depends="build,checker-qual-jar,checker-compat-qual-jar"
             description="Create checker.jar file">
-        <delete dir="${build.reports}"/>
 
         <!-- Only unjar the stubparser - everything else is recompiled. -->
         <unjar src="${stubparser.lib}" dest="${build}" />

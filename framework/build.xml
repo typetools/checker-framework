@@ -227,7 +227,6 @@
     <!-- This creates framework.jar -->
     <target name="jar" depends="build"
             description="Create framework.jar file">
-        <delete dir="${build.reports}"/>
 
         <unjar src="${stubparser.lib}" dest="${build}" />
         <unjar src="${javacutil.lib}" dest="${build}" />
