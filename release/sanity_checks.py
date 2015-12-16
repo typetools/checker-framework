@@ -18,7 +18,7 @@ import zipfile
 def javac_sanity_check( checker_framework_website, release_version ):
     """
        Download the release of the Checker Framework from the development website
-       and NullnessExampleWithWarnings.java from the Google Code repository.
+       and NullnessExampleWithWarnings.java from the GitHub repository.
        Run the Nullness Checker on NullnessExampleWithWarnings and verify the output
        Fails if the expected errors are not found in the output.
     """

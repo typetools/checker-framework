@@ -65,20 +65,21 @@ USER_SCRATCH_DIR = "/scratch/" + USER
 # Per-user directory for the temporary files created by the release process
 TMP_DIR = USER_SCRATCH_DIR + "/jsr308-release"
 
-#Location this and other release scripts are contained in
-
+# Location this and other release scripts are contained in
 SCRIPTS_DIR = TMP_DIR + "/checker-framework/release"
 
-#Location in which we will download files to run sanity checks
-SANITY_DIR = "/scratch/jsr308-release/sanity"
-# TODO: Uncomment when the entire release process can be moved to the per-user scratch directory, and delete the line above.
-# SANITY_DIR = TMP_DIR + "/sanity"
+# Location in which we will download files to run sanity checks
+SANITY_DIR = TMP_DIR + "/sanity"
+SANITY_TEST_CHECKER_FRAMEWORK_DIR = SANITY_DIR + "/test-checker-framework"
+
+# The existence of this file indicates that release_build completed.
+# It is deleted at the beginning of a release_build run, and at the
+# end of a release_push run.
+RELEASE_BUILD_COMPLETED_FLAG_FILE = TMP_DIR + "/release-build-completed"
 
 #Every time a release is built the changes/tags are pushed here
 #When a release is deployed all INTERM repos get pushed to LIVE_REPOS
-INTERM_REPO_ROOT    = "/scratch/jsr308-release/interm"
-# TODO: Uncomment when the entire release process can be moved to the per-user scratch directory, and delete the line above.
-# INTERM_REPO_ROOT    = TMP_DIR + "/interm"
+INTERM_REPO_ROOT    = TMP_DIR + "/interm"
 INTERM_CHECKER_REPO = os.path.join(INTERM_REPO_ROOT, "checker-framework")
 INTERM_JSR308_REPO  = os.path.join(INTERM_REPO_ROOT, "jsr308-langtools")
 INTERM_ANNO_REPO    = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
@@ -96,14 +97,11 @@ EMAIL_TO='jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroup
 
 #Location of the project directories in which we will build the actual projects
 #When we build these projects are pushed to the INTERM repositories
-BUILD_DIR        = "/scratch/jsr308-release/build/"
-# TODO: Uncomment when the entire release process can be moved to the per-user scratch directory, and delete the line above.
-# BUILD_DIR        = TMP_DIR + "/build/"
+BUILD_DIR        = TMP_DIR + "/build/"
 CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, 'checker-framework')
 CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, 'release')
 CHECKER_BIN_DIR  = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
 RELEASE_HTACCESS = os.path.join(CHECKER_FRAMEWORK_RELEASE, "types.htaccess")
-RELEASE_DEV_HTACCESS = os.path.join(CHECKER_FRAMEWORK_RELEASE, "types.dev.htaccess")
 CHECKER_TAG_PREFIXES = [ "checker-framework-", "checkers-" , "new release " ]
 
 CHECKER_BINARY   = os.path.join(CHECKER_BIN_DIR, 'checker.jar' )
@@ -207,9 +205,7 @@ LIVE_CF_LOGO = os.path.join(CHECKER_LIVE_SITE, "CFLogo.png")
 CURRENT_DATE=datetime.date.today()
 
 os.environ['CHECKERFRAMEWORK'] = CHECKER_FRAMEWORK
-perl_libs = "/scratch/jsr308-release/perl_lib:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
-# TODO: Uncomment when the entire release process can be moved to the per-user scratch directory, and delete the line above.
-# perl_libs = TMP_DIR + "/perl_lib:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
+perl_libs = TMP_DIR + "/perl_lib:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
 #Environment variables for tools needed during the build
 os.environ['PLUME_LIB'] =  PLUME_LIB
 os.environ['BIBINPUTS']=  '.:' + PLUME_BIB
@@ -223,15 +219,6 @@ os.environ['JAVA_HOME']   =  os.environ['JAVA_7_HOME']
 EDITOR = os.getenv('EDITOR')
 if EDITOR == None:
     EDITOR = 'emacs'
-
-HGUSER = os.getenv('HGUSER')
-if HGUSER == None:
-    raise Exception('HGUSER environment variable is not set')
-
-#This is to catch anyone who blindly copied our directions on setting
-#the HGUSER variable in the README-maintainers.html directions
-if HGUSER == "yourHgUserName":
-    raise Exception('You must replace "yourHgUser" with your own actual HGUSER')
 
 PATH = os.environ['JAVA_HOME'] + "/bin:/scratch/secs-jenkins/tools/hevea-1.10/bin/:" + os.environ['PATH']
 PATH = PATH + ":/usr/bin:/projects/uns/F11/bin/:/projects/uns/F11/bin/"
