@@ -63,7 +63,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class AnnotationClassLoader {
     // For issuing errors to the user
-    private BaseTypeChecker checker;
+    private final BaseTypeChecker checker;
 
     // For loading from a source package directory
     private final String packageName;
@@ -86,10 +86,10 @@ public class AnnotationClassLoader {
      * Processing Env used to create an {@link AnnotationBuilder}, which is in
      * turn used to build the annotation mirror from the loaded class.
      */
-    protected ProcessingEnvironment processingEnv;
+    protected final ProcessingEnvironment processingEnv;
 
     // Stores the resource URL of the qual directory of a checker class
-    private URL resourceURL;
+    private final URL resourceURL;
 
     // Stores set of the loaded annotation classes
     private final Set<Class<? extends Annotation>> loadedAnnotations;
@@ -97,8 +97,7 @@ public class AnnotationClassLoader {
     /**
      * Constructor for loading annotations defined for a checker.
      *
-     * @param checker
-     *            a {@link BaseTypeChecker} or its subclass
+     * @param checker a {@link BaseTypeChecker} or its subclass
      */
     public AnnotationClassLoader(BaseTypeChecker checker) {
         this.checker = checker;
@@ -108,24 +107,58 @@ public class AnnotationClassLoader {
         // class names as we load the classes using the class loader
         packageName = checker.getClass().getPackage().getName() + QUAL_PACKAGE_SUFFIX;
 
-        // the package name with dots replaced by slashes will be used to scan file directories
+        // the package name with dots replaced by slashes will be used to scan
+        // file directories
         packageNameWithSlashes = packageName.replace(DOT, SLASH);
 
-        // each component of the fully qualified package name will be used later to recursively descend from
-        // a root directory to see if the package exists in some particular root directory
+        // each component of the fully qualified package name will be used later
+        // to recursively descend from a root directory to see if the package
+        // exists in some particular root directory
         fullyQualifiedPackageNameSegments = new ArrayList<String>();
 
-        fullyQualifiedPackageNameSegments.addAll(
-                Arrays.asList(Pattern.compile(Character.toString(DOT), Pattern.LITERAL).split(packageName)));
+        fullyQualifiedPackageNameSegments.addAll(Arrays.asList(Pattern.compile(Character.toString(DOT), Pattern.LITERAL).split(packageName)));
 
         // create the data structure to hold all loaded annotation classes
         loadedAnnotations = new HashSet<Class<? extends Annotation>>();
 
-        // Debug use, uncomment if needed to see all of the classpaths (bootclasspath, extension classpath, and classpath)
+        // see if we can access the application classloader
+        ClassLoader appClassloader = checker.getClass().getClassLoader();
+        if (appClassloader != null) {
+            // if the application classloader is accessible, then directly
+            // retrieve the resource URL of the qual package
+            // resource URLs must use slashes
+            resourceURL = appClassloader.getResource(packageName.replace(DOT, SLASH));
+
+            // thread based application classloader, if needed in the future:
+            // resourceURL = Thread.currentThread().getContextClassLoader().getResource(packageName.replace(DOT, SLASH));
+        } else {
+            // if the application classloader is not accessible (which means the
+            // checker class was loaded using the bootstrap classloader)
+            // then scan the classpaths to find a jar or directory which
+            // contains the qual package and set the resource URL to that jar or
+            // qual directory
+            resourceURL = getURLFromClasspaths();
+        }
+
+        // load the annotation classes using reflective lookup
+        loadBundledAnnotationClasses();
+    }
+
+    /**
+     * Scans all classpaths and returns the resource URL to the jar which
+     * contains the checker's qual package, or the qual package directory if it
+     * exists, or null if no jar or directory contains the package
+     * 
+     * @return a URL to the jar that contains the qual package, or to the qual
+     *         package's directory, or null if no jar or directory contains the
+     *         qual package
+     */
+    private final URL getURLFromClasspaths() {
+        // Debug use, uncomment if needed to see all of the classpaths (boot
+        // classpath, extension classpath, and classpath)
         // printPaths();
 
-        // default value for resourceURL
-        resourceURL = null;
+        URL url = null;
 
         // obtain all classpaths
         Set<String> paths = getClasspaths();
@@ -138,50 +171,43 @@ public class AnnotationClassLoader {
         // contains the qual directory of a checker, if so, the the first
         // directory or jar that contains the package will be used as the source
         // for loading classes from the qual package
-        //
-        // if either a directory or a jar contains the package, resourceURL will be updated to
-        // refer to that source, otherwise resourceURL remains as null
-        // TODO: prefer file directory (typically in build directory) over jars? this would help with development builds
-        for(String path : paths)
-        {
-            // temporary URL variable
-            URL url = null;
 
+        // if either a directory or a jar contains the package, resourceURL will
+        // be updated to refer to that source, otherwise resourceURL remains as null
+
+        // TODO: prefer file directory (typically in build directory) over jars?
+        // this would help with development builds
+        for (String path : paths) {
             // see if the current classpath segment is a jar or a directory
-            if(path.endsWith(JAR_SUFFIX)) {
+            if (path.endsWith(JAR_SUFFIX)) {
                 // current classpath segment is a jar
                 url = getJarURL(path);
 
                 // see if the jar contains the package
-                if(url != null && containsPackage(url))
-                {
-                    resourceURL = url;
-                    break;
+                if (url != null && containsPackage(url)) {
+                    return url;
                 }
             } else {
                 // current classpath segment is a directory
                 url = getDirectoryURL(path);
 
                 // see if the directory contains the package
-                if(url != null && containsPackage(url))
-                {
+                if (url != null && containsPackage(url)) {
                     // append a slash if necessary
-                    if(!path.endsWith(Character.toString(SLASH)))
-                    {
+                    if (!path.endsWith(Character.toString(SLASH))) {
                         path += SLASH;
                     }
 
                     // update URL to the qual directory
                     url = getDirectoryURL(path + packageNameWithSlashes);
 
-                    resourceURL = url;
-                    break;
+                    return url;
                 }
             }
         }
 
-        // load the annotation classes using reflective lookup
-        loadBundledAnnotationClasses();
+        // if no jar or directory contains the qual package, then return null
+        return null;
     }
 
     /**
@@ -192,8 +218,7 @@ public class AnnotationClassLoader {
      * @return true if the jar or the directory contains the qual package, false
      *         otherwise
      */
-    private final boolean containsPackage(URL url)
-    {
+    private final boolean containsPackage(URL url) {
         // see whether the resource URL has a protocol of jar or file
         if (url.getProtocol().equals("jar")) {
             // try to open up the jar file
@@ -231,13 +256,12 @@ public class AnnotationClassLoader {
         while (jarEntries.hasMoreElements()) {
             JarEntry je = jarEntries.nextElement();
 
-            // each entry is the fully qualified path and file name to a particular
-            // artifact in the jar file (eg a class file)
-            // if the jar has the package, one of the entry's name will begin with
-            // the package name in slash notation
+            // each entry is the fully qualified path and file name to a
+            // particular artifact in the jar file (eg a class file)
+            // if the jar has the package, one of the entry's name will begin
+            // with the package name in slash notation
             String entryName = je.getName();
-            if(entryName.startsWith(packageNameWithSlashes))
-            {
+            if (entryName.startsWith(packageNameWithSlashes)) {
                 return true;
             }
         }
@@ -264,40 +288,38 @@ public class AnnotationClassLoader {
      * in the given root directory (at the beginning of recursion)
      *
      * @param currentDir current directory
-     * @param pkgNames
-     *            an iterator which provides each segment of the fully qualified
-     *            qual package name
+     * @param pkgNames an iterator which provides each segment of the fully
+     *            qualified qual package name
      * @return true if the qual package exists within the root directory, false
      *         otherwise
      */
-    private final boolean checkDirForPackage(File currentDir, Iterator<String> pkgNames)
-    {
+    private final boolean checkDirForPackage(File currentDir, Iterator<String> pkgNames) {
         // if the iterator has no more package name segments, then we've found
         // the qual directory of interest
-        if(!pkgNames.hasNext())
-        {
+        if (!pkgNames.hasNext()) {
             return true;
         }
         // if the file doesn't exist or it isn't a directory, return false
-        if (currentDir == null || !currentDir.isDirectory())
-        {
+        if (currentDir == null || !currentDir.isDirectory()) {
             return false;
         }
 
-        // if it isn't empty, dequeue one segment of the fully qualified package name
+        // if it isn't empty, dequeue one segment of the fully qualified package
+        // name
         String currentPackageDirName = pkgNames.next();
 
         // scan current directory to see if there's a sub-directory that has a
         // matching name as the package name segment
         for (File file : currentDir.listFiles()) {
-            if(file.isDirectory() && file.getName().equals(currentPackageDirName))
-            {
-                // if so, recursively descend and look at the next segment of the package name
+            if (file.isDirectory() && file.getName().equals(currentPackageDirName)) {
+                // if so, recursively descend and look at the next segment of
+                // the package name
                 return checkDirForPackage(file, pkgNames);
             }
         }
 
-        // if no sub-directory has a matching name, then that means there isn't a matching qual package
+        // if no sub-directory has a matching name, then that means there isn't
+        // a matching qual package
         return false;
     }
 
@@ -308,8 +330,7 @@ public class AnnotationClassLoader {
      * @param absolutePathToDirectory an absolute path to a directory
      * @return a URL reference to the directory, or null if the URL is malformed
      */
-    private URL getDirectoryURL(String absolutePathToDirectory)
-    {
+    private final URL getDirectoryURL(String absolutePathToDirectory) {
         URL directoryURL = null;
 
         try {
@@ -327,12 +348,11 @@ public class AnnotationClassLoader {
      * @param absolutePathToJarFile an absolute path to a jar file
      * @return a URL reference to the jar file, or null if the URL is malformed
      */
-    private URL getJarURL(String absolutePathToJarFile)
-    {
+    private final URL getJarURL(String absolutePathToJarFile) {
         URL jarURL = null;
 
         try {
-            jarURL = new URL("jar:file:"+ absolutePathToJarFile + "!/");
+            jarURL = new URL("jar:file:" + absolutePathToJarFile + "!/");
         } catch (MalformedURLException e) {
             processingEnv.getMessager().printMessage(Kind.NOTE, "Jar URL " + absolutePathToJarFile + " is malformed");
         }
@@ -341,12 +361,13 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Obtains and returns a set of the classpaths from compiler options, system environment variables, and by
-     * examining the classloader to see what paths it has access to
+     * Obtains and returns a set of the classpaths from compiler options, system
+     * environment variables, and by examining the classloader to see what paths
+     * it has access to
+     * 
      * @return an immutable set of the classpaths
      */
-    private Set<String> getClasspaths()
-    {
+    private final Set<String> getClasspaths() {
         Set<String> paths = new HashSet<String>();
 
         // add all paths in Xbootclasspath
@@ -359,14 +380,14 @@ public class AnnotationClassLoader {
         paths.addAll(Arrays.asList(System.getProperty("java.class.path").split(":")));
 
         // add all paths that are examined by the classloader
-        ClassLoader applicationClassLoader = this.checker.getClass().getClassLoader();
+        ClassLoader applicationClassLoader = checker.getClass().getClassLoader();
         if (applicationClassLoader == null) {
-            // if the application classloader for the checker isn't available, then
-            // use the System application classloader
+            // if the application classloader for the checker isn't available,
+            // then use the System application classloader
             applicationClassLoader = ClassLoader.getSystemClassLoader();
         }
         URL[] urls = ((URLClassLoader) applicationClassLoader).getURLs();
-        for(int i=0; i < urls.length; i++) {
+        for (int i = 0; i < urls.length; i++) {
             paths.add(urls[i].getFile().toString());
         }
 
@@ -374,32 +395,27 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Debug Use
-     * Displays all classpaths
+     * Debug Use Displays all classpaths
      */
-    private void printPaths()
-    {
+    private final void printPaths() {
         // all paths in Xbootclasspath
         String[] bootclassPaths = System.getProperty("sun.boot.class.path").split(":");
         processingEnv.getMessager().printMessage(Kind.NOTE, "bootclass path:");
-        for(String path : bootclassPaths)
-        {
+        for (String path : bootclassPaths) {
             processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + path);
         }
 
         // all extension paths
         String[] extensionDirs = System.getProperty("java.ext.dirs").split(":");
         processingEnv.getMessager().printMessage(Kind.NOTE, "extension dirs:");
-        for(String path : extensionDirs)
-        {
+        for (String path : extensionDirs) {
             processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + path);
         }
 
         // all paths in CLASSPATH, -cp, and -classpath
         String[] javaclassPaths = System.getProperty("java.class.path").split(":");
         processingEnv.getMessager().printMessage(Kind.NOTE, "java classpaths:");
-        for(String path : javaclassPaths)
-        {
+        for (String path : javaclassPaths) {
             processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + path);
         }
 
@@ -411,7 +427,7 @@ public class AnnotationClassLoader {
         }
         processingEnv.getMessager().printMessage(Kind.NOTE, "classloader examined paths:");
         URL[] urls = ((URLClassLoader) applicationClassLoader).getURLs();
-        for(int i=0; i < urls.length; i++) {
+        for (int i = 0; i < urls.length; i++) {
             processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + urls[i].getFile());
         }
     }
@@ -436,9 +452,10 @@ public class AnnotationClassLoader {
 
     /**
      * Loads type annotations located in the qual directory of a checker
-     * (referenced by the resourceURL) via reflective annotation class name lookup.
+     * (referenced by the resourceURL) via reflective annotation class name
+     * lookup.
      */
-    private void loadBundledAnnotationClasses() {
+    private final void loadBundledAnnotationClasses() {
         if (resourceURL == null) {
             // if there's no resourceURL, then there's nothing we can load
             return;
@@ -510,8 +527,7 @@ public class AnnotationClassLoader {
      * Retrieves the annotation class file names from the qual directory
      * contained inside a jar
      *
-     * @param jar
-     *            the JarFile containing the annotation class files
+     * @param jar the JarFile containing the annotation class files
      * @return a set of fully qualified class names of the annotations
      */
     private final Set<String> getBundledAnnotationNamesFromJar(JarFile jar) {
@@ -550,23 +566,18 @@ public class AnnotationClassLoader {
      * This method takes as input the canonical name of an external annotation
      * class and loads and returns that class via the class loader.
      *
-     * @param annoName
-     *            canonical name of an external annotation class, e.g.
+     * @param annoName canonical name of an external annotation class, e.g.
      *            "myproject.qual.myannotation"
      * @return the loaded annotation class
      */
-    public /*@Nullable*/ Class<? extends Annotation> loadExternalAnnotationClass(String annoName) {
+    public final /*@Nullable*/ Class<? extends Annotation> loadExternalAnnotationClass(String annoName) {
         try {
             final Class<? extends Annotation> annoClass = Class.forName(annoName).asSubclass(Annotation.class);
             return annoClass;
         } catch (ClassNotFoundException e) {
-            checker.userErrorAbort(checker.getClass().getSimpleName()
-                    + ": could not load class for annotation: " + annoName
-                    + "; ensure that your classpath is correct");
+            checker.userErrorAbort(checker.getClass().getSimpleName() + ": could not load class for annotation: " + annoName + "; ensure that your classpath is correct");
         } catch (ClassCastException e) {
-            checker.userErrorAbort(checker.getClass().getSimpleName()
-                    + ": the loaded class: " + annoName
-                    + " is not an annotation, ensure it is defined correctly");
+            checker.userErrorAbort(checker.getClass().getSimpleName() + ": the loaded class: " + annoName + " is not an annotation, ensure it is defined correctly");
         }
         return null;
     }
@@ -575,11 +586,10 @@ public class AnnotationClassLoader {
      * This method takes as input a fully qualified path to a directory, and
      * loads and returns the set of all annotation classes from that directory.
      *
-     * @param dirName
-     *            absolute path to a directory containing annotation classes
+     * @param dirName absolute path to a directory containing annotation classes
      * @return a set of annotation classes
      */
-    public /*@Nullable*/ Set<Class<? extends Annotation>> loadExternalAnnotationClassesFromDirectory(String dirName) {
+    public final /*@Nullable*/ Set<Class<? extends Annotation>> loadExternalAnnotationClassesFromDirectory(String dirName) {
         File rootDirectory = new File(dirName);
 
         Set<Class<? extends Annotation>> typeQualifiers = loadExternalAnnotationClassesFromDirectory(dirName, rootDirectory);
@@ -591,19 +601,16 @@ public class AnnotationClassLoader {
      * Loads all annotations from the current directory, and recursively
      * descends and loads annotations from sub-directories.
      *
-     * @param rootDirectory
-     *            a string storing the absolute path of the root directory of a
-     *            set of externally defined annotations, which is subtracted
-     *            from class names to retrieve each class's fully qualified
-     *            class names
-     * @param currentDirectory
-     *            a {@link File} object representing the current subdirectory of
-     *            the root directory
+     * @param rootDirectory a string storing the absolute path of the root
+     *            directory of a set of externally defined annotations, which is
+     *            subtracted from class names to retrieve each class's fully
+     *            qualified class names
+     * @param currentDirectory a {@link File} object representing the current
+     *            subdirectory of the root directory
      * @return a set of annotation classes of the annotations in the root
      *         directory or its subdirectories
      */
-    private /*@Nullable*/ Set<Class<? extends Annotation>> loadExternalAnnotationClassesFromDirectory(
-            final String rootDirectory, File currentDirectory) {
+    private final /*@Nullable*/ Set<Class<? extends Annotation>> loadExternalAnnotationClassesFromDirectory(final String rootDirectory, File currentDirectory) {
         Set<Class<? extends Annotation>> annotations = new HashSet<Class<? extends Annotation>>();
 
         File[] files = currentDirectory.listFiles();
@@ -653,13 +660,12 @@ public class AnnotationClassLoader {
      * Loads the class indicated by the fullyQualifiedClassName, and checks to
      * see if it is an annotation that is supported by a checker.
      *
-     * @param fullyQualifiedClassName
-     *            the fully qualified name of the class
+     * @param fullyQualifiedClassName the fully qualified name of the class
      * @return the loaded annotation class if it is defined with
      *         ElementType.TYPE_USE and is a supported annotation, null
      *         otherwise
      */
-    private /*@Nullable*/ Class<? extends Annotation> loadAnnotationClass(String fullyQualifiedClassName) {
+    private final /*@Nullable*/ Class<? extends Annotation> loadAnnotationClass(String fullyQualifiedClassName) {
         Class<?> cls = null;
 
         try {
@@ -699,8 +705,7 @@ public class AnnotationClassLoader {
      * Every subclass of AnnotatedTypeLoader can override this method to
      * indicate whether a particular annotation is supported by its checker.
      *
-     * @param annoClass
-     *            an annotation class
+     * @param annoClass an annotation class
      * @return true if the annotation is supported, false if it isn't
      */
     protected boolean isSupportedAnnotationClass(Class<? extends Annotation> annoClass) {
