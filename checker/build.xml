@@ -138,7 +138,7 @@
         <!-- I can't figure out how to combine filesets (or even selectors)
              to get just one *.uptodate property, so do them individually
              and then combine with <condition>. -->
-            <!-- Probably should depend on a file rather than a directory. -->
+        <!-- Probably should depend on a file rather than a directory. -->
         <uptodate property="src.files.uptodate" targetfile="${build}">
           <srcfiles refid="src.files"/>
           <mapper type="glob" from="*.java" to="${build}/*.class"/>
