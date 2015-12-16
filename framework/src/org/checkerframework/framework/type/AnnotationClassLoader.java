@@ -11,15 +11,24 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.net.JarURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.tools.Diagnostic.Kind;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -58,9 +67,12 @@ public class AnnotationClassLoader {
 
     // For loading from a source package directory
     private final String packageName;
+    private final String packageNameWithSlashes;
+    private final List<String> fullyQualifiedPackageNameSegments;
     private static final String QUAL_PACKAGE_SUFFIX = ".qual";
 
     // For loading from a Jar file
+    private static final String JAR_SUFFIX = ".jar";
     private static final String CLASS_SUFFIX = ".class";
 
     // For loading from external directories
@@ -77,7 +89,7 @@ public class AnnotationClassLoader {
     protected ProcessingEnvironment processingEnv;
 
     // Stores the resource URL of the qual directory of a checker class
-    private final URL resourceURL;
+    private URL resourceURL;
 
     // Stores set of the loaded annotation classes
     private final Set<Class<? extends Annotation>> loadedAnnotations;
@@ -96,21 +108,312 @@ public class AnnotationClassLoader {
         // class names as we load the classes using the class loader
         packageName = checker.getClass().getPackage().getName() + QUAL_PACKAGE_SUFFIX;
 
-        // Sees if the package name of the qual directory is a valid resource
-        // and retrieve its resource URL (either a jar or regular file
-        // directory)
+        // the package name with dots replaced by slashes will be used to scan file directories
+        packageNameWithSlashes = packageName.replace(DOT, SLASH);
+
+        // each component of the fully qualified package name will be used later to recursively descend from
+        // a root directory to see if the package exists in some particular root directory
+        fullyQualifiedPackageNameSegments = new ArrayList<String>();
+
+        fullyQualifiedPackageNameSegments.addAll(
+                Arrays.asList(Pattern.compile(Character.toString(DOT), Pattern.LITERAL).split(packageName)));
+
+        // create the data structure to hold all loaded annotation classes
+        loadedAnnotations = new HashSet<Class<? extends Annotation>>();
+
+        // Debug use, uncomment if needed to see all of the classpaths (bootclasspath, extension classpath, and classpath)
+        // printPaths();
+
+        // default value for resourceURL
+        resourceURL = null;
+
+        // obtain all classpaths
+        Set<String> paths = getClasspaths();
+
         // In checkers, there will be a resource URL for the qual directory. But
         // when called in the framework (eg GeneralAnnotatedTypeFactory), there
         // won't be a resourceURL since there isn't a qual directory
 
-        // resource URLs must use slashes
-        resourceURL = this.getClass().getClassLoader().getResource(packageName.replace(DOT, SLASH));
-        // resourceURL = Thread.currentThread().getContextClassLoader().getResource(packageName.replace(DOT, SLASH));
+        // each path from the set of classpaths will be checked to see if it
+        // contains the qual directory of a checker, if so, the the first
+        // directory or jar that contains the package will be used as the source
+        // for loading classes from the qual package
+        //
+        // if either a directory or a jar contains the package, resourceURL will be updated to
+        // refer to that source, otherwise resourceURL remains as null
+        // TODO: prefer file directory (typically in build directory) over jars? this would help with development builds
+        for(String path : paths)
+        {
+            // temporary URL variable
+            URL url = null;
 
-        loadedAnnotations = new HashSet<Class<? extends Annotation>>();
+            // see if the current classpath segment is a jar or a directory
+            if(path.endsWith(JAR_SUFFIX)) {
+                // current classpath segment is a jar
+                url = getJarURL(path);
+
+                // see if the jar contains the package
+                if(url != null && containsPackage(url))
+                {
+                    resourceURL = url;
+                    break;
+                }
+            } else {
+                // current classpath segment is a directory
+                url = getDirectoryURL(path);
+
+                // see if the directory contains the package
+                if(url != null && containsPackage(url))
+                {
+                    // append a slash if necessary
+                    if(!path.endsWith(Character.toString(SLASH)))
+                    {
+                        path += SLASH;
+                    }
+
+                    // update URL to the qual directory
+                    url = getDirectoryURL(path + packageNameWithSlashes);
+
+                    resourceURL = url;
+                    break;
+                }
+            }
+        }
 
         // load the annotation classes using reflective lookup
         loadBundledAnnotationClasses();
+    }
+
+    /**
+     * Checks to see if the jar or directory referred by the URL contains the
+     * qual package of a specific checker
+     *
+     * @param url a URL referring to either a jar or a directory
+     * @return true if the jar or the directory contains the qual package, false
+     *         otherwise
+     */
+    private final boolean containsPackage(URL url)
+    {
+        // see whether the resource URL has a protocol of jar or file
+        if (url.getProtocol().equals("jar")) {
+            // try to open up the jar file
+            try {
+                JarURLConnection connection = (JarURLConnection) url.openConnection();
+                JarFile jarFile = connection.getJarFile();
+
+                // check to see if the jar file contains the package
+                return checkJarForPackage(jarFile);
+            } catch (IOException e) {
+                // do nothing for missing or un-openable Jar files
+            }
+        } else if (url.getProtocol().equals("file")) {
+            // open up the directory
+            File rootDir = new File(url.getFile());
+
+            // check to see if the directory contains the package
+            return checkDirForPackage(rootDir, fullyQualifiedPackageNameSegments.iterator());
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks to see if the jar file contains the qual package of a specific
+     * checker
+     *
+     * @param jar a jar file
+     * @return true if the jar file contains the qual package, false otherwise
+     */
+    private final boolean checkJarForPackage(JarFile jar) {
+        Enumeration<JarEntry> jarEntries = jar.entries();
+
+        // loop through the entries in the jar
+        while (jarEntries.hasMoreElements()) {
+            JarEntry je = jarEntries.nextElement();
+
+            // each entry is the fully qualified path and file name to a particular
+            // artifact in the jar file (eg a class file)
+            // if the jar has the package, one of the entry's name will begin with
+            // the package name in slash notation
+            String entryName = je.getName();
+            if(entryName.startsWith(packageNameWithSlashes))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks to see if the current directory contains the qual package through
+     * recursion currentDir starts at the root directory (a directory passed in
+     * as part of the classpaths), the iterator goes through each segment of the
+     * fully qualified package name (each segment is separated by a dot)
+     *
+     * Each step of the recursion checks to see if there's a subdirectory in the
+     * current directory which has a name matching the package name segment, if
+     * so, it recursively descends into that subdirectory to check the next
+     * package name segment
+     *
+     * If there's no more segments left, then we've found the qual directory of
+     * interest
+     *
+     * If we've checked every subdirectory and none of them match the current
+     * package name segment, then the qual directory of interest does not exist
+     * in the given root directory (at the beginning of recursion)
+     *
+     * @param currentDir current directory
+     * @param pkgNames
+     *            an iterator which provides each segment of the fully qualified
+     *            qual package name
+     * @return true if the qual package exists within the root directory, false
+     *         otherwise
+     */
+    private final boolean checkDirForPackage(File currentDir, Iterator<String> pkgNames)
+    {
+        // if the iterator has no more package name segments, then we've found
+        // the qual directory of interest
+        if(!pkgNames.hasNext())
+        {
+            return true;
+        }
+        // if the file doesn't exist or it isn't a directory, return false
+        if (currentDir == null || !currentDir.isDirectory())
+        {
+            return false;
+        }
+
+        // if it isn't empty, dequeue one segment of the fully qualified package name
+        String currentPackageDirName = pkgNames.next();
+
+        // scan current directory to see if there's a sub-directory that has a
+        // matching name as the package name segment
+        for (File file : currentDir.listFiles()) {
+            if(file.isDirectory() && file.getName().equals(currentPackageDirName))
+            {
+                // if so, recursively descend and look at the next segment of the package name
+                return checkDirForPackage(file, pkgNames);
+            }
+        }
+
+        // if no sub-directory has a matching name, then that means there isn't a matching qual package
+        return false;
+    }
+
+    /**
+     * Given an absolute path to a directory, this method will return a URL
+     * reference to that directory
+     *
+     * @param absolutePathToDirectory an absolute path to a directory
+     * @return a URL reference to the directory, or null if the URL is malformed
+     */
+    private URL getDirectoryURL(String absolutePathToDirectory)
+    {
+        URL directoryURL = null;
+
+        try {
+            directoryURL = new File(absolutePathToDirectory).toURI().toURL();
+        } catch (MalformedURLException e) {
+            processingEnv.getMessager().printMessage(Kind.NOTE, "Directory URL " + absolutePathToDirectory + " is malformed");
+        }
+        return directoryURL;
+    }
+
+    /**
+     * Given an absolute path to a jar file, this method will return a URL
+     * reference to that jar file
+     *
+     * @param absolutePathToJarFile an absolute path to a jar file
+     * @return a URL reference to the jar file, or null if the URL is malformed
+     */
+    private URL getJarURL(String absolutePathToJarFile)
+    {
+        URL jarURL = null;
+
+        try {
+            jarURL = new URL("jar:file:"+ absolutePathToJarFile + "!/");
+        } catch (MalformedURLException e) {
+            processingEnv.getMessager().printMessage(Kind.NOTE, "Jar URL " + absolutePathToJarFile + " is malformed");
+        }
+
+        return jarURL;
+    }
+
+    /**
+     * Obtains and returns a set of the classpaths from compiler options, system environment variables, and by
+     * examining the classloader to see what paths it has access to
+     * @return an immutable set of the classpaths
+     */
+    private Set<String> getClasspaths()
+    {
+        Set<String> paths = new HashSet<String>();
+
+        // add all paths in Xbootclasspath
+        paths.addAll(Arrays.asList(System.getProperty("sun.boot.class.path").split(":")));
+
+        // add all extension paths
+        paths.addAll(Arrays.asList(System.getProperty("java.ext.dirs").split(":")));
+
+        // add all paths in CLASSPATH, -cp, and -classpath
+        paths.addAll(Arrays.asList(System.getProperty("java.class.path").split(":")));
+
+        // add all paths that are examined by the classloader
+        ClassLoader applicationClassLoader = this.checker.getClass().getClassLoader();
+        if (applicationClassLoader == null) {
+            // if the application classloader for the checker isn't available, then
+            // use the System application classloader
+            applicationClassLoader = ClassLoader.getSystemClassLoader();
+        }
+        URL[] urls = ((URLClassLoader) applicationClassLoader).getURLs();
+        for(int i=0; i < urls.length; i++) {
+            paths.add(urls[i].getFile().toString());
+        }
+
+        return Collections.unmodifiableSet(paths);
+    }
+
+    /**
+     * Debug Use
+     * Displays all classpaths
+     */
+    private void printPaths()
+    {
+        // all paths in Xbootclasspath
+        String[] bootclassPaths = System.getProperty("sun.boot.class.path").split(":");
+        processingEnv.getMessager().printMessage(Kind.NOTE, "bootclass path:");
+        for(String path : bootclassPaths)
+        {
+            processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + path);
+        }
+
+        // all extension paths
+        String[] extensionDirs = System.getProperty("java.ext.dirs").split(":");
+        processingEnv.getMessager().printMessage(Kind.NOTE, "extension dirs:");
+        for(String path : extensionDirs)
+        {
+            processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + path);
+        }
+
+        // all paths in CLASSPATH, -cp, and -classpath
+        String[] javaclassPaths = System.getProperty("java.class.path").split(":");
+        processingEnv.getMessager().printMessage(Kind.NOTE, "java classpaths:");
+        for(String path : javaclassPaths)
+        {
+            processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + path);
+        }
+
+        // add all paths that are examined by the classloader
+        ClassLoader applicationClassLoader = this.checker.getClass().getClassLoader();
+        if (applicationClassLoader == null) {
+            processingEnv.getMessager().printMessage(Kind.NOTE, "Using System application classloader!");
+            applicationClassLoader = ClassLoader.getSystemClassLoader();
+        }
+        processingEnv.getMessager().printMessage(Kind.NOTE, "classloader examined paths:");
+        URL[] urls = ((URLClassLoader) applicationClassLoader).getURLs();
+        for(int i=0; i < urls.length; i++) {
+            processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + urls[i].getFile());
+        }
     }
 
     /**
