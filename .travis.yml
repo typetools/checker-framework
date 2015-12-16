@@ -33,6 +33,10 @@ addons:
       # # for fullpage.sty
       # - texlive-latex-extra
 
+addons:
+  artifacts: true
+  s3_region: "us-west-2" # defaults to "us-east-1"
+
 jdk:
   - oraclejdk8
   - oraclejdk7
