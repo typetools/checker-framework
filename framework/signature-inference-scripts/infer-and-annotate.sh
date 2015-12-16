@@ -6,7 +6,7 @@
 # previous iteration.
 
 # This script receives as arguments:
-# 1. Processor's name.
+# 1. Processor's name (in any form recognized by javac's -processor argument).
 # 2. Classpath (target project's classpath).
 # 3. Extra processor arguments which will be passed to the checker.
 # 4. List of paths to .java files in a program.
@@ -16,14 +16,14 @@
 #     $JSR308/plume-lib/java/plume.jar -AprintErrorStack \
 #     `find $JSR308/plume-lib/java/src/plume/ -name "*.java"`
 
-# In case of using this script for Android projects, you must include paths to:
-# android.jar, gen folder, all libs used, source code folder.
+# In case of using this script for Android projects, the classpath must include
+# paths to: android.jar, gen folder, all libs used, source code folder.
 # The Android project must be built with "ant debug" before running this script.
 
 # Halts the script when a nonzero value is returned from a command.
 set -e
 
-# This function separates extra arguments passed to the checker from java files
+# This function separates extra arguments passed to the checker from Java files
 # received as arguments.
 # TODO: Handle the following limitation: This function makes the assumption
 # that every argument starts with a hyphen. It means one cannot pass arguments
