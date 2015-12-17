@@ -1,6 +1,7 @@
 package org.checkerframework.framework.flow;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.signatureinference.SignatureInferenceScenes;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -30,6 +31,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
+import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
@@ -74,6 +76,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 
 /**
  * The default analysis transfer function for the Checker Framework propagates
@@ -100,6 +103,11 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         implements TransferFunction<V, S> {
 
     /**
+     * Indicates that the signature inference is on.
+     */
+    private final boolean inferSignatures;
+
+    /**
      * The analysis class this store belongs to.
      */
     protected CFAbstractAnalysis<V, S, T> analysis;
@@ -113,6 +121,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
+        inferSignatures = analysis.getTypeFactory().getProcessingEnv().
+                getOptions().containsKey("inferSignatures");
     }
 
     /**
@@ -726,9 +736,36 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         S info = in.getRegularStore();
         V rhsValue = in.getValueOfSubNode(rhs);
+
+        Receiver expr = FlowExpressions.internalReprOf(analysis.getTypeFactory(),
+                n.getTarget());
+
+        if (inferSignatures && !expr.containsUnknown()
+                && expr instanceof FieldAccess) {
+            // Updates inferred field type
+            SignatureInferenceScenes.updateInferredFieldType(
+                    lhs, rhs, analysis.getContainingClass(n.getTree()),
+                    analysis.getTypeFactory());
+        }
+
         processCommonAssignment(in, lhs, rhs, info, rhsValue);
 
         return new RegularTransferResult<>(finishValue(rhsValue, info), info);
+    }
+
+    @Override
+    public TransferResult<V, S> visitReturn(ReturnNode n, TransferInput<V, S> p) {
+        if (inferSignatures) {
+            // Updates the inferred return type of the method
+            ClassTree classTree = analysis.getContainingClass(n.getTree());
+            ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
+                    classTree);
+            SignatureInferenceScenes.updateInferredMethodReturnType(
+                    n, classSymbol,
+                    analysis.getContainingMethod(n.getTree()),
+                    analysis.getTypeFactory());
+        }
+        return super.visitReturn(n, p);
     }
 
     @Override
@@ -789,6 +826,17 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         // add new information based on conditional postcondition
         processConditionalPostconditions(n, method, tree, thenStore, elseStore);
+
+        if (inferSignatures) {
+            // Updates the inferred parameter type of the invoked method
+            ClassTree classTree = analysis.getContainingClass(n.getTree());
+            if (classTree != null) { // If method is invoked from a static context, classTree == null.
+                ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
+                        classTree);
+                SignatureInferenceScenes.updateInferredMethodParametersTypes(
+                        n, classSymbol, method, analysis.getTypeFactory());
+            }
+        }
 
         return new ConditionalTransferResult<>(finishValue(resValue, thenStore,
                 elseStore), thenStore, elseStore);

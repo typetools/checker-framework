@@ -6,6 +6,7 @@ import org.checkerframework.checker.nullness.qual.*;
 */
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.signatureinference.SignatureInferenceScenes;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -193,6 +194,8 @@ import com.sun.tools.javac.util.Log;
     // to be output.
     "resolveReflection",
 
+    // Whether to use .jaif files signature inference
+    "inferSignatures",
 
     ///
     /// Stub libraries

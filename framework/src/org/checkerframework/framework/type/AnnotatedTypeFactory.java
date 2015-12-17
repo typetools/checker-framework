@@ -7,6 +7,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.signatureinference.SignatureInferenceScenes;
 import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
@@ -750,6 +751,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected void postProcessClassTree(ClassTree tree) {
         TypesIntoElements.store(processingEnv, this, tree);
         DeclarationsIntoElements.store(processingEnv, this, tree);
+        if (checker.getOptions().containsKey("inferSignatures")) {
+            // Write scenes into .jaif files. In order to perform the write
+            // operation only once for each .jaif file, the best location to
+            // do so is here.
+            SignatureInferenceScenes.writeScenesToJaif();
+        }
     }
 
     /**

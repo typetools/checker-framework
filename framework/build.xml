@@ -156,7 +156,7 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-framework.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${stubparser.lib}:${javacutil.lib}:${dataflow.lib}:${junit.lib}"
+              classpath="${javac.lib}:${stubparser.lib}:${javacutil.lib}:${dataflow.lib}:${junit.lib}:${afu.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -206,7 +206,7 @@
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${javac.lib}:${javadoc.lib}:${junit.lib}"
+                 classpath="${build}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${javac.lib}:${javadoc.lib}:${junit.lib}:${afu.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
             <package name="org.checkerframework.javacutil.*"/>
@@ -257,7 +257,7 @@
 
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${junit.lib}:${build}:${javacutil.lib}:${dataflow.lib}"
+              classpath="${javac.lib}:${junit.lib}:${build}:${javacutil.lib}:${dataflow.lib}:${afu.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -293,6 +293,7 @@
                 <pathelement path="${framework.lib}"/>
                 <pathelement path="${tests.build}"/>
                 <pathelement path="${junit.lib}"/>
+                <pathelement path="${afu.lib}"/>
             </classpath>
 
             <formatter type="xml"/>
@@ -331,6 +332,7 @@
               <pathelement path="${javac.lib}"/>
               <pathelement path="${framework.lib}"/>
               <pathelement path="${tests.build}"/>
+              <pathelement path="${afu.lib}"/>
               <pathelement path="${junit.lib}"/>
           </classpath>
 
@@ -368,6 +370,45 @@
             description="Run tests for the Checker Framework">
         <antcall target="-run-tests">
             <param name="param" value="tests.AnnotationBuilderTest"/>
+        </antcall>
+    </target>
+
+    <target name="signature-inference-tests" depends="jar,build-tests"
+            description="Run tests for signature inference using .jaif files">
+        <delete dir="build/signature-inference"/>
+        <!--Runs the checker on test files to find expected errors and generate
+                .jaif files.-->
+        <antcall target="-run-tests">
+            <param name="param" value="tests.SignatureInferenceTest"/>
+        </antcall>
+
+        <delete dir="tests/signature-inference/annotated"/>
+
+        <!-- Copying all test files to another directory, removing expected errors. -->
+        <copy todir="tests/signature-inference/annotated">
+            <fileset dir="tests/signature-inference/non-annotated"/>
+            <filterchain>
+                <linecontains negate="true">
+                    <contains value="//:: error:"/>
+                </linecontains>
+            </filterchain>
+        </copy>
+
+        <!-- Copying a file while maintaining expected errors. -->
+        <delete file="tests/signature-inference/annotated/ExpectedErrors.java"/>
+        <copy file="tests/signature-inference/non-annotated/ExpectedErrors.java"
+            todir="tests/signature-inference/annotated"/>
+
+        <!-- Inserting annotations from .jaif files in-place. -->
+        <apply executable="insert-annotations-to-source" parallel="true">
+            <srcfile/>
+            <fileset dir="build/jaif-files/" includes="*.jaif"/>
+            <fileset dir="tests/signature-inference/annotated/" includes="*.java"/>
+            <arg value="--outdir=tests/signature-inference/annotated/"/>
+        </apply>
+        <!-- Running the checker again on the final .java files. -->
+        <antcall target="-run-tests">
+            <param name="param" value="tests.SignatureInferenceValidationTest"/>
         </antcall>
     </target>
 
@@ -604,7 +645,7 @@
         <echo message="${src.files}" file="${tmpdir}/srcfiles-framework.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${afu.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
