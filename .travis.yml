@@ -38,7 +38,7 @@ addons:
     paths:
       - $(ls checker/build/reports/* | tr "\n" ":")
       - $(ls framework/build/reports/* | tr "\n" ":")
-  s3_region: "us-west-2" # defaults to "us-east-1"
+    s3_region: "us-west-2" # defaults to "us-east-1"
 
 jdk:
   - oraclejdk8
