@@ -483,6 +483,22 @@
         </antcall>
     </target>
 
+    <target name="jtreg.check">
+      <condition property="jtreg.exists">
+	<available file="${jtreg.home}" type="dir"/>
+      </condition>
+    </target>
+
+    <target name="-jtreg.download" depends="jtreg.check" unless="jtreg.exists">
+      <get
+	  src="https://adopt-openjdk.ci.cloudbees.com/view/OpenJDK/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.1-b12.tar.gz"
+	dest="${jtreg.home}/.." />
+      <untar src="${jtreg.home}/../jtreg-4.1-b12.tar.gz"
+	     dest="${jtreg.home}/../"
+	     compression="gzip" />
+    </target>
+
+
     <!-- TODO: re-enable -->
     <target name="jtreg-tests" depends="-def-jtreg,jar,build-tests"
             description="Run jtreg tests">
