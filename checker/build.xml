@@ -117,7 +117,7 @@
             description="Set properties: filesets and build.uptodate">
         <fileset id="src.files" dir="${src}">
             <include name="**/*.java"/>
-            <exclude name=""/>
+            <exclude name="**/package-info.java"/>
         </fileset>
 
         <fileset id="dataflow.src.astub.files" dir="${dataflow.loc}/${src}">
@@ -138,10 +138,10 @@
         <!-- I can't figure out how to combine filesets (or even selectors)
              to get just one *.uptodate property, so do them individually
              and then combine with <condition>. -->
-            <!-- Probably should depend on a file rather than a directory. -->
+        <!-- Probably should depend on a file rather than a directory. -->
         <uptodate property="src.files.uptodate" targetfile="${build}">
           <srcfiles refid="src.files"/>
-          <mapper type="glob" from="*.java" to="${build}/*.class"/>
+          <mapper type="glob" from="*.java" to="../${build}/*.class"/>
         </uptodate>
 
         <uptodate property="src.astub.files.uptodate" targetfile="${build}">
@@ -497,11 +497,16 @@
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
                showoutput="true"
-               printsummary="true"
-               haltonfailure="${halt.on.test.failure}">
+               printsummary="withOutAndErr"
+               haltonfailure="${halt.on.test.failure}"
+               maxmemory="2500M">
+
+            <!-- plain output for debugging -->
+            <formatter type="plain"/>
+            <!-- <formatter type="xml"/> -->
+
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="${debugger.str}"/>
-            <jvmarg line="-Xmx2500M"/>
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
             <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
             <jvmarg line="-ea"/>
@@ -513,8 +518,6 @@
                 <pathelement path="${junit.lib}"/>
             </classpath>
 
-            <formatter type="xml"/>
-            <formatter type="brief" usefile="false"/>
 
             <test name="${param}" todir="${build.reports}"/>
         </junit>
@@ -559,6 +562,8 @@
         <!-- Note that the order of the ant vs junit calls matters
              for the Jenkins setup. The junit call must come last. -->
 
+	<!-- Delete directory because we will rerun all tests -->
+        <delete dir="${build.reports}"/>
         <!-- Copied from -run-tests target -->
         <mkdir dir="${build.reports}"/>
 

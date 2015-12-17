@@ -52,6 +52,7 @@
             description="Set properties: filesets and build.uptodate">
         <fileset id="src.files" dir="${src}">
             <include name="**/*.java"/>
+            <exclude name="**/package-info.java"/>
         </fileset>
 
         <!-- I can't figure out how to combine filesets (or even selectors)
@@ -60,7 +61,7 @@
             <!-- Probably should depend on a file rather than a directory. -->
         <uptodate property="src.files.uptodate" targetfile="${build}">
             <srcfiles refid="src.files"/>
-            <mapper type="glob" from="*.java" to="${build}/*.class"/>
+            <mapper type="glob" from="*.java" to="../${build}/*.class"/>
         </uptodate>
 
         <uptodate property="javacutil.lib.uptodate" targetfile="${build}" srcfile="${javacutil.lib}"/>

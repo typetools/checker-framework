@@ -95,7 +95,7 @@
             description="Set properties: filesets and build.uptodate">
         <fileset id="src.files" dir="${src}">
             <include name="**/*.java"/>
-            <exclude name=""/>
+            <exclude name="**/package-info.java"/>
         </fileset>
 
         <fileset id="src.astub.files" dir="${src}" includes="**/*.properties,**/*.astub"/>
@@ -106,7 +106,7 @@
             <!-- Probably should depend on a file rather than a directory. -->
         <uptodate property="src.files.uptodate" targetfile="${build}">
           <srcfiles refid="src.files"/>
-          <mapper type="glob" from="*.java" to="${build}/*.class"/>
+          <mapper type="glob" from="*.java" to="../${build}/*.class"/>
         </uptodate>
 
         <uptodate property="src.astub.files.uptodate" targetfile="${build}">
@@ -318,6 +318,9 @@
     <target name="all-tests-nojtreg-nobuild" depends="build-tests"
             description="Run tests, except jtreg tests, WITHOUT building anything">
 
+      <!-- Delete directory because we will rerun all tests -->
+      <delete dir="${build.reports}"/>
+
       <antcall target="loader-dir-test"/>
 
       <!-- Copied from -run-tests target -->
@@ -508,16 +511,27 @@
         </antcall>
     </target>
 
+    <target name="jtreg.check">
+      <condition property="jtreg.exists">
+	<available file="${jtreg.home}" type="dir"/>
+      </condition>
+    </target>
+
+    <target name="-jtreg.download" depends="jtreg.check" unless="jtreg.exists">
+      <get
+	  src="https://adopt-openjdk.ci.cloudbees.com/view/OpenJDK/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.1-b12.tar.gz"
+	dest="${jtreg.home}/.." />
+      <untar src="${jtreg.home}/../jtreg-4.1-b12.tar.gz"
+	     dest="${jtreg.home}/../"
+	     compression="gzip" />
+    </target>
+
+
     <!-- TODO: re-enable -->
     <target name="jtreg-tests" depends="-def-jtreg,jar,build-tests"
             description="Run jtreg tests">
         <echo message="framework jtreg-tests are currently disabled because they are failing"/>
-    </target>
-
-    <!-- TODO: re-enable -->
-    <target name="jtreg-tests-FAILING" depends="-def-jtreg,jar,build-tests"
-            description="Run jtreg tests">
-        <jtreg-tool2 name="all" tests="."/>
+        <!-- <jtreg-tool2 name="all" tests="."/> -->
     </target>
 
     <target name="-def-check">

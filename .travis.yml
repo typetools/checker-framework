@@ -34,8 +34,12 @@ addons:
       # - texlive-latex-extra
 
 addons:
-  artifacts: true
-  s3_region: "us-west-2" # defaults to "us-east-1"
+  artifacts:
+    paths:
+      - $(ls checker/build/reports/* | tr "\n" ":")
+      - $(ls framework/build/reports/* | tr "\n" ":")
+    s3_region: "us-west-2"
+    # debug: true
 
 jdk:
   - oraclejdk8
