@@ -561,6 +561,8 @@
         <!-- Note that the order of the ant vs junit calls matters
              for the Jenkins setup. The junit call must come last. -->
 
+	<!-- Delete directory because we will rerun all tests -->
+        <delete dir="${build.reports}"/>
         <!-- Copied from -run-tests target -->
         <mkdir dir="${build.reports}"/>
 

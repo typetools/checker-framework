@@ -314,6 +314,8 @@
     <target name="all-tests-nojtreg-nobuild" depends="build-tests"
             description="Run tests, except jtreg tests, WITHOUT building anything">
 
+      <!-- Delete directory because we will rerun all tests -->
+      <delete dir="${build.reports}"/>
       <!-- Copied from -run-tests target -->
       <mkdir dir="${build.reports}"/>
 
