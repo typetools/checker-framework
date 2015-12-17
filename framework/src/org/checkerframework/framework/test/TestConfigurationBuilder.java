@@ -400,6 +400,7 @@ public class TestConfigurationBuilder {
         String globalclasspath = System.getProperty("java.class.path", "");
         return "build" + File.pathSeparator +
                "junit.jar" + File.pathSeparator +
+               "hamcrest-core-1.3.jar" + File.pathSeparator +
                classpath + File.pathSeparator +
                globalclasspath;
     }
