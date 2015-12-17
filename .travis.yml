@@ -39,12 +39,11 @@ addons:
       - $(ls checker/build/reports/* | tr "\n" ":")
       - $(ls framework/build/reports/* | tr "\n" ":")
     s3_region: "us-west-2"
-    debug: true
+    # debug: true
 
 jdk:
-## Temporary while debugging, to save resources
-#  - oraclejdk8
-#  - oraclejdk7
+  - oraclejdk8
+  - oraclejdk7
   - openjdk7
   # openjdk8 is not a legal option: - openjdk8
 
