@@ -95,7 +95,7 @@
             description="Set properties: filesets and build.uptodate">
         <fileset id="src.files" dir="${src}">
             <include name="**/*.java"/>
-            <exclude name=""/>
+            <exclude name="**/package-info.java"/>
         </fileset>
 
         <fileset id="src.astub.files" dir="${src}" includes="**/*.properties,**/*.astub"/>
@@ -106,7 +106,7 @@
             <!-- Probably should depend on a file rather than a directory. -->
         <uptodate property="src.files.uptodate" targetfile="${build}">
           <srcfiles refid="src.files"/>
-          <mapper type="glob" from="*.java" to="${build}/*.class"/>
+          <mapper type="glob" from="*.java" to="../${build}/*.class"/>
         </uptodate>
 
         <uptodate property="src.astub.files.uptodate" targetfile="${build}">
