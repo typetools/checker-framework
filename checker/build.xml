@@ -554,6 +554,7 @@
 
         <ant dir="${framework.loc}">
             <target name="all-tests-nojtreg-nobuild"/>
+            <target name="loader-jar-test"/>
         </ant>
 
         <antcall target="nullness-extra-tests-nobuildjdk"/>
