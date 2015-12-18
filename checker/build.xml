@@ -493,11 +493,13 @@
                dir="${basedir}"
                printsummary="false"
                haltonfailure="${halt.on.test.failure}"
+               maxmemory="2500M"
 	       >
             <formatter type="xml"/>
 	<!-- end of non-debugging version. -->
 	
-	<!-- debugging version:
+	<!-- debugging version: -->
+	<!--
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
                haltonfailure="${halt.on.test.failure}"
