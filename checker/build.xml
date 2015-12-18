@@ -562,13 +562,12 @@
 
         <ant dir="${framework.loc}">
             <target name="all-tests-nojtreg-nobuild"/>
+            <target name="loader-jar-test"/>
         </ant>
 
         <antcall target="nullness-extra-tests-nobuildjdk"/>
 
         <antcall target="example-tests-nobuildjdk"/>
-
-        <antcall target="units-extension-tests"/>
 
         <!-- Note that the order of the ant vs junit calls matters
              for the Jenkins setup. The junit call must come last. -->
@@ -902,6 +901,30 @@
         <antcall target="-run-tests">
             <param name="param" value="tests.UnitsTest"/>
         </antcall>
+    </target>
+
+	<target name="fenum-extension-tests" depends="jar,build-tests"
+            description="Run tests for the Fenum Checker extension capabilities">
+        <exec executable="chmod" failonerror="true">
+            <arg line="+x ${basedir}/bin/javac"/>
+        </exec>
+
+        <exec executable="make" failonerror="${halt.on.test.failure}">
+            <env key="JAVAC" value="${basedir}/bin/javac"/>
+            <arg line="-C tests/fenum-extension/"/>
+        </exec>
+    </target>
+
+	<target name="subtyping-extension-tests" depends="jar,build-tests"
+            description="Run tests for the Subtyping Checker extension capabilities">
+        <exec executable="chmod" failonerror="true">
+            <arg line="+x ${basedir}/bin/javac"/>
+        </exec>
+
+        <exec executable="make" failonerror="${halt.on.test.failure}">
+            <env key="JAVAC" value="${basedir}/bin/javac"/>
+            <arg line="-C tests/subtyping-extension/"/>
+        </exec>
     </target>
 
     <target name="units-extension-tests" depends="jar,build-tests"

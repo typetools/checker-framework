@@ -18,7 +18,6 @@ import com.sun.source.tree.Tree;
  *
  * @checker_framework.manual #regex-checker Regex Checker
  */
-@TypeQualifier
 @InvisibleQualifier
 @ImplicitFor(trees = {Tree.Kind.NULL_LITERAL},
   typeNames = {java.lang.Void.class})

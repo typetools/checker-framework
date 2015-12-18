@@ -7,7 +7,6 @@ import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * An unqualified type.  Such a type is incomparable to (that is, neither a
@@ -19,7 +18,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #fenum-checker Fake Enum Checker
  */
-@TypeQualifier
 @SubtypeOf( { FenumTop.class } )
 @DefaultQualifierInHierarchy
 @Documented

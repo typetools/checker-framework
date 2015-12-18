@@ -28,7 +28,6 @@ import java.lang.annotation.Target;
  *
  * @see org.checkerframework.framework.type.QualifierHierarchy#getBottomAnnotations()
  */
-@TypeQualifier
 @SubtypeOf({})
 @Target({ElementType.TYPE_USE})
 @TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,

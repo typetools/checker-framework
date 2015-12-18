@@ -12,14 +12,12 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Denotes a reference that is untainted, i.e. can be trusted.
  *
  * @checker_framework.manual #tainting-checker Tainting Checker
  */
-@TypeQualifier
 @SubtypeOf(Tainted.class)
 @ImplicitFor(trees = { STRING_LITERAL, NULL_LITERAL })
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

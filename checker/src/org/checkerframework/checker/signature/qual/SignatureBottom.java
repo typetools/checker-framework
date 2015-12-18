@@ -16,7 +16,6 @@ import com.sun.source.tree.Tree;
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
-@TypeQualifier
 @SubtypeOf({SourceNameForNonArray.class,
     FieldDescriptorForArray.class,
     MethodDescriptor.class

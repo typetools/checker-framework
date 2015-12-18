@@ -7,9 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
-@TypeQualifier
 @SubtypeOf({A.class})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

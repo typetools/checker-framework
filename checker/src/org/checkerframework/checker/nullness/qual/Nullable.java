@@ -15,8 +15,6 @@ import org.checkerframework.framework.qual.DefaultForUnannotatedCode;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
-
 import com.sun.source.tree.Tree;
 
 /**
@@ -32,7 +30,6 @@ import com.sun.source.tree.Tree;
  * @see AbstractNullnessChecker
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
-@TypeQualifier
 @SubtypeOf({})
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
 @DefaultFor({ DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,

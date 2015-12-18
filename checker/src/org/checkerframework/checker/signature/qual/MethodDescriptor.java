@@ -4,7 +4,6 @@ import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Represents a method descriptor (JVM representation of method signature)
@@ -25,7 +24,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
-@TypeQualifier
 @SubtypeOf(UnannotatedString.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface MethodDescriptor {}

@@ -25,7 +25,6 @@ import com.sun.source.tree.Tree;
  * @checker_framework.manual #initialization-checker Initialization Checker
  * @author Stefan Heule
  */
-@TypeQualifier
 @SubtypeOf({ UnderInitialization.class, Initialized.class })
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL })
 @Documented

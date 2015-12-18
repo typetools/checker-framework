@@ -17,7 +17,6 @@ import com.sun.source.tree.Tree;
  * @checker_framework.manual #formatter-checker Format String Checker
  * @author Konstantin Weitz
  */
-@TypeQualifier
 @SubtypeOf({Format.class,InvalidFormat.class})
 @Target({ElementType.TYPE_USE})
 @TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,

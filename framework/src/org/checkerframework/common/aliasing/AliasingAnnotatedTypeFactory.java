@@ -1,5 +1,6 @@
 package org.checkerframework.common.aliasing;
 
+import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,7 +17,6 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
@@ -29,17 +29,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
 
 import com.sun.source.tree.NewClassTree;
 
-// @NonLeaked and @LeakedToResult are type qualifiers because of a checker
-// framework limitation (Issue 383). Once the stub parser gets updated to read
-// non-type-qualifers annotations on stub files, this annotation won't be a
-// type qualifier anymore.
-
-@TypeQualifiers({ Unique.class, MaybeAliased.class, NonLeaked.class,
-        LeakedToResult.class, MaybeLeaked.class })
 public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    private final AnnotationMirror MAYBE_ALIASED, NON_LEAKED, UNIQUE,
-            MAYBE_LEAKED;
+    private final AnnotationMirror MAYBE_ALIASED, NON_LEAKED, UNIQUE, MAYBE_LEAKED;
 
     public AliasingAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -50,6 +42,16 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (this.getClass().equals(AliasingAnnotatedTypeFactory.class)) {
             this.postInit();
         }
+    }
+
+    // @NonLeaked and @LeakedToResult are type qualifiers because of a checker
+    // framework limitation (Issue 383). Once the stub parser gets updated to read
+    // non-type-qualifers annotations on stub files, this annotation won't be a
+    // type qualifier anymore.
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return getBundledTypeQualifiersWithoutPolyAll(
+                MaybeLeaked.class);
     }
 
     @Override

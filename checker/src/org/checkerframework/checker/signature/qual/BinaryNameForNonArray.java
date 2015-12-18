@@ -5,7 +5,6 @@ import java.lang.annotation.ElementType;
 
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Represents a {@link BinaryName binary name} as defined in the <a
@@ -18,7 +17,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
-@TypeQualifier
 @SubtypeOf({BinaryName.class, ClassGetName.class})
 @ImplicitFor(stringPatterns="^[A-Za-z_][A-Za-z_0-9]*(\\.[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_][A-Za-z_0-9]*)?$")
 // A @Target meta-annotation with an empty argument would prevent programmers

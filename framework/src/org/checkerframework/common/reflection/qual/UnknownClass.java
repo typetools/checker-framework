@@ -8,7 +8,6 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TargetLocations;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Represents a Class object whose run-time value is not known at compile time.
@@ -20,7 +19,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
  */
-@TypeQualifier
 @InvisibleQualifier
 @SubtypeOf({})
 @Target({ElementType.TYPE_USE})

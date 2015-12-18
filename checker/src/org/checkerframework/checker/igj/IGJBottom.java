@@ -20,7 +20,6 @@ import com.sun.source.tree.Tree.Kind;
  * This annotation may not be written in source code; it is an
  * implementation detail of the checker.
  */
-@TypeQualifier
 @SubtypeOf({Mutable.class, Immutable.class, I.class})
 @ImplicitFor(
         trees = { Kind.NULL_LITERAL },

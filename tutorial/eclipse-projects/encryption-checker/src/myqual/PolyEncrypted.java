@@ -10,7 +10,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
 /**
  * Denotes that the representation of an object is encrypted.
  */
-@TypeQualifier
 @PolymorphicQualifier
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface PolyEncrypted {}

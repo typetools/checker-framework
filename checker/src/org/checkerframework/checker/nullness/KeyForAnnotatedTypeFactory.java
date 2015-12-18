@@ -20,7 +20,6 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.DefaultLocation;
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -68,7 +67,6 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 
-@TypeQualifiers({ KeyFor.class, UnknownKeyFor.class, KeyForBottom.class, PolyKeyFor.class, PolyAll.class})
 public class KeyForAnnotatedTypeFactory extends
     GenericAnnotatedTypeFactory<CFValue, CFStore, KeyForTransfer, KeyForAnalysis> {
 
@@ -100,6 +98,13 @@ public class KeyForAnnotatedTypeFactory extends
         // Add compatibility annotations:
         addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.KeyForDecl.class, KEYFOR);
         addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.KeyForType.class, KEYFOR);
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return Collections.unmodifiableSet(
+                new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(KeyFor.class, UnknownKeyFor.class, KeyForBottom.class, PolyKeyFor.class, PolyAll.class)));
     }
 
     @Override

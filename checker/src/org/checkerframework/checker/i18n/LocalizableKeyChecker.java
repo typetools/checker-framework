@@ -2,12 +2,7 @@ package org.checkerframework.checker.i18n;
 
 import javax.annotation.processing.SupportedOptions;
 
-import org.checkerframework.checker.i18n.qual.LocalizableKey;
 import org.checkerframework.checker.propkey.PropertyKeyChecker;
-import org.checkerframework.checker.propkey.qual.PropertyKey;
-import org.checkerframework.checker.propkey.qual.UnknownPropertyKey;
-import org.checkerframework.framework.qual.TypeQualifiers;
-
 import java.util.ResourceBundle;
 import java.util.Locale;
 
@@ -37,7 +32,6 @@ import java.util.Locale;
  *
  * </ol>
  */
-@TypeQualifiers({ LocalizableKey.class, PropertyKey.class, UnknownPropertyKey.class })
 @SupportedOptions( {"propfiles", "bundlenames"} )
 public class LocalizableKeyChecker extends PropertyKeyChecker {
 }

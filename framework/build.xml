@@ -310,13 +310,20 @@
             description="Run tests for all checkers, WITHOUT building anything"/>
 
     <target name="all-tests-nojtreg" depends="jar, all-tests-nojtreg-nobuild"
-            description="Run tests, except jtreg tests"/>
+            description="Run tests, except jtreg tests">
+
+      <antcall target="loader-jar-test"/>
+
+	</target>
 
     <target name="all-tests-nojtreg-nobuild" depends="build-tests"
             description="Run tests, except jtreg tests, WITHOUT building anything">
 
       <!-- Delete directory because we will rerun all tests -->
       <delete dir="${build.reports}"/>
+
+      <antcall target="loader-dir-test"/>
+
       <!-- Copied from -run-tests target -->
       <mkdir dir="${build.reports}"/>
 
@@ -352,7 +359,28 @@
       </junit>
     </target>
 
-    <target name="aliasing-tests" depends="jar,build-tests"
+	<target name="loader-tests" depends="loader-dir-test,loader-jar-test"
+	            description="Run tests for the annotation class loader"/>
+
+	<target name="loader-jar-test" depends="jar"
+            description="Run tests for the annotation class loader by loading from jar file">
+		<exec executable="make" failonerror="${halt.on.test.failure}">
+			<env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
+			<arg line="-C tests/annotationclassloader/"/>
+			<arg line="load-from-jar-test"/>
+		</exec>
+    </target>
+
+	<target name="loader-dir-test" depends="build-tests"
+            description="Run tests for the annotation class loader by loading from build directories">
+		<exec executable="make" failonerror="${halt.on.test.failure}">
+			<env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
+			<arg line="-C tests/annotationclassloader/"/>
+			<arg line="load-from-dir-test"/>
+		</exec>
+    </target>
+
+	<target name="aliasing-tests" depends="jar,build-tests"
             description="Run tests for the Aliasing checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.AliasingTest"/>

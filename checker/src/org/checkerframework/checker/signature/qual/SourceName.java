@@ -6,7 +6,6 @@ import java.lang.annotation.ElementType;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * A source name is a string that is a valid {@linkplain FullyQualifiedName
@@ -18,7 +17,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
-@TypeQualifier
 @SubtypeOf({BinaryName.class, FullyQualifiedName.class})
 // A @Target meta-annotation with an empty argument would prevent programmers
 // from writing this in a program, but it might sometimes be useful.

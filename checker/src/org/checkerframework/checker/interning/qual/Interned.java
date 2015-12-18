@@ -31,7 +31,6 @@ import com.sun.source.tree.LiteralTree;
  * @see InterningChecker
  * @checker_framework.manual #interning-checker Interning Checker
  */
-@TypeQualifier
 @SubtypeOf(UnknownInterned.class)
 @ImplicitFor(
         treeClasses = { LiteralTree.class },
