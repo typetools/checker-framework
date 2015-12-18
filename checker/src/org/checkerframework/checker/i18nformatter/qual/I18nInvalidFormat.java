@@ -6,7 +6,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * This annotation, attached to a {@link java.lang.String String} type,
@@ -22,7 +21,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *                           Format String Checker
  * @author Siwakorn Srisakaokul
  */
-@TypeQualifier
 @SubtypeOf(I18nUnknownFormat.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })

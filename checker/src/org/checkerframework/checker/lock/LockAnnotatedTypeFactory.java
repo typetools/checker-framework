@@ -16,6 +16,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -65,6 +66,13 @@ public class LockAnnotatedTypeFactory
                 AnnotationUtils.fromClass(elements, SideEffectFree.class));
 
         postInit();
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return Collections.unmodifiableSet(
+                new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(LockHeld.class, LockPossiblyHeld.class)));
     }
 
     @Override

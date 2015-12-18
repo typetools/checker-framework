@@ -10,7 +10,6 @@ import tests.util.SubQual;
 // Nullness Checker. See nullness/UnusedNullness.java instead.
 public class UnusedTypes {
 
-  @TypeQualifier
   @SubtypeOf({})
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface Prototype {}

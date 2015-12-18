@@ -10,7 +10,6 @@ import com.sun.source.tree.Tree.Kind;
 /**
  * Denotes an object with a representation that has been encrypted.
  */
-@TypeQualifier
 @SubtypeOf(Unqualified.class)
 @ImplicitFor(trees = { Kind.NULL_LITERAL })
 @DefaultFor({DefaultLocation.LOWER_BOUNDS})

@@ -10,7 +10,6 @@ import org.checkerframework.checker.interning.InterningChecker;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * The top qualifier for the Interning Checker.
@@ -22,7 +21,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * @see InterningChecker
  * @checker_framework.manual #interning-checker Interning Checker
  */
-@TypeQualifier
 @InvisibleQualifier
 @SubtypeOf({})
 @DefaultQualifierInHierarchy

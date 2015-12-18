@@ -1,7 +1,12 @@
 import org.checkerframework.checker.units.UnitsTools;
-import org.checkerframework.checker.units.qual.*;
+import org.checkerframework.checker.units.qual.Prefix;
+import org.checkerframework.checker.units.qual.s;
 
-public class Demo {
+import qual.Hz;
+import qual.kHz;
+import qual.Frequency;
+
+class UnitsExtensionDemo {
     @Hz int frq;
 
     void bad() {

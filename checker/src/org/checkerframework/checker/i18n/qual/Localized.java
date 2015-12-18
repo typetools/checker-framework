@@ -8,8 +8,6 @@ import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
-
 import com.sun.source.tree.Tree.Kind;
 
 /**
@@ -18,7 +16,6 @@ import com.sun.source.tree.Tree.Kind;
  *
  * @checker_framework.manual #i18n-checker Internationalization Checker
  */
-@TypeQualifier
 @SubtypeOf(UnknownLocalized.class)
 @ImplicitFor( trees = {
         /* All integer literals */

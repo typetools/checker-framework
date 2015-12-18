@@ -6,6 +6,8 @@ This directory shows how to create:
  * relations that enforce that Hertz is computed as scalar / second,
     and that Kilohertz is computed as scalar / millisecond
 
+The make file shows how to invoke the Units Checker to utilize these kinds and units.
+
 You can model your own new units and unit checkers after it.
 
 To see the demo, run: make demo

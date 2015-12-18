@@ -13,7 +13,6 @@ import org.checkerframework.checker.nullness.qual.*;
 // @skip-test
 public class UnusedNullness {
 
-  @TypeQualifier
   @SubtypeOf({})
   @Target(ElementType.TYPE_USE)
   public @interface Prototype {}

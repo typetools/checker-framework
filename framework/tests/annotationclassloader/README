@@ -1,0 +1,5 @@
+This directory tests the annotation class loader's basic capabilities of loading from the qual directory of a checker in two ways;
+1) from a jar
+2) from a file directory
+
+To see the demo, run: make demo

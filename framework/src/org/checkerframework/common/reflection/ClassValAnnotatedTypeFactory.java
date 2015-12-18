@@ -11,7 +11,6 @@ import org.checkerframework.common.reflection.qual.UnknownClass;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.StringVal;
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -24,8 +23,11 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -42,8 +44,6 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.UnionClassType;
 
-@TypeQualifiers({ UnknownClass.class, ClassVal.class, ClassBound.class,
-        ClassValBottom.class })
 public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
 
@@ -56,6 +56,13 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (this.getClass().equals(ClassValAnnotatedTypeFactory.class)) {
             this.postInit();
         }
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return Collections.unmodifiableSet(
+                new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(UnknownClass.class, ClassVal.class, ClassBound.class, ClassValBottom.class)));
     }
 
     private AnnotationMirror createClassVal(List<String> values) {

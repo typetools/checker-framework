@@ -8,7 +8,6 @@ import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TargetLocations;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 import com.sun.source.tree.Tree;
 
@@ -23,7 +22,6 @@ import com.sun.source.tree.Tree;
  *                           Format String Checker
  * @author Siwakorn Srisakaokul
  */
-@TypeQualifier
 @SubtypeOf({ I18nFormat.class, I18nInvalidFormat.class, I18nFormatFor.class })
 @Target({ElementType.TYPE_USE})
 @TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,

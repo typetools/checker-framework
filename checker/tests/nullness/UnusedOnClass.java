@@ -15,12 +15,10 @@ abstract class MyInvariant {
 }
 
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TypeQualifier
 @SubtypeOf({})
 @interface MyPrototype {}
 
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TypeQualifier
 @SubtypeOf(MyPrototype.class)
 @DefaultQualifierInHierarchy
 @interface MyNonPrototype {}

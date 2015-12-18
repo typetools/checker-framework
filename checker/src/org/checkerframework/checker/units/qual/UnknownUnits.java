@@ -9,14 +9,12 @@ import java.lang.annotation.ElementType;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * UnknownUnits is the top type of the type hierarchy.
  *
  * @checker_framework.manual #units-checker Units Checker
  */
-@TypeQualifier
 @InvisibleQualifier
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
