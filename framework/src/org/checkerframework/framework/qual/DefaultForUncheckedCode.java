@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  *
  * @see AnnotatedFor
  * @see DefaultQualifier
- * @see DefaultQualifierForUnannotatedCode
+ * @see DefaultQualifierInHierarchyForUncheckedCode
  * @see ImplicitFor
  * @checker_framework.manual #defaults-classfile Default qualifiers for .class files (conservative library defaults)
  * @checker_framework.manual #compiling-libraries Compiling partially-annotated libraries
@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
-public @interface DefaultForUnannotatedCode {
+public @interface DefaultForUncheckedCode {
     /**
      * @return the locations to which the annotation should be applied
      */

@@ -26,10 +26,10 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultForUnannotatedCode;
+import org.checkerframework.framework.qual.DefaultForUncheckedCode;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
-import org.checkerframework.framework.qual.DefaultQualifierForUnannotatedCode;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchyForUncheckedCode;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
@@ -380,7 +380,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     checker.hasOption("safeDefaultsForUnannotatedBytecode") ||
                     // This block may need to be split after safeDefaults... is reverted to unsafeDefaults...
                     checker.hasOption("useSafeDefaultsForUnannotatedSourceCode")) {
-                DefaultForUnannotatedCode defaultForUnannotated = qual.getAnnotation(DefaultForUnannotatedCode.class);
+                DefaultForUncheckedCode defaultForUnannotated = qual.getAnnotation(DefaultForUncheckedCode.class);
 
                 if (defaultForUnannotated != null) {
                     final DefaultLocation [] locations = defaultForUnannotated.value();
@@ -390,12 +390,12 @@ public abstract class GenericAnnotatedTypeFactory<
                             Arrays.asList(locations).contains(DefaultLocation.OTHERWISE);
                 }
 
-                if (qual.getAnnotation(DefaultQualifierForUnannotatedCode.class) != null) {
+                if (qual.getAnnotation(DefaultQualifierInHierarchyForUncheckedCode.class) != null) {
                     if (defaultForUnannotated != null) {
-                        // A type qualifier should either have a DefaultForUnannotatedCode or
-                        // a DefaultQualifierForUnannotatedCode annotation.
+                        // A type qualifier should either have a DefaultForUncheckedCode or
+                        // a DefaultQualifierInHierarchyForUncheckedCode annotation.
                         ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
-                                "qualifier has both @DefaultForUnannotatedCode and @DefaultQualifierForUnannotatedCode annotations: " +
+                                "qualifier has both @DefaultForUncheckedCode and @DefaultQualifierInHierarchyForUncheckedCode annotations: " +
                                 qual.getCanonicalName());
                     } else {
                         defs.addUnannotatedDefault(AnnotationUtils.fromClass(elements, qual),
