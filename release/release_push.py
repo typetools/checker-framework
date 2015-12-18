@@ -8,7 +8,7 @@ Created by Jonathan Burke on 2013-12-30.
 Copyright (c) 2015 University of Washington. All rights reserved.
 """
 
-#See README-maintainers.html for more information
+# See README-maintainers.html for more information
 
 from release_vars  import *
 from release_utils import *
@@ -17,7 +17,7 @@ import os
 import urllib
 import zipfile
 
-#ensure that the latest built version is
+# ensure that the latest built version is
 def check_release_version( previous_release, new_release ):
     if compare_version_numbers( previous_release, new_release ) >= 0:
         raise Exception( "Previous release version ( " + previous_release + " ) should be less than " +
@@ -55,7 +55,7 @@ def update_release_symlinks( checker_version, afu_version ):
     force_symlink( checker_latest_release_dir, os.path.join( CHECKER_LIVE_SITE, "current" ) )
     force_symlink( afu_latest_release_dir,     os.path.join( AFU_LIVE_SITE,     "current" ) )
 
-    #After the copy operations the index.htmls will point into the dev directory
+    # After the copy operations the index.htmls will point into the dev directory
     force_symlink( os.path.join( afu_latest_release_dir,  "annotation-file-utilities.html" ), os.path.join( afu_latest_release_dir, "index.html" ) )
     force_symlink( os.path.join( checker_latest_release_dir, "checker-framework-webpage.html" ), os.path.join( checker_latest_release_dir, "index.html" ) )
 
@@ -82,11 +82,11 @@ def stage_maven_artifacts_in_maven_central( new_checker_version ):
     mvn_dist = os.path.join(MAVEN_PLUGIN_DIR, "dist" )
     execute( "mkdir -p " + mvn_dist )
 
-    #build Jar files with only readmes for artifacts that don't have sources/javadocs
+    # build Jar files with only readmes for artifacts that don't have sources/javadocs
     ant_cmd = "ant -f release.xml -Ddest.dir=%s -Dmaven.plugin.dir=%s jar-maven-extras" % (mvn_dist, MAVEN_PLUGIN_DIR)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    #At the moment, checker.jar is the only artifact with legitimate accompanying source/javadoc jars
+    # At the moment, checker.jar is the only artifact with legitimate accompanying source/javadoc jars
     mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_BINARY_RELEASE_POM, CHECKER_BINARY,
                              CHECKER_SOURCE, CHECKER_JAVADOC,
                              pgp_user, pgp_passphrase )
@@ -257,7 +257,7 @@ def main(argv):
     new_checker_version     = current_distribution( CHECKER_FRAMEWORK )
     check_release_version( current_checker_version, new_checker_version )
 
-    #note, get_afu_version_from_html uses the file path not the web url
+    # note, get_afu_version_from_html uses the file path not the web url
     dev_afu_website_file  = os.path.join( FILE_PATH_TO_DEV_SITE,  "annotation-file-utilities", "index.html" )
     live_afu_website_file = os.path.join( FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities", "index.html" )
     current_afu_version = get_afu_version_from_html( live_afu_website_file )
@@ -371,6 +371,12 @@ def main(argv):
         if not os.path.isdir( SANITY_TEST_CHECKER_FRAMEWORK_DIR ):
             execute( "mkdir -p " + SANITY_TEST_CHECKER_FRAMEWORK_DIR )
         execute("sh ../../checker-framework/release/test-checker-framework.sh", True, False, SANITY_TEST_CHECKER_FRAMEWORK_DIR)
+        # Ensure that the jsr308-langtools javac works with the system-wide java launcher
+        if not os.path.isdir( SANITY_TEST_JSR308_LANGTOOLS_DIR ):
+            execute( "mkdir -p " + SANITY_TEST_JSR308_LANGTOOLS_DIR )
+        execute("wget http://types.cs.washington.edu/jsr308/current/jsr308-langtools.zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
+        execute("unzip -uq jsr308-langtools.zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
+        execute("env -i bash --noprofile jsr308-langtools-" + new_checker_version + "/dist/bin/javac -version", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
 
     # You must manually deploy the Eclipse plugin. Follow the instructions at the prompt.
 

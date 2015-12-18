@@ -26,7 +26,7 @@ import shutil
 import errno
 
 #=========================================================================================
-# Parse Args Utils #TODO: Perhaps use argparse module
+# Parse Args Utils # TODO: Perhaps use argparse module
 def match_arg( arg ):
     matched_project = None
     for project in PROJECTS_TO_SHORTNAMES:
@@ -396,7 +396,7 @@ def hg_push( repo_root ):
     else:
         execute('hg -R %s push' % repo_root)
 
-#Pull the latest changes and update
+# Pull the latest changes and update
 def update_project(path):
     if is_git_bare(path):
         execute('git -C %s fetch' % path)
@@ -408,12 +408,12 @@ def update_project(path):
 def update_projects(paths):
     for path in paths:
         update_project( path )
-        #print("Checking changes")
+        # print("Checking changes")
         # execute('hg -R %s outgoing' % path)
 
-#Commit the changes we made for this release
-#Then add a tag for this release
-#And push these changes
+# Commit the changes we made for this release
+# Then add a tag for this release
+# And push these changes
 def commit_tag_and_push(version, path, tag_prefix):
     if is_git(path):
         execute('git -C %s commit -a -m "new release %s"' % (path, version))
@@ -534,7 +534,7 @@ def clean_repo(repo, prompt):
         revert(repo)
         strip(repo)
         purge(repo, all)
-        revert(repo) #avoids the issue of purge deleting ignored files we want to get back
+        revert(repo) # avoids the issue of purge deleting ignored files we want to get back
     print ''
 
 def clean_repos(repos, prompt):
@@ -578,7 +578,7 @@ def get_commit_for_tag( revision, repo_file_path, tag_prefixes ):
     if not is_git(repo_file_path):
         raise Exception("get_commit_for_tag is only defined for git repositories")
 
-    #assume the first is the most recent
+    # assume the first is the most recent
     tags = execute("git -C " + repo_file_path + " rev-list " + tag_prefixes[0] + revision, True, True)
     lines = tags.splitlines()
 
@@ -647,16 +647,16 @@ def propose_change_review( dir_title, old_version, repository_path, tag_prefixes
 #=========================================================================================
 # File Utils
 
-#since download_binary does not seem to work on source files
+# since download_binary does not seem to work on source files
 def wget_file( source_url, destination_dir ):
     print("DEST DIR: " + destination_dir)
     execute( "wget %s" % source_url, True, False, destination_dir )
 
-#Note:  This will download the directory into a directory location as follow:
-#Suppose we have a url:  http://level0/level1/target
-#It will download the files into the following directory
-#destination_dir/level0/level1/target
-#use wget_dir_flat if you'd like all files to be just output to destination_dir
+# Note:  This will download the directory into a directory location as follow:
+# Suppose we have a url:  http://level0/level1/target
+# It will download the files into the following directory
+# destination_dir/level0/level1/target
+# use wget_dir_flat if you'd like all files to be just output to destination_dir
 def wget_dir( source_url, destination_dir ):
     execute( "wget -r -l1 --no-parent %s" % source_url, True, False, destination_dir )
 
@@ -704,7 +704,7 @@ def first_line_containing(value, file):
     p2 = Popen(["sed", "-n", 's/^\\([0-9]*\\)[:].*/\\1/p'], stdin=p1.stdout, stdout=PIPE)
     return int(p2.communicate()[0])
 
-#Give group access to the specified path
+# Give group access to the specified path
 def ensure_group_access(path):
     # Errs for any file not owned by this user.
     # But, the point is to set group writeability of any *new* files.
@@ -781,7 +781,7 @@ def force_symlink( target_of_link, path_to_symlink ):
             os.remove( path_to_symlink )
             os.symlink( target_of_link, path_to_symlink )
 
-#note strs to find is mutated
+# note strs to find is mutated
 def are_in_file( file_path, strs_to_find ):
     file = open( file_path )
 
@@ -822,7 +822,7 @@ def create_empty_file( file_path ):
 #=========================================================================================
 # Change Log utils
 
-#Read every line in the file until we reach a line with at least 8 dashes("-") in it
+# Read every line in the file until we reach a line with at least 8 dashes("-") in it
 def changelog_header(filename):
     f = open(filename, 'r')
     header = []
@@ -838,8 +838,8 @@ def get_changelog_date():
     import datetime
     return datetime.datetime.now().strftime("%d %b %Y")
 
-#Ask the user whether they want to edit the changelog
-#Prepend a changelog message to the changelog and then open the passed in editor
+# Ask the user whether they want to edit the changelog
+# Prepend a changelog message to the changelog and then open the passed in editor
 def edit_changelog(projectName, path, version, description, editor):
     edit = raw_input("Edit the %s changelog? [Y/n]" % projectName)
     if not (edit == "n"):
@@ -848,7 +848,7 @@ def edit_changelog(projectName, path, version, description, editor):
             execute([editor, path])
 
 
-#Create a message to add to the current checker framework change log
+# Create a message to add to the current checker framework change log
 def make_checkers_change_desc(version, changes):
     """Version %s, %s
 
@@ -859,7 +859,7 @@ def make_checkers_change_desc(version, changes):
 """  % (version, get_changelog_date(), changes)
 
 
-#Create a message to add to the current JSR308 change log
+# Create a message to add to the current JSR308 change log
 def make_jsr308_change_desc(version, changes, latest_jdk):
     """Version %s, %s
 
@@ -871,17 +871,17 @@ Base build
 ----------------------------------------------------------------------
 """ % (version, get_changelog_date(), latest_jdk, changes)
 
-#Checker Framework Specific Change log method
-#Queries whether or not the user wants to update the checker framework changelog
-#then opens the changelog in the supplied editor
+# Checker Framework Specific Change log method
+# Queries whether or not the user wants to update the checker framework changelog
+# then opens the changelog in the supplied editor
 def edit_checkers_changelog(version, path, editor, changes=""):
     desc = make_checkers_change_desc(version, changes)
     edit_changelog("Checker Framework", path, version, desc, editor)
 
 
-#JSR308 Specific Change log method
-#Queries whether or not the user wants to update the checker framework changelog
-#then opens the changelog in the supplied editor
+# JSR308 Specific Change log method
+# Queries whether or not the user wants to update the checker framework changelog
+# then opens the changelog in the supplied editor
 def edit_langtools_changelog(version, openJdkReleaseSite, path, editor, changes=""):
     latest_jdk = latest_openjdk(openJdkReleaseSite)
     print("Latest OpenJDK release is b%s" % latest_jdk)

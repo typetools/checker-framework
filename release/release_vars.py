@@ -18,8 +18,8 @@ import datetime
 import pwd
 
 #---------------------------------------------------------------------------------
-#The only methods that should go here are methods that help define global release
-#variables.  All other methods that aid in release should go in release_utils.py
+# The only methods that should go here are methods that help define global release
+# variables.  All other methods that aid in release should go in release_utils.py
 
 def getAndAppend(name, append):
     if os.environ.has_key(name):
@@ -35,15 +35,15 @@ def append_to_PATH(paths):
 
 #---------------------------------------------------------------------------------
 
-#Maximum allowable size of files when downloading, 2gi
+# Maximum allowable size of files when downloading, 2gi
 MAX_DOWNLOAD_SIZE=2000000000
 
-#The location the test site is built in
+# The location the test site is built in
 HTTP_PATH_TO_DEV_SITE  = "http://types.cs.washington.edu/dev"
 FILE_PATH_TO_DEV_SITE  = "/cse/www2/types/dev/"
 DEV_HTACCESS = os.path.join(FILE_PATH_TO_DEV_SITE, ".htaccess")
 
-#The location the test site is pushed to when it is ready
+# The location the test site is pushed to when it is ready
 HTTP_PATH_TO_LIVE_SITE  = "http://types.cs.washington.edu"
 FILE_PATH_TO_LIVE_SITE  = "/cse/www2/types"
 LIVE_HTACCESS = os.path.join(FILE_PATH_TO_LIVE_SITE, ".htaccess")
@@ -71,20 +71,21 @@ SCRIPTS_DIR = TMP_DIR + "/checker-framework/release"
 # Location in which we will download files to run sanity checks
 SANITY_DIR = TMP_DIR + "/sanity"
 SANITY_TEST_CHECKER_FRAMEWORK_DIR = SANITY_DIR + "/test-checker-framework"
+SANITY_TEST_JSR308_LANGTOOLS_DIR = SANITY_DIR + "/test-jsr308-langtools"
 
 # The existence of this file indicates that release_build completed.
 # It is deleted at the beginning of a release_build run, and at the
 # end of a release_push run.
 RELEASE_BUILD_COMPLETED_FLAG_FILE = TMP_DIR + "/release-build-completed"
 
-#Every time a release is built the changes/tags are pushed here
-#When a release is deployed all INTERM repos get pushed to LIVE_REPOS
+# Every time a release is built the changes/tags are pushed here
+# When a release is deployed all INTERM repos get pushed to LIVE_REPOS
 INTERM_REPO_ROOT    = TMP_DIR + "/interm"
 INTERM_CHECKER_REPO = os.path.join(INTERM_REPO_ROOT, "checker-framework")
 INTERM_JSR308_REPO  = os.path.join(INTERM_REPO_ROOT, "jsr308-langtools")
 INTERM_ANNO_REPO    = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
 
-#The central repositories for Checker Framework related projects
+# The central repositories for Checker Framework related projects
 LIVE_CHECKER_REPO = "https://github.com/typetools/checker-framework"
 LIVE_JSR308_REPO  = "https://bitbucket.org/typetools/jsr308-langtools"
 LIVE_ANNO_REPO    = "https://github.com/typetools/annotation-tools"
@@ -95,8 +96,8 @@ OPENJDK_RELEASE_SITE = 'http://jdk8.java.net/download.html'
 
 EMAIL_TO='jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroups.com'
 
-#Location of the project directories in which we will build the actual projects
-#When we build these projects are pushed to the INTERM repositories
+# Location of the project directories in which we will build the actual projects
+# When we build these projects are pushed to the INTERM repositories
 BUILD_DIR        = TMP_DIR + "/build/"
 CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, 'checker-framework')
 CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, 'release')
@@ -206,7 +207,7 @@ CURRENT_DATE=datetime.date.today()
 
 os.environ['CHECKERFRAMEWORK'] = CHECKER_FRAMEWORK
 perl_libs = TMP_DIR + "/perl_lib:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
-#Environment variables for tools needed during the build
+# Environment variables for tools needed during the build
 os.environ['PLUME_LIB'] =  PLUME_LIB
 os.environ['BIBINPUTS']=  '.:' + PLUME_BIB
 os.environ['TEXINPUTS'] =  '.:/scratch/secs-jenkins/tools/hevea-1.10/lib/hevea:/usr/share/texmf/tex/latex/hevea/:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:..:'
@@ -226,12 +227,12 @@ PATH = PATH + ":" + PLUME_LIB + "/bin:/homes/gws/mernst/bin/share"
 PATH = PATH + ":/homes/gws/mernst/bin/Linux-x86_64/:/uns/bin:."
 os.environ['PATH'] = PATH
 
-#Tools that must be on your PATH ( besides common *nix ones like grep )
+# Tools that must be on your PATH ( besides common *nix ones like grep )
 TOOLS = [ 'hevea', 'perl', 'java', 'dia', 'latex', 'mvn', 'hg', 'git', 'validate', EDITOR ]
-#Note: validate is a program provided by wdg-html-validator, it is located in
-#/homes/gws/mernst/bin/Linux-x86_64 at the time of this writing
+# Note: validate is a program provided by wdg-html-validator, it is located in
+# /homes/gws/mernst/bin/Linux-x86_64 at the time of this writing
 
-#Script option constants
+# Script option constants
 LT_OPT   = "langtools"
 AFU_OPT  = "annotation-file-utilities"
 CF_OPT   = "checker-framework"

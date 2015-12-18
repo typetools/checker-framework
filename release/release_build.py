@@ -8,7 +8,7 @@ Created by Jonathan Burke on 2013-08-01.
 Copyright (c) 2015 University of Washington. All rights reserved.
 """
 
-#See README-maintainers.html for more information
+# See README-maintainers.html for more information
 
 from release_vars  import *
 from release_utils import *
@@ -19,7 +19,7 @@ def print_usage():
     print( "\n  --auto  accepts or chooses the default for all prompts" )
     print( "\n  --review-manual  review the documentation changes only and don't perform a full build" )
 
-#If the relevant repos do not exist, clone them, otherwise, update them.
+# If the relevant repos do not exist, clone them, otherwise, update them.
 def delete_and_clone_repos( auto ):
     message = """Before building the release, we delete any old release repositories and then
 clone them again.  However, if you have had to run the script multiple times
@@ -92,7 +92,7 @@ def create_interm_dir( project_name, version, auto ):
     return interm_dir
 
 def create_interm_version_dirs( jsr308_version, afu_version, auto ):
-    #these directories corresponds to the /cse/www2/types/dev/<project_name>/releases/<version> dirs
+    # these directories correspond to the /cse/www2/types/dev/<project_name>/releases/<version> dirs
     jsr308_interm_dir = create_interm_dir("jsr308", jsr308_version, auto )
     afu_interm_dir    = create_interm_dir("annotation-file-utilities", afu_version, auto )
     checker_framework_interm_dir = create_interm_dir("checker-framework", jsr308_version, auto )
@@ -110,27 +110,27 @@ def build_jsr308_langtools_release(auto, version, afu_release_date, checker_fram
 
     afu_build_properties = os.path.join( ANNO_FILE_UTILITIES, "build.properties" )
 
-    #update jsr308_langtools versions
+    # update jsr308_langtools versions
     ant_props = "-Dlangtools=%s -Drelease.ver=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (JSR308_LANGTOOLS, version, afu_build_properties, afu_release_date )
     ant_cmd   = "ant -f release.xml %s update-langtools-versions " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    #TODO: perhaps make a "dist" target rather than listing out the relevant targets
-    #build jsr308 binaries and documents but not website, fail if the tests don't pass
+    # TODO: perhaps make a "dist" target rather than listing out the relevant targets
+    # build jsr308 binaries and documents but not website, fail if the tests don't pass
     execute("ant -Dhalt.on.test.failure=true -Dlauncher.java=java clean-and-build-all-tools build-javadoc build-doclets", True, False, JSR308_MAKE)
 
     jsr308ZipName = "jsr308-langtools-%s.zip" % version
 
-    #zip up jsr308-langtools project and place it in jsr308_interm_dir
+    # zip up jsr308-langtools project and place it in jsr308_interm_dir
     ant_props = "-Dlangtools=%s  -Dcheckerframework=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (JSR308_LANGTOOLS, CHECKER_FRAMEWORK, jsr308_interm_dir, jsr308ZipName, version)
     ant_cmd   = "ant -f release.xml %s zip-langtools " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    #build jsr308 website
+    # build jsr308 website
     make_cmd = "make jsr308_www=%s jsr308_www_online=%s web-no-checks" % (jsr308_interm_dir, HTTP_PATH_TO_DEV_SITE)
     execute(make_cmd, True, False, JSR308_LT_DOC)
 
-    #copy remaining website files to jsr308_interm_dir
+    # copy remaining website files to jsr308_interm_dir
     ant_props = "-Dlangtools=%s -Ddest.dir=%s" % (JSR308_LANGTOOLS, jsr308_interm_dir)
     ant_cmd   = "ant -f release.xml %s langtools-website-docs " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
@@ -152,7 +152,7 @@ def build_annotation_tools_release( auto, version, afu_interm_dir ):
     ant_cmd   = "ant -buildfile %s -e update-versions -Drelease.ver=\"%s\" -Drelease.date=\"%s\"" % (build, version, date)
     execute( ant_cmd )
 
-    #Deploy to intermediate site
+    # Deploy to intermediate site
     ant_cmd   = "ant -buildfile %s -e web-no-checks -Dafu.version=%s -Ddeploy-dir=%s" % ( build, version, afu_interm_dir )
     execute( ant_cmd )
 
@@ -182,29 +182,29 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
 
     afu_build_properties = os.path.join( ANNO_FILE_UTILITIES, "build.properties" )
 
-    #update jsr308_langtools versions
+    # update jsr308_langtools versions
     ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (checker_dir, version, afu_build_properties, afu_release_date)
     ant_cmd   = "ant -f release.xml %s update-checker-framework-versions " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     if not manual_only:
-        #ensure all PluginUtil.java files are identical
+        # ensure all PluginUtil.java files are identical
         execute("sh checkPluginUtil.sh", True, False, CHECKER_FRAMEWORK_RELEASE)
 
-        #build the checker framework binaries and documents, run checker framework tests
+        # build the checker framework binaries and documents, run checker framework tests
         execute("ant -Dhalt.on.test.failure=true dist-release", True, False, CHECKER_FRAMEWORK)
 
-    #make the Checker Framework Manual
+    # make the Checker Framework Manual
     checker_manual_dir = os.path.join(checker_dir, "manual")
     execute("make manual.pdf manual.html", True, False, checker_manual_dir)
 
     if not manual_only:
 
-        #make the dataflow manual
+        # make the dataflow manual
         dataflow_manual_dir = os.path.join(CHECKER_FRAMEWORK, "dataflow", "manual")
         execute("make", True, False, dataflow_manual_dir)
 
-        #make the checker framework tutorial
+        # make the checker framework tutorial
         checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
         execute("make", True, False, checker_tutorial_dir)
 
@@ -219,7 +219,7 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
         ant_cmd   = "ant -f release.xml %s zip-maven-examples " % ant_props
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-        #copy the remaining checker-framework website files to checker_framework_interm_dir
+        # copy the remaining checker-framework website files to checker_framework_interm_dir
         ant_props = "-Dchecker=%s -Ddest.dir=%s -Dmanual.name=%s -Ddataflow.manual.name=%s -Dchecker.webpage=%s" % (
                      checker_dir, checker_framework_interm_dir, "checker-framework-manual",
                      "checker-framework-dataflow-manual", "checker-framework-webpage.html"
@@ -235,7 +235,7 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
     return
 
 def commit_to_interm_projects(jsr308_version, afu_version, projects_to_release):
-    #Use project definition instead, see find project location find_project_locations
+    # Use project definition instead, see find project location find_project_locations
     if projects_to_release[LT_OPT]:
         commit_tag_and_push(jsr308_version, JSR308_LANGTOOLS, "jsr308-")
 
@@ -256,9 +256,9 @@ def main(argv):
 
     projects_to_release = read_projects( argv, print_usage )
 
-    #Check for a --auto
-    #If --auto then no prompt and just build a full release
-    #Otherwise provide all prompts
+    # Check for a --auto
+    # If --auto then no prompt and just build a full release
+    # Otherwise provide all prompts
 
     auto = read_auto( argv )
     review_documentation = read_review_manual( argv ) # Indicates whether to review documentation changes only and not perform a build.
@@ -266,7 +266,7 @@ def main(argv):
 
     afu_date = get_afu_date( projects_to_release[AFU_OPT] )
 
-    #For each project, build what is necessary but don't push
+    # For each project, build what is necessary but don't push
 
     if not review_documentation:
         print( "Building a new release of Langtools, Annotation Tools, and the Checker Framework!" )
@@ -288,7 +288,7 @@ def main(argv):
     # Since the move to Git, cleaning can be error prone, so we have moved to deleting the repos entirely
     # and cloning.
 
-    #check we are cloning LIVE -> INTERM, INTERM -> RELEASE
+    # check we are cloning LIVE -> INTERM, INTERM -> RELEASE
     print_step("\n1a: Clone repositories.") # SEMIAUTO
     delete_and_clone_repos( auto )
 
@@ -387,13 +387,11 @@ def main(argv):
 
     print_step("Build Step 4: Copy entire live site to dev site (~22 minutes).") # AUTO
 
-    # TODO: Ask support to delete the dev_old directory as it has files I cannot delete or chmod, then remove "--exclude=dev_old" from the command below.
-
     # ************************************************************************************************
     # WARNING: BE EXTREMELY CAREFUL WHEN MODIFYING THIS COMMAND.  The --delete option is destructive
     # and its work cannot be undone.  If, for example, this command were modified to accidentally make
     # /cse/www2/types/ the target directory, the entire types directory could be wiped out.
-    execute("rsync --omit-dir-times --recursive --links --delete --quiet --exclude=dev --exclude=dev_old /cse/www2/types/ /cse/www2/types/dev", halt_if_fail=False)
+    execute("rsync --omit-dir-times --recursive --links --delete --quiet --exclude=dev /cse/www2/types/ /cse/www2/types/dev", halt_if_fail=False)
     # ************************************************************************************************
 
     print_step("Build Step 5: Create directories for the current release on the dev site.") # SEMIAUTO
