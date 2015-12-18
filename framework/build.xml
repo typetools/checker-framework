@@ -310,11 +310,7 @@
             description="Run tests for all checkers, WITHOUT building anything"/>
 
     <target name="all-tests-nojtreg" depends="jar, all-tests-nojtreg-nobuild"
-            description="Run tests, except jtreg tests">
-
-      <antcall target="loader-jar-test"/>
-
-	</target>
+            description="Run tests, except jtreg tests"/>
 
     <target name="all-tests-nojtreg-nobuild" depends="build-tests"
             description="Run tests, except jtreg tests, WITHOUT building anything">
@@ -322,7 +318,7 @@
       <!-- Delete directory because we will rerun all tests -->
       <delete dir="${build.reports}"/>
 
-      <antcall target="loader-dir-test"/>
+      <antcall target="loader-tests"/>
 
       <!-- Copied from -run-tests target -->
       <mkdir dir="${build.reports}"/>
