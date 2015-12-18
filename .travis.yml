@@ -33,6 +33,8 @@ addons:
       # # for fullpage.sty
       # - texlive-latex-extra
 
+## Enable this when you wish to see JUnit reports.
+## Disable to minimize use of Amazon S3.
 addons:
   artifacts:
     paths:
