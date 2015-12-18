@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
@@ -116,6 +117,7 @@ public class AnnotationClassLoader {
         // exists in some particular root directory
         fullyQualifiedPackageNameSegments = new ArrayList<String>();
 
+        // from the fully qualified package name, split it at every dot then add to the list
         fullyQualifiedPackageNameSegments.addAll(Arrays.asList(Pattern.compile(Character.toString(DOT), Pattern.LITERAL).split(packageName)));
 
         // create the data structure to hold all loaded annotation classes
@@ -127,10 +129,10 @@ public class AnnotationClassLoader {
             // if the application classloader is accessible, then directly
             // retrieve the resource URL of the qual package
             // resource URLs must use slashes
-            resourceURL = applicationClassloader.getResource(packageName.replace(DOT, SLASH));
+            resourceURL = applicationClassloader.getResource(packageNameWithSlashes);
 
             // thread based application classloader, if needed in the future:
-            // resourceURL = Thread.currentThread().getContextClassLoader().getResource(packageName.replace(DOT, SLASH));
+            // resourceURL = Thread.currentThread().getContextClassLoader().getResource(packageNameWithSlashes);
         } else {
             // if the application classloader is not accessible (which means the
             // checker class was loaded using the bootstrap classloader)
@@ -176,8 +178,9 @@ public class AnnotationClassLoader {
         // be updated to refer to that source, otherwise resourceURL remains as
         // null
 
-        // TODO: prefer file directory (typically in build directory) over jars?
-        // this would help with development builds
+        // if both a jar and a directory contain the qual package, then the
+        // order of the jar and the directory in the command line option(s)
+        // or environment variables will decide which one gets examined first
         for (String path : paths) {
             // see if the current classpath segment is a jar or a directory
             if (path.endsWith(JAR_SUFFIX)) {
@@ -366,11 +369,20 @@ public class AnnotationClassLoader {
      * Obtains and returns a set of the classpaths from compiler options, system
      * environment variables, and by examining the classloader to see what paths
      * it has access to
-     * 
-     * @return an immutable set of the classpaths
+     *
+     * The classpaths will be obtained in the order of: 1) boot classpaths (set
+     * using -bootclasspath -Xbootclasspath or -J-Xbootclasspath) 2) extension
+     * paths (from java.ext.dirs) 3) classpaths (set in CLASSPATH, or through
+     * -classpath and -cp) 4) paths accessible and examined by the classloader
+     *
+     * In each of these paths, the order of the paths as specified in the
+     * command line options or environment variables will be the order returned
+     * in the set
+     *
+     * @return an immutable linked hashset of the classpaths
      */
     private final Set<String> getClasspaths() {
-        Set<String> paths = new HashSet<String>();
+        Set<String> paths = new LinkedHashSet<String>();
 
         // add all paths in Xbootclasspath
         paths.addAll(Arrays.asList(System.getProperty("sun.boot.class.path").split(":")));
