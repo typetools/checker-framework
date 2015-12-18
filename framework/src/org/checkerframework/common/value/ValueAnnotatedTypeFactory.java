@@ -227,8 +227,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defaults = super.createQualifierDefaults();
-        defaults.addAbsoluteDefault(UNKNOWNVAL, DefaultLocation.OTHERWISE);
-        defaults.addAbsoluteDefault(BOTTOMVAL, DefaultLocation.LOWER_BOUNDS);
+        defaults.addCheckedCodeDefault(UNKNOWNVAL, DefaultLocation.OTHERWISE);
+        defaults.addCheckedCodeDefault(BOTTOMVAL, DefaultLocation.LOWER_BOUNDS);
 
         return defaults;
     }

@@ -25,15 +25,13 @@ public class RegexChecker extends CheckerAdapter<QualParams<Regex>> {
 
     @Override
     public void setupDefaults(QualifierDefaults defaults) {
-        defaults.addAbsoluteDefault(
-                getTypeMirrorConverter().getAnnotation(
-                        new QualParams<>(new GroundQual<>(Regex.BOTTOM))),
-                DefaultLocation.LOWER_BOUNDS);
+        defaults.addCheckedCodeDefault(getTypeMirrorConverter()
+                                               .getAnnotation(new QualParams<>(new GroundQual<>(Regex.BOTTOM))),
+                                              DefaultLocation.LOWER_BOUNDS);
 
-        defaults.addAbsoluteDefault(
-                getTypeMirrorConverter().getAnnotation(
-                        new QualParams<>(new GroundQual<>(Regex.TOP))),
-                DefaultLocation.LOCAL_VARIABLE);
+        defaults.addCheckedCodeDefault(getTypeMirrorConverter()
+                                               .getAnnotation(new QualParams<>(new GroundQual<>(Regex.TOP))),
+                                              DefaultLocation.LOCAL_VARIABLE);
     }
 
 }

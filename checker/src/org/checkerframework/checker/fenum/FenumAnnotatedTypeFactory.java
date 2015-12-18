@@ -33,7 +33,8 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         this.postInit();
         // flow.setDebug(System.err);
-        defaults.addAbsoluteDefault(FENUM_BOTTOM, DefaultLocation.LOWER_BOUNDS);
+        defaults.addCheckedCodeDefault(FENUM_BOTTOM,
+                                              DefaultLocation.LOWER_BOUNDS);
     }
 
     /** Copied from SubtypingChecker.
