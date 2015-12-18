@@ -489,6 +489,7 @@
         <mkdir dir="${build.reports}"/>
 
 	<!-- non-debugging version: -->
+	<!--
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
                printsummary="false"
@@ -496,10 +497,10 @@
                maxmemory="2500M"
 	       >
             <formatter type="xml"/>
+	-->
 	<!-- end of non-debugging version. -->
 	
 	<!-- debugging version: -->
-	<!--
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
                haltonfailure="${halt.on.test.failure}"
@@ -508,7 +509,6 @@
                printsummary="withOutAndErr"
 	       >
             <formatter type="plain"/>
-	-->
 	<!-- end of debugging version. -->
 
             <!-- plain output for debugging -->
