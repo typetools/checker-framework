@@ -78,7 +78,7 @@ public class TypecheckExecutor {
          */
         final Boolean compiledWithoutError = task.call();
         javacOutput.flush();
-              return new CompilationResult(compiledWithoutError, javacOutput.toString(), javaFiles,
+        return new CompilationResult(compiledWithoutError, javacOutput.toString(), javaFiles,
                                      diagnostics.getDiagnostics());
     }
 
