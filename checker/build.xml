@@ -14,6 +14,8 @@
     <import file="../build-common.xml"/>
 
 
+    <!-- Setting this via the command line "-Drun.tests.should.fork=false"
+	 causes the tests to crash. -->
     <property name="run.tests.should.fork" value="true"/>
     <property name="halt.on.test.failure" value="true"/>
     <property name="javadoc.private" value="false"/>

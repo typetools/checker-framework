@@ -12,9 +12,7 @@ ant javadoc-private
 
 ## Tests
 # The JDK was built above; there is no need to rebuild it again.
-## Don't fork tests, for debugging
-# ant tests-nobuildjdk
-ant tests-nobuildjdk -Drun.tests.should.fork=false
+ant tests-nobuildjdk
 
 (cd checker && ant check-compilermsgs check-purity)
 (cd checker && ant check-tutorial)
