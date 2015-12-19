@@ -5,24 +5,18 @@ set -e
 
 ./.travis-build-without-test.sh
 
-cd checker && ant interning-tests
+## Documentation
+ant javadoc-private
+# Skip the manual because it cannot be compiled on Ubuntu 12.04.
+# make -C checker/manual all
 
-echo "INTERNING TESTS COMPLETED"
+## Tests
+# The JDK was built above; there is no need to rebuild it again.
+ant -d tests-nobuildjdk
 
-## Commented out for debugging
-# 
-# ## Documentation
-# ant javadoc-private
-# # Skip the manual because it cannot be compiled on Ubuntu 12.04.
-# # make -C checker/manual all
-# 
-# ## Tests
-# # The JDK was built above; there is no need to rebuild it again.
-# ant -d tests-nobuildjdk
-# 
-# (cd checker && ant check-compilermsgs check-purity)
-# (cd checker && ant check-tutorial)
-# 
-# # It's cheaper to run the demos test here than to trigger the
-# # checker-framework-demos job, which has to build the whole Checker Framework.
-# (cd checker && ant check-demos)
+(cd checker && ant check-compilermsgs check-purity)
+(cd checker && ant check-tutorial)
+
+# It's cheaper to run the demos test here than to trigger the
+# checker-framework-demos job, which has to build the whole Checker Framework.
+(cd checker && ant check-demos)
