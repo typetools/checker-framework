@@ -510,7 +510,7 @@
                showoutput="true"
                printsummary="withOutAndErr"
 	       >
-            <formatter type="plain"/>
+            <formatter type="plain" usefile="false"/>
 	<!-- end of debugging version. -->
 
             <!-- plain output for debugging -->
