@@ -511,6 +511,7 @@
                printsummary="withOutAndErr"
 	       >
             <formatter type="plain" usefile="false"/>
+            <jvmarg line="-Demit.test.debug=true"/>
 	<!-- end of debugging version. -->
 
             <!-- plain output for debugging -->
