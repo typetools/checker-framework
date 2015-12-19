@@ -57,6 +57,7 @@ public class TestSuite extends Suite {
         return runners;
     }
 
+    /** Returns a list of one-element arrays, each containing a Java File. */
     @SuppressWarnings("unchecked")
     private List<Object[]> getParametersList(TestClass klass) throws Throwable {
         FrameworkMethod method = getParametersMethod(klass);
@@ -81,6 +82,7 @@ public class TestSuite extends Suite {
         return argumentLists;
     }
 
+    /** Returns method annotated @Parameter, typically the getTestDirs or getTestFiles method. */
     private FrameworkMethod getParametersMethod(TestClass testClass) {
         final List<FrameworkMethod> parameterMethods = testClass.getAnnotatedMethods(Parameters.class);
         if (parameterMethods.size() != 1) {
