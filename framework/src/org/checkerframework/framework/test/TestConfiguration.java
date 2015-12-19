@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A configuration for running CheckerFrameworkTests or running the TypecheckExecutor
- * TestConfiguration specifies a set sour
+ * A configuration for running CheckerFrameworkTests or running the TypecheckExecutor.
  */
 public interface TestConfiguration {
     /**
@@ -61,7 +60,8 @@ public interface TestConfiguration {
 
 
     /**
-     * @return The map returned getOptions but flattened into a lis.  The entries will be added as followed:
+     * @return The map returned getOptions but flattened into a list.
+     * The entries will be added as followed:
      *         List(key1, value1, key2, value2, ..., keyN, valueN)
      *         If a value is NULL then it will not appear in the list.
      */
