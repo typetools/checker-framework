@@ -358,21 +358,23 @@
     <target name="loader-tests" depends="loader-dir-test,loader-jar-test"
                 description="Run tests for the annotation class loader"/>
 
-    <target name="loader-jar-test" depends="jar"
-            description="Run tests for the annotation class loader by loading from jar file">
-        <exec executable="make" failonerror="${halt.on.test.failure}">
-            <env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
-            <arg line="-C tests/annotationclassloader/"/>
-            <arg line="load-from-jar-test"/>
-        </exec>
-    </target>
-
     <target name="loader-dir-test" depends="build-tests"
             description="Run tests for the annotation class loader by loading from build directories">
         <exec executable="make" failonerror="${halt.on.test.failure}">
             <env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
+            <env key="JAVACJAR" value="${jsr308.langtools.dist}/lib/javac.jar"/>
             <arg line="-C tests/annotationclassloader/"/>
             <arg line="load-from-dir-test"/>
+        </exec>
+    </target>
+
+    <target name="loader-jar-test" depends="jar"
+            description="Run tests for the annotation class loader by loading from jar file">
+        <exec executable="make" failonerror="${halt.on.test.failure}">
+            <env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
+            <env key="JAVACJAR" value="${jsr308.langtools.dist}/lib/javac.jar"/>
+            <arg line="-C tests/annotationclassloader/"/>
+            <arg line="load-from-jar-test"/>
         </exec>
     </target>
 
