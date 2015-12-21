@@ -15,7 +15,7 @@
 
 
     <!-- Setting this via the command line "-Drun.tests.should.fork=false"
-	 causes the tests to crash. -->
+        causes the tests to crash. -->
     <property name="run.tests.should.fork" value="true"/>
     <property name="halt.on.test.failure" value="true"/>
     <property name="javadoc.private" value="false"/>
@@ -490,29 +490,29 @@
 
         <mkdir dir="${build.reports}"/>
 
-	<!-- non-debugging version: -->
-	<!--
+    <!-- non-debugging version: -->
+    <!--
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
                printsummary="false"
                haltonfailure="${halt.on.test.failure}"
                maxmemory="2500M"
-	       >
+               >
             <formatter type="xml"/>
-	-->
-	<!-- end of non-debugging version. -->
-	
-	<!-- debugging version: -->
+    -->
+    <!-- end of non-debugging version. -->
+    
+    <!-- debugging version: -->
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
                haltonfailure="${halt.on.test.failure}"
                maxmemory="2500M"
                showoutput="true"
                printsummary="withOutAndErr"
-	       >
+               >
             <formatter type="plain" usefile="false"/>
             <jvmarg line="-Demit.test.debug=true"/>
-	<!-- end of debugging version. -->
+    <!-- end of debugging version. -->
 
             <!-- plain output for debugging -->
 
@@ -575,7 +575,7 @@
         <!-- Note that the order of the ant vs junit calls matters
              for the Jenkins setup. The junit call must come last. -->
 
-	<!-- Delete directory because we will rerun all tests -->
+    <!-- Delete directory because we will rerun all tests -->
         <delete dir="${build.reports}"/>
         <!-- Copied from -run-tests target -->
         <mkdir dir="${build.reports}"/>
@@ -906,7 +906,7 @@
         </antcall>
     </target>
 
-	<target name="fenum-extension-tests" depends="jar,build-tests"
+    <target name="fenum-extension-tests" depends="jar,build-tests"
             description="Run tests for the Fenum Checker extension capabilities">
         <exec executable="chmod" failonerror="true">
             <arg line="+x ${basedir}/bin/javac"/>
@@ -918,7 +918,7 @@
         </exec>
     </target>
 
-	<target name="subtyping-extension-tests" depends="jar,build-tests"
+    <target name="subtyping-extension-tests" depends="jar,build-tests"
             description="Run tests for the Subtyping Checker extension capabilities">
         <exec executable="chmod" failonerror="true">
             <arg line="+x ${basedir}/bin/javac"/>
@@ -969,17 +969,17 @@
 
     <target name="jtreg.check">
       <condition property="jtreg.exists">
-	<available file="${jtreg.home}" type="dir"/>
+        <available file="${jtreg.home}" type="dir"/>
       </condition>
     </target>
 
     <target name="-jtreg.download" depends="jtreg.check" unless="jtreg.exists">
       <get
-	  src="https://adopt-openjdk.ci.cloudbees.com/view/OpenJDK/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.1-b12.tar.gz"
-	dest="${jtreg.home}/.." />
+        src="https://adopt-openjdk.ci.cloudbees.com/view/OpenJDK/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.1-b12.tar.gz"
+        dest="${jtreg.home}/.." />
       <untar src="${jtreg.home}/../jtreg-4.1-b12.tar.gz"
-	     dest="${jtreg.home}/../"
-	     compression="gzip" />
+        dest="${jtreg.home}/../"
+        compression="gzip" />
     </target>
 
 
@@ -1193,7 +1193,7 @@
 
     <target name="demos.check">
       <condition property="demos.exists">
-	<available file="${basedir}/../../checker-framework-demos"/>
+        <available file="${basedir}/../../checker-framework-demos"/>
       </condition>
     </target>
 
@@ -1210,7 +1210,7 @@
     </target>
 
     <target name="check-demos" depends="demos.check,-demos.pull,-demos.clone"
-	    description="Test that the demos are working as expected">
+        description="Test that the demos are working as expected">
       <ant dir="${basedir}/../../checker-framework-demos">
       </ant>
     </target>
@@ -1324,12 +1324,12 @@
     </target>
 
     <target name="dist"
-	    depends="-prep-dist,jar,jdk.jar,dist-nobuildjdk"
+            depends="-prep-dist,jar,jdk.jar,dist-nobuildjdk"
             description="Build checker.jar, checker-qual.jar, and one jdkX.jar where X is the major version number of java in JAVA_HOME (only Java 7/8/9 are currently supported).  This comprises all jars needed to run the framework.">
     </target>
 
     <target name="dist-nobuildjdk"
-	    depends="-prep-dist,jar,jdk.jar.exists"
+            depends="-prep-dist,jar,jdk.jar.exists"
             description="Build checker.jar, checker-qual.jar WITHOUT updating jdkX.jar.  Move all relevant files to the binary directory.">
 
         <mkdir dir="dist" />

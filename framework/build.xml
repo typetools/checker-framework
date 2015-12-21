@@ -355,28 +355,28 @@
       </junit>
     </target>
 
-	<target name="loader-tests" depends="loader-dir-test,loader-jar-test"
-	            description="Run tests for the annotation class loader"/>
+    <target name="loader-tests" depends="loader-dir-test,loader-jar-test"
+                description="Run tests for the annotation class loader"/>
 
-	<target name="loader-jar-test" depends="jar"
+    <target name="loader-jar-test" depends="jar"
             description="Run tests for the annotation class loader by loading from jar file">
-		<exec executable="make" failonerror="${halt.on.test.failure}">
-			<env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
-			<arg line="-C tests/annotationclassloader/"/>
-			<arg line="load-from-jar-test"/>
-		</exec>
+        <exec executable="make" failonerror="${halt.on.test.failure}">
+            <env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
+            <arg line="-C tests/annotationclassloader/"/>
+            <arg line="load-from-jar-test"/>
+        </exec>
     </target>
 
-	<target name="loader-dir-test" depends="build-tests"
+    <target name="loader-dir-test" depends="build-tests"
             description="Run tests for the annotation class loader by loading from build directories">
-		<exec executable="make" failonerror="${halt.on.test.failure}">
-			<env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
-			<arg line="-C tests/annotationclassloader/"/>
-			<arg line="load-from-dir-test"/>
-		</exec>
+        <exec executable="make" failonerror="${halt.on.test.failure}">
+            <env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
+            <arg line="-C tests/annotationclassloader/"/>
+            <arg line="load-from-dir-test"/>
+        </exec>
     </target>
 
-	<target name="aliasing-tests" depends="jar,build-tests"
+    <target name="aliasing-tests" depends="jar,build-tests"
             description="Run tests for the Aliasing checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.AliasingTest"/>
@@ -511,17 +511,17 @@
 
     <target name="jtreg.check">
       <condition property="jtreg.exists">
-	<available file="${jtreg.home}" type="dir"/>
+        <available file="${jtreg.home}" type="dir"/>
       </condition>
     </target>
 
     <target name="-jtreg.download" depends="jtreg.check" unless="jtreg.exists">
       <get
-	  src="https://adopt-openjdk.ci.cloudbees.com/view/OpenJDK/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.1-b12.tar.gz"
-	dest="${jtreg.home}/.." />
+        src="https://adopt-openjdk.ci.cloudbees.com/view/OpenJDK/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.1-b12.tar.gz"
+        dest="${jtreg.home}/.." />
       <untar src="${jtreg.home}/../jtreg-4.1-b12.tar.gz"
-	     dest="${jtreg.home}/../"
-	     compression="gzip" />
+        dest="${jtreg.home}/../"
+        compression="gzip" />
     </target>
 
 
