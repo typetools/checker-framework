@@ -150,7 +150,7 @@ public class AnnotationClassLoader {
      * Scans all classpaths and returns the resource URL to the jar which
      * contains the checker's qual package, or the qual package directory if it
      * exists, or null if no jar or directory contains the package
-     * 
+     *
      * @return a URL to the jar that contains the qual package, or to the qual
      *         package's directory, or null if no jar or directory contains the
      *         qual package
@@ -409,7 +409,7 @@ public class AnnotationClassLoader {
     /**
      * Obtains the classloader used to load the checker class, if that isn't
      * available then it will try to obtain the system classloader
-     * 
+     *
      * @return the classloader used to load the checker class, or the system
      *         classloader, or null if both are unavailable
      */
