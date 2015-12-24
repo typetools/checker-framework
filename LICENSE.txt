@@ -31,9 +31,9 @@ different licenses.
    javaparser does not use the GPL.)  See file javaparser/COPYING.LESSER
    and the source code of all its files.
 
- * junit is licensed under the Common Public License v1.0 (see
+ * JUnit is licensed under the Common Public License v1.0 (see
    http://www.junit.org/license), with parts (Hamcrest) licensed under the
-   BSD License (see LICENSE.txt in checkers/tests/junit.jar ).
+   BSD License (see http://hamcrest.org/JavaHamcrest/).
 
  * plume-lib is licensed under the MIT License.
 

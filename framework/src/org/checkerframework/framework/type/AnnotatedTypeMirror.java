@@ -2023,11 +2023,12 @@ public abstract class AnnotatedTypeMirror {
     public static class AnnotatedIntersectionType extends AnnotatedTypeMirror {
 
         /**
-         * AnnotatedIntersectionTypes are created by type parameters whose bounds include an &
+         * AnnotatedIntersectionTypes are created by type parameters whose bounds include an &amp;
          * e.g.
-         * &lt;T extends MyObject & Serializable & Comparable&lt;MyObject&gt;&gt;
+         * {@code <T extends MyObject & Serializable & Comparable<MyObject>>}
          *
-         * The bound MyObject & Serializable & Comparable is an intersection type
+         * The bound {@code MyObject &amp; Serializable &amp; Comparable}
+         * is an intersection type
          * with direct supertypes [MyObject, Serializable, Comparable]
          *
          * @param type  underlying kind of this type

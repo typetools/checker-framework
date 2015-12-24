@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -234,12 +235,47 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     @SideEffectFree
     @Override
     public String toString() {
-        // TODO: it would be easier to debug if the graph and map were sorted by the key.
-        // Simply creating a TreeMap here doesn't work, because AnnotationMirrors are not comparable.
-        return "Supertypes Graph: " + supertypesGraph.toString() +
-                "\nSupertypes Map: " + String.valueOf(supertypesMap) +
-                "\nTops: " + tops +
-                "\nBottoms: " + bottoms;
+        StringBuilder sb = new StringBuilder();
+        sb.append("Supertypes Graph: ");
+
+        for (Entry<AnnotationMirror, Set<AnnotationMirror>> qual : supertypesGraph.entrySet()) {
+            sb.append("\n\t");
+            sb.append(qual.getKey());
+            sb.append(" = ");
+            sb.append(qual.getValue());
+        }
+
+        sb.append("\nSupertypes Map: ");
+
+        for (Entry<AnnotationMirror, Set<AnnotationMirror>> qual : supertypesMap.entrySet()) {
+            sb.append("\n\t");
+            sb.append(qual.getKey());
+            sb.append(" = [");
+
+            Set<AnnotationMirror> supertypes = qual.getValue();
+
+            if (supertypes.size() == 1) {
+                // if there's only 1 supertype for this qual, then directly display that in the same row
+                sb.append(supertypes.iterator().next());
+            } else {
+                // otherwise, display each supertype in its own row
+                for (Iterator<AnnotationMirror> iterator = supertypes.iterator(); iterator.hasNext(); ) {
+                    sb.append("\n\t\t");                            // new line and tabbing
+                    sb.append(iterator.next());                     // display the supertype
+                    sb.append(iterator.hasNext() ? ", " : "");      // add a comma delimiter if it isn't the last value
+                }
+                sb.append("\n\t\t");    // new line and tab indentation for the trailing bracket
+            }
+
+            sb.append("]");
+        }
+
+        sb.append("\nTops: ");
+        sb.append(tops);
+        sb.append("\nBottoms: ");
+        sb.append(bottoms);
+
+        return sb.toString();
     }
 
     @Override
@@ -628,35 +664,47 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                 "], a2: " + a2 + " [top: " + getTopAnnotation(a2) + "]";
 
         Set<AnnotationMirror> outset = AnnotationUtils.createAnnotationSet();
-        for (AnnotationMirror a1Super : findSmallestTypes(supertypesMap.get(a1))) {
+        for (AnnotationMirror a1Super : supertypesGraph.get(a1)) {
             // TODO: we take the first of the smallest supertypes, maybe we would
             // get a different LUB if we used a different one?
             AnnotationMirror a1Lub = findLub(a1Super, a2);
             if (a1Lub != null) {
                 outset.add(a1Lub);
-            }
-            if (a1Lub == null && a1Super == null) {
-                // null is also used for Unqualified! If two qualifiers are separate
-                // subtypes of unqualifed, this might happen.
-                // I ran into this when KeyFor <: Unqualified and Covariant <: Unqualified.
-                // I think it would be much nicer if Unqualified would not be optimized away...
-                // TODO This never seems to happen...
-                outset.add(null);
+            } else {
+                ErrorReporter.errorAbort("GraphQualifierHierarchy could not determine LUB for " + a1 + " and " + a2 +
+                        ". Please ensure that the checker knows about all type qualifiers.");
             }
         }
         if (outset.size() == 1) {
             return outset.iterator().next();
         }
         if (outset.size() > 1) {
+            // outset is created by climbing the supertypes of the left type, which can go higher in the lattice than needed
+            // findSmallestTypes will remove the unnecessary supertypes of supertypes, retaining only the least upper bound(s)
             outset = findSmallestTypes(outset);
+
+            // picks the first qualifier that isn't a polymorphic qualifier
+            // the outset should only have 1 qualifier that isn't polymorphic
+            Iterator<AnnotationMirror> outsetIterator = outset.iterator();
+
+            AnnotationMirror anno;
+            do {
+                anno = outsetIterator.next();
+            } while (isPolymorphicQualifier(anno));
+
             // TODO: more than one, incomparable supertypes. Just pick the first one.
             // if (outset.size()>1) { System.out.println("Still more than one LUB!"); }
-            return outset.iterator().next();
+            return anno;
         }
 
         ErrorReporter.errorAbort("GraphQualifierHierarchy could not determine LUB for " + a1 + " and " + a2 +
                                  ". Please ensure that the checker knows about all type qualifiers.");
         return null;
+    }
+
+    // sees if a particular annotation mirror is a polymorphic qualifier
+    private boolean isPolymorphicQualifier(AnnotationMirror qual) {
+        return AnnotationUtils.containsSame(polyQualifiers.values(), qual);
     }
 
     // remove all supertypes of elements contained in the set
@@ -684,15 +732,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             Map<AnnotationMirror, Set<AnnotationMirror>> supertypes,
             Map<AnnotationMirror, Set<AnnotationMirror>> allSupersSoFar) {
         Set<AnnotationMirror> supers = AnnotationUtils.createAnnotationSet();
-        if (allSupersSoFar.containsKey(anno))
-            return Collections.unmodifiableSet(allSupersSoFar.get(anno));
-
-        // Updating the visited list before and after helps avoid
-        // infinite loops. TODO: cleaner way?
-        allSupersSoFar.put(anno, supers);
-
         for (AnnotationMirror superAnno : supertypes.get(anno)) {
+            // add the current super to the superset
             supers.add(superAnno);
+            // add all of current super's super into superset
             supers.addAll(findAllSupers(superAnno, supertypes, allSupersSoFar));
         }
         allSupersSoFar.put(anno, Collections.unmodifiableSet(supers));

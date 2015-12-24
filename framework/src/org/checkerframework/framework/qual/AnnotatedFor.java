@@ -10,7 +10,9 @@ import java.lang.annotation.Target;
  * Indicates that this class has been annotated for the given type system.
  * For example, <code>@AnnotatedFor({"nullness", "regex"})</code> indicates
  * that the class has been annotated with annotations such as
- * <tt>@Nullable</tt> and <tt>@Regex</tt>.
+ * <tt>@Nullable</tt> and <tt>@Regex</tt>.  Has no effect unless the
+ * <tt>-AuseSafeDefaultsForUnannotatedSourceCode</tt> command-line argument
+ * is supplied.
  * <p>
  *
  * Ordinarily, the <tt>-AuseSafeDefaultsForUnannotatedSourceCode</tt> command-line argument

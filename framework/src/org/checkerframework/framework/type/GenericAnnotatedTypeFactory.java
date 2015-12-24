@@ -642,8 +642,9 @@ public abstract class GenericAnnotatedTypeFactory<
                         ExpressionTree initializer = vt.getInitializer();
                         // analyze initializer if present
                         if (initializer != null) {
+                        	boolean isStatic = vt.getModifiers().getFlags().contains(Modifier.STATIC);
                             analyze(queue, lambdaQueue, new CFGStatement(vt),
-                                    fieldValues, classTree, true, false);
+                                    fieldValues, classTree, true, true, isStatic);
                             Value value = flowResult.getValue(initializer);
                             if (value != null) {
                                 // Store the abstract value for the field.
@@ -663,7 +664,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         break;
                     case BLOCK:
                         BlockTree b = (BlockTree) m;
-                        analyze(queue, lambdaQueue, new CFGStatement(b), fieldValues, ct, true, b.isStatic());
+                        analyze(queue, lambdaQueue, new CFGStatement(b), fieldValues, ct, true, true, b.isStatic());
                         break;
                     default:
                         assert false : "Unexpected member: " + m.getKind();
@@ -675,15 +676,16 @@ public abstract class GenericAnnotatedTypeFactory<
                 // TODO: at this point, we don't have any information about
                 // fields of superclasses.
                 for (MethodTree mt : methods) {
+                	boolean isInitCode = TreeUtils.isConstructor(mt);
                     analyze(queue, lambdaQueue,
                             new CFGMethod(mt, TreeUtils
-                                    .enclosingClass(getPath(mt))), fieldValues, classTree, false, false);
+                                    .enclosingClass(getPath(mt))), fieldValues, classTree, isInitCode, false, false);
                 }
 
                 while (lambdaQueue.size() > 0) {
                     Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
                     analyze(queue, lambdaQueue,
-                            new CFGLambda(lambdaPair.first), fieldValues, classTree, false, false, lambdaPair.second);
+                            new CFGLambda(lambdaPair.first), fieldValues, classTree, false, false, false, lambdaPair.second);
 
                 }
 
@@ -728,13 +730,13 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected void analyze(Queue<ClassTree> queue, Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue, UnderlyingAST ast,
             List<Pair<VariableElement, Value>> fieldValues, ClassTree currentClass,
-            boolean isInitializationCode, boolean isStatic) {
-        analyze(queue, lambdaQueue, ast, fieldValues, currentClass, isInitializationCode, isStatic, null);
+            boolean isInitializationCode, boolean updateInitializationStore, boolean isStatic) {
+        analyze(queue, lambdaQueue, ast, fieldValues, currentClass, isInitializationCode, updateInitializationStore, isStatic, null);
     }
 
     protected void analyze(Queue<ClassTree> queue, Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue, UnderlyingAST ast,
             List<Pair<VariableElement, Value>> fieldValues, ClassTree currentClass,
-            boolean isInitializationCode, boolean isStatic,
+            boolean isInitializationCode, boolean updateInitializationStore, boolean isStatic,
             Store lambdaStore) {
         CFGBuilder builder = new CFCFGBuilder(checker, this);
         ControlFlowGraph cfg = builder.run(root, processingEnv, ast);
@@ -747,7 +749,7 @@ public abstract class GenericAnnotatedTypeFactory<
             TransferFunction transfer = newAnalysis.getTransferFunction();
             transfer.setFixedInitialStore(lambdaStore);
         } else {
-            Store initStore = isStatic ? initializationStore : initializationStaticStore;
+            Store initStore = !isStatic ? initializationStore : initializationStaticStore;
             if (isInitializationCode) {
                 if (initStore != null) {
                     // we have already seen initialization code and analyzed it, and
@@ -789,9 +791,9 @@ public abstract class GenericAnnotatedTypeFactory<
             }
         }
 
-        if (isInitializationCode) {
+        if (isInitializationCode && updateInitializationStore) {
             Store newInitStore = analyses.getFirst().getRegularExitStore();
-            if (isStatic) {
+            if (!isStatic) {
                 initializationStore = newInitStore;
             } else {
                 initializationStaticStore = newInitStore;

@@ -69,9 +69,11 @@ public class QualifierDefaults {
      * This field indicates whether or not a default should be applied to type vars
      * located in the type being default.  This should only ever be true when the type variable
      * is a local variable, non-component use, i.e.
+     * <pre>{@code
      * <T> void method(@NOT_HERE T tIn) {
      *     T t = tIn;
      * }
+     * }</pre>
      *
      * The local variable T will be defaulted in order to allow dataflow to refine T.
      * This variable will be false if dataflow is not in use.
@@ -98,7 +100,7 @@ public class QualifierDefaults {
     private final Map<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
 
     /**
-     * A mapping of Element -> Whether or not that element is AnnotatedFor this type system.
+     * A mapping of Element &rarr; Whether or not that element is AnnotatedFor this type system.
      */
     private final Map<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
 
@@ -500,6 +502,33 @@ public class QualifierDefaults {
         }
     }
 
+    /*
+     * Given an element, returns whether the unannotated (i.e. conservative defaults)
+     * should be applied for it. Handles elements from bytecode or source code.
+     */
+    public boolean applyUnannotatedDefaults(final Element annotationScope) {
+        boolean annotatedForThisChecker = isElementAnnotatedForThisChecker(annotationScope);
+
+        if (unannotatedDefaults.size() > 0) {
+            // TODO: I would expect this:
+            //   atypeFactory.isFromByteCode(annotationScope)) {
+            // to work instead of the
+            // isElementFromByteCode/declarationFromElement/isFromStubFile calls,
+            // but it doesn't work correctly and tests fail.
+            // (That whole @FromStubFile and @FromByteCode annotation
+            // logic should be replaced by something sensible.)
+            SourceChecker checker = atypeFactory.getContext().getChecker();
+            return (checker.hasOption("safeDefaultsForUnannotatedBytecode") &&
+                    ElementUtils.isElementFromByteCode(annotationScope) &&
+                    atypeFactory.declarationFromElement(annotationScope) == null &&
+                    !atypeFactory.isFromStubFile(annotationScope)) ||
+                   (checker.hasOption("useSafeDefaultsForUnannotatedSourceCode") &&
+                    !annotatedForThisChecker);
+        }
+
+        return false;
+    }
+
     /**
      * Applies default annotations to a type. Conservative defaults are applied first
      * as appropriate, followed by source code defaults.
@@ -517,31 +546,15 @@ public class QualifierDefaults {
      */
     private void applyDefaultsElement(final Element annotationScope, final AnnotatedTypeMirror type) {
         DefaultSet defaults = defaultsAt(annotationScope);
-        boolean annotatedForThisChecker = isElementAnnotatedForThisChecker(annotationScope);
         DefaultApplierElement applier = new DefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
 
         for (Default def : defaults) {
             applier.apply(def);
         }
 
-        if (unannotatedDefaults.size() > 0) {
-                // TODO: I would expect this:
-                //   atypeFactory.isFromByteCode(annotationScope)) {
-                // to work instead of the
-                // isElementFromByteCode/declarationFromElement/isFromStubFile calls,
-                // but it doesn't work correctly and tests fail.
-                // (That whole @FromStubFile and @FromByteCode annotation
-                // logic should be replaced by something sensible.)
-            SourceChecker checker = atypeFactory.getContext().getChecker();
-            if ((checker.hasOption("safeDefaultsForUnannotatedBytecode") &&
-                 ElementUtils.isElementFromByteCode(annotationScope) &&
-                 atypeFactory.declarationFromElement(annotationScope) == null &&
-                 !atypeFactory.isFromStubFile(annotationScope)) ||
-                (checker.hasOption("useSafeDefaultsForUnannotatedSourceCode") &&
-                 !annotatedForThisChecker)) {
-                for (Default def : unannotatedDefaults) {
-                    applier.apply(def);
-                }
+        if (applyUnannotatedDefaults(annotationScope)) {
+            for (Default def : unannotatedDefaults) {
+                applier.apply(def);
             }
         }
 

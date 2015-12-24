@@ -141,6 +141,22 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
     }
 
+    /*
+     * Indicates whether the given method is side-effect-free as far as the
+     * current store is concerned.
+     * In some cases, a store for a checker allows for other mechanisms to specify
+     * whether a method is side-effect-free. For example, unannotated methods may
+     * be considered side-effect-free by default.
+     *
+     * @param atypeFactory     the type factory used to retrieve annotations on the method element
+     * @param method           the method element
+     *
+     * @return whether the method is side-effect-free
+     */
+    protected boolean isSideEffectFree(AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
+        return PurityUtils.isSideEffectFree(atypeFactory, method);
+    }
+
     /* --------------------------------------------------------- */
     /* Handling of fields */
     /* --------------------------------------------------------- */
@@ -170,7 +186,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
         // case 1: remove information if necessary
         if (!(analysis.checker.hasOption("assumeSideEffectFree")
-              || PurityUtils.isSideEffectFree(atypeFactory, method))) {
+              || isSideEffectFree(atypeFactory, method))) {
             // update field values
             Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
             for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
@@ -376,25 +392,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             }
         }
         return isMonotonic;
-    }
-
-    public void insertValueToLocalVariableByName(String identifier, AnnotationMirror a) {
-        if (a == null) {
-            return;
-        }
-
-        for (Entry<Element, V> e : localVariableValues.entrySet()) {
-            Element localVar = e.getKey();
-            if (localVar.getSimpleName().toString().equals(identifier)) {
-                V value = analysis.createSingleAnnotationValue(a, localVar.asType());
-
-                V oldValue = localVariableValues.get(localVar);
-                V newValue = value.mostSpecific(oldValue, null);
-                if (newValue != null) {
-                    localVariableValues.put(localVar, newValue);
-                }
-            }
-        }
     }
 
     public void insertThisValue(AnnotationMirror a, TypeMirror underlyingType) {

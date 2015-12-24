@@ -1,6 +1,7 @@
 package org.checkerframework.javacutil;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree.JCLambda;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Pair;
 
 /**
@@ -49,7 +51,7 @@ public class TypeAnnotationUtils {
      */
     public static boolean isTypeCompoundContained(Types types, List<TypeCompound> list, TypeCompound tc) {
         for (Attribute.TypeCompound rawat : list) {
-            if (rawat.type.tsym.name.contentEquals(tc.type.tsym.name) &&
+            if (contentEquals(rawat.type.tsym.name, tc.type.tsym.name) &&
                     // TODO: in previous line, it would be nicer to use reference equality:
                     //   rawat.type == tc.type &&
                     // or at least "isSameType":
@@ -61,6 +63,14 @@ public class TypeAnnotationUtils {
             }
         }
         return false;
+    }
+
+    private static boolean contentEquals(Name n1, Name n2) {
+        // Views of underlying bytes, not copies as with Name#contentEquals
+        ByteBuffer b1 = ByteBuffer.wrap(n1.getByteArray(), n1.getByteOffset(), n1.getByteLength());
+        ByteBuffer b2 = ByteBuffer.wrap(n2.getByteArray(), n2.getByteOffset(), n2.getByteLength());
+
+        return b1.equals(b2);
     }
 
     /**
@@ -302,7 +312,6 @@ public class TypeAnnotationUtils {
      * Catch all exceptions and abort if one occurs - the reflection code should
      * never break once fully debugged.
      *
-     * @param ver The SourceVersion to decide what API to use.
      * @param tc The TAPCall abstraction to encapsulate two methods.
      * @return The created TypeAnnotationPosition.
      */

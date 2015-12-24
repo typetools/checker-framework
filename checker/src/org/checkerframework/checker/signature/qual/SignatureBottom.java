@@ -1,5 +1,6 @@
 package org.checkerframework.checker.signature.qual;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.*;
@@ -15,12 +16,13 @@ import com.sun.source.tree.Tree;
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
-@TypeQualifier
 @SubtypeOf({SourceNameForNonArray.class,
     FieldDescriptorForArray.class,
     MethodDescriptor.class
     })
-@Target({}) // empty target prevents programmers from writing this in a program
+@Target({ElementType.TYPE_USE})
+@TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
+    DefaultLocation.EXPLICIT_UPPER_BOUNDS})
 @ImplicitFor(trees = {Tree.Kind.NULL_LITERAL},
   typeNames = {java.lang.Void.class})
 @DefaultFor({DefaultLocation.LOWER_BOUNDS})

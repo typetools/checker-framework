@@ -1,7 +1,6 @@
 package org.checkerframework.qualframework.base;
 
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -37,6 +36,7 @@ import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 
@@ -61,7 +61,7 @@ public class TypeMirrorConverter<Q> {
     /** Annotation processing environment, used to construct new {@link Key}
      * {@link AnnotationMirror}s. */
     private final ProcessingEnvironment processingEnv;
-    /** The {@link Element} corresponding to the {@link Key.index} field. */
+    /** The {@link Element} corresponding to the {@link Key#index()} field. */
     private final ExecutableElement indexElement;
     /** A {@link Key} annotation with no <code>index</code> set. */
     private final AnnotationMirror blankKey;
@@ -90,7 +90,6 @@ public class TypeMirrorConverter<Q> {
          }
     };
 
-    @TypeQualifier
     @SubtypeOf({})
     public static @interface Key {
         /** An index into the lookup table. */
@@ -124,7 +123,7 @@ public class TypeMirrorConverter<Q> {
     }
 
     /** Constructs a new {@link Key} annotation with the provided index, using
-     * <code>desc.toString()</code> to set the {@link Key.desc} field. */
+     * <code>desc.toString()</code> to set the {@link Key#desc()} field. */
     private AnnotationMirror createKey(int index, Object desc) {
         if (keyToAnnoCache.containsKey(index)) {
             return keyToAnnoCache.get(index);

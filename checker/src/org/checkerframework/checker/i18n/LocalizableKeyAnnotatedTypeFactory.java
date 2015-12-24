@@ -1,8 +1,17 @@
 package org.checkerframework.checker.i18n;
 
 import com.sun.source.tree.Tree;
+
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.checkerframework.checker.i18n.qual.LocalizableKey;
 import org.checkerframework.checker.propkey.PropertyKeyAnnotatedTypeFactory;
+import org.checkerframework.checker.propkey.qual.PropertyKey;
+import org.checkerframework.checker.propkey.qual.UnknownPropertyKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -19,6 +28,13 @@ public class LocalizableKeyAnnotatedTypeFactory extends
 
     public LocalizableKeyAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return Collections.unmodifiableSet(
+                new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(LocalizableKey.class, PropertyKey.class, UnknownPropertyKey.class)));
     }
 
     @Override

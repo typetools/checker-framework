@@ -1,5 +1,11 @@
 package tests.util;
 
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
@@ -8,7 +14,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.Bottom;
 import org.checkerframework.framework.qual.DefaultLocation;
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -30,8 +35,6 @@ import com.sun.source.tree.Tree;
  * <p>
  * This checker should only be used for testing the framework.
  */
-@TypeQualifiers({ Odd.class, MonotonicOdd.class, Even.class, Unqualified.class,
-        Bottom.class })
 public final class TestChecker extends BaseTypeChecker {
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {
@@ -71,6 +74,13 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         addTypeNameImplicit(java.lang.Void.class, BOTTOM);
         this.defaults.addAbsoluteDefault(BOTTOM, DefaultLocation.LOWER_BOUNDS);
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return Collections.unmodifiableSet(
+                new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(Odd.class, MonotonicOdd.class, Even.class, Unqualified.class, Bottom.class)));
     }
 
     @Override

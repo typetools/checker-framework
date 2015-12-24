@@ -22,7 +22,9 @@ import java.util.Set;
  *
  *  Sprinkled throughout this class are comments of the form:
  *
+ * <pre>{@code
  *  //If F has the form G<..., Yk-1, ? super U, Yk+1, ...>, where U involves Tj
+ * }</pre>
  *
  *  These are excerpts from the JLS, if you search for them you will find the corresponding
  *  JLS description of the case being covered.
@@ -115,7 +117,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
 
     /**
      * I believe there should be only 1 way to have a constraint of this form:
-     * visit (Array<T>, T [])
+     * {@code visit (Array<T>, T [])}
      * At this point, I don't think that's a valid argument for a formal parameter.  If this occurs
      * is is because of idiosyncrasies with the Checker Framework .  We're going to skip this case for now.
      */

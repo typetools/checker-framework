@@ -9,7 +9,6 @@ import java.lang.annotation.Target;
 import org.checkerframework.checker.javari.JavariChecker;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Indicates that, for the variable on which this annotation appears,
@@ -24,7 +23,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * @see JavariChecker
  * @checker_framework.manual #javari-checker Javari Checker
  */
-@TypeQualifier
 @SubtypeOf({ThisMutable.class, QReadOnly.class})
 @DefaultQualifierInHierarchy
 @Documented

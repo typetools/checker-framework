@@ -1,5 +1,6 @@
 package org.checkerframework.checker.javari;
 
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -116,6 +117,12 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.typePost = new JavariTypePostAnnotator();
 
         postInit();
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return getBundledTypeQualifiersWithPolyAll(
+                ThisMutable.class);
     }
 
     /**
@@ -498,8 +505,8 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *  any annotation, the parameter receives those annotations.
          *
          *  <li> 3. If the expression qualified type has no
-         *  annotation, then the parameter receives a {@code
-         *  @ThisMutable} annotation.
+         *  annotation, then the parameter receives a
+         *  {@code @ThisMutable} annotation.
          *
          * </ul>
          *
@@ -569,8 +576,8 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *   <li> 1. Annotates unannotated receivers of qualified
      *   executable types with the qualified type owner's annotation;
      *   annotated its parameters with {@code @Mutable}, if they have
-     *   no annotation, and annotates its return type with {@code
-     *   @Mutable}, if it has no annotation.
+     *   no annotation, and annotates its return type with
+     *   {@code @Mutable}, if it has no annotation.
      *
      *   <li> 2. Annotates unannotated qualified declared types with
      *   their underlying type's element annotations.
@@ -652,8 +659,8 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Ensures that AnnotatedArrayTypes are annotated with {@code
-         * @Mutable}, if they have no annotation yet.
+         * Ensures that AnnotatedArrayTypes are annotated with
+         * {@code @Mutable}, if they have no annotation yet.
          */
         @Override
         public Void visitArray(AnnotatedArrayType type, Void p) {

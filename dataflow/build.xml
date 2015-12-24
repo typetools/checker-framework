@@ -13,6 +13,7 @@
 
     <import file="${basedir}/../build-common.xml"/>
 
+    <property name="javadoc.private" value="false"/>
 
     <!-- Dependendencies on other projects (such as javacutil)
          mirrors javadoc dependencies. If changing project
@@ -51,6 +52,7 @@
             description="Set properties: filesets and build.uptodate">
         <fileset id="src.files" dir="${src}">
             <include name="**/*.java"/>
+            <exclude name="**/package-info.java"/>
         </fileset>
 
         <!-- I can't figure out how to combine filesets (or even selectors)
@@ -59,7 +61,7 @@
             <!-- Probably should depend on a file rather than a directory. -->
         <uptodate property="src.files.uptodate" targetfile="${build}">
             <srcfiles refid="src.files"/>
-            <mapper type="glob" from="*.java" to="${build}/*.class"/>
+            <mapper type="glob" from="*.java" to="../${build}/*.class"/>
         </uptodate>
 
         <uptodate property="javacutil.lib.uptodate" targetfile="${build}" srcfile="${javacutil.lib}"/>
@@ -125,6 +127,11 @@
     <!-- TODO: add a type-checking target that doesn't use
          -XDTA:noannotations in comments. -->
 
+    <target name="manual" depends="prep" description="Create PDF manual">
+        <exec executable="make" dir="manual" failonerror="true">
+        </exec>
+    </target>
+
     <!--
     This target seems to only work if tools.jar is already in the
     classpath (despite the attempt in the body to add tools.jar to the
@@ -142,6 +149,7 @@
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
         <javadoc sourcepath="${src}:${javacutil.loc}/${src}" destdir="${api.doc}"
+                 private="${javadoc.private}"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"

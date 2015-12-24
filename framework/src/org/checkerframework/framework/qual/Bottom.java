@@ -1,5 +1,6 @@
 package org.checkerframework.framework.qual;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
@@ -27,7 +28,8 @@ import java.lang.annotation.Target;
  *
  * @see org.checkerframework.framework.type.QualifierHierarchy#getBottomAnnotations()
  */
-@TypeQualifier
 @SubtypeOf({})
-@Target({}) // empty target prevents programmers from writing this in a program
+@Target({ElementType.TYPE_USE})
+@TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
+    DefaultLocation.EXPLICIT_UPPER_BOUNDS})
 public @interface Bottom { }

@@ -106,6 +106,8 @@ public class FlowExpressionParseUtil {
      * Parse a string and return its representation as a {@link Receiver}, or
      * throw an {@link FlowExpressionParseException}. The expression is assumed
      * to be used in the context of a method.
+     * Returns null if 'itself' is passed in as the string to parse
+     * and no receiver named 'itself' could be found.
      *
      * @param s
      *            The string to parse.
@@ -152,12 +154,6 @@ public class FlowExpressionParseUtil {
         }
 
         Matcher itselfMatcher = itselfPattern.matcher(s);
-        if (recursiveCall && itselfMatcher.matches()) {
-            // Only translate 'itself' to an identifier after a recursive call
-            // to first give the opportunity to find an identifier actually named 'itself'
-            s = path.getLeaf().toString();
-        }
-
         Matcher identifierMatcher = identifierPattern.matcher(s);
         Matcher superMatcher = superPattern.matcher(s);
         Matcher parameterMatcher = parameterPattern.matcher(s);
@@ -286,10 +282,11 @@ public class FlowExpressionParseUtil {
                 } catch (Throwable t2) {
 
                     if (!recursiveCall && itselfMatcher.matches()) {
-                        return parse(s, context, path, allowSelf,
-                                allowIdentifier, allowParameter, allowDot,
-                                allowMethods, allowArrays, allowLiterals,
-                                allowLocalVariables, true);
+                        return null; // Don't throw an exception if 'itself' does not match an identifier.
+                        // The callee knows that it passed in 'itself' and will handle the null return value.
+                        // DO however throw an exception below if the call is recursive and 'itself' matches,
+                        // because that might mean that the original expression was "classname.itself",
+                        // which means a field named itself was explicitly sought.
                     }
 
                     throw constructParserException(s);
@@ -403,6 +400,10 @@ public class FlowExpressionParseUtil {
 
             // Parse the receiver first.
             Receiver receiver = parse(receiverString, context, path, true);
+
+            if (receiver instanceof FlowExpressions.ClassName && remainingString.equals("class")) {
+                return receiver;
+            }
 
             // Parse the rest, with a new receiver.
             FlowExpressionContext newContext = context.changeReceiver(receiver);

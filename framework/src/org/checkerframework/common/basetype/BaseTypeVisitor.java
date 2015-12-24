@@ -292,7 +292,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // annotated type of the ClassTree before checking the type of any
         // code within the class.  The call below causes flow analysis to
         // be run over the class.  See GenericAnnotatedTypeFactory
-        // .annotateImplicit where analysis is performed.
+        // .annotateImplicitWithFlow where analysis is performed.
         visitorState.setClassType(atypeFactory.getAnnotatedType(node));
         visitorState.setClassTree(node);
         visitorState.setMethodReceiver(null);
@@ -964,7 +964,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected void checkPreconditions(Tree tree,
             Element invokedElement, boolean methodCall, Set<Pair<String, String>> additionalPreconditions) {
-        Set<Pair<String, String>> preconditions =
+        Set<Pair<String, String>> preconditions = invokedElement == null ?
+                new HashSet<Pair<String, String>>() :
                 contractsUtils.getPreconditions(invokedElement);
 
         if (additionalPreconditions != null) {
@@ -982,8 +983,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 return;
             }
 
+            Node nodeNode = atypeFactory.getNodeForTree(tree);
+
             if (flowExprContext == null) {
-                Node nodeNode = atypeFactory.getNodeForTree(tree);
                 if (methodCall) {
                     flowExprContext = FlowExpressionParseUtil
                             .buildFlowExprContextForUse(
@@ -1030,7 +1032,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
 
                     String s = expression.trim();
-
                     Pattern selfPattern = Pattern.compile("^(this)$");
                     Matcher selfMatcher = selfPattern.matcher(s);
                     if (selfMatcher.matches()) {
@@ -1040,10 +1041,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // Try local variables first
                     CFAbstractValue<?> value = store.getValueOfLocalVariableByName(s);
 
-                    if (value == null) // Not a recognized local variable
-                    {
+                    if (value == null) { // Not a recognized local variable
                         expr = FlowExpressionParseUtil.parse(expression,
                                 flowExprContext, getCurrentPath());
+
+                        if (expr == null) {
+                            // TODO: Wrap the following 'itself' handling logic into a method that calls FlowExpressionParseUtil.parse
+
+                            /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
+                            Pattern itselfPattern = Pattern.compile("^itself$");
+                            Matcher itselfMatcher = itselfPattern.matcher(expression.trim());
+
+                            if (itselfMatcher.matches()) { // There is no variable, class, etc. named "itself"
+                                expr = FlowExpressions.internalReprOf(atypeFactory,
+                                        nodeNode);
+                            }
+                        }
 
                         value = store.getValue(expr);
                     }
@@ -1984,7 +1997,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 continue;
             }
 
-            final AnnotatedTypeMirror paramUpperBound = replaceMalformedWildcards(bounds.getUpperBound(), typeArg);
+            AnnotatedTypeMirror paramUpperBound = bounds.getUpperBound();
+            if (typeArg.getKind() == TypeKind.WILDCARD) {
+                paramUpperBound = atypeFactory.widenToUpperBound(paramUpperBound, (AnnotatedWildcardType) typeArg);
+            }
 
             if (typeargTrees == null || typeargTrees.isEmpty()) {
                 // The type arguments were inferred and we mark the whole method.
@@ -2027,30 +2043,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return typeArg.getKind() == TypeKind.WILDCARD && bounds.getUpperBound().getKind() == TypeKind.WILDCARD;
     }
 
-    //If we have a declaration:
-    // class MyClass<T extends String> ...
-    //
-    //the javac compiler allows wildcard type arguments that have Java types OUTSIDE of the
-    //bounds of T, i.e:
-    // MyClass<? extends Object>
-    //
-    //This is sound because every NON-WILDCARD reference to MyClass MUST obey those bounds
-    //This leads to cases where the type parameter's upper bound is actually a subtype of typeArg
-    //In this case, we convert the upper bound to the type of typeArg and use that for checks
-    //against the parameter's upper bound
-    private AnnotatedTypeMirror replaceMalformedWildcards(final AnnotatedTypeMirror paramUpperBound,
-                                                          final AnnotatedTypeMirror typeArg) {
-        if (typeArg.getKind() == TypeKind.WILDCARD) {
-            final TypeMirror varUnderlyingUb = paramUpperBound.getUnderlyingType();
-            final TypeMirror argUnderlyingUb = ((AnnotatedWildcardType) typeArg).getExtendsBound().getUnderlyingType();
-            if (!types.isSubtype(argUnderlyingUb, varUnderlyingUb)
-                    && types.isSubtype(varUnderlyingUb, argUnderlyingUb)) {
-                return AnnotatedTypes.asSuper(types, atypeFactory,paramUpperBound, typeArg);
-            }
-        } //else
-
-        return paramUpperBound;
-    }
 
     /* Updated version that performs more well-formedness checks.
 
@@ -2127,12 +2119,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     */
 
     /**
+     * Indicates whether to skip subtype checks on the receiver when
+     * checking method invocability. A visitor may, for example,
+     * allow a method to be invoked even if the receivers are siblings
+     * in a hierarchy, provided that some other condition (implemented
+     * by the visitor) is satisfied.
+     *
+     * @param node                        the method invocation node
+     * @param methodDefinitionReceiver    the ATM of the receiver of the method definition
+     * @param methodCallReceiver          the ATM of the receiver of the method call
+     *
+     * @return whether to skip subtype checks on the receiver
+     */
+    protected boolean skipReceiverSubtypeCheck(MethodInvocationTree node,
+            AnnotatedTypeMirror methodDefinitionReceiver,
+            AnnotatedTypeMirror methodCallReceiver) {
+        return false;
+    }
+
+    /**
      * Tests whether the method can be invoked using the receiver of the 'node'
      * method invocation, and issues a "method.invocation.invalid" if the
      * invocation is invalid.
      *
      * This implementation tests whether the receiver in the method invocation
-     * is a subtype of the method receiver type.
+     * is a subtype of the method receiver type. This behavior can be specialized
+     * by overriding skipReceiverSubtypeCheck.
      *
      * @param method    the type of the invoked method
      * @param node      the method invocation node
@@ -2157,7 +2169,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
 
-        if (!atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver)) {
+        if (!skipReceiverSubtypeCheck(node, methodReceiver, rcv) &&
+            !atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver)) {
             checker.report(Result.failure("method.invocation.invalid",
                 TreeUtils.elementFromUse(node),
                 treeReceiver.toString(), methodReceiver.toString()), node);
@@ -2446,7 +2459,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
          *            the declared type enclosing the overridden method
          * @param overriddenReturnType
          *            the return type of the overridden method
-         * @return true if the override check passed, false otherwise
          */
         OverrideChecker(Tree overriderTree,
                 AnnotatedExecutableType overrider,

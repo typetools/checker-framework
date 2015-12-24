@@ -23,7 +23,7 @@ def javac_sanity_check( checker_framework_website, release_version ):
        Fails if the expected errors are not found in the output.
     """
 
-    new_checkers_release_zip = os.path.join( checker_framework_website, "releases", release_version, "checker-framework.zip" )
+    new_checkers_release_zip = os.path.join( checker_framework_website, "releases", release_version, "checker-framework-" + release_version + ".zip" )
 
     javac_sanity_dir = os.path.join( SANITY_DIR, "javac" )
 
@@ -31,7 +31,7 @@ def javac_sanity_check( checker_framework_website, release_version ):
         delete_path( javac_sanity_dir )
     execute( "mkdir -p " + javac_sanity_dir )
 
-    javac_sanity_zip = os.path.join( javac_sanity_dir, "checker-framework.zip" )
+    javac_sanity_zip = os.path.join( javac_sanity_dir, "checker-framework-%s.zip" % release_version)
 
     print( "Attempting to download %s to %s" % ( new_checkers_release_zip, javac_sanity_zip ) )
     download_binary( new_checkers_release_zip, javac_sanity_zip, MAX_DOWNLOAD_SIZE )
@@ -79,7 +79,7 @@ def javac_sanity_check( checker_framework_website, release_version ):
 def maven_sanity_check( sub_sanity_dir_name, repo_url, release_version ):
     """
        Download the Checker Framework maven plugin from the given repository.  Download the
-       HelloGalaxy example for the Maven plugin and run the NullnessChecker on it.  If we don't
+       MavenExample example for the Maven plugin and run the NullnessChecker on it.  If we don't
        encounter the expected errors fail.
     """
     checker_dir = os.path.join(CHECKER_FRAMEWORK, "checker")
@@ -102,20 +102,25 @@ def maven_sanity_check( sub_sanity_dir_name, repo_url, release_version ):
         if os.path.isdir( path_to_artifacts ):
             delete_path( path_to_artifacts )
 
-        hello_galaxy_dir = os.path.join( maven_sanity_dir, "HelloGalaxy" )
-        output_log  = os.path.join( hello_galaxy_dir, "output.log" )
+        maven_example_dir = os.path.join( maven_sanity_dir, "MavenExample" )
+        output_log  = os.path.join( maven_example_dir, "output.log" )
 
         ant_release_script = os.path.join( CHECKER_FRAMEWORK_RELEASE, "release.xml" )
-        get_example_dir_cmd = "ant -f %s update-and-copy-hello-galaxy -Dchecker=%s -Dversion=%s -Ddest.dir=%s" % ( ant_release_script, checker_dir, release_version, maven_sanity_dir )
+        get_example_dir_cmd = "ant -f %s update-and-copy-maven-example -Dchecker=%s -Dversion=%s -Ddest.dir=%s" % ( ant_release_script, checker_dir, release_version, maven_sanity_dir )
 
         execute( get_example_dir_cmd )
 
-        hello_galaxy_pom = os.path.join( hello_galaxy_dir, "pom.xml" )
-        add_repo_information( hello_galaxy_pom, repo_url )
+        maven_example_pom = os.path.join( maven_example_dir, "pom.xml" )
+        add_repo_information( maven_example_pom, repo_url )
 
-        execute_write_to_file( "mvn checkerframework:check", output_log, False, hello_galaxy_dir )
+        print("TODO: mvn compile is working because of a quick fix to set JAVA_HOME to JAVA_8_HOME.")
+        print("Look for a permanent fix.")
+
+        os.environ['JAVA_HOME']   =  os.environ['JAVA_8_HOME']
+        execute_write_to_file( "mvn compile", output_log, False, maven_example_dir )
+        os.environ['JAVA_HOME']   =  os.environ['JAVA_7_HOME']
         check_results( "Maven sanity check", output_log, [
-            "HelloGalaxy.java:[30,29] [assignment.type.incompatible] incompatible types in assignment."
+            "MavenExample.java:[26,29] error: [assignment.type.incompatible] incompatible types in assignment."
         ])
 
         delete_path( path_to_artifacts )

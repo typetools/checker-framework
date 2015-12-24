@@ -382,8 +382,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
             final AnnotatedWildcardType outsideWc = (AnnotatedWildcardType) outside;
 
+            AnnotatedTypeMirror outsideWcUB = outsideWc.getExtendsBound();
+            if (inside.getKind() == TypeKind.WILDCARD) {
+                outsideWcUB = checker.getTypeFactory().widenToUpperBound(outsideWcUB, (AnnotatedWildcardType) inside);
+            }
+
             boolean aboveSuperBound   = checkAndSubtype( outsideWc.getSuperBound(), inside, visited );
-            boolean belowExtendsBound = checkAndSubtype(inside, outsideWc.getExtendsBound(), visited);
+            boolean belowExtendsBound = checkAndSubtype(inside, outsideWcUB, visited);
             return belowExtendsBound && aboveSuperBound;
 
         } else { //TODO: IF WE NEED TO COMPARE A WILDCARD TO A CAPTURE OF A WILDCARD WE FAIL IN ARE_EQUAL -> DO CAPTURE CONVERSION
@@ -866,11 +871,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * those type arguments should come from the original subtype's type arguments then we copy the
      * original type arguments to the converted type.
      * e.g.
-     * We have a type W, that "wasRaw" ArrayList<? extends Object>
+     * We have a type W, that "wasRaw" {@code ArrayList<? extends Object>}
      * When W is converted to type A, List, using asSuper it no longer has its type argument.
      * But since the type argument to List should be the same as that to ArrayList we copy over
      * the type argument of W to A.
-     * A becomes List<? extends Object>
+     * A becomes {@code List<? extends Object>}
      *
      * @param originalSubtype The subtype before being converted by asSuper
      * @param asSuperType he subtype after being converted by asSuper

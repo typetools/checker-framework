@@ -9,7 +9,6 @@ import org.checkerframework.framework.qual.*;
  *
  * @checker_framework.manual #units-checker Units Checker
  */
-@TypeQualifier
 @SubtypeOf(UnknownUnits.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

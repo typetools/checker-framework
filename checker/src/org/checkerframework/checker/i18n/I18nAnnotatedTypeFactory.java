@@ -1,8 +1,15 @@
 package org.checkerframework.checker.i18n;
 
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.lang.model.element.AnnotationMirror;
 
 import org.checkerframework.checker.i18n.qual.Localized;
+import org.checkerframework.checker.i18n.qual.UnknownLocalized;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.*;
@@ -20,6 +27,13 @@ public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public I18nAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         this.postInit();
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return Collections.unmodifiableSet(
+                new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(Localized.class, UnknownLocalized.class)));
     }
 
     @Override

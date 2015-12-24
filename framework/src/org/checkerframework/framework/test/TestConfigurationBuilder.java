@@ -58,6 +58,7 @@ public class TestConfigurationBuilder {
                 .addOption("-Xlint:unchecked")
                 .addOption("-XDrawDiagnostics")  //use short javac diagnostics
                 .addOption("-AprintErrorStack")
+                .addOption("-J-Xmx2500m")
                 .addSourceFiles(testSourceFiles);
 
         if (outputClassDirectory != null) {
@@ -194,12 +195,15 @@ public class TestConfigurationBuilder {
     }
 
     /**
-     * Ensures that the minimum requirements for running a test are met.  These requirements are:
-     *    a) There is at least one source file
-     *    b) There is at least one processor (if requireProcessors has been set to true)
-     *    c) There is an output directory specified for class files
-     *    d) There is no -processor option in the optionMap(it should be added by addProcessor instead)
-     * @param requireProcessors Whether or not to enforce requirement b
+     * Ensures that the minimum requirements for running a test are met.
+     * These requirements are:
+     * <ul>
+     *    <li> There is at least one source file
+     *    <li> There is at least one processor (if requireProcessors has been set to true)
+     *    <li> There is an output directory specified for class files
+     *    <li> There is no -processor option in the optionMap (it should be added by addProcessor instead)
+     * </ul>
+     * @param requireProcessors Whether or not to require that there is at least one processor
      * @return A list of errors found while validating this configuration
      */
     public List<String> validate(boolean requireProcessors) {
@@ -399,7 +403,8 @@ public class TestConfigurationBuilder {
                 "tests" + File.separator + "build");
         String globalclasspath = System.getProperty("java.class.path", "");
         return "build" + File.pathSeparator +
-               "junit.jar" + File.pathSeparator +
+               "junit-4.12.jar" + File.pathSeparator +
+               "hamcrest-core-1.3.jar" + File.pathSeparator +
                classpath + File.pathSeparator +
                globalclasspath;
     }

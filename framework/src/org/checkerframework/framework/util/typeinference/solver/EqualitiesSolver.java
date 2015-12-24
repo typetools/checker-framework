@@ -81,8 +81,11 @@ public class EqualitiesSolver {
      * Let Ti be a target type parameter.
      * When we reach this method we have inferred an argument, Ai, for Ti
      *
-     * However, there still may be constraints of the form Ti = Tj, Ti <: Tj, Tj <: Ti in the constraint map.  In this
-     * case we need to replace Ti with the type.  That is, they become Ai = Tj, Ai <: Tj, and Tj <: Ai
+     * However, there still may be constraints of the form
+     * {@literal Ti = Tj}, {@literal Ti <: Tj}, {@literal Tj <: Ti}
+     * in the constraint map.  In this
+     * case we need to replace Ti with the type.  That is, they become
+     * {@literal Ai = Tj}, {@literal Ai <: Tj}, and {@literal Tj <: Ai}
      *
      * To do this, we find the TargetConstraints for Tj and add these constraints to the appropriate map
      * in TargetConstraints.  We can then clear the constraints for the current target since we have inferred a type.
@@ -154,7 +157,7 @@ public class EqualitiesSolver {
      * Therefore, we want to stop solving for Ti and instead wait till we solve for Tj and use that result.
      *
      * Let ATM be any annotated type mirror and Tk be a target type parameter where k != i and k != j
-     * Even though we've inferred Ti = Tj, there still may be constraints of the form Ti = ATM or Ti <: Tk
+     * Even though we've inferred Ti = Tj, there still may be constraints of the form Ti = ATM or {@literal Ti <: Tk}
      * These constraints are still useful for inferring a argument for Ti/Tj.  So, we replace Ti in these
      * constraints with Tj and place those constraints in the TargetConstraints object for Tj.
      *
@@ -235,9 +238,9 @@ public class EqualitiesSolver {
 
     /**
      *
-     * @param typesToHierarchies A mapping of (types -> hierarchies) that indicate that the argument being inferred
+     * @param typesToHierarchies A mapping of (types &rarr; hierarchies) that indicate that the argument being inferred
      *                           is equal to the types in each of the hierarchies
-     * @param primaries A map (hierarchy -> annotation in hierarchy) where the annotation in hierarchy is equal to
+     * @param primaries A map (hierarchy &rarr; annotation in hierarchy) where the annotation in hierarchy is equal to
      *                  the primary annotation on the argument being inferred
      * @param tops The set of top annotations in the qualifier hierarchy
      * @return A concrete type argument or null if there was not enough information to infer one

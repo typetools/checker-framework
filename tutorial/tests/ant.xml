@@ -71,8 +71,8 @@
     <attribute name="file2"/>
     <attribute name="ignore-matching-lines"/>
     <sequential>
-      <exec executable="diff" resultproperty="diff-result" failonerror="true">
-        <arg value="-q"/>
+      <exec executable="diff" resultproperty="diff-result"> <!-- not  failonerror="true because that prevents user-friendly error message below -->
+        <!-- <arg value="-q"/> -->
         <arg line="-I '@{ignore-matching-lines}'"/>
         <!-- ignore lint results -->
         <arg line="-I 'Note:'"/>
@@ -83,6 +83,11 @@
         <!-- ignore paths -->
         <arg line="-I '.java'"/>
         <arg line="-I '.xml'"/>
+	<arg line="-I 'Deleting directory'"/>
+	<arg line="-I 'Created dir:'"/>
+	<arg line="-I 'Compiling 2 source files to'"/>
+
+	<!-- the files to compare -->
         <arg line="@{file1}"/>
         <arg line="@{file2}"/>
       </exec>
@@ -130,7 +135,7 @@ ${line.separator}NOTE: Did you run 'ant touch-files'?"/>
     <attribute name="expected"/>
     <sequential>
       <!-- Apply the patch -->
-      <patch patchfile="@{patchfile}" quiet="yes" strip="0"/>
+      <patch patchfile="@{patchfile}" quiet="yes" strip="0" failonerror="true"/>
       <my-ant task="@{task}" logfile="output.tmp"/>
       <my-diff file1="@{expected}" file2="output.tmp"
                ignore-matching-lines="Total time"/>
@@ -143,6 +148,7 @@ ${line.separator}NOTE: Did you run 'ant touch-files'?"/>
     <attribute name="step"/>
     <attribute name="dir" default="testdemo"/>
     <sequential>
+      <echo message="Checking demo target=@{target} step=@{step}"/>
       <check-demo
             task="@{target}"
             patchfile="@{dir}/@{target}.@{step}.patch"
@@ -155,7 +161,7 @@ ${line.separator}NOTE: Did you run 'ant touch-files'?"/>
       <attribute name="step"/>
       <attribute name="dir" default="testdemo"/>
       <sequential>
-          <patch patchfile="@{dir}/@{target}.@{step}.patch" quiet="yes" reverse="yes" strip="0"/>
+          <patch patchfile="@{dir}/@{target}.@{step}.patch" quiet="yes" reverse="yes" strip="0" failonerror="true"/>
       </sequential>
   </macrodef>
 </project>

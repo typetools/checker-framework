@@ -34,6 +34,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -176,6 +177,12 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // this.addAliasedDeclAnnotation(org.jmlspecs.annotation.Pure.class, Pure.class, annotationToUse);
 
         this.postInit();
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return getBundledTypeQualifiersWithoutPolyAll(
+                IGJBottom.class);
     }
 
     @Override
@@ -934,14 +941,13 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents, true);
         }
 
-
         /**
          * Uses the JLS specification (as implemented in {@link org.checkerframework.framework.type.DefaultTypeHierarchy},
          * if the variable type, lhs, is mutable; otherwise, allows the type
          * arguments to change while maintaining subtype relationship.
          *
          * This allows for subtyping relationships of the kind:
-         * <pre>  @Mutable List&lt;@Mutable Date&gt; &lt;: @ReadOnly List&lt;@ReadOnly Date&gt;<\pre>
+         * <pre>  @Mutable List&lt;@Mutable Date&gt; &lt;: @ReadOnly List&lt;@ReadOnly Date&gt;</pre>
          */
         @Override
         public Boolean visitTypeArgs(final AnnotatedDeclaredType subtype, final AnnotatedDeclaredType supertype,

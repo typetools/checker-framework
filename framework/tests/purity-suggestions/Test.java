@@ -1,12 +1,15 @@
 import org.checkerframework.framework.test.*;
 
 import java.util.*;
+import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.framework.qual.*;
 import tests.util.*;
 
 // various tests for the checker to automatically suggest pure methods (most methods have been copied from Purity.java)
+
+// This warning is for the implicit constructor of class Test
 //:: warning: (purity.more.sideeffectfree)
 class Test {
 
@@ -158,6 +161,17 @@ class Test {
     //:: warning: (purity.more.pure)
     String t17() {
         return "";
+    }
+
+    @Deterministic
+    //:: warning: (purity.more.sideeffectfree)
+    String t18() {
+        return "";
+    }
+
+    //:: warning: (purity.more.deterministic)
+    String t19() {
+        return t18();
     }
 
     String t12() {

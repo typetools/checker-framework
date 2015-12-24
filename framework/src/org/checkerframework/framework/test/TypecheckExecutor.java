@@ -59,7 +59,13 @@ public class TypecheckExecutor {
         final List<String> options = new ArrayList<String>();
         options.add("-processor");
         options.add(PluginUtil.join(",", configuration.getProcessors()));
-        options.addAll(configuration.getFlatOptions());
+        List<String> nonJvmOptions = new ArrayList<String>();
+        for (String option : configuration.getFlatOptions()) {
+            if (! option.startsWith("-J-")) {
+                nonJvmOptions.add(option);
+            }
+        }
+        options.addAll(nonJvmOptions);
 
         if (configuration.shouldEmitDebugInfo()) {
             System.out.println("Running test using the following invocation:");
@@ -78,7 +84,7 @@ public class TypecheckExecutor {
          */
         final Boolean compiledWithoutError = task.call();
         javacOutput.flush();
-              return new CompilationResult(compiledWithoutError, javacOutput.toString(), javaFiles,
+        return new CompilationResult(compiledWithoutError, javacOutput.toString(), javaFiles,
                                      diagnostics.getDiagnostics());
     }
 

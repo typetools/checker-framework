@@ -200,7 +200,7 @@ public class ElementUtils {
      */
     public static boolean isCompileTimeConstant(Element elt) {
         return elt != null
-            && elt.getKind() == ElementKind.FIELD
+            && (elt.getKind() == ElementKind.FIELD || elt.getKind() == ElementKind.LOCAL_VARIABLE)
             && ((VariableElement)elt).getConstantValue() != null;
     }
 

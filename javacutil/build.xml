@@ -10,6 +10,7 @@
     <property file="build.${os.name}.properties"/>
     <property file="build.properties"/>
     <property file="${basedir}/../build-common.properties"/>
+    <property name="javadoc.private" value="false"/>
 
     <import file="${basedir}/../build-common.xml"/>
 
@@ -36,11 +37,12 @@
             description="Set properties: filesets and build.uptodate">
         <fileset id="src.files" dir="${src}">
             <include name="**/*.java"/>
+            <exclude name="**/package-info.java"/>
         </fileset>
 
-        <uptodate property="src.files.uptodate" targetfile="${build}">
+        <uptodate property="build.uptodate" targetfile="${build}">
             <srcfiles refid="src.files"/>
-            <mapper type="glob" from="*.java" to="${build}/*.class"/>
+            <mapper type="glob" from="*.java" to="../${build}/*.class"/>
         </uptodate>
     </target>
 
@@ -120,6 +122,7 @@
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${api.doc}"
+                 private="${javadoc.private}"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"

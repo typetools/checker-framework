@@ -202,12 +202,17 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     @Override
     public S initialStore(UnderlyingAST underlyingAST,
             /*@Nullable */ List<LocalVariableNode> parameters) {
-        if (fixedInitialStore != null
-                && underlyingAST.getKind() != Kind.LAMBDA) return fixedInitialStore;
+		if (fixedInitialStore != null && underlyingAST.getKind() != Kind.LAMBDA
+				&& underlyingAST.getKind() != Kind.METHOD) return fixedInitialStore;
 
         S info = analysis.createEmptyStore(sequentialSemantics);
 
         if (underlyingAST.getKind() == Kind.METHOD) {
+        	
+        	if (fixedInitialStore != null) {
+        		// copy knowledge
+        		info = analysis.createCopiedStore(fixedInitialStore);
+        	}
 
             AnnotatedTypeFactory factory = analysis.getTypeFactory();
             for (LocalVariableNode p : parameters) {

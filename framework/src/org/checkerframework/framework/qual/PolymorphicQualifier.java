@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
  * qualifiers.
  * <p>
  *
- * @checker_framework.manual #map-key-checker Map Key Checker
+ * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented
 @Target({ElementType.ANNOTATION_TYPE})
