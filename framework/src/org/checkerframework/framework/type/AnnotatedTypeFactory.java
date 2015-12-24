@@ -664,9 +664,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     @SuppressWarnings("deprecation")
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         Set<Class<? extends Annotation>> typeQualifiers = new HashSet<Class<? extends Annotation>>();
-        // by default support PolyAll
-        typeQualifiers.addAll(getBundledTypeQualifiersWithPolyAll());
 
+        // =====================================
         // temporary support for deprecated @TypeQualifiers annotation
         // TODO: This support will be removed in the next version of the checker framework
         TypeQualifiers typeQualifiersAnnotation;
@@ -686,6 +685,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 typeQualifiers.add(qualifier);
             }
         }
+
+        // if the legacy @TypeQualifiers meta-annotation is in use, and it lists
+        // some annotations, then only return annotations listed in that
+        // meta-annotation
+        if (!typeQualifiers.isEmpty()) {
+            return Collections.unmodifiableSet(typeQualifiers);
+        }
+        // =====================================
+
+        // Otherwise load annotations from qual directory
+        // by default support PolyAll
+        typeQualifiers.addAll(getBundledTypeQualifiersWithPolyAll());
 
         return Collections.unmodifiableSet(typeQualifiers);
     }
