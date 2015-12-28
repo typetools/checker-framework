@@ -6,4 +6,6 @@ When adding a .jar file to this directory, update the below list and also the li
 
 The source code appears at the following locations:
 
+commons-bcel-6.0.jar : from https://github.com/typetools/commons-bcel
+guava-19.0.jar : from https://github.com/typetools/guava
 java-getopt-1.0.14.jar : from https://github.com/typetools/java-getopt
