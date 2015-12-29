@@ -496,7 +496,7 @@ public class KeyForAnnotatedTypeFactory extends
           for (String s: values) {
               boolean localVariableFound = false;
 
-              if (unknownReceiver) {
+              if (unknownReceiver && store != null) {
                   // If the receiver is unknown, try a local variable
                   CFAbstractValue<?> val = store.getValueOfLocalVariableByName(s);
 
@@ -507,7 +507,7 @@ public class KeyForAnnotatedTypeFactory extends
                   }
               }
 
-              if (localVariableFound == false) {
+              if (!localVariableFound) {
                   try {
                       varTypeReceiver = FlowExpressionParseUtil.parse(s, flowExprContext, path);
                   } catch (FlowExpressionParseException e) {
