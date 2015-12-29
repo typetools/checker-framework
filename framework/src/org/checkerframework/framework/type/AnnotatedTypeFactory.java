@@ -27,6 +27,7 @@ import org.checkerframework.framework.stub.StubUtil;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -75,6 +76,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -2953,7 +2955,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             case TYPE_CAST:
                 TypeCastTree cast = (TypeCastTree) parentTree;
                 assertFunctionalInterface(javacTypes, (Type) trees.getTypeMirror(getPath(cast.getType())), parentTree, lambdaTree);
-                return (AnnotatedDeclaredType)getAnnotatedType(cast.getType());
+                AnnotatedTypeMirror castATM = getAnnotatedType(cast.getType());
+                if (castATM.getKind() == TypeKind.INTERSECTION) {
+                    AnnotatedIntersectionType itype = (AnnotatedIntersectionType) castATM;
+                    for (AnnotatedTypeMirror t : itype.directSuperTypes()) {
+                        if (javacTypes.isFunctionalInterface((Type) t.getUnderlyingType())) {
+                            return (AnnotatedDeclaredType) t;
+                        }
+                    }
+                    // We should never reach here: assertFunctionalInterface performs the same check and
+                    // would have raised an error already.
+                    ErrorReporter.errorAbort(String.format(
+                            "Expected the type of a cast tree in an assignment context to contain a functional interface bound. " +
+                            "Found type: %s for tree: %s in lambda tree: %s",
+                            castATM, cast, lambdaTree));
+                }
+                return (AnnotatedDeclaredType) castATM;
 
             case NEW_CLASS:
                 NewClassTree newClass = (NewClassTree) parentTree;
@@ -3033,6 +3050,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Type type, Tree contextTree, Tree lambdaTree) {
 
         if (!javacTypes.isFunctionalInterface(type)) {
+            if (type.getKind() == TypeKind.INTERSECTION) {
+                IntersectionType itype = (IntersectionType) type;
+                for (TypeMirror t : itype.getBounds()) {
+                    if (javacTypes.isFunctionalInterface((Type) t)) {
+                        // As long as any of the bounds is a functional interface
+                        // we should be fine.
+                        return;
+                    }
+                }
+            }
             ErrorReporter.errorAbort(String.format(
                     "Expected the type of %s tree in assignment context to be a functional interface. " +
                     "Found type: %s for tree: %s in lambda tree: %s",
