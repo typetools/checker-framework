@@ -25,7 +25,8 @@ rather than a real enum or the typesafe enum pattern.
 One reason is backward-compatibility.  A public API that predates Java's
 enum keyword may use \code{int} constants; it cannot be changed, because
 doing so would break existing clients.  For example, Java's JDK still uses
-\code{int} constants in the AWT and Swing frameworks.
+\code{int} constants in the AWT and Swing frameworks, and Android also uses
+\code{int} constants rather than Java enums.
 %
 Another reason is performance, especially in environments with limited
 resources.  Use of an int instead of an object can
@@ -224,6 +225,10 @@ Also, see the example project in the \<checker/examples/fenum-extension> directo
 \section{References\label{fenum-references}}
 
 \begin{itemize}
+\item Case studies of the Fake Enum Checker:\\
+  ``Building and using pluggable type-checkers''~\cite{DietlDEMS2011}
+  (ICSE 2011, \url{http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011.pdf#page=3})
+
 \item Java Language Specification on enums:\\
   \url{https://docs.oracle.com/javase/specs/jls/se8/html/jls-8.html#jls-8.9}
 
