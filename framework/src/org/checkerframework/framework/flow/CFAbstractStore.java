@@ -434,7 +434,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             return;
         }
         if (r instanceof FlowExpressions.LocalVariable) {
-            Element localVar = ((FlowExpressions.LocalVariable) r).getElement();
+        	FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) r;
             localVariableValues.remove(localVar);
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
@@ -812,7 +812,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /* --------------------------------------------------------- */
 
     /**
-     * @return Current abstract value of a local variable, or {@code null} if no
+     * @return Current abstract value of the current object, or {@code null} if no
      *         information is available.
      */
     public /*@Nullable*/ V getValue(ThisLiteralNode n) {
