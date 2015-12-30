@@ -536,6 +536,12 @@ public abstract class GenericAnnotatedTypeFactory<
         }
         FlowAnalysis analysis = analyses.getFirst();
         Node node = analysis.getNodeForTree(tree);
+        if (node == null) {
+            // TODO: is there something better we can do? Check for
+            // lambda expressions. This fixes Issue 448, but might not
+            // be the best possible.
+            return null;
+        }
         TransferInput<Value, Store> prevStore = analysis.getInput(node.getBlock());
         if (prevStore == null) {
             return null;
