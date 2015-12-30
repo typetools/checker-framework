@@ -30,6 +30,8 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+import com.sun.tools.javac.code.Symbol.VarSymbol;
+
 /**
  * Collection of classes and helper functions to represent Java expressions
  * about which the org.checkerframework.dataflow analysis can possibly infer facts. Expressions
@@ -460,16 +462,16 @@ public class FlowExpressions {
     }
 
     public static class LocalVariable extends Receiver {
-        protected Element element;
+        protected VarSymbol element;
 
         public LocalVariable(LocalVariableNode localVar) {
             super(localVar.getType());
-            this.element = localVar.getElement();
+            this.element = (VarSymbol) localVar.getElement();
         }
 
         public LocalVariable(Element elem) {
             super(ElementUtils.getType(elem));
-            this.element = elem;
+            this.element = (VarSymbol) elem;
         }
 
         @Override
@@ -478,7 +480,9 @@ public class FlowExpressions {
                 return false;
             }
             LocalVariable other = (LocalVariable) obj;
-            return other.element.equals(element);
+            return other.element.name.toString().equals(element.name.toString()) &&
+                   other.element.type.toString().equals(element.type.toString()) &&
+                   other.element.owner.toString().equals(element.owner.toString());
         }
 
         public Element getElement() {
@@ -487,12 +491,14 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(element);
+            return HashCodeUtils.hash(element.name.toString(),
+                    element.type.toString(),
+                    element.owner.toString());
         }
 
         @Override
         public String toString() {
-            return element.toString();
+            return element.name.toString();
         }
 
         @Override
@@ -506,7 +512,7 @@ public class FlowExpressions {
                 return false;
             }
             LocalVariable l = (LocalVariable) other;
-            return l.getElement().equals(getElement());
+            return l.equals(this);
         }
 
         @Override

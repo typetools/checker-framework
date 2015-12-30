@@ -469,67 +469,42 @@ public class KeyForAnnotatedTypeFactory extends
    *
    */
   private LinkedHashSet<String> canonicalizeKeyForValues(AnnotationMirror anno, FlowExpressionContext flowExprContext, TreePath path, Tree t, boolean returnNullIfUnchanged) {
-      Receiver varTypeReceiver = null;
-
-      CFAbstractStore<?, ?> store = null;
-      boolean unknownReceiver = false;
-
-      if (flowExprContext.receiver == null || flowExprContext.receiver.containsUnknown()) {
-          // If the receiver is unknown, we will try local variables
-
-          store = getStoreBefore(t);
-          unknownReceiver = true; // We could use store != null for this check, but this is clearer.
-      }
-
       if (anno != null) {
+          Receiver varTypeReceiver = null;
+          boolean unknownReceiver = flowExprContext.receiver == null || flowExprContext.receiver.containsUnknown();
           boolean valuesChanged = false; // Indicates that at least one value was changed in the list.
           LinkedHashSet<String> newValues = new LinkedHashSet<String>();
 
           List<String> values = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
           for (String s: values) {
-              boolean localVariableFound = false;
+              try {
+                  varTypeReceiver = FlowExpressionParseUtil.parse(s, flowExprContext, path);
+              } catch (FlowExpressionParseException e) {
+              }
 
-              if (unknownReceiver) {
-                  // If the receiver is unknown, try a local variable
-                  CFAbstractValue<?> val = store.getValueOfLocalVariableByName(s);
+              if (unknownReceiver // The receiver type was unknown initially, and ...
+                      && (varTypeReceiver == null
+                      || varTypeReceiver.containsUnknown()) // ... the receiver type is still unknown after a call to parse
+                      ) {
+                  // parse did not find a static member field. Try a nonstatic field.
 
-                  if (val != null) {
-                      newValues.add(s);
-                      // Don't set valuesChanged to true since local variable names are already canonicalized
-                      localVariableFound = true;
+                  try {
+                      varTypeReceiver = FlowExpressionParseUtil.parse("this." + s, // Try a field in the current object. Do not modify s itself since it is used in the newValue.equals(s) check below.
+                              flowExprContext, path);
+                  } catch (FlowExpressionParseException e) {
                   }
               }
 
-              if (localVariableFound == false) {
-                  try {
-                      varTypeReceiver = FlowExpressionParseUtil.parse(s, flowExprContext, path);
-                  } catch (FlowExpressionParseException e) {
-                  }
+              if (varTypeReceiver != null) {
+                  String newValue = varTypeReceiver.toString();
+                  newValues.add(newValue);
 
-                  if (unknownReceiver // The receiver type was unknown initially, and ...
-                          && (varTypeReceiver == null
-                          || varTypeReceiver.containsUnknown()) // ... the receiver type is still unknown after a call to parse
-                          ) {
-                      // parse did not find a static member field. Try a nonstatic field.
-
-                      try {
-                          varTypeReceiver = FlowExpressionParseUtil.parse("this." + s, // Try a field in the current object. Do not modify s itself since it is used in the newValue.equals(s) check below.
-                                  flowExprContext, path);
-                      } catch (FlowExpressionParseException e) {
-                      }
+                  if (!newValue.equals(s)) {
+                      valuesChanged = true;
                   }
-
-                  if (varTypeReceiver != null) {
-                      String newValue = varTypeReceiver.toString();
-                      newValues.add(newValue);
-
-                      if (!newValue.equals(s)) {
-                          valuesChanged = true;
-                      }
-                  }
-                  else {
-                      newValues.add(s); // This will get ignored if valuesChanged is false after exiting the for loop
-                  }
+              }
+              else {
+                  newValues.add(s); // This will get ignored if valuesChanged is false after exiting the for loop
               }
           }
 
