@@ -176,14 +176,14 @@ import com.sun.tools.javac.util.Log;
     "concurrentSemantics",
 
     // Whether to use conservative checks for unannotated bytecode; these are configured
-    // by the specific type checker using @Default[QualifierInHierarchy]ForUncheckedCode.
+    // by the specific type checker using @DefaultInUncheckedCodeFor and @DefaultQualifierInHierarchyInUncheckedCode.
     // They may require more annotations or stub files.
     // "unsafeDefaultsForUnannotatedBytecode",
     // TODO: temporary option to turn on sound behavior.
     "safeDefaultsForUnannotatedBytecode",
 
     // Whether to use conservative checks for unannotated source code; these are configured
-    // by the specific type checker using @Default[QualifierInHierarchy]ForUncheckedCode
+    // by the specific type checker using @DefaultInUncheckedCodeFor and @DefaultQualifierInHierarchyInUncheckedCode
     // and only apply to source code that is not marked as @AnnotatedFor the checker
     // that is being executed.
     "useSafeDefaultsForUnannotatedSourceCode",

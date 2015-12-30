@@ -6,12 +6,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.checkerframework.framework.qual.DefaultForUncheckedCode;
+import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 @SubtypeOf({A.class})
-@DefaultForUncheckedCode({DefaultLocation.PARAMETERS})
+@DefaultInUncheckedCodeFor({DefaultLocation.PARAMETERS})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
