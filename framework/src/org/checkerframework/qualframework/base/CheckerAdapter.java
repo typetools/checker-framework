@@ -164,17 +164,13 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
     }
 
     public void setupDefaults(QualifierDefaults defaults) {
-        defaults.addCheckedCodeDefault(getTypeMirrorConverter()
-                                               .getAnnotation(underlying
-                                                                      .getTypeFactory()
-                                                                      .getQualifierHierarchy()
-                                                                      .getBottom()),
-                                              DefaultLocation.IMPLICIT_LOWER_BOUNDS);
-        defaults.addCheckedCodeDefault(getTypeMirrorConverter()
-                                               .getAnnotation(underlying
-                                                                      .getTypeFactory()
-                                                                      .getQualifierHierarchy()
-                                                                      .getTop()),
-                                              DefaultLocation.LOCAL_VARIABLE);
+        defaults.addCheckedCodeDefault(
+                getTypeMirrorConverter().getAnnotation(
+                        underlying.getTypeFactory().getQualifierHierarchy().getBottom()),
+                DefaultLocation.IMPLICIT_LOWER_BOUNDS);
+        defaults.addCheckedCodeDefault(
+                getTypeMirrorConverter().getAnnotation(
+                        underlying.getTypeFactory().getQualifierHierarchy().getTop()),
+                DefaultLocation.LOCAL_VARIABLE);
     }
 }

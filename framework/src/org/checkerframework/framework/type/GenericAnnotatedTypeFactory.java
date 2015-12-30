@@ -354,9 +354,7 @@ public abstract class GenericAnnotatedTypeFactory<
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
             if (defaultFor != null) {
                 final DefaultLocation [] locations = defaultFor.value();
-                defs.addCheckedCodeDefaults(AnnotationUtils
-                                                    .fromClass(elements, qual),
-                                                   locations);
+                defs.addCheckedCodeDefaults(AnnotationUtils.fromClass(elements, qual), locations);
 
                 foundDefaultOtherwise = foundDefaultOtherwise ||
                         Arrays.asList(locations).contains(DefaultLocation.OTHERWISE);
@@ -370,10 +368,8 @@ public abstract class GenericAnnotatedTypeFactory<
                             "qualifier has both @DefaultFor and @DefaultQualifierInHierarchy annotations: " +
                             qual.getCanonicalName());
                 } else {
-                    defs.addCheckedCodeDefault(AnnotationUtils
-                                                       .fromClass(elements,
-                                                                         qual),
-                                                      DefaultLocation.OTHERWISE);
+                    defs.addCheckedCodeDefault(AnnotationUtils.fromClass(elements, qual),
+                            DefaultLocation.OTHERWISE);
                     foundDefaultOtherwise = true;
                 }
             }
@@ -388,10 +384,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
                 if (defaultForUnannotated != null) {
                     final DefaultLocation [] locations = defaultForUnannotated.value();
-                    defs.addUncheckedCodeDefaults(AnnotationUtils
-                                                          .fromClass(elements,
-                                                                            qual),
-                                                         locations);
+                    defs.addUncheckedCodeDefaults(AnnotationUtils.fromClass(elements, qual), locations);
                     // TODO: here and for source code above, should ALL also be handled?
                     foundDefaultOtherwiseForUnannotatedCode = foundDefaultOtherwiseForUnannotatedCode ||
                             Arrays.asList(locations).contains(DefaultLocation.OTHERWISE);
@@ -405,10 +398,8 @@ public abstract class GenericAnnotatedTypeFactory<
                                 "qualifier has both @DefaultForUncheckedCode and @DefaultQualifierInHierarchyForUncheckedCode annotations: " +
                                 qual.getCanonicalName());
                     } else {
-                        defs.addUncheckedCodeDefault(AnnotationUtils
-                                                             .fromClass(elements,
-                                                                               qual),
-                                                            DefaultLocation.OTHERWISE);
+                        defs.addUncheckedCodeDefault(AnnotationUtils.fromClass(elements, qual),
+                                    DefaultLocation.OTHERWISE);
                         foundDefaultOtherwiseForUnannotatedCode = true;
                     }
                 }
@@ -417,8 +408,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         // If Unqualified is a supported qualifier, make it the default.
         // This is for convenience only. Maybe remove.
-        AnnotationMirror unqualified = AnnotationUtils.fromClass(elements,
-                                                                        Unqualified.class);
+        AnnotationMirror unqualified = AnnotationUtils.fromClass(elements, Unqualified.class);
         if (!foundDefaultOtherwise &&
                 this.isSupportedQualifier(unqualified)) {
             defs.addCheckedCodeDefault(unqualified, DefaultLocation.OTHERWISE);
