@@ -95,6 +95,13 @@
         <!-- for afu.date.0 and afu.date.1 -->
         <loadproperties srcFile="${afu.properties}"/>
 
+        <replaceregexp file="${checkerWebPage}" byline="true"
+                       match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
+
+        <update file="${checkerWebPage}"
+                start="${checkers.zip.ver.0}" end="${checkers.zip.ver.1}"
+                with="checker-framework-${release.ver}.zip"/>
+
         <update file="${checkerWebPage}"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}, ${release.date}"/>
@@ -113,6 +120,9 @@
 
         <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
                        match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
+                       match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
                        match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>

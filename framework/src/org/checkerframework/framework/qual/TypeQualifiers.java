@@ -23,7 +23,8 @@ import java.lang.annotation.Target;
  * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#createSupportedTypeQualifiers()}
  * to explicitly list the qualifiers it supports.
  *
- * @see AnnotatedTypeFactory#createSupportedTypeQualifiers()
+ * @see org.checkerframework.framework.type.AnnotatedTypeFactory#createSupportedTypeQualifiers()
+ * @checker_framework.manual #indicating-supported-annotations Indicating supported annotations
  */
 @Deprecated
 @Documented

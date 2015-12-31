@@ -19,6 +19,18 @@ For type-system developers:
 
 Closed issues: 169, 448, 478, 496, 516, 529.
 
+Type-system developers:
+Deprecated the org.checkerframework.framework.qual.TypeQualifier{s}
+annotations in favor of reflective annotation look-up. See
+http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#indicating-supported-annotations
+for how to indicate the supported annotations.
+Support for TypeQualifier{s} will be removed in the next release.
+
+Renamed
+org.checkerframework.framework.qual.Default{,Qualifier}ForUnannotatedCode
+to DefaultInUncheckedCodeFor and
+DefaultQualifierInHierarchyInUncheckedCode.
+
 ---------------------------------------------------------------------------
 
 Version 1.9.9, 1 December 2015

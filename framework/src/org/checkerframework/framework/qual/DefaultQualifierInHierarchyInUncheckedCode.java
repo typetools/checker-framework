@@ -18,7 +18,7 @@ import java.lang.annotation.*;
  * <p>
  *
  * Each type qualifier hierarchy may have at most one qualifier marked as
- * {@code DefaultQualifierForUnannotatedCode}.
+ * {@code DefaultQualifierInHierarchyInUncheckedCode}.
  * <p>
  *
  * Note, this annotation is analogous to
@@ -26,11 +26,11 @@ import java.lang.annotation.*;
  * unannotated type uses.
  * This qualifier is for type system developers, not end-users.
  * @see AnnotatedFor
- * @see DefaultForUnannotatedCode
+ * @see DefaultInUncheckedCodeFor
  * @checker_framework.manual #defaults-classfile Default qualifiers for .class files (conservative library defaults)
  * @checker_framework.manual #compiling-libraries Compiling partially-annotated libraries
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ANNOTATION_TYPE)
-public @interface DefaultQualifierForUnannotatedCode {}
+public @interface DefaultQualifierInHierarchyInUncheckedCode {}
