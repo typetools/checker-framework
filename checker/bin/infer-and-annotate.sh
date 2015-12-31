@@ -31,13 +31,11 @@ set -e
 read_input() {
     processor=$1
     cp=$2:${CHECKERFRAMEWORK}/../annotation-tools/annotation-file-utilities/annotation-file-utilities.jar
-    extra_args=""
-    java_files=""
-
     # Ignores first two arguments (processor and cp).
     shift
     shift
-
+    extra_args=""
+    java_files=""
     for i in "$@"
     do
         # This function makes the assumption that every extra argument
@@ -57,7 +55,9 @@ read_input() {
 # Iteratively runs the Checker
 infer_and_annotate() {
     DIFF_JAIF=firstdiff
-    rm -rf build/jaif-files
+    # Creates jaif-files directory if it doesn't exist already.
+    # If it already exists, the existing .jaif files will be considered.
+    # This allows the user to provide some .jaif files as input.
     mkdir -p build/jaif-files
     # Perform inference and add annotations from .jaif to .java files until
     # prev-jaif has the same contents as build/jaif-files
@@ -68,7 +68,7 @@ infer_and_annotate() {
         cp -r build/jaif-files prev-jaif
 
         # Runs CF's javac
-        ${CHECKERFRAMEWORK}/checker/bin/javac -cp $cp -processor $processor -AinferSignatures $extra_args $java_files
+        ${CHECKERFRAMEWORK}/checker/bin/javac -cp $cp -processor $processor -AinferSignatures $extra_args $java_files || true
         # Deletes .unannotated backup files. This is necessary otherwise the
         # insert-annotations-to-source tool will use this file instead of the
         # updated .java one.
@@ -82,6 +82,18 @@ infer_and_annotate() {
         # When this happens, this script halts due to the "set -e"
         # in its header. To avoid this problem, we add the "|| true" below.
         DIFF_JAIF="$(diff -qr prev-jaif build/jaif-files || true)"
+        var=$((var+1))
+    done
+    clean
+}
+
+clean() {
+    # Do we want to delete possible .jaif files passed as input?
+    # rm -rf build/jaif-files
+    rm -rf prev-jaif
+    for file in $java_files;
+        do
+            rm -f "${file}.unannotated"
     done
 }
 
