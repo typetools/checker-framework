@@ -24,6 +24,7 @@ import java.lang.annotation.Target;
  * to explicitly list the qualifiers it supports.
  *
  * @see AnnotatedTypeFactory#createSupportedTypeQualifiers()
+ * @checker_framework.manual #indicating-supported-annotations Indicating supported annotations
  */
 @Deprecated
 @Documented
