@@ -82,7 +82,6 @@ infer_and_annotate() {
         # When this happens, this script halts due to the "set -e"
         # in its header. To avoid this problem, we add the "|| true" below.
         DIFF_JAIF="$(diff -qr prev-jaif build/jaif-files || true)"
-        var=$((var+1))
     done
     clean
 }
