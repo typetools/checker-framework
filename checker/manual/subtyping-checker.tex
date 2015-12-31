@@ -195,7 +195,7 @@ capability of any realistic type system.
   You should add the \code{Encrypted} classfile to the processor classpath:
 
 \begin{alltt}
-  javac -processorpath myqualpath -processor org.checkerframework.common.subtyping.SubtypingChecker \
+  javac -processorpath \textit{myqualpath} -processor org.checkerframework.common.subtyping.SubtypingChecker \
         -Aquals=\textit{myModule.qual.Encrypted},\textit{myModule.qual.PossiblyUnencrypted} YourProgram.java
 
 YourProgram.java:42: incompatible types.
@@ -232,7 +232,8 @@ commands:
 Also, see the example project in the \<checker/examples/subtyping-extension> directory.
 
 
-% LocalWords:  TODO ImplicitFor Aquals sourcepath java NonNull
+% LocalWords:  TODO ImplicitFor Aquals sourcepath java NonNull AqualDirs
 % LocalWords:  CharSequence classpath nullness quals SuppressWarnings classfile
 % LocalWords:  uncapitalized processorpath Warski MyFile YourProgram
-%%  LocalWords:  bootclasspath PossiblyUnencrypted
+%%  LocalWords:  bootclasspath PossiblyUnencrypted myProject myLibrary
+%%  LocalWords:  ElementType myqualpath sendOverInternet

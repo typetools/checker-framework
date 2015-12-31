@@ -7,6 +7,8 @@
 % These currently include
 % % Keep this list in sync with file ../lib/README .
 %   \href{https://commons.apache.org/proper/commons-bcel/}{Apache Commons BCEL}
+%   (versions 5.2 and 6.0 pre-release),
+%   \href{https://github.com/google/guava/}{Google Guava},
 %   and
 %   \href{https://github.com/arenn/java-getopt}{GNU getopt Java port}.
 % %% Todo: this should be done automatically for the user.
@@ -233,7 +235,7 @@ partially-annotated library.
   You are not adding new build targets, but modifying existing targets.
   The reason to run every type-checker is to verify
   the annotations you wrote, and to use appropriate defaults for all
-  unnanotated type uses.
+  unannotated type uses.
   The reason to include the contents of \<checker-qual.jar> is so that 
   the resulting \<.jar> file can be used whether or not the Checker Framework
   is being run.
@@ -685,5 +687,7 @@ read whether the library's annotations are parsed.
 %  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug jdk6 jdk7
 %  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
 %%  LocalWords:  NoStubParserWarning CHECKERFRAMEWORK AnnotatedFor regex
-%%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile
+%%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual
 %%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs
+%%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1
+%%  LocalWords:  TypeSystem2 TypeSystem3

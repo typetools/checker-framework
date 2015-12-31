@@ -10,10 +10,7 @@ import javax.lang.model.type.TypeKind;
 
 import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.AbstractNullnessChecker;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.DefaultForUnannotatedCode;
+import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.ImplicitFor;
@@ -61,7 +58,7 @@ import com.sun.source.tree.Tree;
         Tree.Kind.DOUBLE_LITERAL, Tree.Kind.FLOAT_LITERAL,
         Tree.Kind.INT_LITERAL, Tree.Kind.LONG_LITERAL, Tree.Kind.STRING_LITERAL })
 @DefaultQualifierInHierarchy
-@DefaultForUnannotatedCode({ DefaultLocation.PARAMETERS, DefaultLocation.LOWER_BOUNDS })
+@DefaultInUncheckedCodeFor({ DefaultLocation.PARAMETERS, DefaultLocation.LOWER_BOUNDS })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })

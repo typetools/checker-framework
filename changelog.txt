@@ -1,11 +1,32 @@
 ---------------------------------------------------------------------------
 
-Version ??, ?? ?? 2016
+Version 1.9.10, 31 December 2015
 
-The Checker Framework distribution files now contain a version number:  for
-example, checker-framework-1.9.9.zip rather than checker-framework.zip.
+The Checker Framework distribution files now contain a version number:
+for example, checker-framework-1.9.9.zip rather than checker-framework.zip.
 
-Documented how to initialize circular data structures in the Initialization type system.
+Nullness Checker supports org.eclipse.jgit.annotations.Nullable and NonNull
+annotations.
+
+Buildfiles do less unnecessary recomputation.
+
+Documentation:
+ * Documented how to initialize circular data structures in the
+   Initialization type system.
+ * Linked to David Bürgin's Nullness Checker tutorial at
+   https://github.com/glts/safer-spring-petclinic/wiki
+ * Acknowledged more contributors in the manual.
+
+For type-system developers:
+ * The org.checkerframework.framework.qual.TypeQualifier{s} annotations are
+   now deprecated.  To indicate which annotations a checker supports, see
+   http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#indicating-supported-annotations .
+   Support for TypeQualifier{s} will be removed in the next release.
+ * We renamed
+   org.checkerframework.framework.qual.Default{,Qualifier}ForUnannotatedCode to
+   DefaultInUncheckedCodeFor and DefaultQualifierInHierarchyInUncheckedCode.
+
+Closed issues: 169, 448, 478, 496, 516, 529.
 
 ---------------------------------------------------------------------------
 

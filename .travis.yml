@@ -55,9 +55,10 @@ notifications:
     - checker-framework-dev@googlegroups.com 
 
 after_success:
-  # The vertical bar (pipe) means multi-line command in YAML.
   - |
-      if [[ "$TRAVIS_JOB_NUMBER" == *.1 ]] ; then
+      if [[ ($TRAVIS_BRANCH == master) &&
+            ($TRAVIS_PULL_REQUEST == false) &&
+            ( (! $TRAVIS_JOB_NUMBER == *.*) || ($TRAVIS_JOB_NUMBER == *.1) ) ]] ; then
         curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
         sh trigger-travis.sh typetools checker-framework-demos $TRAVISTOKEN
         sh trigger-travis.sh typetools checker-framework-inference $TRAVISTOKEN
