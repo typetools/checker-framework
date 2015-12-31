@@ -93,7 +93,7 @@ public class KeyForAnnotatedTypeFactory extends
 
         this.postInit();
 
-        this.defaults.addAbsoluteDefault(UNKNOWNKEYFOR, DefaultLocation.ALL);
+        this.defaults.addCheckedCodeDefault(UNKNOWNKEYFOR, DefaultLocation.ALL);
 
         // Add compatibility annotations:
         addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.KeyForDecl.class, KEYFOR);
