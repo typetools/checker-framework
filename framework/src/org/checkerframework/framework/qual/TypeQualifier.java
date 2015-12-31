@@ -9,7 +9,7 @@ import java.lang.annotation.*;
  * An annotation will no longer use this meta-annotation. To indicate that an
  * annotation is a type qualifier, see the Checker Framework manual for details
  *
- * @see AnnotatedTypeFactory#createSupportedTypeQualifiers()
+ * @see org.checkerframework.framework.type.AnnotatedTypeFactory#createSupportedTypeQualifiers()
  * @checker_framework.manual #indicating-supported-annotations Indicating supported annotations
  */
 @Deprecated
