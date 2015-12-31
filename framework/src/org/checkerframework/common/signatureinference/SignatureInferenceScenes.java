@@ -68,32 +68,42 @@ import com.sun.tools.javac.code.Type.ClassType;
 /**
  * SignatureInferenceScenes represents a set of annotations that are inferred
  * in a program. It also writes those annotations into .jaif files.
- * This class infers annotations for fields, method return types, and method
+ * This class stores annotations for fields, method return types, and method
  * parameters.
+ * <p>
  * The set of annotations inferred for a certain class is stored in an
- * {@link annotations.el.AScene}, which will later be written into a .jaif file.
+ * {@link annotations.el.AScene}, which {@link #writeScenesToJaif} can write
+ * into a .jaif file.
  * For example, a class field of a class whose fully-qualified name is
  * my.package.MyClass will have its inferred type stored in a Scene, and later
  * written into a file named my.package.MyClass.jaif.
- *
+ * <p>
+ * This class populates the initial Scenes by reading existing .jaif files
+ * on the {@link #JAIF_FILES_PATH} directory. Having more information on those
+ * initial .jaif files means that the precision achieved by the signature
+ * inference analysis will be better. {@link #writeScenesToJaif} rewrites
+ * the initial .jaif files, and may create new ones.
+ * <p>
  * Calling an update* method
- * ({@link updateInferredFieldType}, {@link updateInferredMethodParametersTypes}, or
+ * ({@link updateInferredFieldType},
+ * {@link updateInferredMethodParametersTypes}, or
  * {@link updateInferredMethodReturnType}) 
- * reads the currently-stored type for an element in a Scene, if any,
- * and replaces it by the LUB of it and the update method's argument.
- *
+ * replaces the currently-stored type for an element in a Scene, if any,
+ * by the LUB of it and the update method's argument.
+ * <p>
  * This class does not store annotations for an element if the element has
- * explicit annotations - when calling an update* method passing as argument an
- * explicitly annotated field, method return, or method parameter, it's inferred
+ * explicit annotations -- when calling an update* method passing as argument an
+ * explicitly annotated field, method return, or method parameter, its inferred
  * type is not stored in a Scene.
- * TODO: We could add an option to update the type of explicitly annotated
- * elements, but this currently is not recommended since the
- * insert-annotations-to-source tool, which adds annotations from .jaif files
- * into source code, adds annotations on top of existing
- * annotations. See https://github.com/typetools/annotation-tools/issues/105
- *
- * @author pbsf
+ * <p>
+ *  @author pbsf
  */
+//  TODO: We could add an option to update the type of explicitly annotated
+//  elements, but this currently is not recommended since the
+//  insert-annotations-to-source tool, which adds annotations from .jaif files
+//  into source code, adds annotations on top of existing
+//  annotations. See https://github.com/typetools/annotation-tools/issues/105
+//  TODO: Ensure that annotations are added deterministically to .jaif files.
 public class SignatureInferenceScenes {
 
     /**
@@ -102,20 +112,20 @@ public class SignatureInferenceScenes {
      */
     public final static String JAIF_FILES_PATH = "build/jaif-files/";
 
-    /** Maps file paths (Strings) to Scenes. */
-    private static Map<String, AScene> scenes = new HashMap<String, AScene>();
+    /** Maps .jaif file paths (Strings) to Scenes. */
+    private static Map<String, AScene> scenes = new HashMap<>();
 
     /** Set containing Scenes that were modified since the last time all
      * Scenes were written into .jaif files. The String argument of this set
      * is a path to the .jaif file of the corresponding Scene in the set. It
      * is obtained by passing a class name as argument to the
      * {@link getJaifPath} method.
-     *
+     * <p>
      * Modifying a Scene means adding (or changing) a type annotation for a
-     * field, method return type or method parameter type in the Scene.
-     * (Scenes are modified by the method {@link updateAnnotationSetInScene})
+     * field, method return type, or method parameter type in the Scene.
+     * (Scenes are modified by the method {@link updateAnnotationSetInScene}).
      */
-    private static Set<String> modifiedScenes = new HashSet<String>();
+    private static Set<String> modifiedScenes = new HashSet<>();
 
     /**
      * Returns the String representing the .jaif path of a class given its name.
@@ -173,15 +183,19 @@ public class SignatureInferenceScenes {
     /**
      * Updates the parameters' types of the method methodElt in the Scene of the
      * class with symbol classSymbol.
-     *
+     * <p>
      * For each method parameter in methodElt:
-     *   If the Scene does not contain an annotated type for that parameter,
-     *   then the type of the respective value passed as argument in the
-     *   method call methodInvNode will be added to the parameter in the Scene.
-     *   If the Scene previously contained an annotated type for that parameter,
-     *   then its new type will be the LUB between the previous type and the
-     *   type of the respective value passed as argument in the method call.
-     *
+     *   <ul>
+     *     <li>If the Scene does not contain an annotated type for that
+     *     parameter, then the type of the respective value passed as argument
+     *     in the method call methodInvNode will be added to the parameter in
+     *     the Scene.</li>
+     *     <li>If the Scene previously contained an annotated type for that
+     *     parameter, then its new type will be the LUB between the previous
+     *     type and the type of the respective value passed as argument in the
+     *     method call.</li>
+     *   </ul>
+     * <p>
      * @param methodInvNode the node representing a method invocation.
      * @param classSymbol the symbol of the class that contains the method being
      * invoked.
@@ -218,12 +232,12 @@ public class SignatureInferenceScenes {
     /**
      * Updates the type of the field lhs in the Scene of the class with
      * symbol classSymbol.
-     *
+     * <p>
      * If the Scene contains no entry for the field lhs,
      * the entry will be created and its type will be the type of rhs. If the
      * Scene previously contained an entry/type for lhs, its new type will be
      * the LUB between the previous type and the type of rhs.
-     *
+     * <p>
      * @param lhs the field whose type will be refined.
      * @param rhs the expression being assigned to the field.
      * @param classTree the ClassTree where the assignment is invoked 
@@ -250,14 +264,14 @@ public class SignatureInferenceScenes {
     /**
      * Updates the return type of the method methodTree in the
      * Scene of the class with symbol classSymbol.
-     *
+     * <p>
      * If the Scene does not contain an annotated return type for the method
      * methodTree, then the type of the value passed to the return expression
      * will be added to the return type of that method in the Scene.
      * If the Scene previously contained an annotated return type for the
      * method methodTree, its new type will be the LUB between the previous
      * type and the type of the value passed to the return expression.
-     *
+     * <p>
      * @param retNode the node that contains the expression returned.
      * @param classSymbol the symbol of the class that contains the method.
      * @param atf the annotated type factory of a given type system, whose
@@ -282,12 +296,14 @@ public class SignatureInferenceScenes {
     }
 
     /**
-     * Updates the set of annotations in a location of a Scene. If the set of
-     * annotations (curAnnos) is empty, then the updated set will be the set of
-     * annotations in newATM.
-     * If curAnnos is not empty, the updated set will be the LUB between
-     * curAnnos and newATM.
-     *
+     * Updates the set of annotations in a location of a Scene.
+     *   <ul>
+     *     <li>If the set of annotations (curAnnos) is empty, then the updated
+     *     set will be the set of annotations in newATM.</li>
+     *     <li>If curAnnos is not empty, the updated set will be the LUB
+     *     between curAnnos and newATM.</li>
+     *   </ul>
+     * <p>
      * @param type ATypeElement of the Scene which will be modified.
      * @param atf the annotated type factory of a given type system, whose
      * type hierarchy will be used to update curAnnos.
@@ -374,7 +390,7 @@ public class SignatureInferenceScenes {
         // The others stay intact.
         Set<Class<? extends java.lang.annotation.Annotation>> supportedAnnos =
                 atf.getSupportedTypeQualifiers();
-        Set<Annotation> annosToRemove = new HashSet<Annotation>();
+        Set<Annotation> annosToRemove = new HashSet<>();
         for (Annotation anno: typeToUpdate.tlAnnotationsHere) {
             for (Class<? extends java.lang.annotation.Annotation> clazz : supportedAnnos) {
                 // TODO: Remove comparison by name, and make this routine more efficient.
@@ -421,7 +437,7 @@ public class SignatureInferenceScenes {
      */
     private static Annotation annotationMirrorToAnnotation(AnnotationMirror am) {
         AnnotationDef def = new AnnotationDef(AnnotationUtils.annotationName(am));
-        Map<String, AnnotationFieldType> fieldTypes = new HashMap<String, AnnotationFieldType>();
+        Map<String, AnnotationFieldType> fieldTypes = new HashMap<>();
         // Handling cases where there are fields in annotations.
         for (ExecutableElement ee : am.getElementValues().keySet()) {
             AnnotationFieldType aft = getAnnotationFieldType(ee, am.
@@ -435,13 +451,13 @@ public class SignatureInferenceScenes {
         // Now, we handle the values of those types below
         Map<? extends ExecutableElement, ? extends AnnotationValue> values =
                 am.getElementValues();
-        Map<String, Object> newValues = new HashMap<String, Object>();
+        Map<String, Object> newValues = new HashMap<>();
         for (ExecutableElement ee : values.keySet()) {
             Object value = values.get(ee).getValue();
             if (value instanceof List) {
                 @SuppressWarnings("unchecked")
                 List<Object> valueList = (List<Object>)value;
-                List<Object> newList = new ArrayList<Object>();
+                List<Object> newList = new ArrayList<>();
                 // If we have a List here, then it is a List of AnnotatedValue.
                 // Converting each AnnotatedValue to its respective Java type:
                 for (Object o : valueList) {
@@ -520,7 +536,7 @@ public class SignatureInferenceScenes {
      * @param builder is the AnnotationBuilder
      */
     @SuppressWarnings("unchecked") // This is actually checked in the first
-    //instanceOf call.
+    // instanceOf call below.
     private static void addFieldToAnnotationBuilder(String fieldKey, Object obj,
             AnnotationBuilder builder) {
         if (obj instanceof List<?>) {
@@ -567,11 +583,12 @@ public class SignatureInferenceScenes {
     /**
      * Returns the ClassSymbol of the class encapsulating
      * the node n passed as parameter.
+     * <p>
      * If the receiver of field is an instance of "this", the implementation
      * obtains the ClassSymbol by using classTree. Otherwise, it finds the class
      * of the receiverNode and uses it to obtain the ClassSymbol.
-     * TODO: This method could be moved somewhere else.
      */
+    // TODO: This method could be moved somewhere else.
     private static ClassSymbol getEnclosingClassSymbol(
             ClassTree classTree, FieldAccessNode field) {
         Node receiverNode = field.getReceiver();

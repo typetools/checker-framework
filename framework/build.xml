@@ -367,15 +367,17 @@
     <target name="signature-inference-tests" depends="jar,build-tests"
             description="Run tests for signature inference using .jaif files">
         <delete dir="build/signature-inference"/>
-        <!--Runs the checker on test files to find expected errors and generate
-                .jaif files.-->
+        <!--Runs the checker on test files with the signature inference on
+             to generate .jaif files.-->
         <antcall target="-run-tests">
             <param name="param" value="tests.SignatureInferenceTest"/>
         </antcall>
 
         <delete dir="tests/signature-inference/annotated"/>
 
-        <!-- Copying all test files to another directory, removing expected errors. -->
+        <!-- Copying all test files to another directory, removing all
+             expected errors that should not occur after inserting inferred
+             annotations from .jaif files. -->
         <copy todir="tests/signature-inference/annotated">
             <fileset dir="tests/signature-inference/non-annotated"/>
             <filterchain>
@@ -385,7 +387,8 @@
             </filterchain>
         </copy>
 
-        <!-- Copying a file while maintaining expected errors. -->
+        <!-- The only file that expected errors are maintained is
+             ExpectedErrors.java. -->
         <delete file="tests/signature-inference/annotated/ExpectedErrors.java"/>
         <copy file="tests/signature-inference/non-annotated/ExpectedErrors.java"
             todir="tests/signature-inference/annotated"/>
