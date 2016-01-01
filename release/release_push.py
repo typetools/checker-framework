@@ -140,7 +140,7 @@ def is_file_empty( filename ):
 def run_link_checker( site, output ):
     delete_if_exists( output )
     check_links_script = os.path.join(SCRIPTS_DIR, "checkLinks.sh")
-    cmd = ["sh", check_links_script, site]
+    cmd = ["PLUME_BIN=%s/bin" % PLUME_LIB, "sh", check_links_script, site]
 
     out_file = open( output, 'w+' )
 
