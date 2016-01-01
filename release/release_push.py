@@ -141,13 +141,15 @@ def run_link_checker( site, output ):
     delete_if_exists( output )
     check_links_script = os.path.join(SCRIPTS_DIR, "checkLinks.sh")
     cmd = ["sh", check_links_script, site]
+    env = {"PLUME_BIN": "%s/bin" % PLUME_LIB}
 
     out_file = open( output, 'w+' )
 
-    print("Executing: " + " ".join(cmd) )
-    process = subprocess.Popen(cmd,
-                               env={"PLUME_BIN": "PLUME_BIN=%s/bin" % PLUME_LIB},
-                               stdout=out_file, stderr=out_file)
+    print("Executing: "
+          + ' '.join("%s=%r" % (key2,val2) for (key2,val2) in env.items())
+          + " "
+          + " ".join(cmd) )
+    process = subprocess.Popen(cmd, env=env, stdout=out_file, stderr=out_file)
     process.communicate()
     process.wait()
     out_file.close()
