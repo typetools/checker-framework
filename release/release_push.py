@@ -140,12 +140,14 @@ def is_file_empty( filename ):
 def run_link_checker( site, output ):
     delete_if_exists( output )
     check_links_script = os.path.join(SCRIPTS_DIR, "checkLinks.sh")
-    cmd = ["PLUME_BIN=%s/bin" % PLUME_LIB, "sh", check_links_script, site]
+    cmd = ["sh", check_links_script, site]
 
     out_file = open( output, 'w+' )
 
     print("Executing: " + " ".join(cmd) )
-    process = subprocess.Popen(cmd, stdout=out_file, stderr=out_file)
+    process = subprocess.Popen(cmd,
+                               env={"PLUME_BIN": "PLUME_BIN=%s/bin" % PLUME_LIB},
+                               stdout=out_file, stderr=out_file)
     process.communicate()
     process.wait()
     out_file.close()
