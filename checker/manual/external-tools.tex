@@ -36,15 +36,9 @@ licensing restrictions.
 
 \section{Javac compiler\label{javac-installation}}
 
-If you ordinarily use the \code{javac} compiler from the command line, then you can
-instead use the ``Checker Framework compiler'', a variant of the OpenJDK
-\code{javac} that recognizes type annotations in comments and that includes
-the Checker Framework jar files on its path.
-The Checker Framework compiler is backward-compatible, so using it as your
-Java compiler, even when you are not doing pluggable type-checking, has no
-negative consequences.
-
-You can use the Checker Framework compiler in three ways.  You can use any
+To perform pluggable type-checking, run the \<javac> compiler with the
+Checker Framework on the classpath.
+There are three ways to achieve this.  You can use any
 one of them.  However, if you are using the Windows command shell, you must
 use the last one.
 % Is the last one required for Cygwin, as well as for the Windows command shell?
@@ -55,8 +49,9 @@ use the last one.
     Option 1:
     Add directory
     \code{.../checker-framework-1.9.9/checker/bin} to your path, \emph{before} any other
-    directory that contains a \<javac> executable.  Now, whenever
-    you run \code{javac}, you will use the updated compiler.  If you are
+    directory that contains a \<javac> executable.
+
+    If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
@@ -65,6 +60,13 @@ use the last one.
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
     setting takes effect.
+
+    Now, whenever you run \code{javac}, you will use the ``Checker
+    Framework compiler''.  It is exactly the same as the OpenJDK compiler,
+    with two small differences:  it includes the Checker Framework jar file
+    on its classpath, and it recognizes type annotations in comments (see
+    Section~\ref{annotations-in-comments}).
+    
   \item
     \begin{sloppypar}
     Option 2:
@@ -94,7 +96,7 @@ use the last one.
    may get the following error when running a class that was compiled by
    javacheck:
 \begin{Verbatim}
-UnsupportedClassVersionError: ... : Unsupported major.minor version 52.0
+  UnsupportedClassVersionError: ... : Unsupported major.minor version 52.0
 \end{Verbatim}
 
    \item
