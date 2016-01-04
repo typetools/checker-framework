@@ -85,7 +85,7 @@ def print_projects( print_error_label, indent_level, indent_size ):
     indentation = duplicate( duplicate( " ", indent_size ), indent_level )
     project_to_short_cols = 27
 
-    if( print_error_label ):
+    if ( print_error_label ):
         print("projects:   You must specify at least one of the following projects or \"all\"")
 
     print( indentation + pad_to( "project", " ", project_to_short_cols ) + "short-name" )
@@ -547,7 +547,7 @@ def check_repos(repos, fail_on_error):
     for repo in repos:
         if repo_exists(repo):
             if not is_repo_cleaned_and_updated(repo):
-                if(fail_on_error):
+                if (fail_on_error):
                     raise Exception('repo %s is not cleaned and updated!' % repo)
                 else:
                     if not prompt_yn( '%s is not clean and up to date! Continue?' % repo):
