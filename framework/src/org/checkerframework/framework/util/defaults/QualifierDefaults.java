@@ -105,6 +105,16 @@ public class QualifierDefaults {
     private final Map<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
 
     /**
+     * CLIMB-to-the-top locations whose standard default is top
+     */
+    public static final DefaultLocation[] standardClimbDefaultsTop = { DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,
+                                                                       DefaultLocation.EXCEPTION_PARAMETER, DefaultLocation.IMPLICIT_UPPER_BOUNDS };
+    /**
+     * CLIMB-to-the-top locations whose standard default is bottom
+     */
+    public static final DefaultLocation[] standardClimbDefaultsBottom = { DefaultLocation.IMPLICIT_LOWER_BOUNDS };
+
+    /**
      * List of DefaultLocations which are valid for unchecked code defaults.
      */
     private static final DefaultLocation[] validUncheckedCodeDefaultLocations = {
@@ -176,6 +186,31 @@ public class QualifierDefaults {
                 // Only add standard defaults in locations where a default has not be specified
                 if (!conflictsWithExistingDefaults(uncheckedCodeDefaults, bottom, loc)) {
                     addUncheckedCodeDefault(bottom, loc);
+                }
+            }
+        }
+    }
+
+    /**
+     * Add standard CLIMB-to-the-top defaults that do not conflict with previously added defaults.
+     *
+     * @param tops    AnnotationMirrors that are top
+     * @param bottoms AnnotationMirrors that are bottom
+     */
+    public void addClimbStandardDefaults(Iterable<? extends AnnotationMirror> tops, Iterable<? extends AnnotationMirror> bottoms) {
+        for (DefaultLocation loc : standardClimbDefaultsTop) {
+            for (AnnotationMirror top : tops) {
+                if (!conflictsWithExistingDefaults(checkedCodeDefaults, top, loc)) {
+                    addCheckedCodeDefault(top, loc);
+                }
+            }
+        }
+
+        for (DefaultLocation loc : standardClimbDefaultsBottom) {
+            for (AnnotationMirror bottom : bottoms) {
+                // Only add standard defaults in locations where a default has not be specified
+                if (!conflictsWithExistingDefaults(checkedCodeDefaults, bottom, loc)) {
+                    addCheckedCodeDefault(bottom, loc);
                 }
             }
         }
