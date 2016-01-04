@@ -22,11 +22,11 @@ For type-system developers:
    now deprecated.  To indicate which annotations a checker supports, see
    http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#indicating-supported-annotations .
    Support for TypeQualifier{s} will be removed in the next release.
- * We renamed
+ * Renamed
    org.checkerframework.framework.qual.Default{,Qualifier}ForUnannotatedCode to
    DefaultInUncheckedCodeFor and DefaultQualifierInHierarchyInUncheckedCode.
 
-Closed issues: 169, 448, 478, 496, 516, 529.
+Closed issues: 169, 363, 448, 478, 496, 516, 529.
 
 ---------------------------------------------------------------------------
 
