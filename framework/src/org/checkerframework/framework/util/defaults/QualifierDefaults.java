@@ -131,6 +131,9 @@ public class QualifierDefaults {
      */
     public static final DefaultLocation[] standardUncheckedDefaultsBottom = { DefaultLocation.PARAMETERS,
                                                                                     DefaultLocation.LOWER_BOUNDS };
+    private final boolean useUncheckedCodeDefaultsSource;
+    private final boolean useUncheckedCodeDefaultsBytecode;
+
     /**
      * Returns an array of locations that are valid for the unchecked value
      * defaults.  These are simply by syntax, since an entire file is typechecked,
@@ -148,6 +151,8 @@ public class QualifierDefaults {
         this.elements = elements;
         this.atypeFactory = atypeFactory;
         this.upstreamCheckerNames = atypeFactory.getContext().getChecker().getUpstreamCheckerNames();
+        this.useUncheckedCodeDefaultsBytecode = atypeFactory.getContext().getChecker().useUncheckedCodeDefault("bytecode");
+        this.useUncheckedCodeDefaultsSource = atypeFactory.getContext().getChecker().useUncheckedCodeDefault("source");
     }
 
     /**
@@ -452,10 +457,11 @@ public class QualifierDefaults {
         }
 
         {
-            AnnotatedFor af = elt.getAnnotation(AnnotatedFor.class);
+            AnnotationMirror af = atypeFactory.getDeclAnnotation(elt, AnnotatedFor.class);
+
 
             if (af != null) {
-                String[] checkers = af.value();
+                List<String> checkers = AnnotationUtils.getElementValueArray(af,"value",String.class,false);
 
                 if (checkers != null) {
                     for (String checker : checkers) {
@@ -470,7 +476,8 @@ public class QualifierDefaults {
 
         if (elementAnnotatedForThisChecker == false) {
             Element parent;
-            if (elt.getKind() == ElementKind.PACKAGE) // Must NOT look at packages.
+            if (elt.getKind() == ElementKind.PACKAGE)
+                // elt.getEnclosingElement() on a package is null
                 parent = ((Symbol) elt).owner;
             else
                 parent = elt.getEnclosingElement();
@@ -549,28 +556,32 @@ public class QualifierDefaults {
      * should be applied for it. Handles elements from bytecode or source code.
      */
     public boolean applyUncheckedCodeDefaults(final Element annotationScope) {
-        if(annotationScope == null){
+
+        if(annotationScope == null) {
             return false;
         }
 
-        boolean annotatedForThisChecker = isElementAnnotatedForThisChecker(annotationScope);
         if (uncheckedCodeDefaults.size() > 0) {
             // TODO: I would expect this:
             //   atypeFactory.isFromByteCode(annotationScope)) {
             // to work instead of the
             // isElementFromByteCode/declarationFromElement/isFromStubFile calls,
             // but it doesn't work correctly and tests fail.
-            // (That whole @FromStubFile and @FromByteCode annotation
-            // logic should be replaced by something sensible.)
-            SourceChecker checker = atypeFactory.getContext().getChecker();
-            return (checker.hasOption("safeDefaultsForUnannotatedBytecode") &&
-                    ElementUtils.isElementFromByteCode(annotationScope) &&
-                    atypeFactory.declarationFromElement(annotationScope) == null &&
-                    !atypeFactory.isFromStubFile(annotationScope)) ||
-                   (checker.hasOption("useSafeDefaultsForUnannotatedSourceCode") &&
-                    !annotatedForThisChecker);
-        }
 
+            boolean isFromStubFile = atypeFactory.isFromStubFile(annotationScope);
+            boolean isBytecode = ElementUtils.isElementFromByteCode(annotationScope) &&
+                           atypeFactory.declarationFromElement(annotationScope) == null &&
+                           !isFromStubFile;
+            if (isBytecode) {
+                return useUncheckedCodeDefaultsBytecode;
+            } else if (isFromStubFile){
+                // TODO: look for @AnnotatedFor once they has been added to stub files
+                // for now, stub files are always treated as checked code
+                return false;
+            } else if (useUncheckedCodeDefaultsSource) {
+                return !isElementAnnotatedForThisChecker(annotationScope);
+            }
+        }
         return false;
     }
 
