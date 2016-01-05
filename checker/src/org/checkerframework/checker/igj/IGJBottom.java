@@ -1,5 +1,6 @@
 package org.checkerframework.checker.igj;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 import org.checkerframework.checker.igj.qual.I;
@@ -26,5 +27,7 @@ import com.sun.source.tree.Tree.Kind;
         typeClasses = { AnnotatedPrimitiveType.class }
 )
 @DefaultFor({DefaultLocation.LOWER_BOUNDS})
-@Target({}) // empty target prevents programmers from writing this in a program
+@Target({ElementType.TYPE_USE})
+@TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
+    DefaultLocation.EXPLICIT_UPPER_BOUNDS})
 @interface IGJBottom {}
