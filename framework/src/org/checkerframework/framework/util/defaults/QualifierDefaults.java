@@ -119,6 +119,22 @@ public class QualifierDefaults {
     };
 
     /**
+     * Standard unchecked default locations that should be top
+     */
+    // Fields are default to top so that warnings are issued at field reads, which we believe are more common
+    // than field writes. Future work is to specify different defaults for field reads and field writes.
+    public static final DefaultLocation[] standardUncheckedDefaultsTop = { DefaultLocation.RETURNS,
+                                                                                 DefaultLocation.FIELD,
+                                                                                 DefaultLocation.UPPER_BOUNDS };
+    /**
+     * Standard unchecked default locations that should be bottom
+     */
+    public static final DefaultLocation[] standardUncheckedDefaultsBottom = { DefaultLocation.PARAMETERS,
+                                                                                    DefaultLocation.LOWER_BOUNDS };
+    private final boolean useUncheckedCodeDefaultsSource;
+    private final boolean useUncheckedCodeDefaultsBytecode;
+
+    /**
      * Returns an array of locations that are valid for the unchecked value
      * defaults.  These are simply by syntax, since an entire file is typechecked,
      * it is not possible for local variables to be unchecked.
@@ -135,6 +151,32 @@ public class QualifierDefaults {
         this.elements = elements;
         this.atypeFactory = atypeFactory;
         this.upstreamCheckerNames = atypeFactory.getContext().getChecker().getUpstreamCheckerNames();
+        this.useUncheckedCodeDefaultsBytecode = atypeFactory.getContext().getChecker().useUncheckedCodeDefault("bytecode");
+        this.useUncheckedCodeDefaultsSource = atypeFactory.getContext().getChecker().useUncheckedCodeDefault("source");
+    }
+
+    /**
+     * Add standard unchecked defaults that do not conflict with previously added defaults.
+     * @param tops AnnotationMirrors that are top
+     * @param bottoms AnnotationMirrors that are bottom
+     */
+    public void addUncheckedStandardDefaults(Iterable<? extends AnnotationMirror> tops, Iterable<? extends AnnotationMirror> bottoms){
+        for(DefaultLocation loc : standardUncheckedDefaultsTop) {
+            for (AnnotationMirror top : tops) {
+                if (!conflictsWithExistingDefaults(uncheckedCodeDefaults, top, loc)) {
+                    addUncheckedCodeDefault(top, loc);
+                }
+            }
+        }
+
+        for(DefaultLocation loc : standardUncheckedDefaultsBottom) {
+            for (AnnotationMirror bottom : bottoms) {
+                // Only add standard defaults in locations where a default has not be specified
+                if (!conflictsWithExistingDefaults(uncheckedCodeDefaults, bottom, loc)) {
+                    addUncheckedCodeDefault(bottom, loc);
+                }
+            }
+        }
     }
 
     /**
@@ -202,20 +244,25 @@ public class QualifierDefaults {
     }
 
     private void checkDuplicates(DefaultSet previousDefaults, AnnotationMirror newAnno, DefaultLocation newLoc ) {
+        if (conflictsWithExistingDefaults(previousDefaults,newAnno,newLoc)) {
+            ErrorReporter.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
+                                             + previousDefaults + " and new: "
+                                             + (new Default(newAnno, newLoc)));
+        }
+    }
+
+    private boolean conflictsWithExistingDefaults(DefaultSet previousDefaults, AnnotationMirror newAnno, DefaultLocation newLoc ) {
         final QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
 
         for (Default previous : previousDefaults ) {
-
             if (!newAnno.equals(previous.anno) && previous.location == newLoc) {
                 final AnnotationMirror previousTop = qualHierarchy.getTopAnnotation(previous.anno);
-
                 if (qualHierarchy.isSubtype(newAnno, previousTop)) {
-                    ErrorReporter.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
-                                            + previousDefaults + " and new: " + (new Default(newAnno, newLoc)));
+                    return true;
                 }
             }
-
         }
+        return false;
     }
 
     /**
@@ -410,10 +457,11 @@ public class QualifierDefaults {
         }
 
         {
-            AnnotatedFor af = elt.getAnnotation(AnnotatedFor.class);
+            AnnotationMirror af = atypeFactory.getDeclAnnotation(elt, AnnotatedFor.class);
+
 
             if (af != null) {
-                String[] checkers = af.value();
+                List<String> checkers = AnnotationUtils.getElementValueArray(af,"value",String.class,false);
 
                 if (checkers != null) {
                     for (String checker : checkers) {
@@ -428,7 +476,8 @@ public class QualifierDefaults {
 
         if (elementAnnotatedForThisChecker == false) {
             Element parent;
-            if (elt.getKind() == ElementKind.PACKAGE) // Must NOT look at packages.
+            if (elt.getKind() == ElementKind.PACKAGE)
+                // elt.getEnclosingElement() on a package is null
                 parent = ((Symbol) elt).owner;
             else
                 parent = elt.getEnclosingElement();
@@ -507,7 +556,10 @@ public class QualifierDefaults {
      * should be applied for it. Handles elements from bytecode or source code.
      */
     public boolean applyUncheckedCodeDefaults(final Element annotationScope) {
-        boolean annotatedForThisChecker = isElementAnnotatedForThisChecker(annotationScope);
+
+        if(annotationScope == null) {
+            return false;
+        }
 
         if (uncheckedCodeDefaults.size() > 0) {
             // TODO: I would expect this:
@@ -515,17 +567,21 @@ public class QualifierDefaults {
             // to work instead of the
             // isElementFromByteCode/declarationFromElement/isFromStubFile calls,
             // but it doesn't work correctly and tests fail.
-            // (That whole @FromStubFile and @FromByteCode annotation
-            // logic should be replaced by something sensible.)
-            SourceChecker checker = atypeFactory.getContext().getChecker();
-            return (checker.hasOption("safeDefaultsForUnannotatedBytecode") &&
-                    ElementUtils.isElementFromByteCode(annotationScope) &&
-                    atypeFactory.declarationFromElement(annotationScope) == null &&
-                    !atypeFactory.isFromStubFile(annotationScope)) ||
-                   (checker.hasOption("useSafeDefaultsForUnannotatedSourceCode") &&
-                    !annotatedForThisChecker);
-        }
 
+            boolean isFromStubFile = atypeFactory.isFromStubFile(annotationScope);
+            boolean isBytecode = ElementUtils.isElementFromByteCode(annotationScope) &&
+                           atypeFactory.declarationFromElement(annotationScope) == null &&
+                           !isFromStubFile;
+            if (isBytecode) {
+                return useUncheckedCodeDefaultsBytecode;
+            } else if (isFromStubFile){
+                // TODO: look for @AnnotatedFor once they has been added to stub files
+                // for now, stub files are always treated as checked code
+                return false;
+            } else if (useUncheckedCodeDefaultsSource) {
+                return !isElementAnnotatedForThisChecker(annotationScope);
+            }
+        }
         return false;
     }
 
