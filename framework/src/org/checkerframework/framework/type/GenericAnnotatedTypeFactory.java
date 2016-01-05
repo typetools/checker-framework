@@ -339,126 +339,106 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Create {@link QualifierDefaults} which handles checker specified defaults
-     * Subclasses should override {@code addCheckedCodeDefaults(QualifierDefaults defs)} or
-     * {@code addUncheckedCodeDefaults(QualifierDefaults defs)} to add more defaults or
-     * use different defaults.
-     *
+     * Create {@link QualifierDefaults} which handles user specified defaults
      * @return the QualifierDefaults class
-     */
-    protected final QualifierDefaults createQualifierDefaults() {
-        QualifierDefaults defs = new QualifierDefaults(elements, this);
-        addCheckedCodeDefaults(defs);
-        addUncheckedCodeDefaults(defs);
-        return defs;
-    }
-
-    /**
-     * Adds default qualifiers for type-checked code by
-     * reading  {@code @DefaultFor} and {@code @DefaultQualifierInHeirarchy}
-     * meta-annotations.
-     * Subclasses may override this method to add defaults that cannot be specified with
-     * a {@code @DefaultFor} or {@code @DefaultQualifierInHierarchy} meta-annotations.
      *
-     * @param defs QualifierDefault object to which defaults are added
+     * TODO: should this be split in two methods to allow separate reuse?
      */
-    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
-        boolean foundOtherwise = false;
-        // Add defaults from @DefaultFor and @DefaultQualiferInHeirarchy
+    protected QualifierDefaults createQualifierDefaults() {
+        QualifierDefaults defs = new QualifierDefaults(elements, this);
+        boolean foundDefaultOtherwise = false;
+        boolean foundDefaultOtherwiseForUnannotatedCode = false;
+
+        // TODO: Verify that only one default per location type is present.
         for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
             if (defaultFor != null) {
-                final DefaultLocation[] locations = defaultFor.value();
-                defs.addCheckedCodeDefaults(AnnotationUtils
-                                                    .fromClass(elements, qual),
-                                                   locations);
-                foundOtherwise = foundOtherwise ||  Arrays.asList(locations).contains(DefaultLocation.OTHERWISE);
+                final DefaultLocation [] locations = defaultFor.value();
+                defs.addCheckedCodeDefaults(AnnotationUtils.fromClass(elements, qual), locations);
+
+                foundDefaultOtherwise = foundDefaultOtherwise ||
+                        Arrays.asList(locations).contains(DefaultLocation.OTHERWISE);
             }
 
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
                 if (defaultFor != null) {
                     // A type qualifier should either have a DefaultFor or
                     // a DefaultQualifierInHierarchy annotation
-                    ErrorReporter
-                            .errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
-                                                "qualifier has both @DefaultFor and @DefaultQualifierInHierarchy annotations: "
-                                                + qual.getCanonicalName());
+                    ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
+                            "qualifier has both @DefaultFor and @DefaultQualifierInHierarchy annotations: " +
+                            qual.getCanonicalName());
                 } else {
-                    defs.addCheckedCodeDefault(AnnotationUtils
-                                                       .fromClass(elements,
-                                                                         qual),
-                                                      DefaultLocation.OTHERWISE);
-                    foundOtherwise = true;
+                    defs.addCheckedCodeDefault(AnnotationUtils.fromClass(elements, qual),
+                            DefaultLocation.OTHERWISE);
+                    foundDefaultOtherwise = true;
                 }
             }
-        }
-        // If Unqualified is a supported qualifier, make it the default.
-        AnnotationMirror unqualified = AnnotationUtils.fromClass(elements,
-                                                                        Unqualified.class);
-        if (!foundOtherwise && this.isSupportedQualifier(unqualified)) {
-            defs.addCheckedCodeDefault(unqualified, DefaultLocation.OTHERWISE);
-            foundOtherwise = true;
-        }
 
-        if(!foundOtherwise) {
-            ErrorReporter
-                    .errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: "
-                                        + "@DefaultQualifierInHierarchy or @DefaultFor(DefaultLocation.OTHERWISE) not found. "
-                                        + "Every checker must specify a default qualifier.");
-        }
-    }
+            // Add defaults for unannotated code if conservative unannotated flag is passed.
+            if (// !checker.hasOption("unsafeDefaultsForUnannotatedBytecode")
+                    // temporarily use unsafe defaults for bytecode, unless option given
+                    checker.hasOption("safeDefaultsForUnannotatedBytecode") ||
+                    // This block may need to be split after safeDefaults... is reverted to unsafeDefaults...
+                    checker.hasOption("useSafeDefaultsForUnannotatedSourceCode")) {
+                DefaultInUncheckedCodeFor defaultForUnannotated = qual.getAnnotation(DefaultInUncheckedCodeFor.class);
 
-    /**
-     * Adds default qualifiers for code that is not type-checked by
-     * reading  {@code @DefaultForUncheckedCode} and {@code @DefaultQualifierForUncheckedCode}
-     * meta-annotations. Then it applies the standard
-     * unchecked code defaults, if a default was not specified for a particular location.
-     * <p>
-     * Standard unchecked code default are: <br>
-     * top: {@code DefaultLocation.RETURNS,DefaultLocation.FIELD,DefaultLocation.UPPER_BOUNDS}<br>
-     * bottom: {@code DefaultLocation.PARAMETERS, DefaultLocation.LOWER_BOUNDS}<br>
-     * <p>
-     * If {@code @DefaultQualiferForUnchecked} code is not found or a default for {@code DefaultLocation.Otherwise}
-     * is not used, the defaults for checked code will be applied to locations without a default for unchecked code.
-     * <p>
-     * Subclasses may override this method to add defaults that cannot be specified with
-     * a {@code @DefaultForUncheckedCode} or {@code @DefaultQualifierForUncheckedCode} meta-annotations or to change
-     * the standard defaults.
-     *
-     * @param defs QualifierDefault object to which defaults are added
-     */
-    protected void addUncheckedCodeDefaults(QualifierDefaults defs) {
-        for (Class<? extends Annotation> annotation : getSupportedTypeQualifiers()) {
-            DefaultInUncheckedCodeFor defaultForUnannotated = annotation.getAnnotation(DefaultInUncheckedCodeFor.class);
-
-            if (defaultForUnannotated != null) {
-                final DefaultLocation[] locations = defaultForUnannotated.value();
-                defs.addUncheckedCodeDefaults(AnnotationUtils
-                                                      .fromClass(elements,
-                                                                        annotation),
-                                                     locations);
-            }
-
-            if (annotation.getAnnotation(DefaultQualifierInHierarchyInUncheckedCode.class) != null) {
                 if (defaultForUnannotated != null) {
-                    // A type qualifier should either have a DefaultForUncheckedCode or
-                    // a DefaultQualifierForUncheckedCode annotation.
-                    ErrorReporter
-                            .errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
-                                                "qualifier has both @DefaultForUncheckedCode and @DefaultQualifierInHierarchyForUncheckedCode annotations: "
-                                                + annotation.getCanonicalName());
-                } else {
-                    defs.addUncheckedCodeDefault(AnnotationUtils.fromClass(elements, annotation),
-                                                      DefaultLocation.OTHERWISE);
+                    final DefaultLocation [] locations = defaultForUnannotated.value();
+                    defs.addUncheckedCodeDefaults(AnnotationUtils.fromClass(elements, qual), locations);
+                    // TODO: here and for source code above, should ALL also be handled?
+                    foundDefaultOtherwiseForUnannotatedCode = foundDefaultOtherwiseForUnannotatedCode ||
+                            Arrays.asList(locations).contains(DefaultLocation.OTHERWISE);
+                }
+
+                if (qual.getAnnotation(DefaultQualifierInHierarchyInUncheckedCode.class) != null) {
+                    if (defaultForUnannotated != null) {
+                        // A type qualifier should either have a DefaultInUncheckedCodeFor or
+                        // a DefaultQualifierInHierarchyInUncheckedCode annotation.
+                        ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
+                                "qualifier has both @DefaultInUncheckedCodeFor and @DefaultQualifierInHierarchyInUncheckedCode annotations: " +
+                                qual.getCanonicalName());
+                    } else {
+                        defs.addUncheckedCodeDefault(AnnotationUtils.fromClass(elements, qual),
+                                    DefaultLocation.OTHERWISE);
+                        foundDefaultOtherwiseForUnannotatedCode = true;
+                    }
                 }
             }
         }
-        Set<? extends AnnotationMirror> tops = this.qualHierarchy.getTopAnnotations();
-        Set<? extends  AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
-        defs.addUncheckedStandardDefaults(tops, bottoms);
 
-        // Don't require @DefaultQualifierForUncheckedCode or an unchecked default for DefaultLocation.OTHERWISE.
-        // if one isn't specified the defaults for checked code will be used.
+        // If Unqualified is a supported qualifier, make it the default.
+        // This is for convenience only. Maybe remove.
+        AnnotationMirror unqualified = AnnotationUtils.fromClass(elements, Unqualified.class);
+        if (!foundDefaultOtherwise &&
+                this.isSupportedQualifier(unqualified)) {
+            defs.addCheckedCodeDefault(unqualified, DefaultLocation.OTHERWISE);
+        }
+
+        // Add defaults for unannotated code if conservative unannotated flag is passed and
+        // no defaults were given.
+        if ((// !checker.hasOption("unsafeDefaultsForUnannotatedBytecode")
+                // temporarily use unsafe defaults for bytecode, unless option given
+                checker.hasOption("safeDefaultsForUnannotatedBytecode") ||
+                // This block may need to be split after safeDefaults... is reverted to unsafeDefaults...
+                checker.hasOption("useSafeDefaultsForUnannotatedSourceCode")) &&
+                !foundDefaultOtherwiseForUnannotatedCode) {
+            Set<? extends AnnotationMirror> tops = this.qualHierarchy.getTopAnnotations();
+            for (AnnotationMirror top : tops) {
+                defs.addUncheckedCodeDefault(top, DefaultLocation.RETURNS);
+                defs.addUncheckedCodeDefault(top, DefaultLocation.UPPER_BOUNDS);
+            }
+            Set<? extends AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
+            for (AnnotationMirror bot : bottoms) {
+                defs.addUncheckedCodeDefault(bot, DefaultLocation.PARAMETERS);
+                defs.addUncheckedCodeDefault(bot, DefaultLocation.LOWER_BOUNDS);
+                defs.addUncheckedCodeDefault(bot, DefaultLocation.FIELD);
+                // TODO: this isn't simply DefaultLocation.OTHERWISE, because that would
+                // also apply to type declarations, which isn't currently working as desired.
+                // See: https://groups.google.com/d/msg/checker-framework-dev/vk2V6ZFKPLk/v3hENw-e7gsJ
+            }
+        }
+
+        return defs;
     }
 
     /**

@@ -1,6 +1,6 @@
 import org.checkerframework.framework.qual.AnnotatedFor;
 
-// Tests that the unchecked source code defaults option does not
+// Tests that the -AsafeDefaultsForUnannotatedBytecode option does not
 // affect defaulting nor suppress errors in source code.
 
 class BasicTest {

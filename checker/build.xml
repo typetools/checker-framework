@@ -787,7 +787,7 @@
     </target>
 
     <target name="nullness-safedefaultsbytecode-tests" depends="jar,build-tests"
-            description="Run tests for the Nullness Checker using -AuseDefaultsForUncheckedCode=-source,bytecode">
+            description="Run tests for the Nullness Checker using -AsafeDefaultsForUnannotatedBytecode">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessSafeDefaultsBytecodeTest"/>
         </antcall>

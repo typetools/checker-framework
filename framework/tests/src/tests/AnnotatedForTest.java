@@ -17,7 +17,7 @@ public class AnnotatedForTest extends CheckerFrameworkTest {
               "subtyping",
               "-Anomsgtext",
               "-Aquals=tests.util.SubQual,tests.util.SuperQual",
-              "-AuseDefaultsForUncheckedCode=source,bytecode");
+              "-AuseSafeDefaultsForUnannotatedSourceCode");
     }
 
 

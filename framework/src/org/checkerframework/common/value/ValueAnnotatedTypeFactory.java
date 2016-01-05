@@ -162,7 +162,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private AnnotatedTypeMirror postFixInt(AnnotatedTypeMirror anno,
             boolean increment) {
-        List<Long> values = getIntValues(anno.getAnnotation(IntVal.class));
+        List<Long> values = getIntValues(
+                anno.getAnnotation(IntVal.class));
         List<? extends Number> castedValues = NumberUtils.castNumbers(
                 anno.getUnderlyingType(), values);
         List<Long> results = new ArrayList<>();
@@ -223,12 +224,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new ValueQualifierHierarchy(factory);
     }
-
     @Override
-    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
-        defs.addCheckedCodeDefault(UNKNOWNVAL, DefaultLocation.OTHERWISE);
-        defs.addCheckedCodeDefault(BOTTOMVAL, DefaultLocation.LOWER_BOUNDS);
-        super.addCheckedCodeDefaults(defs);
+    protected QualifierDefaults createQualifierDefaults() {
+        QualifierDefaults defaults = super.createQualifierDefaults();
+        defaults.addCheckedCodeDefault(UNKNOWNVAL, DefaultLocation.OTHERWISE);
+        defaults.addCheckedCodeDefault(BOTTOMVAL, DefaultLocation.LOWER_BOUNDS);
+
+        return defaults;
     }
 
     @Override

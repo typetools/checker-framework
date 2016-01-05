@@ -6,15 +6,15 @@ import java.lang.annotation.*;
 
 /**
  * Indicates that the annotated qualifier is the default qualifier on
- * unannotated type uses (in bytecode or source code that has not been type-checked).
+ * unannotated type uses (in bytecode or source code).
  * <p>
  *
- * This qualifier only applies if the
- * -AuseDefaultsForUncheckedCode command-line option enables unchecked code defaults.
- * They can be enabled for
- * source and bytecode separately.  If the unchecked code defaults are enabled for
- * source code, they will only be applied to source code not annotated with
- * {@link AnnotatedFor} for the checker being executed.
+ * This qualifier applies to unannotated type uses in bytecode only if the
+ * -AsafeDefaultsForUnannotatedBytecode command-line option is passed.
+ * This qualifier applies to unannotated type uses in source code only if the
+ * -AuseSafeDefaultsForUnannotatedSourceCode command-line
+ * option is passed and the containing class is not annotated with
+ * {@code @}{@link AnnotatedFor} for the checker being executed.
  * <p>
  *
  * Each type qualifier hierarchy may have at most one qualifier marked as
@@ -23,7 +23,7 @@ import java.lang.annotation.*;
  *
  * Note, this annotation is analogous to
  * {@code @}{@link DefaultQualifierInHierarchy} but for
- * unannotated type uses in code that has not been type-checked.
+ * unannotated type uses.
  * This qualifier is for type system developers, not end-users.
  * @see AnnotatedFor
  * @see DefaultInUncheckedCodeFor

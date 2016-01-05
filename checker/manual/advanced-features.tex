@@ -476,10 +476,12 @@ Note, the upper bound of the wildcard \code{? extends Object} is defaulted to
 \subsection{Default qualifiers for \<.class> files (conservative library defaults)\label{defaults-classfile}}
 
 (\emph{Note:} Currently, the conservative library defaults presented in this section
-are off by default and can be turned on by supplying the \<-AuseDefaultsForUncheckedcode=bytecode>
+are off by default and can be turned on by supplying the \<-AsafeDefaultsForUnannotatedBytecode>
 command-line option.  In a future release, they will be turned on
 by default and it will be possible to turn them off by supplying a
-\<-AuseDefaultsForUncheckedCode=-byte> command-line option.)
+\<-AunsafeDefaultsForUnannotatedBytecode> command-line option;
+the \<-AsafeDefaultsForUnannotatedBytecode>
+command-line option will no longer exist.)
 
 The defaulting rules presented so far apply to source code that is read by
 the compiler.  When the compiler reads a \<.class> file, different
@@ -507,15 +509,15 @@ If the checker was not run during the compiler execution that created the
 that the programmer wrote explicitly.  (Furthermore, there is no guarantee
 that these qualifiers are correct, since they have not been checked.)
 In this case, each checker decides what qualifier to use for the
-locations where the programmer did not write an annotation.  Unless otherwise noted, the 
+locations where the programmer did not write an annotation.  The typical
 choice is:
 
 \begin{itemize}
 \item
-  For method parameters and lower bounds, use the bottom qualifier (see
+  For method parameters, use the bottom qualifier (see
   Section~\ref{bottom-qualifier}).
 \item
-  For method return values, fields, and upper bounds, use the top qualifier (see
+  For method return values, use the top qualifier (see
   Section~\ref{top-qualifier}).
 \end{itemize}
 

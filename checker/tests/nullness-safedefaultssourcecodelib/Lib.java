@@ -1,5 +1,5 @@
 // A library to be compiled with 
-//   -AuseDefaultsForUncheckedCode=source,bytecode
+//   -AuseSafeDefaultsForUnannotatedSourceCode
 // and then to be read from bytecode.
 
 import org.checkerframework.framework.qual.AnnotatedFor;

@@ -175,14 +175,18 @@ import com.sun.tools.javac.util.Log;
     // org.checkerframework.framework.flow.CFAbstractTransfer.sequentialSemantics
     "concurrentSemantics",
 
-    // Whether to use unchecked code defaults for bytecode and/or source code; these are configured
-    // by the specific type checker using @Default[QualifierInHierarchy]ForUncheckedCode.
-    // This option takes an argument "source,bytecode" the default is
-    // -source,-bytecode (eventually this will be changed to -source,bytecode).
-    // Note, if unchecked code defaults are turned on for source code, the unchecked
-    // defaults are not applied to code in scope of an @AnnotatedFor.
-    // org.checkerframework.framework.source.SourceChecker.useUncheckedCodeDefault
-    "useDefaultsForUncheckedCode",
+    // Whether to use conservative checks for unannotated bytecode; these are configured
+    // by the specific type checker using @DefaultInUncheckedCodeFor and @DefaultQualifierInHierarchyInUncheckedCode.
+    // They may require more annotations or stub files.
+    // "unsafeDefaultsForUnannotatedBytecode",
+    // TODO: temporary option to turn on sound behavior.
+    "safeDefaultsForUnannotatedBytecode",
+
+    // Whether to use conservative checks for unannotated source code; these are configured
+    // by the specific type checker using @DefaultInUncheckedCodeFor and @DefaultQualifierInHierarchyInUncheckedCode
+    // and only apply to source code that is not marked as @AnnotatedFor the checker
+    // that is being executed.
+    "useSafeDefaultsForUnannotatedSourceCode",
 
     // Whether to resolve reflective method invocations
     // resolveReflection=debug cause debugging information
@@ -1254,7 +1258,7 @@ public abstract class SourceChecker
                 return false; // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements, because they may not have an @AnnotatedFor.
         }
 
-        if (useUncheckedCodeDefault("source")) {
+        if (hasOption("useSafeDefaultsForUnannotatedSourceCode")) {
             // If we got this far without hitting an @AnnotatedFor and returning false, we DO suppress the warning.
             return true;
         }
@@ -1262,28 +1266,6 @@ public abstract class SourceChecker
         return false;
     }
 
-    /**
-     * Should unchecked code defaults be used for the kind of code indicated by the parameter
-     * @param kindOfCode source or bytecode
-     * @return whether unchecked code defaults should be used
-     */
-    public boolean useUncheckedCodeDefault(String kindOfCode) {
-        String option = this.getOption("useDefaultsForUncheckedCode", "-source,-bytecode");
-        if(option == null){
-            // if "useDefaultsForUncheckedCode" option is supplied without
-            // an argument, use the default.
-            option = "-source,-bytecode";
-        }
-
-        String[] args = option.split(",");
-        for (String arg : args) {
-            boolean value = !arg.contains("-");
-            if (arg.contains(kindOfCode)) {
-                return value;
-            }
-        }
-        return false;
-    }
     /**
      * Determines whether all the warnings pertaining to a given tree
      * should be suppressed.  Returns true if the element is within the scope
@@ -1314,7 +1296,7 @@ public abstract class SourceChecker
 
     private boolean isAnnotatedForThisCheckerOrUpstreamChecker(/*@Nullable*/ Element elt) {
 
-        if (elt == null || !useUncheckedCodeDefault("source"))
+        if (elt == null || !hasOption("useSafeDefaultsForUnannotatedSourceCode"))
             return false;
 
         /*@Nullable*/ AnnotatedFor anno = elt.getAnnotation(AnnotatedFor.class);
