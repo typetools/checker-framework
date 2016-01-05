@@ -2,6 +2,8 @@ package org.checkerframework.checker.propkey.qual;
 
 import java.lang.annotation.*;
 
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 
@@ -18,4 +20,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 //by overloading the AnnotatedTypeFactory.createTreeAnnotator method (see CompilerMessagesAnnotatedTypeFactory),
 //one exception to this is the I18nChecker
 @ImplicitFor(typeNames = {java.lang.Void.class})
+@DefaultFor(DefaultLocation.LOWER_BOUNDS)
 public @interface PropertyKeyBottom {}
