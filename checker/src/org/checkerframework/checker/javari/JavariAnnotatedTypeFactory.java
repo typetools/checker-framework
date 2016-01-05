@@ -21,6 +21,7 @@ import org.checkerframework.checker.javari.qual.ReadOnly;
 import org.checkerframework.checker.javari.qual.ThisMutable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -34,6 +35,7 @@ import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -117,6 +119,14 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.typePost = new JavariTypePostAnnotator();
 
         postInit();
+    }
+
+    @Override
+    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
+        // An error is issued if the type of a thrown exception
+        // is not @Mutable.
+        defs.addCheckedCodeDefault(MUTABLE, DefaultLocation.EXCEPTION_PARAMETER);
+        super.addCheckedCodeDefaults(defs);
     }
 
     @Override

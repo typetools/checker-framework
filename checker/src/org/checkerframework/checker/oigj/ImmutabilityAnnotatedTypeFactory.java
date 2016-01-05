@@ -7,6 +7,7 @@ import org.checkerframework.checker.oigj.qual.Mutable;
 import org.checkerframework.checker.oigj.qual.ReadOnly;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -28,6 +29,7 @@ import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -150,6 +152,14 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         BOTTOM_QUAL = AnnotationUtils.fromClass(elements, OIGJMutabilityBottom.class);
 
         this.postInit();
+    }
+
+    @Override
+    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
+        // An error is issued if the type of a thrown exception
+        // is not @Mutable.
+        defs.addCheckedCodeDefault(MUTABLE, DefaultLocation.EXCEPTION_PARAMETER);
+        super.addCheckedCodeDefaults(defs);
     }
 
     @Override

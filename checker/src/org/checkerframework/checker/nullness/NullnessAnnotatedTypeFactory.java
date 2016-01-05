@@ -13,6 +13,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.nullness.qual.Raw;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
@@ -28,6 +29,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.DependentTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -163,6 +165,14 @@ public class NullnessAnnotatedTypeFactory
         // do this last, as it might use the factory again.
         this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(
                 processingEnv, this);
+    }
+
+    @Override
+    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
+        // Exception parameters are always nonnull, so use that as the default
+        // rather than the CLIMB-to-the-top default.
+        defs.addCheckedCodeDefault(NONNULL, DefaultLocation.EXCEPTION_PARAMETER);
+        super.addCheckedCodeDefaults(defs);
     }
 
     @Override

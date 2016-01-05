@@ -6,12 +6,14 @@ import org.checkerframework.checker.oigj.qual.O;
 import org.checkerframework.checker.oigj.qual.World;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
@@ -35,6 +37,13 @@ public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
         BOTTOM_QUAL = AnnotationUtils.fromClass(elements, OIGJMutabilityBottom.class);
         this.postInit();
+    }
+
+    @Override
+    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
+        // See note org.checkerframework.checker.oigj.OwnershipVisitor.checkExceptionParameter()
+        defs.addCheckedCodeDefault(BOTTOM_QUAL, DefaultLocation.EXCEPTION_PARAMETER);
+        super.addCheckedCodeDefaults(defs);
     }
 
     @Override
