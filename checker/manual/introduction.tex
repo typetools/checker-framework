@@ -359,10 +359,10 @@ Section~\ref{writing-annotations}.  Here are some examples:
 
 %% This detail is not helpful so early in the manual, where it feels out of place.
 % \section{What comes with the Checker Framework distribution\label{release-content}}
-% 
+%
 % The Checker Framework distribution contains the following notable
 % directories and files:
-% 
+%
 % \begin{itemize}
 % \item \<changelog.txt> The changelog.
 % \item \<checker/bin/javac> A drop-in replacement for the \<javac> compiler that
@@ -385,7 +385,7 @@ Section~\ref{writing-annotations}.  Here are some examples:
 %   by IDEs.
 %   \end{itemize}
 % \end{itemize}
-% 
+%
 % % The source distribution contains a superset of these files.
 % % See the developer manual for details.
 
@@ -585,15 +585,15 @@ Unsound checking: ignore some errors
 \item \<-AassumeAssertionsAreEnabled>, \<-AassumeAssertionsAreDisabled>
   Whether to assume that assertions are enabled or disabled; see Section~\ref{type-refinement-assertions}.
 \item \<-AuseDefaultsForUncheckedCode>
-  Enables/disables unchecked code defualts.  Takes an argument ``source,bytecode''. 
+  Enables/disables unchecked code defualts.  Takes arguments ``source,bytecode''.
   ``-source,-bytecode'' is the default setting.
   ``bytecode'' specifies
-  whether the checker should use unchecked code defaults for unannotated
+  whether the checker should apply unchecked code defaults to
   bytecode; see
   Section~\ref{defaults-classfile}.
   Outside the scope of any relevant
-  \refqualclass{framework/qual}{AnnotatedFor} annotation, ``source`` specifies whether unchecked code  
-  default annotations are used in sourcecode and suppress all type-checking warnings; see
+  \refqualclass{framework/qual}{AnnotatedFor} annotation, ``source`` specifies whether unchecked code
+  default annotations are applied to source code and suppress all type-checking warnings; see
   Section~\ref{compiling-libraries}.
 \end{itemize}
 
@@ -654,7 +654,7 @@ Partially-annotated libraries
 % This item is repeated above:
 \item \<-AuseDefaultsForUncheckedCode=source>
   Outside the scope of any relevant
-  \refqualclass{framework/qual}{AnnotatedFor} annotation, use unchecked code 
+  \refqualclass{framework/qual}{AnnotatedFor} annotation, use unchecked code
   default annotations and suppress all type-checking warnings; see
   Section~\ref{compiling-libraries}.
 \end{itemize}

@@ -176,7 +176,7 @@ import com.sun.tools.javac.util.Log;
     "concurrentSemantics",
 
     // Whether to use unchecked code defaults for bytecode and/or source code; these are configured
-    // by the specific type checker using @Default[QualifierInHierarchy]ForUncheckedCode.
+    // by the specific type checker using @Default[QualifierInHierarchy]InUncheckedCode[For].
     // This option takes an argument "source,bytecode" the default is
     // -source,-bytecode (eventually this will be changed to -source,bytecode).
     // Note, if unchecked code defaults are turned on for source code, the unchecked
@@ -1268,19 +1268,24 @@ public abstract class SourceChecker
      * @return whether unchecked code defaults should be used
      */
     public boolean useUncheckedCodeDefault(String kindOfCode) {
-        String option = this.getOption("useDefaultsForUncheckedCode", "-source,-bytecode");
-        if(option == null){
-            // if "useDefaultsForUncheckedCode" option is supplied without
-            // an argument, use the default.
-            option = "-source,-bytecode";
-        }
+        boolean useUncheckedDefaultsForSource = false;
+        boolean useUncheckedDefaultsForByteCode = false;
+        String option = this.getOption("useDefaultsForUncheckedCode");
 
-        String[] args = option.split(",");
+        String[] args = option != null ? option.split(",") : new String[0];
         for (String arg : args) {
-            boolean value = !arg.contains("-");
-            if (arg.contains(kindOfCode)) {
+            boolean value = arg.indexOf("-") != 0;
+            arg = value ? arg : arg.substring(1);
+            if (arg.equals(kindOfCode)) {
                 return value;
             }
+        }
+        if (kindOfCode.equals("source")) {
+            return useUncheckedDefaultsForSource;
+        } else if (kindOfCode.equals("bytecode")) {
+            return useUncheckedDefaultsForByteCode;
+        } else {
+            ErrorReporter.errorAbort("SourceChecker: unexpected argument to useUncheckedCodeDefault: " + kindOfCode);
         }
         return false;
     }

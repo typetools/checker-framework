@@ -162,6 +162,7 @@ public class QualifierDefaults {
      */
     public void addUncheckedStandardDefaults(Iterable<? extends AnnotationMirror> tops, Iterable<? extends AnnotationMirror> bottoms){
         for(DefaultLocation loc : standardUncheckedDefaultsTop) {
+            // Only add standard defaults in locations where a default has not be specified
             for (AnnotationMirror top : tops) {
                 if (!conflictsWithExistingDefaults(uncheckedCodeDefaults, top, loc)) {
                     addUncheckedCodeDefault(top, loc);
@@ -458,7 +459,6 @@ public class QualifierDefaults {
 
         {
             AnnotationMirror af = atypeFactory.getDeclAnnotation(elt, AnnotatedFor.class);
-
 
             if (af != null) {
                 List<String> checkers = AnnotationUtils.getElementValueArray(af,"value",String.class,false);

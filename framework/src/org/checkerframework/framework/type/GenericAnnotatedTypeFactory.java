@@ -355,7 +355,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /**
      * Adds default qualifiers for type-checked code by
-     * reading  {@code @DefaultFor} and {@code @DefaultQualifierInHeirarchy}
+     * reading  {@code @DefaultFor} and {@code @DefaultQualifierInHierarchy}
      * meta-annotations.
      * Subclasses may override this method to add defaults that cannot be specified with
      * a {@code @DefaultFor} or {@code @DefaultQualifierInHierarchy} meta-annotations.
@@ -364,7 +364,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected void addCheckedCodeDefaults(QualifierDefaults defs) {
         boolean foundOtherwise = false;
-        // Add defaults from @DefaultFor and @DefaultQualiferInHeirarchy
+        // Add defaults from @DefaultFor and @DefaultQualiferInHierarchy
         for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
             if (defaultFor != null) {
@@ -393,8 +393,7 @@ public abstract class GenericAnnotatedTypeFactory<
             }
         }
         // If Unqualified is a supported qualifier, make it the default.
-        AnnotationMirror unqualified = AnnotationUtils.fromClass(elements,
-                                                                        Unqualified.class);
+        AnnotationMirror unqualified = AnnotationUtils.fromClass(elements, Unqualified.class);
         if (!foundOtherwise && this.isSupportedQualifier(unqualified)) {
             defs.addCheckedCodeDefault(unqualified, DefaultLocation.OTHERWISE);
             foundOtherwise = true;
@@ -410,7 +409,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /**
      * Adds default qualifiers for code that is not type-checked by
-     * reading  {@code @DefaultForUncheckedCode} and {@code @DefaultQualifierForUncheckedCode}
+     * reading  {@code @DefaultInUncheckedCodeFor} and {@code @DefaultQualifierInHierarchyInUncheckedCode}
      * meta-annotations. Then it applies the standard
      * unchecked code defaults, if a default was not specified for a particular location.
      * <p>
@@ -418,21 +417,21 @@ public abstract class GenericAnnotatedTypeFactory<
      * top: {@code DefaultLocation.RETURNS,DefaultLocation.FIELD,DefaultLocation.UPPER_BOUNDS}<br>
      * bottom: {@code DefaultLocation.PARAMETERS, DefaultLocation.LOWER_BOUNDS}<br>
      * <p>
-     * If {@code @DefaultQualiferForUnchecked} code is not found or a default for {@code DefaultLocation.Otherwise}
+     * If {@code @DefaultQualifierInHierarchyInUncheckedCode} code is not found or a default for {@code DefaultLocation.Otherwise}
      * is not used, the defaults for checked code will be applied to locations without a default for unchecked code.
      * <p>
      * Subclasses may override this method to add defaults that cannot be specified with
-     * a {@code @DefaultForUncheckedCode} or {@code @DefaultQualifierForUncheckedCode} meta-annotations or to change
+     * a {@code @DefaultInUncheckedCodeFor} or {@code @DefaultQualifierInHierarchyInUncheckedCode} meta-annotations or to change
      * the standard defaults.
      *
      * @param defs QualifierDefault object to which defaults are added
      */
     protected void addUncheckedCodeDefaults(QualifierDefaults defs) {
         for (Class<? extends Annotation> annotation : getSupportedTypeQualifiers()) {
-            DefaultInUncheckedCodeFor defaultForUnannotated = annotation.getAnnotation(DefaultInUncheckedCodeFor.class);
+            DefaultInUncheckedCodeFor defaultInUncheckedCodeFor = annotation.getAnnotation(DefaultInUncheckedCodeFor.class);
 
-            if (defaultForUnannotated != null) {
-                final DefaultLocation[] locations = defaultForUnannotated.value();
+            if (defaultInUncheckedCodeFor != null) {
+                final DefaultLocation[] locations = defaultInUncheckedCodeFor.value();
                 defs.addUncheckedCodeDefaults(AnnotationUtils
                                                       .fromClass(elements,
                                                                         annotation),
@@ -440,12 +439,12 @@ public abstract class GenericAnnotatedTypeFactory<
             }
 
             if (annotation.getAnnotation(DefaultQualifierInHierarchyInUncheckedCode.class) != null) {
-                if (defaultForUnannotated != null) {
-                    // A type qualifier should either have a DefaultForUncheckedCode or
-                    // a DefaultQualifierForUncheckedCode annotation.
+                if (defaultInUncheckedCodeFor != null) {
+                    // A type qualifier should either have a DefaultInUncheckedCodeFor or
+                    // a DefaultQualifierInHierarchyInUncheckedCode annotation.
                     ErrorReporter
                             .errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
-                                                "qualifier has both @DefaultForUncheckedCode and @DefaultQualifierInHierarchyForUncheckedCode annotations: "
+                                                "qualifier has both @DefaultInUncheckedCodeFor and @DefaultQualifierInHierarchyInUncheckedCode annotations: "
                                                 + annotation.getCanonicalName());
                 } else {
                     defs.addUncheckedCodeDefault(AnnotationUtils.fromClass(elements, annotation),
@@ -457,7 +456,7 @@ public abstract class GenericAnnotatedTypeFactory<
         Set<? extends  AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
         defs.addUncheckedStandardDefaults(tops, bottoms);
 
-        // Don't require @DefaultQualifierForUncheckedCode or an unchecked default for DefaultLocation.OTHERWISE.
+        // Don't require @DefaultQualifierInHierarchyInUncheckedCode or an unchecked default for DefaultLocation.OTHERWISE.
         // if one isn't specified the defaults for checked code will be used.
     }
 

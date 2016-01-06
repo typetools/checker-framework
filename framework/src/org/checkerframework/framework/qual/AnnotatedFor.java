@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
  *
  * Ordinarily, the <tt>-AuseDefaultsForUncheckedCode=source</tt> command-line argument
  * causes unannotated locations to be defaulted using unchecked code defaults,
- * and it suppresses all warnings.  The
+ * and it suppresses all warnings. However, the
  * <tt>-AuseDefaultsForUncheckedCode=source</tt> command-line argument has no effect on
  * classes with a relevant <tt>@AnnotatedFor</tt> annotation:  any
  * unannotated location is defaulted normally (typically using the
