@@ -31,6 +31,7 @@ import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,6 +52,7 @@ import javax.lang.model.util.Types;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Type;
 
 /**
  * An implementation of TypeArgumentInference that mostly follows the process outlined in JLS7
