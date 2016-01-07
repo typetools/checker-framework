@@ -26,6 +26,8 @@ import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -321,7 +323,7 @@ public class SignatureInferenceScenes {
             newATM = AnnotatedTypes.leastUpperBound(
                     atf.getProcessingEnv(), atf, newATM, curAnnosATM);
         }
-        atmToTypeElement(newATM, oldATM, atf, type, 1);
+        updateTypeElementFromATM(newATM, oldATM, atf, type, 1);
         modifiedScenes.add(jaifPath);
     }
 
@@ -339,17 +341,37 @@ public class SignatureInferenceScenes {
      * but is rather an implementation detail.
      * For example, {@link org.checkerframework.common.value.qual.BottomVal}.
      * Returns false otherwise.
-     * TODO: The implementation checks for the @Target meta-annotation, which
-     * is unreliable. See https://github.com/typetools/checker-framework/issues/515.
      */
     private static boolean ignoreAnnotation(AnnotationMirror am) {
         Target target = am.getAnnotationType().asElement().
                 getAnnotation(Target.class);
+        boolean isDefaultQual = am.getAnnotationType().asElement().
+                getAnnotation(DefaultQualifierInHierarchy.class) != null;
+        boolean isInvisQual = am.getAnnotationType().asElement().
+                getAnnotation(InvisibleQualifier.class) != null;
         // If the @Target meta-annotations is missing, it can be used anywhere.
-        return target != null && target.value().length == 0;
+        return isDefaultQual || isInvisQual || (target != null && target.value().length == 0);
     }
 
-    // The four conversion methods below could be somewhere else. Maybe in AFU?
+    /**
+     * Returns a Set<Annotation> containing only supported annotations by the
+     * atf passed as argument.
+     */
+    private static Set<Annotation> getSupportedAnnosInSet(Set<Annotation> annosSet,
+            AnnotatedTypeFactory atf) {
+        Set<Annotation> output = new HashSet<>();
+        Set<Class<? extends java.lang.annotation.Annotation>> supportedAnnos
+                = atf.getSupportedTypeQualifiers();
+        for (Annotation anno: annosSet) {
+            for (Class<? extends java.lang.annotation.Annotation> clazz : supportedAnnos) {
+                // TODO: Remove comparison by name, and make this routine more efficient.
+                if (clazz.getName().equals(anno.def.name)) {
+                    output.add(anno);
+                }
+            }
+        }
+        return output;
+    }
 
     /**
      * Converts a set of {@link annotations.Annotation} into an
@@ -361,7 +383,9 @@ public class SignatureInferenceScenes {
             boolean isDeclaration, TypeMirror tm) {
         AnnotatedTypeMirror atm = AnnotatedTypeMirror.createType(tm, atf,
                 isDeclaration);
-        for (Annotation anno : type.tlAnnotationsHere) {
+        Set<Annotation> annos = getSupportedAnnosInSet(type.tlAnnotationsHere,
+                atf);
+        for (Annotation anno: annos) {
             AnnotationMirror am = annotationToAnnotationMirror(
                     anno, atf.getProcessingEnv());
             atm.addAnnotation(am);
@@ -372,35 +396,42 @@ public class SignatureInferenceScenes {
                 TypeMirror at = aat.getUnderlyingType().getComponentType();
                 aat.setComponentType(typeElementToATM(innerType, atf,
                         isDeclaration, at));
+                
             }
         }
         return atm;
     }
 
-    /**
-     * Converts an {@link org.checkerframework.framework.type.AnnotatedTypeMirror}
-     * into a set of {@link annotations.Annotation}. Annotations in the original
-     * set that are an implementation detail are ignored and not added to the
-     * resulting set.
-     */
-    private static void atmToTypeElement(AnnotatedTypeMirror newATM,
+   /**
+    * Updates an {@annotations.el.ATypeElement} to have the annotations of an
+    * {@link org.checkerframework.framework.type.AnnotatedTypeMirror} passed
+    * as argument. Annotations in the original set that are an implementation
+    * detail are ignored and not added to the resulting set. This method also
+    * checks if the {@annotations.el.ATypeElement} has explicit annotations,
+    * and if that is the case no annotations are added.
+    *
+    * @param newATM the AnnotatedTypeMirror whose annotations will be added to
+    * the ATypeElement.
+    * @param oldATM used to check if the ATypeElement has explicit annotations.
+    * @param atf the annotated type factory of a given type system, whose
+    * type hierarchy will be used to update the method's return type.
+    * @param typeToUpdate the ATypeElement which will be updated.
+    * @param idx used to write annotations on compound types of an ATypeElement.
+    */
+    private static void updateTypeElementFromATM(AnnotatedTypeMirror newATM,
             AnnotatedTypeMirror oldATM,
             AnnotatedTypeFactory atf, ATypeElement typeToUpdate, int idx) {
         // Clears only the annotations that are supported by atf.
         // The others stay intact.
-        Set<Class<? extends java.lang.annotation.Annotation>> supportedAnnos =
-                atf.getSupportedTypeQualifiers();
-        Set<Annotation> annosToRemove = new HashSet<>();
-        for (Annotation anno: typeToUpdate.tlAnnotationsHere) {
-            for (Class<? extends java.lang.annotation.Annotation> clazz : supportedAnnos) {
-                // TODO: Remove comparison by name, and make this routine more efficient.
-                if (clazz.getName().equals(anno.def.name)) {
-                    annosToRemove.add(anno);
-                }
-            }
+        if (idx == 1) {
+            // This if avoids clearing the annotations multiple times in cases
+            // of type variables and compound types.
+            Set<Annotation> annosToRemove = getSupportedAnnosInSet(
+                    typeToUpdate.tlAnnotationsHere, atf);
+            typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
         }
-        typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
 
+        // Only update the ATypeElement if there are no explicit annotations
         if (oldATM.getExplicitAnnotations().size() == 0) {
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 if (!ignoreAnnotation(am)) {
@@ -417,7 +448,7 @@ public class SignatureInferenceScenes {
                 oldATM.getKind() == TypeKind.ARRAY) {
             AnnotatedArrayType newAAT = (AnnotatedArrayType) newATM;
             AnnotatedArrayType oldAAT = (AnnotatedArrayType) oldATM;
-            atmToTypeElement(newAAT.getComponentType(), oldAAT.getComponentType(),
+            updateTypeElementFromATM(newAAT.getComponentType(), oldAAT.getComponentType(),
                     atf, typeToUpdate.innerTypes.vivify(new InnerTypeLocation(
                             TypeAnnotationPosition.getTypePathFromBinary(
                                     Collections.nCopies(2 * idx, 0)))), idx+1);
@@ -425,12 +456,14 @@ public class SignatureInferenceScenes {
                 oldATM.getKind() == TypeKind.TYPEVAR) {
             AnnotatedTypeVariable newATV = (AnnotatedTypeVariable) newATM;
             AnnotatedTypeVariable oldATV = (AnnotatedTypeVariable) oldATM;
-            // It only considers the upper bounds for type variables.
-            atmToTypeElement(newATV.getUpperBound(), oldATV.getUpperBound(),
+            updateTypeElementFromATM(newATV.getUpperBound(), oldATV.getUpperBound(),
+                    atf, typeToUpdate, idx);
+            updateTypeElementFromATM(newATV.getLowerBound(), oldATV.getLowerBound(),
                     atf, typeToUpdate, idx);
         }
     }
 
+    // TODO: The two conversion methods below could be somewhere else. Maybe in AFU?
     /**
      * Converts an {@link javax.lang.model.element.AnnotationMirror}
      * into an {@link annotations.Annotation}.

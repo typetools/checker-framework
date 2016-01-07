@@ -394,9 +394,6 @@
         <!-- The only file that expected errors are maintained is
              ExpectedErrors.java, so we copy it over. -->
         <delete file="tests/signature-inference/annotated/ExpectedErrors.java"/>
-        <copy file="tests/signature-inference/non-annotated/ExpectedErrors.java"
-            todir="tests/signature-inference/annotated"/>
-
         <!-- Inserting annotations from .jaif files in-place. -->
         <apply executable="insert-annotations-to-source" parallel="true">
             <srcfile/>
@@ -404,6 +401,10 @@
             <fileset dir="tests/signature-inference/annotated/" includes="*.java"/>
             <arg value="--outdir=tests/signature-inference/annotated/"/>
         </apply>
+
+        <copy file="tests/signature-inference/non-annotated/ExpectedErrors.java"
+            todir="tests/signature-inference/annotated"/>
+
         <!-- Running the checker again on the final .java files. -->
         <antcall target="-run-tests">
             <param name="param" value="tests.SignatureInferenceValidationTest"/>
