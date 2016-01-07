@@ -34,9 +34,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import sun.misc.JavaSecurityAccess;
-import sun.misc.JavaSecurityProtectionDomainAccess;
-import sun.misc.SharedSecrets;
+import jdk.internal.misc.JavaSecurityAccess;
+import jdk.internal.misc.JavaSecurityProtectionDomainAccess;
+import jdk.internal.misc.SharedSecrets;
+
 import sun.security.util.Debug;
 import sun.security.util.SecurityConstants;
 

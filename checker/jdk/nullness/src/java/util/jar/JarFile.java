@@ -34,9 +34,11 @@ import java.security.CodeSigner;
 import java.security.cert.Certificate;
 import java.security.AccessController;
 import java.security.CodeSource;
+
 import sun.security.action.GetPropertyAction;
 import sun.security.util.ManifestEntryVerifier;
-import sun.misc.SharedSecrets;
+
+import jdk.internal.misc.SharedSecrets;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
