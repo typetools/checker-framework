@@ -257,8 +257,8 @@ public class InternalUtils {
      */
     public static TypeMirror leastUpperBound(
             ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
-        Type t1 = ((Type) tm1).unannotatedType();
-        Type t2 = ((Type) tm2).unannotatedType();
+        Type t1 = ((Type) tm1).stripMetadataIfNeeded();
+        Type t2 = ((Type) tm2).stripMetadataIfNeeded();
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
         Types types = Types.instance(javacEnv.getContext());
         if (types.isSameType(t1, t2)) {
@@ -320,8 +320,8 @@ public class InternalUtils {
      */
     public static TypeMirror greatestLowerBound(
             ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
-        Type t1 = ((Type) tm1).unannotatedType();
-        Type t2 = ((Type) tm2).unannotatedType();
+        Type t1 = ((Type) tm1).stripMetadataIfNeeded();
+        Type t2 = ((Type) tm2).stripMetadataIfNeeded();
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
         Types types = Types.instance(javacEnv.getContext());
         if (types.isSameType(t1, t2)) {
