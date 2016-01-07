@@ -1268,8 +1268,8 @@ public abstract class SourceChecker
      * @return whether unchecked code defaults should be used
      */
     public boolean useUncheckedCodeDefault(String kindOfCode) {
-        boolean useUncheckedDefaultsForSource = false;
-        boolean useUncheckedDefaultsForByteCode = false;
+        final boolean useUncheckedDefaultsForSource = false;
+        final boolean useUncheckedDefaultsForByteCode = false;
         String option = this.getOption("useDefaultsForUncheckedCode");
 
         String[] args = option != null ? option.split(",") : new String[0];
