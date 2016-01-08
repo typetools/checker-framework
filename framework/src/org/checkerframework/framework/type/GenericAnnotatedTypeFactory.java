@@ -355,10 +355,10 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /**
      * Adds default qualifiers for type-checked code by
-     * reading  {@link @DefaultFor} and {@link @DefaultQualifierInHierarchy}
+     * reading  {@link DefaultFor} and {@link DefaultQualifierInHierarchy}
      * meta-annotations.
      * Subclasses may override this method to add defaults that cannot be specified with
-     * a {@link @DefaultFor} or {@link @DefaultQualifierInHierarchy} meta-annotations.
+     * a {@link DefaultFor} or {@link DefaultQualifierInHierarchy} meta-annotations.
      *
      * @param defs QualifierDefault object to which defaults are added
      */
