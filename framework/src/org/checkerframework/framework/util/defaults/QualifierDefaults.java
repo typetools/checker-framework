@@ -121,8 +121,9 @@ public class QualifierDefaults {
     /**
      * Standard unchecked default locations that should be top
      */
-    // Fields are default to top so that warnings are issued at field reads, which we believe are more common
+    // Fields are defaulted to top so that warnings are issued at field reads, which we believe are more common
     // than field writes. Future work is to specify different defaults for field reads and field writes.
+    // (When a field is written to, its type should be bottom.)
     public static final DefaultLocation[] standardUncheckedDefaultsTop = { DefaultLocation.RETURNS,
                                                                                  DefaultLocation.FIELD,
                                                                                  DefaultLocation.UPPER_BOUNDS };

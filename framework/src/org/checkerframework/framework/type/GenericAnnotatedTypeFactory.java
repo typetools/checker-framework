@@ -457,7 +457,7 @@ public abstract class GenericAnnotatedTypeFactory<
         defs.addUncheckedStandardDefaults(tops, bottoms);
 
         // Don't require @DefaultQualifierInHierarchyInUncheckedCode or an unchecked default for DefaultLocation.OTHERWISE.
-        // if one isn't specified the defaults for checked code will be used.
+        // if a default unchecked code qualifier isn't specified, the defaults for checked code will be used.
     }
 
     /**

@@ -177,10 +177,13 @@ import com.sun.tools.javac.util.Log;
 
     // Whether to use unchecked code defaults for bytecode and/or source code; these are configured
     // by the specific type checker using @Default[QualifierInHierarchy]InUncheckedCode[For].
-    // This option takes an argument "source,bytecode" the default is
-    // -source,-bytecode (eventually this will be changed to -source,bytecode).
+    // This option takes arguments "source" and/or "bytecode".
+    // The default is "-source,-bytecode" (eventually this will be changed to "-source,bytecode").
     // Note, if unchecked code defaults are turned on for source code, the unchecked
     // defaults are not applied to code in scope of an @AnnotatedFor.
+    // See the "Compiling partially-annotated libraries" and
+    // "Default qualifiers for \<.class> files (conservative library defaults)"
+    // sections in the manual for more details
     // org.checkerframework.framework.source.SourceChecker.useUncheckedCodeDefault
     "useDefaultsForUncheckedCode",
 
