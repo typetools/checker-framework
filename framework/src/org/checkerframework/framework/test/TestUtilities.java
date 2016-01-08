@@ -36,7 +36,7 @@ public class TestUtilities {
         OutputStream err = new ByteArrayOutputStream();
         compiler.run(null, null, err, "-version");
         isJSR308Compiler = err.toString().contains("jsr308");
-        isAtLeast8Jvm = org.checkerframework.framework.util.PluginUtil.getJreVersion() >= 1.8d;
+        isAtLeast8Jvm = org.checkerframework.framework.util.PluginUtil.getJreVersion() >= 8;
     }
 
     public static List<File> findNestedJavaTestFiles(String... dirNames) {

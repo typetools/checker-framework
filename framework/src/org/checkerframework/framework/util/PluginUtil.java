@@ -427,19 +427,25 @@ public class PluginUtil {
     }
 
     /**
-     * Extract the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
-     * @return The first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
+     * Extract the major version number from java.version (e.g. 6 from 1.6.whatever)
+     * @return The major version number from java.version
      */
-    public static double getJreVersion() {
-        final Pattern versionPattern = Pattern.compile("^(\\d\\.\\d+)\\..*$");
+    public static int getJreVersion() {
+        final Pattern oldVersionPattern = Pattern.compile("^\\d\\.(\\d+)\\..*$");
         final String  jreVersionStr = System.getProperty("java.version");
-        final Matcher versionMatcher = versionPattern.matcher(jreVersionStr);
+        final Matcher oldVersionMatcher = oldVersionPattern.matcher(jreVersionStr);
 
-        final double version;
-        if (versionMatcher.matches()) {
-            version = Double.parseDouble(versionMatcher.group(1));
+        final int version;
+        if (oldVersionMatcher.matches()) {
+            version = Integer.parseInt(oldVersionMatcher.group(1));
         } else {
-            throw new RuntimeException("Could not determine version from property java.version=" + jreVersionStr);
+            final Pattern newVersionPattern = Pattern.compile("^(\\d)\\..*$");
+            final Matcher newVersionMatcher = newVersionPattern.matcher(jreVersionStr);
+            if (newVersionMatcher.matches()) {
+                version = Integer.parseInt(newVersionMatcher.group(1));
+            } else {
+                throw new RuntimeException("Could not determine version from property java.version=" + jreVersionStr);
+            }
         }
 
         return version;
@@ -451,19 +457,13 @@ public class PluginUtil {
      * @return The jdkX where X is the version of Java that is being run (e.g. 6, 7, ...)
      */
     public static String getJdkJarPrefix() {
-        final double jreVersion = getJreVersion();
+        final int jreVersion = getJreVersion();
         final String prefix;
-        if (jreVersion == 1.4 || jreVersion == 1.5 || jreVersion == 1.6) {
-            // TODO: raise an error, these versions are no longer supported.
-            prefix = "jdk6";
-        } else if (jreVersion == 1.7) {
-            prefix = "jdk7";
-        } else if (jreVersion == 1.8) {
-            prefix = "jdk8";
-        } else if (jreVersion == 1.9) {
-            prefix = "jdk9";
-        } else {
+        if (jreVersion <= 6 ||
+                jreVersion > 9) {
             throw new AssertionError("Unsupported JRE version: " + jreVersion);
+        } else {
+            prefix = "jdk" + jreVersion;
         }
 
         return prefix;
