@@ -3,7 +3,7 @@
 # This script runs the Checker Framework's signature inference
 # iteratively on a program, adding type annotations to the program, until the
 # .jaif files from one iteration are the same as the .jaif files from the
-# previous iteration.
+# previous iteration (which means there is nothing new to infer anymore).
 
 # This script receives as arguments:
 # 1. Processor's name (in any form recognized by javac's -processor argument).
@@ -23,6 +23,20 @@
 # Halts the script when a nonzero value is returned from a command.
 set -e
 
+# Path to directory that will contain .jaif files after running the CF
+# with -AinferSignatures
+SIGNATURE_INFERENCE_DIR=build/signature-inference
+
+# Path that will contain .class files after running CF's javac. This dir will
+# deleted after executing this script.
+TEMP_DIR=build/temp-signature-inference-output
+
+# Path to directory will contain .jaif files from the previous interation.
+PREV_ITERATION_DIR=build/prev-signature-inference
+
+# Path to annotation-file-utilities.jar
+AFU_JAR="${CHECKERFRAMEWORK}/../annotation-tools/annotation-file-utilities/annotation-file-utilities.jar"
+
 # This function separates extra arguments passed to the checker from Java files
 # received as arguments.
 # TODO: Handle the following limitation: This function makes the assumption
@@ -30,7 +44,7 @@ set -e
 # such as -processorpath and -source.
 read_input() {
     processor=$1
-    cp=$2:${CHECKERFRAMEWORK}/../annotation-tools/annotation-file-utilities/annotation-file-utilities.jar
+    cp=$2:$AFU_JAR
     # Ignores first two arguments (processor and cp).
     shift
     shift
@@ -55,20 +69,21 @@ read_input() {
 # Iteratively runs the Checker
 infer_and_annotate() {
     DIFF_JAIF=firstdiff
-    # Creates jaif-files directory if it doesn't exist already.
+    # Creates signature-inference directory if it doesn't exist already.
     # If it already exists, the existing .jaif files will be considered.
     # This allows the user to provide some .jaif files as input.
-    mkdir -p build/jaif-files
+    mkdir -p $SIGNATURE_INFERENCE_DIR
+    mkdir -p $TEMP_DIR
     # Perform inference and add annotations from .jaif to .java files until
-    # prev-jaif has the same contents as build/jaif-files
+    # $PREV_ITERATION_DIR has the same contents as $SIGNATURE_INFERENCE_DIR
     while [ "$DIFF_JAIF" != "" ]
     do
-        # Updates prev-jaif folder
-        rm -rf prev-jaif
-        cp -r build/jaif-files prev-jaif
+        # Updates $PREV_ITERATION_DIR folder
+        rm -rf $PREV_ITERATION_DIR
+        cp -r $SIGNATURE_INFERENCE_DIR $PREV_ITERATION_DIR
 
         # Runs CF's javac
-        ${CHECKERFRAMEWORK}/checker/bin/javac -cp $cp -processor $processor -AinferSignatures $extra_args $java_files || true
+        ${CHECKERFRAMEWORK}/checker/bin/javac -d $TEMP_DIR/ -cp $cp -processor $processor -AinferSignatures $extra_args $java_files || true
         # Deletes .unannotated backup files. This is necessary otherwise the
         # insert-annotations-to-source tool will use this file instead of the
         # updated .java one.
@@ -76,20 +91,26 @@ infer_and_annotate() {
         do
             rm -f "${file}.unannotated"
         done
-        insert-annotations-to-source -i build/jaif-files/* $java_files
+        if [ ! `find $SIGNATURE_INFERENCE_DIR -prune -empty` ]
+        then
+            # Only insert annotations if there is at least one .jaif file.
+            insert-annotations-to-source -i $SIGNATURE_INFERENCE_DIR/* $java_files
+        fi
         # Updates DIFF_JAIF variable.
         # diff returns exit-value 1 when there are differences between files.
         # When this happens, this script halts due to the "set -e"
         # in its header. To avoid this problem, we add the "|| true" below.
-        DIFF_JAIF="$(diff -qr prev-jaif build/jaif-files || true)"
+        DIFF_JAIF="$(diff -qr $PREV_ITERATION_DIR $SIGNATURE_INFERENCE_DIR || true)"
     done
     clean
 }
 
 clean() {
     # Do we want to delete possible .jaif files passed as input?
-    # rm -rf build/jaif-files
-    rm -rf prev-jaif
+    # If so, uncomment line below:
+    # rm -rf $SIGNATURE_INFERENCE_DIR
+    rm -rf $PREV_ITERATION_DIR
+    rm -rf $TEMP_DIR
     for file in $java_files;
         do
             rm -f "${file}.unannotated"
