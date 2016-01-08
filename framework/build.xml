@@ -397,7 +397,7 @@
         <!-- Inserting annotations from .jaif files in-place. -->
         <apply executable="insert-annotations-to-source" parallel="true">
             <srcfile/>
-            <fileset dir="build/jaif-files/" includes="*.jaif"/>
+            <fileset dir="build/signature-inference/" includes="*.jaif"/>
             <fileset dir="tests/signature-inference/annotated/" includes="*.java"/>
             <arg value="--outdir=tests/signature-inference/annotated/"/>
         </apply>
