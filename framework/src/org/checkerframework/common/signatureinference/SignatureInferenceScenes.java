@@ -67,7 +67,6 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.AnnotatedType;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
@@ -204,7 +203,7 @@ public class SignatureInferenceScenes {
      *   </ul>
      * <p>
      * @param methodInvNode the node representing a method invocation.
-     * @param ClassTree the Tree of the class that contains the method being
+     * @param receiverTree the Tree of the class that contains the method being
      * invoked.
      * @param methodElt the element of the method being invoked.
      * @param atf the annotated type factory of a given type system, whose
@@ -665,7 +664,7 @@ public class SignatureInferenceScenes {
      * obtains the ClassSymbol by using classTree. Otherwise, it finds the class
      * of the receiverNode and uses it to obtain the ClassSymbol.
      */
-    // TODO: This method could be moved somewhere else.
+    // TODO: These methods below could be moved somewhere else.
     private static ClassSymbol getEnclosingClassSymbol(
             ClassTree classTree, FieldAccessNode field) {
         Node receiverNode = field.getReceiver();
@@ -687,6 +686,11 @@ public class SignatureInferenceScenes {
         }
         return null;
     }
+
+    /**
+     * Returns the ClassSymbol of the class encapsulating
+     * classTree passed as parameter.
+     */
     private static ClassSymbol getEnclosingClassSymbol(Tree classTree) {
         Element symbol = InternalUtils.symbol(classTree);
         if (symbol instanceof ClassSymbol) {
