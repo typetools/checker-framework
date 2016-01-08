@@ -577,8 +577,9 @@ public class QualifierDefaults {
             if (isBytecode) {
                 return useUncheckedCodeDefaultsBytecode;
             } else if (isFromStubFile){
-                // TODO: Add progamatically add @AnnotatedFor to stubfiles,
-                // then treat stub files as source code
+                // TODO: Programmatically add @AnnotatedFor to stub files.
+                // Then treat types in stub files as unchecked byte code unless
+                // they are in the scope of an @AnnotatedFor
                 return false;
             } else if (useUncheckedCodeDefaultsSource) {
                 return !isElementAnnotatedForThisChecker(annotationScope);
