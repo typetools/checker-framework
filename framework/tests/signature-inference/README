@@ -24,8 +24,7 @@ but the inferred types that were inserted should remove their occurrence during
 the type-checking.
 
 In order to test that an error will persist even after the signature inference,
-this expected error's comment must be added to the
-"non-annotated/ExpectedErrors.java" file. This is the only file where the
-expected error comments are not removed when copied to
-"annotated/ExpectedErrors.java".
+this expected error must be added to the "non-annotated/ExpectedErrors.java"
+file. This is the only file where the expected error comments are not removed
+ when copied to "annotated/ExpectedErrors.java".
 

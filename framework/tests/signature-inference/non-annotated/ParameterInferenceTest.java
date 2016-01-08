@@ -18,4 +18,5 @@ public class ParameterInferenceTest {
     }
 
     void expectsTopNoSignature(int t) {}
+
 }

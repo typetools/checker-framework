@@ -29,9 +29,16 @@ public class PublicFieldTest {
 
 class AnotherClass {
 
+    int innerField;
     public AnotherClass() {
         PublicFieldTest.field1 = getSibling2();
         PublicFieldTest.field2 = getSibling2();
+        innerField = getSibling2();
+    }
+
+    void innerFieldTest() {
+        //:: error: (argument.type.incompatible)
+        expectsSibling2(innerField);
     }
 
     @SignatureInferenceBottom int getBottom() {
@@ -43,4 +50,5 @@ class AnotherClass {
     @Sibling2 int getSibling2() {
         return (@Sibling2 int) 0;
     }
+    void expectsSibling2(@Sibling2 int t) {}
 }
