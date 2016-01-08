@@ -559,7 +559,7 @@ public class QualifierDefaults {
      */
     public boolean applyUncheckedCodeDefaults(final Element annotationScope) {
 
-        if(annotationScope == null) {
+        if (annotationScope == null) {
             return false;
         }
 
@@ -577,8 +577,8 @@ public class QualifierDefaults {
             if (isBytecode) {
                 return useUncheckedCodeDefaultsBytecode;
             } else if (isFromStubFile){
-                // TODO: look for @AnnotatedFor once they has been added to stub files
-                // for now, stub files are always treated as checked code
+                // TODO: Add progamatically add @AnnotatedFor to stubfiles,
+                // then treat stub files as source code
                 return false;
             } else if (useUncheckedCodeDefaultsSource) {
                 return !isElementAnnotatedForThisChecker(annotationScope);
