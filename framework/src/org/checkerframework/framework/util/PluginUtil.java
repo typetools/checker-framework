@@ -439,7 +439,9 @@ public class PluginUtil {
         if (oldVersionMatcher.matches()) {
             version = Integer.parseInt(oldVersionMatcher.group(1));
         } else {
-            final Pattern newVersionPattern = Pattern.compile("^(\\d)\\..*$");
+            // See http://openjdk.java.net/jeps/223
+            // We only care about the major version number.
+            final Pattern newVersionPattern = Pattern.compile("^(\\d).*$");
             final Matcher newVersionMatcher = newVersionPattern.matcher(jreVersionStr);
             if (newVersionMatcher.matches()) {
                 version = Integer.parseInt(newVersionMatcher.group(1));
