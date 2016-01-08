@@ -26,6 +26,9 @@ import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -60,9 +63,11 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Attribute.Array;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.AnnotatedType;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
@@ -112,7 +117,7 @@ public class SignatureInferenceScenes {
      * Path to where .jaif files will be written to and read from.
      * This path is relative to where the CF's javac command is executed.
      */
-    public final static String JAIF_FILES_PATH = "build/jaif-files/";
+    public final static String JAIF_FILES_PATH = "build/signature-inference/";
 
     /** Maps .jaif file paths (Strings) to Scenes. */
     private static Map<String, AScene> scenes = new HashMap<>();
@@ -199,16 +204,27 @@ public class SignatureInferenceScenes {
      *   </ul>
      * <p>
      * @param methodInvNode the node representing a method invocation.
-     * @param classSymbol the symbol of the class that contains the method being
+     * @param ClassTree the Tree of the class that contains the method being
      * invoked.
      * @param methodElt the element of the method being invoked.
      * @param atf the annotated type factory of a given type system, whose
      * type hierarchy will be used to update the method parameters' types.
      */
     public static void updateInferredMethodParametersTypes(
-            MethodInvocationNode methodInvNode, ClassSymbol classSymbol,
+            MethodInvocationNode methodInvNode, Tree receiverTree,
             ExecutableElement methodElt, AnnotatedTypeFactory atf) {
-        if (classSymbol == null) return; // Anonymous class => Ignore, for now.
+        if (receiverTree == null) {
+            // Method called from static context.
+            // I struggled to obtain the ClassTree of a method called from a
+            // static context and currently I'm ignoring it.
+            return;
+        }
+        ClassSymbol classSymbol = getEnclosingClassSymbol(receiverTree);
+        if (classSymbol == null) {
+            // Also struggled to obtain the ClassTree from an anonymous class.
+            // Ignoring it for now.
+            return;
+        }
         String className = classSymbol.flatname.toString();
 
         String jaifPath = getJaifPath(className);
@@ -227,7 +243,8 @@ public class SignatureInferenceScenes {
             AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
             AField param = method.parameters.vivify(i);
             updateAnnotationSetInScene(
-                    param.type, atf, jaifPath, argATM, paramATM);
+                    param.type, atf, jaifPath, argATM, paramATM,
+                    DefaultLocation.PARAMETERS);
         }
     }
 
@@ -260,7 +277,7 @@ public class SignatureInferenceScenes {
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
         updateAnnotationSetInScene(
-                field.type, atf, jaifPath, rhsATM, lhsATM);
+                field.type, atf, jaifPath, rhsATM, lhsATM, DefaultLocation.FIELD);
     }
 
     /**
@@ -294,7 +311,8 @@ public class SignatureInferenceScenes {
         // Type of the expression returned
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(retNode.getTree().getExpression());
         updateAnnotationSetInScene(
-                method.returnType, atf, jaifPath, rhsATM, lhsATM);
+                method.returnType, atf, jaifPath, rhsATM, lhsATM,
+                DefaultLocation.RETURNS);
     }
 
     /**
@@ -315,7 +333,8 @@ public class SignatureInferenceScenes {
      */
     private static void updateAnnotationSetInScene(ATypeElement type,
             AnnotatedTypeFactory atf, String jaifPath,
-            AnnotatedTypeMirror newATM, AnnotatedTypeMirror oldATM) {
+            AnnotatedTypeMirror newATM, AnnotatedTypeMirror oldATM,
+            DefaultLocation defLoc) {
         AnnotatedTypeMirror curAnnosATM = typeElementToATM(
                 type, atf, false, newATM.getUnderlyingType());
         if (curAnnosATM.getAnnotations().size() == newATM.getAnnotations().size()
@@ -323,7 +342,7 @@ public class SignatureInferenceScenes {
             newATM = AnnotatedTypes.leastUpperBound(
                     atf.getProcessingEnv(), atf, newATM, curAnnosATM);
         }
-        updateTypeElementFromATM(newATM, oldATM, atf, type, 1);
+        updateTypeElementFromATM(newATM, oldATM, atf, type, 1, defLoc);
         modifiedScenes.add(jaifPath);
     }
 
@@ -337,20 +356,45 @@ public class SignatureInferenceScenes {
     }
 
     /**
-     * Returns true if am should not be inserted in source code,
-     * but is rather an implementation detail.
+     * Returns true if am should not be inserted in source code. This happens
+     * when am is either an implementation detail or is the default for the
+     * location passed as argument.
      * For example, {@link org.checkerframework.common.value.qual.BottomVal}.
      * Returns false otherwise.
      */
-    private static boolean ignoreAnnotation(AnnotationMirror am) {
+    private static boolean shouldIgnore(AnnotationMirror am,
+            DefaultLocation location) {
+        boolean shouldIgnore = false;
+        // Checks if am is an implementation detail
         Target target = am.getAnnotationType().asElement().
                 getAnnotation(Target.class);
-        boolean isDefaultQual = am.getAnnotationType().asElement().
-                getAnnotation(DefaultQualifierInHierarchy.class) != null;
-        boolean isInvisQual = am.getAnnotationType().asElement().
+        shouldIgnore = shouldIgnore || (target != null && target.value().length == 0);
+        shouldIgnore = shouldIgnore || am.getAnnotationType().asElement().
                 getAnnotation(InvisibleQualifier.class) != null;
-        // If the @Target meta-annotations is missing, it can be used anywhere.
-        return isDefaultQual || isInvisQual || (target != null && target.value().length == 0);
+
+        // Checks if am is default
+        shouldIgnore = shouldIgnore || am.getAnnotationType().asElement().
+                getAnnotation(DefaultQualifierInHierarchy.class) != null;
+        DefaultQualifier defaultQual = am.getAnnotationType().asElement().
+                getAnnotation(DefaultQualifier.class);
+        if (!shouldIgnore && defaultQual != null) {
+            for (DefaultLocation loc : defaultQual.locations()) {
+                if (loc == DefaultLocation.ALL || loc == location) {
+                    shouldIgnore = true;
+                }
+            }
+        }
+        DefaultFor defaultQualForLocation = am.getAnnotationType().asElement().
+                getAnnotation(DefaultFor.class);
+        if (!shouldIgnore && defaultQualForLocation != null) {
+            for (DefaultLocation loc : defaultQualForLocation.value()) {
+                if (loc == DefaultLocation.ALL || loc == location) {
+                    shouldIgnore = true;
+                }
+            }
+        }
+
+        return shouldIgnore;
     }
 
     /**
@@ -419,8 +463,8 @@ public class SignatureInferenceScenes {
     * @param idx used to write annotations on compound types of an ATypeElement.
     */
     private static void updateTypeElementFromATM(AnnotatedTypeMirror newATM,
-            AnnotatedTypeMirror oldATM,
-            AnnotatedTypeFactory atf, ATypeElement typeToUpdate, int idx) {
+            AnnotatedTypeMirror oldATM, AnnotatedTypeFactory atf,
+            ATypeElement typeToUpdate, int idx, DefaultLocation defLoc) {
         // Clears only the annotations that are supported by atf.
         // The others stay intact.
         if (idx == 1) {
@@ -434,7 +478,7 @@ public class SignatureInferenceScenes {
         // Only update the ATypeElement if there are no explicit annotations
         if (oldATM.getExplicitAnnotations().size() == 0) {
             for (AnnotationMirror am : newATM.getAnnotations()) {
-                if (!ignoreAnnotation(am)) {
+                if (!shouldIgnore(am, defLoc)) {
                     Annotation anno = annotationMirrorToAnnotation(am);
                     if (anno != null) {
                         typeToUpdate.tlAnnotationsHere.add(anno);
@@ -451,15 +495,15 @@ public class SignatureInferenceScenes {
             updateTypeElementFromATM(newAAT.getComponentType(), oldAAT.getComponentType(),
                     atf, typeToUpdate.innerTypes.vivify(new InnerTypeLocation(
                             TypeAnnotationPosition.getTypePathFromBinary(
-                                    Collections.nCopies(2 * idx, 0)))), idx+1);
+                                    Collections.nCopies(2 * idx, 0)))), idx+1, defLoc);
         } else if (newATM.getKind() == TypeKind.TYPEVAR &&
                 oldATM.getKind() == TypeKind.TYPEVAR) {
             AnnotatedTypeVariable newATV = (AnnotatedTypeVariable) newATM;
             AnnotatedTypeVariable oldATV = (AnnotatedTypeVariable) oldATM;
             updateTypeElementFromATM(newATV.getUpperBound(), oldATV.getUpperBound(),
-                    atf, typeToUpdate, idx);
+                    atf, typeToUpdate, idx, defLoc);
             updateTypeElementFromATM(newATV.getLowerBound(), oldATV.getLowerBound(),
-                    atf, typeToUpdate, idx);
+                    atf, typeToUpdate, idx, defLoc);
         }
     }
 
@@ -640,6 +684,17 @@ public class SignatureInferenceScenes {
             return (ClassSymbol) symbol;
         } else if (symbol instanceof VarSymbol) {
             return ((VarSymbol)symbol).enclClass();
+        }
+        return null;
+    }
+    private static ClassSymbol getEnclosingClassSymbol(Tree classTree) {
+        Element symbol = InternalUtils.symbol(classTree);
+        if (symbol instanceof ClassSymbol) {
+            return (ClassSymbol) symbol;
+        } else if (symbol instanceof VarSymbol) {
+            return ((VarSymbol)symbol).enclClass();
+        } else if (symbol instanceof MethodSymbol) {
+            return ((MethodSymbol)symbol).enclClass();
         }
         return null;
     }
