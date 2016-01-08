@@ -461,7 +461,7 @@ public class QualifierDefaults {
             AnnotationMirror af = atypeFactory.getDeclAnnotation(elt, AnnotatedFor.class);
 
             if (af != null) {
-                List<String> checkers = AnnotationUtils.getElementValueArray(af,"value",String.class,false);
+                List<String> checkers = AnnotationUtils.getElementValueArray(af, "value", String.class, false);
 
                 if (checkers != null) {
                     for (String checker : checkers) {
@@ -474,13 +474,14 @@ public class QualifierDefaults {
             }
         }
 
-        if (elementAnnotatedForThisChecker == false) {
+        if (!elementAnnotatedForThisChecker) {
             Element parent;
-            if (elt.getKind() == ElementKind.PACKAGE)
+            if (elt.getKind() == ElementKind.PACKAGE) {
                 // elt.getEnclosingElement() on a package is null
                 parent = ((Symbol) elt).owner;
-            else
+            } else {
                 parent = elt.getEnclosingElement();
+            }
 
             if (isElementAnnotatedForThisChecker(parent)) {
                 elementAnnotatedForThisChecker = true;

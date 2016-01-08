@@ -11,9 +11,8 @@ import java.lang.annotation.*;
  *
  * This qualifier only applies if the
  * -AuseDefaultsForUncheckedCode command-line option enables unchecked code defaults.
- * They can be enabled for
- * source and bytecode separately.  If the unchecked code defaults are enabled for
- * source code, they will only be applied to source code not annotated with
+ * They can be enabled for source and bytecode separately.  If the unchecked code defaults
+ * are enabled for source code, they will only be applied to source code not annotated with
  * {@link AnnotatedFor} for the checker being executed.
  * <p>
  *
@@ -26,8 +25,8 @@ import java.lang.annotation.*;
  * unannotated type uses in code that has not been type-checked.
  * <p>
  *
- *  If a checker does not specifiy a default qualifier for unchecked code,
- *  then the defaults for checked code will be used.
+ * If a checker does not specify a default qualifier for unchecked code,
+ * then the defaults for checked code will be used.
  *
  * This qualifier is for type system developers, not end-users.
  * @see AnnotatedFor
