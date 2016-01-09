@@ -681,8 +681,8 @@ public class SignatureInferenceScenes {
      * the node n passed as parameter.
      * <p>
      * If the receiver of field is an instance of "this", the implementation
-     * obtains the ClassSymbol by using classTree. Otherwise, it finds the class
-     * of the receiverNode and uses it to obtain the ClassSymbol.
+     * obtains the ClassSymbol by using classTree. Otherwise, the ClassSymbol
+     * is from the field's receiver.
      */
     // TODO: These methods below could be moved somewhere else.
     private static ClassSymbol getEnclosingClassSymbol(
