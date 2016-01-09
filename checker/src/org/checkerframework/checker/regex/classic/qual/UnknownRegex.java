@@ -12,11 +12,6 @@ import org.checkerframework.framework.qual.TargetLocations;
 /**
  * Represents the top of the Regex qualifier hierarchy.
  *
- * <p>
- *
- * This annotation may not be written in source code; it is an
- * implementation detail of the checker.
- *
  * @checker_framework.manual #regex-checker Regex Checker
  */
 @InvisibleQualifier

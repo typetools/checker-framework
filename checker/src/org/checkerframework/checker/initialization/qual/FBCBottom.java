@@ -17,10 +17,6 @@ import com.sun.source.tree.Tree;
 /**
  * {@link FBCBottom} marks the bottom of the Freedom Before Commitment type
  * hierarchy.
- * <p>
- *
- * This annotation may not be written in source code; it is an
- * implementation detail of the checker.
  *
  * @checker_framework.manual #initialization-checker Initialization Checker
  * @author Stefan Heule

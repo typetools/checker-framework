@@ -32,8 +32,6 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         FENUM_UNQUALIFIED = AnnotationUtils.fromClass(elements, FenumUnqualified.class);
 
         this.postInit();
-        // flow.setDebug(System.err);
-        defaults.addCheckedCodeDefault(FENUM_BOTTOM, DefaultLocation.LOWER_BOUNDS);
     }
 
     /** Copied from SubtypingChecker.

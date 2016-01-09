@@ -69,8 +69,6 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker, false);
 
         this.postInit();
-
-        addTypeNameImplicit(java.lang.Void.class, BOTTOM);
     }
 
     // In Units Checker, we always want to print out the Invisible Qualifiers

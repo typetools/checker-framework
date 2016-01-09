@@ -14,10 +14,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * similar methods,
  * Passing it will lead to the exception message indicated in the annotation's
  * value.
- * <p>
- *
- * This annotation may not be written in source code; it is an
- * implementation detail of the checker.
  *
  * @checker_framework.manual #formatter-checker Format String Checker
  * @author Konstantin Weitz

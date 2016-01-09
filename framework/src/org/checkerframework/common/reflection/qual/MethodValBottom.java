@@ -14,10 +14,6 @@ import com.sun.source.tree.Tree;
 /**
  * Represents the bottom of the MethodVal qualifier hierarchy. This is used to
  * make the <tt>null</tt> literal a subtype of all MethodVal annotations.
- * <p>
- *
- * This annotation may not be written in source code; it is an implementation
- * detail of the checker.
  *
  * @checker_framework.manual #methodval-and-classval-checkers MethodVal Checker
  */
