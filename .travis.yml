@@ -50,9 +50,11 @@ jdk:
   - openjdk7
   # openjdk8 is not a legal option: - openjdk8
 
-notifications:
-  email:
-    - checker-framework-dev@googlegroups.com 
+## Disable so that we are not notified of build failures in forks.
+## Use Travis default: send mail to author and committer of breaking commit.
+# notifications:
+#   email:
+#     - checker-framework-dev@googlegroups.com 
 
 after_success:
   - |
