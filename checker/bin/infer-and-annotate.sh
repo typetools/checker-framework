@@ -9,7 +9,8 @@
 # 1. Processor's name (in any form recognized by javac's -processor argument).
 # 2. Classpath (target project's classpath).
 # 3. Any number of extra processor arguments to be passed to the checker.
-# 4. List of paths to .java files in a program.
+# 4. List of paths to .jaif files -- used as input (optional).
+# 5. List of paths to .java files in a program.
 
 # Example of usage:
 # ./infer-and-annotate.sh "LockChecker,NullnessChecker" \
@@ -28,10 +29,10 @@ set -e
 SIGNATURE_INFERENCE_DIR=build/signature-inference
 
 # Path that will contain .class files after running CF's javac. This dir will
-# deleted after executing this script.
+# be deleted after executing this script.
 TEMP_DIR=build/temp-signature-inference-output
 
-# Path to directory will contain .jaif files from the previous interation.
+# Path to directory that will contain .jaif files from the previous interation.
 PREV_ITERATION_DIR=build/prev-signature-inference
 
 # Path to annotation-file-utilities.jar
@@ -50,6 +51,7 @@ read_input() {
     shift
     extra_args=""
     java_files=""
+    jaif_files=""
     for i in "$@"
     do
         # This function makes the assumption that every extra argument
@@ -58,7 +60,10 @@ read_input() {
             -*)
                 extra_args="$extra_args $1"
             ;;
-            *)
+            *.jaif)
+                jaif_files="$jaif_files $1"
+            ;;
+            *.java)
                 java_files="$java_files $1"
             ;;
         esac
@@ -68,12 +73,17 @@ read_input() {
 
 # Iteratively runs the Checker
 infer_and_annotate() {
-    DIFF_JAIF=firstdiff
-    # Creates signature-inference directory if it doesn't exist already.
-    # If it already exists, the existing .jaif files will be considered.
-    # This allows the user to provide some .jaif files as input.
-    mkdir -p $SIGNATURE_INFERENCE_DIR
     mkdir -p $TEMP_DIR
+    DIFF_JAIF=firstdiff
+    # Create/clean signature-inference directory.
+    rm -rf $SIGNATURE_INFERENCE_DIR
+    mkdir -p $SIGNATURE_INFERENCE_DIR
+    # If there are .jaif files as input, copy them.
+    for file in $jaif_files;
+    do
+        cp $file $SIGNATURE_INFERENCE_DIR/
+    done
+
     # Perform inference and add annotations from .jaif to .java files until
     # $PREV_ITERATION_DIR has the same contents as $SIGNATURE_INFERENCE_DIR.
     while [ "$DIFF_JAIF" != "" ]
@@ -106,8 +116,7 @@ infer_and_annotate() {
 }
 
 clean() {
-    # Do we want to delete possible .jaif files passed as input?
-    # If so, uncomment line below:
+    # It might be good to keep the final .jaif files.
     # rm -rf $SIGNATURE_INFERENCE_DIR
     rm -rf $PREV_ITERATION_DIR
     rm -rf $TEMP_DIR
