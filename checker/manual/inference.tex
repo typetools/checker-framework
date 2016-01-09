@@ -135,7 +135,7 @@ infer types for fields, method parameters, and method return types, and it
 can insert these inferred types into your program.
 
 To do so, run the script
-\<framework/signature-inference-scripts/infer-and-annotate.sh>.
+\<checker/bin/infer-and-annotate.sh>.
 Its command-line arguments are:
 
 \begin{enumerate}
@@ -148,17 +148,20 @@ Its command-line arguments are:
 \item List of paths to \<.java> files in the program.
 \end{enumerate}
 
-For example, from the \<plume-lib> directory:
+For example, to add annotations to the \<plume-lib> project:
 \begin{Verbatim}
 git clone https://github.com/mernst/plume-lib.git
 cd plume-lib
-$CHECKERFRAMEWORK/framework/signature-inference-scripts/infer-and-annotate.sh \
+$CHECKERFRAMEWORK/checker/bin/infer-and-annotate.sh \
     "LockChecker,NullnessChecker" java/plume.jar    \
     -AprintErrorStack  \
     `find java/src/plume/ -name "*.java"`
+# View the results
+git diff    
 \end{Verbatim}
 
-You may need to wait a few minutes for the command to complete.
+You may need to wait a few minutes for the command to complete,
+and it will produce voluminous output that you can ignore.
 
 As with any type inference tool, it is a good idea to double-check the
 results.
