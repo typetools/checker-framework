@@ -219,34 +219,16 @@ public class SignatureInferenceScenes {
             MethodInvocationNode methodInvNode, Tree receiverTree,
             ExecutableElement methodElt, AnnotatedTypeFactory atf) {
         if (receiverTree == null) {
-<<<<<<< HEAD
-            // Method called from static context.
-            // TODO: I struggled to obtain the ClassTree of a method called
+            // TODO: Method called from static context.
+            // I struggled to obtain the ClassTree of a method called
             // from a static context and currently I'm ignoring it.
-||||||| merged common ancestors
-            // Method called from static context.
-            // I struggled to obtain the ClassTree of a method called from a
-            // static context and currently I'm ignoring it.
-=======
-            // TODO: handle methods called from static context.
-            // I struggled to obtain the ClassTree of a method called from a
-            // static context and currently I'm ignoring it.
->>>>>>> upstream/master
             return;
         }
         ClassSymbol classSymbol = getEnclosingClassSymbol(receiverTree);
         if (classSymbol == null) {
-<<<<<<< HEAD
-            // TODO: Also struggled to obtain the ClassTree from an anonymous
-            // class. Ignoring it for now.
-||||||| merged common ancestors
-            // Also struggled to obtain the ClassTree from an anonymous class.
-            // Ignoring it for now.
-=======
             // TODO: Handle anonymous classes.
             // Also struggled to obtain the ClassTree from an anonymous class.
             // Ignoring it for now.
->>>>>>> upstream/master
             return;
         }
         String className = classSymbol.flatname.toString();
