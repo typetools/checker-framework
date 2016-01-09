@@ -14,8 +14,7 @@ import org.checkerframework.framework.qual.TargetLocations;
  * Also represents non-Class values.
  * <p>
  *
- * This annotation is the default in the hierarchy and may not be written in
- * source code.
+ * This annotation is the default in the hierarchy.
  *
  * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
  */

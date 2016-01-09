@@ -21,10 +21,6 @@ import com.sun.source.tree.Tree.Kind;
  * An annotation used to represent a place holder immutability type, that is a
  * subtype of all other types. For example, {@code null} type is a subtype
  * of all immutability types.
- * <p>
- *
- * This annotation may not be written in source code; it is an
- * implementation detail of the checker.
  */
 @SubtypeOf({Mutable.class, Immutable.class, I.class,
     Modifier.class, O.class})

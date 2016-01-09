@@ -14,10 +14,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * array types:  only for an array type whose base type is either a
  * primitive or in the unnamed package.
  *
- * <p>
- * This annotation may not be written in source code; it is an
- * implementation detail of the checker.
- *
  * @checker_framework.manual #signature-checker Signature Checker
  */
 @SubtypeOf({ClassGetName.class, FieldDescriptor.class})
