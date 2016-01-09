@@ -109,14 +109,19 @@ import com.sun.tools.javac.code.Type.ClassType;
 //  insert-annotations-to-source tool, which adds annotations from .jaif files
 //  into source code, adds annotations on top of existing
 //  annotations. See https://github.com/typetools/annotation-tools/issues/105
-//  TODO: Ensure that annotations are added deterministically to .jaif files.
+
+//  TODO: Ensure that annotations are inserted deterministically into .jaif
+//  files. This is important otherwise developers might achieve different
+//  results (order of annotations) when running the signature inference for
+//  the same set of files.
 public class SignatureInferenceScenes {
 
     /**
      * Path to where .jaif files will be written to and read from.
      * This path is relative to where the CF's javac command is executed.
      */
-    public final static String JAIF_FILES_PATH = "build/signature-inference/";
+    public final static String JAIF_FILES_PATH = "build" + File.separator +
+            "signature-inference" + File.separator;
 
     /** Maps .jaif file paths (Strings) to Scenes. */
     private static Map<String, AScene> scenes = new HashMap<>();
@@ -168,12 +173,14 @@ public class SignatureInferenceScenes {
      * {@link updateAnnotationSetInScene})
      */
     public static void writeScenesToJaif() {
+        // Create .jaif files directory if it doesn't exist already.
+        File jaifDir = new File(JAIF_FILES_PATH);
+        if (!jaifDir.exists()) {
+            jaifDir.mkdirs();
+        }
+        // Write scenes into .jaif files.
         for (String jaifPath : modifiedScenes) {
             try {
-                File jaifFile = new File(jaifPath);
-                if (!jaifFile.exists()) {
-                    jaifFile.getParentFile().mkdirs();
-                }
                 AScene scene = scenes.get(jaifPath);
                 IndexFileWriter.write(scene, new FileWriter(jaifPath));
             } catch (IOException e) {
@@ -213,13 +220,14 @@ public class SignatureInferenceScenes {
             MethodInvocationNode methodInvNode, Tree receiverTree,
             ExecutableElement methodElt, AnnotatedTypeFactory atf) {
         if (receiverTree == null) {
-            // Method called from static context.
+            // TODO: handle methods called from static context.
             // I struggled to obtain the ClassTree of a method called from a
             // static context and currently I'm ignoring it.
             return;
         }
         ClassSymbol classSymbol = getEnclosingClassSymbol(receiverTree);
         if (classSymbol == null) {
+            // TODO: Handle anonymous classes.
             // Also struggled to obtain the ClassTree from an anonymous class.
             // Ignoring it for now.
             return;
@@ -238,7 +246,12 @@ public class SignatureInferenceScenes {
 
             Node arg = methodInvNode.getArgument(i);
             Tree treeNode = arg.getTree();
-            if (treeNode == null) continue;
+            if (treeNode == null) {
+                // TODO: Handle variable-length list as parameter.
+                // An ArrayCreationNode with a null tree is created when the
+                // parameter is a variable-length list. We are ignoring it for now.
+                continue;
+            }
             AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
             AField param = method.parameters.vivify(i);
             updateAnnotationSetInScene(
@@ -266,7 +279,7 @@ public class SignatureInferenceScenes {
             Node lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf) {
         FieldAccessNode lhsFieldNode = (FieldAccessNode) lhs;
         ClassSymbol classSymbol = getEnclosingClassSymbol(classTree, lhsFieldNode);
-        if (classSymbol == null) return; // Anonymous class => Ignore, for now.
+        if (classSymbol == null) return; // TODO: Handle anonymous classes.
         String className = classSymbol.flatname.toString();
 
         String jaifPath = getJaifPath(className);
@@ -298,7 +311,7 @@ public class SignatureInferenceScenes {
     public static void updateInferredMethodReturnType(ReturnNode retNode,
             ClassSymbol classSymbol, MethodTree methodTree,
             AnnotatedTypeFactory atf) {
-        if (classSymbol == null) return; // Anonymous class => Ignore, for now.
+        if (classSymbol == null) return; // TODO: Handle anonymous classes.
         String className = classSymbol.flatname.toString();
 
         String jaifPath = getJaifPath(className);
@@ -317,27 +330,28 @@ public class SignatureInferenceScenes {
     /**
      * Updates the set of annotations in a location of a Scene.
      *   <ul>
-     *     <li>If the set of annotations (curAnnos) is empty, then the updated
-     *     set will be the set of annotations in newATM.</li>
-     *     <li>If curAnnos is not empty, the updated set will be the LUB
-     *     between curAnnos and newATM.</li>
+     *     <li>If there was no previous annotation for that location, then the
+     *      updated set will be the annotations in newATM.</li>
+     *     <li>If there was a previous annotation, the updated set will be the
+     *      LUB between the previous annotation and newATM.</li>
      *   </ul>
      * <p>
      * @param type ATypeElement of the Scene which will be modified.
      * @param atf the annotated type factory of a given type system, whose
-     * type hierarchy will be used to update curAnnos.
+     * type hierarchy will be used.
      * @param jaifPath used to identify a Scene.
-     * @param newATM the type containing a set of annotations to be
-     * added (or "lubbed") to the Scene.
+     * @param newATM the type containing annotations to be added (or "lubbed")
+     * to the Scene.
+     * @param defLoc the location where the annotation will be added.
      */
     private static void updateAnnotationSetInScene(ATypeElement type,
             AnnotatedTypeFactory atf, String jaifPath,
             AnnotatedTypeMirror newATM, AnnotatedTypeMirror oldATM,
             DefaultLocation defLoc) {
         AnnotatedTypeMirror curAnnosATM = typeElementToATM(
-                type, atf, false, newATM.getUnderlyingType());
+                type, atf, newATM.getUnderlyingType());
         if (curAnnosATM.getAnnotations().size() == newATM.getAnnotations().size()
-                && newATM.getAnnotations().size() > 0) {
+                && !newATM.getAnnotations().isEmpty()) {
             newATM = AnnotatedTypes.leastUpperBound(
                     atf.getProcessingEnv(), atf, newATM, curAnnosATM);
         }
@@ -356,10 +370,15 @@ public class SignatureInferenceScenes {
 
     /**
      * Returns true if am should not be inserted in source code. This happens
-     * when am is either an implementation detail or is the default for the
+     * when am cannot be inserted in source code or is the default for the
      * location passed as argument.
+     * <p>
      * For example, {@link org.checkerframework.common.value.qual.BottomVal}.
      * Returns false otherwise.
+     * <p>
+     * Invisible qualifiers, which are annotations that contain the
+     * {@link org.checkerframework.framework.qual.InvisibleQualifier}
+     * meta-annotation, also return true.
      */
     private static boolean shouldIgnore(AnnotationMirror am,
             DefaultLocation location) {
@@ -417,15 +436,18 @@ public class SignatureInferenceScenes {
     }
 
     /**
-     * Converts a set of {@link annotations.Annotation} into an
-     * {@link org.checkerframework.framework.type.AnnotatedTypeMirror} that
-     * contains all annotations in the first set.
+     * Returns an {@link org.checkerframework.framework.type.AnnotatedTypeMirror}
+     * containing the {@link annotations.Annotation}s of an
+     * {@link annotations.el.ATypeElement}.
+     * @param type the {@link annotations.el.ATypeElement}.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used.
+     * @param tm the underlying type.
      */
     private static AnnotatedTypeMirror typeElementToATM(
-            ATypeElement type, AnnotatedTypeFactory atf,
-            boolean isDeclaration, TypeMirror tm) {
+            ATypeElement type, AnnotatedTypeFactory atf, TypeMirror tm) {
         AnnotatedTypeMirror atm = AnnotatedTypeMirror.createType(tm, atf,
-                isDeclaration);
+                false);
         Set<Annotation> annos = getSupportedAnnosInSet(type.tlAnnotationsHere,
                 atf);
         for (Annotation anno: annos) {
@@ -437,9 +459,7 @@ public class SignatureInferenceScenes {
             AnnotatedArrayType aat = (AnnotatedArrayType) atm;
             for (ATypeElement innerType : type.innerTypes.values()) {
                 TypeMirror at = aat.getUnderlyingType().getComponentType();
-                aat.setComponentType(typeElementToATM(innerType, atf,
-                        isDeclaration, at));
-                
+                aat.setComponentType(typeElementToATM(innerType, atf,at));
             }
         }
         return atm;
@@ -457,9 +477,10 @@ public class SignatureInferenceScenes {
     * the ATypeElement.
     * @param oldATM used to check if the ATypeElement has explicit annotations.
     * @param atf the annotated type factory of a given type system, whose
-    * type hierarchy will be used to update the method's return type.
+    * type hierarchy will be used.
     * @param typeToUpdate the ATypeElement which will be updated.
     * @param idx used to write annotations on compound types of an ATypeElement.
+    * @param defLoc the location where the annotation will be added.
     */
     private static void updateTypeElementFromATM(AnnotatedTypeMirror newATM,
             AnnotatedTypeMirror oldATM, AnnotatedTypeFactory atf,
