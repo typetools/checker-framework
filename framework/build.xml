@@ -305,7 +305,7 @@
     <target name="all-tests" depends="jar, all-tests-nojar"
             description="Run tests for all checkers"/>
 
-    <target name="all-tests-nojar" depends="build-tests"
+    <target name="all-tests-nojar" depends="build-tests, signature-inference-tests"
             description="Run tests for all checkers, WITHOUT building anything">
 
       <!-- Copied from -run-tests target -->
@@ -338,6 +338,10 @@
                   <!-- Framework classes -->
                   <exclude name="**/CheckerTest.java"/>
                   <exclude name="**/ParameterizedCheckerTest.java"/>
+                  <!-- Signature inference tests depends on the
+                       signature-inference-tests target, so we added that target
+                       to the depends group and excluded it here.-->
+                  <exclude name="**/SignatureInference*.java"/>
               </fileset>
           </batchtest>
       </junit>
@@ -388,18 +392,19 @@
         </copy>
 
         <!-- The only file that expected errors are maintained is
-             ExpectedErrors.java. -->
+             ExpectedErrors.java, so we copy it over. -->
         <delete file="tests/signature-inference/annotated/ExpectedErrors.java"/>
-        <copy file="tests/signature-inference/non-annotated/ExpectedErrors.java"
-            todir="tests/signature-inference/annotated"/>
-
         <!-- Inserting annotations from .jaif files in-place. -->
         <apply executable="insert-annotations-to-source" parallel="true">
             <srcfile/>
-            <fileset dir="build/jaif-files/" includes="*.jaif"/>
+            <fileset dir="build/signature-inference/" includes="*.jaif"/>
             <fileset dir="tests/signature-inference/annotated/" includes="*.java"/>
             <arg value="--outdir=tests/signature-inference/annotated/"/>
         </apply>
+
+        <copy file="tests/signature-inference/non-annotated/ExpectedErrors.java"
+            todir="tests/signature-inference/annotated"/>
+
         <!-- Running the checker again on the final .java files. -->
         <antcall target="-run-tests">
             <param name="param" value="tests.SignatureInferenceValidationTest"/>

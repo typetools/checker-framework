@@ -735,8 +735,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         Receiver expr = FlowExpressions.internalReprOf(analysis.getTypeFactory(),
                 n.getTarget());
 
-        if (inferSignatures && !expr.containsUnknown()
-                && expr instanceof FieldAccess) {
+        if (inferSignatures && expr instanceof FieldAccess) {
             // Updates inferred field type
             SignatureInferenceScenes.updateInferredFieldType(
                     lhs, rhs, analysis.getContainingClass(n.getTree()),
@@ -751,10 +750,11 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     @Override
     public TransferResult<V, S> visitReturn(ReturnNode n, TransferInput<V, S> p) {
         if (inferSignatures) {
-            // Updates the inferred return type of the method
+            // Retrieves class containing the method
             ClassTree classTree = analysis.getContainingClass(n.getTree());
             ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
                     classTree);
+            // Updates the inferred return type of the method
             SignatureInferenceScenes.updateInferredMethodReturnType(
                     n, classSymbol,
                     analysis.getContainingMethod(n.getTree()),
@@ -823,14 +823,15 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         processConditionalPostconditions(n, method, tree, thenStore, elseStore);
 
         if (inferSignatures) {
-            // Updates the inferred parameter type of the invoked method
-            ClassTree classTree = analysis.getContainingClass(n.getTree());
-            if (classTree != null) { // If method is invoked from a static context, classTree == null.
-                ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
-                        classTree);
-                SignatureInferenceScenes.updateInferredMethodParametersTypes(
-                        n, classSymbol, method, analysis.getTypeFactory());
+            // Finds the receiver's type
+            Tree receiverTree = n.getTarget().getReceiver().getTree();
+            if (receiverTree == null) {
+                // If there is no receiver, then get the class being visited.
+                receiverTree = analysis.getContainingClass(n.getTree());
             }
+            // Updates the inferred parameter type of the invoked method
+            SignatureInferenceScenes.updateInferredMethodParametersTypes(
+                    n, receiverTree, method, analysis.getTypeFactory());
         }
 
         return new ConditionalTransferResult<>(finishValue(resValue, thenStore,

@@ -1,15 +1,14 @@
 import tests.signatureinference.qual.*;
 public class MethodReturnTest {
 
-    static int getSibling1() {
+    static int getSibling1NotAnnotated() {
         return (@Sibling1 int) 0;
     }
 
-    public static @Sibling1 int getSibling1NotAnnotated() {
+    static @Sibling1 int getSibling1() {
         //:: error: (return.type.incompatible)
-        return getSibling1();
+        return getSibling1NotAnnotated();
     }
-
     public static boolean bool = false;
 
     public static int lubTest() {
@@ -26,8 +25,24 @@ public class MethodReturnTest {
         return x;
     }
 
-    public void voidMethod() {
-        return;
+    class InnerClass {
+        int field = 0;
+        int getParent2() {
+            MethodReturnTest mrt = new MethodReturnTest();
+            field = mrt.getParent();
+            return mrt.getParent();
+        }
+
+        void receivesSibling1(int i) {
+            //:: error: (argument.type.incompatible)
+            expectsSibling1(i);
+        }
+
+        void expectsSibling1(@Sibling1 int i) {}
+        void test() {
+            @Sibling1 int sib = (@Sibling1 int) 0;
+            receivesSibling1(sib);
+        }
     }
 }
 
