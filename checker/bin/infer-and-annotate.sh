@@ -8,7 +8,7 @@
 # This script receives as arguments:
 # 1. Processor's name (in any form recognized by javac's -processor argument).
 # 2. Classpath (target project's classpath).
-# 3. Extra processor arguments which will be passed to the checker.
+# 3. Any number of extra processor arguments to be passed to the checker.
 # 4. List of paths to .java files in a program.
 
 # Example of usage:
@@ -41,7 +41,7 @@ AFU_JAR="${CHECKERFRAMEWORK}/../annotation-tools/annotation-file-utilities/annot
 # received as arguments.
 # TODO: Handle the following limitation: This function makes the assumption
 # that every argument starts with a hyphen. It means one cannot pass arguments
-# such as -processorpath and -source.
+# such as -processorpath and -source, which are followed by a value.
 read_input() {
     processor=$1
     cp=$2:$AFU_JAR
@@ -75,7 +75,7 @@ infer_and_annotate() {
     mkdir -p $SIGNATURE_INFERENCE_DIR
     mkdir -p $TEMP_DIR
     # Perform inference and add annotations from .jaif to .java files until
-    # $PREV_ITERATION_DIR has the same contents as $SIGNATURE_INFERENCE_DIR
+    # $PREV_ITERATION_DIR has the same contents as $SIGNATURE_INFERENCE_DIR.
     while [ "$DIFF_JAIF" != "" ]
     do
         # Updates $PREV_ITERATION_DIR folder

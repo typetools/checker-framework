@@ -85,22 +85,22 @@ import com.sun.tools.javac.code.Type.ClassType;
  * written into a file named my.package.MyClass.jaif.
  * <p>
  * This class populates the initial Scenes by reading existing .jaif files
- * on the {@link #JAIF_FILES_PATH} directory. Having more information on those
+ * on the {@link #JAIF_FILES_PATH} directory. Having more information in those
  * initial .jaif files means that the precision achieved by the signature
  * inference analysis will be better. {@link #writeScenesToJaif} rewrites
  * the initial .jaif files, and may create new ones.
  * <p>
  * Calling an update* method
- * ({@link updateInferredFieldType},
- * {@link updateInferredMethodParametersTypes}, or
- * {@link updateInferredMethodReturnType}) 
+ * ({@link #updateInferredFieldType},
+ * {@link #updateInferredMethodParametersTypes}, or
+ * {@link #updateInferredMethodReturnType})
  * replaces the currently-stored type for an element in a Scene, if any,
  * by the LUB of it and the update method's argument.
  * <p>
  * This class does not store annotations for an element if the element has
- * explicit annotations -- when calling an update* method passing as argument an
- * explicitly annotated field, method return, or method parameter, its inferred
- * type is not stored in a Scene.
+ * explicit annotations &mdash; an update* method ignores an
+ * explicitly annotated field, method return, or method parameter when
+ * passed as an argument.
  * <p>
  *  @author pbsf
  */
@@ -108,28 +108,29 @@ import com.sun.tools.javac.code.Type.ClassType;
 //  elements, but this currently is not recommended since the
 //  insert-annotations-to-source tool, which adds annotations from .jaif files
 //  into source code, adds annotations on top of existing
-//  annotations. See https://github.com/typetools/annotation-tools/issues/105
+//  annotations. See https://github.com/typetools/annotation-tools/issues/105 .
 //  TODO: Ensure that annotations are added deterministically to .jaif files.
 public class SignatureInferenceScenes {
 
     /**
-     * Path to where .jaif files will be written to and read from.
-     * This path is relative to where the CF's javac command is executed.
+     * Directory where .jaif files will be written to and read from.
+     * This directory is relative to where the CF's javac command is executed.
      */
     public final static String JAIF_FILES_PATH = "build/signature-inference/";
 
     /** Maps .jaif file paths (Strings) to Scenes. */
     private static Map<String, AScene> scenes = new HashMap<>();
 
-    /** Set containing Scenes that were modified since the last time all
-     * Scenes were written into .jaif files. The String argument of this set
+    /**
+     * Set representing Scenes that were modified since the last time all
+     * Scenes were written into .jaif files. Each String element of this set
      * is a path to the .jaif file of the corresponding Scene in the set. It
      * is obtained by passing a class name as argument to the
-     * {@link getJaifPath} method.
+     * {@link #getJaifPath} method.
      * <p>
      * Modifying a Scene means adding (or changing) a type annotation for a
      * field, method return type, or method parameter type in the Scene.
-     * (Scenes are modified by the method {@link updateAnnotationSetInScene}).
+     * (Scenes are modified by the method {@link #updateAnnotationSetInScene}.)
      */
     private static Set<String> modifiedScenes = new HashSet<>();
 
@@ -164,8 +165,7 @@ public class SignatureInferenceScenes {
 
     /**
      * Write all modified scenes into .jaif files.
-     * (Scenes are modified by the method
-     * {@link updateAnnotationSetInScene})
+     * (Scenes are modified by the method {@link #updateAnnotationSetInScene}.)
      */
     public static void writeScenesToJaif() {
         for (String jaifPath : modifiedScenes) {
@@ -187,7 +187,7 @@ public class SignatureInferenceScenes {
     }
 
     /**
-     * Updates the parameters' types of the method methodElt in the Scene of the
+     * Updates the parameter types of the method methodElt in the Scene of the
      * class with symbol classSymbol.
      * <p>
      * For each method parameter in methodElt:
@@ -214,14 +214,14 @@ public class SignatureInferenceScenes {
             ExecutableElement methodElt, AnnotatedTypeFactory atf) {
         if (receiverTree == null) {
             // Method called from static context.
-            // I struggled to obtain the ClassTree of a method called from a
-            // static context and currently I'm ignoring it.
+            // TODO: I struggled to obtain the ClassTree of a method called
+            // from a static context and currently I'm ignoring it.
             return;
         }
         ClassSymbol classSymbol = getEnclosingClassSymbol(receiverTree);
         if (classSymbol == null) {
-            // Also struggled to obtain the ClassTree from an anonymous class.
-            // Ignoring it for now.
+            // TODO: Also struggled to obtain the ClassTree from an anonymous
+            // class. Ignoring it for now.
             return;
         }
         String className = classSymbol.flatname.toString();
@@ -397,8 +397,8 @@ public class SignatureInferenceScenes {
     }
 
     /**
-     * Returns a Set<Annotation> containing only supported annotations by the
-     * atf passed as argument.
+     * Returns a subset of annosSet, consisting of the annotations supported
+     * by atf.
      */
     private static Set<Annotation> getSupportedAnnosInSet(Set<Annotation> annosSet,
             AnnotatedTypeFactory atf) {
