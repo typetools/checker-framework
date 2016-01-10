@@ -362,7 +362,7 @@
             description="Run tests for the annotation class loader by loading from build directories">
         <exec executable="make" failonerror="${halt.on.test.failure}">
             <env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
-            <env key="JAVACJAR" value="${jsr308.langtools.dist}/lib/javac.jar"/>
+            <env key="JAVACJAR" value="${javac.lib}"/>
             <arg line="-C tests/annotationclassloader/"/>
             <arg line="load-from-dir-test"/>
         </exec>
@@ -372,7 +372,7 @@
             description="Run tests for the annotation class loader by loading from jar file">
         <exec executable="make" failonerror="${halt.on.test.failure}">
             <env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
-            <env key="JAVACJAR" value="${jsr308.langtools.dist}/lib/javac.jar"/>
+            <env key="JAVACJAR" value="${javac.lib}"/>
             <arg line="-C tests/annotationclassloader/"/>
             <arg line="load-from-jar-test"/>
         </exec>
@@ -528,7 +528,7 @@
 
 
     <!-- TODO: re-enable -->
-    <target name="jtreg-tests" depends="-def-jtreg,jar,build-tests"
+    <target name="jtreg-tests" depends="-jtreg.download,-def-jtreg,jar,build-tests"
             description="Run jtreg tests">
         <echo message="framework jtreg-tests are currently disabled because they are failing"/>
         <!-- <jtreg-tool2 name="all" tests="."/> -->
