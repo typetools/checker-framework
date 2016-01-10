@@ -31,7 +31,7 @@
         value="${java.io.tmpdir}/${user.name}/${timestamp}${env.EXECUTOR_NUMBER}/${ant.project.name}" />
 
     <property name="compiler.version.goal.jsr308"
-              value="javac 1.8.0-jsr308-${build.version}"/>
+              value="javac 1.9.0-jsr308-${build.version}"/>
 
     <property name="compiler.version.goal.java8"
               value="javac 1.8.0"/>
