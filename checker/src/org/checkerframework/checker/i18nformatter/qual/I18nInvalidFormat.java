@@ -12,10 +12,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * indicates that if the String is passed to
  * {@link java.text.MessageFormat#format(String, Object...)},
  * an exception will result.
- * <p>
- *
- * This annotation may not be written in source code; it is an
- * implementation detail of the checker.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization
  *                           Format String Checker

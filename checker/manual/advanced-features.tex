@@ -509,8 +509,8 @@ If the checker was not run during the compiler execution that created the
 that the programmer wrote explicitly.  (Furthermore, there is no guarantee
 that these qualifiers are correct, since they have not been checked.)
 In this case, each checker decides what qualifier to use for the
-locations where the programmer did not write an annotation.  The typical
-choice is:
+locations where the programmer did not write an annotation.  The typical,
+sound choice is:
 
 \begin{itemize}
 \item
@@ -520,6 +520,12 @@ choice is:
   For method return values, use the top qualifier (see
   Section~\ref{top-qualifier}).
 \end{itemize}
+
+These choices are conservative.  They are likely to cause many
+false-positive type-checking errors, which will help you to know which
+library methods need annotations.  You can then write those library
+annotations (see Chapter~\ref{annotating-libraries}) or alternately
+suppress the warnings (see Section~\ref{suppressing-warnings}).
 
 For example, an unannotated method
 
@@ -548,12 +554,6 @@ improve handling of mutable public fields in unannotated libraries.
 
 %% TODO: should give rules for other locations, such as type parameters
 %% (which should behave like fields), bounds, etc.
-
-These choices are conservative.  They are likely to cause many
-false-positive type-checking errors, which will help you to know which
-library methods need annotations.  You can then write those library
-annotations (see Chapter~\ref{annotating-libraries}) or alternately
-suppress the warnings (see Section~\ref{suppressing-warnings}).
 
 % If you supply the command-line option
 % \<-AunsafeDefaultsForUnannotatedBytecode>,
