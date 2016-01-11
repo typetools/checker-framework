@@ -36,7 +36,7 @@ addons:
 ## Enable this when you wish to see JUnit reports.
 ## Disable to minimize use of Amazon S3.
 addons:
-  artifacts:
+  artifacts: false
     paths:
       - $(ls checker/build/reports/* | tr "\n" ":")
       - $(ls framework/build/reports/* | tr "\n" ":")

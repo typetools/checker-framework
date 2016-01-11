@@ -519,6 +519,12 @@ choice is:
   Section~\ref{top-qualifier}).
 \end{itemize}
 
+These choices are conservative.  They are likely to cause many
+false-positive type-checking errors, which will help you to know which
+library methods need annotations.  You can then write those library
+annotations (see Chapter~\ref{annotating-libraries}) or alternately
+suppress the warnings (see Section~\ref{suppressing-warnings}).
+
 For example, an unannotated method
 
 \begin{Verbatim}
@@ -546,12 +552,6 @@ improve handling of mutable public fields in unannotated libraries.
 
 %% TODO: should give rules for other locations, such as type parameters
 %% (which should behave like fields), bounds, etc.
-
-These choices are conservative.  They are likely to cause many
-false-positive type-checking errors, which will help you to know which
-library methods need annotations.  You can then write those library
-annotations (see Chapter~\ref{annotating-libraries}) or alternately
-suppress the warnings (see Section~\ref{suppressing-warnings}).
 
 % If you supply the command-line option
 % \<-AunsafeDefaultsForUnannotatedBytecode>,

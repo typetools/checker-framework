@@ -13,10 +13,6 @@ import com.sun.source.tree.Tree;
 
 /**
  * Represents the bottom of the Internationalization Format String type hierarchy.
- * <p>
- *
- * This annotation may not be written in source code; it is an
- * implementation detail of the checker.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization
  *                           Format String Checker

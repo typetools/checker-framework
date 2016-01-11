@@ -91,13 +91,11 @@ public class KeyForAnnotatedTypeFactory extends
         UNKNOWNKEYFOR = AnnotationUtils.fromClass(elements, UnknownKeyFor.class);
         keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
-        this.postInit();
-
-        this.defaults.addCheckedCodeDefault(UNKNOWNKEYFOR, DefaultLocation.ALL);
-
         // Add compatibility annotations:
         addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.KeyForDecl.class, KEYFOR);
         addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.KeyForType.class, KEYFOR);
+
+        this.postInit();
     }
 
     @Override

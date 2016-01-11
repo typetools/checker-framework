@@ -11,10 +11,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * UnknownVal is a type annotation indicating that the expression's value is not
  * known at compile type.
- * <p>
- *
- * This annotation may not be written in source code; it is an implementation
- * detail of the Constant Value Checker.
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
