@@ -588,7 +588,6 @@ public class SignatureInferenceScenes {
     private static AnnotationFieldType getAnnotationFieldType(ExecutableElement
             ee, Object value) {
         if (value instanceof List<?>) {
-            // Handling cases of empty arrays was a bit troublesome here.
             AnnotationValue defaultValue = ee.getDefaultValue();
             if (defaultValue == null || ((ArrayType)((Array)defaultValue).type) == null) {
                 List<?> listV = (List<?>)value;

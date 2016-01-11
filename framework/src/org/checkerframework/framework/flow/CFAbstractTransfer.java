@@ -121,7 +121,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
-        inferSignatures = analysis.getTypeFactory().getProcessingEnv().
+        this.inferSignatures = analysis.getTypeFactory().getProcessingEnv().
                 getOptions().containsKey("inferSignatures");
     }
 
