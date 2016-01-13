@@ -162,7 +162,7 @@ public class QualifierDefaults {
      * @param bottoms AnnotationMirrors that are bottom
      */
     public void addUncheckedStandardDefaults(Iterable<? extends AnnotationMirror> tops, Iterable<? extends AnnotationMirror> bottoms){
-        for(DefaultLocation loc : standardUncheckedDefaultsTop) {
+        for (DefaultLocation loc : standardUncheckedDefaultsTop) {
             // Only add standard defaults in locations where a default has not be specified
             for (AnnotationMirror top : tops) {
                 if (!conflictsWithExistingDefaults(uncheckedCodeDefaults, top, loc)) {
@@ -171,7 +171,7 @@ public class QualifierDefaults {
             }
         }
 
-        for(DefaultLocation loc : standardUncheckedDefaultsBottom) {
+        for (DefaultLocation loc : standardUncheckedDefaultsBottom) {
             for (AnnotationMirror bottom : bottoms) {
                 // Only add standard defaults in locations where a default has not be specified
                 if (!conflictsWithExistingDefaults(uncheckedCodeDefaults, bottom, loc)) {
