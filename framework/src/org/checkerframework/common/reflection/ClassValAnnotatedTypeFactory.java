@@ -142,6 +142,34 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
+        @Override
+        public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (!AnnotationUtils.areSameIgnoringValues(getTopAnnotation(a1),getTopAnnotation(a2))) {
+                return null;
+            } else if (isSubtype(a1, a2)) {
+                return a1;
+            } else if (isSubtype(a2, a1)) {
+                return a2;
+            } else  {
+                List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
+                List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
+                Set<String> glbClassNames = new TreeSet<String>();
+                glbClassNames.addAll(a1ClassNames);
+                glbClassNames.retainAll(a2ClassNames);
+
+                // If either annotation is a ClassVal, the glb must also be a ClassVal.
+                // For example:
+                // GLB( @ClassVal(a,b), @ClassBound(a,c)) is @ClassVal(a)
+                // because @ClassBound(a) is not a subtype of @ClassVal(a,b)
+                if (AnnotationUtils.areSameByClass(a1, ClassVal.class) ||
+                            AnnotationUtils.areSameByClass(a2, ClassVal.class)) {
+                    return createClassVal(new ArrayList<>(glbClassNames));
+                } else {
+                    return createClassBound(new ArrayList<>(glbClassNames));
+                }
+            }
+        }
+
         /*
          * Computes subtyping as per the subtyping in the qualifier hierarchy
          * structure unless both annotations are ClassVal. In this case, rhs is
