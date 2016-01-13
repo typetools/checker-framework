@@ -378,15 +378,11 @@ public abstract class GenericAnnotatedTypeFactory<
                 if (defaultFor != null) {
                     // A type qualifier should either have a DefaultFor or
                     // a DefaultQualifierInHierarchy annotation
-                    ErrorReporter
-                            .errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
-                                                "qualifier has both @DefaultFor and @DefaultQualifierInHierarchy annotations: "
-                                                + qual.getCanonicalName());
+                    ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
+                                                     "qualifier has both @DefaultFor and @DefaultQualifierInHierarchy annotations: " +
+                                                     qual.getCanonicalName());
                 } else {
-                    defs.addCheckedCodeDefault(AnnotationUtils
-                                                       .fromClass(elements,
-                                                                         qual),
-                                                      DefaultLocation.OTHERWISE);
+                    defs.addCheckedCodeDefault(AnnotationUtils.fromClass(elements, qual), DefaultLocation.OTHERWISE);
                     foundOtherwise = true;
                 }
             }
@@ -432,28 +428,23 @@ public abstract class GenericAnnotatedTypeFactory<
 
             if (defaultInUncheckedCodeFor != null) {
                 final DefaultLocation[] locations = defaultInUncheckedCodeFor.value();
-                defs.addUncheckedCodeDefaults(AnnotationUtils
-                                                      .fromClass(elements,
-                                                                        annotation),
-                                                     locations);
+                defs.addUncheckedCodeDefaults(AnnotationUtils.fromClass(elements, annotation), locations);
             }
 
             if (annotation.getAnnotation(DefaultQualifierInHierarchyInUncheckedCode.class) != null) {
                 if (defaultInUncheckedCodeFor != null) {
                     // A type qualifier should either have a DefaultInUncheckedCodeFor or
                     // a DefaultQualifierInHierarchyInUncheckedCode annotation.
-                    ErrorReporter
-                            .errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
-                                                "qualifier has both @DefaultInUncheckedCodeFor and @DefaultQualifierInHierarchyInUncheckedCode annotations: "
-                                                + annotation.getCanonicalName());
+                    ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
+                                                     "qualifier has both @DefaultInUncheckedCodeFor and @DefaultQualifierInHierarchyInUncheckedCode annotations: " +
+                                                     annotation.getCanonicalName());
                 } else {
-                    defs.addUncheckedCodeDefault(AnnotationUtils.fromClass(elements, annotation),
-                                                      DefaultLocation.OTHERWISE);
+                    defs.addUncheckedCodeDefault(AnnotationUtils.fromClass(elements, annotation), DefaultLocation.OTHERWISE);
                 }
             }
         }
         Set<? extends AnnotationMirror> tops = this.qualHierarchy.getTopAnnotations();
-        Set<? extends  AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
+        Set<? extends AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
         defs.addUncheckedStandardDefaults(tops, bottoms);
 
         // Don't require @DefaultQualifierInHierarchyInUncheckedCode or an unchecked default for DefaultLocation.OTHERWISE.
