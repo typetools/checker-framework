@@ -155,14 +155,14 @@ You use \<@AnnotatedFor> to indicate which classes you have annotated.
 
 
 
-\subsection{The \<-AuseSafeDefaultsForUnannotatedSourceCode> command-line
-argument\label{AuseSafeDefaultsForUnannotatedSourceCode}}
+\subsection{The \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line
+argument\label{AuseDefaultsForUncheckedCodesource}}
 
 \begin{sloppypar}
 When compiling a library that is not fully annotated, use command-line
-argument \<-AuseSafeDefaultsForUnannotatedSourceCode>.  This causes
+argument \<-AuseDefaultsForUncheckedCode=source,bytecode>.  This causes
 the checker to behave normally for classes with a relevant \<@AnnotatedFor>
-annotation.  For all other classes, the checker uses conservative defaults
+annotation.  For all other classes, the checker uses unchecked code defaults
 (see Section~\ref{defaults-classfile}) for any type use with no explicit
 user-written annotation, and the checker issues no warnings.
 \end{sloppypar}
@@ -183,7 +183,7 @@ checkers (see Section~\ref{shorthand-for-checkers}).
 
 \begin{sloppypar}
 Whenever you compile a class using the Checker Framework, including when
-using the \<-AuseSafeDefaultsForUnannotatedSourceCode> command-line
+using the \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line
 argument, the resulting \<.class> files are fully-annotated; each type use
 in the \<.class> file has an explicit type qualifier for any checker that
 is run.
@@ -218,7 +218,7 @@ partially-annotated library.
     Every time the build system runs the compiler, it should:
     \begin{itemize}
     \item
-      passes the \<-AuseSafeDefaultsForUnannotatedSourceCode>
+      passes the \<-AuseDefaultsForUncheckedCode=source,bytecode>
       command-line option and
     \item
       runs every pluggable type-checker for which any

@@ -15,7 +15,7 @@ public class NullnessSafeDefaultsSourceCodeLibTest extends CheckerFrameworkTest 
         super(testFile,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
-                "-AuseSafeDefaultsForUnannotatedSourceCode",
+                "-AuseDefaultsForUncheckedCode=source,bytecode",
                 "-Anomsgtext");
     }
 
