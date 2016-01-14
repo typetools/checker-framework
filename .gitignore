@@ -94,6 +94,9 @@ checker/tests/nullness/generics/*.class
 checker/tests/nullness-temp/*.java
 checker/tests/nullness-temp/*.class
 
+# Signature inference generated files
+framework/tests/signature-inference/annotated/*
+
 checker/jtreg/multipleexecutions/Main.class
 
 tutorial/eclipse-projects.zip
