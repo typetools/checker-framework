@@ -245,7 +245,7 @@
         <echo message="${qual.src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${afu.lib}"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -293,7 +293,7 @@
         <echo message="${compat.qual.src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${afu.lib}"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>

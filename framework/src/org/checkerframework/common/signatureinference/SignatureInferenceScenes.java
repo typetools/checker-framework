@@ -194,7 +194,7 @@ public class SignatureInferenceScenes {
 
     /**
      * Updates the parameter types of the method methodElt in the Scene of the
-     * class with symbol classSymbol.
+     * receiverTree's enclosing class.
      * <p>
      * For each method parameter in methodElt:
      *   <ul>
@@ -261,7 +261,7 @@ public class SignatureInferenceScenes {
 
     /**
      * Updates the type of the field lhs in the Scene of the class with
-     * symbol classSymbol.
+     * tree classTree.
      * <p>
      * If the Scene contains no entry for the field lhs,
      * the entry will be created and its type will be the type of rhs. If the
@@ -304,6 +304,8 @@ public class SignatureInferenceScenes {
      * <p>
      * @param retNode the node that contains the expression returned.
      * @param classSymbol the symbol of the class that contains the method.
+     * @param methodTree the tree of the method whose return type
+     * may be updated.
      * @param atf the annotated type factory of a given type system, whose
      * type hierarchy will be used to update the method's return type.
      */
@@ -341,20 +343,22 @@ public class SignatureInferenceScenes {
      * @param jaifPath used to identify a Scene.
      * @param newATM the type containing annotations to be added (or "lubbed")
      * to the Scene.
+     * @param curATM used to check if the element which will be updated has
+     * explicit annotations in source code.
      * @param defLoc the location where the annotation will be added.
      */
     private static void updateAnnotationSetInScene(ATypeElement type,
             AnnotatedTypeFactory atf, String jaifPath,
-            AnnotatedTypeMirror newATM, AnnotatedTypeMirror oldATM,
+            AnnotatedTypeMirror newATM, AnnotatedTypeMirror curATM,
             DefaultLocation defLoc) {
-        AnnotatedTypeMirror curAnnosATM = typeElementToATM(
+        AnnotatedTypeMirror atmFromJaif = typeElementToATM(
                 type, atf, newATM.getUnderlyingType());
-        if (curAnnosATM.getAnnotations().size() == newATM.getAnnotations().size()
+        if (atmFromJaif.getAnnotations().size() == newATM.getAnnotations().size()
                 && !newATM.getAnnotations().isEmpty()) {
             newATM = AnnotatedTypes.leastUpperBound(
-                    atf.getProcessingEnv(), atf, newATM, curAnnosATM);
+                    atf.getProcessingEnv(), atf, newATM, atmFromJaif);
         }
-        updateTypeElementFromATM(newATM, oldATM, atf, type, 1, defLoc);
+        updateTypeElementFromATM(newATM, curATM, atf, type, 1, defLoc);
         modifiedScenes.add(jaifPath);
     }
 
@@ -368,12 +372,10 @@ public class SignatureInferenceScenes {
     }
 
     /**
-     * Returns true if am should not be inserted in source code. This happens
+     * Returns true if am should not be inserted in source code, for example 
+     * {@link org.checkerframework.common.value.qual.BottomVal}. This happens
      * when am cannot be inserted in source code or is the default for the
      * location passed as argument.
-     * <p>
-     * For example, {@link org.checkerframework.common.value.qual.BottomVal}.
-     * Returns false otherwise.
      * <p>
      * Invisible qualifiers, which are annotations that contain the
      * {@link org.checkerframework.framework.qual.InvisibleQualifier}
@@ -382,12 +384,16 @@ public class SignatureInferenceScenes {
     private static boolean shouldIgnore(AnnotationMirror am,
             DefaultLocation location) {
         boolean shouldIgnore = false;
-        // Checks if am is an implementation detail
+        // Checks if am is an implementation detail (a type qualifier used
+        // internally by the type system and not meant to be seen by the user.)
         Target target = am.getAnnotationType().asElement().
                 getAnnotation(Target.class);
         shouldIgnore = shouldIgnore || (target != null && target.value().length == 0);
         shouldIgnore = shouldIgnore || am.getAnnotationType().asElement().
                 getAnnotation(InvisibleQualifier.class) != null;
+        if (shouldIgnore) {
+            return shouldIgnore;
+        }
 
         // Checks if am is default
         shouldIgnore = shouldIgnore || am.getAnnotationType().asElement().
@@ -467,14 +473,22 @@ public class SignatureInferenceScenes {
    /**
     * Updates an {@annotations.el.ATypeElement} to have the annotations of an
     * {@link org.checkerframework.framework.type.AnnotatedTypeMirror} passed
-    * as argument. Annotations in the original set that are an implementation
-    * detail are ignored and not added to the resulting set. This method also
-    * checks if the {@annotations.el.ATypeElement} has explicit annotations,
-    * and if that is the case no annotations are added.
+    * as argument. Annotations in the original set that should be ignored
+    * (see {@link #shouldIgnore}) are not added to the resulting set.
+    * This method also checks if the AnnotatedTypeMirror has explicit
+    * annotations in source code, and if that is the case no annotations are
+    * added for that location.
+    * <p>
+    * This method removes from the ATypeElement all annotations supported by atf
+    * before inserting new ones. It is assumed that every time this method is
+    * called, the AnnotatedTypeMirror has a better type estimate for the
+    * ATypeElement. Therefore, it is not a problem to remove all annotations
+    * before inserting  the new annotations.
     *
     * @param newATM the AnnotatedTypeMirror whose annotations will be added to
     * the ATypeElement.
-    * @param oldATM used to check if the ATypeElement has explicit annotations.
+    * @param curATM used to check if the element which will be updated has
+    * explicit annotations in source code.
     * @param atf the annotated type factory of a given type system, whose
     * type hierarchy will be used.
     * @param typeToUpdate the ATypeElement which will be updated.
@@ -482,7 +496,7 @@ public class SignatureInferenceScenes {
     * @param defLoc the location where the annotation will be added.
     */
     private static void updateTypeElementFromATM(AnnotatedTypeMirror newATM,
-            AnnotatedTypeMirror oldATM, AnnotatedTypeFactory atf,
+            AnnotatedTypeMirror curATM, AnnotatedTypeFactory atf,
             ATypeElement typeToUpdate, int idx, DefaultLocation defLoc) {
         // Clears only the annotations that are supported by atf.
         // The others stay intact.
@@ -491,11 +505,15 @@ public class SignatureInferenceScenes {
             // of type variables and compound types.
             Set<Annotation> annosToRemove = getSupportedAnnosInSet(
                     typeToUpdate.tlAnnotationsHere, atf);
+            // This method may be called consecutive times for the same ATypeElement.
+            // Each time it is called, the AnnotatedTypeMirror has a better type
+            // estimate for the ATypeElement. Therefore, it is not a problem to remove
+            // all annotations before inserting the new annotations.
             typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
         }
 
         // Only update the ATypeElement if there are no explicit annotations
-        if (oldATM.getExplicitAnnotations().size() == 0) {
+        if (curATM.getExplicitAnnotations().size() == 0) {
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 if (!shouldIgnore(am, defLoc)) {
                     Annotation anno = annotationMirrorToAnnotation(am);
@@ -508,17 +526,17 @@ public class SignatureInferenceScenes {
 
         // Recursively update compound type and type variable type if they exist.
         if (newATM.getKind() == TypeKind.ARRAY &&
-                oldATM.getKind() == TypeKind.ARRAY) {
+                curATM.getKind() == TypeKind.ARRAY) {
             AnnotatedArrayType newAAT = (AnnotatedArrayType) newATM;
-            AnnotatedArrayType oldAAT = (AnnotatedArrayType) oldATM;
+            AnnotatedArrayType oldAAT = (AnnotatedArrayType) curATM;
             updateTypeElementFromATM(newAAT.getComponentType(), oldAAT.getComponentType(),
                     atf, typeToUpdate.innerTypes.vivify(new InnerTypeLocation(
                             TypeAnnotationPosition.getTypePathFromBinary(
                                     Collections.nCopies(2 * idx, 0)))), idx+1, defLoc);
         } else if (newATM.getKind() == TypeKind.TYPEVAR &&
-                oldATM.getKind() == TypeKind.TYPEVAR) {
+                curATM.getKind() == TypeKind.TYPEVAR) {
             AnnotatedTypeVariable newATV = (AnnotatedTypeVariable) newATM;
-            AnnotatedTypeVariable oldATV = (AnnotatedTypeVariable) oldATM;
+            AnnotatedTypeVariable oldATV = (AnnotatedTypeVariable) curATM;
             updateTypeElementFromATM(newATV.getUpperBound(), oldATV.getUpperBound(),
                     atf, typeToUpdate, idx, defLoc);
             updateTypeElementFromATM(newATV.getLowerBound(), oldATV.getLowerBound(),
@@ -593,7 +611,7 @@ public class SignatureInferenceScenes {
                 List<?> listV = (List<?>)value;
                 if (!listV.isEmpty()) {
                     return new ArrayAFT((ScalarAFT) getAnnotationFieldType(ee,
-                            ((AnnotationValue)((List<?>)value).get(0)).getValue()));
+                            ((AnnotationValue)listV.get(0)).getValue()));
                 }
                 return null;
             }
@@ -696,22 +714,15 @@ public class SignatureInferenceScenes {
             TypeSymbol tsym = ((ClassType) type).asElement();
             return tsym.enclClass();
         }
-        Tree tree = receiverNode.getTree();
-        Element symbol = InternalUtils.symbol(tree);
-        if (symbol instanceof ClassSymbol) {
-            return (ClassSymbol) symbol;
-        } else if (symbol instanceof VarSymbol) {
-            return ((VarSymbol)symbol).enclClass();
-        }
-        return null;
+        return getEnclosingClassSymbol(receiverNode.getTree());
     }
 
     /**
      * Returns the ClassSymbol of the class encapsulating
-     * classTree passed as parameter.
+     * tree passed as parameter.
      */
-    private static ClassSymbol getEnclosingClassSymbol(Tree classTree) {
-        Element symbol = InternalUtils.symbol(classTree);
+    private static ClassSymbol getEnclosingClassSymbol(Tree tree) {
+        Element symbol = InternalUtils.symbol(tree);
         if (symbol instanceof ClassSymbol) {
             return (ClassSymbol) symbol;
         } else if (symbol instanceof VarSymbol) {

@@ -410,8 +410,6 @@
             <param name="param" value="tests.SignatureInferenceValidationTest"/>
         </antcall>
 
-        <delete dir="tests/signature-inference/annotated"/>
-
     </target>
 
     <target name="flow-tests" depends="jar,build-tests"

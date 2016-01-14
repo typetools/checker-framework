@@ -6,7 +6,7 @@
 # previous iteration (which means there is nothing new to infer anymore).
 
 # This script receives as arguments:
-# 1. Processor's name (in any form recognized by javac's -processor argument).
+# 1. Processor's name (in any form recognized by CF's javac -processor argument).
 # 2. Classpath (target project's classpath).
 # 3. Any number of extra processor arguments to be passed to the checker.
 # 4. List of paths to .jaif files -- used as input (optional).
@@ -21,6 +21,12 @@
 # paths to: android.jar, gen folder, all libs used, source code folder.
 # The Android project must be built with "ant debug" before running this script.
 
+# TODO: This script deletes all .unannotated files, including ones that could
+# have been generated previously by another means other than using this script.
+# We must decide if we want to make a backup of previously generated
+# .unannotated files, or if we want to keep the first set of generated
+# .unannotated files.
+
 # Halts the script when a nonzero value is returned from a command.
 set -e
 
@@ -32,7 +38,7 @@ SIGNATURE_INFERENCE_DIR=build/signature-inference
 # be deleted after executing this script.
 TEMP_DIR=build/temp-signature-inference-output
 
-# Path to directory that will contain .jaif files from the previous interation.
+# Path to directory that will contain .jaif files from the previous iteration.
 PREV_ITERATION_DIR=build/prev-signature-inference
 
 # Path to annotation-file-utilities.jar
@@ -97,6 +103,7 @@ infer_and_annotate() {
         # Deletes .unannotated backup files. This is necessary otherwise the
         # insert-annotations-to-source tool will use this file instead of the
         # updated .java one.
+        # See TODO about .unannotated file at the top of this file.
         for file in $java_files;
         do
             rm -f "${file}.unannotated"
@@ -120,6 +127,7 @@ clean() {
     # rm -rf $SIGNATURE_INFERENCE_DIR
     rm -rf $PREV_ITERATION_DIR
     rm -rf $TEMP_DIR
+    # See TODO about .unannotated file at the top of this file.
     for file in $java_files;
         do
             rm -f "${file}.unannotated"

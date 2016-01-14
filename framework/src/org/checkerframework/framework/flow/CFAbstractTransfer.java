@@ -733,7 +733,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         V rhsValue = in.getValueOfSubNode(rhs);
 
         Receiver expr = FlowExpressions.internalReprOf(analysis.getTypeFactory(),
-                n.getTarget());
+                lhs);
 
         if (inferSignatures && expr instanceof FieldAccess) {
             // Updates inferred field type
