@@ -394,7 +394,7 @@
             </filterchain>
         </copy>
 
-        <!-- The only file that expected errors are maintained is
+        <!-- The only file for which expected errors are maintained is
              ExpectedErrors.java, so we copy it over. -->
         <delete file="tests/signature-inference/annotated/ExpectedErrors.java"/>
         <!-- Inserting annotations from .jaif files in-place. -->
