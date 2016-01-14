@@ -83,6 +83,9 @@
         <delete dir="${tests.build}" />
 
         <delete file="${framework.lib}"/>
+
+        <!-- Signature-inference generated tests -->
+        <delete dir="tests/signature-inference/annotated"/>
     </target>
 
     <target name="clean-nojar" description="Remove generated class files, but not the .jar files">
