@@ -1,5 +1,15 @@
 ---------------------------------------------------------------------------
 
+Version 1.9.11, 1 February 2016
+
+For type-system developers:
+
+* The previously deprecated
+  org.checkerframework.framework.qual.TypeQualifier{s} annotations
+  were removed.
+
+---------------------------------------------------------------------------
+
 Version 1.9.10, 4 January 2016
 
 The Checker Framework distribution files now contain a version number:
