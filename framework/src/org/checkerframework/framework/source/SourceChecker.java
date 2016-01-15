@@ -7,7 +7,6 @@ import org.checkerframework.checker.nullness.qual.*;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.CheckerMain;
@@ -1710,14 +1709,10 @@ public abstract class SourceChecker
      * annotation.  <p>
      *
      * To specify the annotations that a checker recognizes as type qualifiers,
-     * use the {@link TypeQualifiers} annotation on the declaration of
-     * subclasses of this class or override the
-     * {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()} method.
+     * see {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()}.
      *
      * @throws Error if a subclass is annotated with
      *         {@link SupportedAnnotationTypes}
-     *
-     * @see TypeQualifiers
      */
     @Override
     public final Set<String> getSupportedAnnotationTypes() {
