@@ -5,14 +5,12 @@ import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * UnknownSignedness is a type qualifier which indicates that a value's 
  * signedness is either not known after some operation, or cannot have
  * a signedness.
  */
-@TypeQualifier
 @Target( { ElementType.TYPE_USE, ElementType.TYPE_PARAMETER } )
 @SubtypeOf( { } )
 @DefaultQualifierInHierarchy

@@ -7,14 +7,13 @@ import javax.lang.model.type.TypeKind;
 
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Signed is a type qualifier which indicates that a value should
  * be interpreted using two's complement encoding, and should function
  * normally in Java.
  */
-@TypeQualifier
+
 @Target( { ElementType.TYPE_USE, ElementType.TYPE_PARAMETER } )
 @SubtypeOf( { UnknownSignedness.class } )
 @ImplicitFor(
