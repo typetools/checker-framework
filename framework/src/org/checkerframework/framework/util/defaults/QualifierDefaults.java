@@ -83,8 +83,8 @@ public class QualifierDefaults {
     private final AnnotatedTypeFactory atypeFactory;
     private final List<String> upstreamCheckerNames;
 
-    private final DefaultSet absoluteDefaults = new DefaultSet();
-    private final DefaultSet unannotatedDefaults = new DefaultSet();
+    private final DefaultSet checkedCodeDefaults = new DefaultSet();
+    private final DefaultSet uncheckedCodeDefaults = new DefaultSet();
 
     /** Mapping from an Element to the source Tree of the declaration. */
     private static final int CACHE_SIZE = 300;
@@ -105,9 +105,9 @@ public class QualifierDefaults {
     private final Map<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
 
     /**
-     * List of DefaultLocations which are valid for unannotated code defaults.
+     * List of DefaultLocations which are valid for unchecked code defaults.
      */
-    private static final DefaultLocation[] validUnannotatedDefaultLocations = {
+    private static final DefaultLocation[] validUncheckedCodeDefaultLocations = {
         DefaultLocation.FIELD,
         DefaultLocation.PARAMETERS,
         DefaultLocation.RETURNS,
@@ -119,12 +119,12 @@ public class QualifierDefaults {
     };
 
     /**
-     * Returns an array of locations that are valid for the unannotated value
+     * Returns an array of locations that are valid for the unchecked value
      * defaults.  These are simply by syntax, since an entire file is typechecked,
-     * it is not possible for local variables to be unannotated.
+     * it is not possible for local variables to be unchecked.
      */
-    public static DefaultLocation[] validLocationsForUnannotated() {
-        return validUnannotatedDefaultLocations;
+    public static DefaultLocation[] validLocationsForUncheckedCodeDefaults() {
+        return validUncheckedCodeDefaultLocations;
     }
 
     /**
@@ -141,33 +141,33 @@ public class QualifierDefaults {
      * Sets the default annotations.  A programmer may override this by
      * writing the @DefaultQualifier annotation on an element.
      */
-    public void addAbsoluteDefault(AnnotationMirror absoluteDefaultAnno, DefaultLocation location) {
-        checkDuplicates(absoluteDefaults, absoluteDefaultAnno, location);
-        absoluteDefaults.add(new Default(absoluteDefaultAnno, location));
+    public void addCheckedCodeDefault(AnnotationMirror absoluteDefaultAnno, DefaultLocation location) {
+        checkDuplicates(checkedCodeDefaults, absoluteDefaultAnno, location);
+        checkedCodeDefaults.add(new Default(absoluteDefaultAnno, location));
     }
 
     /**
-     * Sets the default annotation for unannotated elements.
+     * Sets the default annotation for unchecked elements.
      */
-    public void addUnannotatedDefault(AnnotationMirror unannotatedDefaultAnno, DefaultLocation location) {
-        checkDuplicates(unannotatedDefaults, unannotatedDefaultAnno, location);
-        checkIsValidUnannotatedLocation(unannotatedDefaultAnno, location);
+    public void addUncheckedCodeDefault(AnnotationMirror uncheckedDefaultAnno, DefaultLocation location) {
+        checkDuplicates(uncheckedCodeDefaults, uncheckedDefaultAnno, location);
+        checkIsValidUncheckedCodeLocation(uncheckedDefaultAnno, location);
 
-        unannotatedDefaults.add(new Default(unannotatedDefaultAnno, location));
+        uncheckedCodeDefaults.add(new Default(uncheckedDefaultAnno, location));
     }
 
     /**
-     * Sets the default annotation for unannotated elements, with specific locations.
+     * Sets the default annotation for unchecked elements, with specific locations.
      */
-    public void addUnannotatedDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
+    public void addUncheckedCodeDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
         for (DefaultLocation location : locations) {
-            addUnannotatedDefault(absoluteDefaultAnno, location);
+            addUncheckedCodeDefault(absoluteDefaultAnno, location);
         }
     }
 
-    public void addAbsoluteDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
+    public void addCheckedCodeDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
         for (DefaultLocation location : locations) {
-            addAbsoluteDefault(absoluteDefaultAnno, location);
+            addCheckedCodeDefault(absoluteDefaultAnno, location);
         }
     }
 
@@ -185,9 +185,9 @@ public class QualifierDefaults {
         elementDefaults.put(elem, prevset);
     }
 
-    private void checkIsValidUnannotatedLocation(AnnotationMirror unannotatedDefaultAnno, DefaultLocation location) {
+    private void checkIsValidUncheckedCodeLocation(AnnotationMirror uncheckedDefaultAnno, DefaultLocation location) {
         boolean isValidUntypeLocation = false;
-        for (DefaultLocation validLoc : validLocationsForUnannotated()) {
+        for (DefaultLocation validLoc : validLocationsForUncheckedCodeDefaults()) {
             if (location == validLoc) {
                 isValidUntypeLocation = true;
                 break;
@@ -196,7 +196,7 @@ public class QualifierDefaults {
 
         if (!isValidUntypeLocation) {
             ErrorReporter.errorAbort(
-                    "Invalid unannotated default location: " + location + " -> " + unannotatedDefaultAnno );
+                    "Invalid unchecked code default location: " + location + " -> " + uncheckedDefaultAnno );
         }
 
     }
@@ -503,13 +503,13 @@ public class QualifierDefaults {
     }
 
     /*
-     * Given an element, returns whether the unannotated (i.e. conservative defaults)
+     * Given an element, returns whether the unchecked code default (i.e. conservative defaults)
      * should be applied for it. Handles elements from bytecode or source code.
      */
-    public boolean applyUnannotatedDefaults(final Element annotationScope) {
+    public boolean applyUncheckedCodeDefaults(final Element annotationScope) {
         boolean annotatedForThisChecker = isElementAnnotatedForThisChecker(annotationScope);
 
-        if (unannotatedDefaults.size() > 0) {
+        if (uncheckedCodeDefaults.size() > 0) {
             // TODO: I would expect this:
             //   atypeFactory.isFromByteCode(annotationScope)) {
             // to work instead of the
@@ -552,13 +552,13 @@ public class QualifierDefaults {
             applier.apply(def);
         }
 
-        if (applyUnannotatedDefaults(annotationScope)) {
-            for (Default def : unannotatedDefaults) {
+        if (applyUncheckedCodeDefaults(annotationScope)) {
+            for (Default def : uncheckedCodeDefaults) {
                 applier.apply(def);
             }
         }
 
-        for (Default def : absoluteDefaults) {
+        for (Default def : checkedCodeDefaults) {
             applier.apply(def);
         }
     }

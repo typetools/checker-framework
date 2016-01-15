@@ -10,7 +10,6 @@ import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TargetLocations;
-import org.checkerframework.framework.qual.TypeQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
 import java.lang.annotation.ElementType;
@@ -22,12 +21,7 @@ import com.sun.source.tree.Tree.Kind;
  * An annotation used to represent a place holder immutability type, that is a
  * subtype of all other types. For example, {@code null} type is a subtype
  * of all immutability types.
- * <p>
- *
- * This annotation may not be written in source code; it is an
- * implementation detail of the checker.
  */
-@TypeQualifier
 @SubtypeOf({Mutable.class, Immutable.class, I.class,
     Modifier.class, O.class})
 @Target({ElementType.TYPE_USE})

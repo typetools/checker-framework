@@ -50,7 +50,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-receiver}: What is a ``receiver''?
 \\ \ref{faq-annotation-after-type}: What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>?
 \\ \ref{faq-array-syntax-meaning}: What is the meaning of array annotations such as \<@NonNull Object @Nullable []>?
-\\ \ref{faq-vararg-syntax-meaning}: What is the meaning of vararg annotations such as \<@English String @NonEmpty~...>?
+\\ \ref{faq-varargs-syntax-meaning}: What is the meaning of varargs annotations such as \<@English String @NonEmpty~...>?
 \\ \ref{faq-type-qualifier-on-class-declaration}: What is the meaning of a type qualifier at a class declaration?
 \\ \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations?
 
@@ -645,9 +645,9 @@ tool is updated to conform to the Java specification, or until you
 transition to a newer tool that conforms to the Java specification.
 
 
-\subsection{What is the meaning of vararg annotations such as \<@English String @NonEmpty~...>?\label{faq-vararg-syntax-meaning}}
+\subsection{What is the meaning of varargs annotations such as \<@English String @NonEmpty~...>?\label{faq-varargs-syntax-meaning}}
 
-Vararg annotations are treated similarly to array annotations.
+Varargs annotations are treated similarly to array annotations.
 (A way to remember this is that 
 when you write a varargs formal parameter such as
 \<void method(String... x) \ttlcb\ttrcb>, the Java compiler generates a
@@ -664,7 +664,7 @@ Either of these annotations
 
 \noindent
 applies to the array:  the method takes a non-empty array of strings, or
-the vararg list must not be empty.
+the varargs list must not be empty.
 
 Either of these annotations
 
@@ -1010,7 +1010,6 @@ To whet your interest and demonstrate how easy it is to get started, here
 is an example of a complete, useful type-checker.
 
 \begin{Verbatim}
-  @TypeQualifier
   @SubtypeOf(Unqualified.class)
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface Encrypted { }
@@ -1202,7 +1201,8 @@ annotations-in-comments feature (Section~\ref{annotations-in-comments}).
 % LocalWords:  ElementType nullness bytecodes Jlint Hashtable SuppressWarnings
 %  LocalWords:  RegexUtil compareTo myA requiresB nullable java myobject
 %  LocalWords:  multithreading myfield Regex NonEmpty Xmaxerrs Xmaxwarns
-%  LocalWords:  8's igj javari MonotonicNonNull EnsuresNonNull myFieldName
-%  LocalWords:  m1 m2 RequiresNonNull AconcurrentSemantics 8's 8's MyQual
+%  LocalWords:  igj javari MonotonicNonNull EnsuresNonNull myFieldName pre
+%  LocalWords:  m1 m2 RequiresNonNull AconcurrentSemantics MyQual plugin
 %  LocalWords:  MyClass MyMoreRestrictiveQual TOPTYPEANNO DEFAULTANNO api
-%%  LocalWords:  OtherClass 8's Goetz antipattern subclassed
+%%  LocalWords:  OtherClass Goetz antipattern subclassed varargs
+%%  LocalWords:  featureful

@@ -8,7 +8,6 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TargetLocations;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Represents a {@link java.lang.reflect.Method Method} or
@@ -17,12 +16,10 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * non-Method, non-Constructor values.
  * <p>
  *
- * This annotation is the default in the hierarchy and may not be written in
- * source code.
+ * This annotation is the default in the hierarchy.
  *
  * @checker_framework.manual #methodval-and-classval-checkers MethodVal Checker
  */
-@TypeQualifier
 @InvisibleQualifier
 @SubtypeOf({})
 @Target({ElementType.TYPE_USE})

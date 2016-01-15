@@ -38,6 +38,19 @@ cfDir="${mydir}"/../..
 # into the checker/build directory.
 buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/stubparser/build:"${cfDir}"/framework/build:"${cfDir}"/checker/build
 
+## Preserve quoting and spaces in arguments, which would otherwise be lost
+## due to being passed through the shell twice.
+# Unset IFS and use newline as arg separator to preserve spaces in args
+DUALCASE=1  # for MKS: make case statement case-sensitive (6709498)
+saveIFS="$IFS"
+nl='
+'
+for i in "$@" ; do
+   IFS=
+   args=$args$nl"'"$i"'"
+   IFS="$saveIFS"
+done
+
 eval "java" \
      "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" \
      "-DCheckerDevelMain.cp=${buildDirs} " \
@@ -45,4 +58,4 @@ eval "java" \
      "-DCheckerDevelMain.runtime.bcp=${ltBinDir} " \
      "-DCheckerDevelMain.binary=${binaryDir}" \
      "-classpath ${buildDirs} " \
-     "org.checkerframework.framework.util.CheckerDevelMain" "-AprintErrorStack" "$@"
+     "org.checkerframework.framework.util.CheckerDevelMain" "-AprintErrorStack" ${args}

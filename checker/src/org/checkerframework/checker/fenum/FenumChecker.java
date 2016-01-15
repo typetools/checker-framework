@@ -30,7 +30,7 @@ import org.checkerframework.common.subtyping.SubtypingChecker;
  * @author wmdietl
  * @checker_framework.manual #fenum-checker Fake Enum Checker
  */
-@SupportedOptions( { "quals" } )
+@SupportedOptions( { "quals", "qualDirs" } )
 public class FenumChecker extends BaseTypeChecker {
 
     /*

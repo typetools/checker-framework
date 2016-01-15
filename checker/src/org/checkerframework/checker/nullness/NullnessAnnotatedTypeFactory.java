@@ -1,10 +1,16 @@
 package org.checkerframework.checker.nullness;
 
 import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory;
+import org.checkerframework.checker.initialization.qual.FBCBottom;
+import org.checkerframework.checker.initialization.qual.Initialized;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.NonRaw;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.checker.nullness.qual.Raw;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.qual.PolyAll;
@@ -31,6 +37,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -109,6 +116,7 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(javax.validation.constraints.NotNull.class, NONNULL);
         addAliasedAnnotation(lombok.NonNull.class, NONNULL);
         addAliasedAnnotation(org.eclipse.jdt.annotation.NonNull.class, NONNULL);
+        addAliasedAnnotation(org.eclipse.jgit.annotations.NonNull.class, NONNULL);
         addAliasedAnnotation(org.jetbrains.annotations.NotNull.class, NONNULL);
         addAliasedAnnotation(org.netbeans.api.annotations.common.NonNull.class, NONNULL);
         addAliasedAnnotation(org.jmlspecs.annotation.NonNull.class, NONNULL);
@@ -123,6 +131,7 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(javax.annotation.CheckForNull.class, NULLABLE);
         addAliasedAnnotation(javax.annotation.Nullable.class, NULLABLE);
         addAliasedAnnotation(org.eclipse.jdt.annotation.Nullable.class, NULLABLE);
+        addAliasedAnnotation(org.eclipse.jgit.annotations.Nullable.class, NULLABLE);
         addAliasedAnnotation(org.jetbrains.annotations.Nullable.class, NULLABLE);
         addAliasedAnnotation(org.netbeans.api.annotations.common.CheckForNull.class, NULLABLE);
         addAliasedAnnotation(org.netbeans.api.annotations.common.NullAllowed.class, NULLABLE);
@@ -154,6 +163,27 @@ public class NullnessAnnotatedTypeFactory
         // do this last, as it might use the factory again.
         this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(
                 processingEnv, this);
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        // NullnessATF is used by both NullnessChecker and NullnessRawnessChecker, load the correct set of qualifiers here
+        AbstractNullnessChecker ckr = (AbstractNullnessChecker) checker;
+        // if useFbc is true, then it is the NullnessChecker
+        if (ckr.useFbc) {
+            return Collections.unmodifiableSet(
+                    new HashSet<Class<? extends Annotation>>(
+                            Arrays.asList(Nullable.class, MonotonicNonNull.class, NonNull.class, UnderInitialization.class,
+                                    Initialized.class, UnknownInitialization.class, FBCBottom.class, PolyNull.class, PolyAll.class)));
+        }
+        // otherwise, it is the NullnessRawnessChecker
+        else {
+            return Collections.unmodifiableSet(
+                    new HashSet<Class<? extends Annotation>>(
+                            Arrays.asList(Nullable.class, MonotonicNonNull.class, NonNull.class, NonRaw.class, Raw.class,
+                                    // PolyRaw.class, //TODO: support PolyRaw in the future
+                                    PolyNull.class, PolyAll.class)));
+        }
     }
 
     @Override

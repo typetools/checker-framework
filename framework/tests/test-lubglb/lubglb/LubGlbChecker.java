@@ -5,18 +5,23 @@ import javax.lang.model.util.Elements;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+// Type hierarchy:
+//    A       <-- @DefaultQualifierInHierarchy
+//   / \
+//  B   C
+//   \ / \
+//    D   E
+//     \ /
+//      F
 import lubglb.quals.A;
 import lubglb.quals.B;
 import lubglb.quals.C;
 import lubglb.quals.D;
 import lubglb.quals.E;
-import lubglb.quals.F;
 
-@TypeQualifiers( {A.class, B.class, C.class, D.class, E.class, F.class} )
 public class LubGlbChecker extends BaseTypeChecker {
 
     private AnnotationMirror B, C, D, E; // A and F not needed

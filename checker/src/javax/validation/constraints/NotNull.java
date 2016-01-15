@@ -6,12 +6,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.checkerframework.framework.qual.TypeQualifier;
-
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER})
-@TypeQualifier
 public @interface NotNull {
     // The following annotation attributes are allowed in source code,
     // but are ignored by the Nullness Checker.

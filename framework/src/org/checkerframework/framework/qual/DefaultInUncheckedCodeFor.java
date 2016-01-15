@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Applied to the declaration of a type qualifier specifies that
+ * Applied to the declaration of a type qualifier, specifies that
  * the given annotation should be the default for unannotated type uses
  * (in bytecode or source code) at the given location(s).
  * <p>
@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  *
  * @see AnnotatedFor
  * @see DefaultQualifier
- * @see DefaultQualifierForUnannotatedCode
+ * @see DefaultQualifierInHierarchyInUncheckedCode
  * @see ImplicitFor
  * @checker_framework.manual #defaults-classfile Default qualifiers for .class files (conservative library defaults)
  * @checker_framework.manual #compiling-libraries Compiling partially-annotated libraries
@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
-public @interface DefaultForUnannotatedCode {
+public @interface DefaultInUncheckedCodeFor {
     /**
      * @return the locations to which the annotation should be applied
      */

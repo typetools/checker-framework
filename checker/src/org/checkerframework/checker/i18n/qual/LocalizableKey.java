@@ -4,7 +4,6 @@ import java.lang.annotation.*;
 
 import org.checkerframework.checker.propkey.qual.PropertyKey;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Indicates that the {@code String} is a key into a property file
@@ -12,7 +11,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #i18n-checker Internationalization Checker
  */
-@TypeQualifier
 @SubtypeOf(PropertyKey.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

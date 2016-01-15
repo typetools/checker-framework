@@ -26,10 +26,10 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultForUnannotatedCode;
+import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
-import org.checkerframework.framework.qual.DefaultQualifierForUnannotatedCode;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUncheckedCode;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
@@ -354,7 +354,7 @@ public abstract class GenericAnnotatedTypeFactory<
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
             if (defaultFor != null) {
                 final DefaultLocation [] locations = defaultFor.value();
-                defs.addAbsoluteDefaults(AnnotationUtils.fromClass(elements,qual), locations);
+                defs.addCheckedCodeDefaults(AnnotationUtils.fromClass(elements, qual), locations);
 
                 foundDefaultOtherwise = foundDefaultOtherwise ||
                         Arrays.asList(locations).contains(DefaultLocation.OTHERWISE);
@@ -368,7 +368,7 @@ public abstract class GenericAnnotatedTypeFactory<
                             "qualifier has both @DefaultFor and @DefaultQualifierInHierarchy annotations: " +
                             qual.getCanonicalName());
                 } else {
-                    defs.addAbsoluteDefault(AnnotationUtils.fromClass(elements, qual),
+                    defs.addCheckedCodeDefault(AnnotationUtils.fromClass(elements, qual),
                             DefaultLocation.OTHERWISE);
                     foundDefaultOtherwise = true;
                 }
@@ -380,25 +380,25 @@ public abstract class GenericAnnotatedTypeFactory<
                     checker.hasOption("safeDefaultsForUnannotatedBytecode") ||
                     // This block may need to be split after safeDefaults... is reverted to unsafeDefaults...
                     checker.hasOption("useSafeDefaultsForUnannotatedSourceCode")) {
-                DefaultForUnannotatedCode defaultForUnannotated = qual.getAnnotation(DefaultForUnannotatedCode.class);
+                DefaultInUncheckedCodeFor defaultForUnannotated = qual.getAnnotation(DefaultInUncheckedCodeFor.class);
 
                 if (defaultForUnannotated != null) {
                     final DefaultLocation [] locations = defaultForUnannotated.value();
-                    defs.addUnannotatedDefaults(AnnotationUtils.fromClass(elements, qual), locations);
+                    defs.addUncheckedCodeDefaults(AnnotationUtils.fromClass(elements, qual), locations);
                     // TODO: here and for source code above, should ALL also be handled?
                     foundDefaultOtherwiseForUnannotatedCode = foundDefaultOtherwiseForUnannotatedCode ||
                             Arrays.asList(locations).contains(DefaultLocation.OTHERWISE);
                 }
 
-                if (qual.getAnnotation(DefaultQualifierForUnannotatedCode.class) != null) {
+                if (qual.getAnnotation(DefaultQualifierInHierarchyInUncheckedCode.class) != null) {
                     if (defaultForUnannotated != null) {
-                        // A type qualifier should either have a DefaultForUnannotatedCode or
-                        // a DefaultQualifierForUnannotatedCode annotation.
+                        // A type qualifier should either have a DefaultInUncheckedCodeFor or
+                        // a DefaultQualifierInHierarchyInUncheckedCode annotation.
                         ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
-                                "qualifier has both @DefaultForUnannotatedCode and @DefaultQualifierForUnannotatedCode annotations: " +
+                                "qualifier has both @DefaultInUncheckedCodeFor and @DefaultQualifierInHierarchyInUncheckedCode annotations: " +
                                 qual.getCanonicalName());
                     } else {
-                        defs.addUnannotatedDefault(AnnotationUtils.fromClass(elements, qual),
+                        defs.addUncheckedCodeDefault(AnnotationUtils.fromClass(elements, qual),
                                     DefaultLocation.OTHERWISE);
                         foundDefaultOtherwiseForUnannotatedCode = true;
                     }
@@ -411,8 +411,7 @@ public abstract class GenericAnnotatedTypeFactory<
         AnnotationMirror unqualified = AnnotationUtils.fromClass(elements, Unqualified.class);
         if (!foundDefaultOtherwise &&
                 this.isSupportedQualifier(unqualified)) {
-            defs.addAbsoluteDefault(unqualified,
-                    DefaultLocation.OTHERWISE);
+            defs.addCheckedCodeDefault(unqualified, DefaultLocation.OTHERWISE);
         }
 
         // Add defaults for unannotated code if conservative unannotated flag is passed and
@@ -425,14 +424,14 @@ public abstract class GenericAnnotatedTypeFactory<
                 !foundDefaultOtherwiseForUnannotatedCode) {
             Set<? extends AnnotationMirror> tops = this.qualHierarchy.getTopAnnotations();
             for (AnnotationMirror top : tops) {
-                defs.addUnannotatedDefault(top, DefaultLocation.RETURNS);
-                defs.addUnannotatedDefault(top, DefaultLocation.UPPER_BOUNDS);
+                defs.addUncheckedCodeDefault(top, DefaultLocation.RETURNS);
+                defs.addUncheckedCodeDefault(top, DefaultLocation.UPPER_BOUNDS);
             }
             Set<? extends AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
             for (AnnotationMirror bot : bottoms) {
-                defs.addUnannotatedDefault(bot, DefaultLocation.PARAMETERS);
-                defs.addUnannotatedDefault(bot, DefaultLocation.LOWER_BOUNDS);
-                defs.addUnannotatedDefault(bot, DefaultLocation.FIELD);
+                defs.addUncheckedCodeDefault(bot, DefaultLocation.PARAMETERS);
+                defs.addUncheckedCodeDefault(bot, DefaultLocation.LOWER_BOUNDS);
+                defs.addUncheckedCodeDefault(bot, DefaultLocation.FIELD);
                 // TODO: this isn't simply DefaultLocation.OTHERWISE, because that would
                 // also apply to type declarations, which isn't currently working as desired.
                 // See: https://groups.google.com/d/msg/checker-framework-dev/vk2V6ZFKPLk/v3hENw-e7gsJ
@@ -536,6 +535,12 @@ public abstract class GenericAnnotatedTypeFactory<
         }
         FlowAnalysis analysis = analyses.getFirst();
         Node node = analysis.getNodeForTree(tree);
+        if (node == null) {
+            // TODO: is there something better we can do? Check for
+            // lambda expressions. This fixes Issue 448, but might not
+            // be the best possible.
+            return null;
+        }
         TransferInput<Value, Store> prevStore = analysis.getInput(node.getBlock());
         if (prevStore == null) {
             return null;
@@ -642,8 +647,9 @@ public abstract class GenericAnnotatedTypeFactory<
                         ExpressionTree initializer = vt.getInitializer();
                         // analyze initializer if present
                         if (initializer != null) {
+                        	boolean isStatic = vt.getModifiers().getFlags().contains(Modifier.STATIC);
                             analyze(queue, lambdaQueue, new CFGStatement(vt),
-                                    fieldValues, classTree, true, false);
+                                    fieldValues, classTree, true, true, isStatic);
                             Value value = flowResult.getValue(initializer);
                             if (value != null) {
                                 // Store the abstract value for the field.
@@ -663,7 +669,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         break;
                     case BLOCK:
                         BlockTree b = (BlockTree) m;
-                        analyze(queue, lambdaQueue, new CFGStatement(b), fieldValues, ct, true, b.isStatic());
+                        analyze(queue, lambdaQueue, new CFGStatement(b), fieldValues, ct, true, true, b.isStatic());
                         break;
                     default:
                         assert false : "Unexpected member: " + m.getKind();
@@ -675,15 +681,16 @@ public abstract class GenericAnnotatedTypeFactory<
                 // TODO: at this point, we don't have any information about
                 // fields of superclasses.
                 for (MethodTree mt : methods) {
+                	boolean isInitCode = TreeUtils.isConstructor(mt);
                     analyze(queue, lambdaQueue,
                             new CFGMethod(mt, TreeUtils
-                                    .enclosingClass(getPath(mt))), fieldValues, classTree, false, false);
+                                    .enclosingClass(getPath(mt))), fieldValues, classTree, isInitCode, false, false);
                 }
 
                 while (lambdaQueue.size() > 0) {
                     Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
                     analyze(queue, lambdaQueue,
-                            new CFGLambda(lambdaPair.first), fieldValues, classTree, false, false, lambdaPair.second);
+                            new CFGLambda(lambdaPair.first), fieldValues, classTree, false, false, false, lambdaPair.second);
 
                 }
 
@@ -728,13 +735,13 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected void analyze(Queue<ClassTree> queue, Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue, UnderlyingAST ast,
             List<Pair<VariableElement, Value>> fieldValues, ClassTree currentClass,
-            boolean isInitializationCode, boolean isStatic) {
-        analyze(queue, lambdaQueue, ast, fieldValues, currentClass, isInitializationCode, isStatic, null);
+            boolean isInitializationCode, boolean updateInitializationStore, boolean isStatic) {
+        analyze(queue, lambdaQueue, ast, fieldValues, currentClass, isInitializationCode, updateInitializationStore, isStatic, null);
     }
 
     protected void analyze(Queue<ClassTree> queue, Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue, UnderlyingAST ast,
             List<Pair<VariableElement, Value>> fieldValues, ClassTree currentClass,
-            boolean isInitializationCode, boolean isStatic,
+            boolean isInitializationCode, boolean updateInitializationStore, boolean isStatic,
             Store lambdaStore) {
         CFGBuilder builder = new CFCFGBuilder(checker, this);
         ControlFlowGraph cfg = builder.run(root, processingEnv, ast);
@@ -747,7 +754,7 @@ public abstract class GenericAnnotatedTypeFactory<
             TransferFunction transfer = newAnalysis.getTransferFunction();
             transfer.setFixedInitialStore(lambdaStore);
         } else {
-            Store initStore = isStatic ? initializationStore : initializationStaticStore;
+            Store initStore = !isStatic ? initializationStore : initializationStaticStore;
             if (isInitializationCode) {
                 if (initStore != null) {
                     // we have already seen initialization code and analyzed it, and
@@ -789,9 +796,9 @@ public abstract class GenericAnnotatedTypeFactory<
             }
         }
 
-        if (isInitializationCode) {
+        if (isInitializationCode && updateInitializationStore) {
             Store newInitStore = analyses.getFirst().getRegularExitStore();
-            if (isStatic) {
+            if (!isStatic) {
                 initializationStore = newInitStore;
             } else {
                 initializationStaticStore = newInitStore;

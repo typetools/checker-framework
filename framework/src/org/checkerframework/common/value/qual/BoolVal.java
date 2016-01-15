@@ -6,7 +6,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * An annotation indicating the possible values for a bool type.
@@ -15,7 +14,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
-@TypeQualifier
 @SubtypeOf({ UnknownVal.class })
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_PARAMETER, ElementType.TYPE_USE })

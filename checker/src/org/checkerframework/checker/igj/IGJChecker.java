@@ -7,7 +7,6 @@ import org.checkerframework.checker.igj.qual.Immutable;
 import org.checkerframework.checker.igj.qual.Mutable;
 import org.checkerframework.checker.igj.qual.ReadOnly;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.TypeQualifiers;
 
 
 /**
@@ -22,8 +21,6 @@ import org.checkerframework.framework.qual.TypeQualifiers;
  * @checker_framework.manual #igj-checker IGJ Checker
  *
  */
-@TypeQualifiers({ ReadOnly.class, Mutable.class, Immutable.class, I.class,
-    AssignsFields.class, IGJBottom.class })
 public class IGJChecker extends BaseTypeChecker {
     /*
     @Override

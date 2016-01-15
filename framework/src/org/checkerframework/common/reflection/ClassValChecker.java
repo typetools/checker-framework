@@ -4,13 +4,8 @@ import java.util.LinkedHashSet;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.common.reflection.qual.ClassBound;
-import org.checkerframework.common.reflection.qual.ClassVal;
-import org.checkerframework.common.reflection.qual.ClassValBottom;
-import org.checkerframework.common.reflection.qual.UnknownClass;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.StubFiles;
-import org.checkerframework.framework.qual.TypeQualifiers;
 
 /**
  * The ClassVal Checker provides a sound estimate of the binary name of Class
@@ -19,8 +14,6 @@ import org.checkerframework.framework.qual.TypeQualifiers;
  * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
  */
 @StubFiles({"reflection.astub"})
-@TypeQualifiers({ UnknownClass.class, ClassVal.class, ClassBound.class,
-        ClassValBottom.class })
 public class ClassValChecker extends BaseTypeChecker {
 
     @Override

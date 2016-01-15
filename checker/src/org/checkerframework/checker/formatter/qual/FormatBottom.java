@@ -9,15 +9,10 @@ import com.sun.source.tree.Tree;
 
 /**
  * Represents the bottom of the Format String type hierarchy.
- * <p>
- *
- * This annotation may not be written in source code; it is an
- * implementation detail of the checker.
  *
  * @checker_framework.manual #formatter-checker Format String Checker
  * @author Konstantin Weitz
  */
-@TypeQualifier
 @SubtypeOf({Format.class,InvalidFormat.class})
 @Target({ElementType.TYPE_USE})
 @TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,

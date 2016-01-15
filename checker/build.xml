@@ -9,11 +9,13 @@
 
     <property file="build.${os.name}.properties"/>
     <property file="build.properties"/>
-    <property file="../build-common.properties"/>
+    <property file="${basedir}/../build-common.properties"/>
 
     <import file="../build-common.xml"/>
 
 
+    <!-- Setting this via the command line "-Drun.tests.should.fork=false"
+        causes the tests to crash. -->
     <property name="run.tests.should.fork" value="true"/>
     <property name="halt.on.test.failure" value="true"/>
     <property name="javadoc.private" value="false"/>
@@ -68,7 +70,10 @@
     </target>
 
     <target name="clean" description="Remove generated files"
-            depends="clean-nojdk">
+            depends="clean-nocleanjdk,clean-jdk">
+    </target>
+
+    <target name="clean-jdk" description="Remove generated jdkX.jar files">
         <delete file="dist/jdk7.jar"/>
         <delete file="dist/jdk8.jar"/>
         <delete file="dist/jdk9.jar"/>
@@ -76,12 +81,9 @@
         <delete file="jdk/jdk7.jar"/>
         <delete file="jdk/jdk8.jar"/>
         <delete file="jdk/jdk9.jar"/>
-
-        <delete dir="${dist}"/>
-        <delete dir="dist" failonerror="false"/>
     </target>
 
-    <target name="clean-nojdk" description="Remove generated files, but not the jdkX.jar files">
+    <target name="clean-nocleanjdk" description="Remove generated files, but not the jdkX.jar files">
         <ant dir="${framework.loc}">
             <target name="clean"/>
         </ant>
@@ -100,7 +102,8 @@
             <fileset dir="jdk" includes="**/*.class"/>
         </delete>
 
-        <delete file="dist/javac.jar"/>
+        <delete dir="${dist}"/>
+        <delete dir="dist" failonerror="false"/>
     </target>
 
     <target name="clean-nojar" description="Remove generated class files, but not the .jar files">
@@ -116,7 +119,7 @@
             description="Set properties: filesets and build.uptodate">
         <fileset id="src.files" dir="${src}">
             <include name="**/*.java"/>
-            <exclude name=""/>
+            <exclude name="**/package-info.java"/>
         </fileset>
 
         <fileset id="dataflow.src.astub.files" dir="${dataflow.loc}/${src}">
@@ -137,10 +140,10 @@
         <!-- I can't figure out how to combine filesets (or even selectors)
              to get just one *.uptodate property, so do them individually
              and then combine with <condition>. -->
-            <!-- Probably should depend on a file rather than a directory. -->
+        <!-- Probably should depend on a file rather than a directory. -->
         <uptodate property="src.files.uptodate" targetfile="${build}">
           <srcfiles refid="src.files"/>
-          <mapper type="glob" from="*.java" to="${build}/*.class"/>
+          <mapper type="glob" from="*.java" to="../${build}/*.class"/>
         </uptodate>
 
         <uptodate property="src.astub.files.uptodate" targetfile="${build}">
@@ -246,7 +249,7 @@
         <echo message="${qual.src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -270,7 +273,7 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -294,7 +297,7 @@
         <echo message="${compat.qual.src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -347,7 +350,7 @@
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}"
+                 classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
 
@@ -387,7 +390,6 @@
     <!-- This creates checker.jar -->
     <target name="jar" depends="build,checker-qual-jar,checker-compat-qual-jar"
             description="Create checker.jar file">
-        <delete dir="${build.reports}"/>
 
         <!-- Only unjar the stubparser - everything else is recompiled. -->
         <unjar src="${stubparser.lib}" dest="${build}" />
@@ -457,7 +459,7 @@
 
         <java fork="true"
               failonerror="true"
-              classpath="${build}:${javac.lib}:${junit.lib}"
+              classpath="${build}:${javac.lib}:${junit.lib}:${hamcrest.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -487,12 +489,36 @@
         </condition>
 
         <mkdir dir="${build.reports}"/>
+
+    <!-- non-debugging version: -->
+    <!--
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
                printsummary="false"
-               haltonfailure="${halt.on.test.failure}">
+               haltonfailure="${halt.on.test.failure}"
+               maxmemory="2500M"
+               >
+            <formatter type="xml"/>
+    -->
+    <!-- end of non-debugging version. -->
+    
+    <!-- debugging version: -->
+        <junit fork="${run.tests.should.fork}"
+               dir="${basedir}"
+               haltonfailure="${halt.on.test.failure}"
+               maxmemory="2500M"
+               showoutput="true"
+               printsummary="withOutAndErr"
+               >
+            <formatter type="plain" usefile="false"/>
+            <jvmarg line="-Demit.test.debug=true"/>
+    <!-- end of debugging version. -->
+
+            <!-- plain output for debugging -->
+
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="${debugger.str}"/>
+            <jvmarg line="-XX:MaxPermSize=512m"/>
             <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
             <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
             <jvmarg line="-ea"/>
@@ -502,25 +528,32 @@
                 <pathelement path="${tests.build}"/>
                 <pathelement path="${javac.lib}"/>
                 <pathelement path="${junit.lib}"/>
+                <pathelement path="${hamcrest.lib}"/>
             </classpath>
 
-            <formatter type="xml"/>
-            <formatter type="brief" usefile="false"/>
 
             <test name="${param}" todir="${build.reports}"/>
         </junit>
     </target>
 
-    <target name="all-tests" depends="jdk.jar, all-tests-nojdk"
-            description="Run tests for all checkers"/>
+    <target name="all-tests" depends="all-tests-nojtreg, jtreg-tests"
+            description="Run tests for all checkers and the framework"/>
 
     <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
-    <target name="all-tests-nojdk" depends="jar, jdk.jar.exists, all-tests-nojar"
-            description="Run tests for all checkers, WITHOUT updating jdkX.jar">
+    <target name="all-tests-nobuildjdk" depends="all-tests-nojtreg-nobuildjdk, jtreg-tests"
+            description="Run tests for all checkers and the framework, WITHOUT updating jdkX.jar">
+    </target>
+
+    <target name="all-tests-nojtreg" depends="jdk.jar, all-tests-nojtreg-nobuildjdk"
+            description="Run tests for all checkers and the framework, except jtreg tests"/>
+
+    <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
+    <target name="all-tests-nojtreg-nobuildjdk" depends="jar, jdk.jar.exists, all-tests-nojtreg-nobuild"
+            description="Run tests for all checkers and the framework, except jtreg tests, WITHOUT updating jdkX.jar">
     </target>
 
     <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
-    <target name="all-tests-nojar" depends="build-tests"
+    <target name="all-tests-nojtreg-nobuild" depends="build-tests"
             description="Run tests for all checkers, WITHOUT building anything">
 
         <condition property="should.emit.debug.str" value="true" else="false">
@@ -532,18 +565,18 @@
         </condition>
 
         <ant dir="${framework.loc}">
-            <target name="all-tests-nojar"/>
+            <target name="all-tests-nojtreg-nobuild"/>
         </ant>
 
-        <antcall target="nullness-extra-tests-nojdk"/>
+        <antcall target="nullness-extra-tests-nobuildjdk"/>
 
-        <antcall target="example-tests-nojdk"/>
-
-        <antcall target="units-extension-tests"/>
+        <antcall target="example-tests-nobuildjdk"/>
 
         <!-- Note that the order of the ant vs junit calls matters
              for the Jenkins setup. The junit call must come last. -->
 
+    <!-- Delete directory because we will rerun all tests -->
+        <delete dir="${build.reports}"/>
         <!-- Copied from -run-tests target -->
         <mkdir dir="${build.reports}"/>
 
@@ -562,6 +595,7 @@
               <pathelement path="${tests.build}"/>
               <pathelement path="${javac.lib}"/>
               <pathelement path="${junit.lib}"/>
+              <pathelement path="${hamcrest.lib}"/>
             </classpath>
 
             <formatter type="xml"/>
@@ -654,12 +688,12 @@
     </target>
 
     <target name="nullness-tests"
-            depends="jdk.jar,nullness-tests-nojdk"
+            depends="jdk.jar,nullness-tests-nobuildjdk"
             description="Run tests for the Nullness Checker">
     </target>
 
-    <target name="nullness-tests-nojdk"
-            depends="jar,jdk.jar.exists,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-assume-assertions-are-enabled-tests,nullness-extra-tests-nojdk,nullness-reflection-tests,nullness-invariantarrays-tests,nullness-safedefaultsbytecode-tests,nullness-safedefaultssourcecode-tests"
+    <target name="nullness-tests-nobuildjdk"
+            depends="jar,jdk.jar.exists,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-assume-assertions-are-enabled-tests,nullness-extra-tests-nobuildjdk,nullness-reflection-tests,nullness-invariantarrays-tests,nullness-safedefaultsbytecode-tests,nullness-safedefaultssourcecode-tests"
             description="Run tests for the Nullness Checker, WITHOUT updating jdkX.jar">
     </target>
 
@@ -701,10 +735,10 @@
 
     <!-- Differs from other targets in that it is defined via a Makefile and
        is not run via the "-run-tests" Antfile target, as other tests are. -->
-    <target name="nullness-extra-tests" depends="dist,build-tests,nullness-extra-tests-nojdk"
+    <target name="nullness-extra-tests" depends="dist,build-tests,nullness-extra-tests-nobuildjdk"
             description="Run extra tests for the Nullness Checker"/>
 
-    <target name="nullness-extra-tests-nojdk" depends="dist-nojdk,jdk.jar.exists,build-tests"
+    <target name="nullness-extra-tests-nobuildjdk" depends="dist-nobuildjdk,jdk.jar.exists,build-tests"
             description="Run extra tests for the Nullness Checker, WITHOUT updating jdkX.jar">
         <exec executable="chmod" failonerror="true">
             <arg line="+x ${basedir}/bin/javac"/>
@@ -872,6 +906,30 @@
         </antcall>
     </target>
 
+    <target name="fenum-extension-tests" depends="jar,build-tests"
+            description="Run tests for the Fenum Checker extension capabilities">
+        <exec executable="chmod" failonerror="true">
+            <arg line="+x ${basedir}/bin/javac"/>
+        </exec>
+
+        <exec executable="make" failonerror="${halt.on.test.failure}">
+            <env key="JAVAC" value="${basedir}/bin/javac"/>
+            <arg line="-C tests/fenum-extension/"/>
+        </exec>
+    </target>
+
+    <target name="subtyping-extension-tests" depends="jar,build-tests"
+            description="Run tests for the Subtyping Checker extension capabilities">
+        <exec executable="chmod" failonerror="true">
+            <arg line="+x ${basedir}/bin/javac"/>
+        </exec>
+
+        <exec executable="make" failonerror="${halt.on.test.failure}">
+            <env key="JAVAC" value="${basedir}/bin/javac"/>
+            <arg line="-C tests/subtyping-extension/"/>
+        </exec>
+    </target>
+
     <target name="units-extension-tests" depends="jar,build-tests"
             description="Run tests for the Units Checker extension capabilities">
         <exec executable="chmod" failonerror="true">
@@ -891,11 +949,11 @@
         </antcall>
     </target>
 
-    <target name="example-tests" depends="dist,example-tests-nojdk"
+    <target name="example-tests" depends="dist,example-tests-nobuildjdk"
             description="Run tests for the example programs">
     </target>
 
-    <target name="example-tests-nojdk" depends="dist-nojdk,jdk.jar.exists,build-tests"
+    <target name="example-tests-nobuildjdk" depends="dist-nobuildjdk,jdk.jar.exists,build-tests"
             description="Run tests for the example programs, WITHOUT updating jdkX.jar">
       <exec executable="chmod" failonerror="true">
         <arg line="+x ${basedir}/bin/javac"/>
@@ -909,6 +967,27 @@
 
 
 
+    <target name="jtreg.check">
+      <condition property="jtreg.exists">
+        <available file="${jtreg.home}" type="dir"/>
+      </condition>
+    </target>
+
+    <target name="-jtreg.download" depends="jtreg.check" unless="jtreg.exists">
+      <get
+        src="https://adopt-openjdk.ci.cloudbees.com/view/OpenJDK/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.1-b12.tar.gz"
+        dest="${jtreg.home}/.." />
+      <untar src="${jtreg.home}/../jtreg-4.1-b12.tar.gz"
+        dest="${jtreg.home}/../"
+        compression="gzip" />
+    </target>
+
+
+    <target name="jtreg-tests"
+            depends="-jtreg.download,-def-jtreg,jar,jtreg-tests-checkers,jtreg-tests-framework"
+            description="Run all jtreg tests">
+    </target>
+
     <target name="jtreg-tests-checkers" depends="-def-jtreg,jar"
             description="Run checker jtreg tests">
         <jtreg-tool name="all" tests="."/>
@@ -919,11 +998,6 @@
        <ant dir="${framework.loc}">
            <target name="jtreg-tests" />
        </ant>
-    </target>
-
-    <target name="jtreg-tests"
-            depends="-def-jtreg,jar,jtreg-tests-checkers,jtreg-tests-framework"
-            description="Run all jtreg tests">
     </target>
 
     <target name="-def-check">
@@ -1051,7 +1125,7 @@
         <echo message="${src.files}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}"
+              classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="${maybeDebug}"/>
@@ -1109,23 +1183,49 @@
     </target>
 
 
-    <target name="check-tutorial" description="Test to see if the tutorial is working as expected">
+    <target name="check-tutorial" description="Test that the tutorial is working as expected">
     <!--The tutorial build file is written relative to its location,
         so useNativeBasedir is required. -->
           <ant dir="${framework.loc}/../tutorial/tests/" useNativeBasedir="true">
               <target name="check-tutorial"/>
           </ant>
     </target>
+
+    <target name="demos.check">
+      <condition property="demos.exists">
+        <available file="${basedir}/../../checker-framework-demos"/>
+      </condition>
+    </target>
+
+    <target name="-demos.pull" depends="demos.check" if="demos.exists">
+      <exec executable="git" dir="${basedir}/../../checker-framework-demos" failonerror="true">
+        <arg line="pull"/>
+      </exec>
+    </target>
+
+    <target name="-demos.clone" depends="demos.check" unless="demos.exists">
+      <exec executable="git" dir="${basedir}/../.." failonerror="true">
+        <arg line="clone https://github.com/typetools/checker-framework.demos.git checker-framework-demos"/>
+      </exec>
+    </target>
+
+    <target name="check-demos" depends="demos.check,-demos.pull,-demos.clone"
+        description="Test that the demos are working as expected">
+      <ant dir="${basedir}/../../checker-framework-demos">
+      </ant>
+    </target>
+      
+
     <!-- TODO: like for -run-checker this only checks checker/src.
          Improve both. -->
-    <!-- Depend on dist-nojdk to make sure everything compiles. -->
-    <target name="check-errorprone" depends="dist-nojdk, clean-nojar"
+    <!-- Depend on dist-nobuildjdk to make sure everything compiles. -->
+    <target name="check-errorprone" depends="dist-nobuildjdk, clean-nojar"
             description="Run the error-prone compiler on the Checker Framework">
         <mkdir dir="${build}"/>
         <javac failonerror="true"
                 includeantruntime="false"
                 bootclasspath="${javac.lib}:${java.home}/lib/rt.jar"
-                classpath="${javac.lib}:${checker.lib}:${junit.lib}"
+                classpath="${javac.lib}:${checker.lib}:${junit.lib}:${hamcrest.lib}"
                 srcdir="${src}"
                 includes="**/*.java"
                 excludes="org/checkerframework/checker/nullness/NullnessUtils.java org/checkerframework/checker/regex/RegexUtils.java"
@@ -1214,22 +1314,22 @@
 
     </target>
 
-    <target name="dist-release" depends="clean, dist-all, all-tests-nojar, javadoc.jar, sources.jar"
+    <target name="dist-release" depends="clean, dist-all, all-tests-nojtreg-nobuild, javadoc.jar, sources.jar"
             description="Everything necessary to prepare this project for distribution: binary distribution, testing, and documentation.">
     </target>
 
     <target name="dist-all"
-            depends="-prep-dist,jar,all.jdks.jar,dist-nojdk"
+            depends="-prep-dist,jar,all.jdks.jar,dist-nobuildjdk"
             description="Build checker.jar, checker-qual.jar, and all jdkX.jar(s).  This comprises all jars needed to run the framework.">
     </target>
 
     <target name="dist"
-	    depends="-prep-dist,jar,jdk.jar,dist-nojdk"
+            depends="-prep-dist,jar,jdk.jar,dist-nobuildjdk"
             description="Build checker.jar, checker-qual.jar, and one jdkX.jar where X is the major version number of java in JAVA_HOME (only Java 7/8/9 are currently supported).  This comprises all jars needed to run the framework.">
     </target>
 
-    <target name="dist-nojdk"
-	    depends="-prep-dist,jar,jdk.jar.exists"
+    <target name="dist-nobuildjdk"
+            depends="-prep-dist,jar,jdk.jar.exists"
             description="Build checker.jar, checker-qual.jar WITHOUT updating jdkX.jar.  Move all relevant files to the binary directory.">
 
         <mkdir dir="dist" />

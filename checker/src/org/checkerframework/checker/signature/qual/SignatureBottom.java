@@ -9,14 +9,9 @@ import com.sun.source.tree.Tree;
 
 /**
  * Represents the bottom of the type-qualifier hierarchy.
- * <p>
- *
- * This annotation may not be written in source code; it is an
- * implementation detail of the checker.
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
-@TypeQualifier
 @SubtypeOf({SourceNameForNonArray.class,
     FieldDescriptorForArray.class,
     MethodDescriptor.class
