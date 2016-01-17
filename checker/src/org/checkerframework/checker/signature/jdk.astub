@@ -523,3 +523,29 @@ public abstract class Type implements java.io.Serializable {
 public abstract class FieldOrMethod extends CPInstruction implements LoadClass {
   public @BinaryNameForNonArray String getClassName(ConstantPoolGen cpg);
 }
+
+// Temporary fix to make Daikon typecheck.  These will eventually be removed as there
+// is already an annotated version of the BCEL in the checker/lib directory.
+
+package org.apache.commons.bcel6.generic;
+
+public class ClassGen { //  extends AccessFlags implements Cloneable {
+  public @BinaryNameForNonArray String getClassName();
+}
+
+public abstract class Type {
+  public @BinaryName String toString();
+}
+
+public abstract class FieldOrMethod extends CPInstruction implements LoadClass {
+  public @ClassGetName String getClassName(ConstantPoolGen cpg);
+}
+
+public class ObjectType extends ReferenceType {
+  public @BinaryNameForNonArray String getClassName();
+}
+
+public abstract class InvokeInstruction extends FieldOrMethod implements ExceptionThrower,
+        StackConsumer, StackProducer {
+  public @ClassGetName String getClassName(ConstantPoolGen cpg);
+}
