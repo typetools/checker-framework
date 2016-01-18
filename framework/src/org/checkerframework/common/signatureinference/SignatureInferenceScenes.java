@@ -270,7 +270,7 @@ public class SignatureInferenceScenes {
      * <p>
      * @param lhs the field whose type will be refined.
      * @param rhs the expression being assigned to the field.
-     * @param classTree the ClassTree where the assignment is invoked 
+     * @param classTree the ClassTree for the enclosing class of the assignment.
      * @param atf the annotated type factory of a given type system, whose
      * type hierarchy will be used to update the field's type.
      */
@@ -380,6 +380,10 @@ public class SignatureInferenceScenes {
      * Invisible qualifiers, which are annotations that contain the
      * {@link org.checkerframework.framework.qual.InvisibleQualifier}
      * meta-annotation, also return true.
+     * <p>
+     * TODO: Merge functionality somewhere else with
+     * {@link org.checkerframework.framework.type.GenericAnnotatedTypeFactory#createQualifierDefaults}.
+     * Look into the createQualifierDefaults method before changing anything here.
      */
     private static boolean shouldIgnore(AnnotationMirror am,
             DefaultLocation location) {

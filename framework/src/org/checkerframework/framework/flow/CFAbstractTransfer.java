@@ -827,7 +827,10 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             Tree receiverTree = n.getTarget().getReceiver().getTree();
             if (receiverTree == null) {
                 // If there is no receiver, then get the class being visited.
+                // This happens when the receiver corresponds to "this".
                 receiverTree = analysis.getContainingClass(n.getTree());
+                // receiverTree could still be null after the call above. That
+                // happens when the method is called from a static context.
             }
             // Updates the inferred parameter type of the invoked method
             SignatureInferenceScenes.updateInferredMethodParametersTypes(

@@ -343,6 +343,9 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return the QualifierDefaults class
      *
      * TODO: should this be split in two methods to allow separate reuse?
+     * TODO: When changing this method, also look into
+     * {@link org.checkerframework.common.signatureinference.SignatureInferenceScenes#shouldIgnore}.
+     * Both methods should have some functionality merged into a single location.
      */
     protected QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defs = new QualifierDefaults(elements, this);
