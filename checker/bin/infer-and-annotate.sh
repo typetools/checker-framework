@@ -5,6 +5,10 @@
 # .jaif files from one iteration are the same as the .jaif files from the
 # previous iteration (which means there is nothing new to infer anymore).
 
+# To use this script, the $CHECKERFRAMEWORK variable must be set to the
+# Checker Framework's directory. Also, insert-annotations-to-source must
+# be available from the $PATH.
+
 # This script receives as arguments:
 # 1. Processor's name (in any form recognized by CF's javac -processor argument).
 # 2. Classpath (target project's classpath).

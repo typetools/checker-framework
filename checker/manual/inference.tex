@@ -134,8 +134,11 @@ has been described as working only within a method.  In fact, it can also
 infer types for fields, method parameters, and method return types, and it
 can insert these inferred types into your program.
 
-To do so, run the script
-\<checker/bin/infer-and-annotate.sh>.
+To do so, please set the \<\$CHECKERFRAMEWORK> variable to the Checker Framework's
+directory (if you haven't already), and make sure that
+\<insert-annotations-to-source>, from the Annotation File Utilities project,
+is available from the \<\$PATH>.
+Then, run the script \<checker/bin/infer-and-annotate.sh>.
 Its command-line arguments are:
 
 \begin{enumerate}
@@ -149,6 +152,8 @@ Its command-line arguments are:
     process.
 \item List of paths to \<.java> files in the program.
 \end{enumerate}
+
+
 
 For example, to add annotations to the \<plume-lib> project:
 \begin{Verbatim}
