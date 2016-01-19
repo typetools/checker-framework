@@ -787,21 +787,21 @@
     </target>
 
     <target name="nullness-safedefaultsbytecode-tests" depends="jar,build-tests"
-            description="Run tests for the Nullness Checker using -AsafeDefaultsForUnannotatedBytecode">
+            description="Run tests for the Nullness Checker using -AuseDefaultsForUncheckedCode=-source,bytecode">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessSafeDefaultsBytecodeTest"/>
         </antcall>
     </target>
 
     <target name="nullness-safedefaultssourcecodelib-tests" depends="jar,build-tests"
-            description="Create libraries for tests for the Nullness Checker using -AuseSafeDefaultsForUnannotatedSourceCode">
+            description="Create libraries for tests for the Nullness Checker using -AuseDefaultsForUncheckedCode=source,bytecode">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessSafeDefaultsSourceCodeLibTest"/>
         </antcall>
     </target>
 
     <target name="nullness-safedefaultssourcecode-tests" depends="jar,build-tests,nullness-safedefaultssourcecodelib-tests"
-            description="Run tests for the Nullness Checker using -AuseSafeDefaultsForUnannotatedSourceCode">
+            description="Run tests for the Nullness Checker using -AuseDefaultsForUncheckedCode=source">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessSafeDefaultsSourceCodeTest"/>
         </antcall>

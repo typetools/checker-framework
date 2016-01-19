@@ -65,10 +65,8 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected QualifierDefaults createQualifierDefaults() {
-        QualifierDefaults result = super.createQualifierDefaults();
-        getCheckerAdapter().setupDefaults(result);
-        return result;
+    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
+        getCheckerAdapter().setupDefaults(defs);
     }
 
     /** Returns the underlying {@link QualifiedTypeFactory}. */
