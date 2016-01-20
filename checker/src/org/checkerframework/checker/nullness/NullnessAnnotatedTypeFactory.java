@@ -168,14 +168,6 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
-        // Exception parameters are always nonnull, so use that as the default
-        // rather than the CLIMB-to-the-top default.
-        defs.addCheckedCodeDefault(NONNULL, DefaultLocation.EXCEPTION_PARAMETER);
-        super.addCheckedCodeDefaults(defs);
-    }
-
-    @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         // NullnessATF is used by both NullnessChecker and NullnessRawnessChecker, load the correct set of qualifiers here
         AbstractNullnessChecker ckr = (AbstractNullnessChecker) checker;

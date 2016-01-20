@@ -122,14 +122,6 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
-        // An error is issued if the type of a thrown exception
-        // is not @Mutable.
-        defs.addCheckedCodeDefault(MUTABLE, DefaultLocation.EXCEPTION_PARAMETER);
-        super.addCheckedCodeDefaults(defs);
-    }
-
-    @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return getBundledTypeQualifiersWithPolyAll(
                 ThisMutable.class);

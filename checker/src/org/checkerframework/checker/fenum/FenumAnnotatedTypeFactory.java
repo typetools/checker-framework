@@ -35,14 +35,6 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
     }
 
-    @Override
-    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
-        // An error is issued if the type of a thrown exception
-        // is not @FenumUnqualified.
-        defs.addCheckedCodeDefault(FENUM_UNQUALIFIED, DefaultLocation.EXCEPTION_PARAMETER);
-        super.addCheckedCodeDefaults(defs);
-    }
-
 
     /** Copied from SubtypingChecker.
      * Instead of returning an empty set if no "quals" option is given,
