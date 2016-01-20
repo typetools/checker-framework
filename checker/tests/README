@@ -165,6 +165,14 @@ Write @non-308-skip-test anywhere in a test file to disable that test if
 the jsr308-langtools compiler is not used. (This is useful for tests that
 depend on annotations-in-comments that would fail with the stock compiler.)
 
+Write @below-java8-jdk-skip-test anywhere in a test file to disable that
+test if the executing JDK version is lower than 8.
+This is useful when the test depends on Java 8 language features that
+need runtime support (e.g. lambdas) or depends on Java 8 APIs
+(e.g. streams and reflective type annotation access).
+Tests that only exercise the static type annotation API do not need
+this marker, as the tests will be executed with a Java 8 compiler.
+
 To disable all tests for a given type system, temporarily move away a file;
 for example,
   mv $CHECKERFRAMEWORK/checker/tests/src/tests/OIGJTest.java $CHECKERFRAMEWORK/checker/tests/src/tests/OIGJTest.java-SAVE
