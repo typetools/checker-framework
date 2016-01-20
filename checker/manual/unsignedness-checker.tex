@@ -18,11 +18,10 @@ These are the qualifiers in the Unsignedness type system:
 
 \item[\refqualclass{checker/unsignedness/qual}{Signed}]
     indicates that the programmer intends the annotated value to be interpreted
-    as signed. This is how Java interprets all values of relevant type, and as
-    such is default for such types in this checker.
+    as signed.  This is the default annotation.
 
 \item[\refqualclass{checker/unsignedness/qual}{Constant}]
-    indicates that a value is a compile-time constant and could justifiably be
+    indicates that a value is a compile-time constant and could be
     interpreted as unsigned or signed. This is used internally, and should not 
     be written by the programmer.
 
@@ -35,27 +34,27 @@ These are the qualifiers in the Unsignedness type system:
 
 \begin{figure}
 \includeimage{unsignedness}{3.5cm}
-\caption{A partial diagram of the subtyping hierarchy of the qualifiers in the 
-Unsignedness type system.}
+\caption{The type qualifier hierarchy of the Unsignedness annotations.
+Qualifiers in gray are used internally by the type system but should never be written by a programmer.}
 \label{fig-unsignedness-hierarchy}
 \end{figure}
 
 \subsection{Default Qualifiers\label{unsignedness-checker-annotations-default-qualifiers}}
 
-The only type qualifier in this system that the programmer should ever write is
+The only type qualifier that the programmer should need to write is
 \code{@Unsigned}. When a programmer leaves an expression unannotated, the
-Unsignedness Checker handles it in one of the following ways:
+Unsignedness Checker treats it in one of the following ways:
 
 \begin{itemize}
 
     \item
     All \code{byte}, \code{short}, \code{int}, and \code{long} literals default
-    to \code{@constant}.
+    to \refqualclass{checker/unsignedness/qual}{Constant}.
     \item
     All \code{byte}, \code{short}, \code{int}, and \code{long} variables default
-    to \code{@Signed}.
+    to \refqualclass{checker/unsignedness/qual}{Signed}.
     \item
-    All other expressions default to \code{@UnknownSignedness}.
+    All other expressions default to \refqualclass{checker/unsignedness/qual}{UnknownSignedness}.
 
 \end{itemize}
 
@@ -89,19 +88,19 @@ unsigned interpretations. For this reason, the Unsignedness Checker will prohibi
     operand.
     \item   
     Equals ( \code{==} ) and not equals ( \code{!=} ) with one \code{@Unsigned}
-    operand and one \code{Signed} operand.
+    operand and one \code{@Signed} operand.
 
 \end{itemize}
 
-The Unsignedness Checker also ensures that assignments and pseudo assignments are
+The Unsignedness Checker also ensures that assignments and pseudo-assignments are
 correct. For example, it is unsound to assign a \code{@Signed} expression to an
 \code{@Unsigned} variable.
 
 \section{Rationale\label{unsignedness-checker-rationale}}
 
 The intent of the Unsignedness Checker is to prevent the misuse of unsigned
-values in Java code. All relevant Java operations interpret operands as signed,
-rendering some operations unsound for unsigned values. A program should not use
+values in Java code.  Most Java operations interpret operands as signed,
+rendering those operations unsound for unsigned values. A program should not use
 unsigned values with such operations, because the operation would interpret a
 large unsigned integer as negative, producing an undesired outcome.
 
@@ -111,22 +110,22 @@ Consider the following Java code:
     int s1 = -1;
     int s2 = -2;
 
-    @Unsigned int u1 = 0xFFFFFFFF;  \\unsigned: 2^32 - 1, signed: -1
-    @Unsigned int u2 = 0xFFFFFFFE;  \\unsigned: 2^32 - 2, signed: -2
+    @Unsigned int u1 = 0xFFFFFFFF;  // unsigned: 2^32 - 1, signed: -1
+    @Unsigned int u2 = 0xFFFFFFFE;  // unsigned: 2^32 - 2, signed: -2
 
     int result;
 
-    result = s2 / s1;   \\OK: -2 / -1 is 2
-    result = u2 / u1;   \\ERROR: (2^32 - 1) / (2^32 - 2) should not be 2
+    result = s2 / s1;   // OK: -2 / -1 is 2
+    result = u2 / u1;   // ERROR: (2^32 - 1) / (2^32 - 2) should not be 2
 
     s1 = 0;
     s2 = 5;
 
-    u1 = 0xFFFFFFFF;    \\unsigned: 2^32 - 1, signed: -1
+    u1 = 0xFFFFFFFF;    // unsigned: 2^32 - 1, signed: -1
     u2 = 5;
 
-    result = s1 % s2;   \\OK: 0 % 5 is 0
-    result = u1 % u2;   \\ERROR: (2^32 - 1) % 5 should not be 4
+    result = s1 % s2;   // OK: 0 % 5 is 0
+    result = u1 % u2;   // ERROR: (2^32 - 1) % 5 should not be 4
 \end{Verbatim}
 
 These examples illustrate why any division or modulus with an unsigned operand 
