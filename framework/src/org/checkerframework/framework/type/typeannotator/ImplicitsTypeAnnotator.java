@@ -1,7 +1,6 @@
 package org.checkerframework.framework.type.typeannotator;
 
 import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -54,9 +53,8 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
     // private final AnnotatedTypeFactory atypeFactory;
 
     /**
-     * Creates a {@link ImplicitsTypeAnnotator} from the given checker, using that checker's
-     * {@link TypeQualifiers} annotation to determine the annotations that are
-     * in the type hierarchy.
+     * Creates a {@link ImplicitsTypeAnnotator} from the given checker, using
+     * that checker to determine the annotations that are in the type hierarchy.
      */
     public ImplicitsTypeAnnotator(AnnotatedTypeFactory typeFactory) {
         super(typeFactory);
