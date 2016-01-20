@@ -369,7 +369,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected void addCheckedCodeDefaults(QualifierDefaults defs) {
         boolean foundOtherwise = false;
-        // Add defaults from @DefaultFor and @DefaultQualiferInHierarchy
+        // Add defaults from @DefaultFor and @DefaultQualifierInHierarchy
         for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
             if (defaultFor != null) {
@@ -380,16 +380,8 @@ public abstract class GenericAnnotatedTypeFactory<
             }
 
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
-                if (defaultFor != null) {
-                    // A type qualifier should either have a DefaultFor or
-                    // a DefaultQualifierInHierarchy annotation
-                    ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
-                                                     "qualifier has both @DefaultFor and @DefaultQualifierInHierarchy annotations: " +
-                                                     qual.getCanonicalName());
-                } else {
-                    defs.addCheckedCodeDefault(AnnotationUtils.fromClass(elements, qual), DefaultLocation.OTHERWISE);
-                    foundOtherwise = true;
-                }
+                defs.addCheckedCodeDefault(AnnotationUtils.fromClass(elements, qual), DefaultLocation.OTHERWISE);
+                foundOtherwise = true;
             }
         }
         // If Unqualified is a supported qualifier, make it the default.
@@ -443,15 +435,7 @@ public abstract class GenericAnnotatedTypeFactory<
             }
 
             if (annotation.getAnnotation(DefaultQualifierInHierarchyInUncheckedCode.class) != null) {
-                if (defaultInUncheckedCodeFor != null) {
-                    // A type qualifier should either have a DefaultInUncheckedCodeFor or
-                    // a DefaultQualifierInHierarchyInUncheckedCode annotation.
-                    ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
-                                                     "qualifier has both @DefaultInUncheckedCodeFor and @DefaultQualifierInHierarchyInUncheckedCode annotations: " +
-                                                     annotation.getCanonicalName());
-                } else {
-                    defs.addUncheckedCodeDefault(AnnotationUtils.fromClass(elements, annotation), DefaultLocation.OTHERWISE);
-                }
+                defs.addUncheckedCodeDefault(AnnotationUtils.fromClass(elements, annotation), DefaultLocation.OTHERWISE);
             }
         }
         Set<? extends AnnotationMirror> tops = this.qualHierarchy.getTopAnnotations();
