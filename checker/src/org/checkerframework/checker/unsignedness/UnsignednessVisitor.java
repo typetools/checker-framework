@@ -17,7 +17,7 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessTypeFactory
         super(checker);
     }
 
-    protected UnsignednessVisitor(BaseTypeChecker checker, 
+    protected UnsignednessVisitor(BaseTypeChecker checker,
                                   UnsignednessTypeFactory factory) {
         super(checker, factory);
     }
@@ -40,7 +40,7 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessTypeFactory
         Kind kind = node.getKind();
 
         switch (kind) {
-            
+
         case DIVIDE:
         case REMAINDER:
             if (leftOpType.hasAnnotation(Unsigned.class)) {
@@ -110,7 +110,7 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessTypeFactory
 
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-    
+
         super.visitCompoundAssignment(node, p);
 
         ExpressionTree var = node.getVariable();
@@ -121,7 +121,7 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessTypeFactory
         Kind kind = node.getKind();
 
         switch (kind) {
-            
+
         case DIVIDE_ASSIGNMENT:
         case REMAINDER_ASSIGNMENT:
             if (varType.hasAnnotation(Unsigned.class)) {
