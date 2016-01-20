@@ -122,11 +122,12 @@ public abstract class GenericAnnotatedTypeFactory<
 
     // Flow related fields
 
-    /** Should use flow analysis? */
+    /** Should use flow analysis? This value can be changed when an AnnotatedTypeMirror
+     * without annotations from data flow is required */
     protected boolean useFlow;
 
-    /** Is dataflow ever used for this checker? **/
-    private final boolean everUseDataFlow;
+    /** Is this type factory configured to use data flow? */
+    private final boolean everUseFlow;
 
     /** An empty store. */
     private Store emptyStore;
@@ -141,7 +142,7 @@ public abstract class GenericAnnotatedTypeFactory<
     public GenericAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
         super(checker);
 
-        this.everUseDataFlow = useFlow;
+        this.everUseFlow = useFlow;
         this.useFlow = useFlow;
         this.analyses = new LinkedList<>();
         this.scannedClasses = new HashMap<>();
@@ -404,9 +405,10 @@ public abstract class GenericAnnotatedTypeFactory<
                                         + "@DefaultQualifierInHierarchy or @DefaultFor(DefaultLocation.OTHERWISE) not found. "
                                         + "Every checker must specify a default qualifier.");
         }
-        Set<? extends AnnotationMirror> tops = this.qualHierarchy.getTopAnnotations();
-        Set<? extends AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
-        if (this.everUseDataFlow) {
+
+        if (this.everUseFlow) {
+            Set<? extends AnnotationMirror> tops = this.qualHierarchy.getTopAnnotations();
+            Set<? extends AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
             defs.addClimbStandardDefaults(tops, bottoms);
         }
     }

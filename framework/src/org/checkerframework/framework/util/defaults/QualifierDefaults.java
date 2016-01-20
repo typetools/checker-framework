@@ -201,6 +201,7 @@ public class QualifierDefaults {
         for (DefaultLocation loc : standardClimbDefaultsTop) {
             for (AnnotationMirror top : tops) {
                 if (!conflictsWithExistingDefaults(checkedCodeDefaults, top, loc)) {
+                    // Only add standard defaults in locations where a default has not been specified
                     addCheckedCodeDefault(top, loc);
                 }
             }
@@ -208,8 +209,8 @@ public class QualifierDefaults {
 
         for (DefaultLocation loc : standardClimbDefaultsBottom) {
             for (AnnotationMirror bottom : bottoms) {
-                // Only add standard defaults in locations where a default has not be specified
                 if (!conflictsWithExistingDefaults(checkedCodeDefaults, bottom, loc)) {
+                    // Only add standard defaults in locations where a default has not been specified
                     addCheckedCodeDefault(bottom, loc);
                 }
             }
