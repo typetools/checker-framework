@@ -1,0 +1,68 @@
+\htmhr
+\chapter{Unsignedness Checker\label{unsignedness-checker}}
+
+The Unsignedness Checker guarantees that signed and unsigned values are not mixed 
+together in a computation. In addition, it prohibits meaningless operations, such 
+as division on an unsigned value.
+
+\section{Annotations\label{unsignedness-checker-annotations}}
+
+The Unsignedness Checker uses type annotations to indicate the signedness that the programmer intends an expression to have.
+
+These are the qualifiers in the Unsignedness type system:
+
+\begin{description}
+
+\item[\refqualclass{checker/unsignedness/qual}{Unsigned}]
+    indicates that the programmer intends the annotated value to be interpreted as unsigned.
+
+\item[\refqualclass{checker/unsignedness/qual}{Signed}]
+    indicates that the programmer intends the annotated value to be interpreted as signed. This how Java interprets all values of relevant type, and as such is default for such types in this checker.
+
+\item[\refqualclass{checker/unsignedness/qual}{Constant}]
+    indicates that a value is a compile-time constant and could justifiably be interpreted as unsigned or signed. This is used internally, and should not be written by the programmer.
+
+\item[\refqualclass{checker/unsignedness/qual}{UnknownSignedness}]
+    indicates that a value’s type is not relevant or known to this checker. This annotation is used internally, and should not be written by the programmer.
+
+\end{description}
+
+\begin{figure}
+\includeimage{unsignedness}{3.5cm}
+\caption{A partial diagram of the subtyping hierarchy of the qualifiers in the 
+Unsignedness type system.}
+\label{fig-unsignedness-hierarchy}
+\end{figure}
+
+\section{Prohibited Operations\label{unsignedness-checker-Prohibited-Operations}}
+
+The Unsignedness Checker prohibits the following uses of operators:
+
+\begin{itemize}
+
+    \item   
+    Division ( \code{/} ) or modulus ( \code{\%} ) with an \code{@Unsigned}
+    operand.
+    \item   
+    Signed right shift ( \code{>>} ) with an \code{@Unsigned} left operand.
+    \item   
+    Unsigned right shift ( \code{>>>} ) with a \code{@Signed} left operand.
+    \item   
+    Any other binary operator with one \code{@Unsigned} operand and one
+    \code{@Signed} operand.
+
+\end{itemize}
+
+There are also occasions when comparisons can be rendered illegitimate for
+unsigned interpretations. For this reason, the Unsignedness Checker will prohibit the following uses of comparators:
+
+\begin{itemize}
+
+    \item   
+    Greater/less than (or equal) comparators
+    ( \code{<}, \code{<=}, \code{>}, \code{>=} ) with an \code{@Unsigned}operand.
+    \item   
+    Equals ( \code{==} ) and not equals ( \code{!=} ) with one \code{@Unsigned}
+    operand and one \code{Signed} operand.
+    
+\end{itemize}
