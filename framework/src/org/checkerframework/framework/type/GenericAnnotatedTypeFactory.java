@@ -362,7 +362,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *         of each qualifier.
      */
     private final String getSortedQualifierNames() {
-        Set<Class<? extends Annotation>> sortedQuals = getSortedSupportedTypeQualifiers();
+        List<Class<? extends Annotation>> sortedQuals = getSortedSupportedTypeQualifiers();
 
         // display the number of qualifiers as well as the names of each
         // qualifier.

@@ -66,7 +66,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -780,21 +779,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     };
 
     /**
-     * Returns an alphabetically sorted immutable set of the type qualifiers
+     * Returns an alphabetically sorted immutable list of the type qualifiers
      * supported by this checker. This method is useful for debug printing
-     * purposes, but otherwise returns the same set as
+     * purposes, but otherwise returns the same qualifiers as
      * {@link #getSupportedTypeQualifiers()}.
      *
      * @see #getSupportedTypeQualifiers()
      *
-     * @return a sorted and immutable TreeSet of the supported type qualifiers,
-     *         or an empty set if no qualifiers are supported
+     * @return an immutable sorted list of the supported type qualifiers, or an
+     *         immutable empty list if no qualifiers are supported
      */
-    public final Set<Class<? extends Annotation>> getSortedSupportedTypeQualifiers() {
-        // perform sorting by insertion into a TreeSet.
-        Set<Class<? extends Annotation>> sortedSupportedQuals = new TreeSet<Class<? extends Annotation>>(QUALIFIER_SORT_ORDERING);
+    public final List<Class<? extends Annotation>> getSortedSupportedTypeQualifiers() {
+        // insert into an array list then sort it alphabetically
+        List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<Class<? extends Annotation>>();
         sortedSupportedQuals.addAll(getSupportedTypeQualifiers());
-        return Collections.unmodifiableSet(sortedSupportedQuals);
+        sortedSupportedQuals.sort(QUALIFIER_SORT_ORDERING);
+        return Collections.unmodifiableList(sortedSupportedQuals);
     }
 
     // **********************************************************************
