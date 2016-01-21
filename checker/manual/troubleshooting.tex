@@ -79,9 +79,11 @@ If the error is
 package org.checkerframework.checker.nullness.qual does not exist
 \end{Verbatim}
 
+\begin{sloppypar}
 \noindent
 (note the extra apostrophe!), then you have probably misused quoting when
 supplying the (deprecated) \code{jsr308\_imports} environment variable.
+\end{sloppypar}
 
 \item
 If you get an error like one of the following,
@@ -115,10 +117,12 @@ The type com.sun.source.util.AbstractTypeProcessor cannot be resolved.
   It is indirectly referenced from required .class files
 \end{alltt}
 
+\begin{sloppypar}
 \noindent
 then you are likely \textbf{not} using the Checker Framework compiler.  Use
-either \code{\$CHECKERFRAMEWORK/checker/bin/javac} one of the alternatives
-described in Section~\ref{installation}.
+either \code{\$CHECKERFRAMEWORK/checker/bin/javac} or one of the alternatives
+described in Section~\ref{javac-installation}.
+\end{sloppypar}
 
 
 \item
@@ -150,7 +154,9 @@ with a Java 6 or 7 compiler that will ignore the annotations in comments.
 
 \item
 A ``class file for \ldots\ not found'' error, especially for an inner class
-in the JDK, is probably due to a JDK version mismatch.
+in the JDK, is probably due to a JDK version mismatch.  To solve the
+problem, you need to perform compilation with a different Java version or
+different version of the JDK\@.
 
 In general, Java issues a ``class file for \ldots\ not found'' error when
 your classpath contains code that was compiled
@@ -529,7 +535,7 @@ Here are ways to solve the problem:
 Use a newer JVM (run \<java -version> to
 determine the version you are using)
 \item
-Use the Checker Framework to type-check your code, then afterword produce a
+Use the Checker Framework to type-check your code, then afterward produce a
 classfile that targets an earlier JVM by supplying arguments such as
 \<javac -source 7 -target 7 ...>.
 \end{itemize}
@@ -540,15 +546,21 @@ classfile that targets an earlier JVM by supplying arguments such as
 The following warning is innocuous and you can ignore it, or you can
 suppress it using the \<-Xlint:-classfile> command-line argument to javac:
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
 warning: [classfile] RuntimeVisibleTypeAnnotations attribute introduced in version 52.0 class files is ignored in version 51.0 class files
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 This warning results when you compile a library using the Checker Framework
 compiler, then use a normal Java compiler to compile client code that uses
 the library.
 The Checker Framework compiler puts Java 8 type annotations even in Java 7
-classfiles, for the benefit of modular typechecking.  The Checker Framework
+classfiles, for the benefit of modular type-checking.  The Checker Framework
 compiler reads these annotations in Java 7, and other compilers ignore them.
 
 
@@ -566,7 +578,7 @@ features, new checker plugins, and other improvements.
 
 Please ensure that your bug report is clear and that it is complete.
 Otherwise, we may be unable to understand it or to reproduce it, either of
-which would prevent us from fixing the bug.  Your bug report will be most
+which would prevent us from helping you.  Your bug report will be most
 helpful if you:
 
 \begin{itemize}
@@ -583,7 +595,11 @@ helpful if you:
   includes every file that is used by any of the commands you reported, and
   possibly other files as well.  Please attach the files, rather than
   pasting their contents into the body of your bug report or email message,
-  because some mailers mangle formatting of pasted text.
+  because some mailers mangle formatting of pasted text.  If you
+  encountered a problem while using tool integration such as the Eclipse
+  plugin or Maven integration, then try to reproduce the problem from the
+  command line as well --- this will indicate whether the problem is with
+  the checker itself or with the tool integration.
 \item
   Indicate exactly what the result was by attaching a file or using
   cut-and-paste from your command shell (don't merely describe it in
@@ -638,13 +654,6 @@ git clone https://github.com/typetools/annotation-tools.git annotation-tools
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
-\noindent
-(Alternately, you could use the version of the source code that is packaged
-in the Checker Framework release.)
-
-% TODO: the AFU and JSR 308 source code is not included in the
-% checker-framework.zip file!
-
 
 \subsection{Build the Type Annotations compiler\label{building-compiler}}
 
@@ -670,9 +679,15 @@ variable might already be set, because it is needed for Ant to work.)
 In the bash shell, the following command \emph{sometimes} works (it might
 not because \<java> might be the version in the JDK or in the JRE):
 % Can someone give a simpler command?
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
   export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(dirname $(readlink -f $(/usr/bin/which java)))))}
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 \item
 Compile the Type Annotations tools:
@@ -812,83 +827,6 @@ sudo apt-get install hevea librsvg2-bin
 \item
 Run \code{make} in the \code{checker/manual} directory to build both the PDF and HTML versions of the manual.
 \end{enumerate}
-
-% \subsection{Adjust classpath}
-
-% Building the Checker Framework requires use of a Java 8 compiler.  You may
-% use either the OpenJDK compiler or the Checker Framework compiler.  The latter has a
-% few extra features and tends to get bug fixes more quickly.
-
-% The following instructions give detailed steps for installing the source
-% release of the Checker Framework.
-
-
-% \item Download and install the JSR 308 implementation; follow the instructions at
-% % alternative: \urldef{\JsrInstallingUrl}{\url}{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}
-% {\codesize\url{http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing}}.
-% This creates a \code{jsr308-langtools} directory.
-%
-% \item Download the Checker Framework distribution zipfile from
-% \myurl{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip},
-% and unzip it to create a \code{checkers} directory.  We recommend that the
-% \code{checkers} directory and the \code{jsr308-langtools} directory be siblings.
-% Example commands:
-%
-% \begin{Verbatim}
-%   cd $JSR308
-%   wget http://types.cs.washington.edu/checker-framework/current/checker-framework.zip
-%   unzip checker-framework.zip
-% \end{Verbatim}
-%
-% You will also need to adjust the path to \<javac> in any Ant buildfiles,
-% etc.
-
-% \item Optionally edit property \code{compiler.lib} in file
-%   \code{build-common.properties}.  You don't have to do this if the
-%   \code{checker} directory and the \code{jsr308-langtools} directory are
-%   siblings.
-
-
-% (A checker implementation builds on
-% standard mechanisms such as JSR 269 annotation processing, but also
-% accesses the compiler's AST. In the long run, a checker built using the
-% Checker Framework should not be dependent on any compiler specifics.)
-% If you do not place the annotations in
-% then you should also disable Eclipse's on-the-fly syntax checking.
-
-
-
-
-% \subsection{TO DO:  The short instructions (for Linux only)}
-%
-% %%% This comment does not seem to be correct any longer.
-% %% This text is identically reproduced at ../../jsr308-langtools/README-jsr308.html
-% %% so if you change either one, change the other also!
-%
-% The following commands install
-% the JSR 308 \code{javac} compiler and the Checker
-% Framework, or update an existing installation.
-% It currently works only on \textbf{Linux}.
-% For more details, or if anything goes wrong, see the comments in the
-% \code{Makefile-jsr308-install} file.
-%
-% \begin{enumerate}
-%
-% \item
-%   Execute the following commands:
-%
-% \begin{Verbatim}
-%   cd
-%   wget -nv -N http://types.cs.washington.edu/jsr308/Makefile-jsr308-install
-%   make -f Makefile-jsr308-install
-% \end{Verbatim}
-%
-% \item
-% Set some environment variables according to the instructions at the top of file
-% \code{Makefile-jsr308-install}.
-%
-% \end{enumerate}
-
 
 
 \section{Publications\label{publications}\label{learning-more}}
@@ -1066,25 +1004,6 @@ documentation for a detailed discussion of related work.
 
 \section{Credits, changelog, and license\label{credits}}
 
-The key developers of the Checker Framework are Mahmood Ali, Telmo Correa,
-Werner M. Dietl, Michael D. Ernst, and Matthew M. Papi.
-Many other developers have also contributed, for example by writing
-the checkers that are distributed with the Checker Framework.
-Many, many users to list have provided valuable feedback, for which we are
-grateful.
-
-%% Not so accurate, since Mahmood is really an author of the nullness and
-%% interned checkers too, and since then they have been essentially
-%% rewritten from scratch.
-% The Checker Framework was implemented by
-% The Nullness Checker was implemented by Matthew M. Papi.
-% The Interning Checker was implemented by Matthew M. Papi.
-% The Javari Checker was implemented by Telmo Correa.
-% The IGJ Checker was implemented by Mahmood Ali.
-% The Subtyping Checker was implemented by Matthew M. Papi.
-% The Fake Enum Checker was written by Werner M. Dietl.
-% ... many others ...
-
 Differences from previous versions of the checkers and framework can be found
 in the \code{changelog.txt} file.  This file is included in the
 Checker Framework distribution and is also available on the web at
@@ -1095,9 +1014,12 @@ Two different licenses apply to different parts of the Checker Framework.
 \item
 The Checker Framework itself is licensed under the GNU General Public License
 (GPL), version 2.  The GPL is the same license that OpenJDK is licensed
-under.  That means that type-checking your code using the Checker Framework
-is no more dangerous (from an intellectual property point of view) than
-compiling your code using javac.
+under.  Just as compiling your code with javac does not infect your code
+with the GPL, type-checking your code with the Checker Framework does not
+infect your code with the GPL\@.  Running the Checker Framework during
+development has no effect on your intellectual property or licensing.  If
+you want to ship the Checker Framework as part of your product, then your
+product must be licensed under the GPL\@.
 \item
 The more permissive MIT License applies
 to code that you might want to include in your own
@@ -1105,6 +1027,47 @@ program, such as the annotations.
 \end{itemize}
 \noindent
 For details, see file \<LICENSE.txt>.
+
+Developers who have contributed code to the Checker Framework include
+%
+Abraham Lin,
+Anatoly Kupriyanov,
+Asumu Takikawa,
+Charlie Garrett,
+Colin Gordon,
+Dan Brotherston,
+Dan Brown,
+David Lazar,
+David McArthur,
+Eric Spishak,
+Javier Thaine,
+Jeff Luo,
+Jonathan Burke,
+Kivanc Muslu,
+Konstantin Weitz,
+Mahmood Ali,
+Mark Roberts,
+Matt Mullen,
+Michael Bayne,
+Michael Coblenz,
+Michael Ernst,
+Michael Sloan,
+Paul Vines,
+Paulo Barros,
+Philip Lai,
+Renato Athaydes,
+Ren\'e Just,
+Ryan Oblak,
+Stefan Heule,
+Steph Dietzel,
+Stuart Pernsteiner,
+Suzanne Millstein,
+Trask Stalnaker,
+Werner Dietl.
+%
+In addition, too many users to list have provided valuable feedback, which
+has improved the toolset's design and implementation.
+Thanks for your help!
 
 
 
@@ -1115,6 +1078,10 @@ For details, see file \<LICENSE.txt>.
 %  LocalWords:  extJavac ZipFile AprintErrorStack AprintAllQualifiers Jlint
 %  LocalWords:  Telmo Correa Papi NoSuchFieldError ZipException Xlint A1
 %  LocalWords:  FileNotFoundException MyQualifier ImplicitFor A2 A3 JDKs
-%  LocalWords:  StaticNestedClass StaticNested ConfusingAnnotation
-%%  LocalWords:  CHECKERFRAMEWORK currentOutgoing isCompleted
-%%  LocalWords:  EnsuresNonNull
+%  LocalWords:  StaticNestedClass StaticNested ConfusingAnnotation pre IGJ
+%%  LocalWords:  CHECKERFRAMEWORK currentOutgoing isCompleted ElementType
+%%  LocalWords:  EnsuresNonNull devel javacutil stubparser rsvg Regex OIGJ
+%%  LocalWords:  JavaUI EnerJ App CCS ReIm ReImInfer Anatoly Kupriyanov
+%%  LocalWords:  Asumu Takikawa Brotherston McArthur Luo Bayne Coblenz Lai
+%%  LocalWords:  Barros Athaydes Ren Oblak Heule Steph Trask Stalnaker
+%%  LocalWords:  toolset's

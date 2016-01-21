@@ -8,7 +8,6 @@ import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Indicates that the annotated reference is an immutable reference to an
@@ -19,7 +18,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #igj-checker IGJ Checker
  */
-@TypeQualifier
 @SubtypeOf(AssignsFields.class)
 @DefaultQualifierInHierarchy
 @Documented

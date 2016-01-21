@@ -62,38 +62,6 @@ import sun.security.util.SecurityConstants;
 
 public class ProtectionDomain {
 
-    static {
-        // Set up JavaSecurityAccess in SharedSecrets
-        SharedSecrets.setJavaSecurityAccess(
-            new JavaSecurityAccess() {
-                @Override
-                public <T> T doIntersectionPrivilege(
-                    PrivilegedAction<T> action,
-                    final AccessControlContext stack,
-                    final AccessControlContext context)
-                {
-                    if (action == null) {
-                        throw new NullPointerException();
-                    }
-                    return AccessController.doPrivileged(
-                        action,
-                        new AccessControlContext(
-                            stack.getContext(), context).optimize()
-                    );
-                }
-
-                @Override
-                public <T> T doIntersectionPrivilege(
-                    PrivilegedAction<T> action,
-                    AccessControlContext context)
-                {
-                    return doIntersectionPrivilege(action,
-                        AccessController.getContext(), context);
-                }
-            }
-       );
-    }
-
     /* CodeSource */
     private @Nullable
     final CodeSource codesource ;

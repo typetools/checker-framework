@@ -11,7 +11,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Raw;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * This type qualifier belongs to the rawness initialization tracking
@@ -27,7 +26,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
-@TypeQualifier
 @SubtypeOf(Raw.class)
 @DefaultQualifierInHierarchy
 @Documented

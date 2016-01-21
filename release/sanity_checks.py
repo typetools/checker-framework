@@ -18,7 +18,7 @@ import zipfile
 def javac_sanity_check( checker_framework_website, release_version ):
     """
        Download the release of the Checker Framework from the development website
-       and NullnessExampleWithWarnings.java from the Google Code repository.
+       and NullnessExampleWithWarnings.java from the GitHub repository.
        Run the Nullness Checker on NullnessExampleWithWarnings and verify the output
        Fails if the expected errors are not found in the output.
     """
@@ -31,7 +31,7 @@ def javac_sanity_check( checker_framework_website, release_version ):
         delete_path( javac_sanity_dir )
     execute( "mkdir -p " + javac_sanity_dir )
 
-    javac_sanity_zip = os.path.join( javac_sanity_dir, "checker-framework.zip" )
+    javac_sanity_zip = os.path.join( javac_sanity_dir, "checker-framework-%s.zip" % release_version)
 
     print( "Attempting to download %s to %s" % ( new_checkers_release_zip, javac_sanity_zip ) )
     download_binary( new_checkers_release_zip, javac_sanity_zip, MAX_DOWNLOAD_SIZE )
@@ -66,8 +66,8 @@ def javac_sanity_check( checker_framework_website, release_version ):
         "NullnessExampleWithWarnings.java:36: error: (argument.type.incompatible)"
     ])
 
-    #this is a smoke test for the built-in checker shorthand feature
-    #http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#shorthand-for-checkers
+    # this is a smoke test for the built-in checker shorthand feature
+    # http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#shorthand-for-checkers
     nullness_shorthand_output = os.path.join( deploy_dir, "output_shorthand.log")
     cmd = sanity_javac + " -processor NullnessChecker " + nullness_example + " -Anomsgtext"
     execute_write_to_file( cmd, nullness_shorthand_output, False )
@@ -112,6 +112,9 @@ def maven_sanity_check( sub_sanity_dir_name, repo_url, release_version ):
 
         maven_example_pom = os.path.join( maven_example_dir, "pom.xml" )
         add_repo_information( maven_example_pom, repo_url )
+
+        print("TODO: mvn compile is working because of a quick fix to set JAVA_HOME to JAVA_8_HOME.")
+        print("Look for a permanent fix.")
 
         os.environ['JAVA_HOME']   =  os.environ['JAVA_8_HOME']
         execute_write_to_file( "mvn compile", output_log, False, maven_example_dir )

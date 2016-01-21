@@ -7,6 +7,8 @@
 % These currently include
 % % Keep this list in sync with file ../lib/README .
 %   \href{https://commons.apache.org/proper/commons-bcel/}{Apache Commons BCEL}
+%   (versions 5.2 and 6.0 pre-release),
+%   \href{https://github.com/google/guava/}{Google Guava},
 %   and
 %   \href{https://github.com/arenn/java-getopt}{GNU getopt Java port}.
 % %% Todo: this should be done automatically for the user.
@@ -153,15 +155,17 @@ You use \<@AnnotatedFor> to indicate which classes you have annotated.
 
 
 
-\subsection{The \<-AuseSafeDefaultsForUnannotatedSourceCode> command-line
-argument\label{AuseSafeDefaultsForUnannotatedSourceCode}}
+\subsection{The \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line
+argument\label{AuseDefaultsForUncheckedCodesource}}
 
+\begin{sloppypar}
 When compiling a library that is not fully annotated, use command-line
-argument \<-AuseSafeDefaultsForUnannotatedSourceCode>.  This causes
+argument \<-AuseDefaultsForUncheckedCode=source,bytecode>.  This causes
 the checker to behave normally for classes with a relevant \<@AnnotatedFor>
-annotation.  For all other classes, the checker uses conservative defaults
+annotation.  For all other classes, the checker uses unchecked code defaults
 (see Section~\ref{defaults-classfile}) for any type use with no explicit
 user-written annotation, and the checker issues no warnings.
+\end{sloppypar}
 
 The \refqualclass{framework/qual}{AnnotatedFor} annotation, written on a
 class, indicates that the class has been annotated for certain type
@@ -177,11 +181,13 @@ may be passed to the \<-processor> command-line argument:  the
 fully-qualified class name for the checker, or a shorthand for built-in
 checkers (see Section~\ref{shorthand-for-checkers}).
 
+\begin{sloppypar}
 Whenever you compile a class using the Checker Framework, including when
-using the \<-AuseSafeDefaultsForUnannotatedSourceCode> command-line
+using the \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line
 argument, the resulting \<.class> files are fully-annotated; each type use
 in the \<.class> file has an explicit type qualifier for any checker that
 is run.
+\end{sloppypar}
 
 
 \subsection{Workflow for creating or augmenting a partially-annotated library\label{compiling-libraries-workflow}}
@@ -206,12 +212,13 @@ partially-annotated library.
 
   Adjust the library's
   build process, such as a Maven or Ant buildfile.
+  \begin{sloppypar}
   \begin{enumerate}
   \item
     Every time the build system runs the compiler, it should:
     \begin{itemize}
     \item
-      passes the \<-AuseSafeDefaultsForUnannotatedSourceCode>
+      passes the \<-AuseDefaultsForUncheckedCode=source,bytecode>
       command-line option and
     \item
       runs every pluggable type-checker for which any
@@ -223,11 +230,12 @@ partially-annotated library.
     file includes the contents of
     \<checker-framework/checker/dist/checker-qual.jar>.
   \end{enumerate}
+  \end{sloppypar}
 
   You are not adding new build targets, but modifying existing targets.
   The reason to run every type-checker is to verify
   the annotations you wrote, and to use appropriate defaults for all
-  unnanotated type uses.
+  unannotated type uses.
   The reason to include the contents of \<checker-qual.jar> is so that 
   the resulting \<.jar> file can be used whether or not the Checker Framework
   is being run.
@@ -679,5 +687,7 @@ read whether the library's annotations are parsed.
 %  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug jdk6 jdk7
 %  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
 %%  LocalWords:  NoStubParserWarning CHECKERFRAMEWORK AnnotatedFor regex
-%%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile
+%%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual
 %%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs
+%%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1
+%%  LocalWords:  TypeSystem2 TypeSystem3

@@ -79,9 +79,11 @@ cases above, but for now you need to use \<@Interned>, \<@UsesObjectEquals>
 (which handles a surprising number of cases), and/or
 \<@SuppressWarnings>.
 
+\begin{sloppypar}
 To run the Interning Checker, supply the
 \code{-processor org.checkerframework.checker.interning.InterningChecker}
 command-line option to javac.  For examples, see Section~\ref{interning-example}.
+\end{sloppypar}
 
 
 \section{Interning annotations\label{interning-annotations}}
@@ -121,10 +123,16 @@ In order to perform checking, you must annotate your code with the \refqualclass
 type annotation, which indicates a type for the canonical representation of an
 object:
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
             String s1 = ...;  // type is (uninterned) "String"
   @Interned String s2 = ...;  // Java type is "String", but checker treats it as "@Interned String"
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 The type system enforced by the checker plugin ensures that only interned
 values can be assigned to \code{s2}.
@@ -235,9 +243,15 @@ To try the Interning Checker on a source file that uses the \refqualclass{checke
 use the following command (where \code{javac} is the Checker Framework compiler that
 is distributed with the Checker Framework):
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.interning.InterningChecker examples/InterningExample.java
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 \noindent
 Compilation will complete without errors or warnings.
@@ -245,9 +259,15 @@ Compilation will complete without errors or warnings.
 To see the checker warn about incorrect usage of annotations, use the following
 command:
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.interning.InterningChecker examples/InterningExampleWithWarnings.java
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 \noindent
 The compiler will issue an error regarding violation of the semantics of
@@ -308,6 +328,5 @@ side of Figure~\ref{fig-interning-refactoring}.
 
 % LocalWords:  plugin MyInternedClass enum InterningExampleWithWarnings java
 % LocalWords:  PolyInterned Alint dotequals quals InterningAnnotatedTypeFactory
-% LocalWords:  javac InterningVisitor JLS Acheckclass UsesObjectEquals 5cm
+% LocalWords:  javac InterningVisitor JLS Acheckclass UsesObjectEquals
 %  LocalWords:  consing valueOf superclasses s2 cleanroom canonicalization
-%  LocalWords:  5cm

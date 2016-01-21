@@ -14,7 +14,7 @@ When using the Constant Value Checker as part of another checker, the
 be passed as a stub file for the checker.
 \item
 Alternately, you can run just the Constant Value Checker, by
-supplying the following command-line option to javac:
+supplying the following command-line options to javac:
 \code{-processor org.checkerframework.common.value.ValueChecker -Astubs=statically-executable.astub}
 \end{itemize}
 
@@ -123,6 +123,7 @@ public void bar() {
 \label{fig-staticallyexecutable}
 \end{figure}
 
+\begin{sloppypar}
 A \<@StaticallyExecutable> method must
 be \refqualclass{dataflow/qual}{Pure} (side-effect-free and
 deterministic).
@@ -132,7 +133,9 @@ compile-time to perform the constant value analysis. Any standard
 library methods (such as those annotated as \<@StaticallyExecutable> in file
 \<statically-executable.astub>) will already be on the
 classpath.
+\end{sloppypar}
 
+\begin{sloppypar}
 To use \<@StaticallyExecutable> on methods in your own code, you should
 first compile the code without the Constant Value Checker and then add
 the location of the resulting \code{.class} files to the
@@ -142,7 +145,7 @@ argument \code{-classpath path/to/class/files} to the call. The latter
 would look similar to:
 \code{-processor org.checkerframework.common.value.ValueChecker
 -Astubs=statically-executable.astub -classpath \$CLASSPATH:\$MY\_PROJECT/build/}
-
+\end{sloppypar}
 
 
 \section{Warnings\label{value-checker-warnings}}
@@ -153,6 +156,7 @@ such a warning, then the return value of the method will be \<@UnknownVal>
 instead of being able to be resolved to a specific value annotation.
 Some examples of these:
 
+\begin{sloppypar}
 \begin{itemize}
 \item \code{[class.find.failed] Failed to find class named Test.}
 
@@ -179,10 +183,12 @@ Some examples of these:
   might not be thrown on every execution, depending on the run-time values.
 
 \end{itemize}
+\end{sloppypar}
 
 There is one other situation in which the Constant Value Checker produces a
 warning message:
 
+\begin{sloppypar}
 \begin{itemize}
 \item \code{[too.many.values.given] Annotation ignored because the maximum
   number of values tracked is 10.}
@@ -192,8 +198,9 @@ warning message:
   tracked, the annotation is ignored.
 
 \end{itemize}
+\end{sloppypar}
 
 
-%%  LocalWords:  9cm UnknownVal 5cm StringValue BottomVal 9cm 5cm astub
+%%  LocalWords:  UnknownVal StringValue BottomVal astub
 %  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
-%%  LocalWords:  3cm 75cm classpath
+%%  LocalWords:  classpath

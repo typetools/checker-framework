@@ -10,7 +10,6 @@ import org.checkerframework.framework.qual.*;
 
 import com.sun.source.tree.Tree;
 
-@TypeQualifier
 @SubtypeOf({H2S1.class, H2S2.class})
 @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
 @Documented

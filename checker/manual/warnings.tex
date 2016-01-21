@@ -44,7 +44,7 @@ You can suppress warnings throughout the codebase by using the following mechani
 \item
   the \code{-AskipDefs} and \code{-AonlyDefs} command-line options (Section~\ref{askipdefs}),
 \item
-  the \code{-AuseSafeDefaultsForUnannotatedSourceCode} command-line
+  the \code{-AuseDefaultsForUncheckedCode=source} command-line
   option (Section~\ref{compiling-libraries}),
 \item
   the \code{-Alint} command-line option (Section~\ref{alint}), or
@@ -66,11 +66,13 @@ We now explain these mechanisms in turn.
 
 \section{\code{@SuppressWarnings} annotation\label{suppresswarnings-annotation}}
 
+\begin{sloppypar}
 You can suppress specific errors and warnings by use of the
 \code{@SuppressWarnings} annotation, for example
 \code{@SuppressWarnings("interning")} or \code{@SuppressWarnings("nullness")}.
 Section~\ref{suppresswarnings-annotation-syntax} explains the syntax of the
 argument string.
+\end{sloppypar}
 
 A \sunjavadocanno{java/lang/SuppressWarnings.html}{SuppressWarnings}
 annotation may be placed on program declarations such as a local
@@ -691,6 +693,7 @@ but your code will still compile with any Java compiler.
 % In a single program, you may write some annotations in comments, and others
 % outside of comments.  There is not much point in doing so, however.
 
+\begin{sloppypar}
 By default, the Checker Framework compiler ignores any comment that contains spaces at the
 beginning or end, or between the \code{@} and the annotation name.
 In other words, it reads \code{/*@NonNull*/} as an annotation but ignores
@@ -709,6 +712,7 @@ Indentation'' command, since it inserts space in comments.  But the
 annotation comments are less readable with spaces, so it's even better to disable
 inserting spaces:  in the Formatter preferences, in the Comments tab,
 unselect the ``enable block comment formatting'' checkbox.
+\end{sloppypar}
 
 Compiler flag \code{-XDTA:noannotationsincomments} causes the compiler
 to ignore annotation comments.  With this compiler flag, the
@@ -778,7 +782,7 @@ If the import statements are \emph{not} commented out, then every time you
 compile the code (even when not doing pluggable type-checking),
 the annotation definitions (e.g., the \code{checker.jar}
 or \code{checker-qual.jar} file) must be on the classpath.
-(This is done automatically if you use the Checker Framework comiler.)
+(This is done automatically if you use the Checker Framework compiler.)
 Commenting out the import statements also eliminates Eclipse
 warnings about unused import statements, if all uses of the imported
 qualifier are themselves in comments and thus invisible to Eclipse.
@@ -837,7 +841,7 @@ program requires a Java 8 or later JDK at run time.
 
 To ensure that your program can run on a Java 5/6/7 JVM, use a command-line
 option such as \<-target 7> when doing normal compilation to produce
-classfiles.  Before doing so, you will do pluggable typechecking, using the
+classfiles.  Before doing so, you will do pluggable type-checking, using the
 \<-target 8> command-line option (or no \<-target> command-line option) to
 javac; you may wish to supply the \<-proc:only> command-line argument so
 that the type-checking step does not overwrite existing classfiles.
@@ -847,7 +851,7 @@ Here are the disadvantages of this approach:
 \begin{itemize}
 \item
 It produces classfiles that contain no trace of your type annotations.
-This means that modular typechecking (also known as separate compilation)
+This means that modular type-checking (also known as separate compilation)
 is not possible.
 
 You need to compile your entire application every time you
@@ -924,6 +928,7 @@ use aliased annotations from other projects.  For example, the aliased
 annotations for the Nullness Checker are listed in
 Section~\ref{nullness-related-work}.
 
+\begin{sloppypar}
 At locations where only type annotations are possible, use the
 ``\<*Type>'' compatibility annotations from package
 \<org.checkerframework.checker.nullness.compatqual>
@@ -934,6 +939,7 @@ declares these declaration annotations:
 \refqualclass{checker/nullness/compatqual}{PolyNullType},
 \refqualclass{checker/nullness/compatqual}{MonotonicNonNullType}, and
 \refqualclass{checker/nullness/compatqual}{KeyForType}.
+\end{sloppypar}
 
 \item
 At locations where declaration annotations are possible,
@@ -967,14 +973,14 @@ annotations, and not to write them in comments.
 % LocalWords:  Xlint dotequals castNonNull XDTA spacesincomments Formatter jsr
 % LocalWords:  unselect checkbox classpath Djsr bak Nullness nullness java lang
 % LocalWords:  checkername util myref nulltest html ESC buildfile mynifty Fenum
-% LocalWords:  MyNiftyChecker messagekey basetype uncommenting Anomsgtext '
-% LocalWords:  AskipDefs mypackage jsr308 Djsr308 Makefile PLXCOMP expr '
+% LocalWords:  MyNiftyChecker messagekey basetype uncommenting Anomsgtext
+% LocalWords:  AskipDefs mypackage jsr308 Djsr308 Makefile PLXCOMP expr
 %  LocalWords:  TODO AsuppressWarnings AssumeAssertion AonlyUses AonlyDefs
-%  LocalWords:  ing warningkey redundantNullComparison ' ' qual proc Decl
+%  LocalWords:  ing warningkey redundantNullComparison qual proc Decl
 %  LocalWords:  noannotationsincomments lastsinglesuppression classfiles
 %%  LocalWords:  AshowSuppressWarningKeys NullableType NonNullType JUnit's
 %%  LocalWords:  PolyNullType MonotonicNonNullType KeyForType NullableDecl
 %%  LocalWords:  NonNullDecl PolyNullDecl MonotonicNonNullDecl KeyForDecl
 %%  LocalWords:  refactored AassumeAssertionsAreEnabled assertNotNull
 %%  LocalWords:  AassumeAssertionsAreDisabled NullnessUtils checkNotNull
-%%  LocalWords:  ElementType
+%%  LocalWords:  ElementType AuseSafeDefaultsForUnannotatedSourceCode

@@ -7,14 +7,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.PolymorphicQualifier;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Annotation for the polymorphic-UI effect.
  *
  * @checker_framework.manual #guieffect-checker GUI Effect Checker
  */
-@TypeQualifier
 @PolymorphicQualifier(UI.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

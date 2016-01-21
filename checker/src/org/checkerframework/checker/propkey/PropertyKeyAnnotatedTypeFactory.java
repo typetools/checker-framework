@@ -48,7 +48,6 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         PROPKEY_BOTTOM = AnnotationUtils.fromClass(elements, PropertyKeyBottom.class);
 
         this.postInit();
-        this.defaults.addAbsoluteDefault(PROPKEY_BOTTOM, DefaultLocation.LOWER_BOUNDS);
     }
 
     @Override

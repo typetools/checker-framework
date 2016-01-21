@@ -1,3 +1,11 @@
 
+clean:
+Deleting directory /home/mernst/research/types/checker-framework-REAL/tutorial/eclipse-projects/personalblog-demo/bin
+
+check-tainting:
+Created dir: /home/mernst/research/types/checker-framework-REAL/tutorial/eclipse-projects/personalblog-demo/bin
+Compiling 2 source files to /home/mernst/research/types/checker-framework-REAL/tutorial/eclipse-projects/personalblog-demo/bin
+javac 1.8.0-jsr308-1.9.9
+
 BUILD SUCCESSFUL
-Total time: 1 second
+Total time: 2 seconds

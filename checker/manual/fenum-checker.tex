@@ -25,7 +25,8 @@ rather than a real enum or the typesafe enum pattern.
 One reason is backward-compatibility.  A public API that predates Java's
 enum keyword may use \code{int} constants; it cannot be changed, because
 doing so would break existing clients.  For example, Java's JDK still uses
-\code{int} constants in the AWT and Swing frameworks.
+\code{int} constants in the AWT and Swing frameworks, and Android also uses
+\code{int} constants rather than Java enums.
 %
 Another reason is performance, especially in environments with limited
 resources.  Use of an int instead of an object can
@@ -64,21 +65,24 @@ The checker supports two ways to introduce a new fake enum (fenum):
 file \code{\emph{MyFenum}.java}:
 
 \begin{alltt}
-package \textit{myproject}.qual;
+package \textit{myModule}.qual;
 
 import java.lang.annotation.*;
+import org.checkerframework.checker.fenum.qual.FenumTop;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@TypeQualifier
-@SubtypeOf( \ttlcb{} FenumTop.class \ttrcb{} )
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf(FenumTop.class)
 public @interface \textit{MyFenum} \ttlcb\ttrcb
 \end{alltt}
 
 You only need to adapt the italicized package, annotation, and file names in the example.
 
+Note that all custom annotations must have the
+\<@Target({ElementType.TYPE\_USE})> meta-annotation. See section
+\ref{define-type-qualifiers}.
 
 \item Use the provided \refqualclass{checker/fenum/qual}{Fenum} annotation, which takes a
 \code{String} argument to distinguish different fenums.
@@ -115,18 +119,46 @@ The Fenum Checker can be invoked by running the following commands.
 
 \begin{itemize}
   \item
-If you define your own annotation, provide the name of the annotation using the
-\code{-Aquals} option:
+If you define your own annotation(s), provide the name(s) of the annotation(s)
+through the \code{-Aquals} option, using a comma-no-space-separated notation:
 
 \begin{alltt}
-  javac -processor org.checkerframework.checker.fenum.FenumChecker
-        \textit{-Aquals=myproject.qual.MyFenum} MyFile.java ...
+  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+        -processor org.checkerframework.checker.fenum.FenumChecker \ttbs
+        -Aquals=\textit{myModule.qual.MyFenum} MyFile.java ...
 \end{alltt}
 
+The annotations listed in \code{-Aquals} must be accessible to
+the compiler during compilation in the classpath.  In other words, they must
+already be compiled (and, typically, be on the javac bootclasspath)
+before you run the Fenum Checker with \code{javac}.  It
+is not sufficient to supply their source files on the command line.
+
+You can also provide the fully-qualified paths to a set of directories
+that contain the annotations through the \code{-AqualDirs} option,
+using a colon-no-space-separated notation. For example:
+
+\begin{alltt}
+  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+        -processor org.checkerframework.checker.fenum.FenumChecker \ttbs
+        -AqualDirs=\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} MyFile.java ...
+\end{alltt}
+
+Note that in these two examples, the compiled class file of the
+\<myModule.qual.MyFenum> annotation must exist in either the \<myProject/bin>
+directory or the \<myLibrary/bin> directory. The following placement of
+the class file will work with the above commands:
+
+\begin{alltt}
+  .../myProject/bin/myModule/qual/MyFenum.class
+\end{alltt}
+
+The two options can be used at the same time to provide groups of annotations
+from directories, and individually named annotations.
 
 \item
 If your code uses the \refqualclass{checker/fenum/qual}{Fenum} annotation, you do
-not need the \code{-Aquals} option:
+not need the \code{-Aquals} or \code{-AqualDirs} option:
 
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.fenum.FenumChecker MyFile.java ...
@@ -186,10 +218,17 @@ class FenumUser {
  }
 \end{Verbatim}
 
+Also, see the example project in the \<checker/examples/fenum-extension> directory.
+
+
 
 \section{References\label{fenum-references}}
 
 \begin{itemize}
+\item Case studies of the Fake Enum Checker:\\
+  ``Building and using pluggable type-checkers''~\cite{DietlDEMS2011}
+  (ICSE 2011, \url{http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011.pdf#page=3})
+
 \item Java Language Specification on enums:\\
   \url{https://docs.oracle.com/javase/specs/jls/se8/html/jls-8.html#jls-8.9}
 
@@ -205,6 +244,7 @@ class FenumUser {
 \end{itemize}
 
 % LocalWords:  enums typesafe Fenum Fenums fenum MyFenum quals fenums Aquals
-% LocalWords:  TestStatic FenumC FenumD myproject RetentionPolicy TypeQualifier
-% LocalWords:  SubtypeOf FenumTop MyFile Enum enum AWT 5cm java jls qual
-%  LocalWords:  FenumUnqualified FenumBottom
+% LocalWords:  TestStatic FenumC FenumD myModule RetentionPolicy
+% LocalWords:  SubtypeOf FenumTop MyFile Enum enum AWT java jls qual
+%  LocalWords:  FenumUnqualified FenumBottom ElementType classpath
+%%  LocalWords:  bootclasspath AqualDirs myProject myLibrary

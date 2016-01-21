@@ -8,18 +8,18 @@ instead; see file ../manual/manual.html .
 How to run all the tests for the Checker Framework
 ==================================================
 
-  # Warning: this may rebuild the JDK, which takes a long time
-  # from the checker-framework directory
+  # To run from the checker-framework directory:
+  # (warning: this may rebuild the JDK, which takes a long time)
   ant -e -find build.xml tests
 
-  #from the checker Directory
+  # To run from the checker directory
   ant -e -find build.xml all-tests
 
 Other ant targets also exist to run a subset of the tests, without
 rebuilding the JDK; for example,
-  #from the checker directory
+  # Run from the checker directory:
   ant -e -find build.xml nullness-tests
-  ant -e -find build.xml all-tests-nojdk
+  ant -e -find build.xml all-tests-nobuildjdk
 
 
 How to run just one test for the Checker Framework
@@ -34,7 +34,7 @@ the JDK, do something like:
 or
 
   cd $CHECKERFRAMEWORK/checker/tests/nullness
-  (cd $CHECKERFRAMEWORK && ant -e dist-nojdk) && $CHECKERFRAMEWORK/checker/bin-devel/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class AssertNonNullTest.java
+  (cd $CHECKERFRAMEWORK && ant -e dist-nobuildjdk) && $CHECKERFRAMEWORK/checker/bin-devel/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class AssertNonNullTest.java
 
 or, less commonly (to rebuild the JDK):
 
@@ -164,6 +164,14 @@ Write @skip-test anywhere in a test file to disable that test.
 Write @non-308-skip-test anywhere in a test file to disable that test if
 the jsr308-langtools compiler is not used. (This is useful for tests that
 depend on annotations-in-comments that would fail with the stock compiler.)
+
+Write @below-java8-jdk-skip-test anywhere in a test file to disable that
+test if the executing JDK version is lower than 8.
+This is useful when the test depends on Java 8 language features that
+need runtime support (e.g. lambdas) or depends on Java 8 APIs
+(e.g. streams and reflective type annotation access).
+Tests that only exercise the static type annotation API do not need
+this marker, as the tests will be executed with a Java 8 compiler.
 
 To disable all tests for a given type system, temporarily move away a file;
 for example,

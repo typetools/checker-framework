@@ -25,12 +25,15 @@ command-line option to javac.
 
 \textbf{Summary of declaration annotations used by the Lock Checker.}\\
 
-\begin{tabular}{l|l|l}
-\textbf{Type annotation} & \textbf{Indicates} \\
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{tabular}{l|l}
+\textbf{Type annotation} & \\
 @GuardedBy(String lock) &
 Fields/variables only accessible after acquiring the given lock.
 \\
-\textbf{Declaration annotation} & \textbf{Indicates} \\
+\textbf{Declaration annotation} \\
 @Holding(String[] locks) &
 Locks that must be held before the method is called.
 \\
@@ -44,6 +47,9 @@ Locks guaranteed to be held when the method returns the given result.
 The method does not make any use of locks or synchronization.
 \\
 \end{tabular}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 \subsection{Type annotations for objects protected by locks\label{lock-annotations-objects}}
 
@@ -63,6 +69,7 @@ The Lock Checker supports several annotations that specify method behavior.
 These are declaration annotations, not type annotations: they apply to the
 method itself rather than to some particular type.
 
+\begin{sloppypar}
 \begin{description}
 \item[\refqualclass{checker/lock/qual}{EnsuresLockHeld}\small{(String[] expressions)}]
 \item[\refqualclass{checker/lock/qual}{EnsuresLockHeldIf}\small{(String[] expressions, boolean result)}]
@@ -93,6 +100,7 @@ method itself rather than to some particular type.
   detection, this annotation must be used in anticipation that
   the Lock Checker eventually could.
 \end{description}
+\end{sloppypar}
 
 
 \subsection{Discussion of \<@Holding>\label{lock-checker-holding}}
@@ -279,42 +287,42 @@ private @GuardedBy("lock") Object x; // Initialized in the constructor
 // This method does not use locks or synchronization but cannot
 // be annotated as @SideEffectFree since it alters myField.
 void myMethod() {
-    myField = new Object();
+  myField = new Object();
 }
 
 @SideEffectFree
 int mySideEffectFreeMethod() {
-    return 0;
+  return 0;
 }
 
 void myUnlockingMethod() {
-    lock.unlock();
+  lock.unlock();
 }
 
 void myUnannotatedEmptyMethod() {
 }
 
 void myOtherMethod() {
-    if (lock.tryLock()) {
-        x.toString(); // OK: the lock is held
-        myMethod();
-        x.toString(); // OK: the lock is still known to be held since myMethod is locking-free
-        mySideEffectFreeMethod();
-        x.toString(); // OK: the lock is still known to be held since mySideEffectFreeMethod
-                      // is side-effect-free
-        myUnlockingMethod();
-        x.toString(); // ILLEGAL: myLockingMethod is not locking-free
+  if (lock.tryLock()) {
+    x.toString(); // OK: the lock is held
+    myMethod();
+    x.toString(); // OK: the lock is still known to be held since myMethod is locking-free
+    mySideEffectFreeMethod();
+    x.toString(); // OK: the lock is still known to be held since mySideEffectFreeMethod
+                  // is side-effect-free
+    myUnlockingMethod();
+    x.toString(); // ILLEGAL: myLockingMethod is not locking-free
+  }
+  if (lock.tryLock()) {
+    x.toString(); // OK: the lock is held
+    myUnannotatedEmptyMethod();
+    x.toString(); // ILLEGAL: even though myUnannotatedEmptyMethod is empty, since it is
+                  // not annotated with @LockingFree, the Lock Checker no longer knows
+                  // the state of the lock.
+    if (lock.isHeldByCurrentThread()) {
+      x.toString(); // OK: the lock is known to be held
     }
-    if (lock.tryLock()) {
-        x.toString(); // OK: the lock is held
-        myUnannotatedEmptyMethod();
-        x.toString(); // ILLEGAL: even though myUnannotatedEmptyMethod is empty, since it is
-                      // not annotated with @LockingFree, the Lock Checker no longer knows
-                      // the state of the lock.
-        if (lock.isHeldByCurrentThread()) {
-            x.toString(); // OK: the lock is known to be held
-        }
-    }
+  }
 }
 \end{verbatim}
 
@@ -455,6 +463,6 @@ current state of locks at a given point in the code.
 
 \end{description}
 
-% LocalWords:  quals GuardedBy JCIP putfield getfield invokevirtual 5cm
+% LocalWords:  quals GuardedBy JCIP putfield getfield invokevirtual
 % LocalWords:  invokeinterface threadsafety Clang's GuardedByTop cleanroom
-%%  LocalWords:  api 5cm
+%%  LocalWords:  api

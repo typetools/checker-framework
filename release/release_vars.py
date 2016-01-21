@@ -18,8 +18,8 @@ import datetime
 import pwd
 
 #---------------------------------------------------------------------------------
-#The only methods that should go here are methods that help define global release
-#variables.  All other methods that aid in release should go in release_utils.py
+# The only methods that should go here are methods that help define global release
+# variables.  All other methods that aid in release should go in release_utils.py
 
 def getAndAppend(name, append):
     if os.environ.has_key(name):
@@ -35,15 +35,15 @@ def append_to_PATH(paths):
 
 #---------------------------------------------------------------------------------
 
-#Maximum allowable size of files when downloading, 2gi
+# Maximum allowable size of files when downloading, 2gi
 MAX_DOWNLOAD_SIZE=2000000000
 
-#The location the test site is built in
+# The location the test site is built in
 HTTP_PATH_TO_DEV_SITE  = "http://types.cs.washington.edu/dev"
 FILE_PATH_TO_DEV_SITE  = "/cse/www2/types/dev/"
 DEV_HTACCESS = os.path.join(FILE_PATH_TO_DEV_SITE, ".htaccess")
 
-#The location the test site is pushed to when it is ready
+# The location the test site is pushed to when it is ready
 HTTP_PATH_TO_LIVE_SITE  = "http://types.cs.washington.edu"
 FILE_PATH_TO_LIVE_SITE  = "/cse/www2/types"
 LIVE_HTACCESS = os.path.join(FILE_PATH_TO_LIVE_SITE, ".htaccess")
@@ -51,46 +51,58 @@ LIVE_HTACCESS = os.path.join(FILE_PATH_TO_LIVE_SITE, ".htaccess")
 PGP_PASSPHRASE_FILE = "/projects/swlab1/checker-framework/release-private.password"
 SONATYPE_OSS_URL = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 SONATYPE_STAGING_REPO_ID = "sonatype-nexus-staging"
-SONATYPE_CLOSING_DIRECTIONS_URL = "https://central.sonatype.org/pages/releasing-the-deployment.html"
-SONATYPE_RELEASE_DIRECTIONS_URL = "https://central.sonatype.org/pages/releasing-the-deployment.html"
+SONATYPE_CLOSING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
+SONATYPE_RELEASE_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
 SONATYPE_DROPPING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
 
-#Location this and other release scripts are contained in
-SCRIPTS_DIR = "/scratch/jsr308-release/scripts"
+# "USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566
+# Another alternative is: USER = os.getenv('USER')
+USER = pwd.getpwuid(os.geteuid())[0]
 
-#Location in which we will download files to run sanity checks
-SANITY_DIR = "/scratch/jsr308-release/sanity"
+# Per-user root directory for the files created by the release process
+USER_SCRATCH_DIR = "/scratch/" + USER
 
-#Every time a release is built the changes/tags are pushed here
-#When a release is deployed all INTERM repos get pushed to LIVE_REPOS
-INTERM_REPO_ROOT    = "/scratch/jsr308-release/interm"
+# Per-user directory for the temporary files created by the release process
+TMP_DIR = USER_SCRATCH_DIR + "/jsr308-release"
+
+# Location this and other release scripts are contained in
+SCRIPTS_DIR = TMP_DIR + "/checker-framework/release"
+
+# Location in which we will download files to run sanity checks
+SANITY_DIR = TMP_DIR + "/sanity"
+SANITY_TEST_CHECKER_FRAMEWORK_DIR = SANITY_DIR + "/test-checker-framework"
+SANITY_TEST_JSR308_LANGTOOLS_DIR = SANITY_DIR + "/test-jsr308-langtools"
+
+# The existence of this file indicates that release_build completed.
+# It is deleted at the beginning of a release_build run, and at the
+# end of a release_push run.
+RELEASE_BUILD_COMPLETED_FLAG_FILE = TMP_DIR + "/release-build-completed"
+
+# Every time a release is built the changes/tags are pushed here
+# When a release is deployed all INTERM repos get pushed to LIVE_REPOS
+INTERM_REPO_ROOT    = TMP_DIR + "/interm"
 INTERM_CHECKER_REPO = os.path.join(INTERM_REPO_ROOT, "checker-framework")
 INTERM_JSR308_REPO  = os.path.join(INTERM_REPO_ROOT, "jsr308-langtools")
 INTERM_ANNO_REPO    = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
 
-#The central repositories for Checker Framework related projects
+# The central repositories for Checker Framework related projects
 LIVE_CHECKER_REPO = "https://github.com/typetools/checker-framework"
 LIVE_JSR308_REPO  = "https://bitbucket.org/typetools/jsr308-langtools"
 LIVE_ANNO_REPO    = "https://github.com/typetools/annotation-tools"
 LIVE_PLUME_LIB    = "https://github.com/mernst/plume-lib"
 LIVE_PLUME_BIB    = "https://github.com/mernst/plume-bib"
 
-# "USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566
-# Another alternative is: USER = os.getenv('USER')
-USER = pwd.getpwuid(os.geteuid())[0]
-
 OPENJDK_RELEASE_SITE = 'http://jdk8.java.net/download.html'
 
 EMAIL_TO='jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroups.com'
 
-#Location of the project directories in which we will build the actual projects
-#When we build these projects are pushed to the INTERM repositories
-BUILD_DIR        = "/scratch/jsr308-release/build/"
+# Location of the project directories in which we will build the actual projects
+# When we build these projects are pushed to the INTERM repositories
+BUILD_DIR        = TMP_DIR + "/build/"
 CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, 'checker-framework')
 CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, 'release')
 CHECKER_BIN_DIR  = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
 RELEASE_HTACCESS = os.path.join(CHECKER_FRAMEWORK_RELEASE, "types.htaccess")
-RELEASE_DEV_HTACCESS = os.path.join(CHECKER_FRAMEWORK_RELEASE, "types.dev.htaccess")
 CHECKER_TAG_PREFIXES = [ "checker-framework-", "checkers-" , "new release " ]
 
 CHECKER_BINARY   = os.path.join(CHECKER_BIN_DIR, 'checker.jar' )
@@ -194,8 +206,8 @@ LIVE_CF_LOGO = os.path.join(CHECKER_LIVE_SITE, "CFLogo.png")
 CURRENT_DATE=datetime.date.today()
 
 os.environ['CHECKERFRAMEWORK'] = CHECKER_FRAMEWORK
-perl_libs = "/scratch/jsr308-release/perl_lib:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
-#Environment variables for tools needed during the build
+perl_libs = TMP_DIR + "/perl_lib:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
+# Environment variables for tools needed during the build
 os.environ['PLUME_LIB'] =  PLUME_LIB
 os.environ['BIBINPUTS']=  '.:' + PLUME_BIB
 os.environ['TEXINPUTS'] =  '.:/scratch/secs-jenkins/tools/hevea-1.10/lib/hevea:/usr/share/texmf/tex/latex/hevea/:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:..:'
@@ -209,27 +221,18 @@ EDITOR = os.getenv('EDITOR')
 if EDITOR == None:
     EDITOR = 'emacs'
 
-HGUSER = os.getenv('HGUSER')
-if HGUSER == None:
-    raise Exception('HGUSER environment variable is not set')
-
-#This is to catch anyone who blindly copied our directions on setting
-#the HGUSER variable in the README-maintainers.html directions
-if HGUSER == "yourHgUserName":
-    raise Exception('You must replace "yourHgUser" with your own actual HGUSER')
-
 PATH = os.environ['JAVA_HOME'] + "/bin:/scratch/secs-jenkins/tools/hevea-1.10/bin/:" + os.environ['PATH']
 PATH = PATH + ":/usr/bin:/projects/uns/F11/bin/:/projects/uns/F11/bin/"
 PATH = PATH + ":" + PLUME_LIB + "/bin:/homes/gws/mernst/bin/share"
 PATH = PATH + ":/homes/gws/mernst/bin/Linux-x86_64/:/uns/bin:."
 os.environ['PATH'] = PATH
 
-#Tools that must be on your PATH ( besides common *nix ones like grep )
+# Tools that must be on your PATH ( besides common *nix ones like grep )
 TOOLS = [ 'hevea', 'perl', 'java', 'dia', 'latex', 'mvn', 'hg', 'git', 'validate', EDITOR ]
-#Note: validate is a program provided by wdg-html-validator, it is located in
-#/homes/gws/mernst/bin/Linux-x86_64 at the time of this writing
+# Note: validate is a program provided by wdg-html-validator, it is located in
+# /homes/gws/mernst/bin/Linux-x86_64 at the time of this writing
 
-#Script option constants
+# Script option constants
 LT_OPT   = "langtools"
 AFU_OPT  = "annotation-file-utilities"
 CF_OPT   = "checker-framework"

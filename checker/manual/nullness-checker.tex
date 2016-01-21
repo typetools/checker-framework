@@ -164,6 +164,7 @@ The nullness hierarchy contains these qualifiers:
   assigned, its type is treated as
   \refqualclass{checker/nullness/qual}{NonNull}.
 
+  \begin{sloppypar}
   Because the Nullness Checker works intraprocedurally (it analyzes one
   method at a time), when a \code{MonotonicNonNull} field is first read within a
   method, the field cannot be assumed to be non-null.  The benefit of
@@ -173,6 +174,7 @@ The nullness hierarchy contains these qualifiers:
   field, all subsequent accesses \emph{within that method} can be assumed
   to be NonNull, even after arbitrary external method calls that have
   access to the given field.
+  \end{sloppypar}
 
   It is permitted to initialize a MonotonicNonNull field to null, but the
   field may not be assigned to null anywhere else in the program.  If you
@@ -530,9 +532,11 @@ or its annotations, to eliminate the warning.  Alternately, you can
 suppress the warning, which does not change the code but prevents the
 Nullness Checker from reporting this particular warning to you.
 
+\begin{sloppypar}
 The Checker Framework supplies several ways to suppress warnings, most
 notably the \<@SuppressWarnings("nullness")> annotation (see
 Section~\ref{suppressing-warnings}).  An example use is
+\end{sloppypar}
 
 %BEGIN LATEX
 \begin{smaller}
@@ -612,6 +616,7 @@ code:
   defensive programming.  See Section~\ref{defensive-programming} for an
   explanation of the distinction.
 
+\begin{sloppypar}
 The Nullness Checker introduces a new method, rather than re-using an
 existing method such as \<org.junit.Assert.assertNotNull(Object)> or
 \<com.google.common.base.Preconditions.checkNotNull(Object)>.  Those
@@ -623,6 +628,7 @@ the distinction between warning suppression and defensive programming.
 % Also, different checking tools issue different false warnings that
 % need to be suppressed, so warning suppression needs to be customized for
 % each tool.
+\end{sloppypar}
 
 
 \section{Examples\label{nullness-example}}
@@ -633,9 +639,15 @@ To try the Nullness Checker on a source file that uses the \refqualclass{checker
 use the following command (where \code{javac} is the Checker Framework compiler that
 is distributed with the Checker Framework):
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.nullness.NullnessChecker examples/NullnessExample.java
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 \noindent
 Compilation will complete without warnings.
@@ -643,9 +655,16 @@ Compilation will complete without warnings.
 To see the checker warn about incorrect usage of annotations (and therefore the
 possibility of a null pointer exception at run time), use the following command:
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.nullness.NullnessChecker examples/NullnessExampleWithWarnings.java
 \end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
 
 \noindent
 The compiler will issue two warnings regarding violation of the semantics of
@@ -829,6 +848,7 @@ Nullness Checker, as described in Figure~\ref{fig-nullness-refactoring}.
  ~javax.validation.constraints.NotNull~ \\ \hline
  ~lombok.NonNull~ \\ \hline
  ~org.eclipse.jdt.annotation.NonNull~ \\ \hline
+ ~org.eclipse.jgit.annotations.NonNull~ \\ \hline
  ~org.jetbrains.annotations.NotNull~ \\ \hline
  ~org.jmlspecs.annotation.NonNull~ \\ \hline
  ~org.netbeans.api.annotations.common.NonNull~ \\ \hline
@@ -850,6 +870,7 @@ $\Rightarrow$
  ~javax.annotation.Nullable~ \\ \hline
  ~javax.annotation.CheckForNull~ \\ \hline
  ~org.eclipse.jdt.annotation.Nullable~ \\ \hline
+ ~org.eclipse.jgit.annotations.Nullable~ \\ \hline
  ~org.jetbrains.annotations.Nullable~ \\ \hline
  ~org.jmlspecs.annotation.Nullable~ \\ \hline
  ~org.netbeans.api.annotations.common.NullAllowed~ \\ \hline
@@ -917,7 +938,7 @@ import at most one of the annotations with
 conflicting names; the other(s) must be written out fully rather than
 imported.
 
-Note that some older tools interpret array and vararg declarations
+Note that some older tools interpret array and varargs declarations
 inconsistently with the Java specification.  For example, they might
 interpret \<@NonNull Object []> as ``non-null array of objects'', rather
 than as ``array of non-null objects'' which is the correct Java
@@ -1235,6 +1256,7 @@ treated as being \refqualclass{checker/nullness/qual}{Nullable}, but when
 written, they are treated as being
 \refqualclass{checker/nullness/qual}{NonNull}.
 
+\begin{sloppypar}
 The initialization hierarchy is orthogonal to the nullness hierarchy.  It
 is legal for a reference to be \<@NonNull @UnderInitialization>, \<@Nullable @UnderInitialization>,
 \<@NonNull @Initialized>, or \<@Nullable @Initialized>.  The nullness hierarchy tells
@@ -1245,6 +1267,7 @@ type annotation?
 % It's a figure rather than appearing inline so as not to span page breaks
 % in the printed manual.
 Figure~\ref{fig-initialization-examples} contains some examples.
+\end{sloppypar}
 
 \begin{figure}
 \begin{tabular}{l|l|l}
@@ -1418,6 +1441,122 @@ the type of the object being constructed is:
 \item
   \<@UnderInitialization(B.class) B>
 \end{enumerate}
+
+
+\subsection{Initialization of circular data structures\label{circular-initialization}}
+
+There is one final aspect of the initialization type system to be considered:
+the rules governing reading and writing to objects that are currently under
+initialization (both reading from fields of objects under initialization, as well as
+writing objects under initialization to fields).
+By default, only fully-initialized objects can be stored in a
+field of another object.  If this was the only option, then it would not be
+possible to create circular data structures (such as a doubly-linked list) where
+fields have a \refqualclass{checker/nullness/qual}{NonNull} type.
+However, the annotation
+\refqualclass{checker/initialization/qual}{NotOnlyInitialized} can be used to
+indicate that a field can store objects that are currently under initialization.
+In this case, the rules for reading and writing to that field become a little
+bit more interesting, to soundly support circular structures.
+
+The rules for reading from a
+\refqualclass{checker/initialization/qual}{NotOnlyInitialized} field
+are summarized in Figure~\ref{fig-init-read-field}.  Essentially, nothing is
+known about the initialization status of the value returned unless the receiver
+was \refqualclass{checker/initialization/qual}{Initialized}.
+
+\begin{figure}
+\centering
+\begin{tabular}{l|l|l}
+  \<x.f>&\<f> is \<@NonNull>& \<f> is \<@Nullable>\\ \hline
+  \<x> is \<@Initialized> & \<@Initialized @NonNull> & \<@Initialized @Nullable> \\
+  \<x> is \<@UnderInitialization> & \<@UnknownInitialization @Nullable> & \<@UnknownInitialization @Nullable> \\
+  \<x> is \<@UnknownInitialization> & \<@UnknownInitialization @Nullable> & \<@UnknownInitialization @Nullable> \\
+\end{tabular}
+\caption{Initialization rules for reading a \refqualclass{checker/initialization/qual}{NotOnlyInitialized} field \<f>.}
+\label{fig-init-read-field}
+\end{figure}
+
+Similarly, Figure~\ref{fig-init-write-field} shows under which conditions
+an assignment \<x.f = y> is allowed for a
+\refqualclass{checker/initialization/qual}{NotOnlyInitialized} field \<f>.
+If the receiver \<x> is
+\refqualclass{checker/initialization/qual}{UnderInitialization}, then any
+\<y> can be of any initialization state.  If \<y> is known to be
+fully initialized, then any receiver is allowed.  All other assignments
+are disallowed.
+
+\begin{figure}
+\centering
+\begin{tabular}{l|ccc}
+  \<x.f = y>&\<y> is \<@Initialized>& \<y> is \<@UnderInitialization>& \<y> is \<@UnknownInitialization>\\ \hline
+  \<x> is \<@Initialized> & yes & no & no \\
+  \<x> is \<@UnderInitialization> & yes & yes & yes \\
+  \<x> is \<@UnknownInitialization> & yes & no & no \\
+\end{tabular}
+\caption{Rules for deciding when an assignment \<x.f = y> is allowed for a
+\refqualclass{checker/initialization/qual}{NotOnlyInitialized} field \<f>.}
+\label{fig-init-write-field}
+\end{figure}
+
+These rules allow for the safe initialization of circular structures.  For instance,
+consider a doubly linked list:
+
+\begin{Verbatim}
+  class List<T> {
+    @NotOnlyInitialized
+    Node<T> sentinel;
+
+    public List() {
+      this.sentinel = new Node<T>(this);
+    }
+
+    void insert(@Nullable T data) {
+      this.sentinel.insertAfter(data);
+    }
+    
+    public static void main() {
+      List<Integer> l = new List<Integer>();
+      l.insert(1);
+      l.insert(2);
+    }
+  }
+
+  class Node<T> {
+    @NotOnlyInitialized
+    Node<T> prev;
+
+    @NotOnlyInitialized
+    Node<T> next;
+
+    @NotOnlyInitialized
+    List parent;
+
+    @Nullable
+    T data;
+
+    // for sentinel construction
+    Node(@UnderInitialization List parent) {
+      this.parent = parent;
+      this.prev = this;
+      this.next = this;
+    }
+
+    // for data node construction
+    Node(Node<T> prev, Node<T> next, @Nullable T data) {
+      this.parent = prev.parent;
+      this.prev = prev;
+      this.next = next;
+      this.data = data;
+    }
+
+    void insertAfter(@Nullable T data) {
+      Node<T> n = new Node<T>(this, this.next, data);
+      this.next.prev = n;
+      this.next = n;
+    }
+  }
+\end{Verbatim}
 
 % \paragraph{Example}
 %
@@ -1675,6 +1814,7 @@ uses the two annotations
 The rawness type system is slightly easier to use but slightly less
 expressive.
 
+\begin{sloppypar}
 To run the Nullness Checker with the rawness variant of the Initialization
 Checker, invoke the NullnessRawnessChecker rather than the NullnessChecker;
 that is, supply the \code{-processor org.checkerframework.checker.nullness.NullnessRawnessChecker}
@@ -1683,6 +1823,7 @@ Although \code{@Raw} roughly corresponds to \code{@UnknownInitialization}
 and \code{@NonRaw} roughly corresponds to \code{@Initialized}, the
 annotations are not aliased and you must use the ones that correspond to
 the type-checker that you are running.
+\end{sloppypar}
 
 
 %% TODO: cut much of this, which is redundant with the text above.
@@ -2048,6 +2189,9 @@ as C2 is.  For example, \<nraA>'s type is a supertype of those of \<rB>,
 types, but are not expressible.  The other empty cells are not interesting
 types.)
 
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
 \noindent
 \begin{tabular}{|c|c|c|}
 
@@ -2097,6 +2241,9 @@ types.)
 \\
 \hline
 \end{tabular}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
 
 
 
@@ -2158,16 +2305,17 @@ annotation has nothing to do with the raw types of Java Generics.
 % LocalWords:  Nullability typeargs nulltest EnsuresNonNullIf listFiles faq
 % LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings rB
 % LocalWords:  FindBugs's getObject RequiresNonNull EnsuresNonNull KeyFor
-% LocalWords:  nonnull EnsuresNonNull ReadOnly arg 5cm orElse isPresent
+% LocalWords:  nonnull EnsuresNonNull ReadOnly arg orElse isPresent
 % LocalWords:  keySet getField keyfor param TypeName containsValue indexOf nraA
 % LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
-% LocalWords:  typeofthis nraB nrbB rO nroO nroB 5cm IGJ containsKey enum
-% LocalWords:  JUnit's 5in field1 field2 superclasses Foo C1 C2 2in 75in PolyRaw
-%  LocalWords:  NullnessChecker redundantNullComparison 5cm instanceof 5in
-%  LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
-%  LocalWords:  UnderInitialization getComponentType 2in AsuppressWarnings
-%  LocalWords:  isEmpty AssumeAssertion cleanroom vararg OtherClass 75in
-%  LocalWords:  NullnessRawnessChecker mymap mykey KeyType ValueType 5cm
-%  LocalWords:  dereferenced dereference Dereferencing initializers 5in
-%  LocalWords:  initHelper helperMethod NoSuchElementException 4cm 5in 2in
-%  LocalWords:  75in forbidnonnullarraycomponents
+% LocalWords:  typeofthis nraB nrbB rO nroO nroB IGJ containsKey enum
+% LocalWords:  JUnit's field1 field2 superclasses Foo C1 C2 PolyRaw
+% LocalWords:  NullnessChecker redundantNullComparison instanceof
+% LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
+% LocalWords:  UnderInitialization getComponentType AsuppressWarnings
+% LocalWords:  isEmpty AssumeAssertion cleanroom varargs OtherClass
+% LocalWords:  NullnessRawnessChecker mymap mykey KeyType ValueType
+% LocalWords:  dereferenced dereference Dereferencing initializers
+% LocalWords:  initHelper helperMethod NoSuchElementException
+% LocalWords:  forbidnonnullarraycomponents lombok
+% LocalWords:  NotOnlyInitialized

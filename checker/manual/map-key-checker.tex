@@ -71,7 +71,7 @@ slightly refactor your code.  For example, this would be illegal:
 \begin{verbatim}
 Map<String,Object> m;
 Collection<@KeyFor("m") String> coll;
-coll.add(x);   // error:  coll's element type is @KeyFor("m") String, but x does not have that type
+coll.add(x);   // error: element type is @KeyFor("m") String, but x does not have that type
 m.put(x, ...);
 \end{verbatim}
 
@@ -173,4 +173,4 @@ class MyClass {
 
 
 %%  LocalWords:  KeyFor containsKey java keyfor UnknownKeyFor KeyForBottom
-%%  LocalWords:  2cm mapSet keySet km threeLetterWordSubset JT
+%%  LocalWords:  mapSet keySet km threeLetterWordSubset JT

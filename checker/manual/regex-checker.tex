@@ -189,11 +189,15 @@ Pattern p = Pattern.compile(regex);
 The Regex Checker supports qualifier parameters.
 See Section~\ref{qualifier-parameters} for more details on qualifier parameters.
 
-The qualifier parameter system currently (as of February 2015) incurs a 50\%
+\begin{sloppypar}
+The qualifier parameter system currently
+% (as of December 2015)
+incurs a 50\%
 performance penalty. If this is unacceptable you can run the original Regex
-Checker by passing \code{-processor org.checkerframework.checker.regex.classic.RegexClassicChecker}
-as a command-line option to javac.
-
+Checker by passing the
+\code{-processor org.checkerframework.checker.regex.classic.RegexClassicChecker}
+command-line option to javac.
+\end{sloppypar}
 
 
 \subsection{Suppressing warnings\label{regex-suppressing-warnings}}
@@ -223,5 +227,5 @@ so the \<asRegex> method should be used rarely.
 
 
 % LocalWords:  Regex regex quals PolyRegex isRegex RegexUtil regexError asRegex
-% LocalWords:  regexException PatternSyntaxException 9cm Matcher java 9cm
-%  LocalWords:  CheckedPatternSyntaxException colo colou 9cm
+% LocalWords:  regexException PatternSyntaxException Matcher java
+%  LocalWords:  CheckedPatternSyntaxException colo colou

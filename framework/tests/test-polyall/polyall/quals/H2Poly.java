@@ -7,9 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.PolymorphicQualifier;
-import org.checkerframework.framework.qual.TypeQualifier;
 
-@TypeQualifier
 @PolymorphicQualifier(H2Top.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

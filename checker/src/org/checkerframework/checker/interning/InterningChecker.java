@@ -1,11 +1,7 @@
 package org.checkerframework.checker.interning;
 
 import org.checkerframework.checker.interning.qual.Interned;
-import org.checkerframework.checker.interning.qual.PolyInterned;
-import org.checkerframework.checker.interning.qual.UnknownInterned;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.PolyAll;
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.SupportedLintOptions;
 
 import javax.annotation.processing.SupportedOptions;
@@ -25,8 +21,6 @@ import javax.annotation.processing.SupportedOptions;
  *
  * @checker_framework.manual #interning-checker Interning Checker
  */
-@TypeQualifiers({ Interned.class, UnknownInterned.class,
-    PolyInterned.class, PolyAll.class })
 @SupportedLintOptions({"dotequals"})
 @SupportedOptions({"checkclass"})
 public final class InterningChecker extends BaseTypeChecker {

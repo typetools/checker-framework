@@ -14,32 +14,37 @@ import static org.checkerframework.framework.test.TestConfigurationBuilder.build
 /**
  * To use this class you must do two things:
  * <ol>
- * <li> Create exactly 1 constructor in the subclass with exactly 1 argument which is a java.io.File.  This File
- * will be the Java file that is compiled and whose output is verified.</li>
+ * <li> Create exactly 1 constructor in the subclass with exactly 1 argument
+ *      of type java.io.File.  This File will be the Java file that is
+ *      compiled and whose output is verified.</li>
  * <li>
- *   Create one of the following 2 public static methods with the annotation org.junit.runners.Parameterized.Parameters.
- * The method name and signature must match exactly.
+ *   Create one of the following 2 public static methods with the annotation
+ *   org.junit.runners.Parameterized.Parameters.
+ *   The method name and signature must match exactly.
  *
  * <ul>
  * <li>
  * {@code @Parameters public static String [] getTestDirs()}
  * <p>
- * getTestDir must return an array of directories that exist in the test folder, e.g.
+ * getTestDir must return an array of directories that exist in the test
+ * folder, e.g.
  * <pre>  @Parameters
  *   public static String [] getTestDirs() {
  *      return new String[]{"all-systems", "flow"};
  *   }</pre>
- * The directories can contain more path information (e.g.  "myTestDir/moreTests") but note,
- * the testsuite will find all of the java test files that exists below the listed directories.
- * It is unnecessary to list child directories of a directory you have already listed.
- * </li>
+ * The directories can contain more path information (e.g.,
+ * "myTestDir/moreTests") but note, the test suite will find all of the Java
+ * test files that exists below the listed directories.  It is unnecessary
+ * to list child directories of a directory you have already listed.  </li>
  *
  * <li>
  * {@code @Parameters public static List<File> getTestFiles() }
  * <p>
- * The method returns a List of Java files. There are methods in TestUtilities like findNestedJavaTestFiles to help
- * you construct this List. The TestSuite will then instantiate the subclass once for each file returned by
- * getTestFiles and execute the run method.
+
+ * The method returns a List of Java files. There are methods like
+ * {@link TestUtilities#findNestedJavaTestFiles} to help you construct this
+ * List. The TestSuite will then instantiate the subclass once for each
+ * file returned by getTestFiles and execute the run method.
  * An example of this method is:
  *
  * <pre>  @Parameters
@@ -91,8 +96,15 @@ public abstract class CheckerFrameworkTest {
     }
 
     /**
-     * Override this method if you would like to customize Checker Options per Java file
-     * passed to the test.
+     * Override this method if you would like to supply a checker
+     * command-line option that depends on the Java file passed to the test.
+     * That file name is available in field {@link #testFile}.
+     * <p>
+     *
+     * If you want to specify the same command-line option for all tests of
+     * a particular checker, then pass it to the {@link #CheckerFrameworkTest}
+     * constructor.
+     * 
      * @param previousOptions The options specified in the constructor of the test
      *                        previousOptions is unmodifiable
      * @return A new list of options or the original passed through

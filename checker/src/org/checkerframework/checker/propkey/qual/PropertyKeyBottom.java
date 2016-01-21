@@ -2,16 +2,16 @@ package org.checkerframework.checker.propkey.qual;
 
 import java.lang.annotation.*;
 
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * The bottom qualifier for the PropertyKeyChecker and associated checkers.
  *
  * @checker_framework.manual #propkey-checker Property File Checker
  */
-@TypeQualifier
 @SubtypeOf(PropertyKey.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -20,4 +20,5 @@ import org.checkerframework.framework.qual.TypeQualifier;
 //by overloading the AnnotatedTypeFactory.createTreeAnnotator method (see CompilerMessagesAnnotatedTypeFactory),
 //one exception to this is the I18nChecker
 @ImplicitFor(typeNames = {java.lang.Void.class})
+@DefaultFor(DefaultLocation.LOWER_BOUNDS)
 public @interface PropertyKeyBottom {}

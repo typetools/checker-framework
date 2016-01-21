@@ -202,13 +202,13 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      *
      *
      * @see org.checkerframework.common.basetype.BaseTypeVisitor#visitClass(com.sun.source.tree.ClassTree, java.lang.Object)
-     *
-     * TODO: CODE REVIEW: Should this METHOD INSTEAD USE EITHER THE Javac TYPES or SOME OTHER UTILITY TO GET
-     * TODO: ALL DIRECT SUPERTYPES AND VERIFY THAT EACH DOES NOT OVERRIDE .equals and THAT AT LEAST ONE OF THEM
-     * TODO: DECLARES @UsesObjectEquals
      */
     @Override
     public Void visitClass(ClassTree node, Void p) {
+        // TODO: Should this method use the Javac types or some other utility to get
+        // all direct supertypes instead, and should it verify that each does not
+        // override .equals and that at least one of them is annotated with @UsesObjectEquals?
+
         // Looking for an @UsesObjectEquals class declaration
 
         TypeElement elt = TreeUtils.elementFromDeclaration(node);
