@@ -2,7 +2,6 @@ package org.checkerframework.framework.flow;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.dataflow.cfg.CFGDOTVisualizer;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -12,12 +11,8 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -87,7 +82,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
         typeHierarchy = factory.getTypeHierarchy();
         this.atypeFactory = factory;
         this.checker = checker;
-        transferFunction = createTransferFunction();
+        this.transferFunction = createTransferFunction();
         this.fieldValues = fieldValues;
     }
 
@@ -141,19 +136,10 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
     }
 
     /**
-     * Print a DOT graph of the CFG and analysis info for inspection.
+     * Perform a visualization of the CFG and analysis info for inspection.
      */
-    public void outputToDotFile(String outputFile, boolean verbose) {
-        String s = CFGDOTVisualizer.visualize(cfg, cfg.getEntryBlock(), this, verbose);
-
-        try {
-            FileWriter fstream = new FileWriter(outputFile);
-            BufferedWriter out = new BufferedWriter(fstream);
-            out.write(s);
-            out.close();
-        } catch (IOException e) {
-            ErrorReporter.errorAbort("Error creating dot file: " + outputFile + "; ensure the path is valid", e);
-        }
+    public void visualizeCFG() {
+        atypeFactory.getCFGVisualizer().visualize(cfg, cfg.getEntryBlock(), this);
     }
 
     /**

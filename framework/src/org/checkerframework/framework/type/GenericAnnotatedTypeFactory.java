@@ -9,7 +9,9 @@ import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.CFGBuilder;
+import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.checkerframework.dataflow.cfg.DOTCFGVisualizer;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
@@ -148,6 +150,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
         this.initializationStore = null;
         this.initializationStaticStore = null;
+
+        this.cfgVisualizer = createCFGVisualizer();
 
         // Add common aliases.
         // addAliasedDeclAnnotation(checkers.nullness.quals.Pure.class,
@@ -798,20 +802,9 @@ public abstract class GenericAnnotatedTypeFactory<
             }
         }
 
-        if (checker.hasOption("flowdotdir")) {
-
-            String checkerName = checker.getClass().getSimpleName();
-            if (checkerName.endsWith("Checker") || checkerName.endsWith("checker")) {
-                checkerName = checkerName.substring(0, checkerName.length() - "checker".length());
-            }
-
-            String dotfilename = checker.getOption("flowdotdir") + "/"
-                    + dotOutputFileName(ast) + "_" + checkerName + ".dot";
-            // make path safe for Windows
-            dotfilename = dotfilename.replace("<", "_").replace(">", "");
-            System.err.println("Output to DOT file: " + dotfilename);
-            boolean verbose = checker.hasOption("verbosecfg");
-            analyses.getFirst().outputToDotFile(dotfilename, verbose);
+        if (checker.hasOption("flowdotdir") ||
+                checker.hasOption("cfgviz")) {
+            handleCFGViz();
         }
 
         analyses.removeFirst();
@@ -823,15 +816,13 @@ public abstract class GenericAnnotatedTypeFactory<
         }
     }
 
-    /** @return The file name used for DOT output. */
-    protected String dotOutputFileName(UnderlyingAST ast) {
-        if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
-            return "initializer-" + ast.hashCode();
-        } else if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
-            return ((CFGMethod) ast).getMethod().getName().toString();
-        }
-        assert false;
-        return null;
+    /**
+     * Handle the visualization of the CFG, by calling {@code visualizeCFG}
+     * on the first analysis. This method gets invoked in {@code analyze} if
+     * on of the visualization options is provided.
+     */
+    protected void handleCFGViz() {
+        analyses.getFirst().visualizeCFG();
     }
 
 
@@ -992,5 +983,80 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker> T getTypeFactoryOfSubchecker(Class<U> checkerClass) {
         return checker.getTypeFactoryOfSubchecker(checkerClass);
+    }
+
+    /**
+     * The CFGVisualizer to be used by all CFAbstractAnalysis instances.
+     */
+    protected final CFGVisualizer cfgVisualizer;
+
+    protected CFGVisualizer createCFGVisualizer() {
+        if (checker.hasOption("flowdotdir")) {
+            String flowdotdir = checker.getOption("flowdotdir");
+            boolean verbose = checker.hasOption("verbosecfg");
+
+            Map<String, Object> args = new HashMap<>(2);
+            args.put("outdir", flowdotdir);
+            args.put("verbose", verbose);
+            args.put("checkerName", getCheckerName());
+
+            CFGVisualizer res = new DOTCFGVisualizer();
+            res.init(args);
+            return res;
+        } else if (checker.hasOption("cfgviz")) {
+            String cfgviz = checker.getOption("cfgviz");
+            String[] opts = cfgviz.split(",");
+
+            Map<String, Object> args = processCFGVisualizerOption(opts);
+            if (!args.containsKey("verbose")) {
+                boolean verbose = checker.hasOption("verbosecfg");
+                args.put("verbose", verbose);
+            }
+            args.put("checkerName", getCheckerName());
+
+            CFGVisualizer res = BaseTypeChecker.invokeConstructorFor(opts[0], null, null);
+            res.init(args);
+            return res;
+        }
+        // Nobody expected to use cfgVisualizer if neither option given.
+        return null;
+    }
+
+    /* A simple utility method to determine a short checker name to be
+     * used by CFG visualizations.
+     */
+    private String getCheckerName() {
+        String checkerName = checker.getClass().getSimpleName();
+        if (checkerName.endsWith("Checker") || checkerName.endsWith("checker")) {
+            checkerName = checkerName.substring(0, checkerName.length() - "checker".length());
+        }
+        return checkerName;
+    }
+
+    /* Parse values or key-value pairs into a map from value to true, respectively,
+     * from the value to the key.
+     */
+    private Map<String, Object> processCFGVisualizerOption(String[] opts) {
+        Map<String, Object> res = new HashMap<>(opts.length - 1);
+        // Index 0 is the visualizer class name and can be ignored.
+        for (int i = 1; i < opts.length; ++i) {
+            String opt = opts[i];
+            String[] split = opt.split("=");
+            switch (split.length) {
+            case 1:
+                res.put(split[0], true);
+                break;
+            case 2:
+                res.put(split[0], split[1]);
+                break;
+            default:
+                ErrorReporter.errorAbort("Too many `=` in cfgviz option: " + opt);
+            }
+        }
+        return res;
+    }
+
+    public CFGVisualizer getCFGVisualizer() {
+        return cfgVisualizer;
     }
 }
