@@ -1,4 +1,4 @@
-import org.checkerframework.checker.unsignedness.qual.&;
+import org.checkerframework.checker.unsignedness.qual.*;
 
 public class LowerUpperBound {
 

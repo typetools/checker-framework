@@ -11,7 +11,7 @@ public class Operations {
         //Division (/) is legal for all combinations without @Unsigned
         int divSS = signed / signed;
         int divSC = signed / constant;
-        int divSU = signed / unknown
+        int divSU = signed / unknown;
 
         int divCS = constant / signed;
         int divCC = constant / constant;
@@ -24,7 +24,7 @@ public class Operations {
         //Remainder (%) is legal for all combinations without @Unsigned
         int modSS = signed % signed;
         int modSC = signed % constant;
-        int modSU = signed % unknown
+        int modSU = signed % unknown;
 
         int modCS = constant % signed;
         int modCC = constant % constant;

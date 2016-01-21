@@ -1,6 +1,6 @@
 import org.checkerframework.checker.unsignedness.qual.*;
 
-public class CompundAssignments {
+public class CompoundAssignments {
 
     void good() {
         @Unsigned int unsigned = 1;
@@ -14,7 +14,7 @@ public class CompundAssignments {
         @Signed int divSC = 1;
         divSC /= constant;
         @Signed int divSU = 1;
-        divSU /= unknown
+        divSU /= unknown;
 
         @Constant int divCS = 1;
         divCS /= signed;
@@ -36,7 +36,7 @@ public class CompundAssignments {
         @Signed int modSC = 1;
         modSC %= constant;
         @Signed int modSU = 1;
-        modSU %= unknown
+        modSU %= unknown;
 
         @Constant int modCS = 1;
         modCS %= signed;
@@ -185,7 +185,7 @@ public class CompundAssignments {
         andUnUn &= unsigned;
         @Unsigned int andUnC = 1;
         andUnC &= constant;
-        @Unsigned int adnUnU = 1;
+        @Unsigned int andUnU = 1;
         andUnU &= unknown;
 
         @Signed int andSS = 1;
@@ -335,56 +335,56 @@ public class CompundAssignments {
         modUUn %= unsigned;
 
         //Signed right shift (>>) is illegal with left @Unsigned operand
-        @Unsigned sshiftUn = 1;
+        @Unsigned int sshiftUn = 1;
         //:: error: (compoundassignment.shift.type.incompatible)
         sshiftUn >>= 1;
 
         //Unsigned right shift (>>>) is illegal with left @Signed operand
-        @Signed ushiftS = 1;
+        @Signed int ushiftS = 1;
         //:: error: (compoundassignment.shift.type.incompatible)
         ushiftS >>>= 1;
 
         //All other operators with one @Unsigned and one @Signed are illegal
 
-        @Unsigned mulUnS = 1;
+        @Unsigned int mulUnS = 1;
         //:: error: (compoundassignment.type.incompatible.unsignedlhs)
         mulUnS *= signed;
-        @Signed mulSUn = 1;
+        @Signed int mulSUn = 1;
         //:: error: (compoundassignment.type.incompatible.unsignedrhs)
         mulSUn *= unsigned;
 
-        @Unsigned addUnS = 1;
+        @Unsigned int addUnS = 1;
         //:: error: (compoundassignment.type.incompatible.unsignedlhs)
         addUnS += signed;
-        @Signed addSUn = 1;
+        @Signed int addSUn = 1;
         //:: error: (compoundassignment.type.incompatible.unsignedrhs)
         addSUn += unsigned;
 
-        @Unsigned subUnS = 1;
+        @Unsigned int subUnS = 1;
         //:: error: (compoundassignment.type.incompatible.unsignedlhs)
         subUnS -= signed;
-        @Signed subSUn = 1;
+        @Signed int subSUn = 1;
         //:: error: (compoundassignment.type.incompatible.unsignedrhs)
         subSUn -= unsigned;
 
-        @Unsigned andUnS = 1;
+        @Unsigned int andUnS = 1;
         //:: error: (compoundassignment.type.incompatible.unsignedlhs)
         andUnS &= signed;
-        @Signed andSUn = 1;
+        @Signed int andSUn = 1;
         //:: error: (compoundassignment.type.incompatible.unsignedrhs)
         andSUn &= unsigned;
 
-        @Unsigned xorUnS = 1;
+        @Unsigned int xorUnS = 1;
         //:: error: (compoundassignment.type.incompatible.unsignedlhs)
         xorUnS ^= signed;
-        @Signed xorSUn = 1;
+        @Signed int xorSUn = 1;
         //:: error: (compoundassignment.type.incompatible.unsignedrhs)
         xorSUn ^= unsigned;
 
-        @Unsigned orUnS = 1;
+        @Unsigned int orUnS = 1;
         //:: error: (compoundassignment.type.incompatible.unsignedlhs)
         orUnS |= signed;
-        @Signed orSUn = 1;
+        @Signed int orSUn = 1;
         //:: error: (compoundassignment.type.incompatible.unsignedrhs)
         orSUn |= unsigned;
     }
