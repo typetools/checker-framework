@@ -59,7 +59,6 @@ import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -760,41 +759,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @see #createSupportedTypeQualifiers()
      *
-     * @return an immutable HashSet of the supported type qualifiers, or an
+     * @return an immutable set of the supported type qualifiers, or an
      *         empty set if no qualifiers are supported
      */
     public final Set<Class<? extends Annotation>> getSupportedTypeQualifiers() {
         return supportedQuals;
-    }
-
-    /**
-     * Defines alphabetical sort ordering for qualifiers
-     */
-    private static final Comparator<Class<? extends Annotation>> QUALIFIER_SORT_ORDERING
-    = new Comparator<Class<? extends Annotation>>() {
-        @Override
-        public int compare(Class<? extends Annotation> a1, Class<? extends Annotation> a2) {
-            return a1.getCanonicalName().compareTo(a2.getCanonicalName());
-        }
-    };
-
-    /**
-     * Returns an alphabetically sorted immutable list of the type qualifiers
-     * supported by this checker. This method is useful for debug printing
-     * purposes, but otherwise returns the same qualifiers as
-     * {@link #getSupportedTypeQualifiers()}.
-     *
-     * @see #getSupportedTypeQualifiers()
-     *
-     * @return an immutable sorted list of the supported type qualifiers, or an
-     *         immutable empty list if no qualifiers are supported
-     */
-    public final List<Class<? extends Annotation>> getSortedSupportedTypeQualifiers() {
-        // insert into an array list then sort it alphabetically
-        List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<Class<? extends Annotation>>();
-        sortedSupportedQuals.addAll(getSupportedTypeQualifiers());
-        Collections.sort(sortedSupportedQuals, QUALIFIER_SORT_ORDERING);
-        return Collections.unmodifiableList(sortedSupportedQuals);
     }
 
     // **********************************************************************
