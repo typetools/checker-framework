@@ -7,7 +7,7 @@ public class Comparisons {
         @Constant int constant = 1;
         @UnknownSignedness int unknown = 1;
 
-        //Less than (<) comparison is legal when @Unsigned is not involved
+        // Less than (<) comparison is legal when @Unsigned is not involved
         boolean ltSS = signed < signed;
         boolean ltSC = signed < constant;
         boolean ltSU = signed < unknown;
@@ -18,7 +18,7 @@ public class Comparisons {
         boolean ltUC = unknown < constant;
         boolean ltUU = unknown < unknown;
 
-        //Less than or equal (<=) comparison is legal when @Unsigned is not involved
+        // Less than or equal (<=) comparison is legal when @Unsigned is not involved
         boolean lteSS = signed <= signed;
         boolean lteSC = signed <= constant;
         boolean lteSU = signed <= unknown;
@@ -29,7 +29,7 @@ public class Comparisons {
         boolean lteUC = unknown <= constant;
         boolean lteUU = unknown <= unknown;
 
-        //Greater than (>) comparison is legal when @Unsigned is not involved
+        // Greater than (>) comparison is legal when @Unsigned is not involved
         boolean gtSS = signed > signed;
         boolean gtSC = signed > constant;
         boolean gtSU = signed > unknown;
@@ -40,7 +40,7 @@ public class Comparisons {
         boolean gtUC = unknown > constant;
         boolean gtUU = unknown > unknown;
 
-        //Greater than or equal (>=) comparison is legal when @Unsigned is not involved
+        // Greater than or equal (>=) comparison is legal when @Unsigned is not involved
         boolean gteSS = signed <= signed;
         boolean gteSC = signed <= constant;
         boolean gteSU = signed <= unknown;
@@ -51,8 +51,8 @@ public class Comparisons {
         boolean gteUC = unknown <= constant;
         boolean gteUU = unknown <= unknown;
 
-        //Equal to (==) comparison is legal when it is not the case that one 
-        //operand is @Unsigned and the other is @Signed
+        // Equal to (==) comparison is legal when it is not the case that one 
+        // operand is @Unsigned and the other is @Signed
         boolean etUnUn = unsigned == unsigned;
         boolean etUnC = unsigned == constant;
         boolean etUnU = unsigned == unknown;
@@ -68,8 +68,8 @@ public class Comparisons {
         boolean etUC = unknown == constant;
         boolean etUU = unknown == unknown;
 
-        //Not equal to (!=) comparison is legal when it is not the case that one 
-        //operand is @Unsigned and the other is @Signed
+        // Not equal to (!=) comparison is legal when it is not the case that one 
+        // operand is @Unsigned and the other is @Signed
         boolean netUnUn = unsigned != unsigned;
         boolean netUnC = unsigned != constant;
         boolean netUnU = unsigned != unknown;
@@ -92,7 +92,7 @@ public class Comparisons {
         @Constant int constant = 1;
         @UnknownSignedness int unknown = 1;
 
-        //Less than (<) is illegal when @Unsigned is involved
+        // Less than (<) is illegal when @Unsigned is involved
         //:: error: (binary.comparison.type.incompatible)
         boolean ltUnUn = unsigned < unsigned;
         //:: error: (binary.comparison.type.incompatible)
@@ -108,7 +108,7 @@ public class Comparisons {
         //:: error: (binary.comparison.type.incompatible)
         boolean ltUUn = unknown < unsigned;
 
-        //Less than or equal (<=) is illegal when @Unsigned is involved
+        // Less than or equal (<=) is illegal when @Unsigned is involved
         //:: error: (binary.comparison.type.incompatible)
         boolean lteUnUn = unsigned <= unsigned;
         //:: error: (binary.comparison.type.incompatible)
@@ -124,7 +124,7 @@ public class Comparisons {
         //:: error: (binary.comparison.type.incompatible)
         boolean lteUUn = unknown <= unsigned;
 
-        //Greater than (>) is illegal when @Unsigned is involved
+        // Greater than (>) is illegal when @Unsigned is involved
         //:: error: (binary.comparison.type.incompatible)
         boolean gtUnUn = unsigned > unsigned;
         //:: error: (binary.comparison.type.incompatible)
@@ -140,7 +140,7 @@ public class Comparisons {
         //:: error: (binary.comparison.type.incompatible)
         boolean gtUUn = unknown > unsigned;
 
-        //Greater than or equal (>=) is illegal when @Unsigned is involved
+        // Greater than or equal (>=) is illegal when @Unsigned is involved
         //:: error: (binary.comparison.type.incompatible)
         boolean gteUnUn = unsigned >= unsigned;
         //:: error: (binary.comparison.type.incompatible)
@@ -156,15 +156,15 @@ public class Comparisons {
         //:: error: (binary.comparison.type.incompatible)
         boolean gteUUn = unknown >= unsigned;
 
-        //Equal to (==) is illegal if one operand is @Unsigned
-        //and the other is @Signed
+        // Equal to (==) is illegal if one operand is @Unsigned
+        // and the other is @Signed
         //:: error: (binary.comparison.type.incompatible.lhs)
         boolean etUnS = unsigned == signed;
         //:: error: (binary.comparison.type.incompatible.rhs)
         boolean etSUn = signed == unsigned;
 
-        //Not equal to (!=) is illegal if one operand is @Unsigned
-        //and the other is @Signed
+        // Not equal to (!=) is illegal if one operand is @Unsigned
+        // and the other is @Signed
         //:: error: (binary.comparison.type.incompatible.lhs)
         boolean netUnS = unsigned != signed;
         //:: error: (binary.comparison.type.incompatible.rhs)

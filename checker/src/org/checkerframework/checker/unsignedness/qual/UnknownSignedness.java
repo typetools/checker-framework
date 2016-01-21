@@ -10,6 +10,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * UnknownSignedness is a type qualifier which indicates that a value's 
  * signedness is either not known after some operation, or cannot have
  * a signedness.
+ *
+ * @checker_framework.manual #unsignedness-checker Unsignedness Checker
  */
 @Target( { ElementType.TYPE_USE, ElementType.TYPE_PARAMETER } )
 @SubtypeOf( { } )

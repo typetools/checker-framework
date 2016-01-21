@@ -1,4 +1,4 @@
-import org.checkerframework.checker.unsignedness.qual.&;
+import org.checkerframework.checker.unsignedness.qual.*;
 
 public class LowerUpperBound {
 
@@ -8,7 +8,7 @@ public class LowerUpperBound {
 		@Constant int constant = 1;
 		@UnknownSignedness int unknown = 1;
 
-		//Confirm that * follows the LUB rule for legal uses.
+		// Confirm that * follows the LUB rule for legal uses.
 		@UnknownSignedness int unMultUnUn = unknown * unknown;
 		@UnknownSignedness int unMultUnU = unknown * unsigned;
 		@UnknownSignedness int unMultUnS = unknown * signed;
@@ -36,7 +36,7 @@ public class LowerUpperBound {
 		@Signed int sMultCC = constant * constant;
 		@Constant int cMultCC = constant * constant;
 
-		//Confirm that / follows the LUB rule for legal uses.
+		// Confirm that / follows the LUB rule for legal uses.
 		@UnknownSignedness int unDivUnUn = unknown / unknown;
 		@UnknownSignedness int unDiveUnS = unknown / signed;
 		@UnknownSignedness int unDivUnC = unknown / constant;
@@ -55,7 +55,7 @@ public class LowerUpperBound {
 		@Signed int sDivCC = constant / constant;
 		@Constant int cDivCC = constant / constant;
 
-		//Confirm that % follows the LUB ruel for legal uses.
+		// Confirm that % follows the LUB ruel for legal uses.
 		@UnknownSignedness int unModUnUn = unknown % unknown;
 		@UnknownSignedness int unModeUnS = unknown % signed;
 		@UnknownSignedness int unModUnC = unknown % constant;
@@ -74,7 +74,7 @@ public class LowerUpperBound {
 		@Signed int sModCC = constant % constant;
 		@Constant int cModCC = constant % constant;
 
-		//Confirm that + follows the LUB rule for legal uses.
+		// Confirm that + follows the LUB rule for legal uses.
 		@UnknownSignedness int unAddUnUn = unknown + unknown;
 		@UnknownSignedness int unAddUnU = unknown + unsigned;
 		@UnknownSignedness int unAddUnS = unknown + signed;
@@ -102,7 +102,7 @@ public class LowerUpperBound {
 		@Signed int sAddCC = constant + constant;
 		@Constant int cAddCC = constant + constant;
 
-		//Confirm that - follows the LUB rule for legal uses.
+		// Confirm that - follows the LUB rule for legal uses.
 		@UnknownSignedness int unSubUnUn = unknown - unknown;
 		@UnknownSignedness int unSubUnU = unknown - unsigned;
 		@UnknownSignedness int unSubUnS = unknown - signed;
@@ -130,7 +130,7 @@ public class LowerUpperBound {
 		@Signed int sSubCC = constant - constant;
 		@Constant int cSubCC = constant - constant;
 
-		//Confirm that << follows the LUB rule for legal uses.
+		// Confirm that << follows the LUB rule for legal uses.
 		@UnknownSignedness int unLShiftUnUn = unknown << unknown;
 		@UnknownSignedness int unLShiftUnU = unknown << unsigned;
 		@UnknownSignedness int unLShiftUnS = unknown << signed;
@@ -158,7 +158,7 @@ public class LowerUpperBound {
 		@Signed int sLShiftCC = constant << constant;
 		@Constant int cLShiftCC = constant << constant;
 
-		//Confirm that >> follows the LUB rule for legal uses.
+		// Confirm that >> follows the LUB rule for legal uses.
 		@UnknownSignedness int unSShiftUnUn = unknown >> unknown;
 		@UnknownSignedness int unSShiftUnU = unknown >> unsigned;
 		@UnknownSignedness int unSShiftUnS = unknown >> signed;
@@ -180,7 +180,7 @@ public class LowerUpperBound {
 		@Signed int sSShiftCC = constant >> constant;
 		@Constant int cSShiftCC = constant >> constant;
 
-		//Confirm that >>> follows the LUB rule for legal uses.
+		// Confirm that >>> follows the LUB rule for legal uses.
 		@UnknownSignedness int unUnShiftUnUn = unknown >>> unknown;
 		@UnknownSignedness int unUnShiftUnU = unknown >>> unsigned;
 		@UnknownSignedness int unUnShiftUnS = unknown >>> signed;
@@ -202,7 +202,7 @@ public class LowerUpperBound {
 		@Signed int sUnShiftCC = constant >>> constant;
 		@Constant int cUnShiftCC = constant >>> constant;
 
-		//Confirm that & follows the LUB rule for legal uses.
+		// Confirm that & follows the LUB rule for legal uses.
 		@UnknownSignedness int unANDUnUn = unknown & unknown;
 		@UnknownSignedness int unANDUnU = unknown & unsigned;
 		@UnknownSignedness int unANDUnS = unknown & signed;
@@ -230,7 +230,7 @@ public class LowerUpperBound {
 		@Signed int sANDCC = constant & constant;
 		@Constant int cANDCC = constant & constant;
 
-		//Confirm that ^ follows the LUB rule for legal uses.
+		// Confirm that ^ follows the LUB rule for legal uses.
 		@UnknownSignedness int unXORUnUn = unknown ^ unknown;
 		@UnknownSignedness int unXORUnU = unknown ^ unsigned;
 		@UnknownSignedness int unXORUnS = unknown ^ signed;
@@ -258,7 +258,7 @@ public class LowerUpperBound {
 		@Signed int sXORCC = constant ^ constant;
 		@Constant int cXORCC = constant ^ constant;
 
-		//Confirm that | follows the LUB rule for legal uses.
+		// Confirm that | follows the LUB rule for legal uses.
 		@UnknownSignedness int unORUnUn = unknown | unknown;
 		@UnknownSignedness int unORUnU = unknown | unsigned;
 		@UnknownSignedness int unORUnS = unknown | signed;
@@ -293,7 +293,7 @@ public class LowerUpperBound {
 		@Signed int signed = 1;
 		@Constant int constant = 1;
 
-		//Confirm that * follows the LUB rule for legal uses.
+		// Confirm that * follows the LUB rule for legal uses.
 		//:: error: (assignment.type.incompatible)
 		@Unsigned int uMultUnUn = unknown * unknown;
 		//:: error: (assignment.type.incompatible)
@@ -393,7 +393,7 @@ public class LowerUpperBound {
 		@UnsignednessBottom int ubMultCC = constant * constant;
 
 
-		//Confirm that / follows the LUB rule for legal uses.
+		// Confirm that / follows the LUB rule for legal uses.
 		//:: error: (assignment.type.incompatible)
 		@Unsigned int uDivUnUn = unknown / unknown;
 		//:: error: (assignment.type.incompatible)
@@ -458,7 +458,7 @@ public class LowerUpperBound {
 		@UnsignednessBottom int ubDivCC = constant / constant;
 
 
-		//Confirm that % follows the LUB rule for legal uses.
+		// Confirm that % follows the LUB rule for legal uses.
 		//:: error: (assignment.type.incompatible)
 		@Unsigned int uModUnUn = unknown % unknown;
 		//:: error: (assignment.type.incompatible)
@@ -523,7 +523,7 @@ public class LowerUpperBound {
 		@UnsignednessBottom int ubModCC = constant % constant;
 
 
-		//Confirm that + follows the LUB rule for legal uses.
+		// Confirm that + follows the LUB rule for legal uses.
 		//:: error: (assignment.type.incompatible)
 		@Unsigned int uAddUnUn = unknown + unknown;
 		//:: error: (assignment.type.incompatible)
@@ -623,7 +623,7 @@ public class LowerUpperBound {
 		@UnsignednessBottom int ubAddCC = constant + constant;
 
 
-		//Confirm that - follows the LUB rule for legal uses.
+		// Confirm that - follows the LUB rule for legal uses.
 		//:: error: (assignment.type.incompatible)
 		@Unsigned int uSubUnUn = unknown - unknown;
 		//:: error: (assignment.type.incompatible)
@@ -723,7 +723,7 @@ public class LowerUpperBound {
 		@UnsignednessBottom int ubSubCC = constant - constant;
 
 
-		//Confirm that << follows the LUB rule for legal uses.
+		// Confirm that << follows the LUB rule for legal uses.
 		//:: error: (assignment.type.incompatible)
 		@Unsigned int uLShiftUnUn = unknown << unknown;
 		//:: error: (assignment.type.incompatible)
@@ -823,7 +823,7 @@ public class LowerUpperBound {
 		@UnsignednessBottom int ubLShiftCC = constant << constant;
 
 
-		//Confirm that >> follows the LUB rule for legal uses.
+		// Confirm that >> follows the LUB rule for legal uses.
 		//:: error: (assignment.type.incompatible)
 		@Unsigned int uSShiftUnUn = unknown >> unknown;
 		//:: error: (assignment.type.incompatible)
@@ -902,7 +902,7 @@ public class LowerUpperBound {
 		@UnsignednessBottom int ubSShiftCC = constant >> constant;
 
 
-		//Confirm that >>> follows the LUB rule for legal uses.
+		// Confirm that >>> follows the LUB rule for legal uses.
 		//:: error: (assignment.type.incompatible)
 		@Unsigned int uUnShiftUnUn = unknown >>> unknown;
 		//:: error: (assignment.type.incompatible)
@@ -981,7 +981,7 @@ public class LowerUpperBound {
 		@UnsignednessBottom int ubUnShiftCC = constant >>> constant;
 
 
-		//Confirm that & follows the LUB rule for legal uses.
+		// Confirm that & follows the LUB rule for legal uses.
 		//:: error: (assignment.type.incompatible)
 		@Unsigned int uANDUnUn = unknown & unknown;
 		//:: error: (assignment.type.incompatible)
@@ -1081,7 +1081,7 @@ public class LowerUpperBound {
 		@UnsignednessBottom int ubANDCC = constant & constant;
 
 
-		//Confirm that ^ follows the LUB rule for legal uses.
+		// Confirm that ^ follows the LUB rule for legal uses.
 		//:: error: (assignment.type.incompatible)
 		@Unsigned int uXORUnUn = unknown ^ unknown;
 		//:: error: (assignment.type.incompatible)
@@ -1181,7 +1181,7 @@ public class LowerUpperBound {
 		@UnsignednessBottom int ubXORCC = constant ^ constant;
 
 
-		//Confirm that | follows the LUB rule for legal uses.
+		// Confirm that | follows the LUB rule for legal uses.
 		//:: error: (assignment.type.incompatible)
 		@Unsigned int uORUnUn = unknown | unknown;
 		//:: error: (assignment.type.incompatible)

@@ -8,10 +8,10 @@ public class Operations {
         @Constant int constant = 1;
         @UnknownSignedness int unknown = 1;
 
-        //Division (/) is legal for all combinations without @Unsigned
+        // Division (/) is legal for all combinations without @Unsigned
         int divSS = signed / signed;
         int divSC = signed / constant;
-        int divSU = signed / unknown
+        int divSU = signed / unknown;
 
         int divCS = constant / signed;
         int divCC = constant / constant;
@@ -21,10 +21,10 @@ public class Operations {
         int divUC = unknown / constant;
         int divUU = unknown / unknown;
 
-        //Remainder (%) is legal for all combinations without @Unsigned
+        // Remainder (%) is legal for all combinations without @Unsigned
         int modSS = signed % signed;
         int modSC = signed % constant;
-        int modSU = signed % unknown
+        int modSU = signed % unknown;
 
         int modCS = constant % signed;
         int modCC = constant % constant;
@@ -34,17 +34,17 @@ public class Operations {
         int modUC = unknown % constant;
         int modUU = unknown % unknown;
 
-        //Signed shift (>>) is legal for any left operator that is not @Unsigned
+        // Signed shift (>>) is legal for any left operator that is not @Unsigned
         int sshiftS = signed >> 1;
         int sshiftC = constant >> 1;
         int sshiftU = unknown >> 1;
 
-        //Unsigned shift (>>>) is legal for any left operator that is not @Signed
+        // Unsigned shift (>>>) is legal for any left operator that is not @Signed
         int ushiftUn = unsigned >>> 1;
         int ushiftC = constant >>> 1;
         int ushiftU = unknown >>> 1;
 
-        //All unary operators are legal
+        // All unary operators are legal
         int postIncUn = unsigned++;
         int postIncS = signed++;
         int postIncC = constant++;
@@ -80,16 +80,16 @@ public class Operations {
         int bitNegC = ~constant;
         int bitNegU = ~unknown;
 
-        //Left shift is always legal for any left operator
+        // Left shift is always legal for any left operator
         int lshiftUn = unsigned << 1;
         int lshiftS = signed << 1;
         int lshiftC = constant << 1;
         int lshiftU = unknown << 1;
 
-        //All binary operators should be legal if it is not the case
-        //that one operator is unsigned and the other is signed
+        // All binary operators should be legal if it is not the case
+        // that one operator is unsigned and the other is signed
         
-        //Multiplication (*)
+        // Multiplication (*)
         int mulUnUn = unsigned * unsigned;
         int mulUnC = unsigned * constant;
         int mulUnU = unsigned * unknown;
@@ -108,7 +108,7 @@ public class Operations {
         int mulUC = unknown * constant;
         int mulUU = unknown * unknown;
 
-        //Addition (+)
+        // Addition (+)
         int addUnUn = unsigned + unsigned;
         int addUnC = unsigned + constant;
         int addUnU = unsigned + unknown;
@@ -127,7 +127,7 @@ public class Operations {
         int addUC = unknown + constant;
         int addUU = unknown + unknown;
 
-        //Subtraction (-)
+        // Subtraction (-)
         int subUnUn = unsigned - unsigned;
         int subUnC = unsigned - constant;
         int subUnU = unsigned - unknown;
@@ -146,7 +146,7 @@ public class Operations {
         int subUC = unknown - constant;
         int subUU = unknown - unknown;
 
-        //Bitwise AND (&)
+        // Bitwise AND (&)
         int andUnUn = unsigned & unsigned;
         int andUnC = unsigned & constant;
         int andUnU = unsigned & unknown;
@@ -165,7 +165,7 @@ public class Operations {
         int andUC = unknown & constant;
         int andUU = unknown & unknown;
 
-        //Bitwise XOR (^)
+        // Bitwise XOR (^)
         int xorUnUn = unsigned ^ unsigned;
         int xorUnC = unsigned ^ constant;
         int xorUnU = unsigned ^ unknown;
@@ -184,7 +184,7 @@ public class Operations {
         int xorUC = unknown ^ constant;
         int xorUU = unknown ^ unknown;
 
-        //Bitwise or (|)
+        // Bitwise or (|)
         int orUnUn = unsigned | unsigned;
         int orUnC = unsigned | constant;
         int orUnU = unsigned | unknown;
@@ -210,7 +210,7 @@ public class Operations {
         @Constant int constant = 1;
         @UnknownSignedness int unknown = 1;
 
-        //Division (/) with @Unsigned operators are illegal
+        // Division (/) with @Unsigned operators are illegal
 
         //:: error: (binary.operation.type.incompatible)
         int divUnUn = unsigned / unsigned;
@@ -227,7 +227,7 @@ public class Operations {
         //:: error: (binary.operation.type.incompatible)
         int divUUn = unknown / unsigned;
 
-        //Remainder (%) with @Unsigned operators are illegal
+        // Remainder (%) with @Unsigned operators are illegal
 
         //:: error: (binary.operation.type.incompatible)
         int modUnUn = unsigned % unsigned;
@@ -244,15 +244,15 @@ public class Operations {
         //:: error: (binary.operation.type.incompatible)
         int modUUn = unknown % unsigned;
 
-        //Signed right shift (>>) is illegal with left @Unsigned operand
+        // Signed right shift (>>) is illegal with left @Unsigned operand
         //:: error: (binary.operation.shift.type.incompatible)
         int sshiftUn = unsigned >> 1;
 
-        //Unsigned right shift (>>>) is illegal with left @Signed operand
+        // Unsigned right shift (>>>) is illegal with left @Signed operand
         //:: error: (binary.operation.shift.type.incompatible)
         int ushiftS = signed >>> 1;
 
-        //All other operators with one @Unsigned and one @Signed are illegal
+        // All other operators with one @Unsigned and one @Signed are illegal
 
         //:: error: (binary.operation.type.incompatible.unsignedlhs)
         int mulUnS = unsigned * signed;
