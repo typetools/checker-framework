@@ -78,7 +78,8 @@
     </text>
   </g>
   <g
-     id="g14">
+     id="g14"
+     style="opacity:0.5">
     <rect
        style="fill:#ffffff"
        x="880"
@@ -95,18 +96,20 @@
        id="rect18" />
     <text
        font-size="16"
-       style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal"
+       style="fill:#000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal"
        x="940"
        y="345.85"
        id="text20">
       <tspan
          x="940"
          y="345.85"
-         id="tspan22">@Signed</tspan>
+         id="tspan22"
+         style="">@Signed</tspan>
     </text>
   </g>
   <g
-     id="g24">
+     id="g24"
+     style="opacity:0.5">
     <rect
        style="fill:#ffffff"
        x="730"
@@ -123,14 +126,15 @@
        id="rect28" />
     <text
        font-size="16"
-       style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal"
+       style="fill:#000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal"
        x="820"
        y="285.85"
        id="text30">
       <tspan
          x="820"
          y="285.85"
-         id="tspan32">@UnknownSignedness</tspan>
+         id="tspan32"
+         style="">@UnknownSignedness</tspan>
     </text>
   </g>
   <g
@@ -206,7 +210,8 @@
        id="polygon64" />
   </g>
   <g
-     id="g66">
+     id="g66"
+     style="opacity:0.5">
     <rect
        style="fill:#ffffff"
        x="760"
@@ -223,14 +228,15 @@
        id="rect70" />
     <text
        font-size="16"
-       style="fill: #000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal"
+       style="fill:#000000;text-anchor:middle;font-family:courier new;font-style:normal;font-weight:normal"
        x="820"
        y="405.85"
        id="text72">
       <tspan
          x="820"
          y="405.85"
-         id="tspan74">@Constant</tspan>
+         id="tspan74"
+         style="">@Constant</tspan>
     </text>
   </g>
 </svg>
