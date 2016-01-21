@@ -793,7 +793,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // insert into an array list then sort it alphabetically
         List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<Class<? extends Annotation>>();
         sortedSupportedQuals.addAll(getSupportedTypeQualifiers());
-        sortedSupportedQuals.sort(QUALIFIER_SORT_ORDERING);
+        Collections.sort(sortedSupportedQuals, QUALIFIER_SORT_ORDERING);
         return Collections.unmodifiableList(sortedSupportedQuals);
     }
 
