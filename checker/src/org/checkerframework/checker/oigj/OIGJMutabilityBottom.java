@@ -30,4 +30,4 @@ import com.sun.source.tree.Tree.Kind;
         typeNames = { java.lang.Void.class }
 )
 @DefaultFor({DefaultLocation.LOWER_BOUNDS})
-@interface OIGJMutabilityBottom { }
+public @interface OIGJMutabilityBottom { }
