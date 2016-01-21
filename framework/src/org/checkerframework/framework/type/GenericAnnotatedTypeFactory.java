@@ -354,6 +354,39 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
+     * Creates and returns a string containing the number of qualifiers and the
+     * canonical class names of each qualifier that has been added to this
+     * checker's supported qualifier set. The names are alphabetically sorted.
+     *
+     * @return a string containing the number of qualifiers and canonical names
+     *         of each qualifier.
+     */
+    private final String getSortedQualifierNames() {
+        Set<Class<? extends Annotation>> sortedQuals = getSortedSupportedTypeQualifiers();
+
+        // display the number of qualifiers as well as the names of each
+        // qualifier.
+        StringBuilder sb = new StringBuilder();
+        sb.append(" ");
+        sb.append(sortedQuals.size());
+        sb.append(" qualifiers examined");
+
+        if (sortedQuals.size() > 0) {
+            sb.append(": ");
+            // for each qualifier, add its canonical name, a comma and a space
+            // to the string.
+            for (Class<? extends Annotation> qual : sortedQuals) {
+                sb.append(qual.getCanonicalName());
+                sb.append(", ");
+            }
+            // remove last comma and space
+            return sb.substring(0, sb.length() - 2);
+        } else {
+            return sb.toString();
+        }
+    }
+
+    /**
      * Adds default qualifiers for type-checked code by
      * reading  {@link DefaultFor} and {@link DefaultQualifierInHierarchy}
      * meta-annotations.
@@ -398,7 +431,7 @@ public abstract class GenericAnnotatedTypeFactory<
             ErrorReporter
                     .errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: "
                                         + "@DefaultQualifierInHierarchy or @DefaultFor(DefaultLocation.OTHERWISE) not found. "
-                                        + "Every checker must specify a default qualifier.");
+                                        + "Every checker must specify a default qualifier." + getSortedQualifierNames());
         }
     }
 
