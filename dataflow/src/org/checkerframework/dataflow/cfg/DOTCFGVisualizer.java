@@ -9,6 +9,7 @@ import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.analysis.TransferInput;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
@@ -17,16 +18,23 @@ import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.javacutil.ErrorReporter;
 
-import javax.lang.model.type.TypeMirror;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
+
+import javax.lang.model.type.TypeMirror;
 
 /**
  * Generate a graph description in the DOT language of a control graph.
@@ -34,41 +42,29 @@ import java.util.Set;
  * @author Stefan Heule
  *
  */
-public class CFGDOTVisualizer {
+public class DOTCFGVisualizer implements CFGVisualizer {
 
-    /**
-     * Output a graph description in the DOT language, representing the control
-     * flow graph starting at <code>entry</code>. Does not output verbose information
-     * or stores at the beginning of basic blocks.
-     *
-     * @see #visualize(ControlFlowGraph, Block, Analysis, boolean)
-     */
-    public static String visualize(ControlFlowGraph cfg, Block entry) {
-        return visualize(cfg, entry, null, false);
+    protected String outdir;
+    protected boolean verbose;
+    protected String checkerName;
+
+    public void init(Map<String, Object> args) {
+        this.outdir = (String) args.get("outdir");
+        {
+            Object verb = args.get("verbose");
+            this.verbose = verb == null ? false :
+                verb instanceof String ? Boolean.getBoolean((String) verb) :
+                    (boolean) verb;
+        }
+        this.checkerName = (String) args.get("checkerName");
     }
 
     /**
-     * Output a graph description in the DOT language, representing the control
-     * flow graph starting at <code>entry</code>.
-     *
-     * @param entry
-     *            The entry node of the control flow graph to be represented.
-     * @param analysis
-     *            An analysis containing information about the program
-     *            represented by the CFG. The information includes {@link Store}
-     *            s that are valid at the beginning of basic blocks reachable
-     *            from <code>entry</code> and per-node information for value
-     *            producing {@link Node}s. Can also be <code>null</code> to
-     *            indicate that this information should not be output.
-     * @param verbose
-     *            Add more output to the CFG description.
-     * @return String representation of the graph in the DOT language.
+     * {@inheritDoc}
      */
-    public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> String visualize(
-            ControlFlowGraph cfg,
-            Block entry,
-            /*@Nullable*/ Analysis<A, S, T> analysis,
-            boolean verbose) {
+    public <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
+    /*@Nullable*/ Map<String, Object> visualize(ControlFlowGraph cfg, Block entry,
+            /*@Nullable*/ Analysis<A, S, T> analysis) {
         StringBuilder sb1 = new StringBuilder();
         StringBuilder sb2 = new StringBuilder();
         Set<Block> visited = new HashSet<>();
@@ -166,10 +162,41 @@ public class CFGDOTVisualizer {
         // footer
         sb1.append("}\n");
 
-        return sb1.toString();
+        String dotstring = sb1.toString();
+
+        String dotfilename = outdir + "/"
+                + dotOutputFileName(cfg.underlyingAST) + "_" + checkerName + ".dot";
+        // make path safe for Windows
+        dotfilename = dotfilename.replace("<", "_").replace(">", "");
+        System.err.println("Output to DOT file: " + dotfilename);
+
+        try {
+            FileWriter fstream = new FileWriter(dotfilename);
+            BufferedWriter out = new BufferedWriter(fstream);
+            out.write(dotstring);
+            out.close();
+        } catch (IOException e) {
+            ErrorReporter.errorAbort("Error creating dot file: " + dotfilename +
+                    "; ensure the path is valid", e);
+        }
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("dotFileName", dotfilename);
+        return res;
     }
 
-    private static IdentityHashMap<Block, List<Integer>> getProcessOrder(ControlFlowGraph cfg) {
+    /** @return The file name used for DOT output. */
+    protected String dotOutputFileName(UnderlyingAST ast) {
+        if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
+            return "initializer-" + ast.hashCode();
+        } else if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
+            return ((CFGMethod) ast).getMethod().getName().toString();
+        }
+        assert false;
+        return null;
+    }
+
+    protected IdentityHashMap<Block, List<Integer>> getProcessOrder(ControlFlowGraph cfg) {
         IdentityHashMap<Block, List<Integer>> depthFirstOrder = new IdentityHashMap<>();
         int count = 1;
         for (Block b : cfg.getDepthFirstOrderedBlocks()) {
@@ -188,7 +215,7 @@ public class CFGDOTVisualizer {
      *            Basic block to visualize.
      * @return String representation.
      */
-    protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> String visualizeContent(
+    protected <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> String visualizeContent(
             Block bb,
             /*@Nullable*/ Analysis<A, S, T> analysis,
             boolean verbose) {
@@ -285,7 +312,7 @@ public class CFGDOTVisualizer {
         return sb.toString() + (centered ? "" : "\\n");
     }
 
-    protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
+    protected <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
     String visualizeNode(Node t, /*@Nullable*/ Analysis<A, S, T> analysis) {
         A value = analysis.getValue(t);
         String valueInfo = "";
@@ -295,12 +322,12 @@ public class CFGDOTVisualizer {
         return prepareString(t.toString()) + "   [ " + visualizeType(t) + " ]" + valueInfo;
     }
 
-    protected static String visualizeType(Node t) {
+    protected String visualizeType(Node t) {
         String name = t.getClass().getSimpleName();
         return name.replace("Node", "");
     }
 
-    protected static String prepareString(String s) {
+    protected String prepareString(String s) {
         return s.replace("\"", "\\\"");
     }
 }
