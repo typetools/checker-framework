@@ -8,7 +8,7 @@ public class CompoundAssignments {
         @Constant int constant = 1;
         @UnknownSignedness int unknown = 1;
 
-        //Division (/) is legal for all combinations without @Unsigned
+        // Division (/) is legal for all combinations without @Unsigned
         @Signed int divSS = 1;
         divSS /= signed;
         @Signed int divSC = 1;
@@ -30,7 +30,7 @@ public class CompoundAssignments {
         @UnknownSignedness int divUU = 1;
         divUU /= unknown;
 
-        //Remainder (%) is legal for all combinations without @Unsigned
+        // Remainder (%) is legal for all combinations without @Unsigned
         @Signed int modSS = 1;
         modSS %= signed;
         @Signed int modSC = 1;
@@ -52,7 +52,7 @@ public class CompoundAssignments {
         @UnknownSignedness int modUU = 1;
         modUU %= unknown;
 
-        //Signed shift (>>) is legal for any left operator that is not @Unsigned
+        // Signed shift (>>) is legal for any left operator that is not @Unsigned
         @Signed int sshiftS = 1;
         sshiftS >>= 1;
         @Constant int sshiftC = 1;
@@ -60,7 +60,7 @@ public class CompoundAssignments {
         @UnknownSignedness int sshiftU = 1;
         sshiftU >>= 1;
 
-        //Unsigned shift (>>>) is legal for any left operator that is not @Signed
+        // Unsigned shift (>>>) is legal for any left operator that is not @Signed
         @Unsigned int ushiftUn = 1;
         ushiftUn >>>= 1;
         @Constant int ushiftC = 1;
@@ -68,7 +68,7 @@ public class CompoundAssignments {
         @UnknownSignedness int ushiftU = 1;
         ushiftU >>>= 1;
 
-        //Left shift is always legal for any left operator
+        // Left shift is always legal for any left operator
         @Unsigned int lshiftUn = 1;
         lshiftUn <<= 1;
         @Signed int lshiftS = 1;
@@ -78,10 +78,10 @@ public class CompoundAssignments {
         @UnknownSignedness int lshiftU = 1;
         lshiftU <<= 1;
 
-        //All binary operators should be legal if it is not the case
-        //that one operator is unsigned and the other is signed
+        // All binary operators should be legal if it is not the case
+        // that one operator is unsigned and the other is signed
         
-        //Multiplication (*)
+        // Multiplication (*)
         @Unsigned int mulUnUn = 1;
         mulUnUn *= unsigned;
         @Unsigned int mulUnC = 1;
@@ -114,7 +114,7 @@ public class CompoundAssignments {
         @UnknownSignedness int mulUU = 1;
         mulUU *= unknown;
 
-        //Addition (+)
+        // Addition (+)
         @Unsigned int addUnUn = 1;
         addUnUn += unsigned;
         @Unsigned int addUnC = 1;
@@ -147,7 +147,7 @@ public class CompoundAssignments {
         @UnknownSignedness int addUU = 1;
         addUU += unknown;
 
-        //Subtraction (-)
+        // Subtraction (-)
         @Unsigned int subUnUn = 1;
         subUnUn -= unsigned;
         @Unsigned int subUnC = 1;
@@ -180,7 +180,7 @@ public class CompoundAssignments {
         @UnknownSignedness int subUU = 1;
         subUU -= unknown;
 
-        //Bitwise AND (&)
+        // Bitwise AND (&)
         @Unsigned int andUnUn = 1;
         andUnUn &= unsigned;
         @Unsigned int andUnC = 1;
@@ -213,7 +213,7 @@ public class CompoundAssignments {
         @UnknownSignedness int andUU = 1;
         andUU &= unknown;
 
-        //Bitwise XOR (^)
+        // Bitwise XOR (^)
         @Unsigned int xorUnUn = 1;
         xorUnUn ^= unsigned;
         @Unsigned int xorUnC = 1;
@@ -246,7 +246,7 @@ public class CompoundAssignments {
         @UnknownSignedness int xorUU = 1;
         xorUU ^= unknown;
 
-        //Bitwise or (|)
+        // Bitwise or (|)
         @Unsigned int orUnUn = 1;
         orUnUn |= unsigned;
         @Unsigned int orUnC = 1;
@@ -286,7 +286,7 @@ public class CompoundAssignments {
         @Constant int constant = 1;
         @UnknownSignedness int unknown = 1;
 
-        //Division (/) with @Unsigned operands are illegal
+        // Division (/) with @Unsigned operands are illegal
 
         @Unsigned int divUnUn = 1;
         //:: error: (compoundassignment.type.incompatible)
@@ -310,7 +310,7 @@ public class CompoundAssignments {
         //:: error: (compoundassignment.type.incompatible)
         divUUn /= unsigned;
 
-        //Remainder (%) with @Unsigned operators are illegal
+        // Remainder (%) with @Unsigned operators are illegal
 
         @Unsigned int modUnUn = 1;
         //:: error: (compoundassignment.type.incompatible)
@@ -334,17 +334,17 @@ public class CompoundAssignments {
         //:: error: (compoundassignment.type.incompatible)
         modUUn %= unsigned;
 
-        //Signed right shift (>>) is illegal with left @Unsigned operand
+        // Signed right shift (>>) is illegal with left @Unsigned operand
         @Unsigned int sshiftUn = 1;
         //:: error: (compoundassignment.shift.type.incompatible)
         sshiftUn >>= 1;
 
-        //Unsigned right shift (>>>) is illegal with left @Signed operand
+        // Unsigned right shift (>>>) is illegal with left @Signed operand
         @Signed int ushiftS = 1;
         //:: error: (compoundassignment.shift.type.incompatible)
         ushiftS >>>= 1;
 
-        //All other operators with one @Unsigned and one @Signed are illegal
+        // All other operators with one @Unsigned and one @Signed are illegal
 
         @Unsigned int mulUnS = 1;
         //:: error: (compoundassignment.type.incompatible.unsignedlhs)
