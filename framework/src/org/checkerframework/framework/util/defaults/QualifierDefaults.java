@@ -105,12 +105,12 @@ public class QualifierDefaults {
     private final Map<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
 
     /**
-     * CLIMB-to-the-top locations whose standard default is top
+     * CLIMB locations whose standard default is top
      */
     public static final DefaultLocation[] standardClimbDefaultsTop = { DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,
                                                                        DefaultLocation.EXCEPTION_PARAMETER, DefaultLocation.IMPLICIT_UPPER_BOUNDS };
     /**
-     * CLIMB-to-the-top locations whose standard default is bottom
+     * CLIMB locations whose standard default is bottom
      */
     public static final DefaultLocation[] standardClimbDefaultsBottom = { DefaultLocation.IMPLICIT_LOWER_BOUNDS };
 
@@ -192,7 +192,7 @@ public class QualifierDefaults {
     }
 
     /**
-     * Add standard CLIMB-to-the-top defaults that do not conflict with previously added defaults.
+     * Add standard CLIMB defaults that do not conflict with previously added defaults.
      *
      * @param tops    AnnotationMirrors that are top
      * @param bottoms AnnotationMirrors that are bottom
