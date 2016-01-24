@@ -632,7 +632,7 @@ public abstract class GenericAnnotatedTypeFactory<
             Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue = new LinkedList<>();
 
             try {
-                List<MethodTree> methods = new ArrayList<>();
+                List<CFGMethod> methods = new ArrayList<>();
                 for (Tree m : ct.getMembers()) {
                     switch (m.getKind()) {
                     case METHOD:
@@ -654,15 +654,16 @@ public abstract class GenericAnnotatedTypeFactory<
 
                         // Wait with scanning the method until all other members
                         // have been processed.
-                        methods.add(mt);
+                        CFGMethod met = new CFGMethod(mt, ct);
+                        methods.add(met);
                         break;
                     case VARIABLE:
                         VariableTree vt = (VariableTree) m;
                         ExpressionTree initializer = vt.getInitializer();
                         // analyze initializer if present
                         if (initializer != null) {
-                        	boolean isStatic = vt.getModifiers().getFlags().contains(Modifier.STATIC);
-                            analyze(queue, lambdaQueue, new CFGStatement(vt),
+                            boolean isStatic = vt.getModifiers().getFlags().contains(Modifier.STATIC);
+                            analyze(queue, lambdaQueue, new CFGStatement(vt, ct),
                                     fieldValues, classTree, true, true, isStatic);
                             Value value = flowResult.getValue(initializer);
                             if (value != null) {
@@ -683,7 +684,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         break;
                     case BLOCK:
                         BlockTree b = (BlockTree) m;
-                        analyze(queue, lambdaQueue, new CFGStatement(b), fieldValues, ct, true, true, b.isStatic());
+                        analyze(queue, lambdaQueue, new CFGStatement(b, ct), fieldValues, ct, true, true, b.isStatic());
                         break;
                     default:
                         assert false : "Unexpected member: " + m.getKind();
@@ -694,11 +695,10 @@ public abstract class GenericAnnotatedTypeFactory<
                 // Now analyze all methods.
                 // TODO: at this point, we don't have any information about
                 // fields of superclasses.
-                for (MethodTree mt : methods) {
-                	boolean isInitCode = TreeUtils.isConstructor(mt);
-                    analyze(queue, lambdaQueue,
-                            new CFGMethod(mt, TreeUtils
-                                    .enclosingClass(getPath(mt))), fieldValues, classTree, isInitCode, false, false);
+                for (CFGMethod met : methods) {
+                    analyze(queue, lambdaQueue, met,
+                            fieldValues, classTree,
+                            TreeUtils.isConstructor(met.getMethod()), false, false);
                 }
 
                 while (lambdaQueue.size() > 0) {
