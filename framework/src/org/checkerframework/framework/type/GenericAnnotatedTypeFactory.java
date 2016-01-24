@@ -31,8 +31,8 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
-import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUncheckedCode;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUncheckedCode;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.Unqualified;
@@ -747,14 +747,21 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param currentClass The class we are currently looking at.
      * @param isInitializationCode Are we analyzing a (non-static) initializer block of a class.
      */
-    protected void analyze(Queue<ClassTree> queue, Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue, UnderlyingAST ast,
-            List<Pair<VariableElement, Value>> fieldValues, ClassTree currentClass,
+    protected void analyze(Queue<ClassTree> queue,
+            Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue,
+            UnderlyingAST ast,
+            List<Pair<VariableElement, Value>> fieldValues,
+            ClassTree currentClass,
             boolean isInitializationCode, boolean updateInitializationStore, boolean isStatic) {
-        analyze(queue, lambdaQueue, ast, fieldValues, currentClass, isInitializationCode, updateInitializationStore, isStatic, null);
+        analyze(queue, lambdaQueue, ast, fieldValues, currentClass,
+                isInitializationCode, updateInitializationStore, isStatic, null);
     }
 
-    protected void analyze(Queue<ClassTree> queue, Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue, UnderlyingAST ast,
-            List<Pair<VariableElement, Value>> fieldValues, ClassTree currentClass,
+    protected void analyze(Queue<ClassTree> queue,
+            Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue,
+            UnderlyingAST ast,
+            List<Pair<VariableElement, Value>> fieldValues,
+            ClassTree currentClass,
             boolean isInitializationCode, boolean updateInitializationStore, boolean isStatic,
             Store lambdaStore) {
         CFGBuilder builder = new CFCFGBuilder(checker, this);
