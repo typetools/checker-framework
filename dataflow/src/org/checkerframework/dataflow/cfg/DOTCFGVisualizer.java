@@ -10,6 +10,7 @@ import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
@@ -36,6 +37,8 @@ import java.util.Set;
 
 import javax.lang.model.type.TypeMirror;
 
+import com.sun.tools.javac.tree.JCTree;
+
 /**
  * Generate a graph description in the DOT language of a control graph.
  *
@@ -48,6 +51,9 @@ public class DOTCFGVisualizer implements CFGVisualizer {
     protected boolean verbose;
     protected String checkerName;
 
+    // Mapping from class/method representation to generated dot file.
+    protected Map<String, String> generated;
+
     public void init(Map<String, Object> args) {
         this.outdir = (String) args.get("outdir");
         {
@@ -57,6 +63,8 @@ public class DOTCFGVisualizer implements CFGVisualizer {
                     (boolean) verb;
         }
         this.checkerName = (String) args.get("checkerName");
+
+        this.generated = new HashMap<>();
     }
 
     /**
@@ -164,11 +172,8 @@ public class DOTCFGVisualizer implements CFGVisualizer {
 
         String dotstring = sb1.toString();
 
-        String dotfilename = outdir + "/"
-                + dotOutputFileName(cfg.underlyingAST) + "_" + checkerName + ".dot";
-        // make path safe for Windows
-        dotfilename = dotfilename.replace("<", "_").replace(">", "");
-        System.err.println("Output to DOT file: " + dotfilename);
+        String dotfilename = dotOutputFileName(cfg.underlyingAST);
+        // System.err.println("Output to DOT file: " + dotfilename);
 
         try {
             FileWriter fstream = new FileWriter(dotfilename);
@@ -187,13 +192,54 @@ public class DOTCFGVisualizer implements CFGVisualizer {
 
     /** @return The file name used for DOT output. */
     protected String dotOutputFileName(UnderlyingAST ast) {
+        StringBuilder srcloc = new StringBuilder();
+
+        StringBuilder outfile = new StringBuilder(outdir);
+        outfile.append('/');
         if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
-            return "initializer-" + ast.hashCode();
+            CFGStatement cfgs = (CFGStatement) ast;
+            String clsname = cfgs.getClassTree().getSimpleName().toString();
+            outfile.append(clsname);
+            outfile.append("-initializer-");
+            outfile.append(ast.hashCode());
+
+            srcloc.append('<');
+            srcloc.append(clsname);
+            srcloc.append("::initializer::");
+            srcloc.append(((JCTree)cfgs.getCode()).pos);
+            srcloc.append('>');
         } else if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
-            return ((CFGMethod) ast).getMethod().getName().toString();
+            CFGMethod cfgm = (CFGMethod) ast;
+            String clsname = cfgm.getClassTree().getSimpleName().toString();
+            String methname = cfgm.getMethod().getName().toString();
+            outfile.append(clsname);
+            outfile.append('-');
+            outfile.append(methname);
+
+            srcloc.append('<');
+            srcloc.append(clsname);
+            srcloc.append("::");
+            srcloc.append(methname);
+            srcloc.append('(');
+            srcloc.append(cfgm.getMethod().getParameters());
+            srcloc.append(")::");
+            srcloc.append(((JCTree)cfgm.getMethod()).pos);
+            srcloc.append('>');
+        } else {
+            ErrorReporter.errorAbort("Unexpected AST kind: " + ast.getKind() +
+                    " value: " + ast.toString());
+            return null;
         }
-        assert false;
-        return null;
+        outfile.append('-');
+        outfile.append(checkerName);
+        outfile.append(".dot");
+
+        // make path safe for Windows
+        String out = outfile.toString().replace("<", "_").replace(">", "");
+
+        generated.put(srcloc.toString(), out);
+
+        return out;
     }
 
     protected IdentityHashMap<Block, List<Integer>> getProcessOrder(ControlFlowGraph cfg) {
@@ -244,7 +290,7 @@ public class DOTCFGVisualizer implements CFGVisualizer {
                 sb.append("\\n");
             }
             notFirst = true;
-            sb.append(prepareString(visualizeNode(t, analysis)));
+            sb.append(visualizeNode(t, analysis));
         }
 
         // handle case where no contents are present
@@ -330,4 +376,27 @@ public class DOTCFGVisualizer implements CFGVisualizer {
     protected String prepareString(String s) {
         return s.replace("\"", "\\\"");
     }
+
+
+    /** Write a file methods.txt that contains a mapping from
+     * source code location to generated dot file.
+     */
+    public void shutdown() {
+        try {
+            // Open for append, in case of multiple sub-checkers.
+            FileWriter fstream = new FileWriter(outdir + "/methods.txt", true);
+            BufferedWriter out = new BufferedWriter(fstream);
+            for (Map.Entry<String, String> kv : generated.entrySet()) {
+                out.write(kv.getKey());
+                out.append('\t');
+                out.write(kv.getValue());
+                out.append('\n');
+            }
+            out.close();
+        } catch (IOException e) {
+            ErrorReporter.errorAbort("Error creating methods.txt file in: " + outdir +
+                    "; ensure the path is valid", e);
+        }
+    }
+
 }
