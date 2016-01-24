@@ -1,5 +1,7 @@
 import org.checkerframework.checker.unsignedness.qual.*;
 
+@skip-test
+
 public class Comparisons {
     void good() {
         @Unsigned int unsigned = 1;

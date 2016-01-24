@@ -1,5 +1,7 @@
 import org.checkerframework.checker.unsignedness.qual.*;
 
+@skip-test
+
 public class LowerUpperBound {
 
 	void good() {
