@@ -165,6 +165,7 @@ public class JavaSource2CFGDOT {
         CFGVisualizer viz = new DOTCFGVisualizer();
         viz.init(args);
         Map<String, Object> res = viz.visualize(cfg, cfg.getEntryBlock(), analysis);
+        viz.shutdown();
 
         if (pdf) {
             producePDF((String) res.get("dotFileName"));

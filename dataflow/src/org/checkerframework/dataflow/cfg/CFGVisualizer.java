@@ -50,4 +50,8 @@ public interface CFGVisualizer {
     <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
     /*@Nullable*/ Map<String, Object> visualize(ControlFlowGraph cfg, Block entry,
             /*@Nullable*/ Analysis<A, S, T> analysis);
+
+    /** Shutdown method called once from the shutdown hook of the BaseTypeChecker.
+     */
+    void shutdown();
 }
