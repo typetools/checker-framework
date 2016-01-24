@@ -10,18 +10,17 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 public final class Class<T> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
   private static final long serialVersionUID = 0;
   protected Class() {}
-  @Override
-@SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   public static Class<?> forName(String a1) throws ClassNotFoundException { throw new RuntimeException("skeleton method"); }
   public static Class<?> forName(String a1, boolean a2, @Nullable ClassLoader a3) throws ClassNotFoundException { throw new RuntimeException("skeleton method"); }
   public @NonNull T newInstance() throws InstantiationException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isAnnotation() { throw new RuntimeException("skeleton method"); }
+  @EnsuresNonNullIf(expression="#1", result=true)
   @Pure public native boolean isInstance(@Nullable Object a1);
   @Pure public boolean isSynthetic() { throw new RuntimeException("skeleton method"); }
   public String getName() { throw new RuntimeException("skeleton method"); }
   public @Nullable ClassLoader getClassLoader() { throw new RuntimeException("skeleton method"); }
-  @Override
-public java.lang.reflect.TypeVariable<Class<T>>[] getTypeParameters() { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect.TypeVariable<Class<T>>[] getTypeParameters() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect. @Nullable Type getGenericSuperclass() { throw new RuntimeException("skeleton method"); }
   @Pure public @Nullable Package getPackage() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Type[] getGenericInterfaces() { throw new RuntimeException("skeleton method"); }
@@ -58,14 +57,10 @@ public java.lang.reflect.TypeVariable<Class<T>>[] getTypeParameters() { throw ne
   java.util.Map<String, T> enumConstantDirectory() { throw new RuntimeException("skeleton method"); }
   public @PolyNull T cast(@PolyNull Object a1) { throw new RuntimeException("skeleton method"); }
   public <U> Class<? extends U> asSubclass(Class<U> a1) { throw new RuntimeException("skeleton method"); }
-  @Override
-public <A extends java.lang.annotation.Annotation> @Nullable A getAnnotation(Class<A> a1) { throw new RuntimeException("skeleton method"); }
-  @Override
-@Pure public boolean isAnnotationPresent(Class<? extends java.lang.annotation.Annotation> a1) { throw new RuntimeException("skeleton method"); }
-  @Override
-public java.lang.annotation.Annotation[] getAnnotations() { throw new RuntimeException("skeleton method"); }
-  @Override
-public java.lang.annotation.Annotation[] getDeclaredAnnotations() { throw new RuntimeException("skeleton method"); }
+  public <A extends java.lang.annotation.Annotation> @Nullable A getAnnotation(Class<A> a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean isAnnotationPresent(Class<? extends java.lang.annotation.Annotation> a1) { throw new RuntimeException("skeleton method"); }
+  public java.lang.annotation.Annotation[] getAnnotations() { throw new RuntimeException("skeleton method"); }
+  public java.lang.annotation.Annotation[] getDeclaredAnnotations() { throw new RuntimeException("skeleton method"); }
   @Pure public native @Nullable Class<?> getComponentType();
   public native Object @Nullable [] getSigners();
   public native @Nullable Class<?> getDeclaringClass();
