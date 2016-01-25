@@ -3,8 +3,7 @@ package org.checkerframework.checker.unsignedness.qual;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;

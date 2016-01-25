@@ -17,12 +17,10 @@ public class UnsignednessVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactor
     public UnsignednessVisitor(BaseTypeChecker checker) {
         super(checker);
     }
-
+    
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
-
-        super.visitBinary(node, p);
-
+        
         ExpressionTree leftOp = node.getLeftOperand();
         ExpressionTree rightOp = node.getRightOperand();
         AnnotatedTypeMirror leftOpType = atypeFactory.getAnnotatedType(leftOp);
@@ -79,7 +77,7 @@ public class UnsignednessVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactor
                 checker.report(Result.failure("binary.comparison.type.incompatible.unsignedlhs",
                                               kind), node);
             } else if (leftOpType.hasAnnotation(Signed.class) && rightOpType.hasAnnotation(Unsigned.class)) {
-                checker.report(Result.failure("binary.comparison.type.incomaptible.unsignedrhs",
+                checker.report(Result.failure("binary.comparison.type.incompatible.unsignedrhs",
                                               kind), node);
             }
             break;
@@ -95,15 +93,13 @@ public class UnsignednessVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactor
             break;
 
         }
-
-        return null;
+        
+        return super.visitBinary(node, p);
     }
 
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-
-        super.visitCompoundAssignment(node, p);
-
+        
         ExpressionTree var = node.getVariable();
         ExpressionTree expr = node.getExpression();
         AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(var);
@@ -116,24 +112,24 @@ public class UnsignednessVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactor
         case DIVIDE_ASSIGNMENT:
         case REMAINDER_ASSIGNMENT:
             if (varType.hasAnnotation(Unsigned.class)) {
-                checker.report(Result.failure("compoundassignment.type.incompatible",
+                checker.report(Result.failure("compound.assignment.type.incompatible",
                                               kind), node);
             } else if (exprType.hasAnnotation(Unsigned.class)) {
-                checker.report(Result.failure("compoundassignment.type.incompatible",
+                checker.report(Result.failure("compound.assignment.type.incompatible",
                                               kind), node);
             }
             break;
 
         case RIGHT_SHIFT_ASSIGNMENT:
             if (varType.hasAnnotation(Unsigned.class)) {
-                checker.report(Result.failure("compoundassignment.type.shift.incompatible",
+                checker.report(Result.failure("compound.assignment.shift.type.incompatible",
                                               kind, "unsigned"), node);
             }
             break;
 
         case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
             if (varType.hasAnnotation(Signed.class)) {
-                checker.report(Result.failure("compoundassignment.type.shift.incompatible",
+                checker.report(Result.failure("compound.assignment.shift.type.incompatible",
                                               kind, "signed"), node);
             }
             break;
@@ -143,16 +139,16 @@ public class UnsignednessVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactor
 
         default:
             if (varType.hasAnnotation(Unsigned.class) && exprType.hasAnnotation(Signed.class)) {
-                checker.report(Result.failure("compoundassignment.type.incompatible.unsignedlhs",
+                checker.report(Result.failure("compound.assignment.type.incompatible.unsignedlhs",
                                               kind), node);
             } else if (varType.hasAnnotation(Signed.class) && exprType.hasAnnotation(Unsigned.class)) {
-                checker.report(Result.failure("compoundassignment.type.incompatible.unsignedrhs",
+                checker.report(Result.failure("compound.assignment.type.incompatible.unsignedrhs",
                                               kind), node);
             }
             break;
 
         }
-
-        return null;
+        
+        return super.visitCompoundAssignment(node, p);
     }
 }
