@@ -15,7 +15,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @checker_framework.manual #unsignedness-checker Unsignedness Checker
  */
-@Target( { ElementType.TYPE_USE, ElementType.TYPE_PARAMETER } )
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf( { Unsigned.class, Signed.class } )
 @ImplicitFor(
     trees = {

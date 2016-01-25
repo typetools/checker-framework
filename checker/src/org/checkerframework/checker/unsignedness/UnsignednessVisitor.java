@@ -17,7 +17,7 @@ public class UnsignednessVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactor
     public UnsignednessVisitor(BaseTypeChecker checker) {
         super(checker);
     }
-    
+
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
         
@@ -97,6 +97,7 @@ public class UnsignednessVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactor
         return super.visitBinary(node, p);
     }
 
+    /*
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
         
@@ -151,4 +152,5 @@ public class UnsignednessVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactor
         
         return super.visitCompoundAssignment(node, p);
     }
+    */
 }

@@ -15,7 +15,7 @@ public class UnsignednessTest extends CheckerFrameworkTest {
     }
 
     @Parameters
-    public static String [] getTestDirs() {
+    public static String[] getTestDirs() {
         return new String[]{"unsignedness", "all-systems"};
     }
 }
