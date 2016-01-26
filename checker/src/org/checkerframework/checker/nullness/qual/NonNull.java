@@ -59,7 +59,7 @@ import com.sun.source.tree.Tree;
         Tree.Kind.DOUBLE_LITERAL, Tree.Kind.FLOAT_LITERAL,
         Tree.Kind.INT_LITERAL, Tree.Kind.LONG_LITERAL, Tree.Kind.STRING_LITERAL })
 @DefaultQualifierInHierarchy
-@DefaultFor({DefaultLocation.EXCEPTION_PARAMETER})
+@DefaultFor({ DefaultLocation.EXCEPTION_PARAMETER })
 @DefaultInUncheckedCodeFor({ DefaultLocation.PARAMETERS, DefaultLocation.LOWER_BOUNDS })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
