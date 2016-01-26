@@ -23,6 +23,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
         TypeKind.BYTE, 
         TypeKind.INT, 
         TypeKind.LONG, 
-        TypeKind.SHORT
+        TypeKind.SHORT,
+        TypeKind.FLOAT,
+        TypeKind.DOUBLE
     } )
 public @interface Signed { }
