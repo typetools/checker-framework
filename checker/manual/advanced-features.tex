@@ -309,7 +309,8 @@ writes a type such as \<Date>, the Nullness Checker interprets it as
 We recommend that the type system apply that default qualifier to most but
 not all types.  In particular, we recommend the CLIMB-to-top rule.  This
 rule states that the \emph{top} qualifier in the hierarchy is applied to
-the CLIMB locations:  \textbf{C}asts, \textbf{L}ocals, \textbf{I}nstanceof, and i\textbf{M}plicit \textbf{B}ounds.
+the CLIMB locations:  \textbf{C}asts, \textbf{L}ocals, \textbf{I}nstanceof,
+and (some) i\textbf{M}plicit \textbf{B}ounds.
 For example, when the user writes a type such as \<Date> in such a
 location, the Nullness Checker interprets it as \<@Nullable Date> (because
 \refqualclass{checker/nullness/qual}{Nullable} is the top qualifier in the
@@ -331,26 +332,25 @@ Here is the rationale for CLIMB-to-top:
 
 \begin{itemize}
 \item
-Casts and local variables (including resource variables in the
-try-with-resources construct, variables in for statements, exception parameters etc.)
-should be defaulted to top because they are the locations to
-which type refinement (Section~\ref{type-refinement}) is applied.  If they
-start as the top type, then the Checker Framework chooses the best (most
-general) possible type for them.  As a result, a programmer rarely writes
-an explicit annotation on any of those locations.
+Local variables are defaulted to top because type refinement
+(Section~\ref{type-refinement}) is applied to local variables.  If a local
+variable starts as the top type, then the Checker Framework refines it to
+the best (most specific) possible type based on assignments to it.  As a
+result, a programmer rarely writes an explicit annotation on any of those
+locations.
 
-Catch arguments, known as exception parameters in the Java Language Specification,
-should be defaulted to top for most checkers; otherwise, an error will be issued.  This is because
+Variables defaulted to top include local variables, resource variables in the
+try-with-resources construct, variables in for statements, and catch
+arguments (known as exception parameters in the Java Language Specification).
+Exception parameters need to have the top type because
 exceptions of arbitrary qualified types can be thrown and the Checker Framework
 does not provide runtime checks.
 
-
 \item
-Instanceof types are defaulted to top for a similar reason:  so that
-programmers do not need to write annotations on them.  If the
-\<instanceof>'s qualifier is top, then the Checker Framework will never
-issue an error that the \<instanceof> qualifier is not compatible with the
-argument.
+Cast and instanceof types are not really defaulted to top.  Rather, they
+are given the same type as their argument, which is the most specific
+possible type.  That would also have been the effect if they were given the
+top type and then flow-sensitively refined to the type of their argument.
 
 \item
 Implicit upper bounds are defaulted to top to allow them to be instantiated
@@ -1433,3 +1433,4 @@ class @Marsupial-Animal {
 %%  LocalWords:  wildcards guieffect AassumeAssertionsAreDisabled
 %%  LocalWords:  AssumeAssertion AsafeDefaultsForUnannotatedBytecode
 %%  LocalWords:  I18nFormatFor AunsafeDefaultsForUnannotatedBytecode
+%%  LocalWords:  AuseDefaultsForUncheckedCode
