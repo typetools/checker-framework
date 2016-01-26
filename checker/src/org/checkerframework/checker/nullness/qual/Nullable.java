@@ -29,8 +29,6 @@ import com.sun.source.tree.Tree;
  */
 @SubtypeOf({})
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
-@DefaultFor({ DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,
-            DefaultLocation.IMPLICIT_UPPER_BOUNDS })
 @DefaultInUncheckedCodeFor({ DefaultLocation.RETURNS, DefaultLocation.UPPER_BOUNDS })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
