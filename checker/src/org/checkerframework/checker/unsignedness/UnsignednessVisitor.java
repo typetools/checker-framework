@@ -97,7 +97,6 @@ public class UnsignednessVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactor
         return super.visitBinary(node, p);
     }
 
-    /*
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
         
@@ -136,21 +135,11 @@ public class UnsignednessVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactor
             break;
 
         case LEFT_SHIFT_ASSIGNMENT:
-            break;
-
         default:
-            if (varType.hasAnnotation(Unsigned.class) && exprType.hasAnnotation(Signed.class)) {
-                checker.report(Result.failure("compound.assignment.type.incompatible.unsignedlhs",
-                                              kind), node);
-            } else if (varType.hasAnnotation(Signed.class) && exprType.hasAnnotation(Unsigned.class)) {
-                checker.report(Result.failure("compound.assignment.type.incompatible.unsignedrhs",
-                                              kind), node);
-            }
             break;
 
         }
         
         return super.visitCompoundAssignment(node, p);
     }
-    */
 }
