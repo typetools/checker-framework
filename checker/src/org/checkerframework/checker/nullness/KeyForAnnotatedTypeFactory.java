@@ -14,8 +14,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.cfg.node.*;
-import org.checkerframework.framework.flow.CFAbstractStore;
-import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.PolyAll;
@@ -470,16 +468,24 @@ public class KeyForAnnotatedTypeFactory extends
    */
   private LinkedHashSet<String> canonicalizeKeyForValues(AnnotationMirror anno, FlowExpressionContext flowExprContext, TreePath path, Tree t, boolean returnNullIfUnchanged) {
       if (anno != null) {
-          Receiver varTypeReceiver = null;
           boolean unknownReceiver = flowExprContext.receiver == null || flowExprContext.receiver.containsUnknown();
           boolean valuesChanged = false; // Indicates that at least one value was changed in the list.
           LinkedHashSet<String> newValues = new LinkedHashSet<String>();
 
           List<String> values = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
           for (String s: values) {
+              Receiver varTypeReceiver = null;
+
               try {
                   varTypeReceiver = FlowExpressionParseUtil.parse(s, flowExprContext, path);
               } catch (FlowExpressionParseException e) {
+            	  // Canonicalization is a best-effort approach and it should not cause an exception
+            	  // to be thrown if an expression cannot be parsed. If an expression that must be
+            	  // canonicalized cannot be because of an inability to parse it, a type checking
+            	  // error will be issued later if the expression is compared to its canonical equivalent.
+            	  // For example, if @KeyFor("#1") could not be canonicalized to @KeyFor("var1"), and
+            	  // it is later compared to a @KeyFor("var1") annotation that was written by the user,
+            	  // a type checking error will result.
               }
 
               if (unknownReceiver // The receiver type was unknown initially, and ...
@@ -492,6 +498,7 @@ public class KeyForAnnotatedTypeFactory extends
                       varTypeReceiver = FlowExpressionParseUtil.parse("this." + s, // Try a field in the current object. Do not modify s itself since it is used in the newValue.equals(s) check below.
                               flowExprContext, path);
                   } catch (FlowExpressionParseException e) {
+                	  // See the comment in the "catch (FlowExpressionParseException e)" block above.
                   }
               }
 

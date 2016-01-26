@@ -462,16 +462,16 @@ public class FlowExpressions {
     }
 
     public static class LocalVariable extends Receiver {
-        protected VarSymbol element;
+        protected Element element;
 
         public LocalVariable(LocalVariableNode localVar) {
             super(localVar.getType());
-            this.element = (VarSymbol) localVar.getElement();
+            this.element = localVar.getElement();
         }
 
         public LocalVariable(Element elem) {
             super(ElementUtils.getType(elem));
-            this.element = (VarSymbol) elem;
+            this.element = elem;
         }
 
         @Override
@@ -480,9 +480,15 @@ public class FlowExpressions {
                 return false;
             }
             LocalVariable other = (LocalVariable) obj;
-            return other.element.name.toString().equals(element.name.toString()) &&
-                   other.element.type.toString().equals(element.type.toString()) &&
-                   other.element.owner.toString().equals(element.owner.toString());
+            VarSymbol vs = (VarSymbol) element;
+            VarSymbol vsother = (VarSymbol) other.element;
+            // Use type.toString().equals(...) instead of Types.isSameType(...)
+            // because Types requires a processing environment, and FlowExpressions is
+            // designed to be independent of processing environment.  See also
+            // calls to getType().toString() in FlowExpressions.
+            return vsother.name.contentEquals(vs.name) &&
+                   vsother.type.toString().equals(vs.type.toString()) &&
+                   vsother.owner.toString().equals(vs.owner.toString());
         }
 
         public Element getElement() {
@@ -491,14 +497,15 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(element.name.toString(),
-                    element.type.toString(),
-                    element.owner.toString());
+            VarSymbol vs = (VarSymbol) element;
+            return HashCodeUtils.hash(vs.name.toString(),
+                    vs.type.toString(),
+                    vs.owner.toString());
         }
 
         @Override
         public String toString() {
-            return element.name.toString();
+            return element.toString();
         }
 
         @Override
