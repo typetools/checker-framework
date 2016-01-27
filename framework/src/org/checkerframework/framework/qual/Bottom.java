@@ -15,9 +15,6 @@ import java.lang.annotation.Target;
  * qualifier hierarchy.
  * <p>
  *
- * This annotation may not be written in source code; it is an
- * implementation detail of the Checker Framework.
- *
  * Note that because of the missing RetentionPolicy, the qualifier will
  * not be stored in bytecode.
  * <p>

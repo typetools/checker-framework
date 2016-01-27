@@ -117,12 +117,20 @@ public class TestUtilities {
     public static boolean isJavaTestFile(File file) {
         if (!isJavaFile(file))
             return false;
+
+        // We could implement special filtering based on directory names,
+        // but I prefer using @below-java8-jdk-skip-test
+        // if (!isAtLeast8Jvm && file.getAbsolutePath().contains("java8")) {
+        //     return false;
+        // }
+
         Scanner in = null;
         try {
             in = new Scanner(file);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
+
         while (in.hasNext()) {
             String nextLine = in.nextLine();
             if (nextLine.contains("@skip-test") ||
@@ -132,6 +140,7 @@ public class TestUtilities {
                 return false;
             }
         }
+
         in.close();
         return true;
     }
@@ -349,19 +358,6 @@ public class TestUtilities {
 
     public static boolean testBooleanProperty(String propName, boolean defaultValue) {
         return System.getProperty(propName, String.valueOf(defaultValue)).equalsIgnoreCase("true");
-    }
-
-    //We should do this while discovering source file but that would require a
-    //refactoring of the test utilities
-    public static void filterOutJdk8Sources(List<File> sources) {
-        for (int i = 0; i < sources.size(); ) {
-            File sourceFile = sources.get(i);
-            if (sourceFile.getAbsolutePath().contains("java8")) {
-                sources.remove(i);
-            } else {
-                i++;
-            }
-        }
     }
 
     public static boolean getShouldEmitDebugInfo() {

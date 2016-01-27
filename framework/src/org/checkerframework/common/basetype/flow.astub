@@ -1,5 +1,5 @@
 // This file will be eventually converted into an annotated JDK, at
-// checkers/jdk/basetype/ .
+// checker/jdk/basetype/ .
 
 import org.checkerframework.dataflow.qual.*;
 

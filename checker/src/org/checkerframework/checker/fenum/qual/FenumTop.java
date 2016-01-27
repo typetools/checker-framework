@@ -13,10 +13,6 @@ import org.checkerframework.framework.qual.TargetLocations;
 
 /**
  * The top of the fake enumeration type hierarchy.
- * <p>
- *
- * This annotation may not be written in source code; it is an
- * implementation detail of the checker.
  *
  * @checker_framework.manual #fenum-checker Fake Enum Checker
  */

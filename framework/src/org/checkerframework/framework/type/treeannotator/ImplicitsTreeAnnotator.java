@@ -59,9 +59,10 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     protected final QualifierHierarchy qualHierarchy;
 
     /**
-     * Creates a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator} from the given checker, using that checker's
-     * {@link org.checkerframework.framework.qual.TypeQualifiers} annotation to determine the annotations that are
-     * in the type hierarchy.
+     * Creates a
+     * {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}
+     * from the given checker, using that checker to determine the annotations
+     * that are in the type hierarchy.
      */
     public ImplicitsTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
         super(atypeFactory);

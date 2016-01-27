@@ -18,7 +18,7 @@ import zipfile
 def javac_sanity_check( checker_framework_website, release_version ):
     """
        Download the release of the Checker Framework from the development website
-       and NullnessExampleWithWarnings.java from the Google Code repository.
+       and NullnessExampleWithWarnings.java from the GitHub repository.
        Run the Nullness Checker on NullnessExampleWithWarnings and verify the output
        Fails if the expected errors are not found in the output.
     """
@@ -66,8 +66,8 @@ def javac_sanity_check( checker_framework_website, release_version ):
         "NullnessExampleWithWarnings.java:36: error: (argument.type.incompatible)"
     ])
 
-    #this is a smoke test for the built-in checker shorthand feature
-    #http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#shorthand-for-checkers
+    # this is a smoke test for the built-in checker shorthand feature
+    # http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#shorthand-for-checkers
     nullness_shorthand_output = os.path.join( deploy_dir, "output_shorthand.log")
     cmd = sanity_javac + " -processor NullnessChecker " + nullness_example + " -Anomsgtext"
     execute_write_to_file( cmd, nullness_shorthand_output, False )
