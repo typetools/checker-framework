@@ -1,6 +1,6 @@
 import org.checkerframework.framework.qual.DefaultQualifiers;
 import org.checkerframework.framework.qual.DefaultQualifier;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
 import polyall.quals.*;
 
@@ -9,7 +9,7 @@ import polyall.quals.*;
 // are separately annotated.
 class Defaulting {
 
-    @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.LOCAL_VARIABLE})
+    @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.LOCAL_VARIABLE})
     class TestLocal {
         void m(@H1S1 Object p1, @H1S2 Object p2) {
             Object l1 = p1;
@@ -19,9 +19,9 @@ class Defaulting {
     }
 
     @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.UPPER_BOUNDS}),
-        @DefaultQualifier(value=H1S2.class, locations={DefaultLocation.OTHERWISE})
+        @DefaultQualifier(value=H1Top.class, locations={ TypeUseLocation.LOCAL_VARIABLE}),
+        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.UPPER_BOUNDS}),
+        @DefaultQualifier(value=H1S2.class, locations={ TypeUseLocation.OTHERWISE})
     })
     //Type of x is <@H1S2 X extends @H1S1 Object>, these annotations are siblings
     //and should not be in the same bound
@@ -36,9 +36,9 @@ class Defaulting {
     }
 
     @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.PARAMETERS}),
-        @DefaultQualifier(value=H1S2.class, locations={DefaultLocation.OTHERWISE})
+        @DefaultQualifier(value=H1Top.class, locations={ TypeUseLocation.LOCAL_VARIABLE}),
+        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.PARAMETERS}),
+        @DefaultQualifier(value=H1S2.class, locations={ TypeUseLocation.OTHERWISE})
     })
     class TestParameter {
         void m(Object p) {
@@ -56,9 +56,9 @@ class Defaulting {
         }
     }
     @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.PARAMETERS}),
-        @DefaultQualifier(value=H1S2.class, locations={DefaultLocation.OTHERWISE})
+        @DefaultQualifier(value=H1Top.class, locations={ TypeUseLocation.LOCAL_VARIABLE}),
+        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.PARAMETERS}),
+        @DefaultQualifier(value=H1S2.class, locations={ TypeUseLocation.OTHERWISE})
     })
     class TestConstructorParameter {
 
@@ -78,9 +78,9 @@ class Defaulting {
     }
 
     @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.RETURNS}),
-        @DefaultQualifier(value=H1S2.class, locations={DefaultLocation.OTHERWISE})
+        @DefaultQualifier(value=H1Top.class, locations={ TypeUseLocation.LOCAL_VARIABLE}),
+        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.RETURNS}),
+        @DefaultQualifier(value=H1S2.class, locations={ TypeUseLocation.OTHERWISE})
     })
     class TestReturns {
         Object res() {
@@ -106,8 +106,8 @@ class Defaulting {
     }
 
     @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.RECEIVERS})
+        @DefaultQualifier(value=H1Top.class, locations={ TypeUseLocation.LOCAL_VARIABLE}),
+        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.RECEIVERS})
     })
     public class ReceiverDefaulting {
         public ReceiverDefaulting() {};
@@ -115,7 +115,7 @@ class Defaulting {
     }
 
     @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCAL_VARIABLE}),
+        @DefaultQualifier(value=H1Top.class, locations={ TypeUseLocation.LOCAL_VARIABLE}),
     })
     class TestReceiver {
 

@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TargetLocations;
 
@@ -17,10 +17,10 @@ import org.checkerframework.framework.qual.TargetLocations;
  * @checker_framework.manual #fenum-checker Fake Enum Checker
  */
 @SubtypeOf( { } )
-@DefaultFor({ DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE })
+@DefaultFor({ TypeUseLocation.LOCAL_VARIABLE, TypeUseLocation.RESOURCE_VARIABLE })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE})
-@TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
-    DefaultLocation.EXPLICIT_UPPER_BOUNDS})
+@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUNDS,
+    TypeUseLocation.EXPLICIT_UPPER_BOUNDS})
 public @interface FenumTop {}

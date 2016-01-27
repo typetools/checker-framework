@@ -3,7 +3,7 @@ import tests.util.*;
 
 class ExtendsDefault {
 
-    @DefaultQualifier(value=Odd.class, locations={DefaultLocation.UPPER_BOUNDS})
+    @DefaultQualifier(value=Odd.class, locations={ TypeUseLocation.UPPER_BOUNDS})
     class MyOddDefault<T> { }
     class MyNonOddDefault<T> { }
 

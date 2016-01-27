@@ -18,8 +18,8 @@ import com.sun.source.tree.Tree;
 @ImplicitFor(trees = {Tree.Kind.NULL_LITERAL},
   typeNames = {java.lang.Void.class})
 @SubtypeOf({Regex.class, PartialRegex.class})
-@DefaultFor(value={DefaultLocation.LOWER_BOUNDS})
+@DefaultFor(value={ TypeUseLocation.LOWER_BOUNDS})
 @Target({ElementType.TYPE_USE})
-@TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
-    DefaultLocation.EXPLICIT_UPPER_BOUNDS})
+@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUNDS,
+    TypeUseLocation.EXPLICIT_UPPER_BOUNDS})
 public @interface RegexBottom {}

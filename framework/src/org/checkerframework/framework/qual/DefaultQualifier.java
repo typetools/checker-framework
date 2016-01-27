@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  * unrelated type systems, or with different {@code locations} fields) at
  * the same location, use {@link DefaultQualifiers}.
  *
- * @see DefaultLocation
+ * @see TypeUseLocation
  * @see DefaultQualifiers
  * @see DefaultQualifierInHierarchy
  * @see DefaultFor
@@ -52,5 +52,5 @@ public @interface DefaultQualifier {
     Class<? extends Annotation> value();
 
     /** @return the locations to which the annotation should be applied */
-    DefaultLocation[] locations() default {DefaultLocation.ALL};
+    TypeUseLocation[] locations() default { TypeUseLocation.ALL};
 }

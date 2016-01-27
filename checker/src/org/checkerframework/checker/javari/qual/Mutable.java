@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 import org.checkerframework.checker.javari.JavariChecker;
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
@@ -27,7 +27,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @SubtypeOf({ThisMutable.class, QReadOnly.class})
 @DefaultQualifierInHierarchy
-@DefaultFor({DefaultLocation.EXCEPTION_PARAMETER})
+@DefaultFor({ TypeUseLocation.EXCEPTION_PARAMETER})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

@@ -5,7 +5,7 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -22,7 +22,7 @@ import org.checkerframework.framework.qual.TargetLocations;
 @SubtypeOf({ ArrayLen.class, BoolVal.class, DoubleVal.class,
         IntVal.class, StringVal.class })
 @Target({ElementType.TYPE_USE})
-@TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
-    DefaultLocation.EXPLICIT_UPPER_BOUNDS})
+@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUNDS,
+    TypeUseLocation.EXPLICIT_UPPER_BOUNDS})
 public @interface BottomVal {
 }

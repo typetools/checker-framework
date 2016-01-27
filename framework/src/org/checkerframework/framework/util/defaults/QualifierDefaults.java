@@ -1,7 +1,7 @@
 package org.checkerframework.framework.util.defaults;
 
 import org.checkerframework.framework.qual.AnnotatedFor;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -106,25 +106,25 @@ public class QualifierDefaults {
     /**
      * CLIMB locations whose standard default is top for a given type system.
      */
-    public static final DefaultLocation[] standardClimbDefaultsTop = { DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,
-                                                                       DefaultLocation.EXCEPTION_PARAMETER, DefaultLocation.IMPLICIT_UPPER_BOUNDS };
+    public static final TypeUseLocation[] standardClimbDefaultsTop = { TypeUseLocation.LOCAL_VARIABLE, TypeUseLocation.RESOURCE_VARIABLE,
+                                                                       TypeUseLocation.EXCEPTION_PARAMETER, TypeUseLocation.IMPLICIT_UPPER_BOUNDS };
     /**
      * CLIMB locations whose standard default is bottom for a given type system.
      */
-    public static final DefaultLocation[] standardClimbDefaultsBottom = { DefaultLocation.IMPLICIT_LOWER_BOUNDS };
+    public static final TypeUseLocation[] standardClimbDefaultsBottom = { TypeUseLocation.IMPLICIT_LOWER_BOUNDS };
 
     /**
      * List of DefaultLocations that are valid for unchecked code defaults.
      */
-    private static final DefaultLocation[] validUncheckedCodeDefaultLocations = {
-        DefaultLocation.FIELD,
-        DefaultLocation.PARAMETERS,
-        DefaultLocation.RETURNS,
-        DefaultLocation.RECEIVERS,
-        DefaultLocation.UPPER_BOUNDS,
-        DefaultLocation.LOWER_BOUNDS,
-        DefaultLocation.OTHERWISE,
-        DefaultLocation.ALL
+    private static final TypeUseLocation[] validUncheckedCodeDefaultLocations = {
+        TypeUseLocation.FIELD,
+        TypeUseLocation.PARAMETERS,
+        TypeUseLocation.RETURNS,
+        TypeUseLocation.RECEIVERS,
+        TypeUseLocation.UPPER_BOUNDS,
+        TypeUseLocation.LOWER_BOUNDS,
+        TypeUseLocation.OTHERWISE,
+        TypeUseLocation.ALL
     };
 
     /**
@@ -133,14 +133,14 @@ public class QualifierDefaults {
     // Fields are defaulted to top so that warnings are issued at field reads, which we believe are more common
     // than field writes. Future work is to specify different defaults for field reads and field writes.
     // (When a field is written to, its type should be bottom.)
-    public static final DefaultLocation[] standardUncheckedDefaultsTop = { DefaultLocation.RETURNS,
-                                                                                 DefaultLocation.FIELD,
-                                                                                 DefaultLocation.UPPER_BOUNDS };
+    public static final TypeUseLocation[] standardUncheckedDefaultsTop = { TypeUseLocation.RETURNS,
+                                                                                 TypeUseLocation.FIELD,
+                                                                                 TypeUseLocation.UPPER_BOUNDS };
     /**
      * Standard unchecked default locations that should be bottom
      */
-    public static final DefaultLocation[] standardUncheckedDefaultsBottom = { DefaultLocation.PARAMETERS,
-                                                                                    DefaultLocation.LOWER_BOUNDS };
+    public static final TypeUseLocation[] standardUncheckedDefaultsBottom = { TypeUseLocation.PARAMETERS,
+                                                                                    TypeUseLocation.LOWER_BOUNDS };
     private final boolean useUncheckedCodeDefaultsSource;
     private final boolean useUncheckedCodeDefaultsBytecode;
 
@@ -149,7 +149,7 @@ public class QualifierDefaults {
      * defaults.  These are simply by syntax, since an entire file is typechecked,
      * it is not possible for local variables to be unchecked.
      */
-    public static DefaultLocation[] validLocationsForUncheckedCodeDefaults() {
+    public static TypeUseLocation[] validLocationsForUncheckedCodeDefaults() {
         return validUncheckedCodeDefaultLocations;
     }
 
@@ -171,7 +171,7 @@ public class QualifierDefaults {
      * @param bottoms AnnotationMirrors that are bottom
      */
     public void addUncheckedStandardDefaults(Iterable<? extends AnnotationMirror> tops, Iterable<? extends AnnotationMirror> bottoms){
-        for (DefaultLocation loc : standardUncheckedDefaultsTop) {
+        for (TypeUseLocation loc : standardUncheckedDefaultsTop) {
             // Only add standard defaults in locations where a default has not be specified
             for (AnnotationMirror top : tops) {
                 if (!conflictsWithExistingDefaults(uncheckedCodeDefaults, top, loc)) {
@@ -180,7 +180,7 @@ public class QualifierDefaults {
             }
         }
 
-        for (DefaultLocation loc : standardUncheckedDefaultsBottom) {
+        for (TypeUseLocation loc : standardUncheckedDefaultsBottom) {
             for (AnnotationMirror bottom : bottoms) {
                 // Only add standard defaults in locations where a default has not be specified
                 if (!conflictsWithExistingDefaults(uncheckedCodeDefaults, bottom, loc)) {
@@ -197,7 +197,7 @@ public class QualifierDefaults {
      * @param bottoms AnnotationMirrors that are bottom
      */
     public void addClimbStandardDefaults(Iterable<? extends AnnotationMirror> tops, Iterable<? extends AnnotationMirror> bottoms) {
-        for (DefaultLocation loc : standardClimbDefaultsTop) {
+        for (TypeUseLocation loc : standardClimbDefaultsTop) {
             for (AnnotationMirror top : tops) {
                 if (!conflictsWithExistingDefaults(checkedCodeDefaults, top, loc)) {
                     // Only add standard defaults in locations where a default has not been specified
@@ -206,7 +206,7 @@ public class QualifierDefaults {
             }
         }
 
-        for (DefaultLocation loc : standardClimbDefaultsBottom) {
+        for (TypeUseLocation loc : standardClimbDefaultsBottom) {
             for (AnnotationMirror bottom : bottoms) {
                 if (!conflictsWithExistingDefaults(checkedCodeDefaults, bottom, loc)) {
                     // Only add standard defaults in locations where a default has not been specified
@@ -220,7 +220,7 @@ public class QualifierDefaults {
      * Sets the default annotations.  A programmer may override this by
      * writing the @DefaultQualifier annotation on an element.
      */
-    public void addCheckedCodeDefault(AnnotationMirror absoluteDefaultAnno, DefaultLocation location) {
+    public void addCheckedCodeDefault(AnnotationMirror absoluteDefaultAnno, TypeUseLocation location) {
         checkDuplicates(checkedCodeDefaults, absoluteDefaultAnno, location);
         checkedCodeDefaults.add(new Default(absoluteDefaultAnno, location));
     }
@@ -228,7 +228,7 @@ public class QualifierDefaults {
     /**
      * Sets the default annotation for unchecked elements.
      */
-    public void addUncheckedCodeDefault(AnnotationMirror uncheckedDefaultAnno, DefaultLocation location) {
+    public void addUncheckedCodeDefault(AnnotationMirror uncheckedDefaultAnno, TypeUseLocation location) {
         checkDuplicates(uncheckedCodeDefaults, uncheckedDefaultAnno, location);
         checkIsValidUncheckedCodeLocation(uncheckedDefaultAnno, location);
 
@@ -238,14 +238,14 @@ public class QualifierDefaults {
     /**
      * Sets the default annotation for unchecked elements, with specific locations.
      */
-    public void addUncheckedCodeDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
-        for (DefaultLocation location : locations) {
+    public void addUncheckedCodeDefaults(AnnotationMirror absoluteDefaultAnno, TypeUseLocation[] locations) {
+        for (TypeUseLocation location : locations) {
             addUncheckedCodeDefault(absoluteDefaultAnno, location);
         }
     }
 
-    public void addCheckedCodeDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
-        for (DefaultLocation location : locations) {
+    public void addCheckedCodeDefaults(AnnotationMirror absoluteDefaultAnno, TypeUseLocation[] locations) {
+        for (TypeUseLocation location : locations) {
             addCheckedCodeDefault(absoluteDefaultAnno, location);
         }
     }
@@ -253,7 +253,7 @@ public class QualifierDefaults {
     /**
      * Sets the default annotations for a certain Element.
      */
-    public void addElementDefault(Element elem, AnnotationMirror elementDefaultAnno, DefaultLocation location) {
+    public void addElementDefault(Element elem, AnnotationMirror elementDefaultAnno, TypeUseLocation location) {
         DefaultSet prevset = elementDefaults.get(elem);
         if (prevset != null) {
             checkDuplicates(prevset, elementDefaultAnno, location);
@@ -264,9 +264,9 @@ public class QualifierDefaults {
         elementDefaults.put(elem, prevset);
     }
 
-    private void checkIsValidUncheckedCodeLocation(AnnotationMirror uncheckedDefaultAnno, DefaultLocation location) {
+    private void checkIsValidUncheckedCodeLocation(AnnotationMirror uncheckedDefaultAnno, TypeUseLocation location) {
         boolean isValidUntypeLocation = false;
-        for (DefaultLocation validLoc : validLocationsForUncheckedCodeDefaults()) {
+        for (TypeUseLocation validLoc : validLocationsForUncheckedCodeDefaults()) {
             if (location == validLoc) {
                 isValidUntypeLocation = true;
                 break;
@@ -280,7 +280,7 @@ public class QualifierDefaults {
 
     }
 
-    private void checkDuplicates(DefaultSet previousDefaults, AnnotationMirror newAnno, DefaultLocation newLoc ) {
+    private void checkDuplicates(DefaultSet previousDefaults, AnnotationMirror newAnno, TypeUseLocation newLoc ) {
         if (conflictsWithExistingDefaults(previousDefaults,newAnno,newLoc)) {
             ErrorReporter.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
                                              + previousDefaults + " and new: "
@@ -288,7 +288,7 @@ public class QualifierDefaults {
         }
     }
 
-    private boolean conflictsWithExistingDefaults(DefaultSet previousDefaults, AnnotationMirror newAnno, DefaultLocation newLoc ) {
+    private boolean conflictsWithExistingDefaults(DefaultSet previousDefaults, AnnotationMirror newAnno, TypeUseLocation newLoc ) {
         final QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
 
         for (Default previous : previousDefaults ) {
@@ -471,9 +471,9 @@ public class QualifierDefaults {
         }
 
         if (atypeFactory.isSupportedQualifier(anno)) {
-            EnumSet<DefaultLocation> locations = EnumSet.of(dq.locations()[0], dq.locations());
+            EnumSet<TypeUseLocation> locations = EnumSet.of(dq.locations()[0], dq.locations());
             DefaultSet ret = new DefaultSet();
-            for (DefaultLocation loc : locations) {
+            for (TypeUseLocation loc : locations) {
                 ret.add(new Default(anno, loc));
             }
             return ret;
@@ -666,7 +666,7 @@ public class QualifierDefaults {
         private final AnnotatedTypeMirror type;
 
         // Should only be set by {@link apply}
-        private DefaultLocation location;
+        private TypeUseLocation location;
 
         private final DefaultApplierElementImpl impl;
 

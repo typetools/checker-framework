@@ -10,7 +10,7 @@ package org.checkerframework.framework.qual;
  * @see javax.lang.model.element.ElementKind
  */
 // TODO: variable naming is inconsistently singular or plural.
-public enum DefaultLocation {
+public enum TypeUseLocation {
 
     /**
      * Apply default annotations to all unannotated raw types

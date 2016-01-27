@@ -3,7 +3,7 @@ package org.checkerframework.common.reflection.qual;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -21,7 +21,7 @@ import com.sun.source.tree.Tree;
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
 @SubtypeOf({ MethodVal.class })
 @Target({ElementType.TYPE_USE})
-@TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
-    DefaultLocation.EXPLICIT_UPPER_BOUNDS})
+@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUNDS,
+    TypeUseLocation.EXPLICIT_UPPER_BOUNDS})
 public @interface MethodValBottom {
 }
