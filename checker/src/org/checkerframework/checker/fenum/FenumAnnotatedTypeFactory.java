@@ -13,11 +13,9 @@ import org.checkerframework.checker.fenum.qual.FenumTop;
 import org.checkerframework.checker.fenum.qual.FenumUnqualified;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -34,7 +32,6 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         this.postInit();
     }
-
 
     /** Copied from SubtypingChecker.
      * Instead of returning an empty set if no "quals" option is given,
