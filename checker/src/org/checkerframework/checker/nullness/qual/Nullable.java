@@ -7,7 +7,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.checker.nullness.AbstractNullnessChecker;
-import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
@@ -29,8 +28,6 @@ import com.sun.source.tree.Tree;
  */
 @SubtypeOf({})
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
-@DefaultFor({ DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,
-            DefaultLocation.IMPLICIT_UPPER_BOUNDS })
 @DefaultInUncheckedCodeFor({ DefaultLocation.RETURNS, DefaultLocation.UPPER_BOUNDS })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
