@@ -54,6 +54,8 @@ import org.checkerframework.javacutil.TreeUtils;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -360,6 +362,53 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
+     * Defines alphabetical sort ordering for qualifiers
+     */
+    private static final Comparator<Class<? extends Annotation>> QUALIFIER_SORT_ORDERING
+    = new Comparator<Class<? extends Annotation>>() {
+        @Override
+        public int compare(Class<? extends Annotation> a1, Class<? extends Annotation> a2) {
+            return a1.getCanonicalName().compareTo(a2.getCanonicalName());
+        }
+    };
+
+    /**
+     * Creates and returns a string containing the number of qualifiers and the
+     * canonical class names of each qualifier that has been added to this
+     * checker's supported qualifier set. The names are alphabetically sorted.
+     *
+     * @return a string containing the number of qualifiers and canonical names
+     *         of each qualifier.
+     */
+    protected final String getSortedQualifierNames() {
+        // Create a list of the supported qualifiers and sort the list
+        // alphabetically
+        List<Class<? extends Annotation>> sortedSupportedQuals = new ArrayList<Class<? extends Annotation>>();
+        sortedSupportedQuals.addAll(getSupportedTypeQualifiers());
+        Collections.sort(sortedSupportedQuals, QUALIFIER_SORT_ORDERING);
+
+        // display the number of qualifiers as well as the names of each
+        // qualifier.
+        StringBuilder sb = new StringBuilder();
+        sb.append(sortedSupportedQuals.size());
+        sb.append(" qualifiers examined");
+
+        if (sortedSupportedQuals.size() > 0) {
+            sb.append(": ");
+            // for each qualifier, add its canonical name, a comma and a space
+            // to the string.
+            for (Class<? extends Annotation> qual : sortedSupportedQuals) {
+                sb.append(qual.getCanonicalName());
+                sb.append(", ");
+            }
+            // remove last comma and space
+            return sb.substring(0, sb.length() - 2);
+        } else {
+            return sb.toString();
+        }
+    }
+
+    /**
      * Adds default qualifiers for type-checked code by
      * reading  {@link DefaultFor} and {@link DefaultQualifierInHierarchy}
      * meta-annotations.
@@ -396,7 +445,7 @@ public abstract class GenericAnnotatedTypeFactory<
             ErrorReporter
                     .errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: "
                                         + "@DefaultQualifierInHierarchy or @DefaultFor(DefaultLocation.OTHERWISE) not found. "
-                                        + "Every checker must specify a default qualifier.");
+                                        + "Every checker must specify a default qualifier. " + getSortedQualifierNames());
         }
 
         if (this.everUseFlow) {

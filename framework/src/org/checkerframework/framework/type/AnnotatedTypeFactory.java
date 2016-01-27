@@ -754,12 +754,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * <p>
      * Subclasses cannot override this method; they should override
-     * {@link #createSupportedTypeQualifiers createSupportedTypeQualifiers} instead.
-
+     * {@link #createSupportedTypeQualifiers createSupportedTypeQualifiers}
+     * instead.
+     *
      * @see #createSupportedTypeQualifiers()
      *
-     * @return the type qualifiers supported this processor, or an empty
-     * set if none
+     * @return an immutable set of the supported type qualifiers, or an
+     *         empty set if no qualifiers are supported
      */
     public final Set<Class<? extends Annotation>> getSupportedTypeQualifiers() {
         return supportedQuals;
