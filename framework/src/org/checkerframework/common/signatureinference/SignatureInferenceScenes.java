@@ -73,7 +73,7 @@ import com.sun.tools.javac.code.Type.ClassType;
 
 /**
  * SignatureInferenceScenes represents a set of annotations that are inferred
- * in a program. It also writes those annotations into .jaif files.
+ * in a program.
  * This class stores annotations for fields, method return types, and method
  * parameters.
  * <p>
@@ -81,8 +81,8 @@ import com.sun.tools.javac.code.Type.ClassType;
  * {@link annotations.el.AScene}, which {@link #writeScenesToJaif} can write
  * into a .jaif file.
  * For example, a class field of a class whose fully-qualified name is
- * my.package.MyClass will have its inferred type stored in a Scene, and later
- * written into a file named my.package.MyClass.jaif.
+ * {@code my.package.MyClass} will have its inferred type stored in a Scene,
+ * and later written into a file named {@code my.package.MyClass.jaif}.
  * <p>
  * This class populates the initial Scenes by reading existing .jaif files
  * on the {@link #JAIF_FILES_PATH} directory. Having more information in those
@@ -98,7 +98,7 @@ import com.sun.tools.javac.code.Type.ClassType;
  * by the LUB of it and the update method's argument.
  * <p>
  * This class does not store annotations for an element if the element has
- * explicit annotations &mdash; an update* method ignores an
+ * explicit annotations:  an update* method ignores an
  * explicitly annotated field, method return, or method parameter when
  * passed as an argument.
  * <p>
