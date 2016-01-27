@@ -80,6 +80,9 @@
 	<arg line="-I '^ *$'"/>
 	<arg line="-I '^[^ ]*:$'"/>
 
+	<!-- ignore version of Checker Framework javac -->
+	<arg line="-I '^javac 1.8.0-jsr308'"/>
+
         <!-- ignore paths -->
         <arg line="-I '.java'"/>
         <arg line="-I '.xml'"/>
