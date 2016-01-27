@@ -3,6 +3,7 @@ package org.checkerframework.checker.oigj;
 import org.checkerframework.checker.oigj.qual.Dominator;
 import org.checkerframework.checker.oigj.qual.Modifier;
 import org.checkerframework.checker.oigj.qual.O;
+import org.checkerframework.checker.oigj.qual.OIGJMutabilityBottom;
 import org.checkerframework.checker.oigj.qual.World;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
