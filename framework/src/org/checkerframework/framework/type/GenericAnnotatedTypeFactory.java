@@ -122,11 +122,12 @@ public abstract class GenericAnnotatedTypeFactory<
 
     // Flow related fields
 
-    /** Should use flow analysis? This value can be changed when an AnnotatedTypeMirror
-     * without annotations from data flow is required */
+    /** Should use flow-sensitive type refinement analysis?
+     * This value can be changed when an AnnotatedTypeMirror
+     * without annotations from data flow is required. */
     protected boolean useFlow;
 
-    /** Is this type factory configured to use data flow? */
+    /** Is this type factory configured to use flow-sensitive type refinement? */
     private final boolean everUseFlow;
 
     /** An empty store. */

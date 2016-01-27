@@ -307,7 +307,8 @@ writes a type such as \<Date>, the Nullness Checker interprets it as
 \<@NonNull Date>.
 
 The type system applies that default qualifier to most but
-not all types.  In particular, unless otherwise stated, type systems use the CLIMB-to-top rule.  This
+not all types.  In particular, unless otherwise stated, every type system 
+uses the CLIMB-to-top rule.  This
 rule states that the \emph{top} qualifier in the hierarchy is applied to
 the CLIMB locations:  \textbf{C}asts, \textbf{L}ocals, \textbf{I}nstanceof,
 and (some) i\textbf{M}plicit \textbf{B}ounds.
@@ -396,7 +397,7 @@ public @interface Nullable { }
 \<@DefaultFor(\{ DefaultLocation.EXCEPTION\_PARAMETER \})> on \<@NonNull> overrides 
 the CLIMB-to-top rule.
 
-A type system designer can specify defualts that differ from the CLIMB-to-top rule.  In
+A type system designer can specify defaults that differ from the CLIMB-to-top rule.  In
 addition, a user may choose a different rule for defaults using the
 \refqualclass{framework/qual}{DefaultQualifier} annotation; see
 Section~\ref{defaults}.

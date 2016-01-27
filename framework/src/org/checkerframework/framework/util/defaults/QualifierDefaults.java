@@ -105,17 +105,17 @@ public class QualifierDefaults {
     private final Map<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
 
     /**
-     * CLIMB locations whose standard default is top
+     * CLIMB locations whose standard default is top.
      */
     public static final DefaultLocation[] standardClimbDefaultsTop = { DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,
                                                                        DefaultLocation.EXCEPTION_PARAMETER, DefaultLocation.IMPLICIT_UPPER_BOUNDS };
     /**
-     * CLIMB locations whose standard default is bottom
+     * CLIMB locations whose standard default is bottom.
      */
     public static final DefaultLocation[] standardClimbDefaultsBottom = { DefaultLocation.IMPLICIT_LOWER_BOUNDS };
 
     /**
-     * List of DefaultLocations which are valid for unchecked code defaults.
+     * List of DefaultLocations that are valid for unchecked code defaults.
      */
     private static final DefaultLocation[] validUncheckedCodeDefaultLocations = {
         DefaultLocation.FIELD,
