@@ -479,13 +479,13 @@ public class KeyForAnnotatedTypeFactory extends
               try {
                   varTypeReceiver = FlowExpressionParseUtil.parse(s, flowExprContext, path);
               } catch (FlowExpressionParseException e) {
-            	  // Canonicalization is a best-effort approach and it should not cause an exception
-            	  // to be thrown if an expression cannot be parsed. If an expression that must be
-            	  // canonicalized cannot be because of an inability to parse it, a type checking
-            	  // error will be issued later if the expression is compared to its canonical equivalent.
-            	  // For example, if @KeyFor("#1") could not be canonicalized to @KeyFor("var1"), and
-            	  // it is later compared to a @KeyFor("var1") annotation that was written by the user,
-            	  // a type checking error will result.
+                  // Canonicalization is a best-effort approach and it should not cause an exception
+                  // to be thrown if an expression cannot be parsed. If an expression that must be
+                  // canonicalized cannot be because of an inability to parse it, a type checking
+                  // error will be issued later if the expression is compared to its canonical equivalent.
+                  // For example, if @KeyFor("#1") could not be canonicalized to @KeyFor("var1"), and
+                  // it is later compared to a @KeyFor("var1") annotation that was written by the user,
+                  // a type checking error will result.
               }
 
               if (unknownReceiver // The receiver type was unknown initially, and ...
@@ -495,10 +495,12 @@ public class KeyForAnnotatedTypeFactory extends
                   // parse did not find a static member field. Try a nonstatic field.
 
                   try {
-                      varTypeReceiver = FlowExpressionParseUtil.parse("this." + s, // Try a field in the current object. Do not modify s itself since it is used in the newValue.equals(s) check below.
+                      // Try a field in the current object. Do not modify s itself since
+                      // it is used in the newValue.equals(s) check below.
+                      varTypeReceiver = FlowExpressionParseUtil.parse("this." + s,
                               flowExprContext, path);
                   } catch (FlowExpressionParseException e) {
-                	  // See the comment in the "catch (FlowExpressionParseException e)" block above.
+                      // See the comment in the "catch (FlowExpressionParseException e)" block above.
                   }
               }
 
@@ -516,7 +518,9 @@ public class KeyForAnnotatedTypeFactory extends
           }
 
           if (!returnNullIfUnchanged || valuesChanged) {
-              return newValues; // There is no need to sort the resulting array because the subtype check will be a containsAll call, not an equals call.
+              // There is no need to sort the resulting array because the subtype
+              // check will be a containsAll call, not an equals call.
+              return newValues;
           }
       }
 
