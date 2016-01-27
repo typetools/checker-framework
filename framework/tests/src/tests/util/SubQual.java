@@ -10,5 +10,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /** A subtype of SuperQual. */
 @SubtypeOf(SuperQual.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@DefaultInUncheckedCodeFor({ TypeUseLocation.PARAMETERS, TypeUseLocation.LOWER_BOUNDS })
+@DefaultInUncheckedCodeFor({ TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND })
 public @interface SubQual {}

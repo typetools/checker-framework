@@ -73,7 +73,7 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
 
         addTypeNameImplicit(java.lang.Void.class, BOTTOM);
-        this.defaults.addCheckedCodeDefault(BOTTOM, TypeUseLocation.LOWER_BOUNDS);
+        this.defaults.addCheckedCodeDefault(BOTTOM, TypeUseLocation.LOWER_BOUND);
     }
 
     @Override

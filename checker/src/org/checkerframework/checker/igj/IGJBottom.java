@@ -21,8 +21,8 @@ import com.sun.source.tree.Tree.Kind;
         trees = { Kind.NULL_LITERAL },
         typeClasses = { AnnotatedPrimitiveType.class }
 )
-@DefaultFor({ TypeUseLocation.LOWER_BOUNDS})
+@DefaultFor({ TypeUseLocation.LOWER_BOUND })
 @Target({ElementType.TYPE_USE})
-@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUNDS,
-    TypeUseLocation.EXPLICIT_UPPER_BOUNDS})
+@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
+    TypeUseLocation.EXPLICIT_UPPER_BOUND })
 @interface IGJBottom {}

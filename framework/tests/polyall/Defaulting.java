@@ -20,7 +20,7 @@ class Defaulting {
 
     @DefaultQualifiers({
         @DefaultQualifier(value=H1Top.class, locations={ TypeUseLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.UPPER_BOUNDS}),
+        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.UPPER_BOUND }),
         @DefaultQualifier(value=H1S2.class, locations={ TypeUseLocation.OTHERWISE})
     })
     //Type of x is <@H1S2 X extends @H1S1 Object>, these annotations are siblings
@@ -37,7 +37,7 @@ class Defaulting {
 
     @DefaultQualifiers({
         @DefaultQualifier(value=H1Top.class, locations={ TypeUseLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.PARAMETERS}),
+        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.PARAMETER }),
         @DefaultQualifier(value=H1S2.class, locations={ TypeUseLocation.OTHERWISE})
     })
     class TestParameter {
@@ -57,7 +57,7 @@ class Defaulting {
     }
     @DefaultQualifiers({
         @DefaultQualifier(value=H1Top.class, locations={ TypeUseLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.PARAMETERS}),
+        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.PARAMETER }),
         @DefaultQualifier(value=H1S2.class, locations={ TypeUseLocation.OTHERWISE})
     })
     class TestConstructorParameter {
@@ -79,7 +79,7 @@ class Defaulting {
 
     @DefaultQualifiers({
         @DefaultQualifier(value=H1Top.class, locations={ TypeUseLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.RETURNS}),
+        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.RETURN }),
         @DefaultQualifier(value=H1S2.class, locations={ TypeUseLocation.OTHERWISE})
     })
     class TestReturns {
@@ -107,7 +107,7 @@ class Defaulting {
 
     @DefaultQualifiers({
         @DefaultQualifier(value=H1Top.class, locations={ TypeUseLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.RECEIVERS})
+        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.RECEIVER })
     })
     public class ReceiverDefaulting {
         public ReceiverDefaulting() {};

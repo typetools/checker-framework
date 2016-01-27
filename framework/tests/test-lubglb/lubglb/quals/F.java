@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf({D.class, E.class})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@DefaultFor({ TypeUseLocation.LOWER_BOUNDS})
-@DefaultInUncheckedCodeFor({ TypeUseLocation.RETURNS})
+@DefaultFor({ TypeUseLocation.LOWER_BOUND })
+@DefaultInUncheckedCodeFor({ TypeUseLocation.RETURN })
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface F { }

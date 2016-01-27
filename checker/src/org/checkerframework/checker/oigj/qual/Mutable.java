@@ -31,7 +31,7 @@ import com.sun.source.tree.Tree;
         types = { TypeKind.ARRAY }
 )
 @DefaultQualifierInHierarchy
-@DefaultFor({ TypeUseLocation.IMPLICIT_UPPER_BOUNDS,
-              TypeUseLocation.IMPLICIT_LOWER_BOUNDS,
+@DefaultFor({ TypeUseLocation.IMPLICIT_UPPER_BOUND,
+              TypeUseLocation.IMPLICIT_LOWER_BOUND,
               TypeUseLocation.EXCEPTION_PARAMETER})
 public @interface Mutable {}

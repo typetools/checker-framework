@@ -20,14 +20,14 @@ public class LowerBoundQual {
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @SubtypeOf(LB_TOP.class)
-    @DefaultFor(TypeUseLocation.IMPLICIT_LOWER_BOUNDS)
+    @DefaultFor(TypeUseLocation.IMPLICIT_LOWER_BOUND)
     @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
     public static @interface LB_IMPLICIT {}
 
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @SubtypeOf(LB_TOP.class)
-    @DefaultFor(TypeUseLocation.EXPLICIT_LOWER_BOUNDS)
+    @DefaultFor(TypeUseLocation.EXPLICIT_LOWER_BOUND)
     @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
     public static @interface LB_EXPLICIT {}
 

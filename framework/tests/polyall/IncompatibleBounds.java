@@ -18,8 +18,8 @@ import polyall.quals.*;
 
 //set the defaults in the H2 hierarchy such that do not report errors in this test
 @DefaultQualifiers({
-        @DefaultQualifier(value=H2Top.class, locations={ TypeUseLocation.UPPER_BOUNDS}),
-        @DefaultQualifier(value=H2Bot.class, locations={ TypeUseLocation.LOWER_BOUNDS})
+        @DefaultQualifier(value=H2Top.class, locations={ TypeUseLocation.UPPER_BOUND }),
+        @DefaultQualifier(value=H2Bot.class, locations={ TypeUseLocation.LOWER_BOUND })
 })
 public class IncompatibleBounds {
 

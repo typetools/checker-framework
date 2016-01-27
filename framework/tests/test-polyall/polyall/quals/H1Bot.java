@@ -14,6 +14,6 @@ import com.sun.source.tree.Tree;
 @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@DefaultFor({ TypeUseLocation.LOWER_BOUNDS})
+@DefaultFor({ TypeUseLocation.LOWER_BOUND })
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface H1Bot {}

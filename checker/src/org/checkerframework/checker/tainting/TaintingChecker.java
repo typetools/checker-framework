@@ -23,7 +23,7 @@ public class TaintingChecker extends CheckerAdapter<QualParams<Tainting>> {
         defaults.addCheckedCodeDefault(
                 getTypeMirrorConverter().getAnnotation(
                         new QualParams<>(new GroundQual<>(Tainting.UNTAINTED))),
-                TypeUseLocation.IMPLICIT_LOWER_BOUNDS);
+                TypeUseLocation.IMPLICIT_LOWER_BOUND);
 
         defaults.addCheckedCodeDefault(
                 getTypeMirrorConverter().getAnnotation(

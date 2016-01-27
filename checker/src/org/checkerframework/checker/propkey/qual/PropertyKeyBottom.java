@@ -20,5 +20,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 //by overloading the AnnotatedTypeFactory.createTreeAnnotator method (see CompilerMessagesAnnotatedTypeFactory),
 //one exception to this is the I18nChecker
 @ImplicitFor(typeNames = {java.lang.Void.class})
-@DefaultFor(TypeUseLocation.LOWER_BOUNDS)
+@DefaultFor(TypeUseLocation.LOWER_BOUND)
 public @interface PropertyKeyBottom {}

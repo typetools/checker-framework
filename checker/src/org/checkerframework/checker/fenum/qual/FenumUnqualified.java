@@ -22,7 +22,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @SubtypeOf( { FenumTop.class } )
 @DefaultQualifierInHierarchy
-@DefaultFor({ TypeUseLocation.IMPLICIT_UPPER_BOUNDS, TypeUseLocation.IMPLICIT_LOWER_BOUNDS,
+@DefaultFor({ TypeUseLocation.IMPLICIT_UPPER_BOUND, TypeUseLocation.IMPLICIT_LOWER_BOUND,
               TypeUseLocation.EXCEPTION_PARAMETER })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

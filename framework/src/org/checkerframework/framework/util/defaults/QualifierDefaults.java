@@ -107,22 +107,22 @@ public class QualifierDefaults {
      * CLIMB locations whose standard default is top for a given type system.
      */
     public static final TypeUseLocation[] standardClimbDefaultsTop = { TypeUseLocation.LOCAL_VARIABLE, TypeUseLocation.RESOURCE_VARIABLE,
-                                                                       TypeUseLocation.EXCEPTION_PARAMETER, TypeUseLocation.IMPLICIT_UPPER_BOUNDS };
+                                                                       TypeUseLocation.EXCEPTION_PARAMETER, TypeUseLocation.IMPLICIT_UPPER_BOUND };
     /**
      * CLIMB locations whose standard default is bottom for a given type system.
      */
-    public static final TypeUseLocation[] standardClimbDefaultsBottom = { TypeUseLocation.IMPLICIT_LOWER_BOUNDS };
+    public static final TypeUseLocation[] standardClimbDefaultsBottom = { TypeUseLocation.IMPLICIT_LOWER_BOUND };
 
     /**
      * List of DefaultLocations that are valid for unchecked code defaults.
      */
     private static final TypeUseLocation[] validUncheckedCodeDefaultLocations = {
         TypeUseLocation.FIELD,
-        TypeUseLocation.PARAMETERS,
-        TypeUseLocation.RETURNS,
-        TypeUseLocation.RECEIVERS,
-        TypeUseLocation.UPPER_BOUNDS,
-        TypeUseLocation.LOWER_BOUNDS,
+        TypeUseLocation.PARAMETER,
+        TypeUseLocation.RETURN,
+        TypeUseLocation.RECEIVER,
+        TypeUseLocation.UPPER_BOUND,
+        TypeUseLocation.LOWER_BOUND,
         TypeUseLocation.OTHERWISE,
         TypeUseLocation.ALL
     };
@@ -133,14 +133,14 @@ public class QualifierDefaults {
     // Fields are defaulted to top so that warnings are issued at field reads, which we believe are more common
     // than field writes. Future work is to specify different defaults for field reads and field writes.
     // (When a field is written to, its type should be bottom.)
-    public static final TypeUseLocation[] standardUncheckedDefaultsTop = { TypeUseLocation.RETURNS,
+    public static final TypeUseLocation[] standardUncheckedDefaultsTop = { TypeUseLocation.RETURN,
                                                                                  TypeUseLocation.FIELD,
-                                                                                 TypeUseLocation.UPPER_BOUNDS };
+                                                                                 TypeUseLocation.UPPER_BOUND };
     /**
      * Standard unchecked default locations that should be bottom
      */
-    public static final TypeUseLocation[] standardUncheckedDefaultsBottom = { TypeUseLocation.PARAMETERS,
-                                                                                    TypeUseLocation.LOWER_BOUNDS };
+    public static final TypeUseLocation[] standardUncheckedDefaultsBottom = { TypeUseLocation.PARAMETER,
+                                                                                    TypeUseLocation.LOWER_BOUND };
     private final boolean useUncheckedCodeDefaultsSource;
     private final boolean useUncheckedCodeDefaultsBytecode;
 
@@ -787,7 +787,7 @@ public class QualifierDefaults {
                     }
                     break;
                 }
-                case PARAMETERS: {
+                case PARAMETER: {
                     if (scope != null && scope.getKind() == ElementKind.PARAMETER &&
                             t == type) {
                         doApply(t, qual);
@@ -803,7 +803,7 @@ public class QualifierDefaults {
                     }
                     break;
                 }
-                case RECEIVERS: {
+                case RECEIVER: {
                     if (scope != null && scope.getKind() == ElementKind.PARAMETER &&
                             t == type && "this".equals(scope.getSimpleName())) {
                         // TODO: comparison against "this" is ugly, won't work
@@ -820,7 +820,7 @@ public class QualifierDefaults {
                     }
                     break;
                 }
-                case RETURNS: {
+                case RETURN: {
                     if (scope != null && scope.getKind() == ElementKind.METHOD &&
                             t.getKind() == TypeKind.EXECUTABLE &&
                             t == type) {
@@ -833,40 +833,40 @@ public class QualifierDefaults {
                 }
 
 
-                case IMPLICIT_LOWER_BOUNDS: {
+                case IMPLICIT_LOWER_BOUND: {
                     if (isLowerBound && boundType.isOneOf(BoundType.UNBOUND, BoundType.UPPER, BoundType.UNKNOWN)) {
                         doApply(t, qual);
                     }
                     break;
                 }
 
-                case EXPLICIT_LOWER_BOUNDS: {
+                case EXPLICIT_LOWER_BOUND: {
                     if (isLowerBound && boundType.isOneOf(BoundType.LOWER)) {
                         doApply(t, qual);
                     }
                     break;
                 }
 
-                case LOWER_BOUNDS: {
+                case LOWER_BOUND: {
                     if (isLowerBound) {
                         doApply(t, qual);
                     }
                     break;
                 }
 
-                case IMPLICIT_UPPER_BOUNDS: {
+                case IMPLICIT_UPPER_BOUND: {
                     if (isUpperBound && boundType.isOneOf(BoundType.UNBOUND, BoundType.LOWER)) {
                         doApply(t, qual);
                     }
                     break;
                 }
-                case EXPLICIT_UPPER_BOUNDS: {
+                case EXPLICIT_UPPER_BOUND: {
                     if (isUpperBound && boundType.isOneOf(BoundType.UPPER, BoundType.UNKNOWN)) {
                         doApply(t, qual);
                     }
                     break;
                 }
-                case UPPER_BOUNDS: {
+                case UPPER_BOUND: {
                     if (this.isUpperBound) {
                         doApply(t, qual);
                     }

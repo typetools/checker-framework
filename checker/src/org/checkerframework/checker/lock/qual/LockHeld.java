@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
 @SubtypeOf(LockPossiblyHeld.class) // This is the bottom type in this hierarchy
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@DefaultFor({ TypeUseLocation.LOWER_BOUNDS})
+@DefaultFor({ TypeUseLocation.LOWER_BOUND })
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 public @interface LockHeld {
 }

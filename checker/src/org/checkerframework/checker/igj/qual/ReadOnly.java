@@ -26,7 +26,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 //        TypeKind.DOUBLE, TypeKind.FLOAT, TypeKind.INT, TypeKind.LONG,
 //        TypeKind.SHORT})
 @DefaultFor({ TypeUseLocation.LOCAL_VARIABLE, TypeUseLocation.RESOURCE_VARIABLE,
-    TypeUseLocation.IMPLICIT_UPPER_BOUNDS })
+    TypeUseLocation.IMPLICIT_UPPER_BOUND })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

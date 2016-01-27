@@ -26,7 +26,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @checker_framework.manual #javari-checker Javari Checker
  */
 @SubtypeOf({})
-@DefaultFor({ TypeUseLocation.IMPLICIT_UPPER_BOUNDS })
+@DefaultFor({ TypeUseLocation.IMPLICIT_UPPER_BOUND })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

@@ -60,7 +60,7 @@ import com.sun.source.tree.Tree;
         Tree.Kind.INT_LITERAL, Tree.Kind.LONG_LITERAL, Tree.Kind.STRING_LITERAL })
 @DefaultQualifierInHierarchy
 @DefaultFor({ TypeUseLocation.EXCEPTION_PARAMETER })
-@DefaultInUncheckedCodeFor({ TypeUseLocation.PARAMETERS, TypeUseLocation.LOWER_BOUNDS })
+@DefaultInUncheckedCodeFor({ TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })

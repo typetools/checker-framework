@@ -22,7 +22,7 @@ import com.sun.source.tree.Tree;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE})
-@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUNDS,
-    TypeUseLocation.EXPLICIT_UPPER_BOUNDS})
+@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
+    TypeUseLocation.EXPLICIT_UPPER_BOUND })
 public @interface FBCBottom {
 }

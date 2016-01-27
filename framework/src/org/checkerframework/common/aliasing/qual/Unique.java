@@ -29,5 +29,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE})
 @SubtypeOf({MaybeAliased.class})
-@DefaultFor(TypeUseLocation.LOWER_BOUNDS)
+@DefaultFor(TypeUseLocation.LOWER_BOUND)
 public @interface Unique {}

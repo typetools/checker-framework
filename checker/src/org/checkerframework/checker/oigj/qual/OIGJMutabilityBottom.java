@@ -20,8 +20,8 @@ import com.sun.source.tree.Tree.Kind;
 @SubtypeOf({Mutable.class, Immutable.class, I.class,
     Modifier.class, O.class})
 @Target({ElementType.TYPE_USE})
-@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUNDS,
-    TypeUseLocation.EXPLICIT_UPPER_BOUNDS})
+@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
+    TypeUseLocation.EXPLICIT_UPPER_BOUND })
 @ImplicitFor(
         trees = { Kind.NULL_LITERAL, Kind.CLASS, Kind.ENUM,
                 Kind.INTERFACE, Kind.ANNOTATION_TYPE,
@@ -29,5 +29,5 @@ import com.sun.source.tree.Tree.Kind;
         typeClasses = { AnnotatedPrimitiveType.class },
         typeNames = { java.lang.Void.class }
 )
-@DefaultFor({ TypeUseLocation.LOWER_BOUNDS})
+@DefaultFor({ TypeUseLocation.LOWER_BOUND })
 public @interface OIGJMutabilityBottom { }

@@ -17,13 +17,13 @@ import org.checkerframework.framework.qual.TargetLocations;
  * @checker_framework.manual #propkey-checker Property File Checker
  */
 @Documented
-@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUNDS,
-    TypeUseLocation.EXPLICIT_UPPER_BOUNDS})
+@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
+    TypeUseLocation.EXPLICIT_UPPER_BOUND })
 @Target({ElementType.TYPE_USE})
 @SubtypeOf({}) //subtype relationships are set up by passing this class as a bottom
                //to the multigraph hierarchy constructor
 @Retention(RetentionPolicy.RUNTIME)
 @ImplicitFor(trees = {Tree.Kind.NULL_LITERAL},
              typeNames = {java.lang.Void.class})
-@DefaultFor(TypeUseLocation.LOWER_BOUNDS)
+@DefaultFor(TypeUseLocation.LOWER_BOUND)
 public @interface FenumBottom {}

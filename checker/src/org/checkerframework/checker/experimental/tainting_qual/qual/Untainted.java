@@ -21,6 +21,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf(Tainted.class)
 @ImplicitFor(trees = { STRING_LITERAL, NULL_LITERAL })
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@DefaultFor({ TypeUseLocation.LOWER_BOUNDS})
+@DefaultFor({ TypeUseLocation.LOWER_BOUND })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Untainted {}

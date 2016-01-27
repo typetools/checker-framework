@@ -29,7 +29,7 @@ import com.sun.source.tree.Tree;
  */
 @SubtypeOf({})
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
-@DefaultInUncheckedCodeFor({ TypeUseLocation.RETURNS, TypeUseLocation.UPPER_BOUNDS })
+@DefaultInUncheckedCodeFor({ TypeUseLocation.RETURN, TypeUseLocation.UPPER_BOUND })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })

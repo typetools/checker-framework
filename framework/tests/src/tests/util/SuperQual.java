@@ -12,5 +12,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@DefaultInUncheckedCodeFor({ TypeUseLocation.RETURNS, TypeUseLocation.UPPER_BOUNDS })
+@DefaultInUncheckedCodeFor({ TypeUseLocation.RETURN, TypeUseLocation.UPPER_BOUND })
 public @interface SuperQual {}

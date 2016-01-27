@@ -19,7 +19,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf({}) // needs to be done programmatically
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@DefaultFor(TypeUseLocation.LOWER_BOUNDS)
+@DefaultFor(TypeUseLocation.LOWER_BOUND)
 @ImplicitFor(typeNames = Void.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface UnitsBottom {}

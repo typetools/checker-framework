@@ -462,8 +462,8 @@ public abstract class GenericAnnotatedTypeFactory<
      * unchecked code defaults, if a default was not specified for a particular location.
      * <p>
      * Standard unchecked code default are: <br>
-     * top: {@code TypeUseLocation.RETURNS,TypeUseLocation.FIELD,TypeUseLocation.UPPER_BOUNDS}<br>
-     * bottom: {@code TypeUseLocation.PARAMETERS, TypeUseLocation.LOWER_BOUNDS}<br>
+     * top: {@code TypeUseLocation.RETURN,TypeUseLocation.FIELD,TypeUseLocation.UPPER_BOUND}<br>
+     * bottom: {@code TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND}<br>
      * <p>
      * If {@code @DefaultQualifierInHierarchyInUncheckedCode} code is not found or a default for
      * {@code TypeUseLocation.Otherwise} is not used, the defaults for checked code will be applied to

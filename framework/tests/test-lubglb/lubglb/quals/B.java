@@ -11,7 +11,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 @SubtypeOf({A.class})
-@DefaultInUncheckedCodeFor({ TypeUseLocation.PARAMETERS})
+@DefaultInUncheckedCodeFor({ TypeUseLocation.PARAMETER })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

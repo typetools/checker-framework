@@ -12,5 +12,5 @@ import org.checkerframework.framework.qual.*;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(Dominator.class)
 @DefaultQualifierInHierarchy
-@DefaultFor({ TypeUseLocation.IMPLICIT_UPPER_BOUNDS, TypeUseLocation.EXCEPTION_PARAMETER})
+@DefaultFor({ TypeUseLocation.IMPLICIT_UPPER_BOUND, TypeUseLocation.EXCEPTION_PARAMETER})
 public @interface Modifier {}

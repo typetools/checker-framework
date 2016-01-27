@@ -28,7 +28,7 @@ public class RegexChecker extends CheckerAdapter<QualParams<Regex>> {
         defaults.addCheckedCodeDefault(
                 getTypeMirrorConverter().getAnnotation(
                         new QualParams<>(new GroundQual<>(Regex.BOTTOM))),
-                TypeUseLocation.LOWER_BOUNDS);
+                TypeUseLocation.LOWER_BOUND);
 
         defaults.addCheckedCodeDefault(
                 getTypeMirrorConverter().getAnnotation(

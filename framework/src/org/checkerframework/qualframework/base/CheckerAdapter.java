@@ -167,7 +167,7 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
         defaults.addCheckedCodeDefault(
                 getTypeMirrorConverter().getAnnotation(
                         underlying.getTypeFactory().getQualifierHierarchy().getBottom()),
-                TypeUseLocation.IMPLICIT_LOWER_BOUNDS);
+                TypeUseLocation.IMPLICIT_LOWER_BOUND);
         defaults.addCheckedCodeDefault(
                 getTypeMirrorConverter().getAnnotation(
                         underlying.getTypeFactory().getQualifierHierarchy().getTop()),

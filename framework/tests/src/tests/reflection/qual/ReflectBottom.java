@@ -14,6 +14,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @SubtypeOf({Sibling1.class, Sibling2.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@DefaultFor(TypeUseLocation.LOWER_BOUNDS)
+@DefaultFor(TypeUseLocation.LOWER_BOUND)
 public @interface ReflectBottom {}
 
