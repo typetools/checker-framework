@@ -23,11 +23,15 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
 
     @Override
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-// When it is possible to defualt types based on their TypeKinds,
+// When it is possible to default types based on their TypeKinds,
 // this method will no longer be need.
 // Currently, it is adding the LOCAL_VARIABLE default for 
 // bytes, shorts, ints, and longs so that the implicit for 
 // those types is not applied when they are local variables.
+// Only the local variable default is applied first because 
+// it is the only refinable location (other than fields) that could 
+// have a primitive type.
+
         addUnknownSignednessToSomeLocals(tree, type);
         super.annotateImplicit(tree, type, iUseFlow);
     }
