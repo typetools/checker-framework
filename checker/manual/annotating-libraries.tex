@@ -591,12 +591,12 @@ in a stub file one has to write
 
 \item
   The stub file reader
-  does not handle nested classes declarations.  To work around this, it permits a
+  does not handle nested class declarations.  To work around this, it permits a
   top-level class to be written with a \<\$> in its name, and applies the
   annotations to the appropriate nested class.
 
 \begin{Verbatim}
-    class Lib$Inner{
+    class Lib$Inner {
        // methods
     }
 \end{Verbatim}
@@ -610,8 +610,10 @@ in a stub file one has to write
           void init(@Nullable java.security.SecureRandom random);
    \end{Verbatim}
 \item
-   Annotations on types that are inner classes must written before the package on the
-   fully annotated type or before the inner class name. For example,
+   Annotations on types that are inner classes must written before the
+   package if the type is written as a
+   fully annotated type, or before the inner class name if the type is
+   written as a simple type. For example,
 
 \begin{Verbatim}
         ProcessBuilder redirectError(@NonNull java.lang.ProcessBuilder.Redirect destination)
