@@ -593,13 +593,12 @@ in a stub file one has to write
   The stub file reader
   does not handle nested classes declarations.  To work around this, it permits a
   top-level class to be written with a \<\$> in its name, and applies the
-  annotations to the appropriate nested class. For example:
+  annotations to the appropriate nested class.
 
 \begin{Verbatim}
-@SomeAnnotation
-class Lib$Inner{
-   // methods
-}
+    class Lib$Inner{
+       // methods
+    }
 \end{Verbatim}
 
 \item
@@ -610,6 +609,17 @@ class Lib$Inner{
   \begin{Verbatim}
           void init(@Nullable java.security.SecureRandom random);
    \end{Verbatim}
+\item
+   Annotations on types that are inner classes must written before the package on the
+   fully annotated type or before the inner class name. For example,
+
+\begin{Verbatim}
+        ProcessBuilder redirectError(@NonNull java.lang.ProcessBuilder.Redirect destination)
+\end{Verbatim}
+ or
+\begin{Verbatim}
+        ProcessBuilder redirectError(@NonNull Redirect destination)
+\end{Verbatim}
 
 \item
   Annotations can only use string, boolean, or integer literals; other literals are not
