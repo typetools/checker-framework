@@ -591,9 +591,16 @@ in a stub file one has to write
 
 \item
   The stub file reader
-  does not handle nested classes.  To work around this, it permits a
+  does not handle nested classes declarations.  To work around this, it permits a
   top-level class to be written with a \<\$> in its name, and applies the
-  annotations to the appropriate nested class.
+  annotations to the appropriate nested class. For example:
+
+\begin{Verbatim}
+@SomeAnnotation
+class Lib$Inner{
+   // methods
+}
+\end{Verbatim}
 
 \item
   Annotations must be written before the package name on a fully qualified
