@@ -114,7 +114,7 @@ public class QualifierDefaults {
     public static final TypeUseLocation[] standardClimbDefaultsBottom = { TypeUseLocation.IMPLICIT_LOWER_BOUND };
 
     /**
-     * List of DefaultLocations that are valid for unchecked code defaults.
+     * List of TypeUseLocations that are valid for unchecked code defaults.
      */
     private static final TypeUseLocation[] validUncheckedCodeDefaultLocations = {
         TypeUseLocation.FIELD,
