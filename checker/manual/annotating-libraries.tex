@@ -401,7 +401,7 @@ following ways:
   The only required import statements are the ones to import type
   annotations.  Import statements for types are optional.
 
-  Enum constants in annotations need to be either fully qualified
+  Enum constants in annotations need to be either fully-qualified
   or imported.
   For example, one has to either write the enum constant \<ANY> in
   fully-qualified form:
@@ -602,9 +602,9 @@ in a stub file one has to write
 \end{Verbatim}
 
 \item
-  Annotations must be written before the package name on a fully qualified
+  Annotations must be written before the package name on a fully-qualified
   types rather than directly on the type it qualifies.  However, it is usually not
-  necessary to write the fully qualified name.
+  necessary to write the fully-qualified name.
 
   \begin{Verbatim}
           void init(@Nullable java.security.SecureRandom random);
@@ -612,7 +612,7 @@ in a stub file one has to write
 \item
    Annotations on types that are inner classes must be written before the
    package if the type is written as a
-   fully annotated type, or before the inner class name if the type is
+   fully-qualified type, or before the inner class name if the type is
    written as a simple type. For example,
 
 \begin{Verbatim}
