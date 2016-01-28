@@ -48,6 +48,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -123,6 +124,30 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
         this.inferSignatures = analysis.getTypeFactory().getProcessingEnv().
                 getOptions().containsKey("inferSignatures");
+        if (inferSignatures) {
+            checkInvalidOptionsInferSignature(
+                    new String[]{"safeDefaultsForUnannotatedBytecode",
+                                "useSafeDefaultsForUnannotatedSourceCode"});
+        }
+    }
+
+    /**
+     * This method is called only when -AinferSignature is passed as an option.
+     * It checks if another option that should not occur simultaneously with
+     * the signature inference is also passed as argument, and
+     * aborts the process if that is the case. For example, the signature
+     * inference process was not designed to work with safe defaults.
+     * @param invalidOptions an array containing all options that cannot occur
+     * simultaneously with -AinferSignatures.
+     */
+    private void checkInvalidOptionsInferSignature(String[] invalidOptions) {
+        for (String option : invalidOptions) {
+            if (analysis.getTypeFactory().getProcessingEnv().getOptions().
+                    containsKey(option)) {
+                ErrorReporter.errorAbort("The option -AinferSignatures cannot be" +
+                        " used together with the option -A" + option + ".");
+            }
+        }
     }
 
     /**
