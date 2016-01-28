@@ -35,7 +35,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -341,25 +340,61 @@ public class SignatureInferenceScenes {
      * @param atf the annotated type factory of a given type system, whose
      * type hierarchy will be used.
      * @param jaifPath used to identify a Scene.
-     * @param newATM the type containing annotations to be added (or "lubbed")
-     * to the Scene.
-     * @param curATM used to check if the element which will be updated has
-     * explicit annotations in source code.
+     * @param rhsATM the RHS of the annotated type on the source code.
+     * @param lhsATM the LHS of the annotated type on the source code.
      * @param defLoc the location where the annotation will be added.
      */
     private static void updateAnnotationSetInScene(ATypeElement type,
             AnnotatedTypeFactory atf, String jaifPath,
-            AnnotatedTypeMirror newATM, AnnotatedTypeMirror curATM,
+            AnnotatedTypeMirror rhsATM, AnnotatedTypeMirror lhsATM,
             DefaultLocation defLoc) {
         AnnotatedTypeMirror atmFromJaif = typeElementToATM(
-                type, atf, newATM.getUnderlyingType());
-        if (atmFromJaif.getAnnotations().size() == newATM.getAnnotations().size()
-                && !newATM.getAnnotations().isEmpty()) {
-            newATM = AnnotatedTypes.leastUpperBound(
-                    atf.getProcessingEnv(), atf, newATM, atmFromJaif);
+                type, atf, rhsATM.getUnderlyingType());
+        AnnotatedTypeMirror newATM = localLUB(atf, rhsATM, atmFromJaif);
+        if (lhsATM instanceof AnnotatedTypeVariable) {
+            // If the inferred type is a subtype of the upper bounds of the
+            // current type on the source code, exit this routine.
+                if (atf.getQualifierHierarchy().isSubtype(
+                        newATM.getAnnotations(), ((AnnotatedTypeVariable) lhsATM).
+                                getUpperBound().getAnnotations())) {
+                    return;
+                }
         }
-        updateTypeElementFromATM(newATM, curATM, atf, type, 1, defLoc);
+        updateTypeElementFromATM(newATM, lhsATM, atf, type, 1, defLoc);
         modifiedScenes.add(jaifPath);
+    }
+
+    /**
+     * Calculates the LUB between sourceCodeATM and jaifATM, ignoring missing
+     * AnnotationMirrors from jaifATM -- it considers the LUB between an
+     * AnnotationMirror am and a missing AnnotationMirror to be am.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used.
+     * @param sourceCodeATM the annotated type on the source code.
+     * @param jaifATM the annotated type on the .jaif file.
+     * @return
+     */
+    private static AnnotatedTypeMirror localLUB(AnnotatedTypeFactory atf,
+            AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror jaifATM) {
+        if (sourceCodeATM instanceof AnnotatedTypeVariable) {
+            localLUB(atf, ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
+                    ((AnnotatedTypeVariable) jaifATM).getLowerBound());
+            localLUB(atf, ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
+                    ((AnnotatedTypeVariable) jaifATM).getUpperBound());
+        }
+        if (sourceCodeATM instanceof AnnotatedArrayType) {
+            localLUB(atf, ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
+                    ((AnnotatedArrayType) jaifATM).getComponentType());
+        }
+        for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
+            AnnotationMirror amJaif = jaifATM.getAnnotationInHierarchy(amSource);
+            if (amJaif != null) {
+                amSource = atf.getQualifierHierarchy().leastUpperBound(
+                        amSource, amJaif);
+            }
+            sourceCodeATM.replaceAnnotation(amSource);
+        }
+        return sourceCodeATM;
     }
 
     /**
