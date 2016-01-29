@@ -30,4 +30,14 @@ public class LUBAssignmentTest {
     static @Sibling2 int getSibling2() {
         return 0;
     }
+
+    String lubTest2() {
+        if (Math.random() > 0.5) {
+            return "";
+        } else {
+            //:: warning: (cast.unsafe) 
+            @SignatureInferenceBottom String s = (@SignatureInferenceBottom String) "";
+            return s;
+        }
+    }
 }
