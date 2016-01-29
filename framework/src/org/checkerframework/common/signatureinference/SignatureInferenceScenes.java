@@ -39,6 +39,7 @@ import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.qualframework.base.TypeMirrorConverter.Key;
 
 import annotations.Annotation;
 import annotations.el.AClass;
@@ -348,53 +349,57 @@ public class SignatureInferenceScenes {
             AnnotatedTypeFactory atf, String jaifPath,
             AnnotatedTypeMirror rhsATM, AnnotatedTypeMirror lhsATM,
             DefaultLocation defLoc) {
-        AnnotatedTypeMirror atmFromJaif = typeElementToATM(
-                type, atf, rhsATM.getUnderlyingType());
-        AnnotatedTypeMirror newATM = localLUB(atf, rhsATM, atmFromJaif);
+        AnnotatedTypeMirror atmFromJaif = AnnotatedTypeMirror.createType(
+                rhsATM.getUnderlyingType(), atf, false);
+        typeElementToATM(atmFromJaif, type, atf);
+        updatesATMWithLUB(atf, rhsATM, atmFromJaif);
         if (lhsATM instanceof AnnotatedTypeVariable) {
+            Set<AnnotationMirror> upperAnnos = ((AnnotatedTypeVariable) lhsATM).
+                        getUpperBound().getAnnotations();
             // If the inferred type is a subtype of the upper bounds of the
-            // current type on the source code, exit this routine.
-                if (atf.getQualifierHierarchy().isSubtype(
-                        newATM.getAnnotations(), ((AnnotatedTypeVariable) lhsATM).
-                                getUpperBound().getAnnotations())) {
+            // current type on the source code, halt.
+                if (upperAnnos.size() == rhsATM.getAnnotations().size() &&
+                        atf.getQualifierHierarchy().isSubtype(
+                                rhsATM.getAnnotations(), upperAnnos)) {
                     return;
                 }
         }
-        updateTypeElementFromATM(newATM, lhsATM, atf, type, 1, defLoc);
+        updateTypeElementFromATM(rhsATM, lhsATM, atf, type, 1, defLoc);
         modifiedScenes.add(jaifPath);
     }
 
     /**
-     * Calculates the LUB between sourceCodeATM and jaifATM, ignoring missing
-     * AnnotationMirrors from jaifATM -- it considers the LUB between an
-     * AnnotationMirror am and a missing AnnotationMirror to be am.
+     * Updates sourceCodeATM to contain the LUB between sourceCodeATM and
+     * jaifATM, ignoring missing AnnotationMirrors from jaifATM -- it considers
+     * the LUB between an AnnotationMirror am and a missing AnnotationMirror to be am.
+     * The results are stored in sourceCodeATM.
      * @param atf the annotated type factory of a given type system, whose
      * type hierarchy will be used.
      * @param sourceCodeATM the annotated type on the source code.
      * @param jaifATM the annotated type on the .jaif file.
-     * @return
      */
-    private static AnnotatedTypeMirror localLUB(AnnotatedTypeFactory atf,
+    private static void updatesATMWithLUB(AnnotatedTypeFactory atf,
             AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror jaifATM) {
         if (sourceCodeATM instanceof AnnotatedTypeVariable) {
-            localLUB(atf, ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
+            updatesATMWithLUB(atf, ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
                     ((AnnotatedTypeVariable) jaifATM).getLowerBound());
-            localLUB(atf, ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
+            updatesATMWithLUB(atf, ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
                     ((AnnotatedTypeVariable) jaifATM).getUpperBound());
         }
         if (sourceCodeATM instanceof AnnotatedArrayType) {
-            localLUB(atf, ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
+            updatesATMWithLUB(atf, ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
                     ((AnnotatedArrayType) jaifATM).getComponentType());
         }
+        Set<AnnotationMirror> annosToReplace = new HashSet<>();
         for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
             AnnotationMirror amJaif = jaifATM.getAnnotationInHierarchy(amSource);
             if (amJaif != null) {
                 amSource = atf.getQualifierHierarchy().leastUpperBound(
                         amSource, amJaif);
             }
-            sourceCodeATM.replaceAnnotation(amSource);
+            annosToReplace.add(amSource);
         }
-        return sourceCodeATM;
+        sourceCodeATM.replaceAnnotations(annosToReplace);
     }
 
     /**
@@ -455,7 +460,15 @@ public class SignatureInferenceScenes {
                 }
             }
         }
+        if (shouldIgnore) {
+            return shouldIgnore;
+        }
 
+        // Special cases that should be ignored:
+        // {@link org.checkerframework.qualframework.base.TypeMirrorConverter.Key}
+        if (AnnotationUtils.areSameByClass(am, Key.class)) {
+            shouldIgnore = true;
+        }
         return shouldIgnore;
     }
 
@@ -480,18 +493,16 @@ public class SignatureInferenceScenes {
     }
 
     /**
-     * Returns an {@link org.checkerframework.framework.type.AnnotatedTypeMirror}
-     * containing the {@link annotations.Annotation}s of an
+     * Updates an {@link org.checkerframework.framework.type.AnnotatedTypeMirror}
+     * to contain the {@link annotations.Annotation}s of an
      * {@link annotations.el.ATypeElement}.
+     * @param atm the AnnotatedTypeMirror to be modified
      * @param type the {@link annotations.el.ATypeElement}.
      * @param atf the annotated type factory of a given type system, whose
      * type hierarchy will be used.
-     * @param tm the underlying type.
      */
-    private static AnnotatedTypeMirror typeElementToATM(
-            ATypeElement type, AnnotatedTypeFactory atf, TypeMirror tm) {
-        AnnotatedTypeMirror atm = AnnotatedTypeMirror.createType(tm, atf,
-                false);
+    private static void typeElementToATM(AnnotatedTypeMirror atm,
+            ATypeElement type, AnnotatedTypeFactory atf) {
         Set<Annotation> annos = getSupportedAnnosInSet(type.tlAnnotationsHere,
                 atf);
         for (Annotation anno: annos) {
@@ -499,14 +510,19 @@ public class SignatureInferenceScenes {
                     anno, atf.getProcessingEnv());
             atm.addAnnotation(am);
         }
-        if (tm.getKind() == TypeKind.ARRAY) {
+        if (atm.getKind() == TypeKind.ARRAY) {
             AnnotatedArrayType aat = (AnnotatedArrayType) atm;
             for (ATypeElement innerType : type.innerTypes.values()) {
-                TypeMirror at = aat.getUnderlyingType().getComponentType();
-                aat.setComponentType(typeElementToATM(innerType, atf,at));
+                typeElementToATM(aat.getComponentType(), innerType, atf);
             }
         }
-        return atm;
+        if (atm.getKind() == TypeKind.TYPEVAR) {
+            AnnotatedTypeVariable atv = (AnnotatedTypeVariable) atm;
+            for (ATypeElement innerType : type.innerTypes.values()) {
+                typeElementToATM(atv.getLowerBound(), innerType, atf);
+                typeElementToATM(atv.getUpperBound(), innerType, atf);
+            }
+        }
     }
 
    /**
