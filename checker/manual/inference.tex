@@ -127,12 +127,17 @@ Framework.
 You can find installation instructions and a video tutorial at \url{https://github.com/reprogrammer/cascade}.
 
 
-\subsection{Signature inference (interprocedural type refinement)\label{signature-inference}}
+\subsection{Signature inference\label{signature-inference}}
 
 Elsewhere in this manual, type refinement (Section~\ref{type-refinement})
-has been described as working only within a method.  In fact, it can also
-infer types for fields, method parameters, and method return types, and it
-can insert these inferred types into your program.
+has been described as working only within a method. Type refinement always
+refines the current value, regardless of whether the value already has an
+annotated type. Signature inference is an interprocedural inference that
+infer types for fields, method parameters, and method return types that do not
+have an annotated type. The resulting inferred type may not be a type
+refinement. In other words, the inferred type can be a subtype
+or a supertype of the default type. The inferred types can also be inserted into
+your program.
 
 To do so, please set the \<\$CHECKERFRAMEWORK> variable to the Checker Framework's
 directory (if you haven't already), and make sure that
