@@ -122,8 +122,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
-        this.inferSignatures = analysis.getTypeFactory().getProcessingEnv().
-                getOptions().containsKey("inferSignatures");
+        this.inferSignatures = analysis.checker.hasOption("inferSignatures");
         if (inferSignatures) {
             checkInvalidOptionsInferSignature(
                     new String[]{"safeDefaultsForUnannotatedBytecode",
@@ -142,8 +141,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
      */
     private void checkInvalidOptionsInferSignature(String[] invalidOptions) {
         for (String option : invalidOptions) {
-            if (analysis.getTypeFactory().getProcessingEnv().getOptions().
-                    containsKey(option)) {
+            if (analysis.checker.hasOption(option)) {
                 ErrorReporter.errorAbort("The option -AinferSignatures cannot be" +
                         " used together with the option -A" + option + ".");
             }
