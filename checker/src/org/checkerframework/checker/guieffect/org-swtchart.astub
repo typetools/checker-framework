@@ -1,0 +1,4 @@
+import org.checkerframework.checker.guieffect.qual.*;
+
+package org.swtchart;
+@UIType public class Chart extends org.eclipse.swt.widgets.Composite implements org.eclipse.swt.widgets.Listener {}

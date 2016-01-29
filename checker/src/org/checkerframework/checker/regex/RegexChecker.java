@@ -8,10 +8,12 @@ import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.qualframework.base.CheckerAdapter;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 import org.checkerframework.qualframework.poly.QualParams;
+import org.checkerframework.framework.qual.StubFiles;
 
 /**
  * {@link CheckerAdapter} for the Regex-Qual-Param type system.
  */
+@StubFiles("apache-xerces.astub")
 public class RegexChecker extends CheckerAdapter<QualParams<Regex>> {
 
     public RegexChecker() {

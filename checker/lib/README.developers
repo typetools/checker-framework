@@ -1,0 +1,11 @@
+Please read the README file in this directory first, as it is the file
+that is shipped in the distribution and is intended for users of the
+Checker Framework.
+
+When adding a .jar file to this directory, update the list in README and also
+the list in ../manual/annotating-libraries.tex .
+In general, old files need not be removed; that way, we accommodate users
+regardless of which version of a library they wish to use.
+
+To change which files from this directory are included in the distribution,
+modify release/checker-includes.

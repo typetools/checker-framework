@@ -2,6 +2,12 @@
 
 Version 1.9.11, 1 February 2016
 
+The Checker Framework distribution now contains annotated versions
+of libraries.  During type-checking, these versions can be put on
+your classpath, to obtain more precise type-checking with fewer
+false positive warnings.
+Please see checker/lib/README for more details.
+
 For type-system developers:
 
 * The previously deprecated
