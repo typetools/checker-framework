@@ -1,18 +1,18 @@
 package org.checkerframework.checker.unsignedness;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree.Kind;
-
-import org.checkerframework.checker.unsignedness.qual.*;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.checker.unsignedness.qual.Signed;
+import org.checkerframework.checker.unsignedness.qual.Unsigned;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
-public class UnsignednessVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree.Kind;
+
+public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTypeFactory> {
 
     public UnsignednessVisitor(BaseTypeChecker checker) {
         super(checker);
