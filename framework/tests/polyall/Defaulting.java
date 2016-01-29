@@ -9,7 +9,7 @@ import polyall.quals.*;
 // are separately annotated.
 class Defaulting {
 
-    @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.LOCAL_VARIABLE})
+    @DefaultQualifier(value = H1S1.class, locations = { TypeUseLocation.LOCAL_VARIABLE })
     class TestLocal {
         void m(@H1S1 Object p1, @H1S2 Object p2) {
             Object l1 = p1;
@@ -18,10 +18,9 @@ class Defaulting {
         }
     }
 
-    @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={ TypeUseLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.UPPER_BOUND }),
-        @DefaultQualifier(value=H1S2.class, locations={ TypeUseLocation.OTHERWISE})
+    @DefaultQualifiers({ @DefaultQualifier(value = H1Top.class, locations = { TypeUseLocation.LOCAL_VARIABLE }),
+                         @DefaultQualifier(value = H1S1.class, locations = { TypeUseLocation.UPPER_BOUND }),
+                         @DefaultQualifier(value = H1S2.class, locations = { TypeUseLocation.OTHERWISE })
     })
     //Type of x is <@H1S2 X extends @H1S1 Object>, these annotations are siblings
     //and should not be in the same bound
@@ -35,10 +34,9 @@ class Defaulting {
         }
     }
 
-    @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={ TypeUseLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.PARAMETER }),
-        @DefaultQualifier(value=H1S2.class, locations={ TypeUseLocation.OTHERWISE})
+    @DefaultQualifiers({ @DefaultQualifier(value = H1Top.class, locations = { TypeUseLocation.LOCAL_VARIABLE }),
+                         @DefaultQualifier(value = H1S1.class, locations = { TypeUseLocation.PARAMETER }),
+                         @DefaultQualifier(value = H1S2.class, locations = { TypeUseLocation.OTHERWISE })
     })
     class TestParameter {
         void m(Object p) {
@@ -55,10 +53,9 @@ class Defaulting {
             m(new Object());
         }
     }
-    @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={ TypeUseLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.PARAMETER }),
-        @DefaultQualifier(value=H1S2.class, locations={ TypeUseLocation.OTHERWISE})
+    @DefaultQualifiers({ @DefaultQualifier(value = H1Top.class, locations = { TypeUseLocation.LOCAL_VARIABLE }),
+                         @DefaultQualifier(value = H1S1.class, locations = { TypeUseLocation.PARAMETER }),
+                         @DefaultQualifier(value = H1S2.class, locations = { TypeUseLocation.OTHERWISE })
     })
     class TestConstructorParameter {
 
@@ -77,10 +74,9 @@ class Defaulting {
         }
     }
 
-    @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={ TypeUseLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.RETURN }),
-        @DefaultQualifier(value=H1S2.class, locations={ TypeUseLocation.OTHERWISE})
+    @DefaultQualifiers({ @DefaultQualifier(value = H1Top.class, locations = { TypeUseLocation.LOCAL_VARIABLE }),
+                         @DefaultQualifier(value = H1S1.class, locations = { TypeUseLocation.RETURN }),
+                         @DefaultQualifier(value = H1S2.class, locations = { TypeUseLocation.OTHERWISE })
     })
     class TestReturns {
         Object res() {
@@ -105,9 +101,8 @@ class Defaulting {
         }
     }
 
-    @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={ TypeUseLocation.LOCAL_VARIABLE}),
-        @DefaultQualifier(value=H1S1.class, locations={ TypeUseLocation.RECEIVER })
+    @DefaultQualifiers({ @DefaultQualifier(value = H1Top.class, locations = { TypeUseLocation.LOCAL_VARIABLE }),
+                         @DefaultQualifier(value = H1S1.class, locations = { TypeUseLocation.RECEIVER })
     })
     public class ReceiverDefaulting {
         public ReceiverDefaulting() {};
