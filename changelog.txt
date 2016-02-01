@@ -15,7 +15,7 @@ For type-system developers:
   explicitly specifies a different one.  Previously a type system needed
   to explicitly request CLIMB-to-top, but now it is the default.
 
-Closed issues: 524, 563.
+Closed issues: 524, 563, 568.
 
 ---------------------------------------------------------------------------
 
