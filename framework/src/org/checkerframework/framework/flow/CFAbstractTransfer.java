@@ -125,8 +125,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         this.inferSignatures = analysis.checker.hasOption("inferSignatures");
         if (inferSignatures) {
             checkInvalidOptionsInferSignature(
-                    new String[]{"safeDefaultsForUnannotatedBytecode",
-                                "useSafeDefaultsForUnannotatedSourceCode"});
+                    new String[]{"useDefaultsForUncheckedCode"});
         }
     }
         
