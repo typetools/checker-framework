@@ -191,6 +191,8 @@ import com.sun.tools.javac.util.Log;
     // to be output.
     "resolveReflection",
 
+    // Whether to use .jaif files signature inference
+    "inferSignatures",
 
     ///
     /// Stub libraries

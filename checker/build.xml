@@ -273,7 +273,7 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${afu.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -350,7 +350,7 @@
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}"
+                 classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}:${afu.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
 
@@ -1128,7 +1128,7 @@
         <echo message="${src.files}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}"
+              classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${afu.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="${maybeDebug}"/>

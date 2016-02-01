@@ -84,6 +84,9 @@
         <delete dir="${tests.build}" />
 
         <delete file="${framework.lib}"/>
+         <!-- Signature-inference generated tests -->
+        <delete dir="tests/signature-inference/annotated"/>
+
     </target>
 
     <target name="clean-nojar" description="Remove generated class files, but not the .jar files">
@@ -156,7 +159,7 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-framework.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${stubparser.lib}:${javacutil.lib}:${dataflow.lib}:${junit.lib}:${hamcrest.lib}"
+              classpath="${javac.lib}:${stubparser.lib}:${javacutil.lib}:${dataflow.lib}:${junit.lib}:${hamcrest.lib}:${afu.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -206,7 +209,7 @@
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}"
+                 classpath="${build}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}:${afu.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
             <package name="org.checkerframework.javacutil.*"/>
@@ -257,7 +260,7 @@
 
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${junit.lib}:${hamcrest.lib}:${build}:${javacutil.lib}:${dataflow.lib}"
+              classpath="${javac.lib}:${junit.lib}:${hamcrest.lib}:${build}:${javacutil.lib}:${dataflow.lib}:${afu.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -293,6 +296,7 @@
                 <pathelement path="${framework.lib}"/>
                 <pathelement path="${tests.build}"/>
                 <pathelement path="${junit.lib}"/>
+                <pathelement path="${afu.lib}"/>
                 <pathelement path="${hamcrest.lib}"/>
             </classpath>
 
@@ -312,7 +316,7 @@
     <target name="all-tests-nojtreg" depends="jar, all-tests-nojtreg-nobuild"
             description="Run tests, except jtreg tests"/>
 
-    <target name="all-tests-nojtreg-nobuild" depends="build-tests"
+    <target name="all-tests-nojtreg-nobuild" depends="build-tests, signature-inference-tests"
             description="Run tests, except jtreg tests, WITHOUT building anything">
 
       <!-- Delete directory because we will rerun all tests -->
@@ -337,6 +341,7 @@
               <pathelement path="${framework.lib}"/>
               <pathelement path="${tests.build}"/>
               <pathelement path="${junit.lib}"/>
+              <pathelement path="${afu.lib}"/>
               <pathelement path="${hamcrest.lib}"/>
           </classpath>
 
@@ -354,6 +359,11 @@
 
                   <!-- Tests that fail by design -->
                   <exclude name="**/SubtypingStringPatternsPartialTest.java"/>
+                  <!-- Signature inference tests depends on the
+                       signature-inference-tests target, so we added that target
+                       to the depends group and excluded it here.-->
+                  <exclude name="**/SignatureInference*.java"/>
+
               </fileset>
           </batchtest>
       </junit>
@@ -484,6 +494,49 @@
         </antcall>
     </target>
 
+    <target name="signature-inference-tests" depends="jar,build-tests"
+            description="Run tests for signature inference using .jaif files">
+        <delete dir="build/signature-inference"/>
+        <!--Runs the checker on test files with the signature inference on
+             to generate .jaif files.-->
+        <antcall target="-run-tests">
+            <param name="param" value="tests.SignatureInferenceTest"/>
+        </antcall>
+
+        <delete dir="tests/signature-inference/annotated"/>
+
+        <!-- Copying all test files to another directory, removing all
+             expected errors that should not occur after inserting inferred
+             annotations from .jaif files. -->
+        <copy todir="tests/signature-inference/annotated">
+            <fileset dir="tests/signature-inference/non-annotated"/>
+            <filterchain>
+                <linecontains negate="true">
+                    <contains value="//:: error:"/>
+                </linecontains>
+            </filterchain>
+        </copy>
+
+        <!-- The only file for which expected errors are maintained is
+             ExpectedErrors.java, so we copy it over. -->
+        <delete file="tests/signature-inference/annotated/ExpectedErrors.java"/>
+        <!-- Inserting annotations from .jaif files in-place. -->
+        <apply executable="insert-annotations-to-source" parallel="true">
+            <srcfile/>
+            <fileset dir="build/signature-inference/" includes="*.jaif"/>
+            <fileset dir="tests/signature-inference/annotated/" includes="*.java"/>
+            <arg value="--outdir=tests/signature-inference/annotated/"/>
+        </apply>
+
+        <copy file="tests/signature-inference/non-annotated/ExpectedErrors.java"
+            todir="tests/signature-inference/annotated"/>
+
+        <!-- Running the checker again on the final .java files. -->
+        <antcall target="-run-tests">
+            <param name="param" value="tests.SignatureInferenceValidationTest"/>
+        </antcall>
+
+    </target>
 
     <target name="report-tests" depends="jar,build-tests"
             description="Run tests for the Report Checker">
@@ -644,7 +697,7 @@
         <echo message="${src.files}" file="${tmpdir}/srcfiles-framework.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${afu.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>

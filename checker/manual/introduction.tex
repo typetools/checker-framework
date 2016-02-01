@@ -141,7 +141,7 @@ code stays completely backward-compatible:  your code compiles with any
 Java compiler, it runs on any JVM, and your coworkers don't have to use the
 enhanced type system if they don't want to.  You can check only part of
 your program.  Type inference tools exist to help you annotate your
-code.
+code; see Chapter~\ref{type-inference}.
 
 
 A type system designer uses the Checker Framework to define type qualifiers
@@ -406,7 +406,7 @@ described in Sections~\ref{writing-annotations} and~\ref{running}.
 \item The programmer writes annotations, such as \refqualclass{checker/nullness/qual}{NonNull} and
   \refqualclass{checker/interning/qual}{Interned}, that specify additional information about Java types.
   (Or, the programmer uses an inference tool to automatically insert
-  annotations in his code:  see Sections~\ref{nullness-inference} and~\ref{javari-inference}.)
+  annotations in his code:  see Chapter~\ref{type-inference}.)
   It is possible to annotate only part of your code:  see
   Section~\ref{unannotated-code}.
 
@@ -660,6 +660,20 @@ Partially-annotated libraries
   \refqualclass{framework/qual}{AnnotatedFor} annotation, use unchecked code
   default annotations and suppress all type-checking warnings; see
   Section~\ref{compiling-libraries}.
+\end{itemize}
+
+Inference
+\begin{itemize}
+\item \<-AinferSignatures>
+  Output suggested annotations for method signatures and fields.
+  These annotations may reduce the number of type-checking
+  errors when running type-checking in the future; see
+  Section~\ref{signature-inference}.
+\item \<-ArelaxedSignatureInference>
+  Permit inferred signature annotations to be supertypes or subtypes (not
+  just subtypes) of the default annotation; see
+  Section~\ref{signature-inference}.
+
 \end{itemize}
 
 Debugging
