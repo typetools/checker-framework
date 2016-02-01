@@ -580,7 +580,7 @@ public class SignatureInferenceScenes {
     }
 
    /**
-    * Updates an {@annotations.el.ATypeElement} to have the annotations of an
+    * Updates an {@link annotations.el.ATypeElement} to have the annotations of an
     * {@link org.checkerframework.framework.type.AnnotatedTypeMirror} passed
     * as argument. Annotations in the original set that should be ignored
     * (see {@link #shouldIgnore}) are not added to the resulting set.
