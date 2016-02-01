@@ -1,30 +1,29 @@
 \htmlhr
 \chapter{Annotating libraries\label{annotating-libraries}}
 
-%% TODO: reinstate this once the checker/lib/ directory contains content.
-% The Checker Framework distribution contains annotated versions of popular
-% libraries in directory \<checker-framework/checker/lib/>.
-% These currently include
-% % Keep this list in sync with file ../lib/README .
-%   \href{https://commons.apache.org/proper/commons-bcel/}{Apache Commons BCEL}
-%   (versions 5.2 and 6.0 pre-release),
-%   \href{https://github.com/google/guava/}{Google Guava},
-%   and
-%   \href{https://github.com/arenn/java-getopt}{GNU getopt Java port}.
-% %% Todo: this should be done automatically for the user.
-% During type-checking you should put the annotated version of the library on
-% your classpath.  (This is done automatically for the JDK; you don't have to
-% do anything special for it.)
-% When running your code, you can use either the annotated
-% library or the regular distributed version of the library --- they
-% behave identically at run time.
-% Some projects, such as
-%   \href{http://plse.cs.washington.edu/daikon/}{Daikon}
-%   and
-%   \href{http://mernst.github.io/plume-lib/}{plume-lib},
-% are already distributed in annotated form by their maintainers;
-% over time, this should become more common, reducing the need for the
-% Checker Framework to include annotated versions of them.
+The Checker Framework distribution contains annotated versions of popular
+libraries in directory \<checker-framework/checker/lib/>.
+These currently include
+% Keep this list in sync with file ../lib/README .
+  \href{https://commons.apache.org/proper/commons-bcel/}{Apache Commons BCEL}
+  (versions 5.2 and 6.0 pre-release),
+  \href{https://github.com/google/guava/}{Google Guava},
+  and
+  \href{https://github.com/arenn/java-getopt}{GNU getopt Java port}.
+%% Todo: this should be done automatically for the user.
+During type-checking you should put the annotated version of the library on
+your classpath.  (This is done automatically for the JDK; you don't have to
+do anything special for it.)
+When running your code, you can use either the annotated
+library or the regular distributed version of the library --- they
+behave identically at run time.
+Some projects, such as
+  \href{http://plse.cs.washington.edu/daikon/}{Daikon}
+  and
+  \href{http://mernst.github.io/plume-lib/}{plume-lib},
+are already distributed in annotated form by their maintainers;
+over time, this should become more common, reducing the need for the
+Checker Framework to include annotated versions of them.
 
 %% Extra detail about the
 % \section{Using distributed annotated JDKs\label{skeleton-using}\label{skeleton}}
