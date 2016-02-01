@@ -2,11 +2,17 @@
 
 Version 1.9.11, 1 February 2016
 
+Renamed and merged useSafeDefaultsForUnannotatedSourceCode and
+safeDefaultsForUnannotatedBytecode command-line options to
+useDefaultsForUncheckedCode that takes arguments source and bytecode.
+
 For type-system developers:
 
 * The previously deprecated
   org.checkerframework.framework.qual.TypeQualifier{s} annotations
   were removed.
+
+Closed issues: 524, 563.
 
 ---------------------------------------------------------------------------
 
