@@ -125,10 +125,10 @@ public class SignatureInferenceScenes {
     /** Maps .jaif file paths (Strings) to Scenes. */
     private static Map<String, AScene> scenes = new HashMap<>();
 
-    /** Set of name of annotations that will be removed from a scene before
-     *  being added to the respective .jaif file.
+    /** Maps a DefaultLocation to the name of all annotations that should not be
+     * added to .jaif files for that location.
      */
-    private static Set<String> annosToIgnore = new HashSet<>();
+    private static Map<DefaultLocation, Set<String>> annosToIgnore = new HashMap<>();
 
     /**
      * Set representing Scenes that were modified since the last time all
@@ -208,14 +208,17 @@ public class SignatureInferenceScenes {
     private static void removeIgnoredAnnosFromScene(AScene scene) {
         for (AClass aclass : scene.classes.values()) {
             for (AField field : aclass.fields.values()) {
-                removeIgnoredAnnosFromATypeElement(field.type);
+                removeIgnoredAnnosFromATypeElement(
+                        field.type, DefaultLocation.FIELD);
             }
             for (AMethod method : aclass.methods.values()) {
                 // Return type
-                removeIgnoredAnnosFromATypeElement(method.returnType);
+                removeIgnoredAnnosFromATypeElement(
+                        method.returnType, DefaultLocation.RETURNS);
                 // Parameter type
                 for (AField param : method.parameters.values()) {
-                    removeIgnoredAnnosFromATypeElement(param.type);
+                    removeIgnoredAnnosFromATypeElement(
+                            param.type, DefaultLocation.PARAMETERS);
                 }
             }
         }
@@ -225,10 +228,13 @@ public class SignatureInferenceScenes {
      * Removes all annotations that should be ignored from an ATypeElement.
      * (See {@link #shouldIgnore}).
      */
-    private static void removeIgnoredAnnosFromATypeElement(ATypeElement typeEl) {
+    private static void removeIgnoredAnnosFromATypeElement(ATypeElement typeEl,
+            DefaultLocation loc) {
         Set<Annotation> annosToRemove = new HashSet<>();
+        Set<String> annosToIgnoreForLocation = annosToIgnore.get(loc);
+        if (annosToIgnoreForLocation == null) return; // No annotations to ignore for that position.
         for (Annotation anno : typeEl.tlAnnotationsHere) {
-            if (annosToIgnore.contains(anno.def().name)) {
+            if (annosToIgnoreForLocation.contains(anno.def().name)) {
                 annosToRemove.add(anno);
             }
         }
@@ -236,7 +242,7 @@ public class SignatureInferenceScenes {
 
         // Remove annotations recursively for inner types.
         for (ATypeElement innerType : typeEl.innerTypes.values()) {
-            removeIgnoredAnnosFromATypeElement(innerType);
+            removeIgnoredAnnosFromATypeElement(innerType, loc);
         }
     }
 
@@ -621,7 +627,12 @@ public class SignatureInferenceScenes {
                 Annotation anno = annotationMirrorToAnnotation(am);
                 if (anno != null) {
                     if (shouldIgnore(am, defLoc)) {
-                        annosToIgnore.add(anno.def().name);
+                        Set<String> annosIgnored = annosToIgnore.get(defLoc);
+                        if (annosIgnored == null) {
+                            annosIgnored = new HashSet<>();
+                            annosToIgnore.put(defLoc, annosIgnored);
+                        }
+                        annosIgnored.add(anno.def().name);
                     }
                     typeToUpdate.tlAnnotationsHere.add(anno);
                 }
