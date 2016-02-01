@@ -521,7 +521,7 @@
              ExpectedErrors.java, so we copy it over. -->
         <delete file="tests/signature-inference/annotated/ExpectedErrors.java"/>
         <!-- Inserting annotations from .jaif files in-place. -->
-        <apply executable="insert-annotations-to-source" parallel="true">
+        <apply executable="${annotation.tools}/annotation-file-utilities/scripts/insert-annotations-to-source" parallel="true">
             <srcfile/>
             <fileset dir="build/signature-inference/" includes="*.jaif"/>
             <fileset dir="tests/signature-inference/annotated/" includes="*.java"/>
