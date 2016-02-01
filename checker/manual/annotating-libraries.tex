@@ -172,7 +172,7 @@ class, indicates that the class has been annotated for certain type
 systems.  For example, \<@AnnotatedFor(\ttlcb"nullness", "regex"\ttrcb)> means that
 the programmer has written annotations for the Nullness and Regular
 Expression type systems.  If one of those two type-checkers is run,
-the \<-AuseSafeDefaultsForUnannotatedSourceCode> command-line argument
+the \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line argument
 has no effect and this class is treated normally:
 unannotated types are defaulted using normal source-code
 defaults and type-checking warnings are issued.
