@@ -100,7 +100,7 @@ infer_and_annotate() {
     do
         # Updates $PREV_ITERATION_DIR folder
         rm -rf $PREV_ITERATION_DIR
-        cp -r $SIGNATURE_INFERENCE_DIR $PREV_ITERATION_DIR
+        mv $SIGNATURE_INFERENCE_DIR $PREV_ITERATION_DIR
 
         # Runs CF's javac
         ${CHECKERFRAMEWORK}/checker/bin/javac -d $TEMP_DIR/ -cp $cp -processor $processor -AinferSignatures $extra_args $java_files || true
