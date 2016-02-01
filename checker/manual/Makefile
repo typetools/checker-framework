@@ -33,6 +33,7 @@ typestate-checker.tex \
 generics.tex \
 advanced-features.tex \
 warnings.tex \
+inference.tex \
 annotating-libraries.tex \
 creating-a-checker.tex \
 external-tools.tex \

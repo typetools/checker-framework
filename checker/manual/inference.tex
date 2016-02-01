@@ -1,0 +1,258 @@
+\htmlhr
+\chapter{Type inference\label{type-inference}}
+
+There are two different tasks that are commonly called ``type inference'':
+\begin{enumerate}
+\item
+  Type inference during type-checking:
+  The type-checker fills in an appropriate type where the programmer didn't
+  write one, but does not change the source code.
+  See Section~\ref{type-inference-refinement}.
+\item
+  Type inference to annotate a program:
+  As a separate step before type-checking, a type inference tool
+  inserts type qualifiers into the source code.
+  See Section~\ref{type-inference-to-annotate}.
+\end{enumerate}
+
+Each variety has its own advantages, discussed below.
+Advantages of \emph{all} varieties of type inference include:
+\begin{itemize}
+\item
+  Less work for the programmer.
+\item
+  The tool chooses the most general type, whereas a programmer might
+  accidentally write a more-specific, less-generally-useful annotation.
+\end{itemize}
+
+
+\section{Local type inference during type-checking\label{type-inference-refinement}}
+
+During type-checking, if certain variables have no type qualifier, the
+type-checker determines whether there is some type qualifier that would
+permit the program to type-check.  If so, the type-checker uses that type
+qualifier, but does not change the source code.  Each time the
+type-checker runs, it re-infers the type qualifier for that variable.  If
+no type qualifier exists that permits the program to type-check, the
+type-checker issues a warning.
+
+Local type inference is built into the Checker Framework.
+Every checker automatically uses it.  As a result, a programmer typically
+does not have to write any qualifiers inside the body of a method.
+However, it primarily
+works within a method, not across method boundaries.
+The source code must already contain annotations for method
+signatures (arguments and return values) and fields.
+
+Advantages of this variety of type inference include:
+\begin{itemize}
+\item
+  If the type qualifier is obvious to the programmer, then omitting it
+  can reduce annotation clutter in the program.
+\item
+  If the code changes, then there is no old annotation that
+  might need to be updated.
+\item
+  Within-method type inference occurs automatically.
+  The programmer doesn't have to do anything to take advantage of it.
+\end{itemize}
+
+For more details about local type inference during type-checking, also
+known as ``flow-sensitive local type refinement'', see
+Section~\ref{type-refinement}.
+
+
+\section{Type inference to annotate a program\label{type-inference-to-annotate}}
+
+As a separate step before type-checking, a type inference tool takes the
+program as input, and outputs a set of type qualifiers that would
+make the program type-check.
+These qualifiers are inserted into the source code or the
+class file.  They can be viewed and adjusted by the programmer, and can
+be used by tools such as the type-checker.
+
+Advantages of this variety of type inference include:
+\begin{itemize}
+\item
+  The inference may be more precise by taking account of the entire program
+  rather than just reasoning one method at a time.
+\item
+  The program source code contains documentation in the form of type
+  qualifiers, which can aid programmer understanding and may make
+  type-checking warnings more comprehensible.
+\end{itemize}
+
+
+\subsection{Type inference tools\label{type-inference-tools}}
+
+This section lists tools that take a program and output a set of
+annotations for it.
+
+
+\subsubsection{Type inference for specific type systems\label{type-inference-tools-specialized}}
+
+This section lists type inference tools that work for only a single type system.
+Also see Section~\ref{type-inference-tools-general}, for type inference
+tools that work for any type system.
+
+Section~\ref{nullness-inference} lists several tools that infer
+annotations for the Nullness Checker.
+
+Section~\ref{javari-inference} lists a tool that infers
+annotations for the Javari Checker, which detects mutation errors.
+
+If you run the Checker Framework with the \<-AsuggestPureMethods>
+command-line option, it will suggest methods that can be marked as
+\<@SideEffectFree>, \<@Deterministic>, or \<@Pure>; see
+Section~\ref{type-refinement-purity}.
+
+
+\subsubsection{Type inference for any type system\label{type-inference-tools-general}}
+
+This section lists type inference tools that work for any type system.
+Also see Section~\ref{type-inference-tools-specialized}, for type inference
+tools that work for only a single type system.
+
+By supplying the \<-AinferSignatures> command-line option,
+any type-checker can infer annotations. See Section~\ref{signature-inference}.
+
+\href{https://github.com/reprogrammer/cascade/}{Cascade}~\cite{VakilianPEJ2014}
+is an Eclipse plugin that implements interactive type qualifier inference.
+Cascade is interactive rather than fully-automated:  it makes it easier for
+a developer to insert annotations.
+Cascade starts with an unannotated program and runs a type-checker.  For each
+warning it suggests multiple fixes, the developer chooses a fix, and
+Cascade applies it.  Cascade works with any checker built on the Checker
+Framework.
+You can find installation instructions and a video tutorial at \url{https://github.com/reprogrammer/cascade}.
+
+
+\subsection{Signature inference\label{signature-inference}}
+
+Elsewhere in this manual, type refinement (Section~\ref{type-refinement})
+has been described as working only within a method. Type refinement always
+refines the current value, regardless of whether the value already has an
+annotated type. Signature inference is an interprocedural inference that
+infer types for fields, method parameters, and method return types that do not
+have an annotated type. The resulting inferred type may not be a type
+refinement. In other words, the inferred type can be a subtype
+or a supertype of the default type. The inferred types can also be inserted into
+your program.
+
+To do so, please set the \<\$CHECKERFRAMEWORK> variable to the Checker Framework's
+directory (if you haven't already), and make sure that
+\<insert-annotations-to-source>, from the Annotation File Utilities project,
+is available from the \<\$PATH>.
+Then, run the script \<checker/bin/infer-and-annotate.sh>.
+Its command-line arguments are:
+
+\begin{enumerate}
+\item Processor's name.
+\item Target program's classpath.  This argument is required; pass "" if it
+  is empty.
+\item Extra processor arguments which will be passed to the checker, if any.
+  You may supply any number of such arguments, or none.  Each such argument
+  must start with a hyphen.
+\item Optional: List of paths to \<.jaif> files used as input in the inference
+    process.
+\item List of paths to \<.java> files in the program.
+\end{enumerate}
+
+
+
+For example, to add annotations to the \<plume-lib> project:
+\begin{Verbatim}
+git clone https://github.com/mernst/plume-lib.git
+cd plume-lib
+$CHECKERFRAMEWORK/checker/bin/infer-and-annotate.sh \
+    "LockChecker,NullnessChecker" java/plume.jar    \
+    -AprintErrorStack  \
+    `find java/src/plume/ -name "*.java"`
+# View the results
+git diff    
+\end{Verbatim}
+
+You may need to wait a few minutes for the command to complete,
+and it will produce voluminous output that you can ignore.
+
+It is recommended that you run \<infer-and-annotate.sh> on a copy of your
+code, so that you can see what changes it made and so that it does not
+change your only copy.  One way to do this is to work in a clone of your
+repository that has no uncommitted changes.
+
+As with any type inference tool, it is a good idea to double-check the
+results.
+For example, suppose that your program currently calls
+method \<m1> with non-null
+arguments.  This tool will infer that \<m1>'s parameter has
+\<@NonNull> type.  If you had intended the method to be able to
+take \<null> as an argument and you later add such a call, the type-checker
+will issue a warning because the automatically-inserted \<@NonNull>
+annotation is inconsistent with the new call.
+As another example, suppose you intend method \<m2> to be called with
+non-null arguments, but your program contains an error and one of the calls
+to \<m2> passes \<null> as the argument.  Then the tool will infer that
+\<m2>'s parameter has \<@Nullable> type.
+
+Another way of explaining the issue is that the tool determines a method parameter's type
+annotation based on what arguments are passed to the method but not on how the
+parameter is used within the method body.  If the program contains
+no errors, the tool's annotations are legal for the program as
+currently written but may not be as general as possible and may not
+accommodate future program changes.  If the program contains errors, the
+tool's annotations may reflect those errors.
+
+The tool only infers annotations for type uses that have no user-written
+annotation (for the given type system).
+
+\subsubsection{How signature inference works\label{how-signature-inference-works}}
+
+This section explains how the \<infer-and-annotate.sh> script works.  If you
+merely want to run the script and you are not encountering trouble, you can
+skip this section.
+
+If you
+supply to javac the command-line option \code{-AinferSignatures}, then the
+checker outputs \<.jaif> files with refined types for fields and method signatures.
+The output .jaif files are located in the folder \code{build/signature-inference},
+relative to where you executed the javac command.
+
+You can use the Annotation File Utilities
+(\myurl{http://types.cs.washington.edu/annotation-file-utilities/}) to
+insert these refined types in your program.  Then, the next time that you
+run type-checking, there are likely to be fewer type-checking warnings.
+
+Note that a three-step process is required:
+\begin{enumerate}
+\item Run the checker with the \<-AinferSignatures> command-line option to
+  produce a \<.jaif> file.  Some type-checking errors may result.
+\item Insert the \<.jaif> file's annotations in the program.
+\item Run the checker again.  Fewer type-checking errors may result.
+\end{enumerate}
+\noindent
+A good approach is to repeatedly run the above process until there are no
+more changes to the inference results (that is, the \<.jaif> file is
+unchanged between two runs).  That is exactly what the
+\<infer-and-annotate.sh> script does.
+
+The \<infer-and-annotate.sh> script insulates you from the
+clumsy multi-step process.  The multi-step process
+is required because type-checking is modular:
+it processes each class only once, independently.  Modularity enables you
+to run type-checking on only part of your program, and
+it makes type-checking fast.  However, it has some disadvantages:
+\begin{itemize}
+\item
+  The first run of the type-checker cannot take advantage
+  of signature inference results because signature inference is only complete at the
+  end of type-checking, and modular type-checking does not revisit any
+  already-processed classes.
+\item
+  The reason that multiple executions are required is that revisiting an
+  already-processed class may result in a better estimate.
+\end{itemize}
+
+
+
+%%  LocalWords:  AinferSignatures java jaif plugin classpath m2 m1 multi
+%%  LocalWords:  AsuggestPureMethods
