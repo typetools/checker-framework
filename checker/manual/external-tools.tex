@@ -444,37 +444,177 @@ would only run if the profile was enabled.
 
 \section{Gradle\label{gradle}}
 
-% This information came from:
-% http://jira.codehaus.org/browse/GRADLE-342
-% http://docs.codehaus.org/display/GRADLE/Gradle+0.8+Breaking+Changes
+If you use \href{http://gradle.org/}{Gradle},
+then you can enable Checker Framework checkers by following the
+instructions below.
 
-If you fork the compilation task, \href{http://gradle.org/}{Gradle}
-lets you specify the executable to compile java programs.
+These instructions use the artifacts from
+\href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven Central}.
 
-To specify the appropriate executable, set
-\code{options.fork = true} and
-\code{compile.options.fork.executable = "\$CHECKERFRAMEWORK/checker/bin/javac"}
+See the demonstration \code{examples/GradleExamples/} for examples of the use of
+these instructions in a Gradle project.  These examples can be used to verify that
+Gradle is correctly downloading and executing the Checker Framework on your machine.
 
-To specify command-line arguments, set
-\code{compile.options.compilerArgs}.  Here is a possible example:
+Please note that the \<-AoutputArgsToFile> command-line option
+(see Section~\ref{debugging-options-output-args}) and shorthands for built-in checkers
+(see Section~\ref{shorthand-for-checkers}) are not available when
+following these instructions.  Both these features are available only when a checker is
+launched via \<checker.jar> such as when \code{\$CHECKERFRAMEWORK/checker/bin/javac}
+is run.  These instructions bypass \<checker.jar> and cause the compiler to run a
+checker as an annotation processor directly.
+
+\subsection{Gradle with JDK 8\label{gradle-jdk-8}}
+These instructions explain how to configure Gradle to use the Checker Framework using JDK 8.
+See Section~\ref{gradle-jdk-7} for JDK 7 instructions.
+
+\begin{enumerate}
+
+\item Define the Maven Central repostiory:
+
+\begin{Verbatim}
+repositories {
+  ... extisting repositories...
+  mavenCentral()
+}
+\end{Verbatim}
+
+\item Add dependency configurations for the annotated JDK and \<checker.jar>:
+
+\begin{Verbatim}
+configurations {
+  ... extisting configurations ...
+
+  checkerFrameworkAnnotatedJDK {
+     description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
+  }
+  checkerFramework {
+     description = 'The Checker Framework: custom pluggable types for Java'
+  } 
+}
+\end{Verbatim}
+
+\item Using the Maven coordinates, declare the Checker Framework dependencies:
+
+\begin{Verbatim}
+dependencies {
+  ... extisting dependencies...
+
+  ext.checkerFrameworkVersion = '1.9.11'
+  checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
+  checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
+  compile "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+}
+\end{Verbatim}
+
+\item Direct all tasks of type JavaCompile to use the desired checkers:
 
 \begin{Verbatim}
 allprojects {
   tasks.withType(JavaCompile).all { JavaCompile compile ->
     compile.options.debug = true
     compile.options.compilerArgs = [
-      '-version',
-      '-implicit:class',
-      '-processor', 'org.checkerframework.checker.nullness.NullnessChecker'
-    ]
+          // uncomment to turn Checker Framework errors into warnings
+          // '-Awarns',
+          '-processorpath', "${configurations.checkerFramework.asPath}",
+          '-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
+          "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
+        ]
+  }
+}
+\end{Verbatim}
+\end{enumerate}
+
+\subsection{Gradle with JDK 7\label{gradle-jdk-7}}
+These instructions explain how to configure Gradle to use the Checker Framework using JDK 7.
+See Section~\ref{gradle-jdk-8} for JDK 8 instructions.
+
+\begin{enumerate}
+
+\item Define the Maven Central repostiory:
+
+\begin{Verbatim}
+repositories {
+  ... extisting repositories...
+  mavenCentral()
+}
+\end{Verbatim}
+
+\item Add dependency configurations for the annotated JDK, \<checker.jar>, and the Type Annotations compiler:
+
+\begin{Verbatim}
+configurations {
+  ... extisting configurations ...
+  checkerFrameworkJavac {
+     description = 'a customization of the Open JDK javac compiler with additional support for type annotations'
+  }
+  checkerFrameworkAnnotatedJDK {
+     description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
+  }
+  checkerFramework {
+     description = 'The Checker Framework: custom pluggable types for Java'
+  } 
+}
+\end{Verbatim}
+
+\item Using the Maven coordinates, declare the Checker Framework dependencies:
+
+\begin{Verbatim}
+dependencies {
+  ... extisting dependencies...
+
+  ext.checkerFrameworkVersion = '1.9.11'
+  checkerFrameworkJavac "org.checkerframework:compiler:${checkerFrameworkVersion}"
+  checkerFrameworkAnnotatedJDK "org.checkerframework:jdk8:${checkerFrameworkVersion}"
+  checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
+  compile "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+}
+\end{Verbatim}
+
+\item Direct all tasks of type JavaCompile to use the desired checkers:
+
+\begin{Verbatim}
+allprojects {
+  tasks.withType(JavaCompile).all { JavaCompile compile ->
+
+    compile.options.debug = true
+    compile.options.compilerArgs = [
+          '-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
+          '-processorpath', "${configurations.checkerFramework.asPath}",
+          // uncomment to turn Checker Framework errors into warnings
+          //'-Awarns',
+          '-source', '7',
+          '-target', '7',
+          "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
+        ]
     options.fork = true
-    options.forkOptions.executable = "$CHECKERFRAMEWORK/checker/bin/javac"
+    options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.checkerFrameworkJavac.asPath}"]
   }
 }
 \end{Verbatim}
 
-% extra $ to unconfuse Emacs's LaTeX mode
+Alternatively, create a new task to run the desired checkers:
 
+\begin{Verbatim}
+task checkNullness(type: JavaCompile, group: 'build', description: 'Check for null pointer dereferences') {
+    source = sourceSets.main.java
+    classpath = configurations.compile
+    destinationDir = buildDir
+    options.compilerArgs = [
+            '-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
+            '-processorpath', "${configurations.checkerFramework.asPath}",
+            // uncomment to turn Checker Framework errors into warnings
+            // '-Awarns',
+            '-source', '7',
+            '-target', '7',
+            "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
+    ]
+    options.fork = true
+    options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.checkerFrameworkJavac.asPath}"]
+}
+\end{Verbatim}
+
+
+\end{enumerate}
 
 \section{IntelliJ IDEA\label{intellij}}
 
