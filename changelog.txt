@@ -1,5 +1,11 @@
 ---------------------------------------------------------------------------
 
+Version 1.9.12, 1 March 2016
+
+Renamed enum DefaultLocation to TypeUseLocation
+
+---------------------------------------------------------------------------
+
 Version 1.9.11, 1 February 2016
 
 Renamed and merged -AuseSafeDefaultsForUnannotatedSourceCode and
