@@ -3,7 +3,7 @@ package org.checkerframework.checker.i18nformatter.qual;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -23,7 +23,7 @@ import org.checkerframework.framework.qual.TargetLocations;
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
 @Target({ElementType.TYPE_USE})
-@TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
-    DefaultLocation.EXPLICIT_UPPER_BOUNDS})
+@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
+    TypeUseLocation.EXPLICIT_UPPER_BOUND })
 public @interface I18nUnknownFormat {
 }

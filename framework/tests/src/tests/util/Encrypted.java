@@ -12,6 +12,6 @@ import com.sun.source.tree.Tree.Kind;
  */
 @SubtypeOf(Unqualified.class)
 @ImplicitFor(trees = { Kind.NULL_LITERAL })
-@DefaultFor({DefaultLocation.LOWER_BOUNDS})
+@DefaultFor({ TypeUseLocation.LOWER_BOUND })
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Encrypted {}

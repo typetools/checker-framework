@@ -36,7 +36,7 @@ import com.sun.source.tree.LiteralTree;
         treeClasses = { LiteralTree.class },
         typeClasses = { AnnotatedPrimitiveType.class },
         typeNames = { Void.class } )
-@DefaultFor(value={DefaultLocation.LOWER_BOUNDS} )
+@DefaultFor(value={ TypeUseLocation.LOWER_BOUND } )
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

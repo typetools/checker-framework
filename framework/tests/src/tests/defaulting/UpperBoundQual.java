@@ -1,7 +1,7 @@
 package tests.defaulting;
 
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
@@ -24,14 +24,14 @@ public class UpperBoundQual {
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @SubtypeOf(UB_TOP.class)
-    @DefaultFor(DefaultLocation.IMPLICIT_UPPER_BOUNDS)
+    @DefaultFor(TypeUseLocation.IMPLICIT_UPPER_BOUND)
     @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
     public static @interface UB_IMPLICIT {}
 
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @SubtypeOf(UB_TOP.class)
-    @DefaultFor(DefaultLocation.EXPLICIT_UPPER_BOUNDS)
+    @DefaultFor(TypeUseLocation.EXPLICIT_UPPER_BOUND)
     @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
     public static @interface UB_EXPLICIT {}
 
@@ -39,7 +39,7 @@ public class UpperBoundQual {
     @Retention(RetentionPolicy.RUNTIME)
 
     @SubtypeOf({UB_IMPLICIT.class, UB_EXPLICIT.class})
-    @DefaultFor(DefaultLocation.LOWER_BOUNDS)
+    @DefaultFor(TypeUseLocation.LOWER_BOUND)
     @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
     public static @interface UB_BOTTOM {}
 }
