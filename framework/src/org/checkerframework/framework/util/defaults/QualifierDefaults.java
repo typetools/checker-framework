@@ -4,7 +4,6 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifiers;
-import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -105,7 +104,17 @@ public class QualifierDefaults {
     private final Map<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
 
     /**
-     * List of DefaultLocations which are valid for unchecked code defaults.
+     * CLIMB locations whose standard default is top for a given type system.
+     */
+    public static final DefaultLocation[] standardClimbDefaultsTop = { DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,
+                                                                       DefaultLocation.EXCEPTION_PARAMETER, DefaultLocation.IMPLICIT_UPPER_BOUNDS };
+    /**
+     * CLIMB locations whose standard default is bottom for a given type system.
+     */
+    public static final DefaultLocation[] standardClimbDefaultsBottom = { DefaultLocation.IMPLICIT_LOWER_BOUNDS };
+
+    /**
+     * List of DefaultLocations that are valid for unchecked code defaults.
      */
     private static final DefaultLocation[] validUncheckedCodeDefaultLocations = {
         DefaultLocation.FIELD,
@@ -176,6 +185,32 @@ public class QualifierDefaults {
                 // Only add standard defaults in locations where a default has not be specified
                 if (!conflictsWithExistingDefaults(uncheckedCodeDefaults, bottom, loc)) {
                     addUncheckedCodeDefault(bottom, loc);
+                }
+            }
+        }
+    }
+
+    /**
+     * Add standard CLIMB defaults that do not conflict with previously added defaults.
+     *
+     * @param tops    AnnotationMirrors that are top
+     * @param bottoms AnnotationMirrors that are bottom
+     */
+    public void addClimbStandardDefaults(Iterable<? extends AnnotationMirror> tops, Iterable<? extends AnnotationMirror> bottoms) {
+        for (DefaultLocation loc : standardClimbDefaultsTop) {
+            for (AnnotationMirror top : tops) {
+                if (!conflictsWithExistingDefaults(checkedCodeDefaults, top, loc)) {
+                    // Only add standard defaults in locations where a default has not been specified
+                    addCheckedCodeDefault(top, loc);
+                }
+            }
+        }
+
+        for (DefaultLocation loc : standardClimbDefaultsBottom) {
+            for (AnnotationMirror bottom : bottoms) {
+                if (!conflictsWithExistingDefaults(checkedCodeDefaults, bottom, loc)) {
+                    // Only add standard defaults in locations where a default has not been specified
+                    addCheckedCodeDefault(bottom, loc);
                 }
             }
         }

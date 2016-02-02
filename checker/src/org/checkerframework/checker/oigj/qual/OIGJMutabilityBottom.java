@@ -1,10 +1,5 @@
-package org.checkerframework.checker.oigj;
+package org.checkerframework.checker.oigj.qual;
 
-import org.checkerframework.checker.oigj.qual.I;
-import org.checkerframework.checker.oigj.qual.Immutable;
-import org.checkerframework.checker.oigj.qual.Modifier;
-import org.checkerframework.checker.oigj.qual.Mutable;
-import org.checkerframework.checker.oigj.qual.O;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
@@ -35,4 +30,4 @@ import com.sun.source.tree.Tree.Kind;
         typeNames = { java.lang.Void.class }
 )
 @DefaultFor({DefaultLocation.LOWER_BOUNDS})
-@interface OIGJMutabilityBottom { }
+public @interface OIGJMutabilityBottom { }

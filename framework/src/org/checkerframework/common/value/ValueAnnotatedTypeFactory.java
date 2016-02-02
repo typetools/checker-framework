@@ -225,13 +225,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
-        defs.addCheckedCodeDefault(UNKNOWNVAL, DefaultLocation.OTHERWISE);
-        defs.addCheckedCodeDefault(BOTTOMVAL, DefaultLocation.LOWER_BOUNDS);
-        super.addCheckedCodeDefaults(defs);
-    }
-
-    @Override
     protected TypeAnnotator createTypeAnnotator() {
         return new ListTypeAnnotator(new ValueTypeAnnotator(this),
                 super.createTypeAnnotator());
