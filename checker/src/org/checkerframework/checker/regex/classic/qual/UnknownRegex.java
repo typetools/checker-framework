@@ -17,7 +17,7 @@ import org.checkerframework.framework.qual.TargetLocations;
 @InvisibleQualifier
 @DefaultQualifierInHierarchy
 @SubtypeOf({})
-@Target({ElementType.TYPE_USE})
+@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 @TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
     TypeUseLocation.EXPLICIT_UPPER_BOUND })
 public @interface UnknownRegex {}

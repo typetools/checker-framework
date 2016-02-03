@@ -22,7 +22,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @SubtypeOf({ UnknownMethod.class })
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE_USE })
+@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 public @interface MethodVal {
     /** The <a href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1">binary name</a>
      * of the class that declares this method. */

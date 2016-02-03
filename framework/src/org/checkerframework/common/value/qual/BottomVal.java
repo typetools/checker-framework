@@ -21,7 +21,7 @@ import org.checkerframework.framework.qual.TargetLocations;
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
 @SubtypeOf({ ArrayLen.class, BoolVal.class, DoubleVal.class,
         IntVal.class, StringVal.class })
-@Target({ElementType.TYPE_USE})
+@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 @TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
     TypeUseLocation.EXPLICIT_UPPER_BOUND })
 public @interface BottomVal {
