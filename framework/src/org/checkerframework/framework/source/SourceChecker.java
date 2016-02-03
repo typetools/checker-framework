@@ -1223,41 +1223,55 @@ public abstract class SourceChecker
 
         // Don't suppress warnings if this checker provides no key to do so.
         Collection<String> checkerKeys = this.getSuppressWarningsKeys();
-        if (checkerKeys.isEmpty())
+        if (checkerKeys.isEmpty()) {
             return false;
+        }
 
         /*@Nullable*/ TreePath path = trees.getPath(this.currentRoot, tree);
-        if (path == null)
+        if (path == null) {
             return false;
+        }
 
         /*@Nullable*/ VariableTree var = TreeUtils.enclosingVariable(path);
-        if (var != null && shouldSuppressWarnings(InternalUtils.symbol(var), err))
+        if (var != null && shouldSuppressWarnings(InternalUtils.symbol(var), err)) {
             return true;
+        }
 
         /*@Nullable*/ MethodTree method = TreeUtils.enclosingMethod(path);
         if (method != null) {
             /*@Nullable*/ Element elt = InternalUtils.symbol(method);
 
-            if (shouldSuppressWarnings(elt, err))
+            if (shouldSuppressWarnings(elt, err)) {
                 return true;
+            }
 
-            if (isAnnotatedForThisCheckerOrUpstreamChecker(elt))
-                return false; // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements, because they may not have an @AnnotatedFor.
+            if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
+                // Return false immediately. Do NOT check for AnnotatedFor in
+                // the enclosing elements, because they may not have an
+                // @AnnotatedFor.
+                return false;
+            }
         }
 
         /*@Nullable*/ ClassTree cls = TreeUtils.enclosingClass(path);
         if (cls != null) {
             /*@Nullable*/ Element elt = InternalUtils.symbol(cls);
 
-            if (shouldSuppressWarnings(elt, err))
+            if (shouldSuppressWarnings(elt, err)) {
                 return true;
+            }
 
-            if (isAnnotatedForThisCheckerOrUpstreamChecker(elt))
-                return false; // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements, because they may not have an @AnnotatedFor.
+            if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
+                // Return false immediately. Do NOT check for AnnotatedFor in
+                // the enclosing elements, because they may not have an
+                // @AnnotatedFor.
+                return false;
+            }
         }
 
-        if (useUncheckedCodeDefault("source")) {
-            // If we got this far without hitting an @AnnotatedFor and returning false, we DO suppress the warning.
+        if (hasOption("useSafeDefaultsForUnannotatedSourceCode")) {
+            // If we got this far without hitting an @AnnotatedFor and returning
+            // false, we DO suppress the warning.
             return true;
         }
 
@@ -1307,14 +1321,19 @@ public abstract class SourceChecker
     // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
     public boolean shouldSuppressWarnings(/*@Nullable*/ Element elt, String err) {
 
-        if (elt == null)
+        if (elt == null) {
             return false;
+        }
 
-        if (checkSuppressWarnings(elt.getAnnotation(SuppressWarnings.class), err))
+        if (checkSuppressWarnings(elt.getAnnotation(SuppressWarnings.class), err)) {
             return true;
+        }
 
-        if (isAnnotatedForThisCheckerOrUpstreamChecker(elt))
-            return false; // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements, because they may not have an @AnnotatedFor.
+        if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
+            // Return false immediately. Do NOT check for AnnotatedFor in the
+            // enclosing elements, because they may not have an @AnnotatedFor.
+            return false;
+        }
 
         return shouldSuppressWarnings(elt.getEnclosingElement(), err);
     }
@@ -1331,7 +1350,7 @@ public abstract class SourceChecker
         if (userAnnotatedFors != null) {
             List<String> upstreamCheckerNames = getUpstreamCheckerNames();
 
-            for(String userAnnotatedFor : userAnnotatedFors) {
+            for (String userAnnotatedFor : userAnnotatedFors) {
                 if (CheckerMain.matchesCheckerOrSubcheckerFromList(userAnnotatedFor, upstreamCheckerNames)) {
                     return true;
                 }
