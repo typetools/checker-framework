@@ -1291,6 +1291,7 @@ public abstract class SourceChecker
         }
         return false;
     }
+
     /**
      * Determines whether all the warnings pertaining to a given tree
      * should be suppressed.  Returns true if the element is within the scope
