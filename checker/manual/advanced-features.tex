@@ -306,8 +306,9 @@ qualifier for the Nullness Checker is
 writes a type such as \<Date>, the Nullness Checker interprets it as
 \<@NonNull Date>.
 
-We recommend that the type system apply that default qualifier to most but
-not all types.  In particular, we recommend the CLIMB-to-top rule.  This
+The type system applies that default qualifier to most but
+not all types.  In particular, unless otherwise stated, every type system 
+uses the CLIMB-to-top rule.  This
 rule states that the \emph{top} qualifier in the hierarchy is applied to
 the CLIMB locations:  \textbf{C}asts, \textbf{L}ocals, \textbf{I}nstanceof,
 and (some) i\textbf{M}plicit \textbf{B}ounds.
@@ -385,19 +386,18 @@ Here is how the CLIMB-to-top rule is expressed for the Nullness Checker:
 
 \begin{Verbatim}
 @DefaultQualifierInHierarchy
+@DefaultFor({ TypeUseLocation.EXCEPTION_PARAMETER })
 public @interface NonNull { }
 
-@DefaultFor({ DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,
-    DefaultLocation.IMPLICIT_UPPER_BOUNDS })
 public @interface Nullable { }
 \end{Verbatim}
 
 \noindent
-Note that \<DefaultLocation.LOCAL\_VARIABLE> includes casts and instanceof.
  As mentioned above, the exception parameters are always non-null, so
-\<DefaultLocation.EXCEPTION\_PARAMETER> is excluded from the above list.
+\<@DefaultFor(\{ TypeUseLocation.EXCEPTION\_PARAMETER \})> on \<@NonNull> overrides
+the CLIMB-to-top rule.
 
-A type system designer does not have to use the CLIMB-to-top rule.  In
+A type system designer can specify defaults that differ from the CLIMB-to-top rule.  In
 addition, a user may choose a different rule for defaults using the
 \refqualclass{framework/qual}{DefaultQualifier} annotation; see
 Section~\ref{defaults}.
@@ -479,7 +479,7 @@ Note, the upper bound of the wildcard \code{? extends Object} is defaulted to
 are off by default and can be turned on by supplying the \<-AuseDefaultsForUncheckedcode=bytecode>
 command-line option.  In a future release, they will be turned on
 by default and it will be possible to turn them off by supplying a
-\<-AuseDefaultsForUncheckedCode=-byte> command-line option.)
+\<-AuseDefaultsForUncheckedCode=-bytecode> command-line option.)
 
 The defaulting rules presented so far apply to source code that is read by
 the compiler.  When the compiler reads a \<.class> file, different

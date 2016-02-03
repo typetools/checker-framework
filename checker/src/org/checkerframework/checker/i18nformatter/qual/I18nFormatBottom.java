@@ -4,7 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TargetLocations;
@@ -20,9 +20,9 @@ import com.sun.source.tree.Tree;
  */
 @SubtypeOf({ I18nFormat.class, I18nInvalidFormat.class, I18nFormatFor.class })
 @Target({ElementType.TYPE_USE})
-@TargetLocations({DefaultLocation.EXPLICIT_LOWER_BOUNDS,
-    DefaultLocation.EXPLICIT_UPPER_BOUNDS})
+@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
+    TypeUseLocation.EXPLICIT_UPPER_BOUND })
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
-@DefaultFor(value = {DefaultLocation.LOWER_BOUNDS})
+@DefaultFor(value = { TypeUseLocation.LOWER_BOUND })
 public @interface I18nFormatBottom {
 }

@@ -1,12 +1,27 @@
 ---------------------------------------------------------------------------
 
+Version 1.9.12, 1 March 2016
+
+Renamed enum DefaultLocation to TypeUseLocation
+
+---------------------------------------------------------------------------
+
 Version 1.9.11, 1 February 2016
+
+Renamed and merged -AuseSafeDefaultsForUnannotatedSourceCode and
+-AsafeDefaultsForUnannotatedBytecode command-line options to
+-AuseDefaultsForUncheckedCode that takes arguments source and bytecode.
 
 For type-system developers:
 
 * The previously deprecated
   org.checkerframework.framework.qual.TypeQualifier{s} annotations
   were removed.
+* Every type system uses the CLIMB-to-top defaulting scheme, unless it
+  explicitly specifies a different one.  Previously a type system needed
+  to explicitly request CLIMB-to-top, but now it is the default.
+
+Closed issues: 524, 563, 568.
 
 ---------------------------------------------------------------------------
 

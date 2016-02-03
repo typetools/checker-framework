@@ -106,12 +106,12 @@ def update_project_symlink( project_name, interm_dir ):
     print( "Writing symlink: " + link_path + "\nto directory: " + interm_dir )
     force_symlink( interm_dir, link_path )
 
-def build_jsr308_langtools_release(auto, version, afu_release_date, checker_framework_interm_dir, jsr308_interm_dir):
+def build_jsr308_langtools_release(auto, version, afu_version, afu_release_date, checker_framework_interm_dir, jsr308_interm_dir):
 
     afu_build_properties = os.path.join( ANNO_FILE_UTILITIES, "build.properties" )
 
     # update jsr308_langtools versions
-    ant_props = "-Dlangtools=%s -Drelease.ver=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (JSR308_LANGTOOLS, version, afu_build_properties, afu_release_date )
+    ant_props = "-Dlangtools=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (JSR308_LANGTOOLS, version, afu_version, afu_build_properties, afu_release_date )
     ant_cmd   = "ant -f release.xml %s update-langtools-versions " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -177,13 +177,13 @@ def build_and_locally_deploy_maven(version, checker_framework_interm_dir):
 
     return
 
-def build_checker_framework_release(auto, version, afu_release_date, checker_framework_interm_dir, jsr308_interm_dir, manual_only = False):
+def build_checker_framework_release(auto, version, afu_version, afu_release_date, checker_framework_interm_dir, jsr308_interm_dir, manual_only = False):
     checker_dir = os.path.join(CHECKER_FRAMEWORK, "checker")
 
     afu_build_properties = os.path.join( ANNO_FILE_UTILITIES, "build.properties" )
 
     # update jsr308_langtools versions
-    ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (checker_dir, version, afu_build_properties, afu_release_date)
+    ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (checker_dir, version, afu_version, afu_build_properties, afu_release_date)
     ant_cmd   = "ant -f release.xml %s update-checker-framework-versions " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -387,12 +387,13 @@ def main(argv):
 
     print_step("Build Step 4: Copy entire live site to dev site (~22 minutes).") # AUTO
 
-    # ************************************************************************************************
-    # WARNING: BE EXTREMELY CAREFUL WHEN MODIFYING THIS COMMAND.  The --delete option is destructive
-    # and its work cannot be undone.  If, for example, this command were modified to accidentally make
-    # /cse/www2/types/ the target directory, the entire types directory could be wiped out.
-    execute("rsync --omit-dir-times --recursive --links --delete --quiet --exclude=dev /cse/www2/types/ /cse/www2/types/dev", halt_if_fail=False)
-    # ************************************************************************************************
+    if auto or prompt_yes_no("Proceed with copy of live site to dev site?"):
+        # ************************************************************************************************
+        # WARNING: BE EXTREMELY CAREFUL WHEN MODIFYING THIS COMMAND.  The --delete option is destructive
+        # and its work cannot be undone.  If, for example, this command were modified to accidentally make
+        # /cse/www2/types/ the target directory, the entire types directory could be wiped out.
+        execute("rsync --omit-dir-times --recursive --links --delete --quiet --exclude=dev /cse/www2/types/ /cse/www2/types/dev", halt_if_fail=False)
+        # ************************************************************************************************
 
     print_step("Build Step 5: Create directories for the current release on the dev site.") # SEMIAUTO
 
@@ -411,7 +412,7 @@ def main(argv):
     print( projects_to_release )
     if projects_to_release[LT_OPT]:
         print_step("6a: Build Type Annotations Compiler.")
-        build_jsr308_langtools_release(auto, jsr308_version, afu_date, checker_framework_interm_dir, jsr308_interm_dir)
+        build_jsr308_langtools_release(auto, jsr308_version, afu_version, afu_date, checker_framework_interm_dir, jsr308_interm_dir)
 
     if projects_to_release[AFU_OPT]:
         print_step("6b: Build Annotation File Utilities.")
@@ -419,7 +420,7 @@ def main(argv):
 
     if projects_to_release[CF_OPT]:
         print_step("6c: Build Checker Framework.")
-        build_checker_framework_release(auto, jsr308_version, afu_date, checker_framework_interm_dir, jsr308_interm_dir)
+        build_checker_framework_release(auto, jsr308_version, afu_version, afu_date, checker_framework_interm_dir, jsr308_interm_dir)
 
 
     print_step("Build Step 7: Overwrite .htaccess.") # SEMIAUTO

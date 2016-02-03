@@ -16,7 +16,6 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -31,7 +30,6 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -222,13 +220,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new ValueQualifierHierarchy(factory);
-    }
-
-    @Override
-    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
-        defs.addCheckedCodeDefault(UNKNOWNVAL, DefaultLocation.OTHERWISE);
-        defs.addCheckedCodeDefault(BOTTOMVAL, DefaultLocation.LOWER_BOUNDS);
-        super.addCheckedCodeDefaults(defs);
     }
 
     @Override

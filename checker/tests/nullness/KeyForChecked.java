@@ -6,7 +6,7 @@ import org.checkerframework.checker.nullness.qual.Covariant;
 
 import java.util.*;
 
-@DefaultQualifier(value=NonNull.class, locations=DefaultLocation.IMPLICIT_UPPER_BOUNDS)
+@DefaultQualifier(value = NonNull.class, locations = TypeUseLocation.IMPLICIT_UPPER_BOUND)
 public class KeyForChecked {
 
 interface KFMap<K extends @NonNull Object, V extends @NonNull Object> {

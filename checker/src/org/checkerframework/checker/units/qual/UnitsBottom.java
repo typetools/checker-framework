@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 
@@ -19,7 +19,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf({}) // needs to be done programmatically
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@DefaultFor(DefaultLocation.LOWER_BOUNDS)
+@DefaultFor(TypeUseLocation.LOWER_BOUND)
 @ImplicitFor(typeNames = Void.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface UnitsBottom {}

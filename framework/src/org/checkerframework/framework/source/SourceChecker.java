@@ -1138,7 +1138,7 @@ public abstract class SourceChecker
     public static final String DETAILS_SEPARATOR = " $$ ";
 
     /**
-     * Determines whether an error (whose error key is {@code err}) should
+     * Determines whether an error (whose error key is {@code errKey}) should
      * be suppressed, according to the user's explicitly-written
      * SuppressWarnings annotation {@code anno} or the -AsuppressWarnings
      * command-line argument.
@@ -1158,13 +1158,13 @@ public abstract class SourceChecker
      * generic.argument.</li>
      * </ol>
      *
-     * @param anno  the @SuppressWarnings annotation written by the user
-     * @param err   the error key the checker is emitting
-     * @return true if one of {@code annos} is a
-     *         {@literal @}{@link SuppressWarnings} annotation with a key
-     *         returned by {@link SourceChecker#getSuppressWarningsKeys}
+     * @param anno   the @SuppressWarnings annotation written by the user
+     * @param errKey the error key the checker is emitting
+     * @return true  if one of {@code anno}'s keys is
+     *         returned by {@link SourceChecker#getSuppressWarningsKeys};
+     *         also accounts for errKey
      */
-    private boolean checkSuppressWarnings(/*@Nullable*/ SuppressWarnings anno, String err) {
+    private boolean checkSuppressWarnings(/*@Nullable*/ SuppressWarnings anno, String errKey) {
 
         // Don't suppress warnings if this checker provides no key to do so.
         Collection<String> checkerSwKeys = this.getSuppressWarningsKeys();
@@ -1177,15 +1177,20 @@ public abstract class SourceChecker
         }
         String[] cmdLineSwKeys = this.suppressWarnings;
 
-        return (checkSuppressWarnings(userSwKeys, err)
-                || checkSuppressWarnings(cmdLineSwKeys, err));
+        return (checkSuppressWarnings(userSwKeys, errKey)
+                || checkSuppressWarnings(cmdLineSwKeys, errKey));
     }
 
     /**
      * Return true if the given error should be suppressed, based on the
-     * user-supplied @SuppressWarnings keys.
+     * given @SuppressWarnings keys.
+     * @param userSwKeys   the @SuppressWarnings keys supplied by the user
+     * @param errKey the error key the checker is emitting
+     * @return true  if one of the {@code userSwKeys} is
+     *         returned by {@link SourceChecker#getSuppressWarningsKeys};
+     *         also accounts for errKey
      */
-    private boolean checkSuppressWarnings(String /*@Nullable*/ [] userSwKeys, String err) {
+    private boolean checkSuppressWarnings(String /*@Nullable*/ [] userSwKeys, String errKey) {
         if (userSwKeys == null)
             return false;
 
@@ -1197,7 +1202,7 @@ public abstract class SourceChecker
                 if (suppressWarningValue.equalsIgnoreCase(checkerKey))
                     return true;
 
-                String expected = checkerKey + ":" + err;
+                String expected = checkerKey + ":" + errKey;
                 if (expected.toLowerCase().contains(suppressWarningValue.toLowerCase()))
                     return true;
             }
@@ -1215,11 +1220,12 @@ public abstract class SourceChecker
      * SourceChecker#getSuppressWarningsKeys} method.
      *
      * @param tree the tree that might be a source of a warning
+     * @param errKey the error key the checker is emitting
      * @return true if no warning should be emitted for the given tree because
      *         it is contained by a declaration with an appropriately-valued
      *         {@literal @}SuppressWarnings annotation; false otherwise
      */
-    private boolean shouldSuppressWarnings(Tree tree, String err) {
+    private boolean shouldSuppressWarnings(Tree tree, String errKey) {
 
         // Don't suppress warnings if this checker provides no key to do so.
         Collection<String> checkerKeys = this.getSuppressWarningsKeys();
@@ -1233,7 +1239,7 @@ public abstract class SourceChecker
         }
 
         /*@Nullable*/ VariableTree var = TreeUtils.enclosingVariable(path);
-        if (var != null && shouldSuppressWarnings(InternalUtils.symbol(var), err)) {
+        if (var != null && shouldSuppressWarnings(InternalUtils.symbol(var), errKey)) {
             return true;
         }
 
@@ -1241,7 +1247,7 @@ public abstract class SourceChecker
         if (method != null) {
             /*@Nullable*/ Element elt = InternalUtils.symbol(method);
 
-            if (shouldSuppressWarnings(elt, err)) {
+            if (shouldSuppressWarnings(elt, errKey)) {
                 return true;
             }
 
@@ -1257,7 +1263,7 @@ public abstract class SourceChecker
         if (cls != null) {
             /*@Nullable*/ Element elt = InternalUtils.symbol(cls);
 
-            if (shouldSuppressWarnings(elt, err)) {
+            if (shouldSuppressWarnings(elt, errKey)) {
                 return true;
             }
 
@@ -1305,6 +1311,7 @@ public abstract class SourceChecker
         }
         return false;
     }
+
     /**
      * Determines whether all the warnings pertaining to a given tree
      * should be suppressed.  Returns true if the element is within the scope
@@ -1314,18 +1321,19 @@ public abstract class SourceChecker
      * SourceChecker#getSuppressWarningsKeys} method.
      *
      * @param elt the Element that might be a source of, or related to, a warning
-     * @return true if no warning should be emitted for the given tree because
+     * @param errKey the error key the checker is emitting
+     * @return true if no warning should be emitted for the given Element because
      *         it is contained by a declaration with an appropriately-valued
      *         {@code @SuppressWarnings} annotation; false otherwise
      */
     // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
-    public boolean shouldSuppressWarnings(/*@Nullable*/ Element elt, String err) {
+    public boolean shouldSuppressWarnings(/*@Nullable*/ Element elt, String errKey) {
 
         if (elt == null) {
             return false;
         }
 
-        if (checkSuppressWarnings(elt.getAnnotation(SuppressWarnings.class), err)) {
+        if (checkSuppressWarnings(elt.getAnnotation(SuppressWarnings.class), errKey)) {
             return true;
         }
 
@@ -1335,7 +1343,7 @@ public abstract class SourceChecker
             return false;
         }
 
-        return shouldSuppressWarnings(elt.getEnclosingElement(), err);
+        return shouldSuppressWarnings(elt.getEnclosingElement(), errKey);
     }
 
     private boolean isAnnotatedForThisCheckerOrUpstreamChecker(/*@Nullable*/ Element elt) {
@@ -1371,10 +1379,10 @@ public abstract class SourceChecker
      */
     public void report(final Result r, final Object src) {
 
-        String err = r.getMessageKeys().iterator().next();
-        if (src instanceof Tree && shouldSuppressWarnings((Tree)src, err))
+        String errKey = r.getMessageKeys().iterator().next();
+        if (src instanceof Tree && shouldSuppressWarnings((Tree)src, errKey))
             return;
-        if (src instanceof Element && shouldSuppressWarnings((Element)src, err))
+        if (src instanceof Element && shouldSuppressWarnings((Element)src, errKey))
             return;
 
         if (r.isSuccess())

@@ -172,7 +172,7 @@ class, indicates that the class has been annotated for certain type
 systems.  For example, \<@AnnotatedFor(\ttlcb"nullness", "regex"\ttrcb)> means that
 the programmer has written annotations for the Nullness and Regular
 Expression type systems.  If one of those two type-checkers is run,
-the \<-AuseSafeDefaultsForUnannotatedSourceCode> command-line argument
+the \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line argument
 has no effect and this class is treated normally:
 unannotated types are defaulted using normal source-code
 defaults and type-checking warnings are issued.
@@ -401,7 +401,7 @@ following ways:
   The only required import statements are the ones to import type
   annotations.  Import statements for types are optional.
 
-  Enum constants in annotations need to be either fully qualified
+  Enum constants in annotations need to be either fully-qualified
   or imported.
   For example, one has to either write the enum constant \<ANY> in
   fully-qualified form:
@@ -569,7 +569,7 @@ StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
 
 \subsection{Limitations\label{stub-limitations}}
 
-The stub file reader has several limitations.  We will fix these in a
+The stub file reader has several limitations that are violations of Java 8 syntax.  We will fix these in a
 future release.
 
 \begin{itemize}
@@ -591,18 +591,47 @@ in a stub file one has to write
 
 \item
   The stub file reader
-  does not handle nested classes.  To work around this, it permits a
+  does not handle nested class declarations.  To work around this, it permits a
   top-level class to be written with a \<\$> in its name, and applies the
   annotations to the appropriate nested class.
 
+\begin{Verbatim}
+    class Lib$Inner {
+       // methods
+    }
+\end{Verbatim}
+
 \item
-  Annotations must be written before the package name on a fully qualified
+  Annotations must be written before the package name on a fully-qualified
   types rather than directly on the type it qualifies.  However, it is usually not
-  necessary to write the fully qualified name.
+  necessary to write the fully-qualified name.
 
   \begin{Verbatim}
           void init(@Nullable java.security.SecureRandom random);
    \end{Verbatim}
+\item
+   Annotations on types that are inner classes must be written before the
+   package if the type is written as a
+   fully-qualified type, or before the inner class name if the type is
+   written as a simple type. For example,
+
+\begin{Verbatim}
+        ProcessBuilder redirectError(@NonNull java.lang.ProcessBuilder.Redirect destination);
+\end{Verbatim}
+ or
+\begin{Verbatim}
+        ProcessBuilder redirectError(@NonNull Redirect destination);
+\end{Verbatim}
+   The code below will cause an error.
+\begin{Verbatim}
+        // error
+        ProcessBuilder redirectError(@NonNull ProcessBuilder.Redirect destination);
+\end{Verbatim}
+ or
+\begin{Verbatim}
+        // error
+        ProcessBuilder redirectError(ProcessBuilder.@NonNull Redirect destination);
+\end{Verbatim}
 
 \item
   Annotations can only use string, boolean, or integer literals; other literals are not

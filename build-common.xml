@@ -116,8 +116,7 @@ points to version ${build.version} of the 'javac.jar' library."/>
     <target name="tags" depends="prep" description="Create Emacs TAGS table">
         <exec executable="/bin/sh" failonerror="true">
             <arg value="-c"/>
-            <!-- <arg value="etags `find . \( -name jdk \) -prune -o -name '*.java' -print | sort-directory-order`"/> -->
-            <arg value="ctags -e `find . \( -name jdk \) -prune -o -name '*.java' -print | sort-directory-order`"/>
+            <arg value="etags `find . \( -name jdk \) -prune -o -name '*.java' -print | sort-directory-order`"/>
         </exec>
     </target>
 

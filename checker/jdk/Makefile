@@ -82,5 +82,4 @@ annotated/%.class:
 
 TAGS: tags
 tags:
-#	etags `find . -name '*.java'`
-	ctags -e -R .
+	etags `find . -name '*.java'`
