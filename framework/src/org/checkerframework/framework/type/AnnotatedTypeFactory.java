@@ -813,7 +813,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.getAnnotatedType: null element");
             return null; // dead code
         }
-        // Annotations explicitly written in the source code.
+        // Annotations explicitly written in the source code,
+        // or obtained from bytecode.
         AnnotatedTypeMirror type = fromElement(elt);
         // Implicits due to writing annotation on the class declaration.
         annotateInheritedFromClass(type);
