@@ -4,7 +4,7 @@
 The Lock Checker prevents certain concurrency errors by enforcing a
 locking discipline.  A locking discipline indicates which locks must be held
 when a given operation occurs.  You express the locking discipline by
-declaring variable's type to have the qualifier
+declaring a variable's type to have the qualifier
 \<\refqualclass{checker/lock/qual}{GuardedBy}{\small("\emph{lockexpr}")}>.
 This indicates that the variable's value may
 be dereferenced only if the given lock is held.
@@ -23,7 +23,8 @@ Suppose that expression $e$ has type
 Then the value computed for $e$ is only dereferenced by a thread when the
 thread holds locks \<x> and \<y.z>.
 Dereferencing a value is reading or writing one of its fields.
-The guarantee holds not only if the expression $e$ is dereferenced
+The guarantee about $e$'s value
+holds not only if the expression $e$ is dereferenced
 directly, but also if the value was first copied into a variable,
 returned as the
 result of a method call, etc.
@@ -84,7 +85,8 @@ This section describes the lock annotations you can write on types and methods.
   the dereference is
   permitted only if the thread holds all the locks.
 
-  \<@GuardedBy(\{\})> is the default type qualifier for all locations
+  \<@GuardedBy(\{\})>, which means the value is always allowed to be
+  dereferenced, is the default type qualifier for all locations
   if the programmer does not
   write an explicit locking type qualifier.  It is also the conservative
   default type qualifier for method parameters in unannotated libraries
@@ -92,8 +94,16 @@ This section describes the lock annotations you can write on types and methods.
 
 \item[\refqualclass{checker/lock/qual}{GuardedByInaccessible}]
   If a variable \<x> has type \code{@GuardedByInaccessible}, then
+  it is not known which locks protect <x>'s value.  Those locks might
+  even be out of scope (inaccessible) and therefore unable to be written
+  in the annotation.  It is written on a formal parameter in order to
+  permit any value, including one whose locks are not currently held,
+  to be passed as an argument.
+
+  The practical consequence is that
   the value referred to by \<x> can never be dereferenced.
-  It is the conservative
+
+  \<@GuardedByInaccessible> is the conservative
   default type qualifier for method receivers in unannotated libraries
   (see \chapterpageref{annotating-libraries}).
 
@@ -135,8 +145,12 @@ of a problem that would occur if this rule were relaxed.
   If a variable \<x> has type \code{@GuardSatisfied}, then all
   lock expressions for \<x>'s value are held.
 
+  As with other qualifier polymorphism
+  (Section~\ref{qualifier-polymorphism}), the \emph{index} argument
+  indicates when two values are guarded by the same (unknown) set of locks.
+
   \code{@GuardSatisfied} is only allowed on primary annotations of
-  formal parameters, receivers and return types of method declarations.
+  formal parameters, receivers, and return types of method declarations.
 
   See Section~\ref{lock-checker-polymorphism}
   for an example of a use of \code{@GuardSatisfied}.
@@ -218,8 +232,9 @@ method itself rather than to some particular type.
   annotation.
 
 \item[\refqualclass{dataflow/qual}{MayReleaseLocks}]
-  It is unknown whether the method releases
-  locks that were held prior to the method being called.
+  The method may release locks that were held prior to the method being called.
+  You can write this when you are certain the method releases locks, or
+  when you don't know whether the method releases locks.
   This is the conservative default for methods in unannotated libraries (see \chapterpageref{annotating-libraries}).
 
 \end{description}
@@ -241,34 +256,38 @@ the following additional rules.
 
   The overall rules for polymorphic qualifiers are given in
   Section~\ref{qualifier-polymorphism}.  There is an additional constraint
-  for assignments whose
+  for (pseudo-)assignments whose
   left-hand side is an expression of type
   \<@GuardSatisfied>:  the assignment type-checks only if all locks
   mentioned in the right-hand side's \<@GuardedBy> type are currently held.
 
-  Given a method with a formal parameter with primary type annotation \<@GuardSatisfied(index)>,
-  that parameter can be assigned to within that method's body: \<@GuardSatisfied(index)>
-  can only be re-assigned from a right-hand-side of identical \<@GuardSatisfied(index)> type.
-  A formal parameter with type annotation \<@GuardSatisfied> without an index cannot be
-  assigned to.
+  There is a stricter constraint when the left-hand-side is
+  a formal parameter with primary type annotation \<@GuardSatisfied(index)>.
+  The right-hand-side must have identical \<@GuardSatisfied(index)> type.
+  A formal parameter with type annotation \<@GuardSatisfied> without an
+  index cannot be assigned to.
 
-  When type checking a call to a method with a receiver, return type and/or formal parameters with types annotated with
-  primary annotation \<@GuardSatisfied(index)>, the Lock Checker ensures that for all \<@GuardSatisfied> annotations
-  with the same index, the corresponding primary annotations in the \<@GuardedBy> hierarchy
-  of the types at the call site are subtypes of one another (in other words, the
-  least upper bound of the set is an exact match with one of the elements).
+  Suppose a method's signature (return type and/or formal parameters,
+  including the receiver) has two occurrences of \<@GuardSatisfied(index)>
+  with the same index.
+  At every call site, the types for the corresponding arguments must be
+  in a subtyping relationship.  Another way to state this is that for all
+  arguments matching the same \<@GuardSatisfied(index)> formal parameter
+  annotation, one of the elements is an exact match for the
+  least upper bound of the set.
 
   See Section~\ref{lock-checker-polymorphism} for an example demonstrating this rule.
 
   Note that a return type can only be annotated with \<@GuardSatisfied(index)>,
   not \<@GuardSatisfied>.
 
-  Note that if formal parameter types are
-  annotated with \<@GuardSatisfied> without an index, then those formal parameter
-  types are unrelated with regard to types in the \<@GuardedBy> hierarchy.
+  If a formal parameter type is
+  annotated with \<@GuardSatisfied> without an index, then that formal parameter
+  types are unrelated to every other type in the \<@GuardedBy> hierarchy,
+  including other occurrences of \<@GuardSatisfied> without an index.
 
-  \<@GuardSatisfied> may not be used on formal parameters, receivers or return types
-  of a method annotated with @MayReleaseLocks
+  \<@GuardSatisfied> may not be used on formal parameters, receivers, or
+  return types of a method annotated with \<@MayReleaseLocks>.
 \end{description}
 
 \paragraph{Dereferences}
@@ -289,10 +308,10 @@ the following additional rules.
 
 \end{description}
 
-\paragraph{Primitive types, boxed primitive types and Strings}
+\paragraph{Primitive types, boxed primitive types, and Strings}
 
 Primitive types, boxed primitive types (such as \<java.lang.Integer>), and type \<java.lang.String>
-are treated as being annotated with \<@GuardedBy(\{\})>.
+are implicitly annotated with \<@GuardedBy(\{\})>.
 It is an error for the programmer to annotate any of these types with an annotation from
 the \<@GuardedBy> type hierarchy.
 
@@ -325,7 +344,8 @@ the \<@GuardedBy> type hierarchy.
 \item[Overriding methods annotated with \code{@Holding}]
   If class $B$ overrides method $m$ from class $A$, then the expressions in
   $B$'s \<@Holding>
-  annotation must be a subset of or equal to that of $A$.
+  annotation must be a subset of or equal to that of $A$'s \<@Holding>
+  annotation..
 
 \item[Overriding methods annotated with side effect annotations]
   If class $B$ overrides method $m$ from class $A$, then
@@ -419,7 +439,7 @@ public StringBuffer append(StringBuffer this, String str)
 
 Clearly the declaration has no notion of any specific locks that the receiver
 and the \code{str} parameter might be guarded by, such as \code{lock1} and \code{lock2}.
-In order for the example to type check, the declaration needs to be annotated
+In order for the example to type-check, the declaration needs to be annotated
 to indicate that it is safe to provide a receiver and a parameter guarded by
 arbitrary sets of locks, regardless of any dereferences of the receiver and parameter
 that the method body of \code{append} may perform, provided that those locks are held at the method
@@ -437,7 +457,7 @@ site.  However, this set of locks is unrelated to the set of locks guarding
 the receiver and return value.  Therefore \code{str} is annotated with
 \code{@GuardSatisfied(2)}.
 
-It is clear that this method does not make any use of
+This method makes no use of
 locks or synchronization.  Therefore it is appropriate to annotate it
 with \code{@LockingFree}.
 
@@ -449,7 +469,7 @@ public @GuardSatisfied(1) StringBuffer append(@GuardSatisfied(1) StringBuffer th
                                               @GuardSatisfied(2) String str)
 \end{verbatim}
 
-With these annotations in place, the example type checks.
+With these annotations in place, the example type-checks.
 
 \section{Examples\label{lock-examples}}
 
@@ -469,13 +489,13 @@ class MyClass {
   @GuardedBy("lock") Object x = new Object();
   @GuardedBy("lock") Object y = x; // OK, since dereferences of y will require "lock" to be held.
   @GuardedBy({}) Object z = x; // ILLEGAL since dereferences of z don't require "lock" to be held.
-  @GuardedBy("lock") Object myMethod(){
+  @GuardedBy("lock") Object myMethod() {
      return x; // OK because the return type is annotated with @GuardedBy("lock")
   }
 
   [...]
 
-  void exampleMethod(){
+  void exampleMethod() {
      x.toString(); // ILLEGAL because the lock is not known to be held
      y.toString(); // ILLEGAL because the lock is not known to be held
      myMethod().toString(); // ILLEGAL because the lock is not known to be held
@@ -488,7 +508,7 @@ class MyClass {
 }
 \end{Verbatim}
 
-Note that the expression \code{new Object()} is assumed to have type \code{@GuardedBy("lock")}
+Note that the expression \code{new Object()} is inferred to have type \code{@GuardedBy("lock")}
 because it is immediately assigned to a newly-declared
 variable having type annotation \code{@GuardedBy("lock")}.  You could
 explicitly write \code{new @GuardedBy("lock") Object()} but it is not
@@ -507,14 +527,14 @@ hierarchy.
 
 \begin{Verbatim}
 class MyClass {
-    Object a = new Object();
-    Object b = new Object();
-    @GuardedBy("a") Object x = new Object();
-    @GuardedBy({"a", "b"}) Object y = new Object();
+    Object lockA = new Object();
+    Object lockB = new Object();
+    @GuardedBy("lockA") Object x = new Object();
+    @GuardedBy({"lockA", "lockB"}) Object y = new Object();
     void myMethod() {
-        y = x;
-        synchronized(a) {
-          x.toString();  // dereferences y's value without holding lock b
+        y = x;      // ILLEGAL; if legal, later statement x.toString() would cause trouble
+        synchronized(lockA) {
+          x.toString();  // dereferences y's value without holding lock lockB
         }
     }
 }
@@ -527,7 +547,8 @@ If the Lock Checker permitted the assignment
 
 \subsection{Examples of @Holding\label{lock-examples-holding}}
 
-The following example shows the interaction between these two annotations:
+The following example shows the interaction between \<@GuardedBy> and
+\<@Holding>:
 
 \begin{Verbatim}
   void helper1(@GuardedBy("myLock") Object a) {
@@ -545,10 +566,11 @@ The following example shows the interaction between these two annotations:
   }
   void myMethod2(@GuardedBy("myLock") Object e) {
     helper1(e);  // OK to pass to another routine without holding the lock
+                 // (but helper1's body has an error)
     e.toString(); // ILLEGAL: the lock is not held
     synchronized (myLock) {
       helper2(e); // OK: the lock is held
-      helper3(e); // OK, but helper3's body has an error.
+      helper3(e); // OK, but helper3's body has an error
     }
   }
 \end{Verbatim}
@@ -593,7 +615,7 @@ public class Monitor {
 }
 \end{Verbatim}
 
-\subsection{Example of @LockingFree, @ReleasesNoLocks and @MayReleaseLocks\label{lock-lockingfree-example}}
+\subsection{Example of @LockingFree, @ReleasesNoLocks, and @MayReleaseLocks\label{lock-lockingfree-example}}
 
 \code{@LockingFree} is useful when a method does not make any use of synchronization
 or locks but causes other side effects (hence \code{@SideEffectFree} is not appropriate).
@@ -608,7 +630,7 @@ private @GuardedBy("lock") Object x; // Initialized in the constructor
 
 [...]
 
-// This method does not use locks or synchronization but cannot
+// This method does not use locks or synchronization, but it cannot
 // be annotated as @SideEffectFree since it alters myField.
 @LockingFree
 void myMethod() {
@@ -634,7 +656,7 @@ void myLockingUnlockingMethod() {
   lock.unlock();
 }
 
-void myOtherMethod() {
+void clientMethod() {
   if (lock.tryLock()) {
     x.toString(); // OK: the lock is held
     myMethod();
@@ -807,8 +829,8 @@ extra synchronized block.  Here are reasons:
   the lock is not already held.  The Lock Checker prevents this type of
   error.
 \item
-  The annotation has no run-time overhead.  Even if the lock re-acquisition
-  succeeds, it still consumes time.
+  The annotation has no run-time overhead.  The lock re-acquisition
+  consumes time, even if it succeeds.
 \end{itemize}
 
 
@@ -848,11 +870,11 @@ return type.
 (The JCIP book gives some rationales for reusing the annotation name for
 two purposes.  One rationale is
 that there are fewer annotations to learn.  Another rationale is
-that both variables and methods are ``members'' that can be ``accessed'';
-variables can be accessed by reading or writing them (putfield, getfield),
+that both variables and methods are ``members'' that can be ``accessed''
+and \code{@GuardedBy} creates preconditions for doing so.
+Variables can be accessed by reading or writing them (putfield, getfield),
 and methods can be accessed by calling them (invokevirtual,
-invokeinterface):  in both cases, \code{@GuardedBy} creates preconditions
-for accessing so-annotated members.  This informal intuition is
+invokeinterface).  This informal intuition is
 inappropriate for a tool that requires precise semantics.)
 
 % It would not work to retain the name \code{@GuardedBy} but put it on the
