@@ -15,70 +15,47 @@ package org.checkerframework.checker.lock.qual;
 
 import java.lang.annotation.*;
 
-import org.checkerframework.framework.qual.PreconditionAnnotation;
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeUseLocation;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
 /**
- * The field (or other variable) to which this annotation is applied can
- * only be accessed when holding a particular lock, which may be a built-in
- * (synchronization) lock, or may be an explicit {@link
- * java.util.concurrent.locks.Lock}.
+ * Indicates that a thread may dereference the value referred to by the
+ * annotated variable only if the thread holds all the given lock expressions.
  * <p>
  *
- * This annotation does <b>not</b> indicate whether or not the given lock
- * is held at the moment that execution reaches the annotation.
- * It merely indicates that the lock must be held when the
- * variable is accessed.
+ * <code>@GuardedBy({})</code> is the default type qualifier.
  * <p>
  *
- * The argument is a string that indicates which lock guards the annotated variable:
- * <ul>
- * <li>
- * <code>this</code> : The intrinsic lock of the object in whose class the field is defined.
- * </li>
- * <li>
- * <code><em>class-name</em>.this</code> : For inner classes, it may be necessary to disambiguate 'this';
- * the <code><em>class-name</em>.this</code> designation allows you to specify which 'this' reference is intended
- * </li>
- * <li>
- * <code>itself</code> : For reference (non-primitive) fields only; the object to which the field refers.
- * </li>
- * <li>
- * <code><em>field-name</em></code> : The lock object is referenced by the (instance or static) field
- * specified by <code><em>field-name</em></code>.
- * </li>
- * <li>
- * <code><em>class-name</em>.<em>field-name</em></code> : The lock object is reference by the static field specified
- * by <code><em>class-name</em>.<em>field-name</em></code>.
- * </li>
- * <li>
- * <code><em>method-name</em>()</code> : The lock object is returned by calling the named nil-ary method.
- * </li>
- * <li>
- * <code><em>class-name</em>.class</code> : The Class object for the specified class should be used as the lock object.
- * </li>
- * </ul>
- *
- * <b>Subtyping rules:</b>
- * An unannotated type is a subtype of a
- * <code>@GuardedBy</code> one, because the unannotated type may be
- * used in any context where the <code>@GuardedBy</code> one is.
+ * The argument is a string or set of strings that indicates the expression(s) that must be held,
+ * using the <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">syntax
+ * of Java expressions</a> described in the manual.
+ * Expressions evaluate to an intrinsic (built-in, synchronization)
+ * monitor, or an explicit {@link java.util.concurrent.locks.Lock}
  * <p>
  *
  * @see Holding
- * @see HoldingOnEntry
  * @checker_framework.manual #lock-checker Lock Checker
  */
+@SubtypeOf(GuardedByInaccessible.class)
 @Documented
+@DefaultQualifierInHierarchy
+@DefaultFor({TypeUseLocation.EXCEPTION_PARAMETER, TypeUseLocation.UPPER_BOUND})
+@DefaultInUncheckedCodeFor({TypeUseLocation.PARAMETER})
+@ImplicitFor(typeClasses = { AnnotatedPrimitiveType.class }, typeNames = { java.lang.String.class })
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE })
-@PreconditionAnnotation(qualifier = LockHeld.class)
+@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 public @interface GuardedBy {
     /**
-     * The Java expressions that need to be {@link LockHeld}.
+     * The Java value expressions that need to be held.
      *
      * @see <a
-     *      href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax
+     *      href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
      *      of Java expressions</a>
      */
-    String[] value();
+    String[] value() default {};
 }
