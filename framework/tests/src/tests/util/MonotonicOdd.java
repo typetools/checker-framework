@@ -10,6 +10,6 @@ import org.checkerframework.framework.qual.Unqualified;
 
 @Inherited
 @SubtypeOf(Unqualified.class)
-@Target({ElementType.TYPE_USE})
+@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 @MonotonicQualifier(Odd.class)
 public @interface MonotonicOdd {}
