@@ -2465,7 +2465,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         String[] stubArray = allstubFiles.split(File.pathSeparator);
         for (String stubPath : stubArray) {
-            if (stubPath == null || stubPath.isEmpty()) continue;
+            if (stubPath == null || stubPath.isEmpty()) {
+                continue;
+            }
             // Handle case when running in jtreg
             String base = System.getProperty("test.src");
             String stubPathFull = stubPath;
