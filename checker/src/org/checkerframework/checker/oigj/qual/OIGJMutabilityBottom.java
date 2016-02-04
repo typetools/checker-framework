@@ -19,7 +19,7 @@ import com.sun.source.tree.Tree.Kind;
  */
 @SubtypeOf({Mutable.class, Immutable.class, I.class,
     Modifier.class, O.class})
-@Target({ElementType.TYPE_USE})
+@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 @TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
     TypeUseLocation.EXPLICIT_UPPER_BOUND })
 @ImplicitFor(

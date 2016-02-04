@@ -16,7 +16,7 @@ import com.sun.source.tree.Tree;
     FieldDescriptorForArray.class,
     MethodDescriptor.class
     })
-@Target({ElementType.TYPE_USE})
+@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 @TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
     TypeUseLocation.EXPLICIT_UPPER_BOUND })
 @ImplicitFor(trees = {Tree.Kind.NULL_LITERAL},
