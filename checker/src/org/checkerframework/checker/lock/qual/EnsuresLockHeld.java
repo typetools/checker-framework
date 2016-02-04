@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 
 /**
- * Indicates that the value expressions are held if the method
+ * Indicates that the given expressions are held if the method
  * terminates successfully.
  * <p>
  *
@@ -24,8 +24,8 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @InheritedAnnotation
 public @interface EnsuresLockHeld {
     /**
-     * The Java value expressions that are ensured to be held on successful
-     * method termination.
+     * The Java expressions whose values are held after the method terminates
+     * successfully.
      *
      * @see <a
      *      href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax

@@ -34,8 +34,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
  * The argument is a string or set of strings that indicates the expression(s) that must be held,
  * using the <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">syntax
  * of Java expressions</a> described in the manual.
- * Expressions evaluate to an intrinsic (built-in, synchronization)
- * monitor, or an explicit {@link java.util.concurrent.locks.Lock}
+ * The expressions evaluate to an intrinsic (built-in, synchronization)
+ * monitor, or an explicit {@link java.util.concurrent.locks.Lock}.
  * <p>
  *
  * @see Holding

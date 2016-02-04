@@ -6,21 +6,26 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
- * The method neither acquires nor releases locks -- nor do any of the methods that it calls.
- * The method is not {@code synchronized}, it contains no {@code synchronized} blocks,
- * and it contains no calls to {@code lock} or {@code unlock}.
+ * The method neither acquires nor releases locks, nor do any of the
+ * methods that it calls.  The method is not {@code synchronized}, it
+ * contains no {@code synchronized} blocks, it contains no calls to
+ * {@code lock} or {@code unlock}, and it contains no calls to other
+ * non-{@code @LockingFree} methods.
  * <p>
  *
- * {@code @LockingFree} provides a stronger guarantee than {@code @ReleasesNoLocks}, and a
- * weaker guarantee than {@code @SideEffectFree}.
+ * {@code @LockingFree} provides a stronger guarantee than
+ * {@code @}{@link ReleasesNoLocks} and a weaker guarantee than
+ * {@code @}{@link SideEffectFree}.
  *
  * @see MayReleaseLocks
  * @see ReleasesNoLocks
- * @see org.checkerframework.dataflow.qual.SideEffectFree
- * @see org.checkerframework.dataflow.qual.Pure
+ * @see SideEffectFree
+ * @see Pure
  * @checker_framework.manual #lock-checker Lock Checker
  */
 @Documented

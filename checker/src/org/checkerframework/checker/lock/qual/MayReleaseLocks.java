@@ -9,11 +9,8 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
- * It is unknown whether the method, or one of the methods it calls, releases locks
- * that were held prior to the method being called.
- * <p>
- *
- * {@code @MayReleaseLocks} is the conservative default for methods in unannotated libraries.
+ * It is unknown whether the method, or one of the methods it calls, releases
+ * locks that were held prior to the method being called.
  *
  * @see ReleasesNoLocks
  * @see LockingFree

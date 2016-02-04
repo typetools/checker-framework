@@ -5,32 +5,30 @@ import java.lang.annotation.*;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- *
  * If a variable {@code x} has type {@code @GuardSatisfied}, then all
  * lock expressions for {@code x}'s value are held.
  * <p>
  *
- * This annotation is used as a primary annotation on a formal parameter, receiver or return type to indicate that the
- * {@literal @}{@link GuardedBy} annotation on
- * the corresponding actual parameter, receiver or return type at the method call site
- * is unknown at the method definition site, but the lock expressions
- * on the {@literal @}{@link GuardedBy} annotation are known to be held
- * prior to the method call.
+ * Written on a formal parameter (including receiver), this annotation
+ * indicates that the {@literal @}{@link GuardedBy} type for
+ * the corresponding actual argument at the method call site
+ * is unknown at the method definition site, but any lock expressions
+ * that guard it are known to be held prior to the method call.
  * <p>
  *
  * For example, the formal parameter of the String copy constructor,
- * {@link String#String(String s)}, is annotated with {@code @GuardSatisfied} since
- * the {@code @GuardedBy} annotation
- * on the actual parameter to a call to the constructor is unknown
- * at its definition site, because the constructor can be called by
- * arbitrary code.
+ * {@link String#String(String s)}, is annotated with {@code @GuardSatisfied}.
+ * This requires that all locks guarding the actual argument are held when
+ * the constructor is called.  However, the definition of the constructor
+ * does not need to know what those locks are (and it cannot know, because
+ * the constructor can be called by arbitrary code).
  * <p>
  *
- * When type checking a call to a method with a receiver, return type and/or formal parameters with types annotated with
- * {@code @GuardSatisfied(index)}, the Lock Checker ensures that for all {@code @GuardSatisfied} annotations
+ * For all {@code @GuardSatisfied(index)} annotations
  * with the same index, the corresponding primary annotations in the {@code @GuardedBy} hierarchy
  * of the types at the call site are subtypes of one another (in other words, the
- * least upper bound of the set is an exact match with one of the elements). Note that a return type can only
+ * least upper bound of the set is an exact match with one of the elements).
+ * Note that a return type can only
  * be annotated with {@code @GuardSatisfied(index)}, not {@code @GuardSatisfied}.
  * <p>
  *
@@ -39,7 +37,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * types are unrelated with regard to types in the {@code @GuardedBy} hierarchy.
  * <p>
  *
- * {@code @GuardSatisfied} may not be used on formal parameters, receivers or return types of a
+ * {@code @GuardSatisfied} may not be used on formal parameters, receivers, or return types of a
  * method annotated with {@literal @}{@link MayReleaseLocks}
  *
  * @see GuardedBy
