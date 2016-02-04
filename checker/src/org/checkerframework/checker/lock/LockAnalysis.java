@@ -12,7 +12,7 @@ import javax.lang.model.element.VariableElement;
 
 /**
  * The analysis class for the lock type system (serves as factory for the
- * transfer function, stores and abstract values.
+ * transfer function, stores and abstract values).
  */
 public class LockAnalysis extends
         CFAbstractAnalysis<CFValue, LockStore, LockTransfer> {

@@ -801,12 +801,12 @@ public abstract class GenericAnnotatedTypeFactory<
         CFGBuilder builder = new CFCFGBuilder(checker, this);
         ControlFlowGraph cfg = builder.run(root, processingEnv, ast);
         FlowAnalysis newAnalysis = createFlowAnalysis(fieldValues);
+        TransferFunction transfer = newAnalysis.getTransferFunction();
         if (emptyStore == null) {
-            emptyStore = newAnalysis.createEmptyStore(!checker.hasOption("concurrentSemantics"));
+            emptyStore = newAnalysis.createEmptyStore(transfer.usesSequentialSemantics());
         }
         analyses.addFirst(newAnalysis);
         if (lambdaStore != null) {
-            TransferFunction transfer = newAnalysis.getTransferFunction();
             transfer.setFixedInitialStore(lambdaStore);
         } else {
             Store initStore = !isStatic ? initializationStore : initializationStaticStore;
@@ -815,7 +815,6 @@ public abstract class GenericAnnotatedTypeFactory<
                     // we have already seen initialization code and analyzed it, and
                     // the analysis ended with the store initStore.
                     // use it to start the next analysis.
-                    TransferFunction transfer = newAnalysis.getTransferFunction();
                     transfer.setFixedInitialStore(initStore);
                 }
             }
