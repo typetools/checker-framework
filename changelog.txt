@@ -1,17 +1,32 @@
 ---------------------------------------------------------------------------
 
-Version 1.9.11, 1 February 2016
+Version 1.9.12, 1 March 2016
+
+Renamed enum DefaultLocation to TypeUseLocation
 
 The Checker Framework distribution contains annotated versions
 of libraries in directory checker-framework/checker/lib/.
 During type-checking, you should put these versions first on your classpath,
 to obtain more precise type-checking with fewer false positive warnings.
 
+---------------------------------------------------------------------------
+
+Version 1.9.11, 1 February 2016
+
+Renamed and merged -AuseSafeDefaultsForUnannotatedSourceCode and
+-AsafeDefaultsForUnannotatedBytecode command-line options to
+-AuseDefaultsForUncheckedCode that takes arguments source and bytecode.
+
 For type-system developers:
 
 * The previously deprecated
   org.checkerframework.framework.qual.TypeQualifier{s} annotations
   were removed.
+* Every type system uses the CLIMB-to-top defaulting scheme, unless it
+  explicitly specifies a different one.  Previously a type system needed
+  to explicitly request CLIMB-to-top, but now it is the default.
+
+Closed issues: 524, 563, 568.
 
 ---------------------------------------------------------------------------
 
