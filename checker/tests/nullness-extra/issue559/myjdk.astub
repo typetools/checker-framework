@@ -1,0 +1,7 @@
+package java.util;
+
+public class Optional<T> {
+    // In contrast to the annotated JDK, here
+    // we have no @Nullable on the parameter and return types.
+    public T orElse(T other);
+}
