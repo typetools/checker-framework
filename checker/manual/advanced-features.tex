@@ -1214,6 +1214,7 @@ The set of permitted expressions is a subset of all Java expressions:
   the method body with preconditions, or when checking the caller's
   code with postconditions).  This can be useful to annotate trusted
   methods precisely (e.g., \<java.io.BufferedReader.ready()>).  % TODO: expand this example.
+
 \end{itemize}
 
 % We want this in the future:
@@ -1229,14 +1230,19 @@ The set of permitted expressions is a subset of all Java expressions:
 
 \textbf{Limitations:}
 The following Java expressions may not currently be written:
+% The Checker Framework is best at reasoning about Java expressions that
+% are variable references, but these expressions are not.
 \begin{itemize}
 \item Some literals:  floats, doubles, chars, and class literals.
 \item String concatenation expressions.
 \item Mathematical operators (plus, minus, division, ...).
 \item Comparisons (equality, less than, etc.).
-\item Quantification over all array components (e.g. to express that all
-  array elements are non-null).
 \end{itemize}
+
+Additionally, it is not possible to write 
+quantification over all array components (e.g. to express that all
+  array elements are non-null).  There is no such Java expression, but it
+  would be useful when writing specifications.
 
 
 
