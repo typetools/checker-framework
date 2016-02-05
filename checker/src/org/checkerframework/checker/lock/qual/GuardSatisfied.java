@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * lock expressions for {@code x}'s value are held.
  * <p>
  *
- * Written on a formal parameter (including receiver), this annotation
+ * Written on a formal parameter (including the receiver), this annotation
  * indicates that the {@literal @}{@link GuardedBy} type for
  * the corresponding actual argument at the method call site
  * is unknown at the method definition site, but any lock expressions
