@@ -4,7 +4,7 @@
 
 CTSYM ?= $(JAVA_HOME)/lib/ct.sym
 
-CHECKER_DIRS = nullness igj javari
+CHECKER_DIRS = nullness igj javari lock
 
 all: clean classes
 # Extracts unannotated .class files from $(CTSYM)
@@ -30,7 +30,8 @@ ANNOTATED_CLASSES = \
 	$(patsubst nullness/build/%.class,annotated/%.class, \
 	  $(patsubst igj/build/%.class,annotated/%.class, \
 	    $(patsubst javari/build/%.class,annotated/%.class, \
-		  $(ANNOTATED_CLASSES_BY_DIR))))
+	      $(patsubst lock/build/%.class,annotated/%.class, \
+		  $(ANNOTATED_CLASSES_BY_DIR)))))
 
 # Javarifier seems to only check the first .jar it gets on the
 # -soot-classpath (which will be this one), so if these are missing from
