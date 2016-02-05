@@ -1,15 +1,19 @@
 package org.checkerframework.checker.igj;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
-
 import org.checkerframework.checker.igj.qual.I;
 import org.checkerframework.checker.igj.qual.Immutable;
 import org.checkerframework.checker.igj.qual.Mutable;
-import org.checkerframework.framework.qual.*;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TargetLocations;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
-import com.sun.source.tree.Tree.Kind;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
+
+import javax.lang.model.type.TypeKind;
 
 /**
  * An annotation used to represent a placeholder immutability type, that is a
@@ -17,10 +21,11 @@ import com.sun.source.tree.Tree.Kind;
  * of all immutability types.
  */
 @SubtypeOf({Mutable.class, Immutable.class, I.class})
-@ImplicitFor(
-        trees = { Kind.NULL_LITERAL },
-        typeClasses = { AnnotatedPrimitiveType.class }
-)
+@ImplicitFor(literals = { LiteralKind.NULL },
+    types = { TypeKind.BOOLEAN, TypeKind.BYTE,
+              TypeKind.CHAR, TypeKind.DOUBLE,
+              TypeKind.FLOAT, TypeKind.INT,
+              TypeKind.LONG, TypeKind.SHORT })
 @DefaultFor({ TypeUseLocation.LOWER_BOUND })
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 @TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,

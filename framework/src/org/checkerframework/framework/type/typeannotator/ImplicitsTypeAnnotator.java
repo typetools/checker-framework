@@ -79,10 +79,6 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
                 addTypeKind(typeKind, theQual);
             }
 
-            for (Class<? extends AnnotatedTypeMirror> typeClass : implicit.typeClasses()) {
-                addTypeClass(typeClass, theQual);
-            }
-
             for (Class<?> typeName : implicit.typeNames()) {
                 addTypeName(typeName, theQual);
             }

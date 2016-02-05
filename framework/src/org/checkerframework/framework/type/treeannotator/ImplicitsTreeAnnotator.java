@@ -1,6 +1,7 @@
 package org.checkerframework.framework.type.treeannotator;
 
 import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -59,6 +60,23 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     protected final QualifierHierarchy qualHierarchy;
 
     /**
+     * Map of {@link LiteralKind}s to {@link Tree.Kind}s.
+     * This is here and not in LiteralKinds because LiteralKind is in the checker-qual.jar
+     * which cannot depend on classes, such as Tree.Kind, that are in the tools.jar
+     */
+    private static final Map<LiteralKind,Tree.Kind> literalKindToTreeKind = new EnumMap<>(LiteralKind.class);
+    {
+        literalKindToTreeKind.put(LiteralKind.BOOLEAN, Kind.BOOLEAN_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.CHAR, Kind.CHAR_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.DOUBLE,Kind.DOUBLE_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.FLOAT,Kind.FLOAT_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.INT, Kind.INT_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.LONG, Kind.LONG_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.NULL,Kind.NULL_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.STRING, Kind.STRING_LITERAL);
+    }
+
+    /**
      * Creates a
      * {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}
      * from the given checker, using that checker to determine the annotations
@@ -83,12 +101,8 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
                 continue;
 
             AnnotationMirror theQual = AnnotationUtils.fromClass(atypeFactory.getElementUtils(), qual);
-            for (Class<? extends Tree> treeClass : implicit.treeClasses()) {
-                addTreeClass(treeClass, theQual);
-            }
-
-            for (Kind treeKind : implicit.trees()) {
-                addTreeKind(treeKind, theQual);
+            for(LiteralKind literalKind:implicit.literals()){
+                addLiteralKind(literalKind,theQual);
             }
 
             for (String pattern : implicit.stringPatterns()) {
@@ -102,6 +116,20 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
         if (!res) {
             ErrorReporter.errorAbort("PropagationTreeAnnotator: invalid update of map " +
                     treeClasses + " at " + treeClass + " with " +theQual);
+        }
+    }
+    public void addLiteralKind(LiteralKind literalKind, AnnotationMirror theQual) {
+        if (literalKind == LiteralKind.ALL) {
+            for (LiteralKind iterLiteralKind : LiteralKind.valuesWithOutAll()) {
+               addLiteralKind(iterLiteralKind,theQual);
+            }
+        } else {
+            Tree.Kind treeKind = literalKindToTreeKind.get(literalKind);
+            if (treeKind != null) {
+                addTreeKind(treeKind, theQual);
+            } else {
+                ErrorReporter.errorAbort("LiteralKind " + literalKind + "is not mapped to a Tree.Kind.");
+            }
         }
     }
 
