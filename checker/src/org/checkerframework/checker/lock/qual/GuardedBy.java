@@ -36,10 +36,13 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
  * of Java expressions</a> described in the manual.
  * The expressions evaluate to an intrinsic (built-in, synchronization)
  * monitor, or an explicit {@link java.util.concurrent.locks.Lock}.
+ * Two <code>@GuardedBy</code> annotations with different argument expressions
+ * are unrelated by subtyping.
  * <p>
  *
  * @see Holding
  * @checker_framework.manual #lock-checker Lock Checker
+ * @checker_framework.manual #lock-examples-guardedby Example use of @GuardedBy
  */
 @SubtypeOf(GuardedByInaccessible.class)
 @Documented

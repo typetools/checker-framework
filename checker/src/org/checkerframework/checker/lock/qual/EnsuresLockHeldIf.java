@@ -16,6 +16,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  *
  * @see EnsuresLockHeld
  * @checker_framework.manual #lock-checker Lock Checker
+ * @checker_framework.manual #ensureslockheld-examples Example use of @EnsuresLockHeldIf
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

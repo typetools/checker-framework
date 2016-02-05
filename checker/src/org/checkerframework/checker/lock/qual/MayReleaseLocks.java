@@ -18,6 +18,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * @see org.checkerframework.dataflow.qual.Pure
  *
  * @checker_framework.manual #lock-checker Lock Checker
+ * @checker_framework.manual #lock-lockingfree-example Example use of @MayReleaseLocks
  * @checker_framework.manual #annotating-libraries Annotating libraries
  */
 @Documented

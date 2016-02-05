@@ -33,6 +33,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * @see SideEffectFree
  * @see Pure
  * @checker_framework.manual #lock-checker Lock Checker
+ * @checker_framework.manual #lock-lockingfree-example Example use of @ReleasesNoLocks
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

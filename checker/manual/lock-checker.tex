@@ -103,12 +103,15 @@ This section describes the lock annotations you can write on types and methods.
   If a variable \<x> has type \code{@GuardedByInaccessible}, then
   it is not known which locks protect <x>'s value.  Those locks might
   even be out of scope (inaccessible) and therefore unable to be written
-  in the annotation.  It is written on a formal parameter in order to
-  permit any value, including one whose locks are not currently held,
-  to be passed as an argument.
-
+  in the annotation.
   The practical consequence is that
   the value referred to by \<x> can never be dereferenced.
+
+  Any value can be assigned to a variable of type
+  \code{@GuardedByInaccessible}.  In particular, if it is written on a
+  formal parameter, then any value,
+  including one whose locks are not currently held,
+  may be passed as an argument.
 
   \<@GuardedByInaccessible> is the conservative
   default type qualifier for method receivers in unannotated libraries
@@ -159,7 +162,7 @@ of a problem that would occur if this rule were relaxed.
   \code{@GuardSatisfied} is only allowed on primary annotations of
   formal parameters, receivers, and return types of method declarations.
 
-  See Section~\ref{lock-checker-polymorphism}
+  See Section~\ref{lock-checker-polymorphism-example}
   for an example of a use of \code{@GuardSatisfied}.
 
 %\item[\refqualclass{checker/interning/qual}{PolyGuardedBy}]
@@ -283,7 +286,7 @@ the following additional rules.
   annotation, one of the elements is an exact match for the
   least upper bound of the set.
 
-  See Section~\ref{lock-checker-polymorphism} for an example demonstrating this rule.
+  See Section~\ref{lock-checker-polymorphism-example} for an example demonstrating this rule.
 
   Note that a return type can only be annotated with \<@GuardSatisfied(index)>,
   not \<@GuardSatisfied>.
@@ -415,68 +418,6 @@ the \<@GuardedBy> type hierarchy.
 
 \end{description}
 
-
-\subsection{Polymorphism and method formal parameters with unknown guards\label{lock-checker-polymorphism}}
-
-The polymorphic \code{@GuardSatisfied} type annotation allows a method body
-to dereference the method's formal parameters even if the
-\code{@GuardedBy} annotations on the actual parameters are unknown at
-the method declaration site.
-
-Consider the following example:
-
-\begin{verbatim}
-ReentrantLock lock1, lock2;
-@GuardedBy("lock1") StringBuffer filename;
-@GuardedBy("lock2") StringBuffer extension;
-...
-lock1.lock();
-lock2.lock();
-filename = filename.append(extension);
-\end{verbatim}
-% Technically, the 'filename = ' is unnecessary in the example,
-% but is helpful to illustrate the type-checking against the
-% return value of the call to append.
-
-Consider now the declaration of \sunjavadoc{java/lang/StringBuffer.html\#append-java.lang.String-}{StringBuffer.append(String str)}:
-
-\begin{verbatim}
-public StringBuffer append(StringBuffer this, String str)
-\end{verbatim}
-
-Clearly the declaration has no notion of any specific locks that the receiver
-and the \code{str} parameter might be guarded by, such as \code{lock1} and \code{lock2}.
-In order for the example to type-check, the declaration needs to be annotated
-to indicate that it is safe to provide a receiver and a parameter guarded by
-arbitrary sets of locks, regardless of any dereferences of the receiver and parameter
-that the method body of \code{append} may perform, provided that those locks are held at the method
-call site.
-
-The documentation for \sunjavadoc{java/lang/StringBuffer.html\#append-java.lang.String-}{StringBuffer.append(String str)}
-indicates that the method returns the updated receiver.
-\code{@GuardSatisfied(1)} is used
-to indicate that, although the lock expressions guarding the receiver
-are unknown at the method declaration site, it is known that the receiver
-parameter and the return value are guarded by the same set of lock expressions.
-
-The parameter \code{str} may also be guarded by an arbitrary set of locks at the call
-site.  However, this set of locks is unrelated to the set of locks guarding
-the receiver and return value.  Therefore \code{str} is annotated with
-\code{@GuardSatisfied(2)}.
-
-This method makes no use of
-locks or synchronization.  Therefore it is appropriate to annotate it
-with \code{@LockingFree}.
-
-The annotated declaration is:
-
-\begin{verbatim}
-@LockingFree
-public @GuardSatisfied(1) StringBuffer append(@GuardSatisfied(1) StringBuffer this,
-                                              @GuardSatisfied(2) String str)
-\end{verbatim}
-
-With these annotations in place, the example type-checks.
 
 \section{Examples\label{lock-examples}}
 
@@ -717,6 +658,51 @@ void clientMethod() {
 \end{verbatim}
 
 
+\subsection{Polymorphism and method formal parameters with unknown guards\label{lock-checker-polymorphism-example}}
+
+The polymorphic \code{@GuardSatisfied} type annotation allows a method body
+to dereference the method's formal parameters even if the
+\code{@GuardedBy} annotations on the actual parameters are unknown at
+the method declaration site.
+
+The declaration of
+\sunjavadoc{java/lang/StringBuffer.html\#append-java.lang.String-}{StringBuffer.append(String str)}
+is annotated as:
+
+\begin{verbatim}
+@LockingFree
+public @GuardSatisfied(1) StringBuffer append(@GuardSatisfied(1) StringBuffer this,
+                                              @GuardSatisfied(2) String str)
+\end{verbatim}
+
+The method manipulates the values of its arguments, so all their locks must
+be held.  However, the declaration does not know what those are and they
+might not even be in scope at the declaration.  Therefore, the declaration
+cannot use \<@GuardedBy> and must use \<@GuardSatisfied>.  The arguments to
+\<@GuardSatisfied> indicate that the receiver and result (which are the
+same value) are guarded by the same (unknown, possibly empty) set of locks,
+and the \<str> parameter may be guarded by a different set of locks.
+
+The \code{@LockingFree} annotation indicates that 
+this method makes no use of
+locks or synchronization.
+
+Given these annotations on \<append>, the following code type-checks:
+
+\begin{verbatim}
+ReentrantLock lock1, lock2;
+@GuardedBy("lock1") StringBuffer filename;
+@GuardedBy("lock2") StringBuffer extension;
+...
+lock1.lock();
+lock2.lock();
+filename = filename.append(extension);
+\end{verbatim}
+% The 'filename = ' assignment is unnecessary in the example
+% and is not good Java style, but it illustrates the type-checking against the
+% return value of the call to append.
+
+
 
 
 \section{More locking details\label{lock-details}}
@@ -940,11 +926,11 @@ These features are supported by
 
 
 % LocalWords:  quals GuardedBy JCIP putfield getfield invokevirtual
-% LocalWords:  invokeinterface threadsafety Clang's GuardedByInaccessible cleanroom
-%%  LocalWords:  api 5cm lockexpr Dereferencing exprSet expr expr1 expr2
+% LocalWords:  invokeinterface threadsafety Clang's GuardedByInaccessible
+%  LocalWords:  api 5cm lockexpr Dereferencing exprSet expr expr1 expr2
 %  LocalWords:  GuardedByBottom exprSet1 exprSet2 GuardSatisfied 3cm pre
 %  LocalWords:  PolyGuardedBy EnsuresLockHeld ReentrantLock boolean eset
 %  LocalWords:  EnsuresLockHeldIf LockingFree ReleasesNoLocks str lock1
 %  LocalWords:  MayReleaseLocks GuardedByName lock2 jls JLS LockHeld intra
 %  LocalWords:  LockPossiblyHeld explicitLock isHeldByCurrentThread JCIP's
-%  LocalWords:  holdsLock monitorLock
+%  LocalWords:  holdsLock monitorLock cleanroom

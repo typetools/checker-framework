@@ -21,6 +21,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  *
  * @see GuardedBy
  * @checker_framework.manual #lock-checker Lock Checker
+ * @checker_framework.manual #lock-examples-holding Example use of @Holding
  */
 @Documented
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})

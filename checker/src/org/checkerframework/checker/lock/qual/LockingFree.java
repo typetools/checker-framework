@@ -12,7 +12,8 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
  * The method neither acquires nor releases locks, nor do any of the
- * methods that it calls.  The method is not {@code synchronized}, it
+ * methods that it calls.
+ * More specifically, the method is not {@code synchronized}, it
  * contains no {@code synchronized} blocks, it contains no calls to
  * {@code lock} or {@code unlock}, and it contains no calls to other
  * non-{@code @LockingFree} methods.
@@ -27,6 +28,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * @see SideEffectFree
  * @see Pure
  * @checker_framework.manual #lock-checker Lock Checker
+ * @checker_framework.manual #lock-lockingfree-example Example use of @LockingFree
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

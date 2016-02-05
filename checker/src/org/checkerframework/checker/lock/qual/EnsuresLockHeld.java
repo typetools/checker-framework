@@ -16,6 +16,7 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
  *
  * @see EnsuresLockHeldIf
  * @checker_framework.manual #lock-checker Lock Checker
+ * @checker_framework.manual #ensureslockheld-examples Example use of @EnsuresLockHeld
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

@@ -7,13 +7,16 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * The top of the GuardedBy qualifier hierarchy.
- * Indicates that the value referred to by the
- * annotated variable can never be dereferenced.
- * It is unknown what locks guard that value, and those locks might not even
- * be in scope (might be inaccessible) at the location where the
- * <tt>@GuardedByInaccessible</tt> annotation is written.
+ * It is unknown what locks guard the value referred to by the annotated
+ * variable.  Therefore, the value can never be dereferenced.  The locks
+ * that guard it might not even be in scope (might be inaccessible) at the
+ * location where the <tt>@GuardedByInaccessible</tt> annotation is
+ * written.
  * <p>
+ *
+ * <tt>@GuardedByInaccessible</tt> is the top of the GuardedBy qualifier
+ * hierarchy.  Any value can be assigned into a variable of type
+ * <tt>@GuardedByInaccessible</tt>.
  *
  * @checker_framework.manual #lock-checker Lock Checker
  */
