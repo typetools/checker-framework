@@ -138,7 +138,7 @@ Section~\ref{lock-guardedby-invariant-subtyping} for an example
 of a problem that would occur if this rule were relaxed.
 
 
-\paragraph{Polymorphic type qualifiers}
+\paragraph{Polymorphic type qualifiers\label{lock-polymorphic-type-qualifiers}}
 
 %\refqualclass{checker/lock/qual}{GuardSatisfied}{\small(\emph{index})}
 %and
@@ -185,7 +185,7 @@ The Lock Checker supports several annotations that specify method behavior.
 These are declaration annotations, not type annotations: they apply to the
 method itself rather than to some particular type.
 
-\paragraph{Method pre-conditions and post-conditions}
+\paragraph{Method pre-conditions and post-conditions\label{lock-method-pre-post-conditions}}
 
 \begin{sloppypar}
 \begin{description}
@@ -212,7 +212,7 @@ method itself rather than to some particular type.
 
 \end{description}
 
-\paragraph{Side effect specifications}
+\paragraph{Side effect specifications\label{lock-side-effect-specifications}}
 
 \begin{description}
 
@@ -248,14 +248,14 @@ method itself rather than to some particular type.
 \end{sloppypar}
 
 
-\subsection{Type-checking rules}
+\section{Type-checking rules\label{lock-type-checking-rules}}
 
 In addition to the standard subtyping rules enforcing the subtyping relationship
 described in Figure~\ref{fig-lock-guardedby-hierarchy}, the Lock Checker enforces
 the following additional rules.
 
 
-\paragraph{Polymorphic assignments}
+\subsection{Polymorphic assignments\label{lock-type-checking-rules-polymorphic-assignments}}
 
 \begin{description}
 
@@ -297,7 +297,7 @@ the following additional rules.
   return types of a method annotated with \<@MayReleaseLocks>.
 \end{description}
 
-\paragraph{Dereferences}
+\subsection{Dereferences\label{lock-type-checking-rules-dereferences}}
 
 \begin{description}
 
@@ -315,7 +315,7 @@ the following additional rules.
 
 \end{description}
 
-\paragraph{Primitive types, boxed primitive types, and Strings}
+\subsection{Primitive types, boxed primitive types, and Strings\label{lock-type-checking-rules-primitives}}
 
 Primitive types, boxed primitive types (such as \<java.lang.Integer>), and type \<java.lang.String>
 are implicitly annotated with \<@GuardedBy(\{\})>.
@@ -344,7 +344,7 @@ the \<@GuardedBy> type hierarchy.
 %  all type check, whereas none of them would type check if \code{a},
 %  \code{b} and \code{c} were not primitives.
 
-\paragraph{Overriding}
+\subsection{Overriding\label{lock-type-checking-rules-overriding}}
 
 \begin{description}
 
@@ -370,7 +370,7 @@ the \<@GuardedBy> type hierarchy.
 
 \end{description}
 
-\paragraph{Side effects}
+\subsection{Side effects\label{lock-type-checking-rules-polymorphic-side-effects}}
 
 \begin{description}
 
