@@ -24,7 +24,7 @@ public final class String implements java.io.Serializable, Comparable<String>, C
   @SideEffectFree public String(byte[] a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String(StringBuffer a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String(StringBuilder a1) { throw new RuntimeException("skeleton method"); }
-  @Pure @SideEffectFree public int length() { throw new RuntimeException("skeleton method"); }
+  @Pure public int length() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
   @Pure public char charAt(int a1) { throw new RuntimeException("skeleton method"); }
   @Pure public int codePointAt(int a1) { throw new RuntimeException("skeleton method"); }
@@ -75,8 +75,7 @@ public final class String implements java.io.Serializable, Comparable<String>, C
   @SideEffectFree public String toUpperCase(java.util.Locale a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String toUpperCase() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String trim() { throw new RuntimeException("skeleton method"); }
-  // Actually @Pure, but mark it @SideEffectFree while debugging a problem
-  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public char[] toCharArray() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static String format(String a1, @Nullable Object... a2) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static String format(java.util. @Nullable Locale a1, String a2, @Nullable Object... a3) { throw new RuntimeException("skeleton method"); }

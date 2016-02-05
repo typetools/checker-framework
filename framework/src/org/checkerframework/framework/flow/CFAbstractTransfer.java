@@ -115,6 +115,16 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
     }
 
+    // Note that the user can always forcefully turn on concurrent semantics via -AconcurrentSemantics.
+    public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis, boolean useConcurrentSemantics) {
+        this.analysis = analysis;
+        this.sequentialSemantics = !(useConcurrentSemantics || analysis.checker.hasOption("concurrentSemantics"));
+    }
+
+    public boolean usesSequentialSemantics() {
+        return sequentialSemantics;
+    }
+
     /**
      * This method is called before returning the abstract value {@code value}
      * as the result of the transfer function. By default, the value is not
@@ -527,7 +537,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         S store = p.getRegularStore();
         V storeValue = store.getValue(n);
         // look up value in factory, and take the more specific one
-        // TODO: handle cases, where this is not allowed (e.g. contructors in
+        // TODO: handle cases, where this is not allowed (e.g. constructors in
         // non-null type systems)
         V factoryValue = getValueFromFactory(n.getTree(), n);
         V value = moreSpecificValue(factoryValue, storeValue);

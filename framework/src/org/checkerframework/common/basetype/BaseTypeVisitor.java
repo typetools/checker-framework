@@ -2681,7 +2681,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         private boolean checkParameters() {
             boolean result = true;
-            // Check parameter values. (FIXME varargs)
+            // Check parameter values. (TODO: FIXME varargs)
             List<AnnotatedTypeMirror> overriderParams =
                     overrider.getParameterTypes();
             List<AnnotatedTypeMirror> overriddenParams =
