@@ -1304,7 +1304,7 @@ public abstract class SourceChecker
             }
         }
 
-        if (hasOption("useSafeDefaultsForUnannotatedSourceCode")) {
+        if (useUncheckedCodeDefault("source")) {
             // If we got this far without hitting an @AnnotatedFor and returning
             // false, we DO suppress the warning.
             return true;
