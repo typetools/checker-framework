@@ -93,9 +93,11 @@ This section describes the lock annotations you can write on types and methods.
   (monitor) lock of the value referenced by \<o>.
 
   \<@GuardedBy(\{\})>, which means the value is always allowed to be
-  dereferenced, is the default type qualifier for all locations
-  if the programmer does not
-  write an explicit locking type qualifier.  It is also the conservative
+  dereferenced, is the default type qualifier that is used for all locations
+  where the programmer does not
+  write an explicit locking type qualifier.
+  (Section~\ref{lock-checker-default-qualifier} discusses this choice.)
+  It is also the conservative
   default type qualifier for method parameters in unannotated libraries
   (see \chapterpageref{annotating-libraries}).
 
@@ -786,12 +788,26 @@ Section~\ref{type-refinement}.
 % a run-time test, but ReentrantLock does.
 
 
+\subsection{Discussion of default qualifier\label{lock-checker-default-qualifier}}
+
+The default qualifier for unannotated types is \<@GuardedBy(\{\})>.
+This default forces you to write explicit \<@GuardSatisfied> in method
+signatures in the common case that clients ensure that all locks are held.
+
+It might seem that \<@GuardSatisfied> is would be a better default for
+method signatures, but such a default would require even more annotations.
+The reason is that \<@GuardSatisfied> cannot be used on fields.  If
+\<@GuardedBy(\{\})> is the default for fields but \<@GuardSatisfied> is the
+default for parameters and return types, then getters, setters, and many
+other types of methods do not type-check without explicit lock qualifiers.
+
+
 \subsection{Discussion of \<@Holding>\label{lock-checker-holding}}
 
 A programmer might choose to use the \code{@Holding} method annotation in
-two different ways:  to specify correctness constraints for a synchronization protocol, or to summarize
-intended usage.  Both of these approaches are useful, and the Lock Checker
-supports both.
+two different ways:  to specify correctness constraints for a
+synchronization protocol, or to summarize intended usage.  Both of these
+approaches are useful, and the Lock Checker supports both.
 
 \paragraph{Synchronization protocol\label{lock-checker-holding-synchronization-protocol}}
 
