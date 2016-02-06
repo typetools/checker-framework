@@ -5,9 +5,9 @@ import java.util.Optional;
 
 class Issue559 {
     void bar(Optional<String> o) {
-	// With myjdk.astub the following should fail with an
-	// argument.type.incompatible error.
+        // With myjdk.astub the following should fail with an
+        // argument.type.incompatible error.
         o.orElse(null);
-	o.orElse("Hi");
+        o.orElse("Hi");
     }
 }
