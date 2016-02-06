@@ -321,8 +321,9 @@ public class StubParser {
             parsePackage(cu.getPackage(), atypes, declAnnos);
         }
         if (cu.getTypes() != null) {
-            for (TypeDeclaration typeDecl : cu.getTypes())
+            for (TypeDeclaration typeDecl : cu.getTypes()) {
                 parse(typeDecl, packageName, packageAnnos, atypes, declAnnos);
+            }
         }
     }
 
@@ -404,8 +405,9 @@ public class StubParser {
         AnnotatedDeclaredType type = atypeFactory.fromElement(elt);
         annotate(type, decl.getAnnotations());
 
-        List<? extends AnnotatedTypeMirror> typeArguments = type.getTypeArguments();
-        List<TypeParameter> typeParameters = decl.getTypeParameters();
+        final List<? extends AnnotatedTypeMirror> typeArguments = type.getTypeArguments();
+        final List<TypeParameter> typeParameters = decl.getTypeParameters();
+
         // It can be the case that args=[] and params=null.
         // if ((typeParameters == null) != (typeArguments == null)) {
         //     throw new Error(String.format("parseType (%s, %s): inconsistent nullness for args and params%n  args = %s%n  params = %s%n", decl, elt, typeArguments, typeParameters));
@@ -446,7 +448,7 @@ public class StubParser {
              */
         }
 
-        annotateParameters(type.getTypeArguments(), decl.getTypeParameters());
+        annotateParameters(typeArguments, typeParameters);
         annotateSupertypes(decl, type);
         putNew(atypes, elt, type);
     }
@@ -456,7 +458,9 @@ public class StubParser {
             for (ClassOrInterfaceType superType : typeDecl.getExtends()) {
                 AnnotatedDeclaredType foundType = findType(superType, type.directSuperTypes());
                 assert foundType != null : "StubParser: could not find superclass " + superType + " from type " + type;
-                if (foundType != null) annotate(foundType, superType);
+                if (foundType != null) {
+                    annotate(foundType, superType);
+                }
             }
         }
         if (typeDecl.getImplements() != null) {
@@ -467,7 +471,9 @@ public class StubParser {
                 // this addition to be compatible with Java 6.
                 assert foundType != null || (superType.toString().equals("AutoCloseable") || superType.toString().equals("java.io.Closeable") || superType.toString().equals("Closeable")) :
                     "StubParser: could not find superinterface " + superType + " from type " + type;
-                if (foundType != null) annotate(foundType, superType);
+                if (foundType != null) {
+                    annotate(foundType, superType);
+                }
             }
         }
     }
@@ -518,6 +524,16 @@ public class StubParser {
         putNew(atypes, elt, methodType);
     }
 
+    /**
+     * Handle existing annotations on the type. Stub files should override the existing
+     * annotations on a type. Using {@code replaceAnnotation} is usually good enough
+     * to achieve this; however, for annotations on type variables, the stub file sometimes
+     * needs to be able to remove an existing annotation, leaving no annotation on
+     * the type variable. This method achieves this by calling {@code clearAnnotations}.
+     *
+     * @param atype The type to modify.
+     * @param typeDef The type from the stub file, for warnings.
+     */
     private void handleExistingAnnotations(AnnotatedTypeMirror atype, Type typeDef) {
         Set<AnnotationMirror> annos = atype.getAnnotations();
         if (annos != null &&
@@ -694,20 +710,23 @@ public class StubParser {
             return;
         for (AnnotationExpr annotation : annotations) {
             AnnotationMirror annoMirror = getAnnotation(annotation, supportedAnnotations);
-            if (annoMirror != null)
+            if (annoMirror != null) {
                 type.replaceAnnotation(annoMirror);
+            }
         }
     }
 
     private void annotateDecl(Map<String, Set<AnnotationMirror>> declAnnos, Element elt,
             List<AnnotationExpr> annotations) {
-        if (annotations == null)
+        if (annotations == null) {
             return;
+        }
         Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
         for (AnnotationExpr annotation : annotations) {
             AnnotationMirror annoMirror = getAnnotation(annotation, supportedAnnotations);
-            if (annoMirror != null)
+            if (annoMirror != null) {
                 annos.add(annoMirror);
+            }
         }
         String key = ElementUtils.getVerboseName(elt);
         putOrAddToMap(declAnnos, key,annos);
@@ -715,8 +734,9 @@ public class StubParser {
 
     private void annotateParameters(List<? extends AnnotatedTypeMirror> typeArguments,
             List<TypeParameter> typeParameters) {
-        if (typeParameters == null)
+        if (typeParameters == null) {
             return;
+        }
 
         if (typeParameters.size() != typeArguments.size()) {
             stubAlwaysWarn(String.format("annotateParameters: mismatched sizes%n  typeParameters (size %d)=%s%n  typeArguments (size %d)=%s%n",
@@ -782,13 +802,16 @@ public class StubParser {
     private AnnotatedDeclaredType findType(ClassOrInterfaceType type, List<AnnotatedDeclaredType> types) {
         String typeString = type.getName();
         for (AnnotatedDeclaredType superType : types) {
-            if (superType.getUnderlyingType().asElement().getSimpleName().contentEquals(typeString))
+            if (superType.getUnderlyingType().asElement().getSimpleName().contentEquals(typeString)) {
                 return superType;
+            }
         }
         stubWarning("Type " + typeString + " not found");
-        if (debugStubParser)
-            for (AnnotatedDeclaredType superType : types)
+        if (debugStubParser) {
+            for (AnnotatedDeclaredType superType : types) {
                 stubDebug(String.format("  %s%n", superType));
+            }
+        }
         return null;
     }
 
@@ -822,9 +845,10 @@ public class StubParser {
         final String wantedMethodString = StubUtil.toString(methodDecl);
         for (ExecutableElement method : ElementFilter.constructorsIn(typeElt.getEnclosedElements())) {
             // do heuristics first
-            if (wantedMethodParams == method.getParameters().size()
-                    && StubUtil.toString(method).equals(wantedMethodString))
+            if (wantedMethodParams == method.getParameters().size() &&
+                    StubUtil.toString(method).equals(wantedMethodString)) {
                 return method;
+            }
         }
 
         stubWarning("Constructor " + wantedMethodString + " not found in type " + typeElt);
@@ -883,8 +907,9 @@ public class StubParser {
 
     /** Just like Map.put, but errs if the key is already in the map. */
     private static <K,V> void putNew(Map<K,V> m, K key, V value) {
-        if (key == null)
+        if (key == null) {
             return;
+        }
         if (m.containsKey(key) && !m.get(key).equals(value)) {
             ErrorReporter.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
                             + "  " + key + " => " + m.get(key) + LINE_SEPARATOR
@@ -909,8 +934,9 @@ public class StubParser {
 
     /** Just like Map.put, but does not throw an error if the key with the same value is already in the map. */
     private static void putNew(Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror value) {
-        if (key == null)
+        if (key == null) {
             return;
+        }
         if (m.containsKey(key)) {
             AnnotatedTypeMirror value2 = m.get(key);
             AnnotatedTypeMerger.merge(value, value2);
