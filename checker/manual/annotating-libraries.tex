@@ -350,6 +350,12 @@ then the annotation from the last declaration is used.
 % The Checker Framework automatically imports all the stub files named
 % \code{library.astub} found in the classpath.
 
+If both bytecode and a stub file provide information for the same
+element, the stub file information is used. In particular, an
+un-annotated type variable in a stub file is used instead of
+annotations on a type variable in bytecode.
+This feature allows stub files to change the effective annotations in
+all possible situations.
 
 
 \subsection{Stub file format\label{stub-format}}
