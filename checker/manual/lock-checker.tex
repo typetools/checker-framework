@@ -126,6 +126,15 @@ This section describes the lock annotations you can write on types and methods.
 
 \end{description}
 
+\begin{figure}
+\includeimage{lock-guardedby}{3cm}
+\caption{The subtyping relationship of the Lock Checker's qualifiers.
+\code{@GuardedBy(\{\})} is the default type qualifier for unannotated
+types (except CLIMB-to-top locations, see Section~\ref{climb-to-top}).
+}
+\label{fig-lock-guardedby-hierarchy}
+\end{figure}
+
 Figure~\ref{fig-lock-guardedby-hierarchy} shows the type hierarchy of these
 qualifiers.
 All \code{@GuardedBy} annotations are incomparable:
@@ -157,11 +166,11 @@ of a problem that would occur if this rule were relaxed.
   If a variable \<x> has type \code{@GuardSatisfied}, then all
   lock expressions for \<x>'s value are held.
 
-  As with other qualifier polymorphism
+  As with other qualifier-polymorphism annotations
   (Section~\ref{qualifier-polymorphism}), the \emph{index} argument
   indicates when two values are guarded by the same (unknown) set of locks.
 
-  \code{@GuardSatisfied} is only allowed in method signatures, on
+  \code{@GuardSatisfied} is only allowed in method signatures:  on
   formal parameters (including the receiver) and return types.
   It may not be written on fields.
 
@@ -174,15 +183,6 @@ of a problem that would occur if this rule were relaxed.
 %  cannot be dereferenced.
 
 \end{description}
-
-\begin{figure}
-\includeimage{lock-guardedby}{3cm}
-\caption{The subtyping relationship of the Lock Checker's qualifiers.
-\code{@GuardedBy(\{\})} is the default type qualifier for all unannotated
-types.
-}
-\label{fig-lock-guardedby-hierarchy}
-\end{figure}
 
 
 \subsection{Declaration annotations\label{lock-declaration-annotations}}
@@ -268,30 +268,32 @@ the following additional rules.
 \item[\code{@GuardSatisfied}]
 
   The overall rules for polymorphic qualifiers are given in
-  Section~\ref{qualifier-polymorphism}.  There is an additional constraint
-  for (pseudo-)assignments whose
-  left-hand side is an expression of type
-  \<@GuardSatisfied>:  the assignment type-checks only if all locks
-  mentioned in the right-hand side's \<@GuardedBy> type are currently held.
+  Section~\ref{qualifier-polymorphism}.
 
-  There is a stricter constraint when the left-hand-side is
-  a formal parameter with type qualifier \<@GuardSatisfied(index)>.
-  The right-hand-side must have identical \<@GuardSatisfied(index)> type.
-  A formal parameter with type qualifier \<@GuardSatisfied> without an
-  index cannot be assigned to.
+  Here are additional constraints for (pseudo-)assignments:
 
-  Suppose a method's signature (return type and/or formal parameters,
-  including the receiver) has two occurrences of \<@GuardSatisfied(index)>
-  with the same index.
-  At every call site, the types for the corresponding arguments must be
-  in a subtyping relationship.  Another way to state this is that for all
-  arguments matching the same \<@GuardSatisfied(index)> formal parameter
-  annotation, one of the elements is an exact match for the
-  least upper bound of the set.
+  \begin{itemize}
+  \item
+    If the left-hand side has type \<@GuardSatisfied> (with or without an index),
+    then all locks mentioned in the right-hand side's \<@GuardedBy> type
+    must be currently held.
+  \item
+    A formal parameter with type qualifier \<@GuardSatisfied> without an
+    index cannot be assigned to.
+  \item
+    If the left-hand side is a formal parameter has type
+    \<@GuardSatisfied(\emph{index})>, the right-hand-side must have
+    identical \<@GuardSatisfied(\emph{index})> type.
+  \end{itemize}
 
-  See Section~\ref{lock-checker-polymorphism-example} for an example demonstrating this rule.
+  Suppose that a method signature has multiple formal parameters with the
+  same \<@GuardSatisfied(index)> type.
+  As a consequence of the flat type hierarchy and the fact that
+  \<@GuardedByInaccessible> is not assignable to \<@GuardSatisfied>,
+  at any call, all the corresponding actual arguments have the same
+  \<@GuardedBy> type or \<@GuardedByBottom>.
 
-  Note that a return type can only be annotated with \<@GuardSatisfied(index)>,
+  A return type can only be annotated with \<@GuardSatisfied(index)>,
   not \<@GuardSatisfied>.
 
   If a formal parameter type is
