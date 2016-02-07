@@ -124,6 +124,57 @@ public class ExpectedErrors {
     @Top int getTop() {
         return 0;
     }
-    
+
+    public class SuppressWarningsTest {
+        // Tests that signature inference in a @SuppressWarnings block is ignored.
+        private int i;
+        private int i2;
+        @SuppressWarnings("")
+        public void suppressWarningsTest() {
+            i = (@Sibling1 int) 0;
+            i2 = getSibling1();
+        }
+
+        public void suppressWarningsTest2() {
+            SuppressWarningsInner.i = (@Sibling1 int) 0;
+            SuppressWarningsInner.i2 = getSibling1();
+        }
+
+        public void suppressWarningsValidation() {
+            //:: error: (argument.type.incompatible)
+            expectsSibling1(i);
+            //:: error: (argument.type.incompatible)
+            expectsSibling1(i2);
+            //:: error: (argument.type.incompatible)
+            expectsSibling1(SuppressWarningsInner.i);
+            //:: error: (argument.type.incompatible)
+            expectsSibling1(SuppressWarningsInner.i2);
+            //:: error: (argument.type.incompatible)
+            expectsSibling1(suppressWarningsMethodReturn());
+
+            suppressWarningsMethodParams(getSibling1());
+        }
+
+        @SuppressWarnings("")
+        public int suppressWarningsMethodReturn() {
+            return getSibling1();
+        }
+
+        // It is problematic to automatically test signature inference for method
+        // params when suppressing warnings.
+        // Since we must use @SuppressWarnings() for the method,
+        // we won't be able to catch any error inside the method body.
+        // Verified manually that in the "annotated" folder param's type wasn't
+        // updated.
+        @SuppressWarnings("")
+        public void suppressWarningsMethodParams(int param) {
+        }
+    }
+}
+
+@SuppressWarnings("")
+class SuppressWarningsInner {
+    public static int i;
+    public static int i2;
 }
 

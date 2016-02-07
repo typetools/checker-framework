@@ -750,10 +750,12 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         S info = in.getRegularStore();
         V rhsValue = in.getValueOfSubNode(rhs);
-
         Receiver expr = FlowExpressions.internalReprOf(
                 analysis.getTypeFactory(), lhs);
-        if (inferSignatures && expr instanceof FieldAccess) {
+        if (inferSignatures && expr instanceof FieldAccess &&
+                !analysis.checker.shouldSuppressWarnings(n.getTree(), null) &&
+                !analysis.checker.shouldSuppressWarnings(
+                        InternalUtils.symbol(lhs.getTree()), null)) {
             // Updates inferred field type
             SignatureInferenceScenes.updateInferredFieldType(
                     lhs, rhs, analysis.getContainingClass(n.getTree()),
@@ -767,7 +769,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
     @Override
     public TransferResult<V, S> visitReturn(ReturnNode n, TransferInput<V, S> p) {
-        if (inferSignatures) {
+        if (inferSignatures &&
+                !analysis.checker.shouldSuppressWarnings(n.getTree(), null)) {
             // Retrieves class containing the method
             ClassTree classTree = analysis.getContainingClass(n.getTree());
             ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
@@ -839,8 +842,10 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         // add new information based on conditional postcondition
         processConditionalPostconditions(n, method, tree, thenStore, elseStore);
-        
-        if (inferSignatures) {
+
+        if (inferSignatures &&
+                !analysis.checker.shouldSuppressWarnings(n.getTree(), null) &&
+                !analysis.checker.shouldSuppressWarnings(method, null)) {
             // Finds the receiver's type
             Tree receiverTree = n.getTarget().getReceiver().getTree();
             if (receiverTree == null) {
