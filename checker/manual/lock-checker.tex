@@ -161,8 +161,9 @@ of a problem that would occur if this rule were relaxed.
   (Section~\ref{qualifier-polymorphism}), the \emph{index} argument
   indicates when two values are guarded by the same (unknown) set of locks.
 
-  \code{@GuardSatisfied} is only allowed on primary annotations of
-  formal parameters, receivers, and return types of method declarations.
+  \code{@GuardSatisfied} is only allowed in method signatures, on
+  formal parameters (including the receiver) and return types.
+  It may not be written on fields.
 
   See Section~\ref{lock-checker-polymorphism-example}
   for an example of a use of \code{@GuardSatisfied}.
@@ -274,9 +275,9 @@ the following additional rules.
   mentioned in the right-hand side's \<@GuardedBy> type are currently held.
 
   There is a stricter constraint when the left-hand-side is
-  a formal parameter with primary type annotation \<@GuardSatisfied(index)>.
+  a formal parameter with type qualifier \<@GuardSatisfied(index)>.
   The right-hand-side must have identical \<@GuardSatisfied(index)> type.
-  A formal parameter with type annotation \<@GuardSatisfied> without an
+  A formal parameter with type qualifier \<@GuardSatisfied> without an
   index cannot be assigned to.
 
   Suppose a method's signature (return type and/or formal parameters,
