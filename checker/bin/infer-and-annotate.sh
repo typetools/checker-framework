@@ -65,7 +65,7 @@ read_input() {
     for i in "$@"
     do
         # This function makes the assumption that every extra argument
-        # starts with a hyphen. The rest are .java files.
+        # starts with a hyphen. The rest are .java/.jaif files.
         case "$1" in
             -*)
                 extra_args="$extra_args $1"
@@ -115,7 +115,7 @@ infer_and_annotate() {
         if [ ! `find $SIGNATURE_INFERENCE_DIR -prune -empty` ]
         then
             # Only insert annotations if there is at least one .jaif file.
-            insert-annotations-to-source -i $SIGNATURE_INFERENCE_DIR/* $java_files
+            insert-annotations-to-source -i `find $SIGNATURE_INFERENCE_DIR -name "*.jaif"` $java_files
         fi
         # Updates DIFF_JAIF variable.
         # diff returns exit-value 1 when there are differences between files.
