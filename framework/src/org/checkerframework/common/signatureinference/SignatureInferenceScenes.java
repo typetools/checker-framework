@@ -412,11 +412,11 @@ public class SignatureInferenceScenes {
                         getUpperBound().getAnnotations();
             // If the inferred type is a subtype of the upper bounds of the
             // current type on the source code, halt.
-                if (upperAnnos.size() == rhsATM.getAnnotations().size() &&
-                        atf.getQualifierHierarchy().isSubtype(
-                                rhsATM.getAnnotations(), upperAnnos)) {
-                    return;
-                }
+            if (upperAnnos.size() == rhsATM.getAnnotations().size() &&
+                    atf.getQualifierHierarchy().isSubtype(
+                            rhsATM.getAnnotations(), upperAnnos)) {
+                return;
+            }
         }
         updateTypeElementFromATM(rhsATM, lhsATM, atf, type, 1, defLoc);
         modifiedScenes.add(jaifPath);
