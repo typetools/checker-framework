@@ -3,7 +3,7 @@ import org.checkerframework.framework.qual.*;
 
 class MyClass<T extends @Nullable Object> {}
 
-@DefaultQualifier(value=Nullable.class, locations=DefaultLocation.UPPER_BOUNDS)
+@DefaultQualifier(value = Nullable.class, locations = TypeUseLocation.UPPER_BOUND)
 class Varargs {
   void test() { ignore(newInstance()); }
   static void ignore(MyClass<?>... consumer) {}

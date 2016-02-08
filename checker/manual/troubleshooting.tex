@@ -546,15 +546,11 @@ classfile that targets an earlier JVM by supplying arguments such as
 The following warning is innocuous and you can ignore it, or you can
 suppress it using the \<-Xlint:-classfile> command-line argument to javac:
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
+\begin{myxsmall}
 \begin{Verbatim}
 warning: [classfile] RuntimeVisibleTypeAnnotations attribute introduced in version 52.0 class files is ignored in version 51.0 class files
 \end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
+\end{myxsmall}
 
 This warning results when you compile a library using the Checker Framework
 compiler, then use a normal Java compiler to compile client code that uses
@@ -583,7 +579,8 @@ helpful if you:
 
 \begin{itemize}
 \item
-  Add \code{-version -verbose -AprintErrorStack -AprintAllQualifiers} to the javac options.  This causes the compiler to output
+  Add \code{-version -verbose -AprintErrorStack -AprintAllQualifiers}
+  to the javac options.  This causes the compiler to output
   debugging information, including its version number.
 \item
   Indicate exactly what you did.  Don't skip any steps, and don't merely

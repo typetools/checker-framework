@@ -1,7 +1,7 @@
 package org.checkerframework.checker.tainting;
 
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.qualframework.base.CheckerAdapter;
 import org.checkerframework.qualframework.base.TypecheckVisitorAdapter;
@@ -23,12 +23,12 @@ public class TaintingChecker extends CheckerAdapter<QualParams<Tainting>> {
         defaults.addCheckedCodeDefault(
                 getTypeMirrorConverter().getAnnotation(
                         new QualParams<>(new GroundQual<>(Tainting.UNTAINTED))),
-                DefaultLocation.IMPLICIT_LOWER_BOUNDS);
+                TypeUseLocation.IMPLICIT_LOWER_BOUND);
 
         defaults.addCheckedCodeDefault(
                 getTypeMirrorConverter().getAnnotation(
                         new QualParams<>(new GroundQual<>(Tainting.TAINTED))),
-                DefaultLocation.LOCAL_VARIABLE);
+                TypeUseLocation.LOCAL_VARIABLE);
     }
 
 }

@@ -1038,28 +1038,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
                     }
 
-                    // Try local variables first
-                    CFAbstractValue<?> value = store.getValueOfLocalVariableByName(s);
+                    expr = FlowExpressionParseUtil.parse(expression,
+                            flowExprContext, getCurrentPath());
 
-                    if (value == null) { // Not a recognized local variable
-                        expr = FlowExpressionParseUtil.parse(expression,
-                                flowExprContext, getCurrentPath());
+                    if (expr == null) {
+                        // TODO: Wrap the following 'itself' handling logic into a method that calls FlowExpressionParseUtil.parse
 
-                        if (expr == null) {
-                            // TODO: Wrap the following 'itself' handling logic into a method that calls FlowExpressionParseUtil.parse
+                        /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
+                        Pattern itselfPattern = Pattern.compile("^itself$");
+                        Matcher itselfMatcher = itselfPattern.matcher(expression.trim());
 
-                            /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
-                            Pattern itselfPattern = Pattern.compile("^itself$");
-                            Matcher itselfMatcher = itselfPattern.matcher(expression.trim());
-
-                            if (itselfMatcher.matches()) { // There is no variable, class, etc. named "itself"
-                                expr = FlowExpressions.internalReprOf(atypeFactory,
-                                        nodeNode);
-                            }
+                        if (itselfMatcher.matches()) { // There is no variable, class, etc. named "itself"
+                            expr = FlowExpressions.internalReprOf(atypeFactory,
+                                    nodeNode);
                         }
-
-                        value = store.getValue(expr);
                     }
+
+                    CFAbstractValue<?> value = store.getValue(expr);
 
                     AnnotationMirror inferredAnno = value == null ? null : value
                             .getType().getAnnotationInHierarchy(anno);

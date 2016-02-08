@@ -1,12 +1,12 @@
 package org.checkerframework.framework.util.defaults;
 
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 import javax.lang.model.element.AnnotationMirror;
 
 /**
- * Represents a mapping from an Annotation to a DefaultLocation it should be applied to during defaulting.
+ * Represents a mapping from an Annotation to a TypeUseLocation it should be applied to during defaulting.
  * The Comparable ordering of this class first tests location then tests annotation ordering (via
  * {@link org.checkerframework.javacutil.AnnotationUtils}).
  *
@@ -15,9 +15,9 @@ import javax.lang.model.element.AnnotationMirror;
 class Default implements Comparable<Default> {
     //please remember to add any fields to the hashcode calculation
     public final AnnotationMirror anno;
-    public final DefaultLocation location;
+    public final TypeUseLocation location;
 
-    public Default(final AnnotationMirror anno, final DefaultLocation location) {
+    public Default(final AnnotationMirror anno, final TypeUseLocation location) {
         this.anno     = anno;
         this.location = location;
     }

@@ -526,12 +526,9 @@
         compression="gzip" />
     </target>
 
-
-    <!-- TODO: re-enable -->
     <target name="jtreg-tests" depends="-jtreg.download,-def-jtreg,jar,build-tests"
             description="Run jtreg tests">
-        <echo message="framework jtreg-tests are currently disabled because they are failing"/>
-        <!-- <jtreg-tool2 name="all" tests="."/> -->
+        <jtreg-tool2 name="all" tests="."/>
     </target>
 
     <target name="-def-check">

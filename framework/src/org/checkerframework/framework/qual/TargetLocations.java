@@ -35,5 +35,5 @@ public @interface TargetLocations {
      * Type uses at which the qualifier is permitted to be written
      * in source code.
      */
-    DefaultLocation[] value();
+    TypeUseLocation[] value();
 }

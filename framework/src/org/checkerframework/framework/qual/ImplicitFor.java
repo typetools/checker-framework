@@ -75,5 +75,5 @@ public @interface ImplicitFor {
     String[] stringPatterns() default {};
 
     // TODO: do we need an option to provide implicits for locations
-    // specified by a DefaultLocation (which should then be renamed)?
+    // specified by a TypeUseLocation (which should then be renamed)?
 }

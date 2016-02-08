@@ -16,7 +16,6 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -31,7 +30,6 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -162,8 +160,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private AnnotatedTypeMirror postFixInt(AnnotatedTypeMirror anno,
             boolean increment) {
-        List<Long> values = getIntValues(
-                anno.getAnnotation(IntVal.class));
+        List<Long> values = getIntValues(anno.getAnnotation(IntVal.class));
         List<? extends Number> castedValues = NumberUtils.castNumbers(
                 anno.getUnderlyingType(), values);
         List<Long> results = new ArrayList<>();
@@ -223,14 +220,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new ValueQualifierHierarchy(factory);
-    }
-    @Override
-    protected QualifierDefaults createQualifierDefaults() {
-        QualifierDefaults defaults = super.createQualifierDefaults();
-        defaults.addCheckedCodeDefault(UNKNOWNVAL, DefaultLocation.OTHERWISE);
-        defaults.addCheckedCodeDefault(BOTTOMVAL, DefaultLocation.LOWER_BOUNDS);
-
-        return defaults;
     }
 
     @Override

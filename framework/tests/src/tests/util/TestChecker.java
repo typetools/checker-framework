@@ -13,7 +13,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.Bottom;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -73,7 +73,7 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
 
         addTypeNameImplicit(java.lang.Void.class, BOTTOM);
-        this.defaults.addCheckedCodeDefault(BOTTOM, DefaultLocation.LOWER_BOUNDS);
+        this.defaults.addCheckedCodeDefault(BOTTOM, TypeUseLocation.LOWER_BOUND);
     }
 
     @Override

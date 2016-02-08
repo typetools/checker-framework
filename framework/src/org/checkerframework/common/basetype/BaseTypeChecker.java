@@ -6,7 +6,6 @@ import org.checkerframework.checker.igj.qual.*;
 
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -81,9 +80,8 @@ import com.sun.tools.javac.util.Log;
  *
  * <p>
  *
- * Subclasses must specify the set of type qualifiers they support either by
- * annotating the subclass with {@link TypeQualifiers} or by overriding the
- * {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()} method.
+ * Subclasses must specify the set of type qualifiers they support. See
+ * {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()}.
  *
  * <p>
  *

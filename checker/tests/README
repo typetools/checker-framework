@@ -26,7 +26,10 @@ How to run just one test for the Checker Framework
 ==================================================
 
 To run an individual test (check one source code file) without rebuilding
-the JDK, do something like:
+the JDK, do something like the following, assuming that the source code
+file to be checked is AssertNonNullTest.java in directory
+$CHECKERFRAMEWORK/checker/tests/nullness/ and the checker is
+org.checkerframework.checker.nullness.NullnessChecker.
 
   cd $CHECKERFRAMEWORK/checker/tests/nullness
   (cd $CHECKERFRAMEWORK && ant -e build) && $CHECKERFRAMEWORK/checker/bin-devel/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class AssertNonNullTest.java
@@ -44,6 +47,7 @@ or, less commonly (to rebuild the JDK):
 where the specific checker and command-line arguments are often clear from
 the directory name but can also be determined from a file such as
   checker-framework/checker/tests/src/tests/MyTypeSystemTest.java
+which is the source code for the test itself.
 
 
 Writing new tests for an existing checker
@@ -164,6 +168,14 @@ Write @skip-test anywhere in a test file to disable that test.
 Write @non-308-skip-test anywhere in a test file to disable that test if
 the jsr308-langtools compiler is not used. (This is useful for tests that
 depend on annotations-in-comments that would fail with the stock compiler.)
+
+Write @below-java8-jdk-skip-test anywhere in a test file to disable that
+test if the executing JDK version is lower than 8.
+This is useful when the test depends on Java 8 language features that
+need runtime support (e.g. lambdas) or depends on Java 8 APIs
+(e.g. streams and reflective type annotation access).
+Tests that only exercise the static type annotation API do not need
+this marker, as the tests will be executed with a Java 8 compiler.
 
 To disable all tests for a given type system, temporarily move away a file;
 for example,

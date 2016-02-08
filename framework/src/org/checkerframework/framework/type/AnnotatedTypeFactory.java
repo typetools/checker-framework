@@ -19,7 +19,6 @@ import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.StubParser;
 import org.checkerframework.framework.stub.StubResource;
@@ -649,58 +648,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * return an immutable set.
      * <p>
      *
-     * Temporary support for deprecated meta-annotation {@link TypeQualifiers}:
-     * <p>
-     *
-     * If the set is empty, and if the type factory or checker class is
-     * annotated with {@link TypeQualifiers}, return an immutable set with the
-     * same set of classes as the annotation. If the class is not so annotated,
-     * it will return an empty set.
-     * <p>
-     *
      * @return the type qualifiers supported this processor, or an empty set if
      *         none
-     *
-     * @see TypeQualifiers
      */
-    @SuppressWarnings("deprecation")
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        Set<Class<? extends Annotation>> typeQualifiers = new HashSet<Class<? extends Annotation>>();
-
-        // =====================================
-        // temporary support for deprecated @TypeQualifiers annotation
-        // TODO: This support will be removed in the next version of the checker framework
-        TypeQualifiers typeQualifiersAnnotation;
-
-        // First see if the AnnotatedTypeFactory has @TypeQualifiers
-        Class<?> classType = this.getClass();
-        typeQualifiersAnnotation = classType.getAnnotation(TypeQualifiers.class);
-
-        if (typeQualifiersAnnotation == null) {
-            // If not, try the Checker
-            classType = checker.getClass();
-            typeQualifiersAnnotation = classType.getAnnotation(TypeQualifiers.class);
-        }
-
-        if (typeQualifiersAnnotation != null) {
-            for (Class<? extends Annotation> qualifier : typeQualifiersAnnotation.value()) {
-                typeQualifiers.add(qualifier);
-            }
-        }
-
-        // if the legacy @TypeQualifiers meta-annotation is in use, and it lists
-        // some annotations, then only return annotations listed in that
-        // meta-annotation
-        if (!typeQualifiers.isEmpty()) {
-            return Collections.unmodifiableSet(typeQualifiers);
-        }
-        // =====================================
-
-        // Otherwise load annotations from qual directory
         // by default support PolyAll
-        typeQualifiers.addAll(getBundledTypeQualifiersWithPolyAll());
-
-        return Collections.unmodifiableSet(typeQualifiers);
+        return getBundledTypeQualifiersWithPolyAll();
     }
 
     /**
@@ -801,12 +754,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * <p>
      * Subclasses cannot override this method; they should override
-     * {@link #createSupportedTypeQualifiers createSupportedTypeQualifiers} instead.
-
+     * {@link #createSupportedTypeQualifiers createSupportedTypeQualifiers}
+     * instead.
+     *
      * @see #createSupportedTypeQualifiers()
      *
-     * @return the type qualifiers supported this processor, or an empty
-     * set if none
+     * @return an immutable set of the supported type qualifiers, or an
+     *         empty set if no qualifiers are supported
      */
     public final Set<Class<? extends Annotation>> getSupportedTypeQualifiers() {
         return supportedQuals;
@@ -859,7 +813,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.getAnnotatedType: null element");
             return null; // dead code
         }
+        // Annotations explicitly written in the source code,
+        // or obtained from bytecode.
         AnnotatedTypeMirror type = fromElement(elt);
+        // Implicits due to writing annotation on the class declaration.
         annotateInheritedFromClass(type);
         annotateImplicit(elt, type);
         return type;
@@ -2508,7 +2465,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         String[] stubArray = allstubFiles.split(File.pathSeparator);
         for (String stubPath : stubArray) {
-            if (stubPath == null || stubPath.isEmpty()) continue;
+            if (stubPath == null || stubPath.isEmpty()) {
+                continue;
+            }
             // Handle case when running in jtreg
             String base = System.getProperty("test.src");
             String stubPathFull = stubPath;
