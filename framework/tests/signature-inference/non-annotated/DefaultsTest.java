@@ -13,10 +13,11 @@ public class DefaultsTest {
         defaultField2 = explicitDefault;
     }
 
-    // This method's return type should not be updated by the signature inference.
+    // This method's return type should not be updated by the signature inference
+    // since it is the default.
     String lubTest() {
         if (Math.random() > 0.5) {
-            return "";
+            return ""; // @DefaultType
         } else {
             //:: warning: (cast.unsafe) 
             @SignatureInferenceBottom String s = (@SignatureInferenceBottom String) "";
