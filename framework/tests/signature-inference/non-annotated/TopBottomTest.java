@@ -4,8 +4,8 @@ public class TopBottomTest {
     private int privateField;
     public int publicField;
 
-    // The type of privateField is refined to @SignatureInferenceBottom
-    // because of the first method call in the method below.
+    // The types of both fields are refined to @SignatureInferenceBottom
+    // because of the method calls in the method below.
     void assignFieldsToBottom() {
         privateField = getBottom();
         publicField = getBottom();

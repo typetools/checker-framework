@@ -841,7 +841,7 @@ public class SignatureInferenceScenes {
         if (symbol instanceof ClassSymbol) {
             return (ClassSymbol) symbol;
         } else if (symbol instanceof VarSymbol) {
-            return ((VarSymbol)symbol).enclClass();
+            return ((VarSymbol)symbol).asType().asElement().enclClass();
         } else if (symbol instanceof MethodSymbol) {
             return ((MethodSymbol)symbol).enclClass();
         }

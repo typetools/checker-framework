@@ -1,3 +1,4 @@
+import java.lang.reflect.Field;
 import tests.signatureinference.qual.*;
 /**
  * This file contains expected errors that should exist even after the jaif type
@@ -123,6 +124,17 @@ public class ExpectedErrors {
     }
     @Top int getTop() {
         return 0;
+    }
+
+    // Method Field.setBoolean != ExpectedErrors.setBoolean.
+    // No refinement should happen.
+    void test(Field f) throws Exception {
+        f.setBoolean(null, false);
+    }
+
+    void setBoolean(Object o, boolean b) {
+        //:: error: (assignment.type.incompatible)
+        @SignatureInferenceBottom Object bot = o;
     }
 
     public class SuppressWarningsTest {
