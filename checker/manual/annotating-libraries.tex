@@ -318,15 +318,11 @@ The \code{-Astubs} argument causes the Checker Framework to read
 annotations from annotated stub classes in preference to the unannotated
 original library classes.  For example:
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
+\begin{myxsmall}
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.interning.InterningChecker -Astubs=String.astub:stubs MyFile.java MyOtherFile.java ...
 \end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
+\end{myxsmall}
 
 Each stub path entry is a file or a directory; specifying a directory is
 equivalent to specifying every file in it whose name ends with

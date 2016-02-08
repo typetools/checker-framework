@@ -1041,9 +1041,7 @@ exist of the given type.
 
 A common error is:
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
+\begin{mysmall}
 \begin{Verbatim}
 MyClass.java:1465: error: int hashCode() in MyClass cannot override int hashCode(Object this) in java.lang.Object;
 attempting to use an incompatible purity declaration
@@ -1052,9 +1050,7 @@ attempting to use an incompatible purity declaration
   found   : []
   required: [SIDE_EFFECT_FREE, DETERMINISTIC]
 \end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
+\end{mysmall}
 
 \noindent
 The reason for the error is that the \<Object> class is annotated as:
