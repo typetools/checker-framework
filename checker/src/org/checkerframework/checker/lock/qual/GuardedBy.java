@@ -31,11 +31,18 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
  * <code>@GuardedBy({})</code> is the default type qualifier.
  * <p>
  *
- * The argument is a string or set of strings that indicates the expression(s) that must be held,
- * using the <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">syntax
+ * The argument is a string or set of strings that indicates the
+ * expression(s) that must be held, using the <a
+ * href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">syntax
  * of Java expressions</a> described in the manual.
  * The expressions evaluate to an intrinsic (built-in, synchronization)
- * monitor, or an explicit {@link java.util.concurrent.locks.Lock}.
+ * monitor or an explicit {@link java.util.concurrent.locks.Lock}.  The
+ * expression {@code "itself"} is also permitted; the type
+ * {@code @GuardedBy("itself") Object o} indicates that the value
+ * referenced by {@code o} is guarded by the intrinsic (monitor) lock of
+ * the value referenced by {@code o}.
+ * <p>
+ *
  * Two <code>@GuardedBy</code> annotations with different argument expressions
  * are unrelated by subtyping.
  * <p>
