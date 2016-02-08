@@ -159,7 +159,8 @@ class TopLevelWithArg<T> {
 
 /** ArrayType # new */
 // ARRAY_CTOR(ReferenceMode.NEW, false);
-@SuppressWarnings({"oigj", "javari"})
+// NOTE: Unsignedness Checker temporarily suppressed while waiting for DefaultFor feature update.
+@SuppressWarnings({"oigj", "javari", "unsignedness"})
 class ArrayType {
     void context() {
         Function<Integer, String[]> string = String[]::new;
