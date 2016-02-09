@@ -1,8 +1,5 @@
-package org.checkerframework.checker.igj;
+package org.checkerframework.checker.igj.qual;
 
-import org.checkerframework.checker.igj.qual.I;
-import org.checkerframework.checker.igj.qual.Immutable;
-import org.checkerframework.checker.igj.qual.Mutable;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
@@ -30,4 +27,4 @@ import javax.lang.model.type.TypeKind;
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 @TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
     TypeUseLocation.EXPLICIT_UPPER_BOUND })
-@interface IGJBottom {}
+public @interface IGJBottom {}
