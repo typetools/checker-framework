@@ -22,6 +22,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @ImplicitFor(
     trees = {
         Tree.Kind.INT_LITERAL,
-        Tree.Kind.LONG_LITERAL
+        Tree.Kind.LONG_LITERAL,
+        Tree.Kind.CHAR_LITERAL,
+        Tree.Kind.BOOLEAN_LITERAL
     } )
 public @interface Constant { }
