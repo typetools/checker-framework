@@ -31,7 +31,6 @@ dependencies {
     checkerFrameworkAnnotatedJDK "org.checkerframework:jdk7:${checkerFrameworkVersion}"
     checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
     compile "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
-    
 
     compile 'org.apache.commons:commons-lang3:3.1'
 
