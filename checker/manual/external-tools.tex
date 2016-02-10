@@ -445,23 +445,25 @@ would only run if the profile was enabled.
 \section{Gradle\label{gradle}}
 
 If you use \href{http://gradle.org/}{Gradle},
-then you can enable Checker Framework checkers by following the
+then you can run Checker Framework checkers by following the
 instructions below.
 
 These instructions use the artifacts from
 \href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven Central}.
 
-See the demonstration \code{examples/GradleExamples/} for examples of the use of
-these instructions in a Gradle project.  These examples can be used to verify that
-Gradle is correctly downloading and executing the Checker Framework on your machine.
+See the directory \code{examples/GradleExamples/} for examples of running a
+checker in a Gradle project.  You can use these examples to verify that
+Gradle is correctly downloading and executing the Checker Framework.
 
 Please note that the \<-AoutputArgsToFile> command-line option
 (see Section~\ref{debugging-options-output-args}) and shorthands for built-in checkers
 (see Section~\ref{shorthand-for-checkers}) are not available when
 following these instructions.  Both these features are available only when a checker is
 launched via \<checker.jar> such as when \code{\$CHECKERFRAMEWORK/checker/bin/javac}
-is run.  These instructions bypass \<checker.jar> and cause the compiler to run a
+is run.  The Gradle instructions in this section
+bypass \<checker.jar> and cause the compiler to run a
 checker as an annotation processor directly.
+
 
 \subsection{Gradle with JDK 8\label{gradle-jdk-8}}
 These instructions explain how to configure Gradle to use the Checker Framework using JDK 8.
