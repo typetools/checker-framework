@@ -25,7 +25,7 @@ import com.sun.source.tree.VariableTree;
  * 1. If a keySet is being saved to a newly declared set, we transfer the annotations from the
  * keySet to the lhs. e.g.,
  * <pre>{@code
- * //Previously,the user would be required to annotate the LHS's type argument with @KeyFor("m")
+ * //Previously, the user would be required to annotate the LHS's type argument with @KeyFor("m")
  * Set<String> keySet = m.keySet();
  * }</pre>
  *

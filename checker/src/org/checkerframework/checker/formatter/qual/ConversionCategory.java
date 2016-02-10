@@ -158,7 +158,7 @@ public enum ConversionCategory {
 
     public static boolean isSubsetOf(ConversionCategory a,
             ConversionCategory b) {
-        return intersect(a,b) == a;
+        return intersect(a, b) == a;
     }
 
     /**
@@ -167,7 +167,7 @@ public enum ConversionCategory {
      *
      * <blockquote>
      * <pre>
-     * ConversionCategory.intersect(INT,TIME) == INT_AND_TIME;
+     * ConversionCategory.intersect(INT, TIME) == INT_AND_TIME;
      * </pre>
      * </blockquote>
      */

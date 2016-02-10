@@ -288,7 +288,7 @@ public class QualifierDefaults {
     }
 
     private void checkDuplicates(DefaultSet previousDefaults, AnnotationMirror newAnno, TypeUseLocation newLoc ) {
-        if (conflictsWithExistingDefaults(previousDefaults,newAnno,newLoc)) {
+        if (conflictsWithExistingDefaults(previousDefaults, newAnno, newLoc)) {
             ErrorReporter.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
                                              + previousDefaults + " and new: "
                                              + (new Default(newAnno, newLoc)));

@@ -663,7 +663,7 @@ public class StubParser {
                 annos.add(annoMirror);
         }
         String key = ElementUtils.getVerboseName(elt);
-        putOrAddToMap(declAnnos, key,annos);
+        putOrAddToMap(declAnnos, key, annos);
     }
 
     private void annotateParameters(List<? extends AnnotatedTypeMirror> typeArguments,
