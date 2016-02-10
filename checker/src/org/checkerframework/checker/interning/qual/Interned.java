@@ -1,5 +1,6 @@
 package org.checkerframework.checker.interning.qual;
 
+import org.checkerframework.checker.interning.InterningChecker;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
@@ -28,9 +29,9 @@ import javax.lang.model.type.TypeKind;
  * annotated.
  * <p>
  *
- * This annotation is associated with the {@link org.checkerframework.checker.interning.InterningChecker}.
+ * This annotation is associated with the {@link InterningChecker}.
  *
- * @see org.checkerframework.checker.interning.InterningChecker
+ * @see InterningChecker
  * @checker_framework.manual #interning-checker Interning Checker
  */
 @SubtypeOf(UnknownInterned.class)
