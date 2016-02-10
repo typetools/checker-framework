@@ -68,11 +68,11 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     {
         literalKindToTreeKind.put(LiteralKind.BOOLEAN, Kind.BOOLEAN_LITERAL);
         literalKindToTreeKind.put(LiteralKind.CHAR, Kind.CHAR_LITERAL);
-        literalKindToTreeKind.put(LiteralKind.DOUBLE,Kind.DOUBLE_LITERAL);
-        literalKindToTreeKind.put(LiteralKind.FLOAT,Kind.FLOAT_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.DOUBLE, Kind.DOUBLE_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.FLOAT, Kind.FLOAT_LITERAL);
         literalKindToTreeKind.put(LiteralKind.INT, Kind.INT_LITERAL);
         literalKindToTreeKind.put(LiteralKind.LONG, Kind.LONG_LITERAL);
-        literalKindToTreeKind.put(LiteralKind.NULL,Kind.NULL_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.NULL, Kind.NULL_LITERAL);
         literalKindToTreeKind.put(LiteralKind.STRING, Kind.STRING_LITERAL);
     }
 
@@ -102,7 +102,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
 
             AnnotationMirror theQual = AnnotationUtils.fromClass(atypeFactory.getElementUtils(), qual);
             for(LiteralKind literalKind:implicit.literals()){
-                addLiteralKind(literalKind,theQual);
+                addLiteralKind(literalKind, theQual);
             }
 
             for (String pattern : implicit.stringPatterns()) {
