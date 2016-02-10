@@ -2,18 +2,13 @@
 
 // Test case for issue #580: https://github.com/typetools/checker-framework/issues/580
 
+import java.lang.RuntimeException;
 import java.util.Set;
 
-abstract class InitCheckAssertionFailure<E> {
-  public static <E extends Enum<E>> Set<E> noneOf(Class<E> elementType) {
-    Enum<?>[] universe = getEnumConstants(elementType);
-    if (universe.length <= 0) {
-      throw new RuntimeException();
+abstract class InitCheckAssertionFailure {
+    public static <F extends Enum<F>> void noneOf(F[] array) {
+        Enum<?>[] universe = array;
+        //Accessing universe on this line causes the error.
+        int len = universe.length;
     }
-    return null;
-  }
-
-  private static <E> E[] getEnumConstants(Class<E> elementType) {
-    return null;
-  }
 }
