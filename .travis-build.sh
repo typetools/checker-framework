@@ -10,6 +10,9 @@ ant javadoc-private
 # Skip the manual because it cannot be compiled on Ubuntu 12.04.
 # make -C checker/manual all
 
+## Temporary, for testing
+(cd checker && ant -d interning-tests)
+
 ## Tests
 # The JDK was built above; there is no need to rebuild it again.
 # Don't use "-d" to debug ant, because that results in a log so long
