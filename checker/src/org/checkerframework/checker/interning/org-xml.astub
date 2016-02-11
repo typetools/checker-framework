@@ -1,0 +1,21 @@
+import org.checkerframework.checker.interning.qual.*;
+
+package org.xml.sax.helpers;
+
+public class NamespaceSupport
+{
+  public @Interned String [] processName (String qName, String[] parts,
+                                          boolean isAttribute);
+  // These are not necessary, it seems.
+  // final class Context {
+  //     @Interned String [] processName (String qName, boolean isAttribute);
+  // }
+  // final class AttributeListAdapter implements Attributes
+  // {
+  //     public @Interned String getQName (int i);
+  //     public @Interned String getType (int i);
+  //     public @Interned String getType (String uri, String localName);
+  //     public @Interned String getType (String qName);
+  // }
+
+}
