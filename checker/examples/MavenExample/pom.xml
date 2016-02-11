@@ -16,9 +16,9 @@
     <!-- Change to jdk7 if using Java 7 -->
     <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
     <checkerFrameworkVersion><!-- checker-framework-version -->1.9.11<!-- /checker-framework-version --></checkerFrameworkVersion>
-      <!-- The type annotations compiler is required if using Java 7. -->
-      <!-- Uncomment the following line if using Java 7. -->
-      <!--<typeAnnotationsJavac>${org.checkerframework:compiler:jar}</typeAnnotationsJavac>-->
+     <!-- The type annotations compiler is required if using Java 7. -->
+     <!-- Uncomment the following line if using Java 7. -->
+     <!--<typeAnnotationsJavac>${org.checkerframework:compiler:jar}</typeAnnotationsJavac>-->
   </properties>
 
   <dependencies>
@@ -96,7 +96,7 @@
                   <!-- location of the annotated JDK, which comes from a Maven dependency -->
                   <arg>-Xbootclasspath/p:${annotatedJdk}</arg>
                   <!--treat Checker Framework errors as warnings-->
-                  <arg>-Awarns</arg>
+                  <!-- <arg>-Awarns</arg> -->
                   <!-- Uncomment the following line if using Java 7. -->
                   <!--<arg>-J-Xbootclasspath/p:${typeAnnotationsJavac}</arg>-->
                   <arg>-Alint</arg>
