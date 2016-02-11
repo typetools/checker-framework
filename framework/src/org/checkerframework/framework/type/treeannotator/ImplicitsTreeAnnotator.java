@@ -111,6 +111,11 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
         }
     }
 
+    /**
+     * Added an implicit rule for a particular {@link Tree} class
+     * @param treeClass Tree class that should be implicited to {@code theQual}
+     * @param theQual the {@code AnnotationMirror} that should be applied to the {@code treeClass}
+     */
     public void addTreeClass(Class<? extends Tree> treeClass, AnnotationMirror theQual) {
         boolean res = qualHierarchy.updateMappingToMutableSet(treeClasses, treeClass, theQual);
         if (!res) {
@@ -118,6 +123,12 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
                     treeClasses + " at " + treeClass + " with " +theQual);
         }
     }
+
+    /**
+     * Added an implicit rule for a particular {@link LiteralKind}
+     * @param literalKind {@code LiteralKind} that should be implicited to {@code theQual}
+     * @param theQual the {@code AnnotationMirror} that should be applied to the {@code literalKind}
+     */
     public void addLiteralKind(LiteralKind literalKind, AnnotationMirror theQual) {
         if (literalKind == LiteralKind.ALL) {
             for (LiteralKind iterLiteralKind : LiteralKind.valuesWithOutAll()) {
@@ -133,6 +144,11 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
         }
     }
 
+    /**
+     * Added an implicit rule for a particular {@link Tree.Kind}
+     * @param treeKind {@code Tree.Kind} that should be implicited to {@code theQual}
+     * @param theQual the {@code AnnotationMirror} that should be applied to the {@code treeKind}
+     */
     public void addTreeKind(Kind treeKind, AnnotationMirror theQual) {
         boolean res = qualHierarchy.updateMappingToMutableSet(treeKinds, treeKind, theQual);
         if (!res) {
@@ -141,6 +157,11 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
         }
     }
 
+    /**
+     * Added an implicit rule for all String literals that match the given pattern
+     * @param pattern pattern to match Strings against
+     * @param theQual {@code AnnotationMirror} to apply to Strings that match the pattern
+     */
     public void addStringPattern(String pattern, AnnotationMirror theQual) {
         boolean res = qualHierarchy.updateMappingToMutableSet(stringPatterns, Pattern.compile(pattern), theQual);
         if (!res) {

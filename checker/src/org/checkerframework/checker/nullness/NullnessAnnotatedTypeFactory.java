@@ -308,10 +308,10 @@ public class NullnessAnnotatedTypeFactory
         implicitsTypeAnnotator.addTypeClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
         implicitsTypeAnnotator.addTypeClass(AnnotatedTypeMirror.AnnotatedPrimitiveType.class, NONNULL);
         return new ListTypeAnnotator(
-            new PropagationTypeAnnotator(this),
-            implicitsTypeAnnotator,
-            new NullnessTypeAnnotator(this),
-            new CommitmentTypeAnnotator(this)
+                new PropagationTypeAnnotator(this),
+                implicitsTypeAnnotator,
+                new NullnessTypeAnnotator(this),
+                new CommitmentTypeAnnotator(this)
         );
     }
 
