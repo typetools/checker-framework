@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  *
- * <p>TestSuite runs a test class once for each set of parameters returned by its method marked with {@code @Parameter}</p>
+ * <p>TestSuite runs a test class once for each set of parameters returned by its method marked with {@code @Parameters}</p>
  * <p>To use:<br>
  *  Annotated your test class with {@code @RunWith(TestSuite.class)}<br>
  *  Create a parameters method by annotating a public static method with {@code @Parameters}.  This method
@@ -82,7 +82,7 @@ public class TestSuite extends Suite {
         return argumentLists;
     }
 
-    /** Returns method annotated @Parameter, typically the getTestDirs or getTestFiles method. */
+    /** Returns method annotated @Parameters, typically the getTestDirs or getTestFiles method. */
     private FrameworkMethod getParametersMethod(TestClass testClass) {
         final List<FrameworkMethod> parameterMethods = testClass.getAnnotatedMethods(Parameters.class);
         if (parameterMethods.size() != 1) {
@@ -105,7 +105,7 @@ public class TestSuite extends Suite {
             throw new RuntimeException("Exactly one of the following methods should be declared:\n"
                                      + requiredFormsMessage + "\n"
                                      + "testClass=" + testClass.getName() + "\n"
-                                     + "paremeterMethods=" + methods.toString()
+                                     + "parameterMethods=" + methods.toString()
             );
         } //else
 
@@ -138,7 +138,7 @@ public class TestSuite extends Suite {
                 throw new RuntimeException("Exactly one of the following methods should be declared:\n"
                         + requiredFormsMessage + "\n"
                         + "testClass=" + testClass.getName() + "\n"
-                        + "paremeterMethods=" + method.toString()
+                        + "parameterMethods=" + method.toString()
                 );
 
         }

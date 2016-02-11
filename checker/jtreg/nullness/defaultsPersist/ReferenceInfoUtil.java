@@ -150,7 +150,7 @@ public class ReferenceInfoUtil {
              + "lvarLength = " + p1.lvarLength + ", " + p2.lvarLength + "\n"
              + "lvarIndex = " + p1.lvarIndex + ", " + p2.lvarIndex + "\n"
              + "bound_index = " + p1.bound_index + ", " + p2.bound_index + "\n"
-             + "paremeter_index = " + p1.parameter_index + ", " + p2.parameter_index + "\n"
+             + "parameter_index = " + p1.parameter_index + ", " + p2.parameter_index + "\n"
              + "type_index = " + p1.type_index + ", " + p2.type_index + "\n"
              + "exception_index = " + p1.exception_index + ", " + p2.exception_index + "\n";
     }
