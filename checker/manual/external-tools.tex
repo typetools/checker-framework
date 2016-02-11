@@ -445,24 +445,7 @@ would only run if the profile was enabled.
 \section{Gradle\label{gradle}}
 
 If you use \href{http://gradle.org/}{Gradle},
-then you can run Checker Framework checkers by following the
-instructions below.
-
-These instructions use the artifacts from
-\href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven Central}.
-
-See the directory \code{examples/GradleExamples/} for examples of running a
-checker in a Gradle project.  You can use these examples to verify that
-Gradle is correctly downloading and executing the Checker Framework.
-
-Please note that the \<-AoutputArgsToFile> command-line option
-(see Section~\ref{debugging-options-output-args}) and shorthands for built-in checkers
-(see Section~\ref{shorthand-for-checkers}) are not available when
-following these instructions.  Both these features are available only when a checker is
-launched via \<checker.jar> such as when \code{\$CHECKERFRAMEWORK/checker/bin/javac}
-is run.  The Gradle instructions in this section
-bypass \<checker.jar> and cause the compiler to run a
-checker as an annotation processor directly.
+then you can run a checker by following the instructions below.
 
 These instructions can be used with Java 7 or Java 8.  If using Java 7, then
 type annotations should be placed in comments as explained in
@@ -470,19 +453,19 @@ Section~\ref{annotations-in-comments}.
 
 \begin{enumerate}
 
-\item Add a property to indicate which version of Java to which the source and
-class files are targeted.  This property can be set based on the current version
-of Java as shown below or hard code.
+\item Indicate which version of Java you are using.  We recommend the
+  following code, but you can also hard-code the \<ext.targetJavaVersion>
+  property.
 
 \begin{Verbatim}
 ext.targetJavaVersion = JavaVersion.current().isJava7() ? JavaVersion.VERSION_1_7 : JavaVersion.VERSION_1_8
 \end{Verbatim}
 
-\item Define the Maven Central repostiory:
+\item Use the Maven Central repository:
 
 \begin{Verbatim}
 repositories {
-  ... extisting repositories...
+  ... existing repositories...
   mavenCentral()
 }
 \end{Verbatim}
@@ -491,7 +474,7 @@ repositories {
 
 \begin{Verbatim}
 configurations {
-    ... extisting configurations ...
+    ... existing configurations ...
     if (targetJavaVersion.isJava7()) {
         checkerFrameworkJavac {
             description = 'a customization of the Open JDK javac compiler with additional support for type annotations'
@@ -506,11 +489,11 @@ configurations {
 }
 \end{Verbatim}
 
-\item Using the Maven coordinates, declare the Checker Framework dependencies:
+\item Declare the Checker Framework dependencies:
 
 \begin{Verbatim}
 dependencies {
-    ... extisting dependencies...
+    ... existing dependencies...
     ext.checkerFrameworkVersion = '1.9.11'
     ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
     checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
@@ -523,7 +506,7 @@ dependencies {
 }
 \end{Verbatim}
 
-\item Direct all tasks of type JavaCompile to use the desired checkers:
+\item Direct all tasks of type \<JavaCompile> to use the desired checkers:
 
 \begin{Verbatim}
 allprojects {
@@ -532,7 +515,7 @@ allprojects {
                 '-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
                 '-processorpath', "${configurations.checkerFramework.asPath}",
                 // uncomment to turn Checker Framework errors into warnings
-                //'-Awarns',
+                // '-Awarns',
                 "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
         ]
         if (targetJavaVersion.isJava7()) {
@@ -545,12 +528,29 @@ allprojects {
 \end{Verbatim}
 \end{enumerate}
 
+See the directory \code{examples/GradleExamples/} for examples of Gradle
+build files that run a checker.  You can use these examples to verify that
+Gradle is correctly downloading the Checker Framework from
+\href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven
+  Central} and executing it.
+
+Please note that the \<-AoutputArgsToFile> command-line option
+(see Section~\ref{debugging-options-output-args}) and shorthands for built-in checkers
+(see Section~\ref{shorthand-for-checkers}) are not available when
+following these instructions.  Both these features are available only when a checker is
+launched via \<checker.jar> such as when \code{\$CHECKERFRAMEWORK/checker/bin/javac}
+is run.  The Gradle instructions in this section
+bypass \<checker.jar> and cause the compiler to run a
+checker as an annotation processor directly.
+
+
 \section{IntelliJ IDEA\label{intellij}}
 
 IntelliJ IDEA (Maia release)
 \href{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}{supports}
 the Type Annotations (JSR-308) syntax.
 See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}.
+
 
 \section{Eclipse\label{eclipse}}
 
@@ -761,5 +761,5 @@ You can find installation instructions and a video tutorial at \url{https://gith
 %%  LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK
 %%  LocalWords:  javacheck checkerframework MavenExample org arg
 %%  LocalWords:  AoutputArgsToFile qual jdk7 jdk8 annotatedJdk Unhandled
-%%  LocalWords:  annotationProcessors annotationProcessor
-%%  LocalWords:  typeAnnotationsJavac
+%%  LocalWords:  annotationProcessors annotationProcessor JavaCompile
+%%  LocalWords:  typeAnnotationsJavac targetJavaVersion GradleExamples
