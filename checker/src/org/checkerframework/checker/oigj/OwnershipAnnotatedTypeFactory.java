@@ -56,10 +56,10 @@ public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
         implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_CLASS, MUTABLE);
 
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.CLASS,BOTTOM_QUAL);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.ENUM,BOTTOM_QUAL);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.ANNOTATION_TYPE,BOTTOM_QUAL);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY,BOTTOM_QUAL);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.CLASS, BOTTOM_QUAL);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.ENUM, BOTTOM_QUAL);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.ANNOTATION_TYPE, BOTTOM_QUAL);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY, BOTTOM_QUAL);
 
 
         return new ListTreeAnnotator(implicitsTreeAnnotator, new PropagationTreeAnnotator(this),
