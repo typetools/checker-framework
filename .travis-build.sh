@@ -11,7 +11,8 @@ ant javadoc-private
 # make -C checker/manual all
 
 ## Temporary, for testing
-(cd checker && ant -d interning-tests)
+# This succeeds and does not reproduce the problem: (cd checker && ant -d interning-tests)
+(cd checker && ant all-tests-nojtreg-nobuild-only-interning)
 
 ## Tests
 # The JDK was built above; there is no need to rebuild it again.
