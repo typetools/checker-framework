@@ -365,6 +365,14 @@ then the annotation from the last declaration is used.
 % The Checker Framework automatically imports all the stub files named
 % \code{library.astub} found in the classpath.
 
+If both bytecode and a stub file provide information for the same
+element, the stub file information is used. In particular, an
+un-annotated type variable in a stub file is used instead of
+annotations on a type variable in bytecode.
+This feature allows stub files to change the effective annotations in
+all possible situations.
+Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
+warning whenever a stub file overwrites bytecode annotations.
 
 
 \subsection{Stub file format\label{stub-format}}
@@ -555,6 +563,10 @@ be found.
 The \<@NoStubParserWarning> annotation on a package or type in a stub file
 overrides the \<-AstubWarnIfNotFound> command-line option, and no warning
 will be issued.
+
+Use command-line option
+\<-AstubWarnIfOverwritesBytecode> to warn whenever some element of a
+stub file overwrites annotations contained in bytecode.
 
 Use command-line option \<-AstubDebug> to output debugging messages while
 parsing stub files, including about unknown classes, methods, and

@@ -203,6 +203,9 @@ import com.sun.tools.javac.util.Log;
     // that were not found on the class path
     // org.checkerframework.framework.stub.StubParser.warnIfNotFound
     "stubWarnIfNotFound",
+    // Whether to print warnings about stub files that overwrite annotations
+    // from bytecode.
+    "stubWarnIfOverwritesBytecode",
 
     ///
     /// Debugging
