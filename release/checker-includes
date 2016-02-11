@@ -1,5 +1,6 @@
 checker/bin/**
 checker/dist/**
+checker/lib/**
 checker/manual/manual.html
 checker/manual/manual.pdf
 checker/manual/*.svg
