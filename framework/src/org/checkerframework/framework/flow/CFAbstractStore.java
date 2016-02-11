@@ -11,13 +11,13 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.PureMethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
-import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.qual.MonotonicQualifier;
@@ -434,7 +434,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             return;
         }
         if (r instanceof FlowExpressions.LocalVariable) {
-        	FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) r;
+               FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) r;
             localVariableValues.remove(localVar);
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
@@ -980,69 +980,40 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     @SideEffectFree
     @Override
     public String toString() {
-        return toDOToutput().replace("\\n", "\n");
+        return "Use a CFGVisualizer to see the Store: " + this.hashCode();
     }
 
-    @Pure
+    @SuppressWarnings("unchecked")
     @Override
-    public boolean hasDOToutput() {
-        return true;
-    }
-
-    /**
-     * @return DOT representation of the store (may contain control characters
-     *         such as "\n").
-     */
-    @Override
-    public String toDOToutput() {
-        StringBuilder result = new StringBuilder(this.getClass()
-                .getCanonicalName() + " (\\n");
-        internalDotOutput(result);
-        result.append(")");
-        return result.toString();
-    }
-
-
-    protected String escapeDoubleQuotes(final String str) {
-        return str.replace("\"", "\\\"");
-    }
-
-
-    protected String toStringEscapeDoubleQuotes(final Object obj) {
-        return escapeDoubleQuotes(String.valueOf(obj));
+	public void visualize(CFGVisualizer<?, S, ?> viz) {
+        ((CFGVisualizer<V, S, ?> ) viz).visualizeStoreHeader(
+            this.getClass().getCanonicalName());
+        internalVisualize((CFGVisualizer<V, S, ?>) viz);
+        ((CFGVisualizer<V, S, ?> ) viz).visualizeStoreFooter();
     }
 
     /**
      * Adds a DOT representation of the internal information of this store to
      * {@code result}.
      */
-    protected void internalDotOutput(StringBuilder result) {
+    protected void internalVisualize(CFGVisualizer<V, S, ?> viz) {
         for (Entry<FlowExpressions.LocalVariable, V> entry : localVariableValues.entrySet()) {
-            result.append("  " + entry.getKey() + " > " + toStringEscapeDoubleQuotes(entry.getValue())
-                    + "\\n");
+            viz.visualizeLocalVariable(entry.getKey(), entry.getValue());
         }
         if (thisValue != null) {
-            result.append("  this > " + thisValue
-                    + "\\n");
+            viz.visualizeThisValue(thisValue);
         }
-        for (Entry<FlowExpressions.FieldAccess, V> entry : fieldValues
-                .entrySet()) {
-            result.append("  " + entry.getKey() + " > " + toStringEscapeDoubleQuotes(entry.getValue())
-                    + "\\n");
+        for (Entry<FlowExpressions.FieldAccess, V> entry : fieldValues.entrySet()) {
+            viz.visualizeFieldValues(entry.getKey(), entry.getValue());
         }
-        for (Entry<FlowExpressions.ArrayAccess, V> entry : arrayValues
-                .entrySet()) {
-            result.append("  " + entry.getKey() + " > " + toStringEscapeDoubleQuotes(entry.getValue())
-                    + "\\n");
+        for (Entry<FlowExpressions.ArrayAccess, V> entry : arrayValues.entrySet()) {
+            viz.visualizeArrayAccess(entry.getKey(), entry.getValue());
         }
         for (Entry<PureMethodCall, V> entry : methodValues.entrySet()) {
-            result.append("  " + entry.getKey().toString().replace("\"", "\\\"")
-                    + " > " + entry.getValue() + "\\n");
+            viz.visualizeMethodValues(entry.getKey(), entry.getValue());
         }
-        for (Entry<FlowExpressions.ClassName, V> entry : classValues
-                .entrySet()) {
-            result.append("  " + entry.getKey() + " > " + toStringEscapeDoubleQuotes(entry.getValue())
-                    + "\\n");
+        for (Entry<FlowExpressions.ClassName, V> entry : classValues.entrySet()) {
+            viz.visualizeClassValues(entry.getKey(), entry.getValue());
         }
     }
 }

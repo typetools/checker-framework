@@ -280,22 +280,4 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
         }
     }
 
-    public boolean hasDOToutput() {
-        return true;
-    }
-
-    public String toDOToutput() {
-        if (store == null) {
-            if (thenStore.hasDOToutput()) {
-                return "[then=" + thenStore.toDOToutput() + ", else=" + elseStore.toDOToutput() + "]";
-            }
-            return "[then=" + thenStore + ", else=" + elseStore + "]";
-        } else {
-            if (store.hasDOToutput()) {
-                return "[" + store.toDOToutput() + "]";
-            }
-            return "[" + store + "]";
-        }
-    }
-
 }

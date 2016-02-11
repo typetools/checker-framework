@@ -1057,9 +1057,9 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * The CFGVisualizer to be used by all CFAbstractAnalysis instances.
      */
-    protected final CFGVisualizer cfgVisualizer;
+    protected final CFGVisualizer<Value, Store, TransferFunction> cfgVisualizer;
 
-    protected CFGVisualizer createCFGVisualizer() {
+    protected CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() {
         if (checker.hasOption("flowdotdir")) {
             String flowdotdir = checker.getOption("flowdotdir");
             boolean verbose = checker.hasOption("verbosecfg");
@@ -1069,7 +1069,8 @@ public abstract class GenericAnnotatedTypeFactory<
             args.put("verbose", verbose);
             args.put("checkerName", getCheckerName());
 
-            CFGVisualizer res = new DOTCFGVisualizer();
+            CFGVisualizer<Value, Store, TransferFunction> res =
+                    new DOTCFGVisualizer<Value, Store, TransferFunction>();
             res.init(args);
             return res;
         } else if (checker.hasOption("cfgviz")) {
@@ -1083,7 +1084,8 @@ public abstract class GenericAnnotatedTypeFactory<
             }
             args.put("checkerName", getCheckerName());
 
-            CFGVisualizer res = BaseTypeChecker.invokeConstructorFor(opts[0], null, null);
+            CFGVisualizer<Value, Store, TransferFunction> res =
+                    BaseTypeChecker.invokeConstructorFor(opts[0], null, null);
             res.init(args);
             return res;
         }
@@ -1125,7 +1127,7 @@ public abstract class GenericAnnotatedTypeFactory<
         return res;
     }
 
-    public CFGVisualizer getCFGVisualizer() {
+    public CFGVisualizer<Value, Store, TransferFunction> getCFGVisualizer() {
         return cfgVisualizer;
     }
 }

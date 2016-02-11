@@ -6,18 +6,24 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.Node;
 
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.lang.model.element.Element;
 
 /**
  * Perform some visualization on a control flow graph.
  * The particular operations depend on the particular implementation.
  */
-public interface CFGVisualizer {
+public interface CFGVisualizer<A extends AbstractValue<A>,
+        S extends Store<S>, T extends TransferFunction<A, S>> {
     /**
      * Initialization method guaranteed to be called once before the
      * first invocation of {@link visualize}.
@@ -47,9 +53,29 @@ public interface CFGVisualizer {
      *            indicate that this information should not be output.
      * @return Possible analysis results, e.g. generated files.
      */
-    <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
     /*@Nullable*/ Map<String, Object> visualize(ControlFlowGraph cfg, Block entry,
             /*@Nullable*/ Analysis<A, S, T> analysis);
+
+    // TODO: javadoc
+    void visualizeStore(S store);
+
+    void visualizeStoreHeader(String classCanonicalName);
+
+    void visualizeStoreFooter();
+
+    void visualizeLocalVariable(FlowExpressions.LocalVariable localVar, A value);
+
+	void visualizeThisValue(A value);
+
+	void visualizeFieldValues(FlowExpressions.FieldAccess fieldAccess, A value);
+
+	void visualizeArrayAccess(FlowExpressions.ArrayAccess arrayAccess, A value);
+
+	void visualizeMethodValues(FlowExpressions.PureMethodCall methodCall, A value);
+
+	void visualizeClassValues(FlowExpressions.ClassName className, A value);
+
+	void visualizeKeyValue(String keyName, Object value);
 
     /** Shutdown method called once from the shutdown hook of the BaseTypeChecker.
      */
