@@ -17,6 +17,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,6 +37,13 @@ public class TestSuite extends Suite {
     @Target(ElementType.METHOD)
     public @interface Name {}
 
+    private final ArrayList<Runner> runners = new ArrayList<Runner>();
+
+    @Override
+    protected List<Runner> getChildren() {
+        return runners;
+    }
+
     /**
      * Only called reflectively. Do not use programmatically.
      */
@@ -43,18 +51,11 @@ public class TestSuite extends Suite {
         super(klass, Collections.<Runner>emptyList());
         final TestClass testClass = getTestClass();
         final Class<?> javaTestClass = testClass.getJavaClass();
-        final List<Object[]> parametersList= getParametersList(testClass);
+        final List<Object[]> parametersList = getParametersList(testClass);
 
         for (Object [] parameters : parametersList) {
             runners.add(new PerParameterSetTestRunner(javaTestClass, parameters));
         }
-    }
-
-    private final ArrayList<Runner> runners = new ArrayList<Runner>();
-
-    @Override
-    protected List<Runner> getChildren() {
-        return runners;
     }
 
     /** Returns a list of one-element arrays, each containing a Java File. */
@@ -63,7 +64,7 @@ public class TestSuite extends Suite {
         FrameworkMethod method = getParametersMethod(klass);
 
         List<File> javaFiles;
-        //We will have either a method getTesDirs which returns String [] or getTestFiles
+        //We will have either a method getTestDirs which returns String [] or getTestFiles
         //which returns List<Object []> or getParametersMethod would fail
         if (method.getReturnType().isArray()) {
             String [] dirs = (String[]) method.invokeExplosively(null);
@@ -117,7 +118,7 @@ public class TestSuite extends Suite {
             case "getTestDirs":
                 if (returnType.isArray()) {
                     if (!returnType.getComponentType().equals(String.class)) {
-                        throw new RuntimeException("Component type of getTestFiles must be java.lang.String, found "
+                        throw new RuntimeException("Component type of getTestDirs must be java.lang.String, found "
                                                   + returnType.getComponentType().getCanonicalName()
                         );
                     }
