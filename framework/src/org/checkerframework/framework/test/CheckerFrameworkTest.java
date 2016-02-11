@@ -104,7 +104,7 @@ public abstract class CheckerFrameworkTest {
      * If you want to specify the same command-line option for all tests of
      * a particular checker, then pass it to the {@link #CheckerFrameworkTest}
      * constructor.
-     * 
+     *
      * @param previousOptions The options specified in the constructor of the test
      *                        previousOptions is unmodifiable
      * @return A new list of options or the original passed through

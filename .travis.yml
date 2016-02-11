@@ -54,7 +54,7 @@ jdk:
 ## Use Travis default: send mail to author and committer of breaking commit.
 # notifications:
 #   email:
-#     - checker-framework-dev@googlegroups.com 
+#     - checker-framework-dev@googlegroups.com
 
 after_success:
   - |

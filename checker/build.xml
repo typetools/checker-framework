@@ -501,7 +501,7 @@
             <formatter type="xml"/>
     -->
     <!-- end of non-debugging version. -->
-    
+
     <!-- debugging version: -->
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
@@ -1214,7 +1214,7 @@
       <ant dir="${basedir}/../../checker-framework-demos">
       </ant>
     </target>
-      
+
 
     <!-- TODO: like for -run-checker this only checks checker/src.
          Improve both. -->
