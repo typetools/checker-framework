@@ -101,7 +101,7 @@ public abstract class QualifierHierarchy {
      * lhs and rhs contain only the annotations, not the Java type.
      *
      * @return true iff an annotation in lhs is a super of one in rhs
-     **/
+     */
     public abstract boolean isSubtype(Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs);
 
     /**
@@ -228,7 +228,7 @@ public abstract class QualifierHierarchy {
      * value (namely, no annotation).
      *
      * @return true iff an annotation in lhs is a super of one in rhs
-     **/
+     */
     // This method requires more revision.
     // The only case were rhs and lhs have more than one qualifier is in IGJ
     // where the type of 'this' is '@AssignsFields @I FOO'.  Subtyping for
@@ -400,7 +400,7 @@ public abstract class QualifierHierarchy {
      * sufficient (which provides more strict checks).
      *
      * @return true iff an annotation in lhs is a super of one in rhs
-     **/
+     */
     public boolean isSubtype(AnnotatedTypeMirror type1,
             AnnotatedTypeMirror type2, Collection<? extends AnnotationMirror> rhs,
             Collection<AnnotationMirror> lhs) {

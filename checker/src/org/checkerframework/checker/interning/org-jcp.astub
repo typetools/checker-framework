@@ -1,0 +1,6 @@
+import org.checkerframework.checker.interning.qual.*;
+
+package org.jcp.xml.dsig.internal.dom;
+public class DOMCanonicalXMLC14N11Method {
+     public static final @Interned String C14N_11 = "http://www.w3.org/2006/12/xml-c14n11";
+}

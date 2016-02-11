@@ -11,7 +11,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
  *  AliasingChecker and AnotherCompoundChecker are subcheckers of this checker
  *  AnotherCompoundChecker relies on the Alaising Checker, too.
  *  This is so that the order of subcheckers is tested.
- **/
+ */
 
 public class CompoundChecker extends BaseTypeChecker {
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {

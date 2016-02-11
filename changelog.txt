@@ -4,6 +4,11 @@ Version 1.9.12, 1 March 2016
 
 Renamed enum DefaultLocation to TypeUseLocation
 
+The Checker Framework distribution contains annotated versions
+of libraries in directory checker-framework/checker/lib/.
+During type-checking, you should put these versions first on your classpath,
+to obtain more precise type-checking with fewer false positive warnings.
+
 ---------------------------------------------------------------------------
 
 Version 1.9.11, 1 February 2016

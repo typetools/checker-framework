@@ -501,7 +501,7 @@
             <formatter type="xml"/>
     -->
     <!-- end of non-debugging version. -->
-    
+
     <!-- debugging version: -->
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
@@ -575,7 +575,7 @@
         <!-- Note that the order of the ant vs junit calls matters
              for the Jenkins setup. The junit call must come last. -->
 
-    <!-- Delete directory because we will rerun all tests -->
+        <!-- Delete directory because we will rerun all tests -->
         <delete dir="${build.reports}"/>
         <!-- Copied from -run-tests target -->
         <mkdir dir="${build.reports}"/>
@@ -609,6 +609,66 @@
                     <!-- Framework classes -->
                     <exclude name="**/CheckerTest.java"/>
                     <exclude name="**/ParameterizedCheckerTest.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+    <!-- For testing -->
+    <target name="all-tests-nojtreg-nobuild-only-interning" depends="build-tests"
+            description="Run tests for all checkers, WITHOUT building anything">
+
+        <condition property="should.emit.debug.str" value="true" else="false">
+            <isset property="emit.test.debug"/>
+        </condition>
+
+        <condition property="debugger.str" value="-Xnoagent -Djava.compiler=NONE -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" else="">
+            <isset property="debugger.on"/>
+        </condition>
+
+<!--  ***** THIS IS A DIFFERENCE TOO
+        <ant dir="${framework.loc}">
+            <target name="all-tests-nojtreg-nobuild"/>
+        </ant>
+
+        <antcall target="nullness-extra-tests-nobuildjdk"/>
+
+        <antcall target="example-tests-nobuildjdk"/>
+-->
+
+        <!-- Note that the order of the ant vs junit calls matters
+             for the Jenkins setup. The junit call must come last. -->
+
+        <!-- Delete directory because we will rerun all tests -->
+        <delete dir="${build.reports}"/>
+        <!-- Copied from -run-tests target -->
+        <mkdir dir="${build.reports}"/>
+
+        <junit fork="${run.tests.should.fork}"
+               dir="${basedir}"
+               printsummary="false"
+               haltonfailure="${halt.on.test.failure}">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <jvmarg line="-ea"/>
+            <jvmarg line="${debugger.str}"/>
+            <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
+            <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
+
+            <classpath>
+              <pathelement path="${build}"/>
+              <pathelement path="${tests.build}"/>
+              <pathelement path="${javac.lib}"/>
+              <pathelement path="${junit.lib}"/>
+              <pathelement path="${hamcrest.lib}"/>
+            </classpath>
+
+            <formatter type="xml"/>
+            <formatter type="brief" usefile="false"/>
+
+            <batchtest todir="${build.reports}">
+                <fileset dir="${tests}/${src}">
+                    <!-- ***** THIS IS THE DIFFERENCE -->
+                    <include name="**/InterningTest.java"/>
                 </fileset>
             </batchtest>
         </junit>
@@ -1214,7 +1274,7 @@
       <ant dir="${basedir}/../../checker-framework-demos">
       </ant>
     </target>
-      
+
 
     <!-- TODO: like for -run-checker this only checks checker/src.
          Improve both. -->

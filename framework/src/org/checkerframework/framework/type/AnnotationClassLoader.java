@@ -17,6 +17,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -624,7 +625,14 @@ public class AnnotationClassLoader {
         Set<String> results = new LinkedHashSet<String>();
 
         // check every file and directory within the current directory
-        for (File file : currentDirectory.listFiles()) {
+        File[] directoryContents = currentDirectory.listFiles();
+        Arrays.sort(directoryContents, new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        for (File file : directoryContents) {
             if (file.isFile()) {
                 // Full file name, including path to file
                 String fullFileName = file.getAbsolutePath();

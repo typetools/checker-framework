@@ -34,7 +34,7 @@ public class KeyFor_DirectionsFinder {
         for (@KeyFor("endMap") GeoPoint p : beginMap.keySet()) {
             for (StreetSegment beginSeg : beginMap.get(p)) {
                 for (StreetSegment endSeg : endMap.get(p)) {
-                    graph.addEdge(endSeg,beginSeg); // endSeg and beginSeg are @NonNull
+                    graph.addEdge(endSeg, beginSeg); // endSeg and beginSeg are @NonNull
                 }
             }
         }
