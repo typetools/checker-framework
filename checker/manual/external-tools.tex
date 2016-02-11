@@ -66,7 +66,7 @@ use the last one.
     with two small differences:  it includes the Checker Framework jar file
     on its classpath, and it recognizes type annotations in comments (see
     Section~\ref{annotations-in-comments}).
-    
+
   \item
     \begin{sloppypar}
     Option 2:
@@ -405,9 +405,7 @@ section, or add it if it is not present.
 
 For example, to use the \code{org.checkerframework.checker.nullness.NullnessChecker}:
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
+\begin{mysmall}
 \begin{alltt}
     <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -430,9 +428,7 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
         </configuration>
     </plugin>
 \end{alltt}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
+\end{mysmall}
 
 Now, building with Maven should run the checkers during compilation.
 

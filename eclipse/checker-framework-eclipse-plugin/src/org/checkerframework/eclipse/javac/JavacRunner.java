@@ -49,7 +49,7 @@ public class JavacRunner implements CheckersRunner
     private final DiagnosticCollector<JavaFileObject> collector;
     private final boolean hasQuals;
 
-    public JavacRunner(String[] fileNames, String[] processors, String classpath,boolean hasQuals)
+    public JavacRunner(String[] fileNames, String[] processors, String classpath, boolean hasQuals)
     {
         this.collector = new DiagnosticCollector<JavaFileObject>();
         this.fileNames = Arrays.asList(fileNames);

@@ -255,7 +255,7 @@ partially-annotated library.
   The reason to run every type-checker is to verify
   the annotations you wrote, and to use appropriate defaults for all
   unannotated type uses.
-  The reason to include the contents of \<checker-qual.jar> is so that 
+  The reason to include the contents of \<checker-qual.jar> is so that
   the resulting \<.jar> file can be used whether or not the Checker Framework
   is being run.
 
@@ -337,15 +337,11 @@ The \code{-Astubs} argument causes the Checker Framework to read
 annotations from annotated stub classes in preference to the unannotated
 original library classes.  For example:
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
+\begin{myxsmall}
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.interning.InterningChecker -Astubs=String.astub:stubs MyFile.java MyOtherFile.java ...
 \end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
+\end{myxsmall}
 
 Each stub path entry is a file or a directory; specifying a directory is
 equivalent to specifying every file in it whose name ends with

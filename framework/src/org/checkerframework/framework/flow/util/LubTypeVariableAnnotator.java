@@ -101,14 +101,14 @@ public class LubTypeVariableAnnotator {
                 //TODO: Sometimes we need to lub a NULL type with annotations
                 //TODO: In these cases we may see a type var with bounds that lack annotations on their
                 //TODO: type args.  To find these cases:
-                //TODO: !new StructuralEqualityComparer().areEqualInHierarchy(lub,subAsLub, top)) will return false
+                //TODO: !new StructuralEqualityComparer().areEqualInHierarchy(lub, subAsLub, top)) will return false
                 //TODO: Perhaps instead we should handle this case by aggregating the null values and
                 //TODO: rather than converting them to type variables we should handle them separately
                 continue; //lub is already annotated as subtype is either the same type
                           //or extends lub without adding a primary annotation.
                           //so continue to the next hierarchy
             } else if (lubPrimary != null && subPrimary != null) {
-                lub.replaceAnnotation(qualHierarchy.leastUpperBound(lubPrimary,subPrimary));
+                lub.replaceAnnotation(qualHierarchy.leastUpperBound(lubPrimary, subPrimary));
 
             } else {
                 final TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
@@ -135,7 +135,7 @@ public class LubTypeVariableAnnotator {
 
                     //It is a conservative lub to place a primary annotation rather than choosing a more specific bound
                     //set that would be a supertype of both the ranges of the subtype/supertype
-                    lub.replaceAnnotation(qualHierarchy.leastUpperBound(lubAnno,subAnno));
+                    lub.replaceAnnotation(qualHierarchy.leastUpperBound(lubAnno, subAnno));
 
                 }
 

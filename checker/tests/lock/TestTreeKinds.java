@@ -16,7 +16,7 @@ public class TestTreeKinds {
     lock.lock();
   }
 
-  @EnsuresLockHeldIf(expression="lock",result=true)
+  @EnsuresLockHeldIf(expression="lock", result=true)
   boolean tryToLockTheLock() {
     return lock.tryLock();
   }

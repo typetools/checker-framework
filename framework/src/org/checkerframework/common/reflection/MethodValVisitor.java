@@ -58,7 +58,7 @@ class MethodNameValidator extends BaseTypeValidator {
             for (String methodName : methodNames) {
                 if (!legalMethodName(methodName)) {
                     checker.report(
-                            Result.failure("illegal.methodname",methodName, type), tree);
+                            Result.failure("illegal.methodname", methodName, type), tree);
                 }
             }
         }

@@ -117,7 +117,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             // Static initializer; let's assume this is safe to have the UI effect
             if (debugSpew)
                 System.err.println("No enclosing method: likely static initializer");
-            return super.visitMethodInvocation(node,p);
+            return super.visitMethodInvocation(node, p);
         }
         if (debugSpew)
             System.err.println("callerTree found");

@@ -130,7 +130,7 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM> extends Abst
     @Override
     public RETURN_TYPE visitIntersection_Intersection(AnnotatedIntersectionType type1, AnnotatedIntersectionType type2, PARAM param) {
         if (visited.contains(type1, type2)) {
-            return visited.getResult(type1,type2);
+            return visited.getResult(type1, type2);
         }
         visited.add(type1, type2, null);
 
@@ -155,7 +155,7 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM> extends Abst
     @Override
     public RETURN_TYPE visitUnion_Union(AnnotatedUnionType type1, AnnotatedUnionType type2, PARAM param) {
         if (visited.contains(type1, type2)) {
-            return visited.getResult(type1,type2);
+            return visited.getResult(type1, type2);
         }
 
         visited.add(type1, type2, null);
@@ -166,7 +166,7 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM> extends Abst
     @Override
     public RETURN_TYPE visitTypevar_Typevar(AnnotatedTypeVariable type1, AnnotatedTypeVariable type2, PARAM param) {
         if (visited.contains(type1, type2)) {
-            return visited.getResult(type1,type2);
+            return visited.getResult(type1, type2);
         }
 
         visited.add(type1, type2, null);
@@ -179,7 +179,7 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM> extends Abst
     @Override
     public RETURN_TYPE visitWildcard_Wildcard(AnnotatedWildcardType type1, AnnotatedWildcardType type2, PARAM param) {
         if (visited.contains(type1, type2)) {
-            return visited.getResult(type1,type2);
+            return visited.getResult(type1, type2);
         }
 
         visited.add(type1, type2, null);

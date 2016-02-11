@@ -723,7 +723,7 @@ abstract syntax tree structure is:
 \begin{Verbatim}
 VariableTree:
   name: "a"
-  type: 
+  type:
     IdentifierTree
       name: String
   initializer:
@@ -1235,7 +1235,7 @@ only makes sense to run MyChecker if MyHelperChecker has already been run;
 that might be the case if MyHelperChecker computes some information that
 MyChecker needs to use.
 
-Override 
+Override
 \<MyChecker.\refmethodterse{common/basetype}{BaseTypeChecker}{getImmediateSubcheckerClasses}{--}>
 to return a list of the checkers that MyChecker depends on.  Every one of
 them will be run before MyChecker is run.  One of MyChecker's subcheckers

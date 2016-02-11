@@ -2465,7 +2465,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         String[] stubArray = allstubFiles.split(File.pathSeparator);
         for (String stubPath : stubArray) {
-            if (stubPath == null || stubPath.isEmpty()) continue;
+            if (stubPath == null || stubPath.isEmpty()) {
+                continue;
+            }
             // Handle case when running in jtreg
             String base = System.getProperty("test.src");
             String stubPathFull = stubPath;
@@ -2644,7 +2646,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // Getting annotations from super implementation.
                 AnnotatedDeclaredType overriddenType = pair.getKey();
                 AnnotatedExecutableType overriddenMethod =
-                        AnnotatedTypes.asMemberOf(types, this, overriddenType,pair.getValue());
+                        AnnotatedTypes.asMemberOf(types, this, overriddenType, pair.getValue());
                 ExecutableElement superElt = overriddenMethod.getElement();
                 Set<AnnotationMirror> superAnnos = getDeclAnnotations(superElt);
 
