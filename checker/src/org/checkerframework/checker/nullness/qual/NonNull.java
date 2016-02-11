@@ -45,13 +45,14 @@ import javax.lang.model.type.TypeKind;
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @SubtypeOf(MonotonicNonNull.class)
-@ImplicitFor(types = { TypeKind.PACKAGE, TypeKind.INT,
-                       TypeKind.BOOLEAN, TypeKind.CHAR,
-                       TypeKind.DOUBLE, TypeKind.FLOAT,TypeKind.LONG },
+@ImplicitFor(types = { TypeKind.PACKAGE,
+                       TypeKind.INT, TypeKind.BOOLEAN, TypeKind.CHAR,
+                       TypeKind.DOUBLE, TypeKind.FLOAT, TypeKind.LONG,
+                       TypeKind.SHORT, TypeKind.BYTE },
     // All literals except NULL_LITERAL:
-    literals = { LiteralKind.BOOLEAN, LiteralKind.CHAR,
-                 LiteralKind.DOUBLE, LiteralKind.FLOAT,
-                 LiteralKind.INT, LiteralKind.LONG, LiteralKind.STRING })
+    literals = { LiteralKind.BOOLEAN, LiteralKind.CHAR, LiteralKind.DOUBLE,
+                 LiteralKind.FLOAT, LiteralKind.INT, LiteralKind.LONG,
+                 LiteralKind.STRING })
 @DefaultQualifierInHierarchy
 @DefaultFor({ TypeUseLocation.EXCEPTION_PARAMETER })
 @DefaultInUncheckedCodeFor({ TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND })
