@@ -11,7 +11,7 @@ import java.util.*;
  * {@link NullnessExample}, an example of correct use, and {@link
  * NullnessExampleWithWarnings}, an example of incorrect use.
  * See the Nullness Checker documentation for larger examples of annotated code.
- **/
+ */
 public class NullnessExampleWithWarnings {
 
   public void example() {
