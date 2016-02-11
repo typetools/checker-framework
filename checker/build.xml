@@ -575,7 +575,7 @@
         <!-- Note that the order of the ant vs junit calls matters
              for the Jenkins setup. The junit call must come last. -->
 
-    <!-- Delete directory because we will rerun all tests -->
+        <!-- Delete directory because we will rerun all tests -->
         <delete dir="${build.reports}"/>
         <!-- Copied from -run-tests target -->
         <mkdir dir="${build.reports}"/>
@@ -605,6 +605,10 @@
                 <fileset dir="${tests}/${src}">
                     <include name="**/*Test.java"/>
                     <exclude name="**/AllTests.java"/>
+
+                    <!-- Temporary, for testing Travis -->
+		    <exclude name="**/IGJTest.java"/>
+		    <exclude name="**/OGJTest.java"/>
 
                     <!-- Framework classes -->
                     <exclude name="**/CheckerTest.java"/>
