@@ -626,6 +626,7 @@
             <isset property="debugger.on"/>
         </condition>
 
+<!--  ***** THIS IS A DIFFERENCE TOO
         <ant dir="${framework.loc}">
             <target name="all-tests-nojtreg-nobuild"/>
         </ant>
@@ -633,6 +634,7 @@
         <antcall target="nullness-extra-tests-nobuildjdk"/>
 
         <antcall target="example-tests-nobuildjdk"/>
+-->
 
         <!-- Note that the order of the ant vs junit calls matters
              for the Jenkins setup. The junit call must come last. -->
