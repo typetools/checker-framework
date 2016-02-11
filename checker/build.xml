@@ -606,10 +606,6 @@
                     <include name="**/*Test.java"/>
                     <exclude name="**/AllTests.java"/>
 
-                    <!-- Temporary, for testing Travis -->
-		    <exclude name="**/IGJTest.java"/>
-		    <exclude name="**/OGJTest.java"/>
-
                     <!-- Framework classes -->
                     <exclude name="**/CheckerTest.java"/>
                     <exclude name="**/ParameterizedCheckerTest.java"/>
