@@ -90,7 +90,7 @@ public class OptionLine {
 
         int charPos = 0;
         if(remaining.startsWith("[") || ! remaining.endsWith("]")) {
-            remaining = remaining.substring(1).substring(0,remaining.length() - 2); //strip off []
+            remaining = remaining.substring(1).substring(0, remaining.length() - 2); //strip off []
         } else {
             throw new RuntimeException("Invalid option collection " + value);
         }

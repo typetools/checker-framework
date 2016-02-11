@@ -4256,9 +4256,9 @@ public class CFGBuilder {
 
             // see JLS 14.4
 
-			boolean isField = getCurrentPath().getParentPath() != null
-					&& getCurrentPath().getParentPath().getLeaf().getKind() == Kind.CLASS;
-			Node node = null;
+            boolean isField = getCurrentPath().getParentPath() != null
+                    && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.CLASS;
+            Node node = null;
 
             ClassTree enclosingClass = TreeUtils
                     .enclosingClass(getCurrentPath());

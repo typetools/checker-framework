@@ -26,7 +26,7 @@ public final class Effect {
     }
 
     public static Effect min(Effect l, Effect r) {
-        if (LE(l,r)) {
+        if (LE(l, r)) {
             return l;
         } else {
             return r;

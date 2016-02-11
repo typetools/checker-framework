@@ -10,7 +10,7 @@ import java.util.*;
  * Also see {@link InterningExample}, an example of correct use
  * of the @Interned type annotation.  See the Interning Checker documentation
  * for larger examples of annotated code.
- **/
+ */
 public class InterningExampleWithWarnings {
 
   public void example() {

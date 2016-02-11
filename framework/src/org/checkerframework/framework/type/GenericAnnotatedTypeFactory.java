@@ -244,8 +244,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator} that adds annotations to a type based
-     * on the content of the type itself.
+     * Returns a
+     * {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}
+     * that adds annotations to a type based on the content of the type itself.
      *
      * @return a type annotator
      */
@@ -442,10 +443,9 @@ public abstract class GenericAnnotatedTypeFactory<
         }
 
         if (!foundOtherwise) {
-            ErrorReporter
-                    .errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: "
-                                        + "@DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE) not found. "
-                                        + "Every checker must specify a default qualifier. " + getSortedQualifierNames());
+            ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: "
+                    + "@DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE) not found. "
+                    + "Every checker must specify a default qualifier. " + getSortedQualifierNames());
         }
 
         if (this.everUseFlow) {
@@ -492,8 +492,10 @@ public abstract class GenericAnnotatedTypeFactory<
         Set<? extends AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
         defs.addUncheckedStandardDefaults(tops, bottoms);
 
-        // Don't require @DefaultQualifierInHierarchyInUncheckedCode or an unchecked default for TypeUseLocation.OTHERWISE.
-        // if a default unchecked code qualifier isn't specified, the defaults for checked code will be used.
+        // Don't require @DefaultQualifierInHierarchyInUncheckedCode or an
+        // unchecked default for TypeUseLocation.OTHERWISE.
+        // If a default unchecked code qualifier isn't specified, the defaults
+        // for checked code will be used.
     }
 
     /**
@@ -702,7 +704,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         ExpressionTree initializer = vt.getInitializer();
                         // analyze initializer if present
                         if (initializer != null) {
-                        	boolean isStatic = vt.getModifiers().getFlags().contains(Modifier.STATIC);
+                            boolean isStatic = vt.getModifiers().getFlags().contains(Modifier.STATIC);
                             analyze(queue, lambdaQueue, new CFGStatement(vt),
                                     fieldValues, classTree, true, true, isStatic);
                             Value value = flowResult.getValue(initializer);
@@ -736,17 +738,16 @@ public abstract class GenericAnnotatedTypeFactory<
                 // TODO: at this point, we don't have any information about
                 // fields of superclasses.
                 for (MethodTree mt : methods) {
-                	boolean isInitCode = TreeUtils.isConstructor(mt);
+                    boolean isInitCode = TreeUtils.isConstructor(mt);
                     analyze(queue, lambdaQueue,
-                            new CFGMethod(mt, TreeUtils
-                                    .enclosingClass(getPath(mt))), fieldValues, classTree, isInitCode, false, false);
+                            new CFGMethod(mt, TreeUtils.enclosingClass(getPath(mt))),
+                                fieldValues, classTree, isInitCode, false, false);
                 }
 
                 while (lambdaQueue.size() > 0) {
                     Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
                     analyze(queue, lambdaQueue,
                             new CFGLambda(lambdaPair.first), fieldValues, classTree, false, false, false, lambdaPair.second);
-
                 }
 
                 // by convention we store the static initialization store as the regular exit
@@ -833,8 +834,7 @@ public abstract class GenericAnnotatedTypeFactory<
             if (regularExitStore != null) {
                 regularExitStores.put(method, regularExitStore);
             }
-            returnStatementStores.put(method, analyses.getFirst()
-                    .getReturnStatementStores());
+            returnStatementStores.put(method, analyses.getFirst().getReturnStatementStores());
         } else if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
             CFGStatement block = (CFGStatement) ast;
             Store regularExitStore = analyses.getFirst().getRegularExitStore();
@@ -927,8 +927,8 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
             NewClassTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super
-                .constructorFromUse(tree);
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
+                super.constructorFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
         poly.annotate(tree, method);
         return mfuPair;

@@ -7,7 +7,7 @@ import org.checkerframework.dataflow.qual.Pure;
 // @skip-test
 
 public class AssertNonNullIfNonNullTest {
-    
+
     private @Nullable String value;
 
     @Pure

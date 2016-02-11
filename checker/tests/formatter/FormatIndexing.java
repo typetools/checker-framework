@@ -62,25 +62,25 @@ public class FormatIndexing {
         @Format({ConversionCategory.NULL})
         String itc = "%d %<TT %<c";
         //:: error: (format.specifier.null)
-        f.format(tf,null,0);
+        f.format(tf, null, 0);
         //:: warning: (format.indirect.arguments) :: error: (format.specifier.null)
-        f.format(tf,(Object[])null);
+        f.format(tf, (Object[])null);
         //:: error: (format.specifier.null)
-        f.format(tf,'c',0);
+        f.format(tf, 'c', 0);
         //:: error: (format.specifier.null)
-        f.format(tf,(Object)null,0);
+        f.format(tf, (Object)null, 0);
 
         // test UNUSED
         //:: warning: (format.argument.unused)
-        f.format("%1$s %3$s","Hello","Missing","World");
+        f.format("%1$s %3$s", "Hello", "Missing", "World");
         //:: warning: (format.argument.unused) :: warning: (format.indirect.arguments)
-        f.format("%1$s %3$s",new Object[5]);
+        f.format("%1$s %3$s", new Object[5]);
         //:: warning: (format.argument.unused) :: warning: (format.indirect.arguments)
-        f.format("%5$s",(Object[])null);
+        f.format("%5$s", (Object[])null);
         //:: warning: (format.argument.unused)
-        f.format("%3$s",null,null,null);
+        f.format("%3$s", null, null, null);
         //:: warning: (format.argument.unused)
-        f.format("%7$s %2$s %4$s %<s %7$s",0,0,0,0,0,0,0);
+        f.format("%7$s %2$s %4$s %<s %7$s", 0, 0, 0, 0, 0, 0, 0);
         f.close();
 
         // test UNUSED and NULL

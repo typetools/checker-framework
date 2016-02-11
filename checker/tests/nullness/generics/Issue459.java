@@ -8,7 +8,7 @@ public class Issue459
    interface Iface<K, V>
    {
       public <K1 extends K, V1 extends V> Generic<K,V> foo(Generic<? super K1, ? super V1> arg);
-      
+
       public <K2 extends K, V2 extends V> Generic<K,V> foo2(Generic<? super K2, ? super V2> arg, K2 strArg);
    }
 
@@ -16,9 +16,9 @@ public class Issue459
    {
       final Generic<String, Integer> obj = new Generic<String, Integer>();
       arg.foo(obj);
-      
+
       final Generic<@Nullable String, Integer> obj2 = new Generic<@Nullable String, Integer>();
       arg.foo2(obj2, nnString);
-      
+
    }
 }

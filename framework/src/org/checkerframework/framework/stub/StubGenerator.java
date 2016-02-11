@@ -234,7 +234,7 @@ public class StubGenerator {
         out.println("}");
 
         for (TypeElement element: innerClass) {
-            printClass(element,typeElement.getSimpleName().toString());
+            printClass(element, typeElement.getSimpleName().toString());
         }
 
     }
@@ -248,7 +248,7 @@ public class StubGenerator {
     private void printTypeMembers(List<? extends Element> members, List<TypeElement> innerClass) {
         for (Element element : members) {
             if (isPublicOrProtected(element))
-                printMember(element,innerClass);
+                printMember(element, innerClass);
         }
     }
 

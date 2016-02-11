@@ -655,15 +655,11 @@ Compilation will complete without warnings.
 To see the checker warn about incorrect usage of annotations (and therefore the
 possibility of a null pointer exception at run time), use the following command:
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
+\begin{mysmall}
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.nullness.NullnessChecker examples/NullnessExampleWithWarnings.java
 \end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
+\end{mysmall}
 
 
 \noindent
@@ -1514,7 +1510,7 @@ consider a doubly linked list:
     void insert(@Nullable T data) {
       this.sentinel.insertAfter(data);
     }
-    
+
     public static void main() {
       List<Integer> l = new List<Integer>();
       l.insert(1);

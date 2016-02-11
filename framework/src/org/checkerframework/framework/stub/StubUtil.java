@@ -3,6 +3,8 @@ package org.checkerframework.framework.stub;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -343,6 +345,11 @@ public class StubUtil {
         return f.isFile() && f.getName().endsWith(".jar");
     }
 
+    /**
+     * Side-effects <code>resources</code> by adding to it either
+     * <code>stub</code> if it is a stub file, or all the contained stub
+     * files if <code>stub</code> is a jar file or a directory.
+     */
     private static void allStubFiles(File stub, List<StubResource> resources) {
         if (isStub(stub)) {
             resources.add(new FileStubResource(stub));
@@ -362,7 +369,14 @@ public class StubUtil {
                 }
             }
         } else if (stub.isDirectory()) {
-            for (File enclosed : stub.listFiles()) {
+            File[] directoryContents = stub.listFiles();
+            Arrays.sort(directoryContents, new Comparator<File>() {
+                    @Override
+                    public int compare(File o1, File o2) {
+                        return o1.getName().compareTo(o2.getName());
+                    }
+                });
+            for (File enclosed : directoryContents) {
                 allStubFiles(enclosed, resources);
             }
         }

@@ -1,0 +1,8 @@
+import org.checkerframework.checker.guieffect.qual.*;
+
+package org.osgi.framework;
+public interface BundleActivator {
+    // These methods are present on all plugins, UI or not
+    @PolyUIEffect void start(BundleContext context);
+    @PolyUIEffect void stop(BundleContext context);
+}

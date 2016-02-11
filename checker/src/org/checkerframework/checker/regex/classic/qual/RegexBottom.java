@@ -19,7 +19,7 @@ import com.sun.source.tree.Tree;
   typeNames = {java.lang.Void.class})
 @SubtypeOf({Regex.class, PartialRegex.class})
 @DefaultFor(value={ TypeUseLocation.LOWER_BOUND })
-@Target({ElementType.TYPE_USE})
+@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 @TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
     TypeUseLocation.EXPLICIT_UPPER_BOUND })
 public @interface RegexBottom {}

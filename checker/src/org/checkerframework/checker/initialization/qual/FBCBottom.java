@@ -21,7 +21,7 @@ import com.sun.source.tree.Tree;
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE})
+@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 @TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
     TypeUseLocation.EXPLICIT_UPPER_BOUND })
 public @interface FBCBottom {

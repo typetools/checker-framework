@@ -1,0 +1,7 @@
+import org.checkerframework.checker.interning.qual.*;
+
+package org.apache.bcel.generic;
+public @UsesObjectEquals class InstructionHandle implements java.io.Serializable {}
+
+package org.apache.bcel.verifier.structurals;
+public @UsesObjectEquals interface InstructionContext {}

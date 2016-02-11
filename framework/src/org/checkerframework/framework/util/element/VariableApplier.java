@@ -49,7 +49,7 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
     @Override
     protected TargetType[] validTargets() {
         return new TargetType []{
-                NEW, CAST, INSTANCEOF, METHOD_INVOCATION_TYPE_ARGUMENT,CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT,
+                NEW, CAST, INSTANCEOF, METHOD_INVOCATION_TYPE_ARGUMENT, CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT,
                 METHOD_REFERENCE, CONSTRUCTOR_REFERENCE, METHOD_REFERENCE_TYPE_ARGUMENT,
                 CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT
         };

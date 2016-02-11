@@ -90,6 +90,9 @@ public class ElementUtils {
      *
      */
     public static PackageElement parentPackage(final Elements e, final PackageElement elem) {
+        // The following might do the same thing:
+        //   ((Symbol) elt).owner;
+        // TODO: verify and see whether the change is worth it.
         String fqnstart = elem.getQualifiedName().toString();
         String fqn = fqnstart;
         if (fqn != null && !fqn.isEmpty() && fqn.contains(".")) {
