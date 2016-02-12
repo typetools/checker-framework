@@ -64,8 +64,8 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
      * This is here and not in LiteralKinds because LiteralKind is in the checker-qual.jar
      * which cannot depend on classes, such as Tree.Kind, that are in the tools.jar
      */
-    private static final Map<LiteralKind,Tree.Kind> literalKindToTreeKind = new EnumMap<>(LiteralKind.class);
-    {
+    private static final Map<LiteralKind, Tree.Kind> literalKindToTreeKind = new EnumMap<>(LiteralKind.class);
+    static {
         literalKindToTreeKind.put(LiteralKind.BOOLEAN, Kind.BOOLEAN_LITERAL);
         literalKindToTreeKind.put(LiteralKind.CHAR, Kind.CHAR_LITERAL);
         literalKindToTreeKind.put(LiteralKind.DOUBLE, Kind.DOUBLE_LITERAL);
@@ -101,7 +101,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
                 continue;
 
             AnnotationMirror theQual = AnnotationUtils.fromClass(atypeFactory.getElementUtils(), qual);
-            for(LiteralKind literalKind:implicit.literals()){
+            for (LiteralKind literalKind : implicit.literals()) {
                 addLiteralKind(literalKind, theQual);
             }
 
@@ -132,14 +132,14 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     public void addLiteralKind(LiteralKind literalKind, AnnotationMirror theQual) {
         if (literalKind == LiteralKind.ALL) {
             for (LiteralKind iterLiteralKind : LiteralKind.valuesWithOutAll()) {
-               addLiteralKind(iterLiteralKind,theQual);
+                addLiteralKind(iterLiteralKind, theQual);
             }
         } else {
             Tree.Kind treeKind = literalKindToTreeKind.get(literalKind);
             if (treeKind != null) {
                 addTreeKind(treeKind, theQual);
             } else {
-                ErrorReporter.errorAbort("LiteralKind " + literalKind + "is not mapped to a Tree.Kind.");
+                ErrorReporter.errorAbort("LiteralKind " + literalKind + " is not mapped to a Tree.Kind.");
             }
         }
     }
