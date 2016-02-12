@@ -277,7 +277,7 @@ import com.sun.tools.javac.util.Log;
     // org.checkerframework.framework.source.SourceChecker.shutdownHook()
     "resourceStats",
 
-    // Set the cache sized for caches in AnnotatedTypeFactory
+    // Set the cache size for caches in AnnotatedTypeFactory
     "atfCacheSize",
 
     // Sets AnnotatedTypeFactory shouldReadCache to false
