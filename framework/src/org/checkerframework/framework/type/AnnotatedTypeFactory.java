@@ -307,9 +307,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * instance and syntax tree root. (These parameters are required so that
      * the factory may conduct the appropriate annotation-gathering analyses on
      * certain tree types.)
-     * <p/>
+     *
      * Root can be {@code null} if the factory does not operate on trees.
-     * <p/>
+     *
      * A subclass must call postInit at the end of its constructor.
      * postInit must be the last call in the constructor or else types
      * from stub files may not be created as expected.
