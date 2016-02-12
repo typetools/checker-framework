@@ -644,9 +644,14 @@
         <!-- Copied from -run-tests target -->
         <mkdir dir="${build.reports}"/>
 
-	<!-- Verify that we are ruinning Junit 4.12, not some earlier version -->
+        <echo message="JUnit version:"/>
         <exec executable="java" failonerror="true">
             <arg line="-cp ${junit.lib} junit.runner.Version"/>
+        </exec>
+
+        <echo message="Ant version:"/>
+        <exec executable="ant" failonerror="true">
+            <arg line="-version"/>
         </exec>
 
         <junit fork="${run.tests.should.fork}"
