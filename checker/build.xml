@@ -644,9 +644,15 @@
         <!-- Copied from -run-tests target -->
         <mkdir dir="${build.reports}"/>
 
+	<!-- Verify that we are ruinning Junit 4.12, not some earlier version -->
+        <exec executable="java" failonerror="true">
+            <arg line="-cp ${junit.lib} junit.runner.Version"/>
+        </exec>
+
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
                printsummary="false"
+               showoutput="true"
                haltonfailure="${halt.on.test.failure}">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="-ea"/>
@@ -662,8 +668,13 @@
               <pathelement path="${hamcrest.lib}"/>
             </classpath>
 
+<!-- ***** Another difference: see output immediately
             <formatter type="xml"/>
             <formatter type="brief" usefile="false"/>
+-->
+            <formatter type="plain" usefile="false"/>
+            <formatter type="plain" usefile="true"/>
+
 
             <batchtest todir="${build.reports}">
                 <fileset dir="${tests}/${src}">
