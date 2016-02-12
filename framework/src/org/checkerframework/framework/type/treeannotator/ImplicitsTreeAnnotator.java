@@ -131,7 +131,11 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
      */
     public void addLiteralKind(LiteralKind literalKind, AnnotationMirror theQual) {
         if (literalKind == LiteralKind.ALL) {
-            for (LiteralKind iterLiteralKind : LiteralKind.valuesWithOutAll()) {
+            for (LiteralKind iterLiteralKind : LiteralKind.allLiteralKinds()) {
+                addLiteralKind(iterLiteralKind, theQual);
+            }
+        } else if (literalKind == LiteralKind.PRIMITIVE) {
+            for (LiteralKind iterLiteralKind : LiteralKind.primitiveLiteralKinds()) {
                 addLiteralKind(iterLiteralKind, theQual);
             }
         } else {

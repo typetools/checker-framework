@@ -50,9 +50,7 @@ import javax.lang.model.type.TypeKind;
                        TypeKind.DOUBLE, TypeKind.FLOAT, TypeKind.LONG,
                        TypeKind.SHORT, TypeKind.BYTE },
     // All literals except NULL_LITERAL:
-    literals = { LiteralKind.BOOLEAN, LiteralKind.CHAR, LiteralKind.DOUBLE,
-                 LiteralKind.FLOAT, LiteralKind.INT, LiteralKind.LONG,
-                 LiteralKind.STRING })
+    literals = { LiteralKind.STRING })
 @DefaultQualifierInHierarchy
 @DefaultFor({ TypeUseLocation.EXCEPTION_PARAMETER })
 @DefaultInUncheckedCodeFor({ TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND })

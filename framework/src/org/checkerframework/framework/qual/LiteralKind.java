@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * Specifies kinds of literal trees.
- * <p>
+ *
  * These correspond to the *_LITERAL constants in {@link com.sun.source.tree.Tree.Kind}.
  * However, that enum is in the tools.jar which is not on the user's classpath by default.
  * So this enum is used instead.
@@ -46,18 +46,34 @@ public enum LiteralKind {
      */
     STRING,
     /**
-     * Shorthand for all other LiteralKind constants
+     * Shorthand for all other LiteralKind constants, other than PRIMITIVE
      */
-    ALL;
+    ALL,
+    /**
+     * Shorthand for all primitive LiteralKind constants: INT, LONG, FLOAT, DOUBLE, BOOLEAN, CHAR
+     */
+    PRIMITIVE;
 
     /**
-     * Returns all LiteralKinds except for ALL
+     * Returns all LiteralKinds except for ALL and PRIMITIVE
+     *
+     * @return List of LiteralKinds except for ALL and PRIMITIVE
+     */
+    public static List<LiteralKind> allLiteralKinds() {
+        List<LiteralKind> list = new ArrayList<>(Arrays.asList(values()));
+        list.remove(ALL);
+        list.remove(PRIMITIVE);
+        return list;
+    }
+
+    /**
+     * Returns the primitive {@code LiteralKind}s:
+     * INT, LONG, FLOAT, DOUBLE, BOOLEAN, CHAR
      *
      * @return List of LiteralKinds except for ALL
      */
-    public static List<LiteralKind> valuesWithOutAll() {
-        List<LiteralKind> list = new ArrayList<>(Arrays.asList(values()));
-        list.remove(ALL);
-        return list;
+    public static List<LiteralKind> primitiveLiteralKinds() {
+        return new ArrayList<>(Arrays.asList(INT, LONG, FLOAT, DOUBLE, BOOLEAN, CHAR));
     }
+
 }

@@ -61,8 +61,8 @@ public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         implicitsTreeAnnotator.addTreeKind(Tree.Kind.ANNOTATION_TYPE, BOTTOM_QUAL);
         implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY, BOTTOM_QUAL);
 
-
-        return new ListTreeAnnotator(implicitsTreeAnnotator, new PropagationTreeAnnotator(this),
+        return new ListTreeAnnotator(new PropagationTreeAnnotator(this),
+                                     implicitsTreeAnnotator,
                                      new OwnershipTreeAnnotator(this));
     }
 
