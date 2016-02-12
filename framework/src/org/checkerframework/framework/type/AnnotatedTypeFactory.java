@@ -815,14 +815,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private int getCacheSize() {
         String option = checker.getOption("atfCacheSize");
-        if(option == null)
+        if (option == null) {
             return DEFAULT_CACHE_SIZE;
+        }
         try{
             return Integer.valueOf(option);
         } catch (NumberFormatException ex){
             ErrorReporter.errorAbort("atfCacheSize was not an integer: "+option);
+             return 0; // dead code
         }
-        return DEFAULT_CACHE_SIZE;
     }
 
     /**
