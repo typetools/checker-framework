@@ -277,15 +277,6 @@ import com.sun.tools.javac.util.Log;
     // org.checkerframework.framework.source.SourceChecker.shutdownHook()
     "resourceStats",
 
-    // Set the cache size for caches in AnnotatedTypeFactory
-    "atfCacheSize",
-
-    // Sets AnnotatedTypeFactory shouldReadCache to false
-    "atfDoNotReadCache",
-
-    // Sets AnnotatedTypeFactory shouldCache to false
-    "atfDoNotCache"
-
 })
 public abstract class SourceChecker
     extends AbstractTypeProcessor implements ErrorHandler, CFContext, OptionConfiguration {
