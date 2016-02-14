@@ -285,8 +285,11 @@ public class SignatureInferenceScenes {
             // Ignoring it for now.
             return;
         }
-        String className = classSymbol.flatname.toString();
+        // TODO: We must handle cases where the method is declared on a superclass.
+        // Currently we are ignoring them. See ElementUtils#getSuperTypes.
+        if (!classSymbol.getEnclosedElements().contains(methodElt)) return;
 
+        String className = classSymbol.flatname.toString();
         String jaifPath = getJaifPath(className);
         AClass clazz = getAClass(className, jaifPath);
 
@@ -333,8 +336,11 @@ public class SignatureInferenceScenes {
         FieldAccessNode lhsFieldNode = (FieldAccessNode) lhs;
         ClassSymbol classSymbol = getEnclosingClassSymbol(classTree, lhsFieldNode);
         if (classSymbol == null) return; // TODO: Handle anonymous classes.
-        String className = classSymbol.flatname.toString();
+        // TODO: We must handle cases where the field is declared on a superclass.
+        // Currently we are ignoring them. See ElementUtils#getSuperTypes.
+        if (!classSymbol.getEnclosedElements().contains(lhsFieldNode.getElement())) return;
 
+        String className = classSymbol.flatname.toString();
         String jaifPath = getJaifPath(className);
         AClass clazz = getAClass(className, jaifPath);
 
