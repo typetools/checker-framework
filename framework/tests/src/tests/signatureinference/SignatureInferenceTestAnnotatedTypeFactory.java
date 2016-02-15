@@ -96,15 +96,15 @@ public class SignatureInferenceTestAnnotatedTypeFactory
         public AnnotationMirror leastUpperBound(AnnotationMirror a1,
                 AnnotationMirror a2) {
             if ((AnnotationUtils.areSameByClass(a1, Sibling1.class)
-                    && AnnotationUtils.areSameByClass(a2, Sibling2.class)) 
-                    || (AnnotationUtils.areSameByClass(a1, Sibling2.class)
-                    && AnnotationUtils.areSameByClass(a2, Sibling1.class))
-                    || (AnnotationUtils.areSameByClass(a1, Sibling1.class)
-                    && AnnotationUtils.areSameByClass(a2, SiblingWithFields.class))
-                    || (AnnotationUtils.areSameByClass(a1, SiblingWithFields.class)
-                    && AnnotationUtils.areSameByClass(a2, Sibling2.class))
-                    || (AnnotationUtils.areSameByClass(a1, Sibling2.class)
-                    && AnnotationUtils.areSameByClass(a2, SiblingWithFields.class))) {
+                 && AnnotationUtils.areSameByClass(a2, Sibling2.class)) 
+                || (AnnotationUtils.areSameByClass(a1, Sibling2.class)
+                 && AnnotationUtils.areSameByClass(a2, Sibling1.class))
+                || (AnnotationUtils.areSameByClass(a1, Sibling1.class)
+                 && AnnotationUtils.areSameByClass(a2, SiblingWithFields.class))
+                || (AnnotationUtils.areSameByClass(a1, SiblingWithFields.class)
+                 && AnnotationUtils.areSameByClass(a2, Sibling2.class))
+                || (AnnotationUtils.areSameByClass(a1, Sibling2.class)
+                 && AnnotationUtils.areSameByClass(a2, SiblingWithFields.class))) {
                 return PARENT;
             }
             return super.leastUpperBound(a1, a2);
@@ -112,15 +112,14 @@ public class SignatureInferenceTestAnnotatedTypeFactory
         @Override
         public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
             if (AnnotationUtils.areSame(sub, sup)
-                    || AnnotationUtils.areSameByClass(sup, UnknownClass.class)
-                    || AnnotationUtils.areSameByClass(sub, SignatureInferenceBottom.class)
-                    || AnnotationUtils.areSameByClass(sup, Top.class)) {
+                || AnnotationUtils.areSameByClass(sup, UnknownClass.class)
+                || AnnotationUtils.areSameByClass(sub, SignatureInferenceBottom.class)
+                || AnnotationUtils.areSameByClass(sup, Top.class)) {
                 return true;
             }
 
             if (AnnotationUtils.areSameByClass(sub, UnknownClass.class)
-                    || AnnotationUtils
-                            .areSameByClass(sup, SignatureInferenceBottom.class)) {
+                || AnnotationUtils.areSameByClass(sup, SignatureInferenceBottom.class)) {
                 return false;
             }
 
@@ -129,22 +128,22 @@ public class SignatureInferenceTestAnnotatedTypeFactory
             }
 
             if ((AnnotationUtils.areSameByClass(sub, Sibling1.class)
-                    || AnnotationUtils.areSameByClass(sub, Sibling2.class)
-                    || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class))
-                    && AnnotationUtils.areSameByClass(sup, Parent.class)) {
+                 || AnnotationUtils.areSameByClass(sub, Sibling2.class)
+                 || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class))
+                && AnnotationUtils.areSameByClass(sup, Parent.class)) {
                 return true;
             }
 
             if ((AnnotationUtils.areSameByClass(sub, Sibling1.class)
-                    || AnnotationUtils.areSameByClass(sub, Sibling2.class)
-                    || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class)
-                    || AnnotationUtils.areSameByClass(sub, Parent.class)) 
-                    && AnnotationUtils.areSameByClass(sup, DefaultType.class)){
+                 || AnnotationUtils.areSameByClass(sub, Sibling2.class)
+                 || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class)
+                 || AnnotationUtils.areSameByClass(sub, Parent.class)) 
+                && AnnotationUtils.areSameByClass(sup, DefaultType.class)){
                 return true;
             }
 
             if (AnnotationUtils.areSameByClass(sub, SiblingWithFields.class)
-                    && AnnotationUtils.areSameByClass(sup, SiblingWithFields.class)) {
+                && AnnotationUtils.areSameByClass(sup, SiblingWithFields.class)) {
                 List<String> subVal1 = AnnotationUtils.getElementValueArray(sub,
                         "value", String.class, true);
                 List<String> supVal1 = AnnotationUtils.getElementValueArray(sup,
