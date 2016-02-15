@@ -111,8 +111,6 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
     protected String generateDotGraph(ControlFlowGraph cfg, Block entry,
         /*@Nullable*/ Analysis<A, S, T> analysis) {
         StringBuilder sbDigraph = new StringBuilder();
-        StringBuilder sbNode = new StringBuilder();
-        StringBuilder sbEdge = new StringBuilder();
         Set<Block> visited = new HashSet<>();
 
         // header
@@ -120,12 +118,9 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
 
         /*generateDotEdges must called BEFORE generateDotNodes,
          * since DoteNodes needs the information in 'Set<Block> visited' that created in generateDotEdges()  */
-        generateDotEdges(sbEdge, visited, entry);
+        generateDotEdges(sbDigraph, visited, entry);
 
-        generateDotNodes(sbNode, visited, cfg, analysis);
-
-        sbDigraph.append(sbNode);
-        sbDigraph.append(sbEdge);
+        generateDotNodes(sbDigraph, visited, cfg, analysis);
 
         // footer
         sbDigraph.append("}\n");
@@ -133,31 +128,31 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
         return sbDigraph.toString();
     }
 
-    private void generateDotNodes(StringBuilder sbNode, Set<Block> visited,
-			ControlFlowGraph cfg, Analysis<A, S, T> analysis) {
+    private void generateDotNodes(StringBuilder sbDigraph, Set<Block> visited,
+    ControlFlowGraph cfg, Analysis<A, S, T> analysis) {
         IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
-        sbNode.append("    node [shape=rectangle];\n\n");
-     // definition of all nodes including their labels
+        sbDigraph.append("    node [shape=rectangle];\n\n");
+        // definition of all nodes including their labels
         for (Block v : visited) {
-            sbNode.append("    " + v.getId() + " [");
+            sbDigraph.append("    " + v.getId() + " [");
             if (v.getType() == BlockType.CONDITIONAL_BLOCK) {
-                sbNode.append("shape=polygon sides=8 ");
+                sbDigraph.append("shape=polygon sides=8 ");
             } else if (v.getType() == BlockType.SPECIAL_BLOCK) {
-                sbNode.append("shape=oval ");
+                sbDigraph.append("shape=oval ");
             }
-            sbNode.append("label=\"");
+            sbDigraph.append("label=\"");
             if (verbose) {
-                sbNode.append("Process order: " + processOrder.get(v).toString().replaceAll("[\\[\\]]", "") + "\\n");
+                sbDigraph.append("Process order: " + processOrder.get(v).toString().replaceAll("[\\[\\]]", "") + "\\n");
             }
-            sbNode.append(visualizeBlock(v, analysis).replace("\\n", "\\l")
-                    + " \",];\n");
+            sbDigraph.append(visualizeBlock(v, analysis).replace("\\n", "\\l")
+            + " \",];\n");
         }
 
-        sbNode.append("\n");
+        sbDigraph.append("\n");
 	}
 
-	protected void generateDotEdges(StringBuilder sbEdge, Set<Block> visited, Block entry) {
+	protected void generateDotEdges(StringBuilder sbDigraph, Set<Block> visited, Block entry) {
         Block cur = entry;
         Queue<Block> worklist = new LinkedList<>();
         visited.add(entry);
@@ -169,17 +164,13 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
             if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
                 ConditionalBlock ccur = ((ConditionalBlock) cur);
                 Block thenSuccessor = ccur.getThenSuccessor();
-                sbEdge.append(
-                        addDotEdge(ccur.getId(), thenSuccessor.getId(), "then\\n" + ccur.getThenFlowRule())
-                        );
+                addDotEdge(sbDigraph, ccur.getId(), thenSuccessor.getId(), "then\\n" + ccur.getThenFlowRule());
                 if (!visited.contains(thenSuccessor)) {
                     visited.add(thenSuccessor);
                     worklist.add(thenSuccessor);
                 }
                 Block elseSuccessor = ccur.getElseSuccessor();
-                sbEdge.append(
-                    addDotEdge(ccur.getId(), elseSuccessor.getId(), "else\\n" + ccur.getElseFlowRule())
-                    );
+                addDotEdge(sbDigraph, ccur.getId(), elseSuccessor.getId(), "else\\n" + ccur.getElseFlowRule());
                 if (!visited.contains(elseSuccessor)) {
                     visited.add(elseSuccessor);
                     worklist.add(elseSuccessor);
@@ -188,9 +179,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
                 assert cur instanceof SingleSuccessorBlock;
                 Block b = ((SingleSuccessorBlock) cur).getSuccessor();
                 if (b != null) {
-                    sbEdge.append(
-                        addDotEdge(cur.getId(), b.getId(), ((SingleSuccessorBlock) cur).getFlowRule().name())
-                        );
+                    addDotEdge(sbDigraph, cur.getId(), b.getId(), ((SingleSuccessorBlock) cur).getFlowRule().name());
                     if (!visited.contains(b)) {
                         visited.add(b);
                         worklist.add(b);
@@ -211,9 +200,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
                     }
 
                     for (Block b : blocks) {
-                        sbEdge.append(
-                            addDotEdge(cur.getId(), b.getId(), exception)
-                            );
+                        addDotEdge(sbDigraph, cur.getId(), b.getId(), exception);
                         if (!visited.contains(b)) {
                             visited.add(b);
                             worklist.add(b);
@@ -263,7 +250,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
             srcloc.append('>');
         } else {
             ErrorReporter.errorAbort("Unexpected AST kind: " + ast.getKind() +
-                    " value: " + ast.toString());
+                " value: " + ast.toString());
             return null;
         }
         outfile.append('-');
@@ -437,8 +424,8 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
      * @param labelContent
      * @return
      */
-    protected String addDotEdge(long sId, long eId, String labelContent) {
-        return "    " + sId + " -> "+ eId + " [label=\""+ labelContent + "\"];\n";
+    protected void addDotEdge(StringBuilder sbDigraph, long sId, long eId, String labelContent) {
+    	sbDigraph.append("    " + sId + " -> "+ eId + " [label=\""+ labelContent + "\"];\n");
     }
 
     /** Write a file methods.txt that contains a mapping from
@@ -475,9 +462,9 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
 
 	@Override
 	public void visualizeLocalVariable(FlowExpressions.LocalVariable localVar, A value) {
-		this.sbStore.append("  " + localVar + " > " +
-				toStringEscapeDoubleQuotes(value)
-                + "\\n");
+        this.sbStore.append("  " + localVar + " > " +
+            toStringEscapeDoubleQuotes(value)
+            + "\\n");
 	}
 
 	@Override
@@ -488,8 +475,8 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
 	}
 
 	@Override
-	public void visualizeArrayAccess(FlowExpressions.ArrayAccess arrayAccess, A value) {
-		this.sbStore.append("  " + arrayAccess + " > " +
+	public void visualizeArrayValue(FlowExpressions.ArrayAccess arrayValue, A value) {
+		this.sbStore.append("  " + arrayValue + " > " +
             toStringEscapeDoubleQuotes(value)
             + "\\n");
     }

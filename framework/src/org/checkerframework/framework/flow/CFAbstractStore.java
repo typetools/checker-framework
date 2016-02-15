@@ -1007,7 +1007,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             viz.visualizeFieldValues(entry.getKey(), entry.getValue());
         }
         for (Entry<FlowExpressions.ArrayAccess, V> entry : arrayValues.entrySet()) {
-            viz.visualizeArrayAccess(entry.getKey(), entry.getValue());
+            viz.visualizeArrayValue(entry.getKey(), entry.getValue());
         }
         for (Entry<PureMethodCall, V> entry : methodValues.entrySet()) {
             viz.visualizeMethodValues(entry.getKey(), entry.getValue());

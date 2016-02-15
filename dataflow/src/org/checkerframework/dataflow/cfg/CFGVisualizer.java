@@ -56,7 +56,14 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
     /*@Nullable*/ Map<String, Object> visualize(ControlFlowGraph cfg, Block entry,
             /*@Nullable*/ Analysis<A, S, T> analysis);
 
-    // TODO: javadoc
+    /**
+     * This is a double-direction delegate pattern interface.
+     * this method would delegate the visualize responsibility
+     * to the passed store instance.
+     * Then the store would do something and delegate the 
+     * visualize responsibility back to the CFGVisualizer.
+     * @param store
+     */
     void visualizeStore(S store);
 
     void visualizeStoreHeader(String classCanonicalName);
@@ -65,17 +72,17 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
 
     void visualizeLocalVariable(FlowExpressions.LocalVariable localVar, A value);
 
-	void visualizeThisValue(A value);
+    void visualizeThisValue(A value);
 
-	void visualizeFieldValues(FlowExpressions.FieldAccess fieldAccess, A value);
+    void visualizeFieldValues(FlowExpressions.FieldAccess fieldAccess, A value);
 
-	void visualizeArrayAccess(FlowExpressions.ArrayAccess arrayAccess, A value);
+    void visualizeArrayValue(FlowExpressions.ArrayAccess arrayValue, A value);
 
-	void visualizeMethodValues(FlowExpressions.PureMethodCall methodCall, A value);
+    void visualizeMethodValues(FlowExpressions.PureMethodCall methodCall, A value);
 
-	void visualizeClassValues(FlowExpressions.ClassName className, A value);
+    void visualizeClassValues(FlowExpressions.ClassName className, A value);
 
-	void visualizeKeyValue(String keyName, Object value);
+    void visualizeKeyValue(String keyName, Object value);
 
     /** Shutdown method called once from the shutdown hook of the BaseTypeChecker.
      */
