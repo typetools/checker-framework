@@ -53,7 +53,8 @@ public @interface ImplicitFor {
 
     /**
      * @return Regular expressions of string literals, the types of which
-     *         an annotation should be implicitly added
+     *         an annotation should be implicitly added. Useful for annotations that
+     *         indicate the format of a string.
      */
     String[] stringPatterns() default {};
 
