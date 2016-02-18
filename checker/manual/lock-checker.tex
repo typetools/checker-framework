@@ -12,9 +12,8 @@ be dereferenced only if the given lock is held.
 
 To run the Lock Checker, supply the
 \code{-processor org.checkerframework.checker.lock.LockChecker}
-command-line option to javac.  Note that the \<-AconcurrentSemantics>
-command-line option is automatically enabled (for the Lock Checker
-only) when the Lock Checker is run (see Section~\ref{faq-concurrency}).
+command-line option to javac.  The \<-AconcurrentSemantics>
+command-line option is always enabled for the Lock Checker (see Section~\ref{faq-concurrency}).
 
 
 \section{What the Lock Checker guarantees\label{lock-guarantees}}
