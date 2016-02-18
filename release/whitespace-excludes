@@ -1,0 +1,13 @@
+*.aux
+*.class
+*.jar
+*.jtr
+*.log
+*.patch
+*.pdf
+*.png
+*.sty
+*~
+CFLogo.ai
+logfile.log.rec.index
+manual.html
