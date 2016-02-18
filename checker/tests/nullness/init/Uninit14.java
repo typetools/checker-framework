@@ -5,7 +5,7 @@ public class Uninit14 {
   {
     try {
       o = new Object( );
-    } catch( Exception e ) {
+    } catch ( Exception e ) {
       throw new RuntimeException( e );
     }
   }

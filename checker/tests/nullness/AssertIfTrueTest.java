@@ -9,7 +9,7 @@ public class AssertIfTrueTest {
 
     static String killfile_filter = "";
 
-    public static void fromDir(File1 dbdir){
+    public static void fromDir(File1 dbdir) {
         if (!dbdir.isDirectory()) {
             throw new Error("Not a directory: " + dbdir);
         }

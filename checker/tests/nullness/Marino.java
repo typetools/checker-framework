@@ -20,7 +20,7 @@ public class Marino {
             break;
         }
         int i = 1;
-        while (true){
+        while (true) {
 
             @NonNull String a = s;  // s cannot be null here
             s = null;
@@ -46,11 +46,11 @@ public class Marino {
 
         s = null;
         @NonNull String b = "hi";
-        try{
+        try {
             System.out.println("b has length: " + b.length());
             methodThatThrowsEx();
             s = "bye";
-        }finally{
+        } finally {
             // Checker doesn't catch that s will be null here.
             //:: error: (assignment.type.incompatible)
             b = s;

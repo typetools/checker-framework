@@ -36,12 +36,12 @@ class Package extends PatternSyntaxException {
         try {
             //:: error: (usage)
             p.compile("test(((");
-        } catch(Package pe) {
+        } catch (Package pe) {
             // We don't look at supertypes of the types we analyze.
             // TODO: Should we?
             System.out.println("OK!");
         //:: error: (usage)
-        } catch(PatternSyntaxException pse) {
+        } catch (PatternSyntaxException pse) {
             // We do get a report for direct uses.
             System.out.println("Ha!");
         }

@@ -208,7 +208,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
             opts.put(PluginUtil.CheckerProp.A_LINT, lintOpts);
         }
 
-        if (store.getBoolean(CheckerPreferences.PREF_CHECKER_A_WARNS)){
+        if (store.getBoolean(CheckerPreferences.PREF_CHECKER_A_WARNS)) {
             opts.put(PluginUtil.CheckerProp.A_WARNS, Boolean.TRUE);
         }
 

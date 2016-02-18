@@ -3,7 +3,7 @@ class TestStub {
         try {
             //:: error: (methodcall)
             Class.forName("Evil");
-        } catch(Exception e) {
+        } catch (Exception e) {
         }
     }
 }

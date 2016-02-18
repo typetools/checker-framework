@@ -74,7 +74,7 @@ public class CheckerBuilder extends IncrementalProjectBuilder
         try
         {
             delta.accept(visitor);
-        }catch (CoreException e)
+        } catch (CoreException e)
         {
             // TODO Auto-generated catch block
             e.printStackTrace();

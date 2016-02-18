@@ -410,7 +410,7 @@ public interface IFileEditorInput extends IStorageEditorInput {
 public interface IPathEditorInput extends IEditorInput {
     @SafeEffect IPath getPath();
 }
-@SafeType public interface IEditorRegistry{}
+@SafeType public interface IEditorRegistry {}
 @SafeType public interface IEditorDescriptor extends IWorkbenchPartDescriptor {}
 public interface IEditorPart extends IWorkbenchPart, ISaveablePart {
     // XXX not 100% sure

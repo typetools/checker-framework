@@ -272,7 +272,7 @@ public class TestDiagnosticUtils {
     private static final List<TestDiagnostic> EMPTY = Collections.unmodifiableList(new ArrayList<TestDiagnostic>());
 
     public static void removeDiagnosticsOfKind(DiagnosticKind kind, List<TestDiagnostic> expectedDiagnostics) {
-        for(int i = 0; i < expectedDiagnostics.size(); /*no-increment*/) {
+        for (int i = 0; i < expectedDiagnostics.size(); /*no-increment*/) {
             if (expectedDiagnostics.get(i).getKind() == kind) {
                 expectedDiagnostics.remove(i);
             } else {

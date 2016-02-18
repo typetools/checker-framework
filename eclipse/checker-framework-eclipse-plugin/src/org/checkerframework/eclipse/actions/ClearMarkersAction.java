@@ -49,11 +49,11 @@ public class ClearMarkersAction extends CheckerHandler
             ProgressMonitorDialog progress = new ProgressMonitorDialog(
                     CheckerPlugin.getShell());
             progress.run(true, true, cleaner);
-        }catch (InvocationTargetException e)
+        } catch (InvocationTargetException e)
         {
             CheckerPlugin.logException(e,
                     "InvocationTargetException on clear markers");
-        }catch (InterruptedException e)
+        } catch (InterruptedException e)
         {
             CheckerPlugin.logException(e,
                     "InterruptedException on clear markers");
@@ -83,7 +83,7 @@ public class ClearMarkersAction extends CheckerHandler
                             + resource.getName());
                     MarkerUtil.removeMarkers(resource);
                 }
-            }catch (CoreException ex)
+            } catch (CoreException ex)
             {
                 CheckerPlugin
                         .logException(ex, "CoreException on clear markers");

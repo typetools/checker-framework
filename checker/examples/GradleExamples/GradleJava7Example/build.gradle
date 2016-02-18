@@ -25,7 +25,7 @@ configurations {
     }
     checkerFramework {
        description = 'The Checker Framework: custom pluggable types for Java'
-    } 
+    }
 }
 
 dependencies {

@@ -20,7 +20,7 @@ public class KeyFor_DirectionsFinder {
             HashMap<@KeyFor("endMap") GeoPoint, Set<StreetSegment>>();
         Graph graph = new Graph();
 
-        for(StreetSegment seg : segs) {
+        for (StreetSegment seg : segs) {
             GeoPoint p1 = new GeoPoint();
 
             if (!(beginMap.containsKey(p1))) {

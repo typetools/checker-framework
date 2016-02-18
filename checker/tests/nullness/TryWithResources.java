@@ -5,7 +5,7 @@ class TryWithResources {
         try (BufferedReader in =
              new BufferedReader(new InputStreamReader(stream))) {
             in.toString();
-        } catch(Exception e) {
+        } catch (Exception e) {
         }
     }
 
@@ -13,7 +13,7 @@ class TryWithResources {
         try (BufferedReader in = null) {
             //:: error: (dereference.of.nullable)
             in.toString();
-        } catch(Exception e) {
+        } catch (Exception e) {
         }
     }
 }

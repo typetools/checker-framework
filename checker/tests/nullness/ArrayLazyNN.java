@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.*;
 /* Use @MonotonicNonNull as component type to ensure that null can never be
  * assigned into a component. Then, after a single iteration over the array,
  * we can be sure that all elements are non-null.
- * TODO: support for(i=0; i < a.lenght.... and change component type to non-null.
+ * TODO: support for (i=0; i < a.lenght.... and change component type to non-null.
  */
 class ArrayLazyNN {
     void test1() {

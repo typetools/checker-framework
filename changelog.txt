@@ -351,7 +351,7 @@ vm to crash immediately.
 The Lock Checker has been rewritten to support dataflow analysis.
 It can now understand conditional expressions, for example, and
 knows that "lock" is held in the body of statements like
-"if (lock.tryLock()){ ... }"
+"if (lock.tryLock()) { ... }"
 The Lock Checker chapter in the manual has been updated accordingly
 and describes the new Lock Checker features in detail.
 

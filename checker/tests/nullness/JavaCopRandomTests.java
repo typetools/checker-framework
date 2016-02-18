@@ -5,7 +5,7 @@ class RandomTests {
     final int b = 1;
     final int c;
 
-    RandomTests(){
+    RandomTests() {
         String s = null;
         a = 2;
     }
@@ -13,7 +13,7 @@ class RandomTests {
     RandomTests(String s) throws Exception{
         //this();
         a = 2;
-        if (a > 1){
+        if (a > 1) {
             throw new Exception("dude");
         }
         throw new RuntimeException("dude");

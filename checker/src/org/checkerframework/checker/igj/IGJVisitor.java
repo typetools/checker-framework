@@ -109,7 +109,7 @@ public class IGJVisitor extends BaseTypeVisitor<IGJAnnotatedTypeFactory> {
         // f exception parameters are forced to be @ReadOnly, then unannotated
         // code might not type check. For example:
         /*
-         * catch( @ReadOnly Exception e) {
+         * catch (@ReadOnly Exception e) {
          *     Exception e2 = e;  // incompatible types, expected @Mutable
          *     throw new RuntimeException("message'", e) // incompatible types, expected @Mutable
          * }

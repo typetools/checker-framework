@@ -72,11 +72,11 @@ class ThrowsTest {
     //Test exception parameters
     void unionTypes() {
         try {
-        } catch(@Mutable NullPointerException | @Mutable ArrayStoreException unionParam) {
+        } catch (@Mutable NullPointerException | @Mutable ArrayStoreException unionParam) {
 
         }
         try {
-        } catch(@ReadOnly NullPointerException | @ReadOnly ArrayStoreException unionParam) {
+        } catch (@ReadOnly NullPointerException | @ReadOnly ArrayStoreException unionParam) {
 
         }
     }
@@ -84,7 +84,7 @@ class ThrowsTest {
     void defaults() {
         try {
             throw new Exception();
-        } catch(Exception e) {
+        } catch (Exception e) {
 
         }
     }
