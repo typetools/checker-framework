@@ -568,10 +568,6 @@
             <target name="all-tests-nojtreg-nobuild"/>
         </ant>
 
-        <antcall target="nullness-extra-tests-nobuildjdk"/>
-
-        <antcall target="example-tests-nobuildjdk"/>
-
         <!-- Note that the order of the ant vs junit calls matters
              for the Jenkins setup. The junit call must come last. -->
 
@@ -612,6 +608,13 @@
                 </fileset>
             </batchtest>
         </junit>
+
+        <antcall target="nullness-extra-tests-nobuildjdk"/>
+
+        <antcall target="example-tests-nobuildjdk"/>
+
+        <antcall target="check-tutorial"/>
+
     </target>
 
     <target name="aggregate-tests" depends="jar,build-tests"
