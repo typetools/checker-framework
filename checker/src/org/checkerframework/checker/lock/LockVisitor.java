@@ -7,7 +7,7 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByBottom;
-import org.checkerframework.checker.lock.qual.GuardedByInaccessible;
+import org.checkerframework.checker.lock.qual.GuardedByUnknown;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -82,12 +82,12 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     private final Class<? extends Annotation> checkerGuardSatisfiedClass = GuardSatisfied.class;
 
     /** Annotation constants */
-    protected final AnnotationMirror GUARDEDBY, GUARDEDBYINACCESSIBLE, GUARDSATISFIED, GUARDEDBYBOTTOM;
+    protected final AnnotationMirror GUARDEDBY, GUARDEDBYUNKNOWN, GUARDSATISFIED, GUARDEDBYBOTTOM;
 
     public LockVisitor(BaseTypeChecker checker) {
         super(checker);
 
-        GUARDEDBYINACCESSIBLE = AnnotationUtils.fromClass(elements, GuardedByInaccessible.class);
+        GUARDEDBYUNKNOWN = AnnotationUtils.fromClass(elements, GuardedByUnknown.class);
         GUARDEDBY = AnnotationUtils.fromClass(elements, GuardedBy.class);
         GUARDSATISFIED = AnnotationUtils.fromClass(elements, GuardSatisfied.class);
         GUARDEDBYBOTTOM = AnnotationUtils.fromClass(elements, GuardedByBottom.class);
@@ -178,13 +178,13 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             AnnotatedTypeMirror methodDefinitionReceiver,
             AnnotatedTypeMirror methodCallReceiver) {
 
-        AnnotationMirror primaryGb = methodCallReceiver.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE);
-        AnnotationMirror effectiveGb = methodCallReceiver.getEffectiveAnnotationInHierarchy(GUARDEDBYINACCESSIBLE);
+        AnnotationMirror primaryGb = methodCallReceiver.getAnnotationInHierarchy(GUARDEDBYUNKNOWN);
+        AnnotationMirror effectiveGb = methodCallReceiver.getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN);
 
         // If the receiver actual parameter has type @GuardSatisfied, skip the subtype check.
         // Consider only a @GuardSatisfied primary annotation - hence use primaryGb instead of effectiveGb.
         if (primaryGb != null && AnnotationUtils.areSameByClass(primaryGb, checkerGuardSatisfiedClass)){
-            AnnotationMirror primaryGbOnMethodDefinition = methodDefinitionReceiver.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE);
+            AnnotationMirror primaryGbOnMethodDefinition = methodDefinitionReceiver.getAnnotationInHierarchy(GUARDEDBYUNKNOWN);
             if (primaryGbOnMethodDefinition != null && AnnotationUtils.areSameByClass(primaryGbOnMethodDefinition, checkerGuardSatisfiedClass)) {
                 return true;
             }
@@ -226,7 +226,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         Set<? extends AnnotationMirror> tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
         Set<AnnotationMirror> annotationSet = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror anno : tops) {
-            if (anno.equals(GUARDEDBYINACCESSIBLE)) {
+            if (anno.equals(GUARDEDBYUNKNOWN)) {
                 annotationSet.add(GUARDEDBY);
             }
             else {
@@ -332,9 +332,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     // parameter to an actual parameter (see the if block above).
 
                     int varTypeGuardSatisfiedIndex =
-                            AnnotationUtils.getElementValue(varType.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE), "value", Integer.class, true);
+                            AnnotationUtils.getElementValue(varType.getAnnotationInHierarchy(GUARDEDBYUNKNOWN), "value", Integer.class, true);
                         int valueTypeGuardSatisfiedIndex =
-                            AnnotationUtils.getElementValue(valueType.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE), "value", Integer.class, true);
+                            AnnotationUtils.getElementValue(valueType.getAnnotationInHierarchy(GUARDEDBYUNKNOWN), "value", Integer.class, true);
 
                     if (varTypeGuardSatisfiedIndex == -1 && valueTypeGuardSatisfiedIndex == -1) {
                         checker.report(Result.failure(
@@ -478,9 +478,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             }
 
             if (expr != null && atmOfReceiverOrIdentifier != null) {
-                AnnotationMirror gb = atmOfReceiverOrIdentifier.getEffectiveAnnotationInHierarchy(GUARDEDBYINACCESSIBLE);
+                AnnotationMirror gb = atmOfReceiverOrIdentifier.getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN);
                 // IMPORTANT: This relies on getEffectiveAnnotationInHierarchy being sound in the sense that
-                // it never returns null if an effective annotation in the @GuardedByInaccessible hierarchy was present.
+                // it never returns null if an effective annotation in the @GuardedByUnknown hierarchy was present.
                 // It is critical to the soundness of the Lock Checker that an effective primary @GuardedBy(...) annotation
                 // never go unnoticed when checking the access of an expression.
                 if (gb != null) {
@@ -672,9 +672,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // Combine all of the actual parameters into one list of AnnotationMirrors
 
         ArrayList<AnnotationMirror> passedArgAnnotations = new ArrayList<AnnotationMirror>(guardSatisfiedIndex.length); // Not necessary to pass guardSatisfiedIndex.length, but it is known, so why not.
-        passedArgAnnotations.add(methodCallReceiver == null ? null : methodCallReceiver.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE));
+        passedArgAnnotations.add(methodCallReceiver == null ? null : methodCallReceiver.getAnnotationInHierarchy(GUARDEDBYUNKNOWN));
         for(ExpressionTree tree : node.getArguments()) {
-            passedArgAnnotations.add(atypeFactory.getAnnotatedType(tree).getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE));
+            passedArgAnnotations.add(atypeFactory.getAnnotatedType(tree).getAnnotationInHierarchy(GUARDEDBYUNKNOWN));
         }
 
         // Perform the validity check and issue an error if not valid.

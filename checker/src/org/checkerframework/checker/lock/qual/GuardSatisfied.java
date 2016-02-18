@@ -29,7 +29,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @checker_framework.manual #lock-checker Lock Checker
  * @checker_framework.manual #lock-checker-polymorphism-example Lock Checker polymorphism example
  */
-@SubtypeOf(GuardedByInaccessible.class) // TODO: Should @GuardSatisfied be in its own hierarchy?
+@SubtypeOf(GuardedByUnknown.class) // TODO: Should @GuardSatisfied be in its own hierarchy?
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 // TODO: GuardSatisfied should only be allowed on method parameters, receivers, and return types

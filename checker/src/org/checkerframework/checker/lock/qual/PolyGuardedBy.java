@@ -19,7 +19,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  *
  * Any method written using {@code @PolyGuardedBy} conceptually has an
  * arbitrary number of versions:  one in which every instance of
- * {@code @PolyGuardedBy} has been replaced by {@code @}{@link GuardedByInaccessible},
+ * {@code @PolyGuardedBy} has been replaced by {@code @}{@link GuardedByUnknown},
  * one in which every instance of {@code @PolyGuardedBy} has been
  * replaced by {@code @}{@link GuardedByBottom}, and ones in which every
  * instance of {@code @PolyGuardedBy} has been replaced by {@code @}{@link GuardedBy},
@@ -29,7 +29,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * @see GuardedBy
  * @checker_framework.manual #lock-checker Lock Checker
  */
-/*@PolymorphicQualifier(GuardedByInaccessible.class)
+/*@PolymorphicQualifier(GuardedByUnknown.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

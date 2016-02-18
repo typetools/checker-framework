@@ -31,12 +31,12 @@ public class BasicTest {
     @AnnotatedFor("lock")
     @MayReleaseLocks
     void testFields() {
-        // Test in two ways that return values are @GuardedByInaccessible.
-        // The first way is more durable as cannot.dereference is tied specifically to @GuardedByInaccessible (and @GuardedByBottom, but it is unlikely to become the default for return values on unannotated methods).
+        // Test in two ways that return values are @GuardedByUnknown.
+        // The first way is more durable as cannot.dereference is tied specifically to @GuardedByUnknown (and @GuardedByBottom, but it is unlikely to become the default for return values on unannotated methods).
         //:: error: (cannot.dereference)
         myUnannotatedMethod(o1).field = new Object();
         // The second way is less durable because the default for fields is currently @GuardedBy({}) but
-        // could be changed to @GuardedByInaccessible.
+        // could be changed to @GuardedByUnknown.
         //:: error: (assignment.type.incompatible)
         p1 = myUnannotatedMethod(o1);
 

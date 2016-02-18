@@ -421,7 +421,7 @@ void testTreeTypes() {
     s = i == 5 ? f.field.toString() : foo.field.toString(); // dereference of guarded object in conditional expression tree
     // Testing of 'return' is done in getFooWithWrongReturnType()
     //:: error: (throw.type.invalid)
-    try{ throw exception; } catch(Exception e){} // throwing a guarded object - when throwing an exception, it must be @GuardedBy({}). Even @GuardedByInaccessible is not allowed.
+    try{ throw exception; } catch(Exception e){} // throwing a guarded object - when throwing an exception, it must be @GuardedBy({}). Even @GuardedByUnknown is not allowed.
     //:: error: (assignment.type.incompatible)
     @GuardedBy({}) Object e1 = (Object) exception; // casting of a guarded object to an unguarded object
     Object e2 = (Object) exception; // OK, since the local variable's type gets refined to @GuardedBy("lock")
@@ -603,8 +603,6 @@ public void testMethodAnnotations() {
   }
 
   void testPrimitiveTypeGuardedby() {
-      // @GuardedByInaccessible and @GuardedByBottom cannot be written, so no need to test them.
-
       //:: error: (primitive.type.guardedby)
       @GuardedBy("lock") int a = 0;
       //:: error: (primitive.type.guardedby)
@@ -614,6 +612,10 @@ public void testMethodAnnotations() {
       //:: error: (primitive.type.guardedby)
       @GuardSatisfied(1) int d = 0;
       int e = 0;
+      //:: error: (primitive.type.guardedby)
+      @GuardedByUnknown int f = 0;
+      //:: error: (primitive.type.guardedby)
+      @GuardedByBottom int g = 0;
   }
 
 

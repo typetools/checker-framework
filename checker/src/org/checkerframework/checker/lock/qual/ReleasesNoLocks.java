@@ -11,8 +11,9 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
- * The method does not release any locks that were held prior
- * to the method call, nor do any of the methods that it calls.
+ * The method, and all the methods it calls, maintain a strictly
+ * nondecreasing lock hold count on the current thread for any locks
+ * that were held prior to the method call.
  * The method might acquire locks but then release them, or might
  * acquire locks but not release them (in which case it should
  * also be annotated with {@literal @}{@link EnsuresLockHeld} or

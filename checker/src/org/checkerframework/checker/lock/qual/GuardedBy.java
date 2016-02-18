@@ -51,7 +51,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
  * @checker_framework.manual #lock-checker Lock Checker
  * @checker_framework.manual #lock-examples-guardedby Example use of @GuardedBy
  */
-@SubtypeOf(GuardedByInaccessible.class)
+@SubtypeOf(GuardedByUnknown.class)
 @Documented
 @DefaultQualifierInHierarchy
 @DefaultFor({TypeUseLocation.EXCEPTION_PARAMETER, TypeUseLocation.UPPER_BOUND})
