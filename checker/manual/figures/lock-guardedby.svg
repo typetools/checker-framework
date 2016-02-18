@@ -41,12 +41,12 @@
      id="namedview194"
      showgrid="false"
      inkscape:zoom="1.7467478"
-     inkscape:cx="305.01397"
+     inkscape:cx="306.15895"
      inkscape:cy="41.341013"
      inkscape:window-x="0"
      inkscape:window-y="31"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g66" />
+     inkscape:current-layer="g66-6" />
   <g
      id="g4"
      transform="translate(2.2396156,-0.00294728)">
@@ -317,11 +317,11 @@
        height="42"
        id="rect68-0" />
     <rect
-       style="fill:none;stroke:#000000;stroke-width:2.30257201000000000;stroke-opacity:1"
-       x="733.091"
-       y="-441.84872"
-       width="213.61241"
-       height="41.69743"
+       style="fill:none;stroke:#000000;stroke-width:2.1243825;stroke-opacity:1"
+       x="749.69"
+       y="-441.93784"
+       width="181.05629"
+       height="41.875622"
        id="rect70-3"
        transform="scale(1,-1)" />
     <text
@@ -334,7 +334,7 @@
          x="840.18079"
          y="425.85001"
          id="tspan74-0"
-         style="fill:#000000">@GuardedByInaccessible</tspan>
+         style="fill:#000000">@GuardedByUnknown</tspan>
     </text>
   </g>
   <g

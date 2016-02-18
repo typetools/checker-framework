@@ -17,7 +17,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByBottom;
-import org.checkerframework.checker.lock.qual.GuardedByInaccessible;
+import org.checkerframework.checker.lock.qual.GuardedByUnknown;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 
@@ -47,7 +47,7 @@ public class LockTransfer extends
     protected LockChecker checker;
 
     /** Annotations of the lock type system. */
-    protected final AnnotationMirror GUARDEDBY, GUARDSATISFIED, GUARDEDBYINACCESSIBLE, GUARDEDBYBOTTOM, LOCKHELD, LOCKPOSSIBLYHELD;
+    protected final AnnotationMirror GUARDEDBY, GUARDSATISFIED, GUARDEDBYUNKNOWN, GUARDEDBYBOTTOM, LOCKHELD, LOCKPOSSIBLYHELD;
 
     public LockTransfer(LockAnalysis analysis, LockChecker checker) {
         // Always run the Lock Checker with -AconcurrentSemantics turned on.
@@ -61,8 +61,8 @@ public class LockTransfer extends
                 .getElementUtils(), GuardedBy.class);
         GUARDSATISFIED = AnnotationUtils.fromClass(analysis.getTypeFactory()
                 .getElementUtils(), GuardSatisfied.class);
-        GUARDEDBYINACCESSIBLE = AnnotationUtils.fromClass(analysis.getTypeFactory()
-                .getElementUtils(), GuardedByInaccessible.class);
+        GUARDEDBYUNKNOWN = AnnotationUtils.fromClass(analysis.getTypeFactory()
+                .getElementUtils(), GuardedByUnknown.class);
         GUARDEDBYBOTTOM = AnnotationUtils.fromClass(analysis.getTypeFactory()
                 .getElementUtils(), GuardedByBottom.class);
         LOCKHELD = AnnotationUtils.fromClass(analysis.getTypeFactory()
@@ -204,7 +204,7 @@ public class LockTransfer extends
 
         // Strings are always @GuardedBy({})
 
-        if (result.getResultValue().getType().hasAnnotation(GUARDEDBYINACCESSIBLE)) {
+        if (result.getResultValue().getType().hasAnnotation(GUARDEDBYUNKNOWN)) {
             result.getResultValue().getType().replaceAnnotation(GUARDEDBY);
         }
 

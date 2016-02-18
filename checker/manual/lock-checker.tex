@@ -12,7 +12,9 @@ be dereferenced only if the given lock is held.
 
 To run the Lock Checker, supply the
 \code{-processor org.checkerframework.checker.lock.LockChecker}
-command-line option to javac.
+command-line option to javac.  Note that the \<-AconcurrentSemantics>
+command-line option is automatically enabled (for the Lock Checker
+only) when the Lock Checker is run (see Section~\ref{faq-concurrency}).
 
 
 \section{What the Lock Checker guarantees\label{lock-guarantees}}
@@ -101,21 +103,21 @@ This section describes the lock annotations you can write on types and methods.
   default type qualifier for method parameters in unannotated libraries
   (see \chapterpageref{annotating-libraries}).
 
-\item[\refqualclass{checker/lock/qual}{GuardedByInaccessible}]
-  If a variable \<x> has type \code{@GuardedByInaccessible}, then
-  it is not known which locks protect <x>'s value.  Those locks might
+\item[\refqualclass{checker/lock/qual}{GuardedByUnknown}]
+  If a variable \<x> has type \code{@GuardedByUnknown}, then
+  it is not known which locks protect \<x>'s value.  Those locks might
   even be out of scope (inaccessible) and therefore unable to be written
   in the annotation.
   The practical consequence is that
   the value referred to by \<x> can never be dereferenced.
 
   Any value can be assigned to a variable of type
-  \code{@GuardedByInaccessible}.  In particular, if it is written on a
+  \code{@GuardedByUnknown}.  In particular, if it is written on a
   formal parameter, then any value,
   including one whose locks are not currently held,
   may be passed as an argument.
 
-  \<@GuardedByInaccessible> is the conservative
+  \<@GuardedByUnknown> is the conservative
   default type qualifier for method receivers in unannotated libraries
   (see \chapterpageref{annotating-libraries}).
 
@@ -233,7 +235,8 @@ method itself rather than to some particular type.
   then you only need to write \code{@SideEffectFree}.
 
 \item[\refqualclass{dataflow/qual}{ReleasesNoLocks}]
-  The method does not release any locks that were held prior
+  The method maintains a strictly nondecreasing lock hold count on the
+  current thread for any locks that were held prior
   to the method call.  The method might acquire locks but then release
   them, or might acquire locks but not release them (in which case it should
   also be annotated with
@@ -289,7 +292,7 @@ the following additional rules.
   Suppose that a method signature has multiple formal parameters with the
   same \<@GuardSatisfied(index)> type.
   As a consequence of the flat type hierarchy and the fact that
-  \<@GuardedByInaccessible> is not assignable to \<@GuardSatisfied>,
+  \<@GuardedByUnknown> is not assignable to \<@GuardSatisfied>,
   at any call, all the corresponding actual arguments have the same
   \<@GuardedBy> type or \<@GuardedByBottom>.
 
@@ -328,7 +331,7 @@ the following additional rules.
 Primitive types, boxed primitive types (such as \<java.lang.Integer>), and type \<java.lang.String>
 are implicitly annotated with \<@GuardedBy(\{\})>.
 It is an error for the programmer to annotate any of these types with an annotation from
-the \<@GuardedBy> type hierarchy.
+the \<@GuardedBy> type hierarchy, including \<@GuardedBy(\{\})>.
 
 %  Primitive values are not guarded.  Instead, the variables that store them are.
 %  Therefore, for reads, writes and other operations on primitive values, the Lock Checker requires that
@@ -945,7 +948,7 @@ These features are supported by
 
 
 % LocalWords:  quals GuardedBy JCIP putfield getfield invokevirtual
-% LocalWords:  invokeinterface threadsafety Clang's GuardedByInaccessible
+% LocalWords:  invokeinterface threadsafety Clang's GuardedByUnknown
 %  LocalWords:  api 5cm lockexpr Dereferencing exprSet expr expr1 expr2
 %  LocalWords:  GuardedByBottom exprSet1 exprSet2 GuardSatisfied 3cm pre
 %  LocalWords:  PolyGuardedBy EnsuresLockHeld ReentrantLock boolean eset

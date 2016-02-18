@@ -10,7 +10,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByBottom;
-import org.checkerframework.checker.lock.qual.GuardedByInaccessible;
+import org.checkerframework.checker.lock.qual.GuardedByUnknown;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.checker.lock.qual.LockingFree;
@@ -58,7 +58,7 @@ import javax.lang.model.element.VariableElement;
 
 // Add a test that @GuardedBy("<class name>.class") is never ambiguous given two classes with the same name in two different packages.
 
-// Calling a method annotated with @MayReleaseLocks should not always cause local variables' refinement to be reset to @GuardedByInaccessible.
+// Calling a method annotated with @MayReleaseLocks should not always cause local variables' refinement to be reset to @GuardedByUnknown.
 // The current workaround is to explicitly annotate the local variable with the appropriate annotation in the @GuardedBy hierarchy.
 
 // Would it be a useful feature for the Lock Checker to warn about missing unlock calls when there is a call to .lock() in a method?
@@ -87,7 +87,7 @@ public class LockAnnotatedTypeFactory
 
     /** Annotation constants */
     protected final AnnotationMirror LOCKHELD, LOCKPOSSIBLYHELD,
-        SIDEEFFECTFREE, GUARDEDBYINACCESSIBLE, GUARDEDBY,
+        SIDEEFFECTFREE, GUARDEDBYUNKNOWN, GUARDEDBY,
         GUARDEDBYBOTTOM, GUARDSATISFIED;
 
     public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -96,7 +96,7 @@ public class LockAnnotatedTypeFactory
         LOCKHELD = AnnotationUtils.fromClass(elements, LockHeld.class);
         LOCKPOSSIBLYHELD = AnnotationUtils.fromClass(elements, LockPossiblyHeld.class);
         SIDEEFFECTFREE = AnnotationUtils.fromClass(elements, SideEffectFree.class);
-        GUARDEDBYINACCESSIBLE = AnnotationUtils.fromClass(elements, GuardedByInaccessible.class);
+        GUARDEDBYUNKNOWN = AnnotationUtils.fromClass(elements, GuardedByUnknown.class);
         GUARDEDBY = AnnotationUtils.fromClass(elements, GuardedBy.class);
         GUARDEDBYBOTTOM = AnnotationUtils.fromClass(elements, GuardedByBottom.class);
         GUARDSATISFIED = AnnotationUtils.fromClass(elements, GuardSatisfied.class);
@@ -123,7 +123,7 @@ public class LockAnnotatedTypeFactory
         return Collections.unmodifiableSet(
                 new HashSet<Class<? extends Annotation>>(
                         Arrays.asList(LockHeld.class, LockPossiblyHeld.class,
-                                GuardedBy.class, GuardedByInaccessible.class,
+                                GuardedBy.class, GuardedByUnknown.class,
                                 GuardSatisfied.class, GuardedByBottom.class)));
     }
 
@@ -215,20 +215,20 @@ public class LockAnnotatedTypeFactory
             if (AnnotationUtils.areSame(a1top, LOCKPOSSIBLYHELD) &&
                 AnnotationUtils.areSame(a2top, LOCKPOSSIBLYHELD)) {
                 return greatestLowerBoundInLockPossiblyHeldHierarchy(a1, a2);
-            } else if (AnnotationUtils.areSame(a1top, GUARDEDBYINACCESSIBLE) &&
-                       AnnotationUtils.areSame(a2top, GUARDEDBYINACCESSIBLE)) {
-                return greatestLowerBoundInGuardedByInaccessibleHierarchy(a1, a2);
+            } else if (AnnotationUtils.areSame(a1top, GUARDEDBYUNKNOWN) &&
+                       AnnotationUtils.areSame(a2top, GUARDEDBYUNKNOWN)) {
+                return greatestLowerBoundInGuardedByUnknownHierarchy(a1, a2);
             }
 
             return null;
         }
 
-        private AnnotationMirror greatestLowerBoundInGuardedByInaccessibleHierarchy(AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.areSame(a1, GUARDEDBYINACCESSIBLE)) {
+        private AnnotationMirror greatestLowerBoundInGuardedByUnknownHierarchy(AnnotationMirror a1, AnnotationMirror a2) {
+            if (AnnotationUtils.areSame(a1, GUARDEDBYUNKNOWN)) {
                 return a2;
             }
 
-            if (AnnotationUtils.areSame(a2, GUARDEDBYINACCESSIBLE)) {
+            if (AnnotationUtils.areSame(a2, GUARDEDBYUNKNOWN)) {
                 return a1;
             }
 
@@ -436,7 +436,7 @@ public class LockAnnotatedTypeFactory
                                         getElementValue(methodDefinitionReceiver.getAnnotation(GuardSatisfied.class), "value", Integer.class, true);
 
                                 if (receiverGuardSatisfiedIndex == returnGuardSatisfiedIndex) {
-                                    mfuPair.first.getReturnType().replaceAnnotation(receiverType.getAnnotationInHierarchy(GUARDEDBYINACCESSIBLE));
+                                    mfuPair.first.getReturnType().replaceAnnotation(receiverType.getAnnotationInHierarchy(GUARDEDBYUNKNOWN));
                                     return mfuPair;
                                 }
                             }
@@ -453,7 +453,7 @@ public class LockAnnotatedTypeFactory
                                 if (paramGuardSatisfiedIndex == returnGuardSatisfiedIndex) {
                                     ExpressionTree argument = methodInvocationTree.getArguments().get(i);
                                     mfuPair.first.getReturnType().replaceAnnotation(
-                                        getAnnotatedType(argument).getEffectiveAnnotationInHierarchy(GUARDEDBYINACCESSIBLE));
+                                        getAnnotatedType(argument).getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN));
                                     return mfuPair;
                                 }
                             }

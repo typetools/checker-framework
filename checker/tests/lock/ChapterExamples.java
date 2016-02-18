@@ -94,7 +94,7 @@ class ChapterExamples {
         K k = (K) maskNull(key);
     }
 
-    class GuardedByInaccessibleTest<T extends @GuardedByInaccessible MyClass> {
+    class GuardedByUnknownTest<T extends @GuardedByUnknown MyClass> {
 
         T m;
 
@@ -102,7 +102,7 @@ class ChapterExamples {
             //:: error: (method.invocation.invalid)
             m.method();
 
-            @GuardedByInaccessible MyClass local = new @GuardedByInaccessible MyClass();
+            @GuardedByUnknown MyClass local = new @GuardedByUnknown MyClass();
             //:: error: (cannot.dereference)
             local.field = new Object();
             //:: error: (method.invocation.invalid)
@@ -207,7 +207,7 @@ void testDereferenceOfReceiverAndParameter(@GuardedBy("lock") ChapterExamples th
 
 
     //:: error: (contracts.precondition.not.satisfied.field)
-    boolean b2 = compare(p1, p2); // An error is issued indicating that p2 might be dereferenced without "lock" being held. The method call need not be modified, since @GuardedBy({}) <: @GuardedByInaccessible and @GuardedBy("lock") <: @GuardedByInaccessible, but the lock must be acquired prior to the method call.
+    boolean b2 = compare(p1, p2); // An error is issued indicating that p2 might be dereferenced without "lock" being held. The method call need not be modified, since @GuardedBy({}) <: @GuardedByUnknown and @GuardedBy("lock") <: @GuardedByUnknown, but the lock must be acquired prior to the method call.
     //:: error: (contracts.precondition.not.satisfied.field)
     boolean b3 = compare(p1, this.p2);
     //:: error: (contracts.precondition.not.satisfied)
@@ -354,7 +354,7 @@ void myMethod6(){
   //:: error: (contracts.precondition.not.satisfied.field)
   p2.field = new Object();
   //:: error: (contracts.precondition.not.satisfied.field)
-  boolean b2 = compare(p1, p2); // An error is issued indicating that p2 might be dereferenced without "lock" being held. The method call need not be modified, since @GuardedBy({}) <: @GuardedByInaccessible and @GuardedBy("lock") <: @GuardedByInaccessible, but the lock must be acquired prior to the method call.
+  boolean b2 = compare(p1, p2); // An error is issued indicating that p2 might be dereferenced without "lock" being held. The method call need not be modified, since @GuardedBy({}) <: @GuardedByUnknown and @GuardedBy("lock") <: @GuardedByUnknown, but the lock must be acquired prior to the method call.
 }
 
  void helper1(@GuardedBy("ChapterExamples.myLock") MyClass a) {
@@ -609,7 +609,7 @@ void innerClassTest() {
       if (elt.equals(a[0]))
           return false;
       return true;
-//      found   : (@org.checkerframework.checker.lock.qual.GuardedBy({}) :: T)[ extends @GuardedByInaccessible @LockPossiblyHeld Object super @GuardedBy({}) @LockHeld Void]
+//      found   : (@org.checkerframework.checker.lock.qual.GuardedBy({}) :: T)[ extends @GuardedByUnknown @LockPossiblyHeld Object super @GuardedBy({}) @LockHeld Void]
 //              required: @GuardedBy @LockPossiblyHeld Object
     }
 
@@ -620,13 +620,13 @@ void innerClassTest() {
   }
 
   // Tests that @GuardedBy({}) is @ImplicitFor(typeNames = { java.lang.String.class })
-  void StringIsGBnothing(@GuardedByInaccessible Object o) {
+  void StringIsGBnothing(@GuardedByUnknown Object o) {
       //:: error: (assignment.type.incompatible)
       String s = (String) o;
   }
 
   // Tests that the resulting type of string concatenation is always @GuardedBy({})
-  // (and not @GuardedByInaccessible, which is the LUB of @GuardedBy({}) (the type of the
+  // (and not @GuardedByUnknown, which is the LUB of @GuardedBy({}) (the type of the
   // string literal "a") and @GuardSatisfied (the type of param))
   void StringConcat(/*@GuardSatisfied*/ MyClass param) {
       String s = "a" + param;
@@ -640,27 +640,27 @@ void innerClassTest() {
 
   class TestConcurrentSemantics1 {
 	  /* This class tests the following critical scenario.
-	   * 
+	   *
 	   * Suppose the following lines from method1 are executed on thread A.
-	   * 
+	   *
 	   * @GuardedBy(“lock1”) MyClass local;
 	   * m = local;
-	   * 
+	   *
 	   * Then a context switch occurs to method2 on thread B and the following lines are executed:
-	   * 
+	   *
 	   * @GuardedBy(“lock2”) MyClass local;
 	   * m = local;
-	   * 
+	   *
 	   * Then a context switch back to method1 on thread A occurs and the following lines are executed:
-	   * 
+	   *
 	   * lock1.lock();
 	   * m.field = new Object();
-	   * 
+	   *
 	   * In this case, it is absolutely critical that the dereference above not be allowed.
-	   * 
+	   *
 	   */
-	  	  
-        @GuardedByInaccessible MyClass m;
+
+        @GuardedByUnknown MyClass m;
         ReentrantLock lock1 = new ReentrantLock();
         ReentrantLock lock2 = new ReentrantLock();
 
@@ -677,7 +677,7 @@ void innerClassTest() {
             m = local;
         }
     }
-  
+
   class TestConcurrentSemantics2 {
       @GuardedBy("a") Object o;
 
@@ -694,7 +694,7 @@ void innerClassTest() {
       void bar(){
           o = new Object();
       }
-      
+
       // Test that field assignments do not cause their type to be refined:
 	  @GuardedBy("a") Object myObject1 = null;
 	  //:: error: (assignment.type.incompatible)
