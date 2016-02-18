@@ -140,7 +140,7 @@
     </fail>
     <exec executable="grep" outputproperty="missingspace" failonerror="false">
       <arg line="${style.args1}"/>
-      <arg value="\b\(finally|try\){\|}\(catch|finally\)\b\|){\($\|[^0-9]\)\|\b\(catch|for|if|while\)("/>
+      <arg value="[^\\]\b\(else\|finally\|try\){\|}\(catch\|else\|finally\)\b\|){\($\|[^0-9]\)\|\b\(catch\|for\|if\|while\)("/>
       <arg line="${style.args2}"/>
       <arg line="--exclude=build.xml"/>
     </exec>
