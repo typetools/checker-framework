@@ -747,7 +747,7 @@ public class StubParser {
         }
 
         if (typeParameters.size() != typeArguments.size()) {
-            stubAlwaysWarn(String.format("annotateParameters: mismatched sizes%n  typeParameters (size %d)=%s%n  typeArguments (size %d)=%s%n",
+            stubAlwaysWarn(String.format("annotateParameters: mismatched sizes%n  typeParameters (size %d)=%s%n  typeArguments (size %d)=%s%n  For more details, run with -AstubDebug%n",
                             typeParameters.size(), typeParameters,
                             typeArguments.size(), typeArguments));
         }
