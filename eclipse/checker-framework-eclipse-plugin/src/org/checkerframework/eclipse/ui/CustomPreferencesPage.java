@@ -174,8 +174,8 @@ public class CustomPreferencesPage extends PreferencePage implements
                 }
             }
 
-            for(final String cn : classNames) {
-            	if(!contains(cn)) { //TODO: ADD A DIALOG TO WARN IF ALREADY CONTAINED
+            for (final String cn : classNames) {
+            	if (!contains(cn)) { //TODO: ADD A DIALOG TO WARN IF ALREADY CONTAINED
             	    customCheckers.add(cn);
             	}
             }
@@ -183,8 +183,8 @@ public class CustomPreferencesPage extends PreferencePage implements
     }
 
     private boolean contains(final String className) {
-    	for(final String str : customCheckers.getItems()) {
-    		if(str.equals(className)) {
+    	for (final String str : customCheckers.getItems()) {
+    		if (str.equals(className)) {
     			return true;
     		}
     	}
@@ -200,7 +200,7 @@ public class CustomPreferencesPage extends PreferencePage implements
         IPreferenceStore store = doGetPreferenceStore();
         final String storedItems = store.getString(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES);
 
-        if(!storedItems.equals("")) {
+        if (!storedItems.equals("")) {
         	customCheckers.setItems(storedItems.split(","));
         }
         /*

@@ -27,7 +27,7 @@ public class EnableNatureHandler extends ProjectNatureHandler
             if (!hasNature)
                 setNature(project, desc, natures);
 
-        }catch (CoreException e)
+        } catch (CoreException e)
         {
             CheckerPlugin.logException(e, e.getMessage());
         }

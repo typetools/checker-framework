@@ -102,7 +102,7 @@ public class MavenIOExecutor implements CommandLineExceutor {
         log.info("-------------------------------------------------------------");
         for (final CompilerError error : errors) {
             final String msg = error.toString().trim();
-            if(warn) {
+            if (warn) {
                 log.warn(msg);
             } else {
                 log.error(msg);

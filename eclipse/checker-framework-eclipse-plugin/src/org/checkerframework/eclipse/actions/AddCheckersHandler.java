@@ -48,7 +48,7 @@ public class AddCheckersHandler extends CheckerHandler
                             "Could not find file checkers-quals.jar.");
                     manager.handle(status, StatusManager.SHOW);
                     return null;
-                }catch (CoreException e)
+                } catch (CoreException e)
                 {
                     StatusManager manager = StatusManager.getManager();
                     CheckerErrorStatus status = new CheckerErrorStatus(
@@ -68,7 +68,7 @@ public class AddCheckersHandler extends CheckerHandler
                     newEntries[entries.length] = javaEntry;
 
                     javaProject.setRawClasspath(newEntries, null);
-                }catch (JavaModelException e)
+                } catch (JavaModelException e)
                 {
                     StatusManager manager = StatusManager.getManager();
                     CheckerErrorStatus status = new CheckerErrorStatus(

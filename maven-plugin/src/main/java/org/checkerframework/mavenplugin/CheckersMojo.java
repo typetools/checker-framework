@@ -340,7 +340,7 @@ public class CheckersMojo extends AbstractMojo {
     }
 
     public CommandLineExceutor createCommandLineExecutor() {
-        if( useJavacOutput ) {
+        if ( useJavacOutput ) {
             return new JavacIOExecutor(executable);
         } else {
             return new MavenIOExecutor(executable);

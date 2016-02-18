@@ -37,7 +37,7 @@ class Explosion {
         //:: warning: (known.nonnull)
         if (s2 == null) {
             ;//do nothing
-        }else{
+        } else {
             System.out.println("Can't cause null pointer here: " + s2.length());
             s = s2;
         }

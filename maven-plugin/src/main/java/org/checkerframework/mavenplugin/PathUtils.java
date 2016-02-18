@@ -76,14 +76,14 @@ public class PathUtils {
             bw.flush();
 
         } finally {
-            if(bw != null) {
+            if (bw != null) {
                 bw.close();
             }
         }
     }
 
     public static String readVersion(final File versionFile) throws IOException {
-        if( !versionFile.exists() || versionFile.length() == 0) {
+        if ( !versionFile.exists() || versionFile.length() == 0) {
             return null;
         }
 
@@ -92,7 +92,7 @@ public class PathUtils {
         String line;
         try {
             line = vfReader.readLine();
-            if(line == null) {
+            if (line == null) {
                 return null;
             }
 
@@ -186,7 +186,7 @@ public class PathUtils {
 
     public static final void copyFiles(final File dest, final List<File> inputFiles, final List<String> outputFileNames)
             throws IOException {
-        if( inputFiles.size() != outputFileNames.size() ) {
+        if ( inputFiles.size() != outputFileNames.size() ) {
 
             final String inputFilePaths = joinFilePaths(inputFiles);
             final String outputFileNamesStr = StringUtils.join(outputFileNames.iterator(), ", ");
@@ -197,7 +197,7 @@ public class PathUtils {
             );
         }
 
-        for( int i = 0; i < inputFiles.size(); i++ ) {
+        for ( int i = 0; i < inputFiles.size(); i++ ) {
             FileUtils.copyFile(inputFiles.get(i), new File(dest, outputFileNames.get(i)));
         }
     }
@@ -206,8 +206,8 @@ public class PathUtils {
         String inputFilePaths = "";
 
         boolean comma = false;
-        for(final File file : files) {
-            if(comma) {
+        for (final File file : files) {
+            if (comma) {
                 inputFilePaths += ", ";
             } else {
                 comma = true;

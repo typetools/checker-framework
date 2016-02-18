@@ -47,8 +47,8 @@ public class CheckerInfo
         int length = toSplit.length();
 
         int start = 0;
-        for(int i = 0; i < length; i++) {
-            if((Character.isUpperCase(toSplit.charAt(i)) && i != 0)) {
+        for (int i = 0; i < length; i++) {
+            if ((Character.isUpperCase(toSplit.charAt(i)) && i != 0)) {
                 tokens.add(toSplit.substring(start, i));
                 start = i;
             }
@@ -59,7 +59,7 @@ public class CheckerInfo
     }
 
     private static void initCheckers() {
-        if(checkers == null) {
+        if (checkers == null) {
 
             final List<CheckerInfo> checkerList = Arrays.asList(
                 new CheckerInfo("Nullness Checker",  NullnessChecker.class),
@@ -119,7 +119,7 @@ public class CheckerInfo
         final String className = PluginUtil.join(" ", splitAtUppercase(pathTokens[pathTokens.length - 1]));
             str += "className = " + className;
             return new CheckerInfo(className, classPath, qualsPath);
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(str, e);
         }
 
