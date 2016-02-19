@@ -1,12 +1,12 @@
 // Test case for Issue 263:
 // https://github.com/typetools/checker-framework/issues/263
-// @skip-test
 
 abstract class Outer<T> {
 
     public class Inner {
         private T t;
 
+        @SuppressWarnings("javari")
         public Inner(T t) {
             this.t = t;
         }
