@@ -1,4 +1,4 @@
-
+// @below-java8-jdk-skip-test
 // Test references to this and super in a lambda.
 
 import org.checkerframework.checker.nullness.qual.*;
@@ -22,9 +22,6 @@ class ReceiverTest {
         Supplier s = () -> this;
     }
     void context2(@Nullable ReceiverTest this) {
-        // TODO: This is bug that is not specific to lambdas
-        // https://github.com/typetools/checker-framework/issues/352
-        //:: error: (return.type.incompatible)
         Supplier s = () -> this;
     }
 }
