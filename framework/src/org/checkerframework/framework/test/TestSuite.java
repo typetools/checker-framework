@@ -69,9 +69,6 @@ public class TestSuite extends Suite {
         if (method.getReturnType().isArray()) {
             String [] dirs = (String[]) method.invokeExplosively(null);
             javaFiles = TestUtilities.findNestedJavaTestFiles(dirs);
-            // Temporary, for debugging
-            System.out.printf("dirs = %s, javaFiles = %s%n", Arrays.toString(dirs), javaFiles);
-            System.out.flush();
 
         } else {
             javaFiles = (List<File>) method.invokeExplosively(null);
