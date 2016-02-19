@@ -1,4 +1,5 @@
 // @below-java8-jdk-skip-test
+// @skip-test
 // Test references to this and super in a lambda.
 
 import org.checkerframework.checker.nullness.qual.*;
