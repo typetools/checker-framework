@@ -8,10 +8,10 @@ public class Issue531 {
     public MyList<String> test(MyStream<String> stream) {
         return stream.collect(toList());
     }
-    void foo(MyStream<String> stream){
+    void foo(MyStream<String> stream) {
 
     }
-    static <T> MyCollector<T,?,MyList<T>> toList(){
+    static <T> MyCollector<T,?,MyList<T>> toList() {
         return new MyCollector<>();
     }
 }

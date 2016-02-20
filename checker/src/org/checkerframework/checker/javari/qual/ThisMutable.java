@@ -3,7 +3,7 @@ package org.checkerframework.checker.javari.qual;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
@@ -18,5 +18,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @Target({}) // empty target prevents programmers from writing this in a program
 @SubtypeOf(ReadOnly.class)
-@DefaultFor(DefaultLocation.FIELD)
+@DefaultFor(TypeUseLocation.FIELD)
 public @interface ThisMutable {}

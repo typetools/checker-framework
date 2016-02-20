@@ -375,7 +375,7 @@ files that the checker reads.
 \begin{sloppypar}
 Alternately, the type system designer may specify a default procedurally,
 by calling the
-\refmethod{framework/util/defaults}{QualifierDefaults}{addAbsoluteDefault}{-javax.lang.model.element.AnnotationMirror-org.checkerframework.framework.qual.DefaultLocation-}
+\refmethod{framework/util/defaults}{QualifierDefaults}{addCheckedCodeDefault}{-javax.lang.model.element.AnnotationMirror-org.checkerframework.framework.qual.TypeUseLocation-}
 method.  You may do this even if you have declaratively defined the
 qualifier hierarchy; see the Nullness Checker's implementation for an
 example.
@@ -723,7 +723,7 @@ abstract syntax tree structure is:
 \begin{Verbatim}
 VariableTree:
   name: "a"
-  type: 
+  type:
     IdentifierTree
       name: String
   initializer:
@@ -1235,7 +1235,7 @@ only makes sense to run MyChecker if MyHelperChecker has already been run;
 that might be the case if MyHelperChecker computes some information that
 MyChecker needs to use.
 
-Override 
+Override
 \<MyChecker.\refmethodterse{common/basetype}{BaseTypeChecker}{getImmediateSubcheckerClasses}{--}>
 to return a list of the checkers that MyChecker depends on.  Every one of
 them will be run before MyChecker is run.  One of MyChecker's subcheckers
@@ -1380,7 +1380,7 @@ changed if the English message is updated.
 \item \code{-Ashowchecks}: print debugging information for each
 pseudo-assignment check (as performed by
 \refclass{common/basetype}{BaseTypeVisitor}; see
-Section~\ref{extending-visitor}.
+Section~\ref{extending-visitor}).
 
 \end{itemize}
 

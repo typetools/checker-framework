@@ -30,6 +30,8 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+import com.sun.tools.javac.code.Symbol.VarSymbol;
+
 /**
  * Collection of classes and helper functions to represent Java expressions
  * about which the org.checkerframework.dataflow analysis can possibly infer facts. Expressions
@@ -478,7 +480,15 @@ public class FlowExpressions {
                 return false;
             }
             LocalVariable other = (LocalVariable) obj;
-            return other.element.equals(element);
+            VarSymbol vs = (VarSymbol) element;
+            VarSymbol vsother = (VarSymbol) other.element;
+            // Use type.toString().equals(...) instead of Types.isSameType(...)
+            // because Types requires a processing environment, and FlowExpressions is
+            // designed to be independent of processing environment.  See also
+            // calls to getType().toString() in FlowExpressions.
+            return vsother.name.contentEquals(vs.name) &&
+                   vsother.type.toString().equals(vs.type.toString()) &&
+                   vsother.owner.toString().equals(vs.owner.toString());
         }
 
         public Element getElement() {
@@ -487,7 +497,10 @@ public class FlowExpressions {
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(element);
+            VarSymbol vs = (VarSymbol) element;
+            return HashCodeUtils.hash(vs.name.toString(),
+                    vs.type.toString(),
+                    vs.owner.toString());
         }
 
         @Override
@@ -506,7 +519,7 @@ public class FlowExpressions {
                 return false;
             }
             LocalVariable l = (LocalVariable) other;
-            return l.getElement().equals(getElement());
+            return l.equals(this);
         }
 
         @Override

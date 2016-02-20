@@ -6,7 +6,7 @@ class Issue293 {
     String s;
     try {
       s = read();
-    } catch(Exception e) {
+    } catch (Exception e) {
       // Because of definite assignment, s cannot be mentioned here.
       write("Catch.");
       return;

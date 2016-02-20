@@ -48,14 +48,14 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-1.9.10/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-1.9.11/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.10
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.11
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -66,7 +66,7 @@ use the last one.
     with two small differences:  it includes the Checker Framework jar file
     on its classpath, and it recognizes type annotations in comments (see
     Section~\ref{annotations-in-comments}).
-    
+
   \item
     \begin{sloppypar}
     Option 2:
@@ -80,7 +80,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.10
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.11
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -88,7 +88,7 @@ use the last one.
     indicate:
 
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.10
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.11
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac -source 7 -target 7'
 \end{Verbatim}
 
@@ -114,11 +114,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.10
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.11
   alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.9.10\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.9.11\
   doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
 \end{Verbatim}
 
@@ -140,7 +140,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-1.9.10
+  javac 1.8.0-jsr308-1.9.11
 \end{Verbatim}
 
 
@@ -405,9 +405,7 @@ section, or add it if it is not present.
 
 For example, to use the \code{org.checkerframework.checker.nullness.NullnessChecker}:
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
+\begin{mysmall}
 \begin{alltt}
     <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -430,9 +428,7 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
         </configuration>
     </plugin>
 \end{alltt}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
+\end{mysmall}
 
 Now, building with Maven should run the checkers during compilation.
 
@@ -448,82 +444,168 @@ would only run if the profile was enabled.
 
 \section{Gradle\label{gradle}}
 
-% This information came from:
-% http://jira.codehaus.org/browse/GRADLE-342
-% http://docs.codehaus.org/display/GRADLE/Gradle+0.8+Breaking+Changes
+If you use \href{http://gradle.org/}{Gradle},
+then you can run a checker by following the instructions below.
 
-If you fork the compilation task, \href{http://gradle.org/}{Gradle}
-lets you specify the executable to compile java programs.
+These instructions can be used with Java 7 or Java 8.  If using Java 7, then
+type annotations should be placed in comments as explained in
+Section~\ref{annotations-in-comments}.
 
-To specify the appropriate executable, set
-\code{options.fork = true} and
-\code{compile.options.fork.executable = "\$CHECKERFRAMEWORK/checker/bin/javac"}
+\begin{enumerate}
 
-To specify command-line arguments, set
-\code{compile.options.compilerArgs}.  Here is a possible example:
+\item Indicate which version of Java you are using.  We recommend the
+  following code, but you can also hard-code the \<ext.targetJavaVersion>
+  property.
+
+\begin{mysmall}
+\begin{Verbatim}
+ext.targetJavaVersion = JavaVersion.current().isJava7() ? JavaVersion.VERSION_1_7 : JavaVersion.VERSION_1_8
+\end{Verbatim}
+\end{mysmall}
+
+\item Use the Maven Central repository:
 
 \begin{Verbatim}
-allprojects {
-  tasks.withType(JavaCompile).all { JavaCompile compile ->
-    compile.options.debug = true
-    compile.options.compilerArgs = [
-      '-version',
-      '-implicit:class',
-      '-processor', 'org.checkerframework.checker.nullness.NullnessChecker'
-    ]
-    options.fork = true
-    options.forkOptions.executable = "$CHECKERFRAMEWORK/checker/bin/javac"
-  }
+repositories {
+  ... existing repositories...
+  mavenCentral()
 }
 \end{Verbatim}
 
-% extra $ to unconfuse Emacs's LaTeX mode
+\item Add dependency configurations for the annotated JDK, \<checker.jar>, and the Type Annotations compiler:
+
+\begin{mysmall}
+\begin{Verbatim}
+configurations {
+    ... existing configurations ...
+    if (targetJavaVersion.isJava7()) {
+        checkerFrameworkJavac {
+            description = 'a customization of the Open JDK javac compiler with additional support for type annotations'
+        }
+    }
+    checkerFrameworkAnnotatedJDK {
+       description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
+    }
+    checkerFramework {
+       description = 'The Checker Framework: custom pluggable types for Java'
+    }
+}
+\end{Verbatim}
+\end{mysmall}
+
+\item Declare the Checker Framework dependencies:
+
+\begin{Verbatim}
+dependencies {
+    ... existing dependencies...
+    ext.checkerFrameworkVersion = '1.9.11'
+    ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
+    checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
+
+    if (targetJavaVersion.isJava7()) {
+        checkerFrameworkJavac "org.checkerframework:compiler:${checkerFrameworkVersion}"
+    }
+    checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
+    compile "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+}
+\end{Verbatim}
+
+\item Direct all tasks of type \<JavaCompile> to use the desired checkers:
+
+\begin{mysmall}
+\begin{Verbatim}
+allprojects {
+    tasks.withType(JavaCompile).all { JavaCompile compile ->
+        compile.options.compilerArgs = [
+                '-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
+                '-processorpath', "${configurations.checkerFramework.asPath}",
+                // uncomment to turn Checker Framework errors into warnings
+                // '-Awarns',
+                "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
+        ]
+        if (targetJavaVersion.isJava7()) {
+            compile.options.compilerArgs += ['-source', '7', '-target', '7']
+            options.fork = true
+            options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.checkerFrameworkJavac.asPath}"]
+        }
+    }
+}
+\end{Verbatim}
+\end{mysmall}
+\end{enumerate}
+
+See the directory \code{examples/GradleExamples/} for examples of Gradle
+build files that run a checker.  You can use these examples to verify that
+Gradle is correctly downloading the Checker Framework from
+\href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven
+  Central} and executing it.
+
+Please note that the \<-AoutputArgsToFile> command-line option
+(see Section~\ref{debugging-options-output-args}) and shorthands for built-in checkers
+(see Section~\ref{shorthand-for-checkers}) are not available when
+following these instructions.  Both these features are available only when a checker is
+launched via \<checker.jar> such as when \code{\$CHECKERFRAMEWORK/checker/bin/javac}
+is run.  The Gradle instructions in this section
+bypass \<checker.jar> and cause the compiler to run a
+checker as an annotation processor directly.
 
 
 \section{IntelliJ IDEA\label{intellij}}
 
-The following method has been tested with IntelliJ IDEA 15.0.3.
+% The following method has been tested with IntelliJ IDEA 15.0.3.
 
-To run a checker within IntelliJ, you can utilize its built in 
-annotation processor feature.
-
-Follow these steps to set up checker usage on your IntelliJ project:
+To run a checker within IntelliJ:
 
 \begin{enumerate}
-    \item Download and unzip the Checker Framework distribution. I will refer to its location
-            as CHECKERFRAMEWORK for the rest of this section.
-    \item Regardless of if you are using Java SE 7 or Java SE 8, ensure
-            that the the language level for your project is set ot 8. To
-            do this, go to the \"Project Structure\" menu via (File>Project Structure)
-            or (Ctrl-Alt-Shift-S), and set the \"Project language level\" field in the
-            \"Project\" sub-menu to 8.
-    \item In this same \"Project Structure\" menu, navigate to the \"Libraries\" sub-menu.
-            Click on the green \'+\' which appears in this menu, select \"Java\" in the 
-            resulting pop-down menu, and select to CHECKERFRAMEWORK/checker/dist/checker.jar
-            in the resulting menu and click \"OK\". Repeat this step for 
-            CHECKERFRAMEWORK/checker/dist/javac.jar.
-    \item Now go to the \"Settings\" menu via (File>Settings) or (Ctrl-Alt-S) and navigate to
-            the \"Java Compiler\" sub-menu via 
-            (Build, Execution, Deployment>Compiler>Java Compiler) and add the following to
-            the field \"Additional command line parameters\": 
-            \"-Xbootclasspath/p:CHECKERFRAMEWORK/checker/dist/jdk8.jar\".
-    \item Directly under the \"Java Compiler\" sub-menu is the \"Annotation Processors\" 
-            sub-menu. Navigate here and click on the green \"+\" to create a new 
-            Annotation Processor profile. Select the modules you would like to use checkers
-            with from under the \"Default\" profile and move them to your new profile via
-            the button directly right of the \"-\" button. Now select your new profile
-            and check the \"Enable annotation processing\" option. Select the \"Processor path\"
-            radio button and enter \"CHECKERFRAMEWORK/checker/dist/checker.jar\" into the field
-            to the right of it. To add a checker to be run during compilation, click on the 
-            green \"+\" in the \"Processor FQ Name\" section and write that checker's 
-            fully qualified name in the resulting text field. This name is formatted as 
-            followed: \"org.checkerframework.checker.<CHECKER>.<CHECKER>Checker\" where
-            CHECKER is the checker to be run. Once you have entered this text, remember to
-            press the \"ENTER\" key, as your setting won't be recognized otherwise. To remove
-            a checker, simply select it from this list and click the red \"-\" button.
-    \item To run a checker, simply annotate your source code, and add it to the list to be run
-            as described above, then compile.
+
+\item
+  Set the language level for your project to 8.  To do so, go to the
+  "Project Structure" menu via (File>Project Structure) or
+  (Ctrl-Alt-Shift-S), and set the "Project language level" field in the
+  "Project" sub-menu to 8.
+
+\item
+  Add the Checker Framework libraries.  In this same "Project Structure"
+  menu, navigate to the "Libraries" sub-menu.  Click on the green "+" that
+  appears in this menu, select "Java" in the resulting pop-down menu,
+  select \<CHECKERFRAMEWORK/checker/dist/checker.jar> in the resulting menu,
+  and click "OK". Repeat this step for
+  \<CHECKERFRAMEWORK/checker/dist/javac.jar>.
+
+\item
+  Add the annotated JDK library.
+  Go to the "Settings" menu via (File>Settings) or (Ctrl-Alt-S) and
+  navigate to the "Java Compiler" sub-menu via (Build, Execution,
+  Deployment>Compiler>Java Compiler).  Add the following to the field
+  "Additional command line parameters":
+  \<-Xbootclasspath/p:CHECKERFRAMEWORK/checker/dist/jdk8.jar>
+
+\item
+  Create an annotation profile and specify which checkers to run.
+  Directly under the "Java Compiler" sub-menu is the "Annotation
+  Processors" sub-menu. Navigate here and click on the green "+" to create
+  a new Annotation Processor profile. Select the modules you would like to
+  use checkers with from under the "Default" profile and move them to your
+  new profile via the button directly right of the "-" button.
+
+  Now select your new profile and check the "Enable annotation processing"
+  option. Select the "Processor path" radio button and enter
+  \<CHECKERFRAMEWORK/checker/dist/checker.jar> into the field to the right
+  of it. To add a checker to be run during compilation, click on the green
+  "+" in the "Processor FQ Name" section and write that checker's
+  fully-qualified name
+  (\<org.checkerframework.checker.\emph{CHECKER}.\emph{CHECKER}Checker>) in
+  the resulting text field, and press the "ENTER" key.
+  % Without the ENTER key, the setting won't be saved.
+
+   %% This seems obvious, so I removed it to keep the text shorter
+   % To remove a checker, simply select it from this list and click
+   % the red "-" button.
+
 \end{enumerate}
+
+Now, when you compile your code, the checker will be run.
+
 
 \section{Eclipse\label{eclipse}}
 
@@ -734,5 +816,5 @@ You can find installation instructions and a video tutorial at \url{https://gith
 %%  LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK
 %%  LocalWords:  javacheck checkerframework MavenExample org arg
 %%  LocalWords:  AoutputArgsToFile qual jdk7 jdk8 annotatedJdk Unhandled
-%%  LocalWords:  annotationProcessors annotationProcessor
-%%  LocalWords:  typeAnnotationsJavac
+%%  LocalWords:  annotationProcessors annotationProcessor JavaCompile
+%%  LocalWords:  typeAnnotationsJavac targetJavaVersion GradleExamples

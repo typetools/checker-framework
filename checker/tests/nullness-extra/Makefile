@@ -1,4 +1,4 @@
-.PHONY: all Bug109 multiple-errors package-anno issue265 issue309 compat shorthand issue502
+.PHONY: all Bug109 multiple-errors package-anno issue265 issue309 compat shorthand issue502 issue559
 
 all: Bug109 multiple-errors package-anno issue265 issue309 compat shorthand issue502
 
@@ -27,3 +27,6 @@ shorthand:
 
 issue502:
 	make -C issue502
+
+issue559:
+	make -C issue559

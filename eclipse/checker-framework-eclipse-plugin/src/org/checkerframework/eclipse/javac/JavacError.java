@@ -106,7 +106,7 @@ public class JavacError {
      */
     public static String trimDetails(final String errorStr) {
         final Matcher matcher = trimmingPattern.matcher(errorStr);
-        if( matcher.matches() ) {
+        if ( matcher.matches() ) {
             int shave = matcher.group(4).length() + matcher.group(5).length() + " $$ ".length();
             return errorStr.substring(0, errorStr.length() - shave);
         }

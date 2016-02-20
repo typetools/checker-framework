@@ -378,8 +378,8 @@ def main(argv):
         # Ensure that the jsr308-langtools javac works with the system-wide java launcher
         if not os.path.isdir( SANITY_TEST_JSR308_LANGTOOLS_DIR ):
             execute( "mkdir -p " + SANITY_TEST_JSR308_LANGTOOLS_DIR )
-        execute("wget http://types.cs.washington.edu/jsr308/current/jsr308-langtools.zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
-        execute("unzip -uq jsr308-langtools.zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
+        execute("wget http://types.cs.washington.edu/jsr308/current/jsr308-langtools-" + new_checker_version + ".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
+        execute("unzip -uq jsr308-langtools-" + new_checker_version +".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
         execute("env -i bash --noprofile jsr308-langtools-" + new_checker_version + "/dist/bin/javac -version", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
 
     # You must manually deploy the Eclipse plugin. Follow the instructions at the prompt.

@@ -326,7 +326,8 @@
       <junit fork="${run.tests.should.fork}"
              dir="${basedir}"
              printsummary="false"
-             haltonfailure="${halt.on.test.failure}">
+             haltonfailure="${halt.on.test.failure}"
+	     showoutput="true">
           <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
           <jvmarg line="-ea"/>
 

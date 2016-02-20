@@ -1,0 +1,349 @@
+import org.checkerframework.checker.interning.qual.*;
+
+package com.sun.org.apache.xml.internal.utils;
+
+public class NamespaceSupport2 extends org.xml.sax.helpers.NamespaceSupport
+{
+  public @Interned String [] processName (String qName, String[] parts,
+                                          boolean isAttribute);
+}
+
+
+package com.sun.org.apache.xml.internal.security.utils;
+
+public abstract class ElementProxy {
+  public static @Interned String getDefaultPrefix(String namespace);
+  public static @Interned String getDefaultPrefixBindings(String namespace);
+}
+
+// TODO:
+// package com.sun.org.apache.xerces.*;
+// (Rather than having Xerces half-finished, leave it completely un-done.)
+
+package com.sun.org.apache.bcel.internal.util;
+
+public class ClassPath implements Serializable {
+  public static final @Interned String getClassPath();
+}
+
+package com.sun.jmx.mbeanserver;
+
+public class Repository {
+  public @Interned String getDefaultDomain();
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+/// public static final @Interned String (initialized to constant)
+///
+
+package com.sun.imageio.plugins.gif;
+public class GIFStreamMetadata {
+     public static final @Interned String[] versionStrings = { "87a", "89a" };
+}
+package com.sun.imageio.plugins.jpeg;
+public class JPEG {
+     public static final @Interned String vendor = "Sun Microsystems, Inc.";
+     public static final @Interned String version = "0.5";
+     public static final @Interned String [] names = {"JPEG", "jpeg", "JPG", "jpg"};
+     public static final @Interned String [] suffixes = {"jpg", "jpeg"};
+     public static final @Interned String [] MIMETypes = {"image/jpeg"};
+}
+package com.sun.java.swing.plaf.gtk;
+public class PangoFonts {
+     public static final @Interned String CHARS_DIGITS = "0123456789";
+}
+package com.sun.java.util.jar.pack;
+public class DriverResource {
+         public static final @Interned String VERSION ="VERSION";
+         public static final @Interned String BAD_ARGUMENT ="BAD_ARGUMENT";
+         public static final @Interned String BAD_OPTION ="BAD_OPTION";
+         public static final @Interned String BAD_REPACK_OUTPUT="BAD_REPACK_OUTPUT";
+         public static final @Interned String DETECTED_ZIP_COMMENT="DETECTED_ZIP_COMMENT";
+         public static final @Interned String SKIP_FOR_REPACKED ="SKIP_FOR_REPACKED";
+         public static final @Interned String WRITE_PACK_FILE ="WRITE_PACK_FILE";
+         public static final @Interned String WIRTE_PACKGZ_FILE="WIRTE_PACKGZ_FILE";
+         public static final @Interned String SKIP_FOR_MOVE_FAILED="SKIP_FOR_MOVE_FAILED";
+         public static final @Interned String PACK_HELP="PACK_HELP";
+         public static final @Interned String UNPACK_HELP ="UNPACK_HELP";
+         public static final @Interned String MORE_INFO = "MORE_INFO";
+         public static final @Interned String DUPLICATE_OPTION = "DUPLICATE_OPTION";
+         public static final @Interned String BAD_SPEC = "BAD_SPEC";
+}
+package com.sun.jmx.defaults;
+public class JmxProperties {
+     public static final @Interned String MLET_LIB_DIR = "jmx.mlet.library.dir";
+     public static final @Interned String JMX_SPEC_NAME = "jmx.specification.name";
+     public static final @Interned String JMX_SPEC_VERSION = "jmx.specification.version";
+     public static final @Interned String JMX_SPEC_VENDOR = "jmx.specification.vendor";
+     public static final @Interned String JMX_IMPL_NAME = "jmx.implementation.name";
+     public static final @Interned String JMX_IMPL_VENDOR = "jmx.implementation.vendor";
+     public static final @Interned String JMX_IMPL_VERSION = "jmx.implementation.version";
+}
+package com.sun.jmx.defaults;
+public class ServiceName {
+     public static final @Interned String MLET = "type=MLet";
+     public static final @Interned String DOMAIN = "DefaultDomain";
+     public static final @Interned String JMX_SPEC_NAME = "Java Management Extensions";
+     public static final @Interned String JMX_SPEC_VERSION = "1.4";
+     public static final @Interned String JMX_SPEC_VENDOR = "Sun Microsystems";
+     public static final @Interned String JMX_IMPL_NAME = "JMX";
+     public static final @Interned String JMX_IMPL_VENDOR = "Sun Microsystems";
+}
+package com.sun.jmx.remote.util;
+public class EnvHelp {
+     public static final @Interned String DEFAULT_ORB="java.naming.corba.orb";
+     public static final @Interned String JMX_SERVER_DAEMON = "jmx.remote.x.daemon";
+}
+package com.sun.jmx.snmp.defaults;
+public class SnmpProperties {
+     public static final @Interned String MLET_LIB_DIR = "jmx.mlet.library.dir";
+     public static final @Interned String ACL_FILE = "jdmk.acl.file";
+     public static final @Interned String SECURITY_FILE = "jdmk.security.file";
+     public static final @Interned String UACL_FILE = "jdmk.uacl.file";
+     public static final @Interned String MIB_CORE_FILE = "mibcore.file";
+      public static final @Interned String JMX_SPEC_NAME = "jmx.specification.name";
+      public static final @Interned String JMX_SPEC_VERSION = "jmx.specification.version";
+      public static final @Interned String JMX_SPEC_VENDOR = "jmx.specification.vendor";
+     public static final @Interned String JMX_IMPL_NAME = "jmx.implementation.name";
+     public static final @Interned String JMX_IMPL_VENDOR = "jmx.implementation.vendor";
+     public static final @Interned String JMX_IMPL_VERSION = "jmx.implementation.version";
+     public static final @Interned String SSL_CIPHER_SUITE = "jdmk.ssl.cipher.suite.";
+}
+package com.sun.jmx.snmp;
+public class ServiceName {
+     public static final @Interned String DELEGATE = "JMImplementation:type=MBeanServerDelegate" ;
+     public static final @Interned String MLET = "type=MLet";
+     public static final @Interned String DOMAIN = "DefaultDomain";
+     public static final @Interned String RMI_CONNECTOR_SERVER = "name=RmiConnectorServer" ;
+     public static final @Interned String SNMP_ADAPTOR_SERVER = "name=SnmpAdaptorServer" ;
+     public static final @Interned String HTTP_CONNECTOR_SERVER = "name=HttpConnectorServer" ;
+     public static final @Interned String HTTPS_CONNECTOR_SERVER = "name=HttpsConnectorServer" ;
+     public static final @Interned String HTML_ADAPTOR_SERVER = "name=HtmlAdaptorServer" ;
+     public static final @Interned String JMX_SPEC_NAME = "Java Management Extensions";
+     public static final @Interned String JMX_SPEC_VERSION = "1.2 Maintenance Release";
+     public static final @Interned String JMX_SPEC_VENDOR = "Sun Microsystems";
+     public static final @Interned String JMX_IMPL_VENDOR = "Sun Microsystems";
+     public static final @Interned String BUILD_NUMBER = "r01";
+     public static final @Interned String JMX_IMPL_VERSION = "5.1_" + BUILD_NUMBER;
+}
+package com.sun.jndi.ldap;
+public class EntryChangeResponseControl {
+     public static final @Interned String OID = "2.16.840.1.113730.3.4.7";
+}
+package com.sun.jndi.ldap;
+public class LdapCtx {
+     public static final @Interned String DEFAULT_HOST = "localhost";
+}
+package com.sun.jndi.ldap;
+public class ManageReferralControl {
+     public static final @Interned String OID = "2.16.840.1.113730.3.4.2";
+}
+package com.sun.jndi.ldap;
+public class PersistentSearchControl {
+     public static final @Interned String OID = "2.16.840.1.113730.3.4.3";
+}
+package com.sun.org.apache.xml.internal.security.algorithms.implementations;
+public class SignatureDSA {
+     public static final @Interned String _URI = Constants.SignatureSpecNS + "dsa-sha1";
+}
+package com.sun.org.apache.xml.internal.security.algorithms;
+public class MessageDigestAlgorithm {
+    public static final @Interned String ALGO_ID_DIGEST_NOT_RECOMMENDED_MD5 = Constants.MoreAlgorithmsSpecNS + "md5";
+    public static final @Interned String ALGO_ID_DIGEST_SHA1 = Constants.SignatureSpecNS + "sha1";
+    public static final @Interned String ALGO_ID_DIGEST_SHA256 = EncryptionConstants.EncryptionSpecNS + "sha256";
+    public static final @Interned String ALGO_ID_DIGEST_SHA384 = Constants.MoreAlgorithmsSpecNS + "sha384";
+    public static final @Interned String ALGO_ID_DIGEST_SHA512 = EncryptionConstants.EncryptionSpecNS + "sha512";
+    public static final @Interned String ALGO_ID_DIGEST_RIPEMD160 = EncryptionConstants.EncryptionSpecNS + "ripemd160";
+}
+package com.sun.org.apache.xml.internal.security.c14n;
+public class Canonicalizer {
+     public static final @Interned String ENCODING = "UTF8";
+}
+package com.sun.org.apache.xml.internal.security.keys.content.x509;
+public class XMLX509Certificate {
+    public static final @Interned String JCA_CERT_ID = "X.509";
+}
+package com.sun.org.apache.xml.internal.security.keys.content.x509;
+public class XMLX509SKI {
+     public static final @Interned String SKI_OID = "2.5.29.14";
+}
+package com.sun.org.apache.xml.internal.security.keys.content;
+public class RetrievalMethod {
+    public static final @Interned String TYPE_DSA     = Constants.SignatureSpecNS + "DSAKeyValue";
+    public static final @Interned String TYPE_RSA     = Constants.SignatureSpecNS + "RSAKeyValue";
+    public static final @Interned String TYPE_PGP     = Constants.SignatureSpecNS + "PGPData";
+    public static final @Interned String TYPE_SPKI    = Constants.SignatureSpecNS + "SPKIData";
+    public static final @Interned String TYPE_MGMT    = Constants.SignatureSpecNS + "MgmtData";
+    public static final @Interned String TYPE_X509    = Constants.SignatureSpecNS + "X509Data";
+    public static final @Interned String TYPE_RAWX509 = Constants.SignatureSpecNS + "rawX509Certificate";
+}
+package com.sun.org.apache.xml.internal.security.signature;
+public class XMLSignature {
+    public static final @Interned String ALGO_ID_MAC_HMAC_SHA1 = Constants.SignatureSpecNS + "hmac-sha1";
+    public static final @Interned String ALGO_ID_SIGNATURE_DSA = Constants.SignatureSpecNS + "dsa-sha1";
+    public static final @Interned String ALGO_ID_SIGNATURE_RSA = Constants.SignatureSpecNS + "rsa-sha1";
+    public static final @Interned String ALGO_ID_SIGNATURE_RSA_SHA1 = Constants.SignatureSpecNS + "rsa-sha1";
+    public static final @Interned String ALGO_ID_SIGNATURE_NOT_RECOMMENDED_RSA_MD5 = Constants.MoreAlgorithmsSpecNS + "rsa-md5";
+    public static final @Interned String ALGO_ID_SIGNATURE_RSA_RIPEMD160 = Constants.MoreAlgorithmsSpecNS + "rsa-ripemd160";
+    public static final @Interned String ALGO_ID_SIGNATURE_RSA_SHA256 = Constants.MoreAlgorithmsSpecNS + "rsa-sha256";
+    public static final @Interned String ALGO_ID_SIGNATURE_RSA_SHA384 = Constants.MoreAlgorithmsSpecNS + "rsa-sha384";
+    public static final @Interned String ALGO_ID_SIGNATURE_RSA_SHA512 = Constants.MoreAlgorithmsSpecNS + "rsa-sha512";
+    public static final @Interned String ALGO_ID_MAC_HMAC_NOT_RECOMMENDED_MD5 = Constants.MoreAlgorithmsSpecNS + "hmac-md5";
+    public static final @Interned String ALGO_ID_MAC_HMAC_RIPEMD160 = Constants.MoreAlgorithmsSpecNS + "hmac-ripemd160";
+    public static final @Interned String ALGO_ID_MAC_HMAC_SHA256 = Constants.MoreAlgorithmsSpecNS + "hmac-sha256";
+    public static final @Interned String ALGO_ID_MAC_HMAC_SHA384 = Constants.MoreAlgorithmsSpecNS + "hmac-sha384";
+    public static final @Interned String ALGO_ID_MAC_HMAC_SHA512 = Constants.MoreAlgorithmsSpecNS + "hmac-sha512";
+    public static final @Interned String ALGO_ID_SIGNATURE_ECDSA_SHA1 = "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha1";
+}
+package com.sun.org.apache.xml.internal.security.signature;
+public class XMLSignatureInputDebugger {
+         // public static final @Interned String HTMLPrefix = "<!DOCTYPE HTML PUBLIC
+}
+package com.sun.org.apache.xml.internal.security.transforms.params;
+public class InclusiveNamespaces {
+    public static final @Interned String _ATT_EC_PREFIXLIST = "PrefixList";
+}
+package com.sun.org.apache.xml.internal.security.transforms.params;
+public class XPath2FilterContainer {
+    public static final @Interned String _TAG_XPATH2 = "XPath";
+}
+package com.sun.org.apache.xml.internal.security.transforms.params;
+public class XPath2FilterContainer04 {
+    public static final @Interned String _TAG_XPATH2 = "XPath";
+}
+package com.sun.org.apache.xml.internal.security.transforms.params;
+public class XPathFilterCHGPContainer {
+    public static final @Interned String _TAG_XPATHCHGP = "XPathAlternative";
+    public static final @Interned String _ATT_INCLUDESLASH = "IncludeSlashPolicy";
+}
+package com.sun.org.apache.xml.internal.security.utils;
+public class Constants {
+    public static final @Interned String configurationFile = "data/websig.conf";
+    public static final @Interned String configurationFileNew = ".xmlsecurityconfig";
+    public static final @Interned String SIGNATURESPECIFICATION_URL = "http://www.w3.org/TR/2001/CR-xmldsig-core-20010419/";
+    public static final @Interned String SignatureSpecNS   = "http://www.w3.org/2000/09/xmldsig#";
+    public static final @Interned String MoreAlgorithmsSpecNS   = "http://www.w3.org/2001/04/xmldsig-more#";
+    public static final @Interned String XML_LANG_SPACE_SpecNS = "http://www.w3.org/XML/1998/namespace";
+    public static final @Interned String NamespaceSpecNS = "http://www.w3.org/2000/xmlns/";
+    public static final @Interned String _ATT_ALGORITHM              = "Algorithm";
+    public static final @Interned String _ATT_URI                    = "URI";
+    public static final @Interned String _ATT_TYPE                   = "Type";
+    public static final @Interned String _ATT_ID                     = "Id";
+    public static final @Interned String _ATT_MIMETYPE               = "MimeType";
+    public static final @Interned String _ATT_ENCODING               = "Encoding";
+    public static final @Interned String _ATT_TARGET                 = "Target";
+    public static final @Interned String _TAG_CANONICALIZATIONMETHOD = "CanonicalizationMethod";
+    public static final @Interned String _TAG_DIGESTMETHOD           = "DigestMethod";
+    public static final @Interned String _TAG_DIGESTVALUE            = "DigestValue";
+    public static final @Interned String _TAG_MANIFEST               = "Manifest";
+    public static final @Interned String _TAG_METHODS                = "Methods";
+    public static final @Interned String _TAG_OBJECT                 = "Object";
+    public static final @Interned String _TAG_REFERENCE              = "Reference";
+    public static final @Interned String _TAG_SIGNATURE              = "Signature";
+    public static final @Interned String _TAG_SIGNATUREMETHOD        = "SignatureMethod";
+    public static final @Interned String _TAG_HMACOUTPUTLENGTH       = "HMACOutputLength";
+    public static final @Interned String _TAG_SIGNATUREPROPERTIES    = "SignatureProperties";
+    public static final @Interned String _TAG_SIGNATUREPROPERTY      = "SignatureProperty";
+    public static final @Interned String _TAG_SIGNATUREVALUE         = "SignatureValue";
+    public static final @Interned String _TAG_SIGNEDINFO             = "SignedInfo";
+    public static final @Interned String _TAG_TRANSFORM              = "Transform";
+    public static final @Interned String _TAG_TRANSFORMS             = "Transforms";
+    public static final @Interned String _TAG_XPATH                  = "XPath";
+    public static final @Interned String _TAG_KEYINFO                = "KeyInfo";
+    public static final @Interned String _TAG_KEYNAME                = "KeyName";
+    public static final @Interned String _TAG_KEYVALUE               = "KeyValue";
+    public static final @Interned String _TAG_RETRIEVALMETHOD        = "RetrievalMethod";
+    public static final @Interned String _TAG_X509DATA               = "X509Data";
+    public static final @Interned String _TAG_PGPDATA                = "PGPData";
+    public static final @Interned String _TAG_SPKIDATA               = "SPKIData";
+    public static final @Interned String _TAG_MGMTDATA               = "MgmtData";
+    public static final @Interned String _TAG_RSAKEYVALUE            = "RSAKeyValue";
+    public static final @Interned String _TAG_EXPONENT               = "Exponent";
+    public static final @Interned String _TAG_MODULUS                = "Modulus";
+    public static final @Interned String _TAG_DSAKEYVALUE            = "DSAKeyValue";
+    public static final @Interned String _TAG_P                      = "P";
+    public static final @Interned String _TAG_Q                      = "Q";
+    public static final @Interned String _TAG_G                      = "G";
+    public static final @Interned String _TAG_Y                      = "Y";
+    public static final @Interned String _TAG_J                      = "J";
+    public static final @Interned String _TAG_SEED                   = "Seed";
+    public static final @Interned String _TAG_PGENCOUNTER            = "PgenCounter";
+    public static final @Interned String _TAG_RAWX509CERTIFICATE     = "rawX509Certificate";
+    public static final @Interned String _TAG_X509ISSUERSERIAL       = "X509IssuerSerial";
+    public static final @Interned String _TAG_X509SKI                = "X509SKI";
+    public static final @Interned String _TAG_X509SUBJECTNAME        = "X509SubjectName";
+    public static final @Interned String _TAG_X509CERTIFICATE        = "X509Certificate";
+    public static final @Interned String _TAG_X509CRL                = "X509CRL";
+    public static final @Interned String _TAG_X509ISSUERNAME         = "X509IssuerName";
+    public static final @Interned String _TAG_X509SERIALNUMBER       = "X509SerialNumber";
+    public static final @Interned String _TAG_PGPKEYID               = "PGPKeyID";
+    public static final @Interned String _TAG_PGPKEYPACKET           = "PGPKeyPacket";
+    public static final @Interned String _TAG_SPKISEXP               = "SPKISexp";
+    public static final @Interned String ALGO_ID_DIGEST_SHA1        = SignatureSpecNS + "sha1";
+    public static final @Interned String ALGO_ID_SIGNATURE_ECDSA_CERTICOM = "http://www.certicom.com/2000/11/xmlecdsig#ecdsa-sha1";
+}
+package com.sun.org.apache.xml.internal.security.utils;
+public class EncryptionConstants {
+    public static final @Interned String _ATT_ENCODING               = "Encoding";
+    public static final @Interned String _ATT_RECIPIENT              = "Recipient";
+    public static final @Interned String _ATT_MIMETYPE               = "MimeType";
+    public static final @Interned String _TAG_CARRIEDKEYNAME         = "CarriedKeyName";
+    public static final @Interned String _TAG_CIPHERDATA             = "CipherData";
+    public static final @Interned String _TAG_CIPHERREFERENCE        = "CipherReference";
+    public static final @Interned String _TAG_CIPHERVALUE            = "CipherValue";
+    public static final @Interned String _TAG_DATAREFERENCE          = "DataReference";
+    public static final @Interned String _TAG_ENCRYPTEDDATA          = "EncryptedData";
+    public static final @Interned String _TAG_ENCRYPTEDKEY           = "EncryptedKey";
+    public static final @Interned String _TAG_ENCRYPTIONMETHOD       = "EncryptionMethod";
+    public static final @Interned String _TAG_ENCRYPTIONPROPERTIES   = "EncryptionProperties";
+    public static final @Interned String _TAG_ENCRYPTIONPROPERTY     = "EncryptionProperty";
+    public static final @Interned String _TAG_KEYREFERENCE           = "KeyReference";
+    public static final @Interned String _TAG_KEYSIZE                = "KeySize";
+    public static final @Interned String _TAG_OAEPPARAMS             = "OAEPparams";
+    public static final @Interned String _TAG_REFERENCELIST          = "ReferenceList";
+    public static final @Interned String _TAG_TRANSFORMS             = "Transforms";
+    public static final @Interned String _TAG_AGREEMENTMETHOD        = "AgreementMethod";
+    public static final @Interned String _TAG_KA_NONCE               = "KA-Nonce";
+    public static final @Interned String _TAG_ORIGINATORKEYINFO      = "OriginatorKeyInfo";
+    public static final @Interned String _TAG_RECIPIENTKEYINFO       = "RecipientKeyInfo";
+    public static final @Interned String ENCRYPTIONSPECIFICATION_URL = "http://www.w3.org/TR/2001/WD-xmlenc-core-20010626/";
+    public static final @Interned String EncryptionSpecNS = "http://www.w3.org/2001/04/xmlenc#";
+    public static final @Interned String TYPE_CONTENT                = EncryptionSpecNS + "Content";
+    public static final @Interned String TYPE_ELEMENT                = EncryptionSpecNS + "Element";
+    public static final @Interned String TYPE_MEDIATYPE              = "http://www.isi.edu/in-notes/iana/assignments/media-types/"; // + "*/*";
+    public static final @Interned String ALGO_ID_BLOCKCIPHER_TRIPLEDES = EncryptionConstants.EncryptionSpecNS + "tripledes-cbc";
+    public static final @Interned String ALGO_ID_BLOCKCIPHER_AES128 = EncryptionConstants.EncryptionSpecNS + "aes128-cbc";
+    public static final @Interned String ALGO_ID_BLOCKCIPHER_AES256 = EncryptionConstants.EncryptionSpecNS + "aes256-cbc";
+    public static final @Interned String ALGO_ID_BLOCKCIPHER_AES192 = EncryptionConstants.EncryptionSpecNS + "aes192-cbc";
+    public static final @Interned String ALGO_ID_KEYTRANSPORT_RSA15 = EncryptionConstants.EncryptionSpecNS + "rsa-1_5";
+    public static final @Interned String ALGO_ID_KEYTRANSPORT_RSAOAEP = EncryptionConstants.EncryptionSpecNS + "rsa-oaep-mgf1p";
+    public static final @Interned String ALGO_ID_KEYAGREEMENT_DH = EncryptionConstants.EncryptionSpecNS + "dh";
+    public static final @Interned String ALGO_ID_KEYWRAP_TRIPLEDES = EncryptionConstants.EncryptionSpecNS + "kw-tripledes";
+    public static final @Interned String ALGO_ID_KEYWRAP_AES128 = EncryptionConstants.EncryptionSpecNS + "kw-aes128";
+    public static final @Interned String ALGO_ID_KEYWRAP_AES256 = EncryptionConstants.EncryptionSpecNS + "kw-aes256";
+    public static final @Interned String ALGO_ID_KEYWRAP_AES192 = EncryptionConstants.EncryptionSpecNS + "kw-aes192";
+    public static final @Interned String ALGO_ID_DIGEST_SHA256 = EncryptionConstants.EncryptionSpecNS + "sha256";
+    public static final @Interned String ALGO_ID_DIGEST_SHA512 = EncryptionConstants.EncryptionSpecNS + "sha512";
+    public static final @Interned String ALGO_ID_DIGEST_RIPEMD160 = EncryptionConstants.EncryptionSpecNS + "ripemd160";
+    public static final @Interned String ALGO_ID_AUTHENTICATION_XMLSIGNATURE = "http://www.w3.org/TR/2001/CR-xmldsig-core-20010419/";
+    public static final @Interned String ALGO_ID_C14N_WITHCOMMENTS = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments";
+    public static final @Interned String ALGO_ID_C14N_OMITCOMMENTS = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315";
+    public static final @Interned String ALGO_ID_ENCODING_BASE64 = "http://www.w3.org/2000/09/xmldsig#base64";
+}
+package com.sun.org.apache.xml.internal.security;
+public class Init {
+    public static final @Interned String CONF_NS="http://www.xmlsecurity.org/NS/#configuration";
+}
+package com.sun.tools.example.debug.gui;
+public class GUI {
+     public static final @Interned String progname = "javadt";
+     public static final @Interned String version = "1.0Beta";  //### FIX ME. :     public static final @Interned String windowBanner = "Java(tm) platform Debug Tool";
+}
+package com.sun.tools.extcheck;
+public class Main {
+     public static final @Interned String INSUFFICIENT = "Insufficient number of arguments";
+     public static final @Interned String MISSING = "Missing <jar file> argument";
+     public static final @Interned String DOES_NOT_EXIST = "Jarfile does not exist: ";
+     public static final @Interned String EXTRA = "Extra command line argument: ";
+}

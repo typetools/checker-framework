@@ -67,6 +67,8 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 # The below is not necessary since Hevea mkes good tables of contents itself.
 #	perl -pi -e 's/(<!--TOC section Introduction-->)/$$1\n\n<p>Contents:<\/p>\n<!-- start toc.  do not edit; run html-update-toc instead -->\n<!-- end toc -->\n\n<br>\n/' manual.html
 #	html-update-toc manual.html
+# Add CSS styling, since \newstyle doesn't work for me.
+	sed -i -e "s%<style type=\"text/css\">%<style type=\"text/css\">\nimg { max-width: 100\%; max-height: 100\%; }%" manual.html
 
 CFLogo.png: logo/Logo/CFLogo.png
 	cp -p $< $@

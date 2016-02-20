@@ -16,9 +16,9 @@ public class MethodNameTest {
     @MethodVal(className="", methodName=".emethos", params=0) Object o6;
 
     //:: error: (invalid.methodval)
-    @MethodVal(className="c",methodName="m",params={0,0}) Object o7;
+    @MethodVal(className="c", methodName="m", params={0,0}) Object o7;
     //:: error: (invalid.methodval)
-    @MethodVal(className="c",methodName={"m","m"},params={0,0}) Object o8;
+    @MethodVal(className="c", methodName={"m","m"}, params={0,0}) Object o8;
     //:: error: (invalid.methodval)
-    @MethodVal(className="c",methodName={"m","m"},params={0}) Object o9;
+    @MethodVal(className="c", methodName={"m","m"}, params={0}) Object o9;
 }

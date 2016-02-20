@@ -9,8 +9,7 @@ package org.checkerframework.framework.qual;
  * @see DefaultQualifier
  * @see javax.lang.model.element.ElementKind
  */
-// TODO: variable naming is inconsistently singular or plural.
-public enum DefaultLocation {
+public enum TypeUseLocation {
 
     /**
      * Apply default annotations to all unannotated raw types
@@ -42,19 +41,19 @@ public enum DefaultLocation {
      * Apply default annotations to all unannotated raw types
      * of receiver types.
      */
-    RECEIVERS,
+    RECEIVER,
 
     /**
      * Apply default annotations to all unannotated raw types
      * of formal parameter types.
      */
-    PARAMETERS,
+    PARAMETER,
 
     /**
      * Apply default annotations to all unannotated raw types
      * of return types.
      */
-    RETURNS,
+    RETURN,
 
     /**
      * Apply default annotations to unannotated lower bounds
@@ -63,21 +62,21 @@ public enum DefaultLocation {
      * when no explicit <tt>extends</tt> or <tt>super</tt>
      * clause is present
      */
-    LOWER_BOUNDS,
+    LOWER_BOUND,
 
     /**
      * Apply default annotations to unannotated, but explicit lower bounds:
      * <code>&lt;? super Object&gt;</code>
      *
      */
-    EXPLICIT_LOWER_BOUNDS,
+    EXPLICIT_LOWER_BOUND,
 
     /**
      * Apply default annotations to unannotated, but implicit lower bounds:
      * <code>&lt;T&gt;</code>
      * <code>&lt;?&gt;</code>
      */
-    IMPLICIT_LOWER_BOUNDS,
+    IMPLICIT_LOWER_BOUND,
 
     /**
      * Apply default annotations to unannotated upper bounds:  both
@@ -88,25 +87,25 @@ public enum DefaultLocation {
      * Especially useful for parametrized classes that provide a lot of
      * static methods with the same generic parameters as the class.
      *
-     * TODO: more doc, relation to other UPPER_BOUNDS
+     * TODO: more doc, relation to other UPPER_BOUND
      */
-    UPPER_BOUNDS,
+    UPPER_BOUND,
 
     /**
      * Apply default annotations to unannotated, but explicit upper bounds:
      * <code>&lt;T extends Object&gt;</code>
      *
-     * TODO: more doc, relation to other UPPER_BOUNDS
+     * TODO: more doc, relation to other UPPER_BOUND
      */
-    EXPLICIT_UPPER_BOUNDS,
+    EXPLICIT_UPPER_BOUND,
 
     /**
      * Apply default annotations to unannotated type variables:
      * <code>&lt;T&gt;</code>
      *
-     * TODO: more doc, relation to other UPPER_BOUNDS
+     * TODO: more doc, relation to other UPPER_BOUND
      */
-    IMPLICIT_UPPER_BOUNDS,
+    IMPLICIT_UPPER_BOUND,
 
     /**
      * Apply if nothing more concrete is provided.

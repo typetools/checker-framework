@@ -754,12 +754,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * <p>
      * Subclasses cannot override this method; they should override
-     * {@link #createSupportedTypeQualifiers createSupportedTypeQualifiers} instead.
-
+     * {@link #createSupportedTypeQualifiers createSupportedTypeQualifiers}
+     * instead.
+     *
      * @see #createSupportedTypeQualifiers()
      *
-     * @return the type qualifiers supported this processor, or an empty
-     * set if none
+     * @return an immutable set of the supported type qualifiers, or an
+     *         empty set if no qualifiers are supported
      */
     public final Set<Class<? extends Annotation>> getSupportedTypeQualifiers() {
         return supportedQuals;
@@ -812,7 +813,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.getAnnotatedType: null element");
             return null; // dead code
         }
+        // Annotations explicitly written in the source code,
+        // or obtained from bytecode.
         AnnotatedTypeMirror type = fromElement(elt);
+        // Implicits due to writing annotation on the class declaration.
         annotateInheritedFromClass(type);
         annotateImplicit(elt, type);
         return type;
@@ -2461,7 +2465,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         String[] stubArray = allstubFiles.split(File.pathSeparator);
         for (String stubPath : stubArray) {
-            if (stubPath == null || stubPath.isEmpty()) continue;
+            if (stubPath == null || stubPath.isEmpty()) {
+                continue;
+            }
             // Handle case when running in jtreg
             String base = System.getProperty("test.src");
             String stubPathFull = stubPath;
@@ -2640,7 +2646,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // Getting annotations from super implementation.
                 AnnotatedDeclaredType overriddenType = pair.getKey();
                 AnnotatedExecutableType overriddenMethod =
-                        AnnotatedTypes.asMemberOf(types, this, overriddenType,pair.getValue());
+                        AnnotatedTypes.asMemberOf(types, this, overriddenType, pair.getValue());
                 ExecutableElement superElt = overriddenMethod.getElement();
                 Set<AnnotationMirror> superAnnos = getDeclAnnotations(superElt);
 

@@ -17,9 +17,9 @@ Options +FollowSymlinks
 # Therefore, users should see the real file names.
 # With these links, "wget http://types.cs.washington.edu/checker-framework/current/checker-framework.zip"
 # produces a file checker-framework.zip which gives no indication of its version number.
-# RedirectMatch 302 /jsr308/current/jsr308-langtools.zip /jsr308/current/jsr308-langtools-1.9.10.zip
-# RedirectMatch 302 /annotation-file-utilities/annotation-tools.zip /annotation-file-utilities/current/annotation-tools-3.6.24.zip
-# RedirectMatch 302 /checker-framework/current/checker-framework.zip /checker-framework/current/checker-framework-1.9.10.zip
-# RedirectMatch 302 /dev/jsr308/current/jsr308-langtools.zip /dev/jsr308/current/jsr308-langtools-1.9.10.zip
-# RedirectMatch 302 /dev/annotation-file-utilities/annotation-tools.zip /dev/annotation-file-utilities/current/annotation-tools-3.6.24.zip
-# RedirectMatch 302 /dev/checker-framework/current/checker-framework.zip /dev/checker-framework/current/checker-framework-1.9.10.zip
+# RedirectMatch 302 /jsr308/current/jsr308-langtools.zip /jsr308/current/jsr308-langtools-1.9.11.zip
+# RedirectMatch 302 /annotation-file-utilities/annotation-tools.zip /annotation-file-utilities/current/annotation-tools-3.6.25.zip
+# RedirectMatch 302 /checker-framework/current/checker-framework.zip /checker-framework/current/checker-framework-1.9.11.zip
+# RedirectMatch 302 /dev/jsr308/current/jsr308-langtools.zip /dev/jsr308/current/jsr308-langtools-1.9.11.zip
+# RedirectMatch 302 /dev/annotation-file-utilities/annotation-tools.zip /dev/annotation-file-utilities/current/annotation-tools-3.6.25.zip
+# RedirectMatch 302 /dev/checker-framework/current/checker-framework.zip /dev/checker-framework/current/checker-framework-1.9.11.zip

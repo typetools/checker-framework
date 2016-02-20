@@ -3,28 +3,28 @@ import java.util.*;
 public class ForEach {
   void m1() {
     Set<? extends CharSequence> s = new HashSet<CharSequence>( );
-    for( CharSequence cs : s ) {
+    for ( CharSequence cs : s ) {
       cs.toString();
     }
   }
 
   void m2() {
     Set<CharSequence> s = new HashSet<CharSequence>( );
-    for( CharSequence cs : s ) {
+    for ( CharSequence cs : s ) {
       cs.toString();
     }
   }
 
   <T extends Object> void m3(T p) {
     Set<T> s = new HashSet<T>( );
-    for( T cs : s ) {
+    for ( T cs : s ) {
       cs.toString();
     }
   }
 
   <T extends Object> void m4(T p) {
     Set<T> s = new HashSet<T>( );
-    for( Object cs : s ) {
+    for ( Object cs : s ) {
       cs.toString();
     }
   }

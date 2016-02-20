@@ -1,53 +1,14 @@
 \htmlhr
 \chapter{Annotating libraries\label{annotating-libraries}}
 
-%% TODO: reinstate this once the checker/lib/ directory contains content.
-% The Checker Framework distribution contains annotated versions of popular
-% libraries in directory \<checker-framework/checker/lib/>.
-% These currently include
-% % Keep this list in sync with file ../lib/README .
-%   \href{https://commons.apache.org/proper/commons-bcel/}{Apache Commons BCEL}
-%   (versions 5.2 and 6.0 pre-release),
-%   \href{https://github.com/google/guava/}{Google Guava},
-%   and
-%   \href{https://github.com/arenn/java-getopt}{GNU getopt Java port}.
-% %% Todo: this should be done automatically for the user.
-% During type-checking you should put the annotated version of the library on
-% your classpath.  (This is done automatically for the JDK; you don't have to
-% do anything special for it.)
-% When running your code, you can use either the annotated
-% library or the regular distributed version of the library --- they
-% behave identically at run time.
-% Some projects, such as
-%   \href{http://plse.cs.washington.edu/daikon/}{Daikon}
-%   and
-%   \href{http://mernst.github.io/plume-lib/}{plume-lib},
-% are already distributed in annotated form by their maintainers;
-% over time, this should become more common, reducing the need for the
-% Checker Framework to include annotated versions of them.
-
-%% Extra detail about the
-% \section{Using distributed annotated JDKs\label{skeleton-using}\label{skeleton}}
-%
-% The Checker Framework distribution contains two
-% annotated JDKs at the paths \<checker/dist/jdk7.jar> and
-% \<checker/dist/jdk8.jar>.
-% The \<javac> that is distributed with the Checker Framework and the command
-% \code{java -jar \$CHECKERFRAMEWORK/checker/dist/checker.jar} both use the appropriate \<jdk7.jar> or \<jdk8.jar>
-% based on the version of Java used to run them.
-%
-% The annotated JDKs should \emph{not} be in your classpath at run time, only
-% at compile time; and they are automatically added to your classpath at
-% compile time.
-
-
 If your code uses a library that does \emph{not} contain type annotations,
 then the type-checker has no way to know the library's behavior.
 The type-checker
 makes conservative assumptions about unannotated bytecode:  it assumes that
 every method parameter has the bottom type annotation and that every method
 return type has the top type annotation (see
-Section~\ref{defaults-classfile} for details and an example).
+Section~\ref{defaults-classfile} for details, an example, and how to
+override this conservative behavior).
 These conservative library
 annotations invariably lead to checker warnings.
 This chapter describes how to eliminate
@@ -68,6 +29,64 @@ Framework analyzes all, and only, the source code that is passed to it.
 The Checker Framework is a plug-in to the javac compiler, and it never
 analyzes code that is not being compiled, though it does look up
 annotations in the class files for code that was previously compiled.)
+
+
+\section{Using annotated libraries from the Checker Framework distribution\label{annotated-libraries-using}}
+
+The Checker Framework distribution contains annotated versions of popular
+libraries in directory \<checker-framework/checker/lib/>.
+These currently include
+% Keep this list in sync with file ../lib/README .
+\begin{itemize}
+\item \<bcel.jar>:
+  \href{https://commons.apache.org/proper/commons-bcel/}{Apache Commons BCEL} version 5.2
+\item \<commons-bcel-6.0.jar>:
+  \href{https://commons.apache.org/proper/commons-bcel/}{Apache Commons
+    BCEL} version 6.0 pre-release
+\item \<guava-19.0.jar>:
+  \href{https://github.com/google/guava/}{Google Guava}
+\item \<java-getopt-1.0.14.jar>:
+  \href{https://github.com/arenn/java-getopt}{GNU getopt Java port}.
+\end{itemize}
+
+%% Todo: this should be done automatically for the user.
+During type-checking, you should put the annotated version of the library on
+your classpath.  (The annotated JDK is automatically put on your classpath;
+you don't have to
+do anything special for it.)
+When doing ordinary compilation or while running your code,
+you can use either the annotated
+library or the regular distributed version of the library --- they
+behave identically.
+
+%% Extra detail about the
+% \section{Using distributed annotated JDKs\label{skeleton-using}\label{skeleton}}
+%
+% The Checker Framework distribution contains two
+% annotated JDKs at the paths \<checker/dist/jdk7.jar> and
+% \<checker/dist/jdk8.jar>.
+% The \<javac> that is distributed with the Checker Framework and the command
+% \code{java -jar \$CHECKERFRAMEWORK/checker/dist/checker.jar} both use the appropriate \<jdk7.jar> or \<jdk8.jar>
+% based on the version of Java used to run them.
+%
+% The annotated JDKs should \emph{not} be in your classpath at run time, only
+% at compile time; and they are automatically added to your classpath at
+% compile time.
+
+Some projects, such as
+  \href{http://plse.cs.washington.edu/daikon/}{Daikon}
+  and
+  \href{http://mernst.github.io/plume-lib/}{plume-lib},
+are already distributed in annotated form by their maintainers;
+over time, this should become more common, reducing the need for the
+Checker Framework to include annotated versions of libraries.
+
+
+\section{Creating an annotated library\label{annotated-libraries-creating}}
+
+This section describes how to create an annotated library.
+If you annotate a new library, please inform the Checker Framework
+developers so that they can include it in the Checker Framework distribution.
 
 You make the library's annotations known to the checkers by writing
 annotations in a copy of the library's source code (or in a ``stub
@@ -172,7 +191,7 @@ class, indicates that the class has been annotated for certain type
 systems.  For example, \<@AnnotatedFor(\ttlcb"nullness", "regex"\ttrcb)> means that
 the programmer has written annotations for the Nullness and Regular
 Expression type systems.  If one of those two type-checkers is run,
-the \<-AuseSafeDefaultsForUnannotatedSourceCode> command-line argument
+the \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line argument
 has no effect and this class is treated normally:
 unannotated types are defaulted using normal source-code
 defaults and type-checking warnings are issued.
@@ -236,7 +255,7 @@ partially-annotated library.
   The reason to run every type-checker is to verify
   the annotations you wrote, and to use appropriate defaults for all
   unannotated type uses.
-  The reason to include the contents of \<checker-qual.jar> is so that 
+  The reason to include the contents of \<checker-qual.jar> is so that
   the resulting \<.jar> file can be used whether or not the Checker Framework
   is being run.
 
@@ -318,15 +337,11 @@ The \code{-Astubs} argument causes the Checker Framework to read
 annotations from annotated stub classes in preference to the unannotated
 original library classes.  For example:
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
+\begin{myxsmall}
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.interning.InterningChecker -Astubs=String.astub:stubs MyFile.java MyOtherFile.java ...
 \end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
+\end{myxsmall}
 
 Each stub path entry is a file or a directory; specifying a directory is
 equivalent to specifying every file in it whose name ends with
@@ -350,6 +365,14 @@ then the annotation from the last declaration is used.
 % The Checker Framework automatically imports all the stub files named
 % \code{library.astub} found in the classpath.
 
+If both bytecode and a stub file provide information for the same
+element, the stub file information is used. In particular, an
+un-annotated type variable in a stub file is used instead of
+annotations on a type variable in bytecode.
+This feature allows stub files to change the effective annotations in
+all possible situations.
+Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
+warning whenever a stub file overwrites bytecode annotations.
 
 
 \subsection{Stub file format\label{stub-format}}
@@ -401,7 +424,7 @@ following ways:
   The only required import statements are the ones to import type
   annotations.  Import statements for types are optional.
 
-  Enum constants in annotations need to be either fully qualified
+  Enum constants in annotations need to be either fully-qualified
   or imported.
   For example, one has to either write the enum constant \<ANY> in
   fully-qualified form:
@@ -541,6 +564,10 @@ The \<@NoStubParserWarning> annotation on a package or type in a stub file
 overrides the \<-AstubWarnIfNotFound> command-line option, and no warning
 will be issued.
 
+Use command-line option
+\<-AstubWarnIfOverwritesBytecode> to warn whenever some element of a
+stub file overwrites annotations contained in bytecode.
+
 Use command-line option \<-AstubDebug> to output debugging messages while
 parsing stub files, including about unknown classes, methods, and
 annotations.  This overrides the \<@NoStubParserWarning> annotation.
@@ -569,7 +596,7 @@ StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
 
 \subsection{Limitations\label{stub-limitations}}
 
-The stub file reader has several limitations.  We will fix these in a
+The stub file reader has several limitations that are violations of Java 8 syntax.  We will fix these in a
 future release.
 
 \begin{itemize}
@@ -591,18 +618,47 @@ in a stub file one has to write
 
 \item
   The stub file reader
-  does not handle nested classes.  To work around this, it permits a
+  does not handle nested class declarations.  To work around this, it permits a
   top-level class to be written with a \<\$> in its name, and applies the
   annotations to the appropriate nested class.
 
+\begin{Verbatim}
+    class Lib$Inner {
+       // methods
+    }
+\end{Verbatim}
+
 \item
-  Annotations must be written before the package name on a fully qualified
+  Annotations must be written before the package name on a fully-qualified
   types rather than directly on the type it qualifies.  However, it is usually not
-  necessary to write the fully qualified name.
+  necessary to write the fully-qualified name.
 
   \begin{Verbatim}
           void init(@Nullable java.security.SecureRandom random);
    \end{Verbatim}
+\item
+   Annotations on types that are inner classes must be written before the
+   package if the type is written as a
+   fully-qualified type, or before the inner class name if the type is
+   written as a simple type. For example,
+
+\begin{Verbatim}
+        ProcessBuilder redirectError(@NonNull java.lang.ProcessBuilder.Redirect destination);
+\end{Verbatim}
+ or
+\begin{Verbatim}
+        ProcessBuilder redirectError(@NonNull Redirect destination);
+\end{Verbatim}
+   The code below will cause an error.
+\begin{Verbatim}
+        // error
+        ProcessBuilder redirectError(@NonNull ProcessBuilder.Redirect destination);
+\end{Verbatim}
+ or
+\begin{Verbatim}
+        // error
+        ProcessBuilder redirectError(ProcessBuilder.@NonNull Redirect destination);
+\end{Verbatim}
 
 \item
   Annotations can only use string, boolean, or integer literals; other literals are not

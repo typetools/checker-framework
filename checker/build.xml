@@ -501,7 +501,7 @@
             <formatter type="xml"/>
     -->
     <!-- end of non-debugging version. -->
-    
+
     <!-- debugging version: -->
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
@@ -568,14 +568,10 @@
             <target name="all-tests-nojtreg-nobuild"/>
         </ant>
 
-        <antcall target="nullness-extra-tests-nobuildjdk"/>
-
-        <antcall target="example-tests-nobuildjdk"/>
-
         <!-- Note that the order of the ant vs junit calls matters
              for the Jenkins setup. The junit call must come last. -->
 
-    <!-- Delete directory because we will rerun all tests -->
+        <!-- Delete directory because we will rerun all tests -->
         <delete dir="${build.reports}"/>
         <!-- Copied from -run-tests target -->
         <mkdir dir="${build.reports}"/>
@@ -612,6 +608,13 @@
                 </fileset>
             </batchtest>
         </junit>
+
+        <antcall target="nullness-extra-tests-nobuildjdk"/>
+
+        <antcall target="example-tests-nobuildjdk"/>
+
+        <antcall target="check-tutorial"/>
+
     </target>
 
     <target name="aggregate-tests" depends="jar,build-tests"
@@ -1221,7 +1224,7 @@
       <ant dir="${basedir}/../../checker-framework-demos">
       </ant>
     </target>
-      
+
 
     <!-- TODO: like for -run-checker this only checks checker/src.
          Improve both. -->

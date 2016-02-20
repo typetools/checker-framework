@@ -10,5 +10,5 @@ public class MultiError {
     //:: error: (assignment.type.incompatible)
     @StringVal("hello") String s = "goodbye";
     //:: error: (invalid.methodval)
-    @MethodVal(className="c",methodName="m", params={0,0}) Object o;
+    @MethodVal(className="c", methodName="m", params={0,0}) Object o;
 }

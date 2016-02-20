@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 
@@ -21,6 +21,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf(Tainted.class)
 @ImplicitFor(trees = { STRING_LITERAL, NULL_LITERAL })
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@DefaultFor({DefaultLocation.LOWER_BOUNDS})
+@DefaultFor({ TypeUseLocation.LOWER_BOUND })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Untainted {}

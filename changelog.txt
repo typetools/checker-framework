@@ -1,12 +1,36 @@
 ---------------------------------------------------------------------------
 
+Version 1.9.12, 1 March 2016
+
+Renamed enum DefaultLocation to TypeUseLocation.
+
+The Checker Framework distribution contains annotated versions
+of libraries in directory checker-framework/checker/lib/.
+During type-checking, you should put these versions first on your classpath,
+to obtain more precise type-checking with fewer false positive warnings.
+
+The manual documents how to run a pluggable type-checker in IntelliJ IDEA.
+
+Closed issues: 559.
+
+---------------------------------------------------------------------------
+
 Version 1.9.11, 1 February 2016
+
+Renamed and merged -AuseSafeDefaultsForUnannotatedSourceCode and
+-AsafeDefaultsForUnannotatedBytecode command-line options to
+-AuseDefaultsForUncheckedCode that takes arguments source and bytecode.
 
 For type-system developers:
 
 * The previously deprecated
   org.checkerframework.framework.qual.TypeQualifier{s} annotations
   were removed.
+* Every type system uses the CLIMB-to-top defaulting scheme, unless it
+  explicitly specifies a different one.  Previously a type system needed
+  to explicitly request CLIMB-to-top, but now it is the default.
+
+Closed issues: 524, 563, 568.
 
 ---------------------------------------------------------------------------
 
@@ -327,7 +351,7 @@ vm to crash immediately.
 The Lock Checker has been rewritten to support dataflow analysis.
 It can now understand conditional expressions, for example, and
 knows that "lock" is held in the body of statements like
-"if (lock.tryLock()){ ... }"
+"if (lock.tryLock()) { ... }"
 The Lock Checker chapter in the manual has been updated accordingly
 and describes the new Lock Checker features in detail.
 

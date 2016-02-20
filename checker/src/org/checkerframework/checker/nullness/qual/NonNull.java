@@ -10,8 +10,9 @@ import javax.lang.model.type.TypeKind;
 
 import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.AbstractNullnessChecker;
+import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -58,7 +59,8 @@ import com.sun.source.tree.Tree;
         Tree.Kind.DOUBLE_LITERAL, Tree.Kind.FLOAT_LITERAL,
         Tree.Kind.INT_LITERAL, Tree.Kind.LONG_LITERAL, Tree.Kind.STRING_LITERAL })
 @DefaultQualifierInHierarchy
-@DefaultInUncheckedCodeFor({ DefaultLocation.PARAMETERS, DefaultLocation.LOWER_BOUNDS })
+@DefaultFor({ TypeUseLocation.EXCEPTION_PARAMETER })
+@DefaultInUncheckedCodeFor({ TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })

@@ -4,6 +4,7 @@ import org.checkerframework.checker.oigj.qual.AssignsFields;
 import org.checkerframework.checker.oigj.qual.I;
 import org.checkerframework.checker.oigj.qual.Immutable;
 import org.checkerframework.checker.oigj.qual.Mutable;
+import org.checkerframework.checker.oigj.qual.OIGJMutabilityBottom;
 import org.checkerframework.checker.oigj.qual.ReadOnly;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;

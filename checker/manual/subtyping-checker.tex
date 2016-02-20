@@ -106,7 +106,8 @@ type system, follow three steps.
 \item
 Define two annotations for the \code{Encrypted} and \code{PossiblyUnencrypted} qualifiers:
 
-\begin{Verbatim}
+% alltt because it uses \textit
+\begin{alltt}
 package \textit{myModule}.qual;
 
 import org.checkerframework.framework.qual.*;
@@ -119,12 +120,13 @@ import com.sun.source.tree.Tree.Kind;
  */
 @SubtypeOf(PossiblyUnencrypted.class)
 @ImplicitFor(trees = { Kind.NULL_LITERAL })
-@DefaultFor({DefaultLocation.LOWER_BOUNDS})
+@DefaultFor({TypeUseLocation.LOWER_BOUND})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Encrypted {}
-\end{Verbatim}
+\end{alltt}
 
-\begin{Verbatim}
+% alltt because it uses \textit
+\begin{alltt}
 package \textit{myModule}.qual;
 
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
@@ -139,7 +141,7 @@ import java.lang.annotation.Target;
 @SubtypeOf({})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface PossiblyUnencrypted {}
-\end{Verbatim}
+\end{alltt}
 
 Note that all custom annotations must have the
 \<@Target({ElementType.TYPE\_USE})> meta-annotation. See section
@@ -158,7 +160,7 @@ processor path (set via the \<-processorpath> command-line option to javac).
   Write \code{@Encrypted} annotations in your program (say, in file
   \code{YourProgram.java}):
 
-\begin{Verbatim}
+\begin{alltt}
 import \textit{myModule}.qual.Encrypted;
 
 ...
@@ -183,7 +185,7 @@ void sendPassword() {
     String password = getUserPassword();
     sendOverInternet(password);
 }
-\end{Verbatim}
+\end{alltt}
 
 You may also need to add \code{@SuppressWarnings} annotations to the
 \code{encrypt} and \code{decrypt} methods.  Analyzing them is beyond the
@@ -216,11 +218,13 @@ the directories to the boot classpath, for example:
         -AqualDirs=\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} YourProgram.java
 \end{alltt}
 
+\begin{sloppypar}
 Note that in these two examples, the compiled class file of the
 \<myModule.qual.Encrypted> and \<myModule.qual.PossiblyUnencrypted> annotations
 must exist in either the \<myProject/bin> directory or the \<myLibrary/bin>
 directory. The following placement of the class files will work with the above
 commands:
+\end{sloppypar}
 
 \begin{alltt}
   .../myProject/bin/myModule/qual/Encrypted.class

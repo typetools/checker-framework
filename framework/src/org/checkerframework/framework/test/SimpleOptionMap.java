@@ -98,7 +98,7 @@ public class SimpleOptionMap {
 
     public void addOptions(Iterable<String> newOptions) {
         Iterator<String> optIter = newOptions.iterator();
-        while(optIter.hasNext()) {
+        while (optIter.hasNext()) {
             String opt = optIter.next();
             if (this.options.get(opt) != null) {
                 if (!optIter.hasNext()) {

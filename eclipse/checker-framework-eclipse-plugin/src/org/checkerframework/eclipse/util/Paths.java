@@ -21,7 +21,7 @@ public class Paths
         IPath path = (location != null) ? location : jarFile.getFullPath();
         String osString = path.toOSString();
 
-        if( PluginUtil.isWindows() && !hasDriveLetter(osString)) {
+        if ( PluginUtil.isWindows() && !hasDriveLetter(osString)) {
             osString = kludgeFixAddDriveLetterToFilePath(osString);
         }
         return osString;
@@ -47,9 +47,9 @@ public class Paths
 
         final Pattern pattern = Pattern.compile("^([A-Z]):\\\\$");
 
-        for(final File file : files) {
+        for (final File file : files) {
             final Matcher match = pattern.matcher(file.getAbsolutePath());
-            if(match.matches()) {
+            if (match.matches()) {
                 driveRoots.add(file);
             }
         }
@@ -58,13 +58,13 @@ public class Paths
         Collections.sort(driveRoots, new Comparator<File>() {
             @Override
             public int compare(File o1, File o2) {
-                if(equalsIgnoreCase(driveLetter(o1), driveLetter(o2))) {
+                if (equalsIgnoreCase(driveLetter(o1), driveLetter(o2))) {
                     return 0;
                 }
-                if(equalsIgnoreCase(driveLetter(o1), 'c') || equalsIgnoreCase(driveLetter(o2), 'a')) {
+                if (equalsIgnoreCase(driveLetter(o1), 'c') || equalsIgnoreCase(driveLetter(o2), 'a')) {
                     return -1;
                 }
-                if(equalsIgnoreCase(driveLetter(o1), 'a') || equalsIgnoreCase(driveLetter(o2), 'c')) {
+                if (equalsIgnoreCase(driveLetter(o1), 'a') || equalsIgnoreCase(driveLetter(o2), 'c')) {
                     return 1;
                 }
 
@@ -78,8 +78,8 @@ public class Paths
     private static List<File> orderedDriveRoots = Collections.unmodifiableList(determineOrderedDriveRoots());
 
     private static boolean hasDriveLetter(String filePath ) {
-        for(File file : orderedDriveRoots) {
-            if(filePath.startsWith(file.getAbsolutePath())) {
+        for (File file : orderedDriveRoots) {
+            if (filePath.startsWith(file.getAbsolutePath())) {
                 return true;
             }
         }
@@ -107,10 +107,10 @@ public class Paths
      * @return pathStr
      */
     public static String kludgeFixAddDriveLetterToFilePath(final String pathStr) {
-        for(final File root : orderedDriveRoots) {
+        for (final File root : orderedDriveRoots) {
 
             final File cPath = new File(root, (pathStr.startsWith("\\") ? pathStr.substring(1) : pathStr));
-            if(cPath.exists()) {
+            if (cPath.exists()) {
                 return cPath.getAbsolutePath();
             }
         }
