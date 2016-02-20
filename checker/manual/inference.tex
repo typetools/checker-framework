@@ -195,11 +195,41 @@ Third, signature inference can infer a subtype
 or a supertype of the default type, by contrast with type refinement which
 always refines the current type to a subtype.
 
+% TODO: we need a better name than "signature inference".
+The name ``signature inference'' indicates that it infers types for method
+signatures.  It is not related to the Signature String Checker (see \chapterpageref{signature-checker}).
+
 
 \subsubsection{Manually checking signature inference results\label{signature-inference-manual-checking}}
 
 As with any type inference tool, it is a good idea to manually examine the
 results.
+
+\begin{itemize}
+\item
+Signature inference can produce undesired results when your code has
+non-representative calls to a particular method or assignments to a
+particular field, as explained below.
+This is especially noticeable when the arguments or assignments are literals.
+
+\item
+Also carefully examine annotations inferred for uses of type variables; in
+some cases, it might be more appropriate for you to move those annotations
+to the corresponding upper bounds of the type variable declaration.
+
+\end{itemize}
+
+
+\paragraph{Poor signature inference results due to non-representative uses}
+
+Signature inference determines a method parameter's type
+annotation based on what arguments are passed to the method, but not on how the
+parameter is used within the method body.  If the program contains
+no errors, the tool's annotations are legal for the program as
+currently written but may not be as general as possible and may not
+accommodate future program changes.  If the program contains errors, the
+tool's annotations may reflect those errors.
+
 For example, suppose that your program currently calls
 method \<m1> with non-null
 arguments.  This tool will infer that \<m1>'s parameter has
@@ -207,22 +237,13 @@ arguments.  This tool will infer that \<m1>'s parameter has
 take \<null> as an argument and you later add such a call, the type-checker
 will issue a warning because the automatically-inserted \<@NonNull>
 annotation is inconsistent with the new call.
+You can fix the inference problem by adding tests that pass \<null> to \<m1>.
+
 As another example, suppose you intend method \<m2> to be called with
 non-null arguments, but your program contains an error and one of the calls
 to \<m2> passes \<null> as the argument.  Then the tool will infer that
 \<m2>'s parameter has \<@Nullable> type.
-
-Another way of explaining the issue is that the tool determines a method parameter's type
-annotation based on what arguments are passed to the method but not on how the
-parameter is used within the method body.  If the program contains
-no errors, the tool's annotations are legal for the program as
-currently written but may not be as general as possible and may not
-accommodate future program changes.  If the program contains errors, the
-tool's annotations may reflect those errors.
-
-Also carefully examine annotations inferred for uses of type variables; in
-some cases, it might be more appropriate for you to move those annotations
-to the corresponding upper bounds of the type variable declaration.
+You can fix the inference problem by correcting the bug.
 
 
 \subsubsection{How signature inference works\label{how-signature-inference-works}}
