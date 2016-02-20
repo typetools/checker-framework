@@ -42,13 +42,25 @@
         <loadproperties srcFile="${afu.properties}"/>
 
         <replaceregexp file="${jsr308WebPage}" byline="true"
-                       match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
+                       match="checker-framework-${release.version.regexp}{0,1}.zip" replace="checker-framework-${release.ver}.zip"/>
 
         <replaceregexp file="${jsr308WebPage}" byline="true"
                        match="annotation-tools-${release.version.regexp}{0,1}.zip" replace="annotation-tools-${afu.version}.zip"/>
 
         <replaceregexp file="${jsr308WebPage}" byline="true"
                        match="jsr308-langtools-${release.version.regexp}{0,1}.zip" replace="jsr308-langtools-${release.ver}.zip"/>
+
+        <update file="${jsr308WebPage}"
+                start="${checkers.zip.ver.0}" end="${checkers.zip.ver.1}"
+                with="checker-framework-${release.ver}.zip"/>
+
+        <update file="${jsr308WebPage}"
+                start="${afu.zip.ver.0}" end="${afu.zip.ver.1}"
+                with="annotation-tools-${afu.version}.zip"/>
+
+        <update file="${jsr308WebPage}"
+                start="${jsr308.zip.ver.0}" end="${jsr308.zip.ver.1}"
+                with="jsr308-langtools-${release.ver}.zip"/>
 
         <update file="${jsr308WebPage}"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
@@ -115,6 +127,10 @@
         <update file="${checkerWebPage}"
                 start="${checkers.zip.ver.0}" end="${checkers.zip.ver.1}"
                 with="checker-framework-${release.ver}.zip"/>
+
+        <update file="${checkerWebPage}"
+                start="${afu.zip.ver.0}" end="${afu.zip.ver.1}"
+                with="annotation-tools-${afu.version}.zip"/>
 
         <update file="${checkerWebPage}"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
@@ -251,22 +267,6 @@
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-    </target>
-
-    <target name="update-htaccess-versions">
-
-        <fail unless="htaccess.file"  message="htaccess.file not set"/>
-        <fail unless="afu.version"    message="afu.version not set"/>
-        <fail unless="cflt.version"   message="cflt.version (checker framework/langtools version) not set!"/>
-
-        <replaceregexp file="${htaccess.file}" byline="true"
-                       match="jsr308-langtools-\S+.zip" replace="jsr308-langtools-${cflt.version}.zip"/>
-
-        <replaceregexp file="${htaccess.file}" byline="true"
-                       match="checker-framework-\S+.zip" replace="checker-framework-${cflt.version}.zip"/>
-
-        <replaceregexp file="${htaccess.file}" byline="true"
-                       match="annotation-tools-\S+.zip" replace="annotation-tools-${afu.version}.zip"/>
     </target>
 
     <target name="zip-langtools" description="Creates a zip archive for JSR308-Langtools.">

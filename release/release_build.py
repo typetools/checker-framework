@@ -112,6 +112,7 @@ def build_jsr308_langtools_release(auto, version, afu_version, afu_release_date,
 
     # update jsr308_langtools versions
     ant_props = "-Dlangtools=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (JSR308_LANGTOOLS, version, afu_version, afu_build_properties, afu_release_date )
+    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
     ant_cmd   = "ant -f release.xml %s update-langtools-versions " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -123,6 +124,7 @@ def build_jsr308_langtools_release(auto, version, afu_version, afu_release_date,
 
     # zip up jsr308-langtools project and place it in jsr308_interm_dir
     ant_props = "-Dlangtools=%s  -Dcheckerframework=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (JSR308_LANGTOOLS, CHECKER_FRAMEWORK, jsr308_interm_dir, jsr308ZipName, version)
+    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
     ant_cmd   = "ant -f release.xml %s zip-langtools " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -132,6 +134,7 @@ def build_jsr308_langtools_release(auto, version, afu_version, afu_release_date,
 
     # copy remaining website files to jsr308_interm_dir
     ant_props = "-Dlangtools=%s -Ddest.dir=%s" % (JSR308_LANGTOOLS, jsr308_interm_dir)
+    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
     ant_cmd   = "ant -f release.xml %s langtools-website-docs " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -184,6 +187,7 @@ def build_checker_framework_release(auto, version, afu_version, afu_release_date
 
     # update jsr308_langtools versions
     ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (checker_dir, version, afu_version, afu_build_properties, afu_release_date)
+    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
     ant_cmd   = "ant -f release.xml %s update-checker-framework-versions " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -212,10 +216,12 @@ def build_checker_framework_release(auto, version, afu_version, afu_release_date
 
         # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
         ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, cfZipName, version)
+        # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
         ant_cmd   = "ant -f release.xml %s zip-checker-framework " % ant_props
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
         ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, "mvn-examples.zip", version)
+        # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
         ant_cmd   = "ant -f release.xml %s zip-maven-examples " % ant_props
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -225,6 +231,7 @@ def build_checker_framework_release(auto, version, afu_version, afu_release_date
                      "checker-framework-dataflow-manual", "checker-framework-webpage.html"
         )
 
+        # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
         ant_cmd   = "ant -f release.xml %s checker-framework-website-docs " % ant_props
         execute( ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE )
 
@@ -296,8 +303,8 @@ def main(argv):
     # or outgoing changesets. If so, it fails.
 
     print_step("1b: Verify repositories.") # SEMIAUTO
-    check_repos( INTERM_REPOS, False )
-    check_repos( BUILD_REPOS,  False )
+    check_repos( INTERM_REPOS, True, True )
+    check_repos( BUILD_REPOS,  True, False )
 
     # The release script requires a number of common tools (Ant, Maven, make, etc...). This step checks
     # to make sure all tools are available on the command line in order to avoid wasting time in the

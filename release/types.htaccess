@@ -8,18 +8,6 @@ Options +FollowSymlinks
 
 # Redirect /specification/java-annotation-design.html /jsr308/specification/java-annotation-design.html
 # Redirect /dev/specification/java-annotation-design.html /dev/jsr308/specification/java-annotation-design.html
-# Redirect /checker-framework/current/checkers-manual.html /checker-framework/current/checker-framework-manual.html
 
 # We could add a similar rule for every other type system.
 # Redirect /checker-framework/current/api/checkers/nullness/quals/ /checker-framework/current/api/org/checkerframework/checker/nullness/qual/
-
-# Standard practice is to give sofware distributions a version number.
-# Therefore, users should see the real file names.
-# With these links, "wget http://types.cs.washington.edu/checker-framework/current/checker-framework.zip"
-# produces a file checker-framework.zip which gives no indication of its version number.
-# RedirectMatch 302 /jsr308/current/jsr308-langtools.zip /jsr308/current/jsr308-langtools-1.9.11.zip
-# RedirectMatch 302 /annotation-file-utilities/annotation-tools.zip /annotation-file-utilities/current/annotation-tools-3.6.25.zip
-# RedirectMatch 302 /checker-framework/current/checker-framework.zip /checker-framework/current/checker-framework-1.9.11.zip
-# RedirectMatch 302 /dev/jsr308/current/jsr308-langtools.zip /dev/jsr308/current/jsr308-langtools-1.9.11.zip
-# RedirectMatch 302 /dev/annotation-file-utilities/annotation-tools.zip /dev/annotation-file-utilities/current/annotation-tools-3.6.25.zip
-# RedirectMatch 302 /dev/checker-framework/current/checker-framework.zip /dev/checker-framework/current/checker-framework-1.9.11.zip
