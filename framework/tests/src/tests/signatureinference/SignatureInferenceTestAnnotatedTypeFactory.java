@@ -28,6 +28,7 @@ import tests.signatureinference.qual.Sibling1;
 import tests.signatureinference.qual.Sibling2;
 import tests.signatureinference.qual.SiblingWithFields;
 import tests.signatureinference.qual.SignatureInferenceBottom;
+import tests.signatureinference.qual.ToIgnore;
 import tests.signatureinference.qual.Top;
 /**
  * AnnotatedTypeFactory to test signaature inference using .jaif
@@ -44,31 +45,31 @@ public class SignatureInferenceTestAnnotatedTypeFactory
 
     private final AnnotationMirror PARENT = new AnnotationBuilder(
             processingEnv, Parent.class).build();
+    private final AnnotationMirror BOTTOM = new AnnotationBuilder(
+            processingEnv, SignatureInferenceBottom.class).build();
 
     public SignatureInferenceTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         postInit();
-        AnnotationMirror bottom = AnnotationUtils.fromClass(elements,
-                SignatureInferenceBottom.class);
-        addTypeNameImplicit(java.lang.Void.class, bottom);
+        addTypeNameImplicit(java.lang.Void.class, BOTTOM);
     }
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(new HashSet<Class<? extends Annotation>>(Arrays.asList(
+        return Collections.unmodifiableSet(
+                new HashSet<Class<? extends Annotation>>(Arrays.asList(
                     Parent.class, DefaultType.class, Top.class, Sibling1.class,
-                        Sibling2.class, SignatureInferenceBottom.class, SiblingWithFields.class)));
+                    ToIgnore.class, Sibling2.class, SignatureInferenceBottom.class,
+                    SiblingWithFields.class)));
     }
     @Override
     public TreeAnnotator createTreeAnnotator() {
         ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(
                 this);
-        AnnotationMirror bottom = AnnotationUtils.fromClass(elements,
-                SignatureInferenceBottom.class);
         implicitsTreeAnnotator.addTreeKind(
-                com.sun.source.tree.Tree.Kind.NULL_LITERAL, bottom);
+                com.sun.source.tree.Tree.Kind.NULL_LITERAL, BOTTOM);
         implicitsTreeAnnotator.addTreeKind(
-                com.sun.source.tree.Tree.Kind.INT_LITERAL, bottom);
+                com.sun.source.tree.Tree.Kind.INT_LITERAL, BOTTOM);
 
         return new ListTreeAnnotator(new PropagationTreeAnnotator(this),
                 implicitsTreeAnnotator);
@@ -90,6 +91,11 @@ public class SignatureInferenceTestAnnotatedTypeFactory
 
         public SignatureTestQualifierHierarchy(MultiGraphFactory f) {
             super(f);
+        }
+
+        @Override
+        public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
+            return BOTTOM;
         }
 
         @Override
@@ -129,6 +135,7 @@ public class SignatureInferenceTestAnnotatedTypeFactory
 
             if ((AnnotationUtils.areSameByClass(sub, Sibling1.class)
                  || AnnotationUtils.areSameByClass(sub, Sibling2.class)
+                 || AnnotationUtils.areSameByClass(sub, ToIgnore.class)
                  || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class))
                 && AnnotationUtils.areSameByClass(sup, Parent.class)) {
                 return true;
@@ -136,6 +143,7 @@ public class SignatureInferenceTestAnnotatedTypeFactory
 
             if ((AnnotationUtils.areSameByClass(sub, Sibling1.class)
                  || AnnotationUtils.areSameByClass(sub, Sibling2.class)
+                 || AnnotationUtils.areSameByClass(sub, ToIgnore.class)
                  || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class)
                  || AnnotationUtils.areSameByClass(sub, Parent.class)) 
                 && AnnotationUtils.areSameByClass(sup, DefaultType.class)){

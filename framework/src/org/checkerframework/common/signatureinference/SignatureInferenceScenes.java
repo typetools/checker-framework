@@ -30,6 +30,7 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.IgnoreInSignatureInference;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -486,24 +487,29 @@ public class SignatureInferenceScenes {
      * Look into the createQualifierDefaults method before changing anything here.
      */
     private static boolean shouldIgnore(AnnotationMirror am,
-            DefaultLocation location) {
+            DefaultLocation location, AnnotatedTypeFactory atf) {
         boolean shouldIgnore = false;
+        AnnotationMirror bottomAnno = atf.getQualifierHierarchy().getBottomAnnotation(am);
+        if (AnnotationUtils.annotationName(bottomAnno) == AnnotationUtils.annotationName(am)) {
+            // Ignore annotation if it is the bottom type.
+            return true;
+        }
+        Element elt = am.getAnnotationType().asElement();
+        if (elt.getAnnotation(IgnoreInSignatureInference.class) != null) {
+            return true;
+        }
         // Checks if am is an implementation detail (a type qualifier used
         // internally by the type system and not meant to be seen by the user.)
-        Target target = am.getAnnotationType().asElement().
-                getAnnotation(Target.class);
-        shouldIgnore = shouldIgnore || (target != null && target.value().length == 0);
-        shouldIgnore = shouldIgnore || am.getAnnotationType().asElement().
-                getAnnotation(InvisibleQualifier.class) != null;
+        Target target = elt.getAnnotation(Target.class);
+        shouldIgnore |= (target != null && target.value().length == 0);
+        shouldIgnore |= elt.getAnnotation(InvisibleQualifier.class) != null;
         if (shouldIgnore) {
             return shouldIgnore;
         }
 
         // Checks if am is default
-        shouldIgnore = shouldIgnore || am.getAnnotationType().asElement().
-                getAnnotation(DefaultQualifierInHierarchy.class) != null;
-        DefaultQualifier defaultQual = am.getAnnotationType().asElement().
-                getAnnotation(DefaultQualifier.class);
+        shouldIgnore |= elt.getAnnotation(DefaultQualifierInHierarchy.class) != null;
+        DefaultQualifier defaultQual = elt.getAnnotation(DefaultQualifier.class);
         if (!shouldIgnore && defaultQual != null) {
             for (DefaultLocation loc : defaultQual.locations()) {
                 if (loc == DefaultLocation.ALL || loc == location) {
@@ -511,8 +517,7 @@ public class SignatureInferenceScenes {
                 }
             }
         }
-        DefaultFor defaultQualForLocation = am.getAnnotationType().asElement().
-                getAnnotation(DefaultFor.class);
+        DefaultFor defaultQualForLocation = elt.getAnnotation(DefaultFor.class);
         if (!shouldIgnore && defaultQualForLocation != null) {
             for (DefaultLocation loc : defaultQualForLocation.value()) {
                 if (loc == DefaultLocation.ALL || loc == location) {
@@ -632,7 +637,7 @@ public class SignatureInferenceScenes {
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 Annotation anno = annotationMirrorToAnnotation(am);
                 if (anno != null) {
-                    if (shouldIgnore(am, defLoc)) {
+                    if (shouldIgnore(am, defLoc, atf)) {
                         Set<String> annosIgnored = annosToIgnore.get(defLoc);
                         if (annosIgnored == null) {
                             annosIgnored = new HashSet<>();
