@@ -179,17 +179,6 @@ code, so that you can see what changes it made and so that it does not
 change your only copy.  One way to do this is to work in a clone of your
 repository that has no uncommitted changes.
 
-Signature inference ignores code within the the scope of a
-\<@SuppressWarnings> annotation with an appropriate key
-(Section~\ref{suppresswarnings-annotation}).  In particular, uses within
-the scope do not contribute to the inferred type, and declarations within
-the scope are not changed.  You should remove \<@SuppressWarnings> annotations
-from the class declaration of any class you wish to infer types for.
-
-Signature inference never refines a type to the bottom type of a type hierarchy.
-If you want the signature inference to ignore other annotations, you can simply
-add the meta-annotation \<@IgnoreInSignatureInference> to each of them.
-
 Signature inference differs from type refinement (Section~\ref{type-refinement})
 in three ways.  First, type refinement only works within a method body.
 Second, type refinement always
@@ -202,6 +191,33 @@ always refines the current type to a subtype.
 % TODO: we need a better name than "signature inference".
 The name ``signature inference'' indicates that it infers types for method
 signatures.  It is not related to the Signature String Checker (see \chapterpageref{signature-checker}).
+
+
+\subsubsection{Signature inference ignores some code\label{signature-inference-ignores-some-code}}
+
+Signature inference ignores code within the the scope of a
+\<@SuppressWarnings> annotation with an appropriate key
+(Section~\ref{suppresswarnings-annotation}).  In particular, uses within
+the scope do not contribute to the inferred type, and declarations within
+the scope are not changed.  You should remove \<@SuppressWarnings> annotations
+from the class declaration of any class you wish to infer types for.
+
+As noted below, signature inference requires invocations of your code, or
+assignments to your methods, to generalize from.  If a field is set via
+reflection (such as via injection), then signature inference would produce
+an inaccurate result.  You probably have an annotation such as
+\javaeejavadocanno{javax/inject/Inject.html}{Inject}
+or
+\href{http://types.cs.washington.edu/plume-lib/api/plume/Option.html}{\<@Option>}
+that indicates such fields.  Meta-annotate the declaration of the \<Inject>
+or \<Option> annotation with
+\refqualclass{framework/qual}{IgnoreInSignatureInference} and signature
+inference will not produce any inference results for fields annotated with
+\<@Inject> or \<@Option>.
+
+Signature inference never refines a type to the bottom type of a type
+hierarchy, because doing so usually indicates that there were not enough
+uses to yield a good inference result.
 
 
 \subsubsection{Manually checking signature inference results\label{signature-inference-manual-checking}}
