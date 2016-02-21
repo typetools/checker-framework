@@ -3,7 +3,7 @@ package org.checkerframework.checker.unsignedness;
 import org.checkerframework.checker.unsignedness.qual.UnknownSignedness;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -49,8 +49,12 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
         case SHORT:
         case INT:
         case LONG:
+	case FLOAT:
+	case DOUBLE:
+	case CHAR:
+	case BOOLEAN:
             QualifierDefaults defaults = new QualifierDefaults(elements, this);
-            defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, DefaultLocation.LOCAL_VARIABLE);
+            defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
             defaults.annotate(tree, type);
         }
 
