@@ -729,8 +729,7 @@ public class SignatureInferenceScenes {
     /**
      * Returns an AnnotationFieldType given an ExecutableElement or value.
      */
-    private static AnnotationFieldType getAnnotationFieldType(ExecutableElement
-            ee, Object value) {
+    private static AnnotationFieldType getAnnotationFieldType(ExecutableElement ee, Object value) {
         if (value instanceof List<?>) {
             AnnotationValue defaultValue = ee.getDefaultValue();
             if (defaultValue == null || ((ArrayType)((Array)defaultValue).type) == null) {
