@@ -1,0 +1,6 @@
+Issue594.java:19: error: [return.type.incompatible] incompatible types in return.
+        return result;
+               ^
+  found   : T extends @Initialized @Nullable Object
+  required: T extends @Initialized @Nullable Object
+1 error
