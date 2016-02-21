@@ -190,3 +190,43 @@ class SuppressWarningsInner {
     public static int i2;
 }
 
+class TopBottomTest {
+    // The default type for fields is @DefaultType.
+    private int privateField;
+    public int publicField;
+
+    // The types of both fields are not refined to @SignatureInferenceBottom,
+    // as signature inference never refines to the bottom type.
+    void assignFieldsToBottom() {
+        privateField = getBottom();
+        publicField = getBottom();
+    }
+
+    // Testing the refinement above.
+    void testFields() {
+        //:: error: (argument.type.incompatible)
+        expectsBottom(privateField);
+        //:: error: (argument.type.incompatible)
+        expectsBottom(publicField);
+    }
+
+    void expectsBottom(@SignatureInferenceBottom int t) {}
+    @SignatureInferenceBottom int getBottom() {
+        return 0;
+    }
+}
+
+class IgnoreMetaAnnotationTest {
+
+    int field;
+    void foo() {
+        field = (@ToIgnore int) 0;
+    }
+
+    void test() {
+        //:: error: (assignment.type.incompatible)
+        @ToIgnore int i = field;
+    }
+
+}
+

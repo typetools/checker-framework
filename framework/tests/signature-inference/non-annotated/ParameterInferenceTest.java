@@ -2,13 +2,13 @@ import tests.signatureinference.qual.*;
 public class ParameterInferenceTest {
 
     void test1() {
-        @SignatureInferenceBottom int bot = (@SignatureInferenceBottom int) 0;
-        expectsBotNoSignature(bot);
+        @Parent int parent = (@Parent int) 0;
+        expectsParentNoSignature(parent);
     }
 
-    void expectsBotNoSignature(int t) {
+    void expectsParentNoSignature(int t) {
         //:: error: (assignment.type.incompatible)
-        @SignatureInferenceBottom int bot = t;
+        @Parent int parent = t;
     }
 
     void test2() {
