@@ -186,6 +186,10 @@ the scope do not contribute to the inferred type, and declarations within
 the scope are not changed.  You should remove \<@SuppressWarnings> annotations
 from the class declaration of any class you wish to infer types for.
 
+Signature inference never refines a type to the bottom type of a type hierarchy.
+If you want the signature inference to ignore other annotations, you can simply
+add the meta-annotation \<@IgnoreInSignatureInference> to each of them.
+
 Signature inference differs from type refinement (Section~\ref{type-refinement})
 in three ways.  First, type refinement only works within a method body.
 Second, type refinement always
