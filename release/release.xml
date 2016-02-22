@@ -143,6 +143,9 @@
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
                        match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
+                       replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
 
         <replaceregexp file="${checker}/../build-common.properties" byline="true"
                        match="build.version = ${release.version.regexp}{0,1}" replace="build.version = ${release.ver}"/>
@@ -250,6 +253,10 @@
         <update file="${checker.examples}/MavenExample/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
+        <!-- build.gradle in GradleJava8Example is a soft link to GradleJava7Example/build.gradle -->
+        <replaceregexp file="${checker.examples}/GradleExamples/GradleJava7Example/build.gradle" byline="true"
+                       match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
+                       replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
 
     </target>
 
