@@ -199,7 +199,6 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
         if (TreeUtils.isFieldAccess(varTree)) {
             AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExp);
             // special case writing to NonNull field for free/unc receivers
-            // cast is safe, because varTree is a field
             AnnotatedTypeMirror annos = atypeFactory.getDeclaredAndDefaultedAnnotatedType(varTree);
             // receiverType is null for static field accesses
             AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType((ExpressionTree) varTree);

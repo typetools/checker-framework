@@ -11,6 +11,10 @@ to obtain more precise type-checking with fewer false positive warnings.
 
 The manual documents how to run a pluggable type-checker in IntelliJ IDEA.
 
+The instructions on how to run a type-checker in Gradle have been updated to
+use the artifacts in Maven Central. Examples using the instructions have been
+added under checker/examples/GradleExamples.
+
 Closed issues: 559.
 
 ---------------------------------------------------------------------------
