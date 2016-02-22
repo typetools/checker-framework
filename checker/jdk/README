@@ -20,7 +20,7 @@ this process as well.
 If you do create new stub files please share them with us via email at
 checker-framework-dev@googlegroups.com.  Thanks!
 
-We do not add annatations for single methods.  Our policy is to only add a
+We do not add annotations for single methods.  Our policy is to only add a
 class when it is fully-annotated, with correct annotations for all of its
 methods.  This avoids confusion that could result from some methods in a
 class being correctly annotated and other methods not being annotated.  So,
