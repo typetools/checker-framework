@@ -58,17 +58,6 @@ public class Defaults {
 
         //:: error: (assignment.type.incompatible)
         botChar = testChar;
-
-        //Test booleans with literal values
-        @Constant boolean conBool;
-        @UnsignednessBottom boolean botBool;
-
-        boolean testBool = true;
-
-        conBool = testBool;
-
-        //:: error: (assignment.type.incompatible)
-        botBool = testBool;
     }
 
     public void SignedTest(byte testByte, short testShort, int testInt, long testLong,
