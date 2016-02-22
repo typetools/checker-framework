@@ -71,7 +71,8 @@ public class Defaults {
         botBool = testBool;
     }
 
-    public void SignedTest(byte testByte, short testShort, int testInt, long testLong) {
+    public void SignedTest(byte testByte, short testShort, int testInt, long testLong,
+        float testFloat, double testDouble, char testChar, boolean testBool) {
 
         //Test bytes
         @Signed byte sinByte;
@@ -109,6 +110,32 @@ public class Defaults {
         //:: error: (assignment.type.incompatible)
         conLong = testLong;
 
+        //Test floats
+        @Signed float sinFloat;
+        @Constant float conFloat;
+
+        sinFloat = testFloat;
+
+        //:: error: (assignment.type.incompatible)
+        conFloat = testFloat;
+
+        //Test doubles
+        @Signed double sinDouble;
+        @Constant double conDouble;
+
+        sinDouble = testDouble;
+
+        //:: error: (assignment.type.incompatible)
+        conDouble = testDouble;
+
+        //Test chars
+        @Signed char sinChar;
+        @Constant char conChar;
+
+        sinChar = testChar;
+
+        //:: error: (assignment.type.incompatible)
+        conChar = testChar;
     }
 
     public void UnsignednessBottom() {

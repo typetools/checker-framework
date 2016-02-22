@@ -38,7 +38,7 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
 
     /**
      * If the tree is a local variable and the type is a byte, short, int or long,
-     * then it adds the @UnknownSignedness annootation.
+     * then it adds the @UnknownSignedness annotation.
      *
      * @param tree
      * @param type
@@ -49,6 +49,9 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
         case SHORT:
         case INT:
         case LONG:
+        case FLOAT:
+        case DOUBLE:
+        case CHAR:
             QualifierDefaults defaults = new QualifierDefaults(elements, this);
             defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
             defaults.annotate(tree, type);
