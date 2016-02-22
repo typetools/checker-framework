@@ -49,10 +49,6 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
         case SHORT:
         case INT:
         case LONG:
-	case FLOAT:
-	case DOUBLE:
-	case CHAR:
-	case BOOLEAN:
             QualifierDefaults defaults = new QualifierDefaults(elements, this);
             defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
             defaults.annotate(tree, type);
