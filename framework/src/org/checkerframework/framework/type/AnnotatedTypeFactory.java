@@ -277,15 +277,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Should results be cached?
      * This means that ATM.deepCopy() will be called.
-     * ATM.deepCopy() use to (and perhaps still does) side effect the ATM being copied.
-     * So setting this to false is not equivalent to setting shouldReadCache to false.
-     * */
+     * ATM.deepCopy() used to (and perhaps still does) side effect the ATM being copied.
+     * So setting this to false is not equivalent to setting shouldReadCache to false. */
     public boolean shouldCache;
 
     /** Should the cached result be used, or should it be freshly computed? */
     public boolean shouldReadCache;
 
-    /** Size of LRU cache. */
+    /** Size of LRU cache if one isn't specified using the atfCacheSize option. */
     private final static int DEFAULT_CACHE_SIZE = 300;
 
     /** Mapping from a Tree to its annotated type; implicits have been applied. */
@@ -809,7 +808,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final TreePathCacher treePathCache = new TreePathCacher();
 
     /**
-     * Returns the int supplied to the checker via atfCacheSize or
+     * Returns the int supplied to the checker via the atfCacheSize option or
      * the default cache size.
      * @return cache size passed as argument to checker or DEFAULT_CACHE_SIZE
      */
@@ -818,11 +817,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (option == null) {
             return DEFAULT_CACHE_SIZE;
         }
-        try{
+        try {
             return Integer.valueOf(option);
-        } catch (NumberFormatException ex){
-            ErrorReporter.errorAbort("atfCacheSize was not an integer: "+option);
-             return 0; // dead code
+        } catch (NumberFormatException ex) {
+            ErrorReporter.errorAbort("atfCacheSize was not an integer: " + option);
+            return 0; // dead code
         }
     }
 
