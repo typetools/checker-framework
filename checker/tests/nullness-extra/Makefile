@@ -1,7 +1,7 @@
-.PHONY: all Bug109 multiple-errors package-anno issue265 issue309 compat shorthand issue502 issue559 issue594
+.PHONY: all Bug109 multiple-errors package-anno issue265 issue309 compat shorthand issue502 issue559 issue594 issue607
 
 # This skips tests that are not currently passing
-all: Bug109 compat issue265 issue309 issue502 multiple-errors package-anno shorthand 
+all: Bug109 compat issue265 issue309 issue502 multiple-errors package-anno shorthand issue607
 
 Bug109:
 	$(JAVAC) -processor org.checkerframework.checker.nullness.NullnessChecker Bug109_A.java Bug109_B.java
@@ -34,4 +34,7 @@ package-anno:
 
 shorthand:
 	make -C shorthand
+
+issue607:
+	make -C issue607
 
