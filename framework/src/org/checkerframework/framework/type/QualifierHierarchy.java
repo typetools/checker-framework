@@ -12,6 +12,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
+
 
 /**
  * Represents a type qualifier hierarchy.
@@ -154,7 +156,7 @@ public abstract class QualifierHierarchy {
     public Set<? extends AnnotationMirror>
     leastUpperBounds(Collection<? extends AnnotationMirror> annos1, Collection<? extends AnnotationMirror> annos2) {
         if (annos1.size() != annos2.size()) {
-            throw new Error(
+            ErrorReporter.errorAbort(
             "QualifierHierarchy.leastUpperBounds: tried to determine LUB with sets of different sizes!\n" +
                     "    Set 1: " + annos1 + " Set 2: " + annos2);
         }
@@ -195,12 +197,12 @@ public abstract class QualifierHierarchy {
     public Set<? extends AnnotationMirror>
     greatestLowerBounds(Collection<? extends AnnotationMirror> annos1, Collection<? extends AnnotationMirror> annos2) {
         if (annos1.size() != annos2.size()) {
-            throw new Error(
+            ErrorReporter.errorAbort(
             "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with sets of different sizes!\n" +
                     "    Set 1: " + annos1 + " Set 2: " + annos2);
         }
         if (annos1.isEmpty()) {
-            throw new Error(
+            ErrorReporter.errorAbort(
             "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with empty sets!");
         }
 
