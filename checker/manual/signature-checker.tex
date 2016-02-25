@@ -14,9 +14,10 @@ they differ only for nested classes and arrays.
 
 \section{Signature annotations\label{signature-annotations}}
 
-Java defines four main formats for the string representation of a type.
+Java defines six formats for the string representation of a type.
 There is an annotation for each of these representations.
-Figure~\ref{fig-signature-hierarchy} shows how they are related.
+Figure~\ref{fig-signature-hierarchy} shows how they are related;
+examples appear in a table below.
 
 \begin{figure}
 \includeimage{signature-types}{7.5cm}
@@ -38,7 +39,7 @@ Figure~\ref{fig-signature-hierarchy} shows how they are related.
 \item[\refqualclass{checker/signature/qual}{BinaryName}]
   A \emph{binary name} (\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1}{JLS \S 13.1}), such as
   \<package.Outer\$Inner>, is
-  the representation of a type in its own \<.class> file.
+  the conceptual name of a type in its own \<.class> file.
 
 \item[\refqualclass{checker/signature/qual}{FieldDescriptor}]
   A \emph{field descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2}{JVMS \S 4.3.2}), such as
@@ -52,41 +53,67 @@ Figure~\ref{fig-signature-hierarchy} shows how they are related.
   \sunjavadoc{java/lang/Class.html\#getName--}{\code{Class.getName()}}, \<Class.forName(String)>,
   and \<Class.forName(String, boolean, ClassLoader)> methods.  This format
   is:  for any non-array type, the binary name; and for any array type, a
-  format like the \href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2}{FieldDescriptor field descriptor}, but using
+  format like the
+  \href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2}{FieldDescriptor
+    field descriptor}, but using
   ``\<.>''~where the field descriptor uses ``\</>''.
 \end{sloppypar}
 
-\item[\refqualclass{checker/signature/qual}{SourceName}]
+\item[\refqualclass{checker/signature/qual}{InternalForm}]
+  The \emph{internal form}
+  (\href{https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.2}{JVMS
+    \S 4.2}), such as \<package/Outer\$Inner>, is how a class name is
+  actually represented in its own \<.class> file.  It is also known as the
+  ``syntax of binary names that appear in class file structures''.  It is
+  the same as the binary name, but with periods (\<.>) replaced by slashes
+  (\<.>).  Programmers more often use the binary name, leaving the internal
+  form as a JVM implementation detail.
+
+\item[\refqualclass{checker/signature/qual}{ClassGetSimpleName}]
+  The type representation returned by the
+  \sunjavadoc{java/lang/Class.html\#getSimpleName--}{\code{Class.getSimpleName()}}
+  method.  This format is not required by any method in the JDK, so you
+  will rarely write it in source code.  The simple name can be empty.  This
+  is not the same as the ``simple name'' defined in
+  (\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-6.html#jls-6.2}{JLS
+    \S 6.2}), which is the same as
+  \refqualclass{checker/signature/qual}{Identifier}.
+
+\item[\refqualclass{checker/signature/qual}{SourceNameForNonInner}]
   A source name is a string that is a valid fully qualified name \emph{and}
   a valid binary name.  A programmer should never or rarely use this --- you should
   know how you intend to use a given variable.  The checker infers it for
   literal strings such as \<"package.MyClass"> that are valid in both
   formats, and you might occasionally see it in an error message.
-  Likewise, you might see other types such as \<SourceNameForNonArray>,
+  Likewise, you might see other types such as \<SourceNameForNonArrayNonInner>,
   \<BinaryNameForNonArray>, and \<FieldDescriptorForArray>, but you
   generally should not use them either.
 
 \end{description}
 
-Java also defines other string formats for a type: simple
-names (JLS \S 6.2), qualified names (JLS \S 6.2), and canonical
+Java also defines other string formats for a type:
+qualified names (JLS \S 6.2), and canonical
 names (JLS \S 6.7).  The Signature Checker does not include annotations
 for these.
 
 Here are examples of the supported formats:
 
 \begin{center}
-\begin{tabular}{|l|l|l|l|}
+\begin{tabular}{|l|l|l|l|l|l}
 \hline
-\multicolumn{1}{|c|}{fully-qualified name} & \multicolumn{1}{c|}{binary name} & \multicolumn{1}{c|}{Class.getName} & \multicolumn{1}{c|}{field descriptor} \\ \hline
-int &                   int &                    int &                     I \\
-int[][] &               int[][] &                [[I &                     [[I \\
-MyClass &               MyClass &                MyClass &                 LMyClass; \\
-MyClass[] &             MyClass[] &              [LMyClass; &              [LMyClass; \\
-java.lang.Integer &     java.lang.Integer &      java.lang.Integer &       Ljava/lang/Integer; \\
-java.lang.Integer[] &   java.lang.Integer[] &    [Ljava.lang.Integer; &    [Ljava/lang/Integer; \\
-package.Outer.Inner &   package.Outer\$Inner &   package.Outer\$Inner &   Lpackage/Outer\$Inner; \\
-package.Outer.Inner[] & package.Outer\$Inner[] & [Lpackage.Outer\$Inner; & [Lpackage/Outer\$Inner; \\
+\multicolumn{1}{|c|}{fully-qualified name} & \multicolumn{1}{c|}{binary name} & \multicolumn{1}{c|}{Class.getName} & \multicolumn{1}{c|}{field descriptor} & \multicolumn{1}{c|}{internal form} & \multicolumn{1}{c|}{simple name} \\ \hline
+int                    & int                    & int                     & I                       & int                    & int            \\
+int[][]                & int[][]                & [[I                     & [[I                     & int[][]                & int[][]        \\
+MyClass                & MyClass                & MyClass                 & LMyClass;               & MyClass                & MyClass        \\
+MyClass[]              & MyClass[]              & [LMyClass;              & [LMyClass;              & MyClass[]              & MyClass[]      \\
+java.lang.Integer      & java.lang.Integer      & java.lang.Integer       & Ljava/lang/Integer;     & java/lang/Integer      & Integer        \\
+java.lang.Integer[]    & java.lang.Integer[]    & [Ljava.lang.Integer;    & [Ljava/lang/Integer;    & java/lang/Integer[]    & Integer[]      \\
+package.Outer.Inner    & package.Outer\$Inner   & package.Outer\$Inner    & Lpackage/Outer\$Inner;  & package/Outer\$Inner   & Inner          \\
+package.Outer.Inner[]  & package.Outer\$Inner[] & [Lpackage.Outer\$Inner; & [Lpackage/Outer\$Inner; & package/Outer\$Inner[] & Inner[]        \\
+\emph{n/a {\smaller 
+ for anonymous class}} & package.Outer\$22      & package.Outer\$22       & Lpackage/Outer\$22;     & package/Outer\$22      & \emph{\smaller (empty string)} \\
+\emph{n/a {\smaller for
+ array of anon.~class}} & package.Outer\$22[]   & [Lpackage.Outer\$22;    & [Lpackage/Outer\$22;    & package/Outer\$22[]    & []             \\
 \hline
 \end{tabular}
 \end{center}
@@ -127,7 +154,7 @@ command-line option to javac.
 
 
 % LocalWords:  Regex regex quals FullyQualifiedName BinaryName FieldDescriptor
-% LocalWords:  Lpackage SourceName MyClass MethodDescriptor forName substring
+% LocalWords:  Lpackage SourceNameForNonInner MyClass MethodDescriptor forName substring
 %  LocalWords:  jls getName ClassGetName ClassLoader LMyClass Ljava
-%  LocalWords:  SourceNameForNonArray BinaryNameForNonArray
+%  LocalWords:  SourceNameForNonArrayNonInner BinaryNameForNonArray
 %  LocalWords:  FieldDescriptorForArray

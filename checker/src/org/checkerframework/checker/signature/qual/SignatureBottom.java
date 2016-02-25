@@ -12,7 +12,7 @@ import com.sun.source.tree.Tree;
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
-@SubtypeOf({SourceNameForNonArray.class,
+@SubtypeOf({Identifier.class,
     FieldDescriptorForArray.class,
     MethodDescriptor.class
     })
