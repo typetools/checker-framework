@@ -22,7 +22,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -228,7 +228,7 @@
      inkscape:window-x="0"
      inkscape:window-y="24"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg2"
+     inkscape:current-layer="g102-4"
      showborder="true"
      fit-margin-top="0"
      fit-margin-left="0"
@@ -862,19 +862,19 @@
     <text
        font-size="16"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:15.99945831px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Bold';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
-       x="1366.3774"
+       x="1368.6255"
        y="549.21057"
        id="text108-3-9"
        sodipodi:linespacing="125%">
       <tspan
          sodipodi:role="line"
          id="tspan4119-4"
-         x="1366.3774"
+         x="1368.6255"
          y="549.21057">@ClassGetSimpleName</tspan>
       <tspan
          sodipodi:role="line"
          id="tspan4121-5"
-         x="1366.3774"
+         x="1368.6255"
          y="569.2099">String</tspan>
     </text>
   </g>
