@@ -82,22 +82,23 @@ examples appear in a table below.
     \S 6.2}), which is the same as
   \refqualclass{checker/signature/qual}{Identifier}.
 
-\item[\refqualclass{checker/signature/qual}{SourceNameForNonInner}]
-  A source name is a string that is a valid fully qualified name \emph{and}
-  a valid binary name.  A programmer should never or rarely use this --- you should
-  know how you intend to use a given variable.  The checker infers it for
-  literal strings such as \<"package.MyClass"> that are valid in both
-  formats, and you might occasionally see it in an error message.
-  Likewise, you might see other types such as \<SourceNameForNonArrayNonInner>,
-  \<BinaryNameForNonArray>, and \<FieldDescriptorForArray>, but you
-  generally should not use them either.
-
 \end{description}
 
-Java also defines other string formats for a type:
-qualified names (JLS \S 6.2), and canonical
-names (JLS \S 6.7).  The Signature Checker does not include annotations
-for these.
+Other type qualifiers are the intersection of two or more qualifiers listed
+above; for example, a
+\refqualclass{checker/signature/qual}{SourceNameForNonInner} is a string
+that is a valid fully qualified name \emph{and} a valid binary name.  A
+programmer should never or rarely use these qualifiers, and you can ignore
+them as implementation details of the Signature Checker, though you might
+occasionally see them in an error message.  These qualifiers exist to give
+literals sufficiently precise types that they can be used in any
+appropriate context.
+
+Java also defines other string formats for a type:  qualified names
+(\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-6.html#jls-6.2}{JLS
+  \S 6.2}) and canonical names
+(\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-6.html#jls-6.7}{JLS
+  \S 6.7}).  The Signature Checker does not include annotations for these.
 
 Here are examples of the supported formats:
 
