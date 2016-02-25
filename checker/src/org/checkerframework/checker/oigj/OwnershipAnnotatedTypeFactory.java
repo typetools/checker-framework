@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -41,7 +42,7 @@ public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
+                new LinkedHashSet<Class<? extends Annotation>>(
                         Arrays.asList(World.class, Dominator.class, Modifier.class, O.class, OIGJMutabilityBottom.class)));
     }
 

@@ -46,6 +46,7 @@ public class SignatureTypeFactoryTest {
       String s15 = "";
       String s16 = "[]";
       String s17 = "[][]";
+      String s15 = "";
 
       // All the examples from the manual
       String t1 = "I";
@@ -288,6 +289,16 @@ public class SignatureTypeFactoryTest {
       //:: error: (assignment.type.incompatible)
       iform = s17;
       sn = s17;
+
+      us = s15;
+      //:: error: (assignment.type.incompatible)
+      fqn = s15;
+      //:: error: (assignment.type.incompatible)
+      bn = s15;
+      //:: error: (assignment.type.incompatible)
+      cgn = s15;
+      //:: error: (assignment.type.incompatible)
+      fd = s15;
 
       us = t1;
       fqn = t1;
