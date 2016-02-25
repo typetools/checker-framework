@@ -496,12 +496,9 @@
     </target>
 
     <target name="subtyping-tests" depends="jar,build-tests"
-            description="Run tests for the Checker Framework">
+            description="Run tests for the Subtyping Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.SubtypingEncryptedTest"/>
-        </antcall>
-        <antcall target="-run-tests">
-            <param name="param" value="tests.SubtypingSuperSubTest"/>
         </antcall>
     </target>
 

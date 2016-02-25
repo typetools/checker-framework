@@ -44,8 +44,11 @@ examples appear in a table below.
 \item[\refqualclass{checker/signature/qual}{FieldDescriptor}]
   A \emph{field descriptor} (\href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2}{JVMS \S 4.3.2}), such as
   \<Lpackage/Outer\$Inner;>, is used in a \<.class> file's constant pool,
-  for example to refer to other types; it abbreviates primitives and
-  arrays, and uses internal form (\href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.2.1}{JVMS \S 4.2}) for class names.
+  for example to refer to other types.  It abbreviates primitives and
+  arrays.  It uses internal form (binary names, but with \</> instead of
+  \<.>; see
+  \href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.2.1}{JVMS
+    \S 4.2}) for class names.  See examples below.
 
 \item[\refqualclass{checker/signature/qual}{ClassGetName}]
 \begin{sloppypar}
@@ -56,7 +59,7 @@ examples appear in a table below.
   format like the
   \href{https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2}{FieldDescriptor
     field descriptor}, but using
-  ``\<.>''~where the field descriptor uses ``\</>''.
+  ``\<.>''~where the field descriptor uses ``\</>''.  See examples below.
 \end{sloppypar}
 
 \item[\refqualclass{checker/signature/qual}{InternalForm}]
