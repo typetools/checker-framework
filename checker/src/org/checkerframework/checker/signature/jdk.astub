@@ -67,7 +67,7 @@ package java.lang.instrument;
 
 class ClassFileTransformer {
   byte[] transform(ClassLoader loader,
-		   @FieldDescriptor String className,
+		   @InternalForm String className,
 		   Class<?> classBeingRedefined,
 		   ProtectionDomain protectionDomain,
 		   byte[] classfileBuffer);
