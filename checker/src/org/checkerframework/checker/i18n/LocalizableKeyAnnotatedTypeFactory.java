@@ -6,6 +6,7 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.checkerframework.checker.i18n.qual.LocalizableKey;
@@ -33,7 +34,7 @@ public class LocalizableKeyAnnotatedTypeFactory extends
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
+                new LinkedHashSet<Class<? extends Annotation>>(
                         Arrays.asList(LocalizableKey.class, PropertyKey.class, UnknownPropertyKey.class)));
     }
 

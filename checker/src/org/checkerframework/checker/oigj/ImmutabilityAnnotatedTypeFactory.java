@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -156,7 +157,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
+                new LinkedHashSet<Class<? extends Annotation>>(
                         Arrays.asList(ReadOnly.class, Mutable.class, Immutable.class, I.class, AssignsFields.class, OIGJMutabilityBottom.class)));
     }
 

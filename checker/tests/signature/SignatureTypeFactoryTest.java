@@ -31,6 +31,7 @@ public class SignatureTypeFactoryTest {
       String s12 = "a.b$c[][]";
       String s13 = "a.b.c[][]";
       String s14 = "[[Ljava/lang/String;";
+      String s15 = "";
 
       // All the examples from the manual
       String t1 = "I";
@@ -173,6 +174,16 @@ public class SignatureTypeFactoryTest {
       //:: error: (assignment.type.incompatible)
       cgn = s14;
       fd = s14;
+
+      us = s15;
+      //:: error: (assignment.type.incompatible)
+      fqn = s15;
+      //:: error: (assignment.type.incompatible)
+      bn = s15;
+      //:: error: (assignment.type.incompatible)
+      cgn = s15;
+      //:: error: (assignment.type.incompatible)
+      fd = s15;
 
       us = t1;
       fqn = t1;

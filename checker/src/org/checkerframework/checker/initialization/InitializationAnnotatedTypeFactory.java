@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -94,7 +95,7 @@ public abstract class InitializationAnnotatedTypeFactory<
 
         this.useFbc = useFbc;
 
-        Set<Class<? extends Annotation>> tempInitAnnos = new HashSet<>();
+        Set<Class<? extends Annotation>> tempInitAnnos = new LinkedHashSet<>();
 
         if (useFbc) {
             COMMITTED = AnnotationUtils.fromClass(elements, Initialized.class);
