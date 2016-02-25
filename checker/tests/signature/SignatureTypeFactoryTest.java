@@ -46,7 +46,6 @@ public class SignatureTypeFactoryTest {
       String s15 = "";
       String s16 = "[]";
       String s17 = "[][]";
-      String s15 = "";
 
       // All the examples from the manual
       String t1 = "I";
