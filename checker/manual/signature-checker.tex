@@ -76,7 +76,7 @@ examples appear in a table below.
   The type representation returned by the
   \sunjavadoc{java/lang/Class.html\#getSimpleName--}{\code{Class.getSimpleName()}}
   method.  This format is not required by any method in the JDK, so you
-  will rarely write it in source code.  The simple name can be empty.  This
+  will rarely write it in source code.  The string can be empty.  This
   is not the same as the ``simple name'' defined in
   (\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-6.html#jls-6.2}{JLS
     \S 6.2}), which is the same as
@@ -105,7 +105,7 @@ Here are examples of the supported formats:
 \begin{center}
 \begin{tabular}{|l|l|l|l|l|l}
 \hline
-\multicolumn{1}{|c|}{fully-qualified name} & \multicolumn{1}{c|}{binary name} & \multicolumn{1}{c|}{Class.getName} & \multicolumn{1}{c|}{field descriptor} & \multicolumn{1}{c|}{internal form} & \multicolumn{1}{c|}{simple name} \\ \hline
+\multicolumn{1}{|c|}{fully-qualified name} & \multicolumn{1}{c|}{binary name} & \multicolumn{1}{c|}{Class.getName} & \multicolumn{1}{c|}{field descriptor} & \multicolumn{1}{c|}{internal form} & \multicolumn{1}{c|}{Class.getSimpleName} \\ \hline
 int                    & int                    & int                     & I                       & int                    & int            \\
 int[][]                & int[][]                & [[I                     & [[I                     & int[][]                & int[][]        \\
 MyClass                & MyClass                & MyClass                 & LMyClass;               & MyClass                & MyClass        \\
