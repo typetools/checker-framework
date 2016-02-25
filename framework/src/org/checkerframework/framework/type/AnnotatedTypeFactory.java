@@ -205,7 +205,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Initially null, then assigned in postInit().  Caching is enabled as
     // soon as this is non-null, so it should be first set to its final
     // value, not initialized to an empty map that is incrementally filled.
-    private Map<Element, AnnotatedTypeMirror> indexTypes;
+    private Map<Element, AnnotatedTypeMirror> typesFromStubFiles;
 
     /**
      * Declaration annotations read from stub files (but not those from the annotated JDK jar file).
@@ -214,7 +214,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * verbose element name, as returned by ElementUtils.getVerboseName.
      */
     // Not final, because it is assigned in postInit().
-    private Map<String, Set<AnnotationMirror>> indexDeclAnnos;
+    private Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles;
 
     /**
      * A cache used to store elements whose declaration annotations
@@ -349,7 +349,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Actions that logically belong in the constructor, but need to run
      * after the subclass constructor has completed.  In particular,
-     * buildIndexTypes may try to do type resolution with this
+     * parseStubFiles() may try to do type resolution with this
      * AnnotatedTypeFactory.
      */
     protected void postInit() {
@@ -378,7 +378,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         initilizeReflectionResolution();
 
         if (this.getClass().equals(AnnotatedTypeFactory.class)) {
-            this.buildIndexTypes();
+            this.parseStubFiles();
         }
     }
 
@@ -981,9 +981,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror type;
         Tree decl = declarationFromElement(elt);
 
-        if (decl == null && indexTypes != null && indexTypes.containsKey(elt)) {
-            type = indexTypes.get(elt).deepCopy();
-        } else if (decl == null && (indexTypes == null || !indexTypes.containsKey(elt))) {
+        if (decl == null && typesFromStubFiles != null && typesFromStubFiles.containsKey(elt)) {
+            type = typesFromStubFiles.get(elt).deepCopy();
+        } else if (decl == null && (typesFromStubFiles == null || !typesFromStubFiles.containsKey(elt))) {
             type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
             ElementAnnotationApplier.apply(type, elt, this);
 
@@ -1005,10 +1005,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             type = null; // dead code
         }
 
-        // Caching is disabled if indexTypes == null, because calls to this
+        // Caching is disabled if typesFromStubFiles == null, because calls to this
         // method before the stub files are fully read can return incorrect
         // results.
-        if (shouldCache && indexTypes != null)
+        if (shouldCache && typesFromStubFiles != null)
             elementCache.put(elt, type.deepCopy());
         return type;
     }
@@ -1018,7 +1018,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * that are not already annotated with @FromStubFile
      */
     private void addFromByteCode(Element elt) {
-        if (indexDeclAnnos == null) { // || trees.getTree(elt) != null) {
+        if (declAnnosFromStubFiles == null) { // || trees.getTree(elt) != null) {
             // Parsing stub files, don't add @FromByteCode
             return;
         }
@@ -1027,11 +1027,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 elt.getKind() == ElementKind.METHOD || elt.getKind() == ElementKind.FIELD) {
             // Only add @FromByteCode to methods, constructors, and fields
             if (ElementUtils.isElementFromByteCode(elt)) {
-                Set<AnnotationMirror> annos = indexDeclAnnos.get(ElementUtils
+                Set<AnnotationMirror> annos = declAnnosFromStubFiles.get(ElementUtils
                         .getVerboseName(elt));
                 if (annos == null) {
                     annos = AnnotationUtils.createAnnotationSet();
-                    indexDeclAnnos.put(ElementUtils.getVerboseName(elt), annos);
+                    declAnnosFromStubFiles.put(ElementUtils.getVerboseName(elt), annos);
                 }
                 if (!AnnotationUtils.containsSameIgnoringValues(annos, fromStubFile)) {
                     annos.add(fromByteCode);
@@ -2429,68 +2429,79 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
     }
 
-    /** Sets indexTypes and indexDeclAnnos by side effect, just before returning. */
-    protected void buildIndexTypes() {
-        if (this.indexTypes != null || this.indexDeclAnnos != null) {
-            ErrorReporter.errorAbort("AnnotatedTypeFactory.buildIndexTypes called more than once");
+    /**
+     * Parses the stub files in the following order: <br>
+     * 1. jdk.astub in the same directory as the checker, if it exist and ignorejdkastub option is not supplied <br>
+     * 2. flow.astub in the same directory as BaseTypeChecker <br>
+     * 3. Stub files provide via stubs compiler option <br>
+     * 4. Stub files provide via stubs system property <br>
+     * 5. Stub files provide via stubs environment variable <br>
+     * 6. Stub files listed in @Stubfiles annotation on the checker; must be in same directory as the checker
+     * <p>
+     * Sets typesFromStubFiles and declAnnosFromStubFiles by side effect, just before returning.
+     */
+    protected void parseStubFiles() {
+        if (this.typesFromStubFiles != null || this.declAnnosFromStubFiles != null) {
+            ErrorReporter.errorAbort("AnnotatedTypeFactory.parseStubFiles called more than once");
         }
 
-        Map<Element, AnnotatedTypeMirror> indexTypes
+        Map<Element, AnnotatedTypeMirror> typesFromStubFiles
             = new HashMap<Element, AnnotatedTypeMirror>();
-        Map<String, Set<AnnotationMirror>> indexDeclAnnos
+        Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles
             = new HashMap<String, Set<AnnotationMirror>>();
 
+        // 1. jdk.astub
         if (!checker.hasOption("ignorejdkastub")) {
             InputStream in = null;
-            if (checker != null)
-                in = checker.getClass().getResourceAsStream("jdk.astub");
+            in = checker.getClass().getResourceAsStream("jdk.astub");
             if (in != null) {
                 StubParser stubParser = new StubParser("jdk.astub", in, this, processingEnv);
-                stubParser.parse(indexTypes, indexDeclAnnos);
+                stubParser.parse(typesFromStubFiles, declAnnosFromStubFiles);
             }
         }
 
+        // 2. flow.astub
         // stub file for type-system independent annotations
         InputStream input = BaseTypeChecker.class.getResourceAsStream("flow.astub");
         if (input != null) {
             StubParser stubParser = new StubParser("flow.astub", input, this, processingEnv);
-            stubParser.parse(indexTypes, indexDeclAnnos);
+            stubParser.parse(typesFromStubFiles, declAnnosFromStubFiles);
         }
 
-        String allstubFiles = "";
-        String stubFiles;
+        // Stub files specified via stubs compiler option, stubs system property,
+        // stubs env. variable, or @Stubfiles
+        String allStubFiles = "";
 
-        stubFiles = checker.getOption("stubs");
-        if (stubFiles != null)
-            allstubFiles += File.pathSeparator + stubFiles;
+        // 3. Stub files provide via stubs option
+        String stubsOption = checker.getOption("stubs");
+        allStubFiles += stubsOption != null ? File.pathSeparator + stubsOption : "";
 
-        stubFiles = System.getProperty("stubs");
-        if (stubFiles != null)
-            allstubFiles += File.pathSeparator + stubFiles;
+        // 4. Stub files provide via stubs system property
+        String stubsProperty = System.getProperty("stubs");
+        allStubFiles += stubsProperty != null ? File.pathSeparator + stubsProperty : "";
 
-        stubFiles = System.getenv("stubs");
-        if (stubFiles != null)
-            allstubFiles += File.pathSeparator + stubFiles;
+        // 5. Stub files provide via stubs environment variable
+        String stubEnvVar = System.getenv("stubs");
+        allStubFiles += stubEnvVar != null ? File.pathSeparator + stubEnvVar : "";
 
-        {
-            StubFiles sfanno = checker.getClass().getAnnotation(StubFiles.class);
-            if (sfanno != null) {
-                String[] sfarr = sfanno.value();
-                stubFiles = "";
-                for (String sf : sfarr) {
-                    stubFiles += File.pathSeparator + sf;
-                }
-                allstubFiles += stubFiles;
+        // 6. Stub files listed in @Stubfiles annotation on the checker
+        StubFiles stubFilesAnnotation = checker.getClass().getAnnotation(StubFiles.class);
+        if (stubFilesAnnotation != null) {
+            String[] sfarr = stubFilesAnnotation.value();
+            for (String sf : sfarr) {
+                allStubFiles += File.pathSeparator + sf;
             }
         }
 
-        if (allstubFiles.isEmpty()) {
-            this.indexTypes = indexTypes;
-            this.indexDeclAnnos = indexDeclAnnos;
+        if (allStubFiles.isEmpty()) {
+            this.typesFromStubFiles = typesFromStubFiles;
+            this.declAnnosFromStubFiles = declAnnosFromStubFiles;
             return;
         }
 
-        String[] stubArray = allstubFiles.split(File.pathSeparator);
+        // Parse stub files specified via stubs compiler option, stubs system property,
+        // stubs env. variable, or @Stubfiles
+        String[] stubArray = allStubFiles.split(File.pathSeparator);
         for (String stubPath : stubArray) {
             if (stubPath == null || stubPath.isEmpty()) {
                 continue;
@@ -2503,11 +2514,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull);
             if (stubs.size() == 0) {
                 InputStream in = null;
-                if (checker != null)
-                    in = checker.getClass().getResourceAsStream(stubPath);
+                in = checker.getClass().getResourceAsStream(stubPath);
                 if (in != null) {
                     StubParser stubParser = new StubParser(stubPath, in, this, processingEnv);
-                    stubParser.parse(indexTypes, indexDeclAnnos);
+                    stubParser.parse(typesFromStubFiles, declAnnosFromStubFiles);
                     // We could handle the stubPath -> continue.
                     continue;
                 }
@@ -2525,13 +2535,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     continue;
                 }
                 StubParser stubParser = new StubParser(resource.getDescription(), stubStream, this, processingEnv);
-                stubParser.parse(indexTypes, indexDeclAnnos);
+                stubParser.parse(typesFromStubFiles, declAnnosFromStubFiles);
             }
         }
 
-        this.indexTypes = indexTypes;
-        this.indexDeclAnnos = indexDeclAnnos;
-        return;
+        this.typesFromStubFiles = typesFromStubFiles;
+        this.declAnnosFromStubFiles = declAnnosFromStubFiles;
     }
 
     /**
@@ -2628,15 +2637,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         Set<AnnotationMirror> results = AnnotationUtils.createAnnotationSet();
         // Retrieving the annotations from the element.
         results.addAll(elt.getAnnotationMirrors());
-        // If indexDeclAnnos == null, return the annotations in the element.
-        if (indexDeclAnnos != null) {
-            // Adding @FromByteCode annotation to indexDeclAnnos entry with key
+        // If declAnnosFromStubFiles == null, return the annotations in the element.
+        if (declAnnosFromStubFiles != null) {
+            // Adding @FromByteCode annotation to declAnnosFromStubFiles entry with key
             // elt, if elt is from bytecode.
             addFromByteCode(elt);
 
             // Retrieving annotations from stub files.
             String eltName = ElementUtils.getVerboseName(elt);
-            Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
+            Set<AnnotationMirror> stubAnnos = declAnnosFromStubFiles.get(eltName);
             if (stubAnnos != null) {
                 results.addAll(stubAnnos);
             }
