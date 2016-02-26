@@ -747,7 +747,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
 
     /**
-     * Returns a maps from each a pair of annotations to their glb.
+     * Returns a map from each possible pair of annotations to their glb.
      */
     private Map<AnnotationPair, AnnotationMirror> calculateGlbs() {
         Map<AnnotationPair, AnnotationMirror> newglbs = new HashMap<AnnotationPair, AnnotationMirror>();
