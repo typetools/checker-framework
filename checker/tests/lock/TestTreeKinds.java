@@ -614,9 +614,14 @@ public void testMethodAnnotations() {
       int e = 0;
       //:: error: (primitive.type.guardedby)
       @GuardedByUnknown int f = 0;
-      //:: error: (primitive.type.guardedby)
+      //:: error: (primitive.type.guardedby) :: error: (assignment.type.incompatible)
       @GuardedByBottom int g = 0;
   }
 
+  // TODO: Once @TargetLocations are enforced, @GuardSatisfied on all three of these locations should issue warnings:
+  @GuardSatisfied Object field;
+  void testGuardSatisfiedOnArrayElementAndLocalVariable(@GuardSatisfied Object[] array) {
+      @GuardSatisfied Object local;
+  }
 
 }

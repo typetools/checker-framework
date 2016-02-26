@@ -3,6 +3,8 @@ package org.checkerframework.checker.lock.qual;
 import java.lang.annotation.*;
 
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TargetLocations;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * If a variable {@code x} has type {@code @GuardSatisfied}, then all
@@ -32,9 +34,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf(GuardedByUnknown.class) // TODO: Should @GuardSatisfied be in its own hierarchy?
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-// TODO: GuardSatisfied should only be allowed on method parameters, receivers, and return types
-// but ElementType does not these choices.
-@Target({  ElementType.PARAMETER, ElementType.TYPE_USE })
+@TargetLocations({ TypeUseLocation.RECEIVER, TypeUseLocation.PARAMETER, TypeUseLocation.RETURN })
+@Target(ElementType.TYPE_USE)
 public @interface GuardSatisfied {
     /**
      * The index on the GuardSatisfied polymorphic qualifier.
