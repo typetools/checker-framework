@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -98,7 +99,7 @@ public class NullnessAnnotatedTypeFactory
         POLYNULL = AnnotationUtils.fromClass(elements, PolyNull.class);
         MONOTONIC_NONNULL = AnnotationUtils.fromClass(elements, MonotonicNonNull.class);
 
-        Set<Class<? extends Annotation>> tempNullnessAnnos = new HashSet<>();
+        Set<Class<? extends Annotation>> tempNullnessAnnos = new LinkedHashSet<>();
         tempNullnessAnnos.add(NonNull.class);
         tempNullnessAnnos.add(MonotonicNonNull.class);
         tempNullnessAnnos.add(Nullable.class);
@@ -172,14 +173,14 @@ public class NullnessAnnotatedTypeFactory
         // if useFbc is true, then it is the NullnessChecker
         if (ckr.useFbc) {
             return Collections.unmodifiableSet(
-                    new HashSet<Class<? extends Annotation>>(
+                    new LinkedHashSet<Class<? extends Annotation>>(
                             Arrays.asList(Nullable.class, MonotonicNonNull.class, NonNull.class, UnderInitialization.class,
                                     Initialized.class, UnknownInitialization.class, FBCBottom.class, PolyNull.class, PolyAll.class)));
         }
         // otherwise, it is the NullnessRawnessChecker
         else {
             return Collections.unmodifiableSet(
-                    new HashSet<Class<? extends Annotation>>(
+                    new LinkedHashSet<Class<? extends Annotation>>(
                             Arrays.asList(Nullable.class, MonotonicNonNull.class, NonNull.class, NonRaw.class, Raw.class,
                                     // PolyRaw.class, //TODO: support PolyRaw in the future
                                     PolyNull.class, PolyAll.class)));
@@ -290,11 +291,12 @@ public class NullnessAnnotatedTypeFactory
 
     protected AnnotatedTypeMirror getDeclaredAndDefaultedAnnotatedType(Tree tree) {
         HACK_DONT_CALL_POST_AS_MEMBER = true;
+        boolean oldShouldCache = shouldCache;
         shouldCache = false;
 
         AnnotatedTypeMirror type = getAnnotatedType(tree);
 
-        shouldCache = true;
+        shouldCache = oldShouldCache;
         HACK_DONT_CALL_POST_AS_MEMBER = false;
 
         return type;

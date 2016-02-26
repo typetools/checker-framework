@@ -19,6 +19,7 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -54,7 +55,7 @@ public class LockAnnotatedTypeFactory
         LOCKPOSSIBLYHELD = AnnotationUtils.fromClass(elements, LockPossiblyHeld.class);
         SIDEEFFECTFREE = AnnotationUtils.fromClass(elements, SideEffectFree.class);
 
-        Set<Class<? extends Annotation>> tempLockAnnos = new HashSet<>();
+        Set<Class<? extends Annotation>> tempLockAnnos = new LinkedHashSet<>();
         tempLockAnnos.add(LockHeld.class);
         tempLockAnnos.add(LockPossiblyHeld.class);
         lockAnnos = Collections.unmodifiableSet(tempLockAnnos);
@@ -71,7 +72,7 @@ public class LockAnnotatedTypeFactory
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
+                new LinkedHashSet<Class<? extends Annotation>>(
                         Arrays.asList(LockHeld.class, LockPossiblyHeld.class)));
     }
 

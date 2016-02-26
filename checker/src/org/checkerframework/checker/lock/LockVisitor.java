@@ -28,6 +28,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -223,7 +224,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             Element invokedElement, boolean methodCall, Set<Pair<String, String>> additionalPreconditions) {
 
         if (additionalPreconditions == null) {
-            additionalPreconditions = new HashSet<>();
+            additionalPreconditions = new LinkedHashSet<>();
         }
 
         // Retrieve the @GuardedBy annotation on the receiver of the enclosing method
