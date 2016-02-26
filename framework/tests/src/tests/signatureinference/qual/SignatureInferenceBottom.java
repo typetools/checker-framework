@@ -11,7 +11,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * Toy type system for testing field inference.
  * @see Sibling1, Sibling2, Parent
  */
-@SubtypeOf({ToIgnore.class})
+@SubtypeOf({ImplicitAnno.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @DefaultFor(DefaultLocation.LOWER_BOUNDS)
 public @interface SignatureInferenceBottom {}

@@ -20,6 +20,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
@@ -31,6 +32,7 @@ import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.IgnoreInSignatureInference;
+import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -487,8 +489,8 @@ public class SignatureInferenceScenes {
      * Look into the createQualifierDefaults method before changing anything here.
      */
     private static boolean shouldIgnore(AnnotationMirror am,
-            DefaultLocation location, AnnotatedTypeFactory atf) {
-        boolean shouldIgnore = false;
+            DefaultLocation location, AnnotatedTypeFactory atf,
+            AnnotatedTypeMirror atm) {
         AnnotationMirror bottomAnno = atf.getQualifierHierarchy().getBottomAnnotation(am);
         if (AnnotationUtils.annotationName(bottomAnno) == AnnotationUtils.annotationName(am)) {
             // Ignore annotation if it is the bottom type.
@@ -501,40 +503,64 @@ public class SignatureInferenceScenes {
         // Checks if am is an implementation detail (a type qualifier used
         // internally by the type system and not meant to be seen by the user.)
         Target target = elt.getAnnotation(Target.class);
-        shouldIgnore |= (target != null && target.value().length == 0);
-        shouldIgnore |= elt.getAnnotation(InvisibleQualifier.class) != null;
-        if (shouldIgnore) {
-            return shouldIgnore;
-        }
+        if (target != null && target.value().length == 0) return true;
+        if (elt.getAnnotation(InvisibleQualifier.class) != null) return true;
 
         // Checks if am is default
-        shouldIgnore |= elt.getAnnotation(DefaultQualifierInHierarchy.class) != null;
+        if (elt.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
+            return true;
+        }
         DefaultQualifier defaultQual = elt.getAnnotation(DefaultQualifier.class);
-        if (!shouldIgnore && defaultQual != null) {
+        if (defaultQual != null) {
             for (DefaultLocation loc : defaultQual.locations()) {
                 if (loc == DefaultLocation.ALL || loc == location) {
-                    shouldIgnore = true;
+                    return true;
                 }
             }
         }
         DefaultFor defaultQualForLocation = elt.getAnnotation(DefaultFor.class);
-        if (!shouldIgnore && defaultQualForLocation != null) {
+        if (defaultQualForLocation != null) {
             for (DefaultLocation loc : defaultQualForLocation.value()) {
                 if (loc == DefaultLocation.ALL || loc == location) {
-                    shouldIgnore = true;
+                    return true;
                 }
             }
         }
-        if (shouldIgnore) {
-            return shouldIgnore;
+
+        // Checks if am is an implicit annotation
+        // TODO: Handles cases of implicit annotations added via an
+        // org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator
+        ImplicitFor implicitFor = elt.getAnnotation(ImplicitFor.class);
+        if (implicitFor != null) {
+            TypeKind[] types = implicitFor.types();
+            for (TypeKind tk : types) if (tk == atm.getKind()) return true;
+
+            Class<? extends AnnotatedTypeMirror>[] classes =
+                    implicitFor.typeClasses();
+            for (Class<? extends AnnotatedTypeMirror> c : classes) {
+                if (c.isInstance(atm)) return true;
+            }
+
+            Class<?>[] names = implicitFor.typeNames();
+            for (Class<?> c : names) {
+                TypeMirror underlyingtype = atm.getUnderlyingType();
+                while (underlyingtype instanceof javax.lang.model.type.ArrayType) {
+                        underlyingtype = ((javax.lang.model.type.ArrayType)underlyingtype).
+                                getComponentType();
+                }
+                if (c.getCanonicalName().equals(
+                        atm.getUnderlyingType().toString())) {
+                    return true;
+                }
+            }
         }
 
         // Special cases that should be ignored:
         // {@link org.checkerframework.qualframework.base.TypeMirrorConverter.Key}
         if (AnnotationUtils.areSameByClass(am, Key.class)) {
-            shouldIgnore = true;
+            return true;
         }
-        return shouldIgnore;
+        return false;
     }
 
     /**
@@ -637,7 +663,7 @@ public class SignatureInferenceScenes {
             for (AnnotationMirror am : newATM.getAnnotations()) {
                 Annotation anno = annotationMirrorToAnnotation(am);
                 if (anno != null) {
-                    if (shouldIgnore(am, defLoc, atf)) {
+                    if (shouldIgnore(am, defLoc, atf, newATM)) {
                         Set<String> annosIgnored = annosToIgnore.get(defLoc);
                         if (annosIgnored == null) {
                             annosIgnored = new HashSet<>();
@@ -739,9 +765,10 @@ public class SignatureInferenceScenes {
                             ((AnnotationValue)listV.get(0)).getValue());
                     if (scalarAFT != null) {
                         return new ArrayAFT(scalarAFT);
+                    } else {
+                        return null;
                     }
                 }
-                return null;
             }
             Type elemType = ((ArrayType)((Array)defaultValue).type).elemtype;
             try {
