@@ -12,9 +12,13 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * Language Specification, section 13.1</a>, but only for a non-array type
  * in the unnamed package (also known as the default package).
  *
+ * Example: Foo$Inner
+ * Example: Foo$22
+ * Example: Foo
+ *
  * @checker_framework.manual #signature-checker Signature Checker
  */
-@SubtypeOf({BinaryNameForNonArray.class, InternalForm.class})
+@SubtypeOf({BinaryNameForNonArray.class, BinaryNameInUnnamedPackage.class})
 @ImplicitFor(stringPatterns="^[A-Za-z_][A-Za-z_0-9]*(\\$[A-Za-z_0-9]+)*$")
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface BinaryNameForNonArrayInUnnamedPackage {}

@@ -238,6 +238,81 @@
          style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
          transform="scale(0.8,0.8)" />
     </marker>
+    <marker
+       inkscape:stockid="TriangleOutL"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker4743-1-1"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         inkscape:connector-curvature="0"
+         id="path4745-4-71"
+         d="m 5.77,0 -8.65,5 0,-10 8.65,5 z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8,0.8)" />
+    </marker>
+    <marker
+       inkscape:stockid="TriangleOutL"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker4743-1-1-8"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         inkscape:connector-curvature="0"
+         id="path4745-4-71-9"
+         d="m 5.77,0 -8.65,5 0,-10 8.65,5 z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8,0.8)" />
+    </marker>
+    <marker
+       inkscape:stockid="TriangleOutL"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker4743-1-1-8-8"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         inkscape:connector-curvature="0"
+         id="path4745-4-71-9-1"
+         d="m 5.77,0 -8.65,5 0,-10 8.65,5 z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8,0.8)" />
+    </marker>
+    <marker
+       inkscape:stockid="TriangleOutL"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker4743-1-5-7"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         inkscape:connector-curvature="0"
+         id="path4745-4-0-3"
+         d="m 5.77,0 -8.65,5 0,-10 8.65,5 z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8,0.8)" />
+    </marker>
+    <marker
+       inkscape:stockid="TriangleOutL"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker4743-1-2-2"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         inkscape:connector-curvature="0"
+         id="path4745-4-6-1"
+         d="m 5.77,0 -8.65,5 0,-10 8.65,5 z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="scale(0.8,0.8)" />
+    </marker>
   </defs>
   <sodipodi:namedview
      pagecolor="#ffffff"
@@ -248,17 +323,17 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="2560"
-     inkscape:window-height="1536"
+     inkscape:window-width="1920"
+     inkscape:window-height="1176"
      id="namedview222"
      showgrid="false"
      inkscape:zoom="1.9525943"
-     inkscape:cx="327.1614"
-     inkscape:cy="153.41408"
+     inkscape:cx="618.1001"
+     inkscape:cy="173.89965"
      inkscape:window-x="0"
-     inkscape:window-y="27"
+     inkscape:window-y="24"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g70"
+     inkscape:current-layer="g126-6"
      showborder="true"
      fit-margin-top="0"
      fit-margin-left="0"
@@ -415,14 +490,14 @@
     </text>
     <rect
        style="fill:#ffffff"
-       x="897.57812"
+       x="996.49487"
        y="801.60175"
        width="86.592964"
        height="45.970306"
        id="rect72-2" />
     <rect
        style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.15666354"
-       x="897.97064"
+       x="996.88739"
        y="801.18011"
        width="87.436295"
        height="43.655926"
@@ -430,34 +505,34 @@
     <text
        font-size="16"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
-       x="941.68884"
+       x="1040.605"
        y="821.45172"
        id="text76-0"
        sodipodi:linespacing="125%">
       <tspan
          sodipodi:role="line"
          id="tspan4252"
-         x="941.68884"
+         x="1040.605"
          y="821.45172">@Identifier</tspan>
       <tspan
          sodipodi:role="line"
          id="tspan4254"
-         x="941.68884"
+         x="1040.605"
          y="835.50238">String</tspan>
     </text>
     <rect
        style="fill:#ffffff"
-       x="1205.2411"
+       x="1253.0217"
        y="711.67761"
-       width="228.25"
+       width="130.38603"
        height="50"
        id="rect72-2-0" />
     <rect
-       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.9362545"
-       x="1211.722"
-       y="709.39771"
-       width="213.65958"
-       height="50.063747"
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.58433521"
+       x="1248.9646"
+       y="709.22174"
+       width="142.05269"
+       height="50.415665"
        id="rect74-7-8" />
     <text
        font-size="16"
@@ -479,62 +554,34 @@
     </text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.91088629;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4743)"
-       d="m 1400.6481,708.04116 84.5131,-122.83347"
+       d="M 1358.6242,708.04116 1463.2857,584.05635"
        id="path4260"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.91088629;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4743-6)"
-       d="m 1315.6004,707.8196 45.3974,-123.07192"
+       d="m 1315.6004,707.8196 -91.0365,-32.69167"
        id="path4260-4"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.91088629;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4743-8)"
-       d="M 1224.776,708.39527 794.14107,674.06253"
+       d="M 1253.5595,707.24393 794.14107,674.06253"
        id="path4260-6"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.91088629;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4743-1)"
-       d="m 975.91849,799.67558 96.06631,-34.19306"
+       d="m 1045.5746,799.09991 12.0184,-30.16337"
        id="path4260-42"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.91088629;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4743-1-9)"
-       d="M 911.21615,799.4702 868.06774,766.09126"
+       d="M 1007.9288,797.74319 868.06774,766.09126"
        id="path4260-42-3"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
-    <rect
-       style="fill:#ffffff"
-       x="972.58173"
-       y="711.36548"
-       width="228.25"
-       height="50"
-       id="rect72-2-0-1" />
-    <rect
-       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.9362545"
-       x="979.06268"
-       y="709.08557"
-       width="213.65958"
-       height="50.063747"
-       id="rect74-7-8-3" />
-    <text
-       font-size="16"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050776px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr;text-anchor:middle;fill:#000000;"
-       x="1086.7062"
-       y="731.21558"
-       id="text76-0-8-0"
-       sodipodi:linespacing="125%">
-      <tspan
-         sodipodi:role="line"
-         id="tspan4373">@BinaryNameForNonArray-</tspan>
-      <tspan
-         sodipodi:role="line"
-         id="tspan4375">InUnnamedPackage String</tspan>
-    </text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.91088629;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4743-1-2)"
        d="m 1020.2116,707.47146 -19.0678,-30.16337"
@@ -543,8 +590,14 @@
        sodipodi:nodetypes="cc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.91088629;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4743-1-5)"
-       d="M 1180.8236,709.19848 1330.4273,581.74682"
+       d="m 1202.1234,618.24256 128.3039,-36.49574"
        id="path4260-42-2"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.91088629;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4743-1-1)"
+       d="m 1072.0219,799.57873 183.5682,-35.92007"
+       id="path4260-42-6"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
   </g>
@@ -615,42 +668,6 @@
     </text>
   </g>
   <g
-     id="g114"
-     transform="translate(-9.9924114,-0.5408881)">
-    <rect
-       style="fill:#ffffff"
-       x="1055.9052"
-       y="620"
-       width="169.91667"
-       height="50"
-       id="rect116" />
-    <rect
-       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.79259336"
-       x="1052.1161"
-       y="619.89624"
-       width="176.00642"
-       height="50.207405"
-       id="rect118" />
-    <text
-       font-size="16"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
-       x="1140"
-       y="639.84998"
-       id="text120"
-       sodipodi:linespacing="125%">
-      <tspan
-         x="1140"
-         y="639.84998"
-         id="tspan122"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle">@FieldDescriptorForArray</tspan>
-      <tspan
-         x="1140"
-         y="659.84998"
-         id="tspan124"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle">String</tspan>
-    </text>
-  </g>
-  <g
      id="g126"
      transform="translate(43.962022,-0.5408881)">
     <rect
@@ -698,42 +715,40 @@
        id="tspan140" />
   </text>
   <g
-     id="g142"
-     transform="translate(-1,-0.5408881)">
-    <line
-       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
-       x1="1085"
-       y1="620"
-       x2="1075.27"
-       y2="594.04498"
-       id="line144" />
-    <polygon
-       style="fill:#000000"
-       points="1081.82,591.587 1070.35,580.936 1068.71,596.503 "
-       id="polygon146" />
-    <polygon
-       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
-       points="1081.82,591.587 1070.35,580.936 1068.71,596.503 "
-       id="polygon148" />
-  </g>
-  <g
-     id="g150"
-     transform="translate(-1,-0.5408881)">
-    <line
-       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
-       x1="1140"
-       y1="620"
-       x2="1189.77"
-       y2="588.09497"
-       id="line152" />
-    <polygon
-       style="fill:#000000"
-       points="1193.55,593.988 1201.56,580.54 1185.99,582.202 "
-       id="polygon154" />
-    <polygon
-       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
-       points="1193.55,593.988 1201.56,580.54 1185.99,582.202 "
-       id="polygon156" />
+     id="g114"
+     transform="translate(401.98467,-4.3522604)">
+    <rect
+       style="fill:#ffffff"
+       x="1055.9052"
+       y="620"
+       width="169.91667"
+       height="50"
+       id="rect116" />
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.79259336"
+       x="1052.1161"
+       y="619.89624"
+       width="176.00642"
+       height="50.207405"
+       id="rect118" />
+    <text
+       font-size="16"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
+       x="1140"
+       y="639.84998"
+       id="text120"
+       sodipodi:linespacing="125%">
+      <tspan
+         x="1140"
+         y="639.84998"
+         id="tspan122"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle">@FieldDescriptorForArray</tspan>
+      <tspan
+         x="1140"
+         y="659.84998"
+         id="tspan124"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle">String</tspan>
+    </text>
   </g>
   <g
      id="g158"
@@ -990,4 +1005,104 @@
      id="path4260-4-5-30"
      inkscape:connector-curvature="0"
      sodipodi:nodetypes="cc" />
+  <path
+     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.91088629;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4743-1-1-8)"
+     d="M 1592.3001,613.93192 1277.3376,584.91989"
+     id="path4260-42-6-3"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="cc" />
+  <path
+     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.91088629;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4743-1-1-8-8)"
+     d="M 1454.0499,616.59791 1107.4256,585.2832"
+     id="path4260-42-6-3-9"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="cc" />
+  <g
+     id="g126-9"
+     transform="translate(256.81508,3.2320405)">
+    <rect
+       style="fill:#ffffff"
+       x="794.9375"
+       y="615.50378"
+       width="156.88985"
+       height="50"
+       id="rect128-9" />
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.80205798"
+       x="778.94824"
+       y="615.40485"
+       width="185.98994"
+       height="50.197945"
+       id="rect130-7" />
+    <text
+       font-size="16"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
+       x="872.51892"
+       y="635.35376"
+       id="text132-4"
+       sodipodi:linespacing="125%">
+      <tspan
+         sodipodi:role="line"
+         id="tspan3568"
+         x="872.51892"
+         y="635.35376">@BinaryNameInUnnamedPackage</tspan>
+      <tspan
+         sodipodi:role="line"
+         id="tspan3570"
+         x="872.51892"
+         y="649.40442">String</tspan>
+    </text>
+  </g>
+  <path
+     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.91088629;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4743-1-5-7)"
+     d="M 1066.8568,619.67642 939.563,585.48336"
+     id="path4260-42-2-8"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="cc" />
+  <path
+     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.91088629;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4743-1-2-2)"
+     d="m 1118.1876,706.99477 9.1401,-29.01202"
+     id="path4260-42-7-7"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="cc" />
+  <g
+     id="g126-6"
+     transform="translate(168.89099,88.381828)">
+    <rect
+       style="fill:#ffffff"
+       x="810.3468"
+       y="620"
+       width="170.70593"
+       height="50"
+       id="rect128-0" />
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.74098647"
+       x="809.29449"
+       y="619.87048"
+       width="173.38626"
+       height="50.259018"
+       id="rect130-4" />
+    <text
+       font-size="16"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050776px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr;text-anchor:middle;fill:#000000;"
+       x="895"
+       y="639.84998"
+       id="text132-9"
+       sodipodi:linespacing="125%">
+      <tspan
+         sodipodi:role="line"
+         id="tspan3728">@BinaryNameForNonArray-</tspan>
+    </text>
+  </g>
+  <text
+     font-size="16"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050776px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr;text-anchor:middle;fill:#000000;"
+     x="1064.3394"
+     y="741.83722"
+     id="text132-9-4"
+     sodipodi:linespacing="125%">
+    <tspan
+       sodipodi:role="line"
+       id="tspan3726">InUnnamedPackage String</tspan>
+  </text>
 </svg>

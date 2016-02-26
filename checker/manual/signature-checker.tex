@@ -69,7 +69,7 @@ examples appear in a table below.
   actually represented in its own \<.class> file.  It is also known as the
   ``syntax of binary names that appear in class file structures''.  It is
   the same as the binary name, but with periods (\<.>) replaced by slashes
-  (\<.>).  Programmers more often use the binary name, leaving the internal
+  (\</>).  Programmers more often use the binary name, leaving the internal
   form as a JVM implementation detail.
 
 \item[\refqualclass{checker/signature/qual}{ClassGetSimpleName}]
@@ -110,6 +110,10 @@ int                    & int                    & int                     & I   
 int[][]                & int[][]                & [[I                     & [[I                     & int[][]                & int[][]        \\
 MyClass                & MyClass                & MyClass                 & LMyClass;               & MyClass                & MyClass        \\
 MyClass[]              & MyClass[]              & [LMyClass;              & [LMyClass;              & MyClass[]              & MyClass[]      \\
+\emph{n/a {\smaller 
+ for anonymous class}} & MyClass\$22            & MyClass\$22             & LMyClass\$22;           & MyClass\$22            & \emph{\smaller (empty string)} \\
+\emph{n/a {\smaller for
+ array of anon.~class}} & MyClass\$22[]         & [LMyClass\$22;          & [LMyClass\$22;          & MyClass\$22[]          & []             \\
 java.lang.Integer      & java.lang.Integer      & java.lang.Integer       & Ljava/lang/Integer;     & java/lang/Integer      & Integer        \\
 java.lang.Integer[]    & java.lang.Integer[]    & [Ljava.lang.Integer;    & [Ljava/lang/Integer;    & java/lang/Integer[]    & Integer[]      \\
 package.Outer.Inner    & package.Outer\$Inner   & package.Outer\$Inner    & Lpackage/Outer\$Inner;  & package/Outer\$Inner   & Inner          \\
