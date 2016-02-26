@@ -52,8 +52,22 @@
                    do not have performance regressions compared to the previous release (this list may be narrowed down to fewer
                    projects in the future). If a performance regression was introduced, work with the feature owner to understand
                    whether bug fixes can fix the performance regression and to decide on the appropriate action.</li>
-                   <li>Sign in to <a href="https://travis-ci.org/">Travis</a> and ensure that all the projects in the left-hand column are
-                   green (scrolling is required).
+                   <li id="travis">Refresh this page and ensure that the builds for all the following projects are passing in Travis:
+                       <ul>
+                           <li>Annotation File Utilities: <img src="https://travis-ci.org/typetools/annotation-tools.svg?branch=master"/></li>
+                           <li>Checker Framework: <img src="https://travis-ci.org/typetools/checker-framework.svg?branch=master"/></li>
+                           <li>checker-framework.demos: <img src="https://travis-ci.org/typetools/checker-framework.demos.svg?branch=master"/></li>
+                           <li>checker-framework-inference: <img src="https://travis-ci.org/typetools/checker-framework-inference.svg?branch=master"/></li>
+                           <li>Daikon: <img src="https://travis-ci.org/codespecs/daikon.svg?branch=master"/></li>
+                           <li>daikon-typecheck: <img src="https://travis-ci.org/typetools/daikon-typecheck.svg?branch=master"/></li>
+                           <li>daikon-typecheck-nullness: <img src="https://travis-ci.org/typetools/daikon-typecheck-nullness.svg?branch=master"/></li>
+                           <li>daikon-typecheck-signature: <img src="https://travis-ci.org/typetools/daikon-typecheck-signature.svg?branch=master"/></li>
+                           <li>daikon-typecheck-regex: <img src="https://travis-ci.org/typetools/daikon-typecheck-regex.svg?branch=master"/></li>
+                           <li>daikon-typecheck-interning: <img src="https://travis-ci.org/typetools/daikon-typecheck-interning.svg?branch=master"/></li>
+                           <li>daikon-typecheck-formatter: <img src="https://travis-ci.org/typetools/daikon-typecheck-formatter.svg?branch=master"/></li>
+                           <li>plume-lib: <img src="https://travis-ci.org/mernst/plume-lib.svg?branch=master"/></li>
+                           <li>plume-lib-typecheck: <img src="https://travis-ci.org/typetools/plume-lib-typecheck.svg?branch=master"/></li>
+                       </ul>
                    <li>Ensure that
                    the changelogs and documentation for the Checker Framework, Type Annotations Compiler and AFU are complete by following
                    <a href="README-maintainers.html#step_by_step">these instructions</a> up to and including the &quot;Review the changelogs and documentation&quot; step.
