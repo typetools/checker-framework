@@ -4,4 +4,3 @@ class Issue607 extends Issue607SuperClass {
         super(Issue607SuperClass.issue, string -> simpleString);
     }
 }
-

@@ -3,8 +3,3 @@ public class Issue607SuperClass {
     public Issue607SuperClass(Issue607Interface... issue) {
     }
 }
-
-
-
-
-
