@@ -49,7 +49,7 @@ public class WhileTest {
 
     public void testfor1() {
         z = null;
-        for(;z==null;) {
+        for (;z==null;) {
             break;
         }
         //:: error: (assignment.type.incompatible)
@@ -58,7 +58,7 @@ public class WhileTest {
 
     public void testfor2() {
         z = null;
-        for(;z==null;) {
+        for (;z==null;) {
             ;
         }
         nnz = z;

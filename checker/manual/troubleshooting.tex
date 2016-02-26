@@ -557,7 +557,8 @@ compiler, then use a normal Java compiler to compile client code that uses
 the library.
 The Checker Framework compiler puts Java 8 type annotations even in Java 7
 classfiles, for the benefit of modular type-checking.  The Checker Framework
-compiler reads these annotations in Java 7, and other compilers ignore them.
+compiler reads these annotations in Java 7, and other compilers ignore them
+(but some compilers print a warning that they are ignoring them).
 
 
 \section{How to report problems (bug reporting)\label{reporting-bugs}}
@@ -635,6 +636,16 @@ the Checker Framework, rather than an official release.
 % so permits you to examine and modify the implementation of the distributed
 % checkers and of the checker framework.  It may also help you to debug
 % problems more effectively.
+
+
+\subsection{Install prerequisites\label{building-prerequisites}}
+
+You need to install several packages in order to build the Checker
+Framework.  The following command installs them for Ubuntu 14.04:
+
+\begin{Verbatim}
+sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial openjdk-7-jdk unzip
+\end{Verbatim}
 
 
 \subsection{Obtain the source\label{building-obtain-source}}
@@ -814,12 +825,11 @@ an IDE such as Eclipse.
 
 \begin{enumerate}
 \item
-To build the manual you will need
-{\hevea} (\myurl{http://hevea.inria.fr/}) installed, and either
-\<rsvg-convert> or \<convert>.  If you use the Ubuntu operating system, do
-\begin{Verbatim}
-sudo apt-get install hevea librsvg2-bin
-\end{Verbatim}
+Install needed packages; see Section~\ref{building-prerequisites} for
+instructions.
+% To build the manual, you will need \LaTeX and
+% {\hevea} (\myurl{http://hevea.inria.fr/}) installed, and either
+% \<rsvg-convert> or \<convert>.
 
 \item
 Run \code{make} in the \code{checker/manual} directory to build both the PDF and HTML versions of the manual.

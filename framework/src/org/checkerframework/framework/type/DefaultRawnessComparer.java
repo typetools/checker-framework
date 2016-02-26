@@ -226,7 +226,7 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
         return this.visit(subtype, subtypeUb, visited);
     }
 
-    private boolean checkOrAdd(final AnnotatedTypeMirror subtype,final AnnotatedTypeMirror supertype,
+    private boolean checkOrAdd(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype,
                                final VisitHistory visited ) {
         if (visited.contains(subtype, supertype)) {
             return true;

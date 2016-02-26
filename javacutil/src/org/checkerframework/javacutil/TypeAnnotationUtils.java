@@ -320,7 +320,7 @@ public class TypeAnnotationUtils {
             boolean hasNine;
             try {
                 hasNine = SourceVersion.valueOf("RELEASE_9") != null;
-            } catch(IllegalArgumentException iae) {
+            } catch (IllegalArgumentException iae) {
                 hasNine = false;
             }
             if (hasNine) {
@@ -329,7 +329,7 @@ public class TypeAnnotationUtils {
                 boolean hasEight;
                 try {
                     hasEight = SourceVersion.valueOf("RELEASE_8") != null;
-                } catch(IllegalArgumentException iae) {
+                } catch (IllegalArgumentException iae) {
                     hasEight = false;
                 }
                 if (hasEight) {

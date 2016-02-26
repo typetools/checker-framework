@@ -10,6 +10,7 @@ import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.subtyping.SubtypingChecker;
+import org.checkerframework.framework.qual.StubFiles;
 
 /**
  * The main checker class for the Fake Enum Checker.
@@ -30,6 +31,7 @@ import org.checkerframework.common.subtyping.SubtypingChecker;
  * @author wmdietl
  * @checker_framework.manual #fenum-checker Fake Enum Checker
  */
+@StubFiles("jdnc.astub")
 @SupportedOptions( { "quals", "qualDirs" } )
 public class FenumChecker extends BaseTypeChecker {
 

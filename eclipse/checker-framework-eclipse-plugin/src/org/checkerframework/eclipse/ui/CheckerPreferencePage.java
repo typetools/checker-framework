@@ -244,7 +244,7 @@ public class CheckerPreferencePage extends PreferencePage implements
             addProcTableItem(CheckerInfo.fromClassPath(className, null), false);
         }
 
-        for( final TableColumn columns : procTable.getColumns() ) {
+        for ( final TableColumn columns : procTable.getColumns() ) {
             columns.pack();
         }
 
@@ -291,11 +291,11 @@ public class CheckerPreferencePage extends PreferencePage implements
 
             private void setRemoveState() {  final TableItem [] selectedItems = procTable.getSelection();
                 boolean enabled = true;
-                if(selectedItems == null || selectedItems.length == 0) {
+                if (selectedItems == null || selectedItems.length == 0) {
                     enabled = false;
                 } else {
                     for (final TableItem ti : selectedItems) {
-                        if( !ti.getText( SOURCE.ordinal() ).equals(CUSTOM_LABEL) ) {
+                        if ( !ti.getText( SOURCE.ordinal() ).equals(CUSTOM_LABEL) ) {
                             enabled = false;
                             break;
                         }
@@ -345,7 +345,7 @@ public class CheckerPreferencePage extends PreferencePage implements
             addOptTableItem(optionInfo);
         }
 
-        for( final TableColumn columns : optTable.getColumns() ) {
+        for ( final TableColumn columns : optTable.getColumns() ) {
             columns.pack();
         }
 
@@ -409,9 +409,9 @@ public class CheckerPreferencePage extends PreferencePage implements
 
 
     private void removePTIndices(final int [] indices) {
-        for(final int index : indices) {
+        for (final int index : indices) {
             final TableItem ti = procTable.getItem(index);
-            if(! ti.getText(SOURCE.ordinal()).equals(CUSTOM_LABEL) ) {
+            if (! ti.getText(SOURCE.ordinal()).equals(CUSTOM_LABEL) ) {
                 throw new IllegalArgumentException("Cannot remove built-in checker " + ti.getText(LABEL.ordinal()));
             }
         }
@@ -424,8 +424,8 @@ public class CheckerPreferencePage extends PreferencePage implements
         int length = toSplit.length();
 
         int start = 0;
-        for(int i = 0; i < length; i++) {
-            if((Character.isUpperCase(toSplit.charAt(i)) && i != 0)) {
+        for (int i = 0; i < length; i++) {
+            if ((Character.isUpperCase(toSplit.charAt(i)) && i != 0)) {
                 tokens.add(toSplit.substring(start, i));
                 start = i;
             }
@@ -461,9 +461,9 @@ public class CheckerPreferencePage extends PreferencePage implements
         final List<String> selectedClasses = new ArrayList<String>(CheckerManager.getSelectedClasses());
         for (TableItem item : procTable.getItems()) {
             int index = 0;
-            while(index < selectedClasses.size()) {
+            while (index < selectedClasses.size()) {
 
-                if(item.getText(CLASSES.ordinal()).equals(selectedClasses.get(index))) {
+                if (item.getText(CLASSES.ordinal()).equals(selectedClasses.get(index))) {
                     item.setChecked(true);
                     selectedClasses.remove(index);
                 } else {
@@ -501,8 +501,8 @@ public class CheckerPreferencePage extends PreferencePage implements
         IPreferenceStore store = doGetPreferenceStore();
 
         List<String> selectedClasses = new ArrayList<String>();
-        for(final TableItem ti : procTable.getItems()) {
-            if(ti.getChecked()) {
+        for (final TableItem ti : procTable.getItems()) {
+            if (ti.getChecked()) {
                 selectedClasses.add(ti.getText(CLASSES.ordinal()));
             }
         }
@@ -561,9 +561,9 @@ public class CheckerPreferencePage extends PreferencePage implements
             //TODO: CHECK FOR DUPLICATES?
 
             final List<String> classesInTable = classesFromTableItems();
-            for(final String cn : classNames) {
+            for (final String cn : classNames) {
                 final CheckerInfo ci = CheckerInfo.fromClassPath(cn, null);
-                if(!classesInTable.contains(cn)) { //TODO: ADD A DIALOG TO WARN IF ALREADY CONTAINED
+                if (!classesInTable.contains(cn)) { //TODO: ADD A DIALOG TO WARN IF ALREADY CONTAINED
                     addProcTableItem(ci, false);
                 }
             }
@@ -585,7 +585,7 @@ public class CheckerPreferencePage extends PreferencePage implements
 
     private final List<String> classesFromTableItems() {
         final List<String> classes = new ArrayList<String>(procTable.getItemCount());
-        for(final TableItem ti : procTable.getItems()) {
+        for (final TableItem ti : procTable.getItems()) {
             classes.add(ti.getText( CLASSES.ordinal() ));
         }
         return classes;
@@ -593,8 +593,8 @@ public class CheckerPreferencePage extends PreferencePage implements
 
     private final List<String> customClassesFromTableItems() {
         final List<String> classes = new ArrayList<String>(procTable.getItemCount());
-        for(final TableItem ti : procTable.getItems()) {
-            if( ti.getText(SOURCE.ordinal()).equals( CUSTOM_LABEL ) ) {
+        for (final TableItem ti : procTable.getItems()) {
+            if ( ti.getText(SOURCE.ordinal()).equals( CUSTOM_LABEL ) ) {
                 classes.add(ti.getText( CLASSES.ordinal() ));
             }
         }

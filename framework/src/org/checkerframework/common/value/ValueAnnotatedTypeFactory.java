@@ -70,7 +70,7 @@ import com.sun.source.tree.UnaryTree;
  */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    protected final AnnotationMirror  UNKNOWNVAL,BOTTOMVAL;
+    protected final AnnotationMirror UNKNOWNVAL, BOTTOMVAL;
     /** The maximum number of values allowed in an annotation's array */
     protected static final int MAX_VALUES = 10;
     protected Set<String> coveredClassStrings;
@@ -505,7 +505,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        private void handleInitalizers(List<? extends ExpressionTree> initializers,AnnotatedArrayType type) {
+        private void handleInitalizers(List<? extends ExpressionTree> initializers, AnnotatedArrayType type) {
 
             List<Integer> array = new ArrayList<>();
             array.add(initializers.size());
@@ -711,7 +711,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<?> receiverValues;
 
                 if (receiver != null && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
-                    receiverValues = getValues(receiver,receiver.getUnderlyingType());
+                    receiverValues = getValues(receiver, receiver.getUnderlyingType());
                     if (receiverValues.isEmpty()) {
                         // values aren't known, so don't try to evaluate the
                         // method

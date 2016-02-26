@@ -154,7 +154,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
         final List<String> miscOptions = new ArrayList<String>();
         addPreferenceOptions(miscOptions, prefs);
 
-        if(!miscOptions.isEmpty()) {
+        if (!miscOptions.isEmpty()) {
             props.put(PluginUtil.CheckerProp.MISC_COMPILER, miscOptions);
         }
 
@@ -181,8 +181,8 @@ public class CommandlineJavacRunner implements CheckersRunner {
         // add options from preferences
         String argStr = store.getString(CheckerPreferences.PREF_CHECKER_ARGS);
         List<OptionLine> optionlines = OptionLine.parseOptions(argStr);
-        for(final OptionLine optLine : optionlines) {
-            if(optLine.isActive()) {
+        for (final OptionLine optLine : optionlines) {
+            if (optLine.isActive()) {
                 opts.add(optLine.getArgument());
             }
         }
@@ -208,7 +208,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
             opts.put(PluginUtil.CheckerProp.A_LINT, lintOpts);
         }
 
-        if (store.getBoolean(CheckerPreferences.PREF_CHECKER_A_WARNS)){
+        if (store.getBoolean(CheckerPreferences.PREF_CHECKER_A_WARNS)) {
             opts.put(PluginUtil.CheckerProp.A_WARNS, Boolean.TRUE);
         }
 
@@ -243,7 +243,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
         File checkersJarFile;
         try {
             checkersJarFile = new File(checkersJarURL.toURI());
-        } catch(URISyntaxException e) {
+        } catch (URISyntaxException e) {
             checkersJarFile = new File(checkersJarURL.getPath());
         }
 
@@ -261,7 +261,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
     public static void printTrimmedOutput(final MessageConsoleStream out, final String output) {
 
         List<String> lines = Arrays.asList(output.split(Util.NL));
-        for( final String line : lines ) {
+        for ( final String line : lines ) {
             out.println(JavacError.trimDetails(line));
         }
     }

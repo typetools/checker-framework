@@ -173,7 +173,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                         .getReceiverType().getAnnotations(), factory);
             }
 
-            // Glb parameter types
+            // Glb parameter types.  All formal parameter types get
+            // combined together because Method#invoke takes as argument an
+            // array of parameter types, so there is no way to distinguish
+            // the types of different formal parameters.
             for (AnnotatedTypeMirror mirror : resolvedResult.first
                     .getParameterTypes()) {
                 paramsGlb = glb(paramsGlb, mirror.getAnnotations(), factory);
@@ -606,8 +609,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     /**
-     * Build lub of the two sets <code>set1</code> and <code>set2</code> using
-     * the provided AnnotatedTypeFactory.
+     * Build lub of the two types (represented by sets <code>set1</code>
+     * and <code>set2</code>) using the provided AnnotatedTypeFactory.
      * <p>
      * If <code>set1</code> is <code>null</code> or empty, <code>set2</code> is
      * returned.
@@ -623,8 +626,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     /**
-     * Build glb of the two sets <code>set1</code> and <code>set2</code> using
-     * the provided AnnotatedTypeFactory.
+     * Build glb of the two types (represented by sets <code>set1</code>
+     * and <code>set2</code>) using the provided AnnotatedTypeFactory.
      * <p>
      * If <code>set1</code> is <code>null</code> or empty, <code>set2</code> is
      * returned.

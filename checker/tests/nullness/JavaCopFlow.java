@@ -174,7 +174,7 @@ class Flow {
     }
 
 
-    void methodThatThrowsRuntime(){
+    void methodThatThrowsRuntime() {
         throw new RuntimeException();
     }
 
@@ -196,12 +196,12 @@ class Flow {
 
         str = null;
         @NonNull String b = "hi";
-        try{
+        try {
           //:: error: (assignment.type.incompatible)
             b = str;
             methodThatThrowsRuntime();
             str = "bar";
-        }finally{
+        } finally {
           //:: error: (assignment.type.incompatible)
             b = str;
         }

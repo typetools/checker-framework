@@ -9,9 +9,11 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -209,19 +211,31 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     @Override
     public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
         if (!stringPatterns.isEmpty() && tree.getKind() == Kind.STRING_LITERAL) {
-            Set<? extends AnnotationMirror> res = null;
+            List<Set<? extends AnnotationMirror>> matches = new ArrayList<>();
+            List<Set<? extends AnnotationMirror>> nonMatches = new ArrayList<>();
+
             String string = (String) tree.getValue();
             for (Pattern pattern : stringPatterns.keySet()) {
+                Set<AnnotationMirror> sam = stringPatterns.get(pattern);
                 if (pattern.matcher(string).matches()) {
-                    if (res == null) {
-                        res = stringPatterns.get(pattern);
-                    } else {
-                        Set<? extends AnnotationMirror> newres = stringPatterns.get(pattern);
-                        res = qualHierarchy.greatestLowerBounds(res, newres);
-                    }
+                    matches.add(sam);
+                } else {
+                    nonMatches.add(sam);
                 }
             }
-            if (res != null) {
+            Set<? extends AnnotationMirror> res = null;
+            if (! matches.isEmpty()) {
+                res = matches.get(0);
+                for (Set<? extends AnnotationMirror> sam : matches) {
+                    res = qualHierarchy.greatestLowerBounds(res, sam);
+                }
+                // Verify that res is not a subtype of any type in nonMatches
+                for (Set<? extends AnnotationMirror> sam: nonMatches) {
+                    if (qualHierarchy.isSubtype(res, sam)) {
+                            ErrorReporter.errorAbort(
+                              "Bug in @ImplicitFor(stringpatterns=...) in type hierarchy definition: inferred type for \"" + string + "\" is " + res + " which is a subtype of " + sam + " but its pattern does not match the string.  matches = " + matches + "; nonMatches = " + nonMatches);
+                    }
+                }
                 type.addAnnotations(res);
             }
         }

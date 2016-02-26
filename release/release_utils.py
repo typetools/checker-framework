@@ -173,7 +173,7 @@ def prompt_yes_no( msg, default=False ):
 
 def prompt_yn(msg):
     y_or_n = 'z'
-    while(y_or_n != 'y' and y_or_n != 'n'):
+    while (y_or_n != 'y' and y_or_n != 'n'):
         print(msg + " [y|n]")
         y_or_n = raw_input().lower()
 
@@ -186,7 +186,7 @@ def maybe_prompt_yn(msg, prompt):
     return prompt_yn(msg)
 
 def prompt_until_yes():
-    while( not prompt_yes_no("Continue?" ) ):
+    while ( not prompt_yes_no("Continue?" ) ):
         pass
 
 def prompt_w_suggestion(msg, suggestion, validRegex=None):

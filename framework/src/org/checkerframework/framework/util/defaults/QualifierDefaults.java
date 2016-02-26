@@ -176,7 +176,7 @@ public class QualifierDefaults {
      * @param bottoms AnnotationMirrors that are bottom
      */
     public void addUncheckedStandardDefaults(Iterable<? extends AnnotationMirror> tops,
-            Iterable<? extends AnnotationMirror> bottoms){
+            Iterable<? extends AnnotationMirror> bottoms) {
         for (TypeUseLocation loc : standardUncheckedDefaultsTop) {
             // Only add standard defaults in locations where a default has not be specified
             for (AnnotationMirror top : tops) {
@@ -288,7 +288,7 @@ public class QualifierDefaults {
     }
 
     private void checkDuplicates(DefaultSet previousDefaults, AnnotationMirror newAnno, TypeUseLocation newLoc ) {
-        if (conflictsWithExistingDefaults(previousDefaults,newAnno,newLoc)) {
+        if (conflictsWithExistingDefaults(previousDefaults, newAnno, newLoc)) {
             ErrorReporter.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
                                              + previousDefaults + " and new: "
                                              + (new Default(newAnno, newLoc)));
@@ -457,7 +457,7 @@ public class QualifierDefaults {
         Class<? extends Annotation> cls;
         try {
             cls = dq.value();
-        } catch( MirroredTypeException mte ) {
+        } catch ( MirroredTypeException mte ) {
             try {
                 @SuppressWarnings("unchecked")
                 Class<? extends Annotation> clscast =
@@ -623,7 +623,7 @@ public class QualifierDefaults {
                            !isFromStubFile;
             if (isBytecode) {
                 return useUncheckedCodeDefaultsBytecode;
-            } else if (isFromStubFile){
+            } else if (isFromStubFile) {
                 //TODO: Types in stub files not annotated for a particular checker should be
                 // treated as unchecked bytecode.   For now, all types in stub files are treated as
                 // checked code. Eventually, @AnnotateFor(checker) will be programmatically added

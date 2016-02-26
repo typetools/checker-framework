@@ -2,7 +2,20 @@
 
 Version 1.9.12, 1 March 2016
 
-Renamed enum DefaultLocation to TypeUseLocation
+Renamed enum DefaultLocation to TypeUseLocation.
+
+The Checker Framework distribution contains annotated versions
+of libraries in directory checker-framework/checker/lib/.
+During type-checking, you should put these versions first on your classpath,
+to obtain more precise type-checking with fewer false positive warnings.
+
+The manual documents how to run a pluggable type-checker in IntelliJ IDEA.
+
+The instructions on how to run a type-checker in Gradle have been updated to
+use the artifacts in Maven Central. Examples using the instructions have been
+added under checker/examples/GradleExamples.
+
+Closed issues: 559.
 
 checker-qual.jar no longer uses classes, such as com.sun.source.tree.Tree, in tools.jar
 
@@ -344,7 +357,7 @@ vm to crash immediately.
 The Lock Checker has been rewritten to support dataflow analysis.
 It can now understand conditional expressions, for example, and
 knows that "lock" is held in the body of statements like
-"if (lock.tryLock()){ ... }"
+"if (lock.tryLock()) { ... }"
 The Lock Checker chapter in the manual has been updated accordingly
 and describes the new Lock Checker features in detail.
 

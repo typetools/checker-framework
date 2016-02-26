@@ -1,0 +1,27 @@
+import org.checkerframework.checker.signature.qual.*;
+
+package org.apache.bcel.generic;
+
+public class ClassGen { //  extends AccessFlags implements Cloneable {
+  public ClassGen(@BinaryName String class_name, @BinaryName String super_class_name, String file_name, int access_flags, String[] interfaces, ConstantPoolGen cp);
+  public ClassGen(@BinaryNameForNonArray String class_name, @BinaryNameForNonArray String super_class_name, String file_name, int access_flags, String[] interfaces);
+  public @BinaryNameForNonArray String getClassName();
+  public @BinaryNameForNonArray String getSuperclassName();
+  // can actually have '/' in place of '.' in name
+  public void setClassName(@BinaryNameForNonArray String name);
+  // can actually have '/' in place of '.' in name
+  public void setSuperclassName(@BinaryNameForNonArray String name);
+}
+
+
+public class ObjectType extends ReferenceType {
+  public @BinaryNameForNonArray String getClassName();
+}
+
+public abstract class Type implements java.io.Serializable {
+  public @BinaryName String toString();
+}
+
+public abstract class FieldOrMethod extends CPInstruction implements LoadClass {
+  public @BinaryNameForNonArray String getClassName(ConstantPoolGen cpg);
+}

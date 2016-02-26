@@ -51,7 +51,7 @@ public class TestUtilities {
         File [] dirs = new File[dirNames.length];
 
         int i = 0;
-        for(String dirName : dirNames) {
+        for (String dirName : dirNames) {
             dirs[i] = new File(parent, dirName);
             i += 1;
         }
@@ -301,14 +301,14 @@ public class TestUtilities {
         try {
             final BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
             bw.write("Files:\n");
-            for(JavaFileObject f : files) {
+            for (JavaFileObject f : files) {
                 bw.write("    " + f.getName());
                 bw.newLine();
             }
             bw.newLine();
 
             bw.write("Options:\n");
-            for(String o : options) {
+            for (String o : options) {
                 bw.write("    " + o);
                 bw.newLine();
             }
@@ -316,7 +316,7 @@ public class TestUtilities {
 
 
             bw.write("Processors:\n");
-            for(String p : processors) {
+            for (String p : processors) {
                 bw.write("    " + p);
                 bw.newLine();
             }
