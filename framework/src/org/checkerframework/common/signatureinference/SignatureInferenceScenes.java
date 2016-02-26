@@ -18,9 +18,9 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
@@ -535,24 +535,26 @@ public class SignatureInferenceScenes {
             TypeKind[] types = implicitFor.types();
             for (TypeKind tk : types) if (tk == atm.getKind()) return true;
 
-            Class<? extends AnnotatedTypeMirror>[] classes =
-                    implicitFor.typeClasses();
-            for (Class<? extends AnnotatedTypeMirror> c : classes) {
-                if (c.isInstance(atm)) return true;
-            }
-
-            Class<?>[] names = implicitFor.typeNames();
-            for (Class<?> c : names) {
-                TypeMirror underlyingtype = atm.getUnderlyingType();
-                while (underlyingtype instanceof javax.lang.model.type.ArrayType) {
-                        underlyingtype = ((javax.lang.model.type.ArrayType)underlyingtype).
-                                getComponentType();
+            try {
+                Class<? extends AnnotatedTypeMirror>[] classes =
+                        implicitFor.typeClasses();
+                for (Class<? extends AnnotatedTypeMirror> c : classes) {
+                    if (c.isInstance(atm)) return true;
                 }
-                if (c.getCanonicalName().equals(
-                        atm.getUnderlyingType().toString())) {
-                    return true;
+    
+                Class<?>[] names = implicitFor.typeNames();
+                for (Class<?> c : names) {
+                    TypeMirror underlyingtype = atm.getUnderlyingType();
+                    while (underlyingtype instanceof javax.lang.model.type.ArrayType) {
+                            underlyingtype = ((javax.lang.model.type.ArrayType)underlyingtype).
+                                    getComponentType();
+                    }
+                    if (c.getCanonicalName().equals(
+                            atm.getUnderlyingType().toString())) {
+                        return true;
+                    }
                 }
-            }
+            } catch (MirroredTypesException e) {}
         }
 
         // Special cases that should be ignored:
