@@ -173,7 +173,9 @@ of a problem that would occur if this rule were relaxed.
 
   \code{@GuardSatisfied} is only allowed in method signatures:  on
   formal parameters (including the receiver) and return types.
-  It may not be written on fields.
+  It may not be written on fields.  Also, it is a limitation of the
+  current design that \code{@GuardSatisfied} may not be written on
+  array elements or on local variables.
 
   See Section~\ref{lock-checker-polymorphism-example}
   for an example of a use of \code{@GuardSatisfied}.
@@ -690,7 +692,7 @@ cannot use \<@GuardedBy> and must use \<@GuardSatisfied>.  The arguments to
 same value) are guarded by the same (unknown, possibly empty) set of locks,
 and the \<str> parameter may be guarded by a different set of locks.
 
-The \code{@LockingFree} annotation indicates that 
+The \code{@LockingFree} annotation indicates that
 this method makes no use of
 locks or synchronization.
 
