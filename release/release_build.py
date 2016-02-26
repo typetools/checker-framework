@@ -327,9 +327,28 @@ def main(argv):
 
     old_jsr308_version = current_distribution( CHECKER_FRAMEWORK )
     (old_jsr308_version, jsr308_version) = get_new_version( "JSR308/Checker Framework", old_jsr308_version, auto )
+
+    if (old_jsr308_version == jsr308_version):
+        print("It is *strongly discouraged* to not update the release version numbers for the Checker Framework " +
+              "and jsr308-langtools even if no changes were made to these in a month. This would break so much " +
+              "in the release scripts that they would become unusable.\n")
+        prompt_until_yes()
+
     anno_html = os.path.join(ANNO_FILE_UTILITIES, "annotation-file-utilities.html")
     old_afu_version = get_afu_version_from_html( anno_html )
     (old_afu_version, afu_version)       = get_new_version( "Annotation File Utilities", old_afu_version, auto )
+
+    if (old_afu_version == afu_version):
+        print("The AFU version has not changed. It is recommended to include a small bug fix or doc update in every " +
+              "AFU release so the version number can be updated, but when that is not possible, before and after running " +
+              "release_build, you must:\n" +
+              "-Ensure that you are subscribed to the AFU push notifications mailing list.\n" +
+              "-Verify that the AFU changelog has not been changed.\n" +
+              "-Grep all the AFU pages on the dev web site for the release date with patterns such as \"29.*Aug\" " +
+              "and \"Aug.*29\" and fix them to match the previous release date.\n" +
+              "Keep in mind that in this case, the release scripts will fail in certain places and you must manually " +
+              "follow a few remaining release steps.\n")
+        prompt_until_yes()
 
     if review_documentation:
         print_step("Build Step 4: Review changelogs.") # SEMIAUTO
@@ -432,7 +451,9 @@ def main(argv):
 
     print_step("Build Step 7: Overwrite .htaccess.") # SEMIAUTO
 
-    update_htaccess(CHECKER_FRAMEWORK_RELEASE, jsr308_version, afu_version, RELEASE_HTACCESS, DEV_HTACCESS, auto)
+    # Not "cp -p" because that does not work across filesystems whereas rsync does
+    execute("rsync --times %s %s" % (RELEASE_HTACCESS, DEV_HTACCESS))
+
     copy_cf_logo(checker_framework_interm_dir)
 
     # Each project has a set of files that are updated for release. Usually these updates include new

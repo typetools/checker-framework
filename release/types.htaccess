@@ -8,6 +8,7 @@ Options +FollowSymlinks
 
 # Redirect /specification/java-annotation-design.html /jsr308/specification/java-annotation-design.html
 # Redirect /dev/specification/java-annotation-design.html /dev/jsr308/specification/java-annotation-design.html
+# Redirect /checker-framework/current/checkers-manual.html /checker-framework/current/checker-framework-manual.html
 
 # We could add a similar rule for every other type system.
 # Redirect /checker-framework/current/api/checkers/nullness/quals/ /checker-framework/current/api/org/checkerframework/checker/nullness/qual/

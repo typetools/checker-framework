@@ -12,9 +12,10 @@ if [ $# -eq 0 ]; then
     exit 6
 fi
 
-rm -rf checker-framework-$1.zip
-wget -q http://types.cs.washington.edu/checker-framework/current/checker-framework-$1.zip
+rm -f checker-framework-$1.zip
 rm -rf checker-framework-$1/
+
+wget -q http://types.cs.washington.edu/checker-framework/current/checker-framework-$1.zip
 unzip -q checker-framework-$1.zip
 
 export CHECKERFRAMEWORK=checker-framework-$1

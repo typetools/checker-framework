@@ -990,10 +990,6 @@ def mvn_sign_and_deploy_all(url, repo_id, pom_file, artifact_jar, source_jar, ja
 #=========================================================================================
 # Misc. Utils
 
-def update_htaccess( releaseDir, cfLtVersion, afuVersion, htAccessTemplate, htAccessToReplace, auto ):
-    # Not "cp -p" because that does not work across filesystems whereas rsync does
-    execute("rsync --times %s %s" % (htAccessTemplate, htAccessToReplace))
-
 def print_step( step ):
     print( "\n" )
     print( step )
