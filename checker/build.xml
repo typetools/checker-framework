@@ -1302,7 +1302,7 @@
 
       <property name="afu.jar" value="${annotation.tools}/annotation-file-utilities/annotation-file-utilities.jar"/>
       <available property="afu.exist" file="${afu.jar}" />
-      <fail unless="afu.exist" message="Could not find annotation-file-utilities.jar: ${afu.jar}.  You must build Annotation Tools; see http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#build-source" />
+      <fail unless="afu.exist" message="Could not find annotation-file-utilities.jar: ${afu.jar}.  You must build Annotation Tools; see http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#build-source" />
 
       <exec executable="make" failonerror="true">
          <arg value="LANGTOOLS=${jsr308.langtools}"/>
