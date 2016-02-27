@@ -112,6 +112,7 @@ def build_jsr308_langtools_release(auto, version, afu_version, afu_release_date,
 
     # update jsr308_langtools versions
     ant_props = "-Dlangtools=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (JSR308_LANGTOOLS, version, afu_version, afu_build_properties, afu_release_date )
+    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
     ant_cmd   = "ant -f release.xml %s update-langtools-versions " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -123,6 +124,7 @@ def build_jsr308_langtools_release(auto, version, afu_version, afu_release_date,
 
     # zip up jsr308-langtools project and place it in jsr308_interm_dir
     ant_props = "-Dlangtools=%s  -Dcheckerframework=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (JSR308_LANGTOOLS, CHECKER_FRAMEWORK, jsr308_interm_dir, jsr308ZipName, version)
+    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
     ant_cmd   = "ant -f release.xml %s zip-langtools " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -132,6 +134,7 @@ def build_jsr308_langtools_release(auto, version, afu_version, afu_release_date,
 
     # copy remaining website files to jsr308_interm_dir
     ant_props = "-Dlangtools=%s -Ddest.dir=%s" % (JSR308_LANGTOOLS, jsr308_interm_dir)
+    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
     ant_cmd   = "ant -f release.xml %s langtools-website-docs " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -184,6 +187,7 @@ def build_checker_framework_release(auto, version, afu_version, afu_release_date
 
     # update jsr308_langtools versions
     ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (checker_dir, version, afu_version, afu_build_properties, afu_release_date)
+    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
     ant_cmd   = "ant -f release.xml %s update-checker-framework-versions " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -212,10 +216,12 @@ def build_checker_framework_release(auto, version, afu_version, afu_release_date
 
         # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
         ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, cfZipName, version)
+        # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
         ant_cmd   = "ant -f release.xml %s zip-checker-framework " % ant_props
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
         ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, "mvn-examples.zip", version)
+        # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
         ant_cmd   = "ant -f release.xml %s zip-maven-examples " % ant_props
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -225,8 +231,13 @@ def build_checker_framework_release(auto, version, afu_version, afu_release_date
                      "checker-framework-dataflow-manual", "checker-framework-webpage.html"
         )
 
+        # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
         ant_cmd   = "ant -f release.xml %s checker-framework-website-docs " % ant_props
         execute( ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE )
+
+        # clean no longer necessary files left over from building the checker framework tutorial
+        checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
+        execute("make clean", True, False, checker_tutorial_dir)
 
         build_and_locally_deploy_maven(version, checker_framework_interm_dir)
 
@@ -296,8 +307,8 @@ def main(argv):
     # or outgoing changesets. If so, it fails.
 
     print_step("1b: Verify repositories.") # SEMIAUTO
-    check_repos( INTERM_REPOS, False )
-    check_repos( BUILD_REPOS,  False )
+    check_repos( INTERM_REPOS, True, True )
+    check_repos( BUILD_REPOS,  True, False )
 
     # The release script requires a number of common tools (Ant, Maven, make, etc...). This step checks
     # to make sure all tools are available on the command line in order to avoid wasting time in the
@@ -320,9 +331,28 @@ def main(argv):
 
     old_jsr308_version = current_distribution( CHECKER_FRAMEWORK )
     (old_jsr308_version, jsr308_version) = get_new_version( "JSR308/Checker Framework", old_jsr308_version, auto )
+
+    if (old_jsr308_version == jsr308_version):
+        print("It is *strongly discouraged* to not update the release version numbers for the Checker Framework " +
+              "and jsr308-langtools even if no changes were made to these in a month. This would break so much " +
+              "in the release scripts that they would become unusable.\n")
+        prompt_until_yes()
+
     anno_html = os.path.join(ANNO_FILE_UTILITIES, "annotation-file-utilities.html")
     old_afu_version = get_afu_version_from_html( anno_html )
     (old_afu_version, afu_version)       = get_new_version( "Annotation File Utilities", old_afu_version, auto )
+
+    if (old_afu_version == afu_version):
+        print("The AFU version has not changed. It is recommended to include a small bug fix or doc update in every " +
+              "AFU release so the version number can be updated, but when that is not possible, before and after running " +
+              "release_build, you must:\n" +
+              "-Ensure that you are subscribed to the AFU push notifications mailing list.\n" +
+              "-Verify that the AFU changelog has not been changed.\n" +
+              "-Grep all the AFU pages on the dev web site for the release date with patterns such as \"29.*Aug\" " +
+              "and \"Aug.*29\" and fix them to match the previous release date.\n" +
+              "Keep in mind that in this case, the release scripts will fail in certain places and you must manually " +
+              "follow a few remaining release steps.\n")
+        prompt_until_yes()
 
     if review_documentation:
         print_step("Build Step 4: Review changelogs.") # SEMIAUTO
@@ -392,7 +422,7 @@ def main(argv):
         # WARNING: BE EXTREMELY CAREFUL WHEN MODIFYING THIS COMMAND.  The --delete option is destructive
         # and its work cannot be undone.  If, for example, this command were modified to accidentally make
         # /cse/www2/types/ the target directory, the entire types directory could be wiped out.
-        execute("rsync --omit-dir-times --recursive --links --delete --quiet --exclude=dev /cse/www2/types/ /cse/www2/types/dev", halt_if_fail=False)
+        execute("rsync --omit-dir-times --recursive --links --delete --quiet --exclude=dev /cse/www2/types/ /cse/www2/types/dev")
         # ************************************************************************************************
 
     print_step("Build Step 5: Create directories for the current release on the dev site.") # SEMIAUTO
@@ -425,7 +455,9 @@ def main(argv):
 
     print_step("Build Step 7: Overwrite .htaccess.") # SEMIAUTO
 
-    update_htaccess(CHECKER_FRAMEWORK_RELEASE, jsr308_version, afu_version, RELEASE_HTACCESS, DEV_HTACCESS, auto)
+    # Not "cp -p" because that does not work across filesystems whereas rsync does
+    execute("rsync --times %s %s" % (RELEASE_HTACCESS, DEV_HTACCESS))
+
     copy_cf_logo(checker_framework_interm_dir)
 
     # Each project has a set of files that are updated for release. Usually these updates include new

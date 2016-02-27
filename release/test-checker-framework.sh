@@ -3,15 +3,22 @@
 # This script tests that the Checker Framework release can be downloaded
 # and that a simple sanity test works.
 # It assumes that environment variables JAVA7_HOME and JAVA8_HOME are defined.
+# It takes an argument specifying the current Checker Framework version, e.g. "1.9.11".
 
 # This script is used by the release_push script in the "Run javac sanity tests on the live release" step
 
-rm -rf checker-framework*.zip
-wget -q http://types.cs.washington.edu/checker-framework/current/checker-framework-1.9.11.zip
-rm -rf checker-framework-*/
-unzip -q checker-framework*.zip
+if [ $# -eq 0 ]; then
+    echo "Usage: test-checker-framework.sh <current version of Checker Framework on live web site>"
+    exit 6
+fi
 
-export CHECKERFRAMEWORK=`pwd`/`ls -d checker-framework-*`
+rm -f checker-framework-$1.zip
+rm -rf checker-framework-$1/
+
+wget -q http://types.cs.washington.edu/checker-framework/current/checker-framework-$1.zip
+unzip -q checker-framework-$1.zip
+
+export CHECKERFRAMEWORK=checker-framework-$1
 export ORIG_PATH=$PATH
 
 

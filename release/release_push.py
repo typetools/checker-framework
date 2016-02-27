@@ -33,7 +33,10 @@ def copy_release_dir( path_to_dev, path_to_live, release_version ):
     if os.path.exists( dest_location ):
         raise Exception( "Destination location exists: " + dest_location )
 
-    cmd = "rsync --omit-dir-times --recursive --links --quiet %s %s" % ( source_location, dest_location )
+    # The / at the end of the destination location is necessary so that
+    # rsync copies the files in the source directory to the destination directory
+    # rather than a subdirectory of the destination directory.
+    cmd = "rsync --omit-dir-times --recursive --links --quiet %s %s/" % ( source_location, dest_location )
     execute( cmd )
 
     return dest_location
@@ -178,7 +181,12 @@ def check_all_links( jsr308_website, afu_website, checker_website, suffix ):
     if (not is_checkerCheck_empty):
            print( "\t" + checkerCheck + "\n" )
     if (errors_reported):
-        raise Exception("The link checker reported errors.  Please fix them and run release_push again.")
+        release_option = ""
+        if not test_mode:
+            release_option = " release"
+        raise Exception("The link checker reported errors.  Please fix them by committing changes to the mainline\n" +
+                        "repository and pushing them to GitHub/Bitbucket, running \"python release_build.py all\" again\n" +
+                        "(in order to update the development site), and running \"python release_push" + release_option + "\" again.")
 
 def push_interm_to_release_repos():
     hg_push_or_fail( INTERM_JSR308_REPO )
@@ -244,7 +252,7 @@ def main(argv):
 
     if not os.path.exists( RELEASE_BUILD_COMPLETED_FLAG_FILE ):
         continue_or_exit("It appears that release_build.py has not been run since the last push to " +
-                         "the JSR308, AFU, or Checker Framework repositories.  Please ensure it has" +
+                         "the JSR308, AFU, or Checker Framework repositories.  Please ensure it has " +
                          "been run." )
 
     # The release script checks that the new release version is greater than the previous release version.
@@ -374,7 +382,7 @@ def main(argv):
         javac_sanity_check( live_checker_website, new_checker_version )
         if not os.path.isdir( SANITY_TEST_CHECKER_FRAMEWORK_DIR ):
             execute( "mkdir -p " + SANITY_TEST_CHECKER_FRAMEWORK_DIR )
-        execute("sh ../../checker-framework/release/test-checker-framework.sh", True, False, SANITY_TEST_CHECKER_FRAMEWORK_DIR)
+        execute("sh ../../checker-framework/release/test-checker-framework.sh " + new_checker_version, True, False, SANITY_TEST_CHECKER_FRAMEWORK_DIR)
         # Ensure that the jsr308-langtools javac works with the system-wide java launcher
         if not os.path.isdir( SANITY_TEST_JSR308_LANGTOOLS_DIR ):
             execute( "mkdir -p " + SANITY_TEST_JSR308_LANGTOOLS_DIR )
@@ -432,7 +440,7 @@ def main(argv):
         msg = ( "Please 'release' the artifacts, but IMPORTANTLY first ensure that the Checker Framework maven plug-in directory " +
                 "(and only that directory) is removed from the artifacts.\n" +
                 "First log into https://oss.sonatype.org using your Sonatype credentials. Go to Staging Repositories and " +
-                "locate the orgcheckerframework repository and click on it." +
+                "locate the orgcheckerframework repository and click on it.\n" +
                 "Then, in the view for the orgcheckerframework staging repository at the bottom of the page, click on the Content tab. " +
                 "Expand the subdirectories until you find the one called checker-framework-plugin. Right-click on it, and choose delete.\n"
                 "Finally, click on the Release button at the top of the page.  For the description, write " +
@@ -469,10 +477,10 @@ def main(argv):
         print_step( "Push Step 13. Post the Checker Framework and Annotation File Utilities releases on GitHub." ) # MANUAL
 
         msg = ( "\n" +
-                "* Download the following files to your local machine. They will be saved as checker-framework-" + new_checker_version + ".zip and annotation-tools-" + new_afu_version + ".zip.\n" +
+                "* Download the following files to your local machine." +
                 "\n" +
-                "http://types.cs.washington.edu/checker-framework/current/checker-framework.zip\n" +
-                "http://types.cs.washington.edu/annotation-file-utilities/annotation-tools.zip\n" +
+                "http://types.cs.washington.edu/checker-framework/current/checker-framework-" + new_checker_version + ".zip\n" +
+                "http://types.cs.washington.edu/annotation-file-utilities/current/annotation-tools-" + new_afu_version + ".zip\n" +
                 "\n" +
                 "To post the Checker Framework release on GitHub:\n" +
                 "\n" +

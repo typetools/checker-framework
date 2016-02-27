@@ -66,18 +66,21 @@
 <div class="col-md-9 col-md-offset" id="content">
 <p>
     This document explains how to make a release of the Checker Framework, the Type Annotations Compiler,
-    and the Annotation File Utilities.  In general the process consists of 4 steps:
+    and the Annotation File Utilities.  In general the process consists of 5 steps:
 </p>
 <ol>
-    <li>Upload the latest release scripts to Buffalo.</li>
     <li>Log into Buffalo.</li>
+    <li>Clone/update the Checker Framework repository containing the release scripts.</li>
+    <li>Review the changelogs and documentation.</li>
     <li>Run the build script.</li>
     <li>Run the push script.</li>
 </ol>
 <p>
     Together, the release_build/release_push scripts take around 3 hours (including manual steps) when all goes according to plan.
-    However, the most lengthy steps are automatic so you will be able to work on other tasks.
+    However, the lengthiest steps are automatic so you will be able to work on other tasks.
 </p>
+<p><strong>See also</strong> the <a href="README-development-process.html">Checker Framework Development Process</a> document which explains
+the steps a release person should follow over the course of an entire development milestone.</p>
 <div class="alert alert-success">
     <strong>Note:</strong> If you have never read this document before, please read
     the section <a href="#pre_release_checklist">Pre-release Checklist</a> first.
@@ -96,7 +99,7 @@
 </p>
 
 
-<b>Note that many prompts will cause scripts to exit if you say 'no'.</b> This will require you to re-run
+<b>Note that some prompts will cause scripts to exit if you say 'no'.</b> This will require you to re-run
 the script from the beginning, which may take a long time.  It is better to say 'yes' to
 the script prompts and follow the indicated steps even if they are redundant/you have done them
 already. Also, be sure to carefully read all instructions on the command-line before typing yes.
@@ -106,8 +109,6 @@ miss a step if you only read the paragraph asking you to say 'yes'.
 <ol>
   <li>If you have never made a release before, follow the instructions in the
     <a href="#pre_release_checklist">Pre-release Checklist</a>.
-  </li>
-  <li>Update the <a href="#changelog_guide">changelogs</a> for the Checker Framework, Annotation File Utilities, and jsr308-langtools.
   </li>
   <li>
             <strong>Log into Buffalo</strong><br/>
@@ -119,6 +120,13 @@ miss a step if you only read the paragraph asking you to say 'yes'.
             <code>cd /scratch/$USER/jsr308-release<br/></code>
             <code>git -C checker-framework pull || git clone https://github.com/typetools/checker-framework.git<br/></code>
             <code>cd checker-framework/release<br/></code>
+  </li>
+  <li><strong>Review the changelogs and documentation</strong><br/>
+            Ensure that the changelogs and documentation for the Checker Framework, Type Annotations Compiler and
+            AFU are complete by running release_build in a mode that reviews the documentation only:
+            <code>python release_build.py all --review-manual</code><br/><br/>
+            <strong>Note:</strong> This step can be performed in advance of the release day. It is recommended
+            that this be done the work morning after Feature Freeze.
   </li>
   <li><strong>Run release_build</strong><br/>
             <code>python release_build.py all</code><br/><br/>
@@ -225,10 +233,16 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         </tr>
         <tr>
             <td>8.</td>
+            <td><strong>Ensure that you can see the status of all Travis builds relevant to the release</strong><br/>
+                Ensure that the status of all the Travis projects listed <a href="README-development-process.html#travis">here</a> is displayed correctly.
+            </td>
+        </tr>
+        <tr>
+            <td>9.</td>
             <td><strong>Read the Checker Framework Development Process document</strong><br/>
                 A release person has responsibilities each month in addition to performing the release.
                 The <a href="README-development-process.html">Checker Framework Development Process document</a>
-                explains these responsibilities in detail.  Please re-read this document at the beginning
+                explains these responsibilities in detail.  Please re-read the <a href="README-development-process.html#checklist">checklist</a> in this document at the beginning
                 of each month that you are the designated the release person, and help keep this document up
                 to date with the latest best practices.
             </td>
