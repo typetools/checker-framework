@@ -466,12 +466,12 @@
 
         <copy file="${checker.manual}/logo/Logo/CFLogo.png" tofile="${web.root}/current/CFLogo.png" />
         <copy file="${checker.manual}/logo/Logo/CFLogo.png" tofile="${checker.manual}/CFLogo.png" />
-        <copy file="${checker.manual}/logo/Logo/CFLogo.png" tofile="${checker.tutorial}/CFLogo.png" />
-        <copy file="${checker.manual}/logo/Logo/CFLogo.png" tofile="${checker.tutorial}/webpages/CFLogo.png" />
 
         <copy file="${checker.manual}/logo/Checkmark/CFCheckmark_favicon.png" tofile="${dest.dir}/favicon-checkerframework.png" />
         <copy file="${checker.manual}/logo/Checkmark/CFCheckmark_favicon.png" tofile="${web.root}/favicon-checkerframework.png" />
 
+        <copy file="${checker.manual}/logo/Logo/CFLogo.png" tofile="${dest.dir}/tutorial/CFLogo.png" />
+        <copy file="${checker.manual}/logo/Logo/CFLogo.png" tofile="${dest.dir}/tutorial/webpages/CFLogo.png" />
         <copy todir="${dest.dir}/tutorial" >
             <fileset dir="${checker.tutorial}" includes="**"/>
         </copy>

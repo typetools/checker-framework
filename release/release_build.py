@@ -235,6 +235,10 @@ def build_checker_framework_release(auto, version, afu_version, afu_release_date
         ant_cmd   = "ant -f release.xml %s checker-framework-website-docs " % ant_props
         execute( ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE )
 
+        # clean no longer necessary files left over from building the checker framework tutorial
+        checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
+        execute("make clean", True, False, checker_tutorial_dir)
+
         build_and_locally_deploy_maven(version, checker_framework_interm_dir)
 
         update_project_symlink( "checker-framework", checker_framework_interm_dir )
@@ -418,7 +422,7 @@ def main(argv):
         # WARNING: BE EXTREMELY CAREFUL WHEN MODIFYING THIS COMMAND.  The --delete option is destructive
         # and its work cannot be undone.  If, for example, this command were modified to accidentally make
         # /cse/www2/types/ the target directory, the entire types directory could be wiped out.
-        execute("rsync --omit-dir-times --recursive --links --delete --quiet --exclude=dev /cse/www2/types/ /cse/www2/types/dev", halt_if_fail=False)
+        execute("rsync --omit-dir-times --recursive --links --delete --quiet --exclude=dev /cse/www2/types/ /cse/www2/types/dev")
         # ************************************************************************************************
 
     print_step("Build Step 5: Create directories for the current release on the dev site.") # SEMIAUTO
