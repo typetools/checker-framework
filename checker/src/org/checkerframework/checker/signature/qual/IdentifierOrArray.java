@@ -7,7 +7,7 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * An identifier, 
+ * An identifier,
  * followed by any number of array square brackets.
  *
  * Example: Foobar[][]

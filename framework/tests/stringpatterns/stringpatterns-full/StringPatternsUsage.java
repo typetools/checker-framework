@@ -17,7 +17,7 @@ public class StringPatternsUsage {
     String c = "C";
     String d = "D";
     String e = "";
-    
+
     requiresA(a);
     //:: error: (argument.type.incompatible)
     requiresB(a);

@@ -139,7 +139,7 @@ public abstract class QualifierHierarchy {
      * Returns the least upper bound of two types.  Each type is
      * represented as a set of type qualifiers, as is the result.
      * <p>
-     * 
+     *
      * Annos1 and annos2 must have the same size, and each annotation in
      * them must be from a different type hierarchy.
      * <p>
@@ -185,7 +185,7 @@ public abstract class QualifierHierarchy {
      * Returns the greatest lower bound of two types.  Each type is
      * represented as a set of type qualifiers, as is the result.
      * <p>
-     * 
+     *
      * Annos1 and annos2 must have the same size, and each annotation in
      * them must be from a different type hierarchy.
      *
