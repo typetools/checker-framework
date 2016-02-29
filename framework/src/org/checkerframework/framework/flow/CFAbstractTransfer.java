@@ -1,6 +1,26 @@
 package org.checkerframework.framework.flow;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.signatureinference.SignatureInferenceScenes;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -30,6 +50,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
+import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
@@ -46,34 +67,17 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 
 /**
  * The default analysis transfer function for the Checker Framework propagates
@@ -110,10 +114,38 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
      */
     protected final boolean sequentialSemantics;
 
+    /**
+     * Indicates that the signature inference is on.
+     */
+    private final boolean inferSignatures;
+
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
+        this.inferSignatures = analysis.checker.hasOption("inferSignatures");
+        if (inferSignatures) {
+            checkInvalidOptionsInferSignature(
+                    new String[]{"useDefaultsForUncheckedCode"});
+        }
     }
+        
+    /**
+     * This method is called only when -AinferSignature is passed as an option.
+     * It checks if another option that should not occur simultaneously with
+     * the signature inference is also passed as argument, and
+     * aborts the process if that is the case. For example, the signature
+     * inference process was not designed to work with safe defaults.
+     * @param invalidOptions an array containing all options that cannot occur
+     * simultaneously with -AinferSignatures.
+     */
+    private void checkInvalidOptionsInferSignature(String[] invalidOptions) {
+        for (String option : invalidOptions) {
+            if (analysis.checker.hasOption(option)) {
+                ErrorReporter.errorAbort("The option -AinferSignatures cannot be" +
+                        " used together with the option -A" + option + ".");
+            }
+        }
+     }
 
     /**
      * This method is called before returning the abstract value {@code value}
@@ -718,9 +750,38 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         S info = in.getRegularStore();
         V rhsValue = in.getValueOfSubNode(rhs);
+        Receiver expr = FlowExpressions.internalReprOf(
+                analysis.getTypeFactory(), lhs);
+        if (inferSignatures && expr instanceof FieldAccess &&
+                !analysis.checker.shouldSuppressWarnings(n.getTree(), null) &&
+                !analysis.checker.shouldSuppressWarnings(
+                        InternalUtils.symbol(lhs.getTree()), null)) {
+            // Updates inferred field type
+            SignatureInferenceScenes.updateInferredFieldType(
+                    lhs, rhs, analysis.getContainingClass(n.getTree()),
+                    analysis.getTypeFactory());
+        }
+
         processCommonAssignment(in, lhs, rhs, info, rhsValue);
 
         return new RegularTransferResult<>(finishValue(rhsValue, info), info);
+    }
+
+    @Override
+    public TransferResult<V, S> visitReturn(ReturnNode n, TransferInput<V, S> p) {
+        if (inferSignatures &&
+                !analysis.checker.shouldSuppressWarnings(n.getTree(), null)) {
+            // Retrieves class containing the method
+            ClassTree classTree = analysis.getContainingClass(n.getTree());
+            ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
+                    classTree);
+            // Updates the inferred return type of the method
+            SignatureInferenceScenes.updateInferredMethodReturnType(
+                    n, classSymbol,
+                    analysis.getContainingMethod(n.getTree()),
+                    analysis.getTypeFactory());
+        }
+        return super.visitReturn(n, p);
     }
 
     @Override
@@ -781,6 +842,23 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         // add new information based on conditional postcondition
         processConditionalPostconditions(n, method, tree, thenStore, elseStore);
+
+        if (inferSignatures &&
+                !analysis.checker.shouldSuppressWarnings(n.getTree(), null) &&
+                !analysis.checker.shouldSuppressWarnings(method, null)) {
+            // Finds the receiver's type
+            Tree receiverTree = n.getTarget().getReceiver().getTree();
+            if (receiverTree == null) {
+                // If there is no receiver, then get the class being visited.
+                // This happens when the receiver corresponds to "this".
+                receiverTree = analysis.getContainingClass(n.getTree());
+                // receiverTree could still be null after the call above. That
+                // happens when the method is called from a static context.
+            }
+            // Updates the inferred parameter type of the invoked method
+            SignatureInferenceScenes.updateInferredMethodParametersTypes(
+                    n, receiverTree, method, analysis.getTypeFactory());
+        }
 
         return new ConditionalTransferResult<>(finishValue(resValue, thenStore,
                 elseStore), thenStore, elseStore);

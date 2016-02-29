@@ -191,6 +191,8 @@ import com.sun.tools.javac.util.Log;
     // to be output.
     "resolveReflection",
 
+    // Whether to use .jaif files signature inference
+    "inferSignatures",
 
     ///
     /// Stub libraries
@@ -1266,7 +1268,7 @@ public abstract class SourceChecker
      *         it is contained by a declaration with an appropriately-valued
      *         {@literal @}SuppressWarnings annotation; false otherwise
      */
-    private boolean shouldSuppressWarnings(Tree tree, String errKey) {
+    public boolean shouldSuppressWarnings(Tree tree, String errKey) {
 
         // Don't suppress warnings if this checker provides no key to do so.
         Collection<String> checkerKeys = this.getSuppressWarningsKeys();
