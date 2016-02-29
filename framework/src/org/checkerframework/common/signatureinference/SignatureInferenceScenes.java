@@ -28,7 +28,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.IgnoreInSignatureInference;
@@ -128,10 +128,10 @@ public class SignatureInferenceScenes {
     /** Maps .jaif file paths (Strings) to Scenes. */
     private static Map<String, AScene> scenes = new HashMap<>();
 
-    /** Maps a DefaultLocation to the name of all annotations that should not be
+    /** Maps a TypeUseLocation to the name of all annotations that should not be
      * added to .jaif files for that location.
      */
-    private static Map<DefaultLocation, Set<String>> annosToIgnore = new HashMap<>();
+    private static Map<TypeUseLocation, Set<String>> annosToIgnore = new HashMap<>();
 
     /**
      * Set representing Scenes that were modified since the last time all
@@ -212,16 +212,16 @@ public class SignatureInferenceScenes {
         for (AClass aclass : scene.classes.values()) {
             for (AField field : aclass.fields.values()) {
                 removeIgnoredAnnosFromATypeElement(
-                        field.type, DefaultLocation.FIELD);
+                        field.type, TypeUseLocation.FIELD);
             }
             for (AMethod method : aclass.methods.values()) {
                 // Return type
                 removeIgnoredAnnosFromATypeElement(
-                        method.returnType, DefaultLocation.RETURNS);
+                        method.returnType, TypeUseLocation.RETURN);
                 // Parameter type
                 for (AField param : method.parameters.values()) {
                     removeIgnoredAnnosFromATypeElement(
-                            param.type, DefaultLocation.PARAMETERS);
+                            param.type, TypeUseLocation.PARAMETER);
                 }
             }
         }
@@ -232,7 +232,7 @@ public class SignatureInferenceScenes {
      * (See {@link #shouldIgnore}).
      */
     private static void removeIgnoredAnnosFromATypeElement(ATypeElement typeEl,
-            DefaultLocation loc) {
+            TypeUseLocation loc) {
         Set<Annotation> annosToRemove = new HashSet<>();
         Set<String> annosToIgnoreForLocation = annosToIgnore.get(loc);
         if (annosToIgnoreForLocation == null) return; // No annotations to ignore for that position.
@@ -315,7 +315,7 @@ public class SignatureInferenceScenes {
             AField param = method.parameters.vivify(i);
             updateAnnotationSetInScene(
                     param.type, atf, jaifPath, argATM, paramATM,
-                    DefaultLocation.PARAMETERS);
+                    TypeUseLocation.PARAMETER);
         }
     }
 
@@ -351,7 +351,7 @@ public class SignatureInferenceScenes {
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
         updateAnnotationSetInScene(
-                field.type, atf, jaifPath, rhsATM, lhsATM, DefaultLocation.FIELD);
+                field.type, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.FIELD);
     }
 
     /**
@@ -388,7 +388,7 @@ public class SignatureInferenceScenes {
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(retNode.getTree().getExpression());
         updateAnnotationSetInScene(
                 method.returnType, atf, jaifPath, rhsATM, lhsATM,
-                DefaultLocation.RETURNS);
+                TypeUseLocation.RETURN);
     }
 
     /**
@@ -411,7 +411,7 @@ public class SignatureInferenceScenes {
     private static void updateAnnotationSetInScene(ATypeElement type,
             AnnotatedTypeFactory atf, String jaifPath,
             AnnotatedTypeMirror rhsATM, AnnotatedTypeMirror lhsATM,
-            DefaultLocation defLoc) {
+            TypeUseLocation defLoc) {
         AnnotatedTypeMirror atmFromJaif = AnnotatedTypeMirror.createType(
                 rhsATM.getUnderlyingType(), atf, false);
         typeElementToATM(atmFromJaif, type, atf);
@@ -489,7 +489,7 @@ public class SignatureInferenceScenes {
      * Look into the createQualifierDefaults method before changing anything here.
      */
     private static boolean shouldIgnore(AnnotationMirror am,
-            DefaultLocation location, AnnotatedTypeFactory atf,
+            TypeUseLocation location, AnnotatedTypeFactory atf,
             AnnotatedTypeMirror atm) {
         AnnotationMirror bottomAnno = atf.getQualifierHierarchy().getBottomAnnotation(am);
         if (AnnotationUtils.annotationName(bottomAnno) == AnnotationUtils.annotationName(am)) {
@@ -512,16 +512,16 @@ public class SignatureInferenceScenes {
         }
         DefaultQualifier defaultQual = elt.getAnnotation(DefaultQualifier.class);
         if (defaultQual != null) {
-            for (DefaultLocation loc : defaultQual.locations()) {
-                if (loc == DefaultLocation.ALL || loc == location) {
+            for (TypeUseLocation loc : defaultQual.locations()) {
+                if (loc == TypeUseLocation.ALL || loc == location) {
                     return true;
                 }
             }
         }
         DefaultFor defaultQualForLocation = elt.getAnnotation(DefaultFor.class);
         if (defaultQualForLocation != null) {
-            for (DefaultLocation loc : defaultQualForLocation.value()) {
-                if (loc == DefaultLocation.ALL || loc == location) {
+            for (TypeUseLocation loc : defaultQualForLocation.value()) {
+                if (loc == TypeUseLocation.ALL || loc == location) {
                     return true;
                 }
             }
@@ -645,7 +645,7 @@ public class SignatureInferenceScenes {
     */
     private static void updateTypeElementFromATM(AnnotatedTypeMirror newATM,
             AnnotatedTypeMirror curATM, AnnotatedTypeFactory atf,
-            ATypeElement typeToUpdate, int idx, DefaultLocation defLoc) {
+            ATypeElement typeToUpdate, int idx, TypeUseLocation defLoc) {
         // Clears only the annotations that are supported by atf.
         // The others stay intact.
         if (idx == 1) {
