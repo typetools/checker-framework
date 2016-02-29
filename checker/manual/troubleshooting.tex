@@ -420,7 +420,7 @@ the only one that is a subtype of every subtype of \<T extends @MyQualifier
 Object>.  The value \<null> satisfies this for the Java type system, and it
 must be made to satisfy it for the pluggable type system as well.  The
 typical way to address this is to write the meta-annotation
-\<@ImplicitFor(trees={Tree.Kind.NULL\_LITERAL})> on the definition of the
+\<@ImplicitFor(literals={LiteralKind.NULL})> on the definition of the
 bottom type qualifier.
 
 \item

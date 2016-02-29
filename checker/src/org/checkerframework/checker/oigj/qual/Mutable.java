@@ -14,8 +14,6 @@ import java.lang.annotation.Target;
 
 import javax.lang.model.type.TypeKind;
 
-import com.sun.source.tree.Tree;
-
 /**
  * Indicates that the annotated reference is an immutable reference to an
  * immutable object.
@@ -30,10 +28,7 @@ import com.sun.source.tree.Tree;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(AssignsFields.class)
-@ImplicitFor(
-        trees = { Tree.Kind.NEW_CLASS },
-        types = { TypeKind.ARRAY }
-)
+@ImplicitFor(types = TypeKind.ARRAY)
 @DefaultQualifierInHierarchy
 @DefaultFor({ TypeUseLocation.IMPLICIT_UPPER_BOUND, TypeUseLocation.IMPLICIT_LOWER_BOUND,
               TypeUseLocation.EXCEPTION_PARAMETER })

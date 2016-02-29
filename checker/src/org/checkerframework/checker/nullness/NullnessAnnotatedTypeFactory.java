@@ -24,7 +24,9 @@ import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.DependentTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -304,17 +306,26 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
+        ImplicitsTypeAnnotator implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
+        implicitsTypeAnnotator.addTypeClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
+        implicitsTypeAnnotator.addTypeClass(AnnotatedTypeMirror.AnnotatedPrimitiveType.class, NONNULL);
         return new ListTypeAnnotator(
-                super.createTypeAnnotator(),
-                new NullnessTypeAnnotator(this)
+                new PropagationTypeAnnotator(this),
+                implicitsTypeAnnotator,
+                new NullnessTypeAnnotator(this),
+                new CommitmentTypeAnnotator(this)
         );
     }
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
+        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_CLASS, NONNULL);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY, NONNULL);
+
         return new ListTreeAnnotator( // DebugListTreeAnnotator(new Tree.Kind[] {Tree.Kind.CONDITIONAL_EXPRESSION},
                 new NullnessPropagationAnnotator(this),
-                new ImplicitsTreeAnnotator(this),
+                implicitsTreeAnnotator,
                 new NullnessTreeAnnotator(this),
                 new CommitmentTreeAnnotator(this)
         );

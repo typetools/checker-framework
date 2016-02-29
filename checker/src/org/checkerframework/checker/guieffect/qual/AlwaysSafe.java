@@ -1,14 +1,15 @@
 package org.checkerframework.checker.guieffect.qual;
 
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.qual.SubtypeOf;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import org.checkerframework.framework.qual.*;
-
-import com.sun.source.tree.Tree;
 
 /**
  * Annotation to override the UI effect on a class, and make a field or method
@@ -18,7 +19,7 @@ import com.sun.source.tree.Tree;
  */
 @SubtypeOf({UI.class})
 @DefaultQualifierInHierarchy
-@ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
+@ImplicitFor(literals = LiteralKind.NULL)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

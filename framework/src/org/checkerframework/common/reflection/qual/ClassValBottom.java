@@ -1,15 +1,14 @@
 package org.checkerframework.common.reflection.qual;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
-
-import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.InvisibleQualifier;
+import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TargetLocations;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
-import com.sun.source.tree.Tree;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
 /**
  * Represents the bottom of the ClassVal qualifier hierarchy. This is used to
@@ -18,7 +17,7 @@ import com.sun.source.tree.Tree;
  * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
  */
 @InvisibleQualifier
-@ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
+@ImplicitFor(literals = { LiteralKind.NULL }, typeNames = { java.lang.Void.class })
 @SubtypeOf({ ClassVal.class, ClassBound.class })
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 @TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
