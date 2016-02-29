@@ -275,6 +275,33 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected AnnotationClassLoader loader;
 
     /**
+     * Should results be cached?
+     * This means that ATM.deepCopy() will be called.
+     * ATM.deepCopy() used to (and perhaps still does) side effect the ATM being copied.
+     * So setting this to false is not equivalent to setting shouldReadCache to false. */
+    public boolean shouldCache;
+
+    /** Should the cached result be used, or should it be freshly computed? */
+    public boolean shouldReadCache;
+
+    /** Size of LRU cache if one isn't specified using the atfCacheSize option. */
+    private final static int DEFAULT_CACHE_SIZE = 300;
+
+    /** Mapping from a Tree to its annotated type; implicits have been applied. */
+    private final Map<Tree, AnnotatedTypeMirror> treeCache;
+
+    /** Mapping from a Tree to its annotated type; before implicits are applied,
+     * just what the programmer wrote. */
+    protected final Map<Tree, AnnotatedTypeMirror> fromTreeCache;
+
+    /** Mapping from an Element to its annotated type; before implicits are applied,
+     * just what the programmer wrote. */
+    private final Map<Element, AnnotatedTypeMirror> elementCache;
+
+    /** Mapping from an Element to the source Tree of the declaration. */
+    private final Map<Element, Tree> elementToTreeCache;
+
+    /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
      * instance and syntax tree root. (These parameters are required so that
      * the factory may conduct the appropriate annotation-gathering analyses on
@@ -285,7 +312,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * A subclass must call postInit at the end of its constructor.
      * postInit must be the last call in the constructor or else types
      * from stub files may not be created as expected.
-     *
      *
      * @param checker the {@link SourceChecker} to which this factory belongs
      * @throws IllegalArgumentException if either argument is {@code null}
@@ -307,6 +333,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.fromStubFile = AnnotationUtils.fromClass(elements, FromStubFile.class);
 
         this.cacheDeclAnnos = new HashMap<Element, Set<AnnotationMirror>>();
+
+        int cacheSize = getCacheSize();
+        this.treeCache = CollectionUtils.createLRUCache(cacheSize);
+        this.fromTreeCache = CollectionUtils.createLRUCache(cacheSize);
+        this.elementCache = CollectionUtils.createLRUCache(cacheSize);
+        this.elementToTreeCache = CollectionUtils.createLRUCache(cacheSize);
+        this.shouldReadCache = !checker.hasOption("atfDoNotReadCache");
+        this.shouldCache = !checker.hasOption("atfDoNotCache");
 
         this.typeFormatter = createAnnotatedTypeFormatter();
         this.annotationFormatter = createAnnotationFormatter();
@@ -770,33 +804,26 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Factories for annotated types that account for implicit qualifiers
     // **********************************************************************
 
-    /** Should results be cached? Disable for better debugging. */
-    protected static boolean SHOULD_CACHE = true;
-    public boolean shouldCache = SHOULD_CACHE;
-
-    /** Should the cached result be used, or should it be freshly computed? */
-    protected static boolean SHOULD_READ_CACHE = true;
-    public boolean shouldReadCache = SHOULD_READ_CACHE;
-
-    /** Size of LRU cache. */
-    private final static int CACHE_SIZE = 300;
-
-    /** Mapping from a Tree to its annotated type; implicits have been applied. */
-    private final Map<Tree, AnnotatedTypeMirror> treeCache = CollectionUtils.createLRUCache(CACHE_SIZE);
-
-    /** Mapping from a Tree to its annotated type; before implicits are applied,
-     * just what the programmer wrote. */
-    protected final Map<Tree, AnnotatedTypeMirror> fromTreeCache = CollectionUtils.createLRUCache(CACHE_SIZE);
-
-    /** Mapping from an Element to its annotated type; before implicits are applied,
-     * just what the programmer wrote. */
-    private final Map<Element, AnnotatedTypeMirror> elementCache = CollectionUtils.createLRUCache(CACHE_SIZE);
-
-    /** Mapping from an Element to the source Tree of the declaration. */
-    private final Map<Element, Tree> elementToTreeCache  = CollectionUtils.createLRUCache(CACHE_SIZE);
-
     /** Mapping from a Tree to its TreePath **/
     private final TreePathCacher treePathCache = new TreePathCacher();
+
+    /**
+     * Returns the int supplied to the checker via the atfCacheSize option or
+     * the default cache size.
+     * @return cache size passed as argument to checker or DEFAULT_CACHE_SIZE
+     */
+    private int getCacheSize() {
+        String option = checker.getOption("atfCacheSize");
+        if (option == null) {
+            return DEFAULT_CACHE_SIZE;
+        }
+        try {
+            return Integer.valueOf(option);
+        } catch (NumberFormatException ex) {
+            ErrorReporter.errorAbort("atfCacheSize was not an integer: " + option);
+            return 0; // dead code
+        }
+    }
 
     /**
      * Determines the annotated type of an element using
