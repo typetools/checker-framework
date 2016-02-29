@@ -15,9 +15,10 @@ The instructions on how to run a type-checker in Gradle have been updated to
 use the artifacts in Maven Central. Examples using the instructions have been
 added under checker/examples/GradleExamples.
 
-Closed issues: 559.
+tools.jar is no longer required to be on the classpath when using 
+checker-qual.jar
 
-checker-qual.jar no longer uses classes, such as com.sun.source.tree.Tree, in tools.jar
+Closed issues: 559.
 
 ---------------------------------------------------------------------------
 
