@@ -21,7 +21,7 @@ added under checker-framework/checker/examples/GradleExamples/.
 
 Renamed enum DefaultLocation to TypeUseLocation.
 
-Closed issues:  130, 263, 458, 559, 559, 574, 582, 596.
+Closed issues:  130, 263, 345, 458, 559, 559, 574, 582, 596.
 
 ---------------------------------------------------------------------------
 
