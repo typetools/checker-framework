@@ -48,6 +48,10 @@ PREV_ITERATION_DIR=build/prev-signature-inference
 # Path to annotation-file-utilities.jar
 AFU_JAR="${CHECKERFRAMEWORK}/../annotation-tools/annotation-file-utilities/annotation-file-utilities.jar"
 
+debug=
+# For debugging
+# debug=1
+
 # This function separates extra arguments passed to the checker from Java files
 # received as arguments.
 # TODO: Handle the following limitation: This function makes the assumption
@@ -103,7 +107,13 @@ infer_and_annotate() {
         mv $SIGNATURE_INFERENCE_DIR $PREV_ITERATION_DIR
 
         # Runs CF's javac
-        ${CHECKERFRAMEWORK}/checker/bin/javac -d $TEMP_DIR/ -cp $cp -processor $processor -AinferSignatures -Awarns -Xmaxwarns 10000 $extra_args $java_files || true
+        command="${CHECKERFRAMEWORK}/checker/bin/javac -d $TEMP_DIR/ -cp $cp -processor $processor -AinferSignatures -Awarns -Xmaxwarns 10000 $extra_args $java_files"
+        if [ $debug ]; then
+            echo ${command}
+            echo "Press any key to run command... "
+            read _
+        fi
+        ${command} || true
         # Deletes .unannotated backup files. This is necessary otherwise the
         # insert-annotations-to-source tool will use this file instead of the
         # updated .java one.
