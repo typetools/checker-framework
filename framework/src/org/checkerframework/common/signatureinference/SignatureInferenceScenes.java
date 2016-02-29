@@ -767,10 +767,9 @@ public class SignatureInferenceScenes {
                             ((AnnotationValue)listV.get(0)).getValue());
                     if (scalarAFT != null) {
                         return new ArrayAFT(scalarAFT);
-                    } else {
-                        return null;
                     }
                 }
+                return null;
             }
             Type elemType = ((ArrayType)((Array)defaultValue).type).elemtype;
             try {
