@@ -394,7 +394,7 @@ def main(argv):
                                    AFU_TAG_PREFIXES, AFU_MANUAL, TMP_DIR + "/afu.manual"  )
 
         if projects_to_release[CF_OPT]:
-            build_checker_framework_release(False, jsr308_version, afu_date, "", "", manual_only = True)
+            build_checker_framework_release(False, jsr308_version, afu_version, afu_date, "", "", manual_only = True)
 
             print("")
             print("The built Checker Framework manual (HTML and PDF) can be found at " + CHECKER_MANUAL)
