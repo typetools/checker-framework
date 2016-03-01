@@ -160,7 +160,10 @@ miss a step if you only read the paragraph asking you to say 'yes'.
   <li>All
            <a href="http://tern.cs.washington.edu:8080/view/CF%20Release/">the Jenkins projects under &quot;CF Release&quot;</a>
            should not have performance regressions compared to the previous release (this list may be narrowed down to fewer
-           projects in the future).</li>
+           projects in the future). Open the <a href="http://tern.cs.washington.edu:8080/plugin/global-build-stats/">Global Build Stats</a>
+           page (you will be prompted for your Jenkins credentials if you are not logged in). The charts may take a few seconds
+           to load. For each project, look at the average build time in recent days and in days approximately 30 days ago,
+           and look for any differences in the trend.</li>
   <li id="travis">The following Travis builds should be passing (refresh this page to see the latest status)::
   <ul>
     <li>Annotation File Utilities: <img src="https://travis-ci.org/typetools/annotation-tools.svg?branch=master"/></li>
@@ -316,11 +319,9 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       </tr>
       <tr>
         <td></td>
-        <td colspan="2">scripts</td>
-        <td>The directory to which we copy the release scripts and run them.  This is useful
-          in case you would like to make small tweaks to the release script before running them.
-          They won't be located in any directory under version control so those changes won't
-          be committed when the release is committed.
+        <td colspan="2">checker-framework/release</td>
+        <td>The directory where the release scripts are run from.  Any changes made under this directory
+          won't be automatically committed when the release is committed.
         </td>
       </tr>
 
@@ -472,13 +473,17 @@ miss a step if you only read the paragraph asking you to say 'yes'.
           Annotation File Utilities (<a href="http://types.cs.washington.edu/annotation-file-utilities/changelog.html">previous release</a>,
           <a href="https://github.com/typetools/annotation-tools/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>),
           and jsr308-langtools (<a href="http://types.cs.washington.edu/jsr308/current/changelog-jsr308.txt">previous release</a>,
-          <a href="https://bitbucket.org/typetools/jsr308-langtools/issues?&sort=-updated_on">issues query</a>).
+          <a href="https://bitbucket.org/typetools/jsr308-langtools/issues?status=resolved&sort=-updated_on">issues query</a>).
       </li>
 	  <li>
-	    Examine the version control logs since the last release tag:<br/>
+	    Examine the version control logs since the last release tag to ensure they are reflected in the changelogs when appropriate.
+        This can be done from the command-line with:<br/>
 	    <code>cd $CHECKERFRAMEWORK && git log --name-status checker-framework-1.9.10..</code><br/>
 	    <code>cd $CHECKERFRAMEWORK/../annotation-tools && git log --name-status 3.6.24..</code><br/>
 	    <code>cd $CHECKERFRAMEWORK/../jsr308-langtools && hg log -r jsr308-1.9.10:</code><br/>
+        or by opening the following commit queries for <a href="https://bitbucket.org/typetools/jsr308-langtools/commits/all">jsr308-langtools</a>,
+        the <a href="https://github.com/typetools/annotation-tools/commits/master">Annotation File Utilities</a> and the
+            <a href="https://github.com/typetools/checker-framework/commits/master">Checker Framework</a>.
       </li>
 	  <li>
 	    Even if some code has been committed to the repository, don't

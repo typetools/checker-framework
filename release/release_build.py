@@ -362,16 +362,8 @@ def main(argv):
         print( "Ensure that the changelogs end with a line like" )
         print( "Resolved issues:  200, 300, 332, 336, 357, 359, 373, 374\n" )
 
-        print( "List all issues that have been closed since the last release:\n" )
-        # TODO The jsr308-langtools issues list does not seem to be updated often. Is there a better link or should this link be removed?
-        print( "https://bitbucket.org/typetools/jsr308-langtools/issues?status=resolved&sort=-updated_on" )
-        print( "https://github.com/typetools/annotation-tools/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc" )
-        print( "https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc" )
-        print( "" )
-        print( "Finally, please review commits since the last release to ensure they are reflected in the changelogs when appropriate:\n" )
-        print( "https://bitbucket.org/typetools/jsr308-langtools/commits/all" )
-        print( "https://github.com/typetools/annotation-tools/commits/master" )
-        print( "https://github.com/typetools/checker-framework/commits/master" )
+        print( "To ensure the jsr308-langtools, AFU and Checker Framework changelogs are correct and complete, " +
+               "please follow the Content Guidelines found in README-maintainers.html#content_guidelines\n")
 
         prompt_until_yes()
 
