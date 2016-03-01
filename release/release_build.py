@@ -13,6 +13,13 @@ Copyright (c) 2015 University of Washington. All rights reserved.
 from release_vars  import *
 from release_utils import *
 
+debug=0
+antdebug=""
+# For debugging
+debug=1
+ant_debug="-debug"
+    
+
 def print_usage():
     print( "Usage:    python release_build.py [projects] [options]" )
     print_projects( True, 1, 4 )
@@ -113,19 +120,20 @@ def build_jsr308_langtools_release(auto, version, afu_version, afu_release_date,
     # update jsr308_langtools versions
     ant_props = "-Dlangtools=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (JSR308_LANGTOOLS, version, afu_version, afu_build_properties, afu_release_date )
     # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd   = "ant -f release.xml %s update-langtools-versions " % ant_props
+    ant_cmd   = "ant %s -f release.xml %s update-langtools-versions " % (ant_debug, ant_props)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # TODO: perhaps make a "dist" target rather than listing out the relevant targets
     # build jsr308 binaries and documents but not website, fail if the tests don't pass
-    execute("ant -Dhalt.on.test.failure=true -Dlauncher.java=java clean-and-build-all-tools build-javadoc build-doclets", True, False, JSR308_MAKE)
+    ant_cmd   = "ant %s -Dhalt.on.test.failure=true -Dlauncher.java=java clean-and-build-all-tools build-javadoc build-doclets" % (ant_debug)
+    execute(ant_cmd, True, False, JSR308_MAKE)
 
     jsr308ZipName = "jsr308-langtools-%s.zip" % version
 
     # zip up jsr308-langtools project and place it in jsr308_interm_dir
     ant_props = "-Dlangtools=%s  -Dcheckerframework=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (JSR308_LANGTOOLS, CHECKER_FRAMEWORK, jsr308_interm_dir, jsr308ZipName, version)
     # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd   = "ant -f release.xml %s zip-langtools " % ant_props
+    ant_cmd   = "ant %s -f release.xml %s zip-langtools " % (ant_debug, ant_props)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # build jsr308 website
@@ -135,7 +143,7 @@ def build_jsr308_langtools_release(auto, version, afu_version, afu_release_date,
     # copy remaining website files to jsr308_interm_dir
     ant_props = "-Dlangtools=%s -Ddest.dir=%s" % (JSR308_LANGTOOLS, jsr308_interm_dir)
     # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd   = "ant -f release.xml %s langtools-website-docs " % ant_props
+    ant_cmd   = "ant %s -f release.xml %s langtools-website-docs " % (ant_debug, ant_props)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     update_project_symlink( "jsr308", jsr308_interm_dir )
@@ -152,11 +160,11 @@ def build_annotation_tools_release( auto, version, afu_interm_dir ):
     date = get_current_date()
 
     build = os.path.join(ANNO_FILE_UTILITIES, "build.xml")
-    ant_cmd   = "ant -buildfile %s -e update-versions -Drelease.ver=\"%s\" -Drelease.date=\"%s\"" % (build, version, date)
+    ant_cmd   = "ant %s -buildfile %s -e update-versions -Drelease.ver=\"%s\" -Drelease.date=\"%s\"" % (ant_debug, build, version, date)
     execute( ant_cmd )
 
     # Deploy to intermediate site
-    ant_cmd   = "ant -buildfile %s -e web-no-checks -Dafu.version=%s -Ddeploy-dir=%s" % ( build, version, afu_interm_dir )
+    ant_cmd   = "ant %s -buildfile %s -e web-no-checks -Dafu.version=%s -Ddeploy-dir=%s" % ( ant_debug, build, version, afu_interm_dir )
     execute( ant_cmd )
 
     update_project_symlink( "annotation-file-utilities", afu_interm_dir )
@@ -188,7 +196,7 @@ def build_checker_framework_release(auto, version, afu_version, afu_release_date
     # update jsr308_langtools versions
     ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (checker_dir, version, afu_version, afu_build_properties, afu_release_date)
     # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd   = "ant -f release.xml %s update-checker-framework-versions " % ant_props
+    ant_cmd   = "ant %s -f release.xml %s update-checker-framework-versions " % (ant_debug, ant_props)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     if not manual_only:
@@ -196,7 +204,8 @@ def build_checker_framework_release(auto, version, afu_version, afu_release_date
         execute("sh checkPluginUtil.sh", True, False, CHECKER_FRAMEWORK_RELEASE)
 
         # build the checker framework binaries and documents, run checker framework tests
-        execute("ant -Dhalt.on.test.failure=true dist-release", True, False, CHECKER_FRAMEWORK)
+        ant_cmd   = "ant %s -Dhalt.on.test.failure=true dist-release" % (ant_debug)
+        execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the Checker Framework Manual
     checker_manual_dir = os.path.join(checker_dir, "manual")
@@ -217,12 +226,12 @@ def build_checker_framework_release(auto, version, afu_version, afu_release_date
         # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
         ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, cfZipName, version)
         # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-        ant_cmd   = "ant -f release.xml %s zip-checker-framework " % ant_props
+        ant_cmd   = "ant %s -f release.xml %s zip-checker-framework " % (ant_debug, ant_props)
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
         ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, "mvn-examples.zip", version)
         # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-        ant_cmd   = "ant -f release.xml %s zip-maven-examples " % ant_props
+        ant_cmd   = "ant %s -f release.xml %s zip-maven-examples " % (ant_debug, ant_props)
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
         # copy the remaining checker-framework website files to checker_framework_interm_dir
@@ -232,7 +241,7 @@ def build_checker_framework_release(auto, version, afu_version, afu_release_date
         )
 
         # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-        ant_cmd   = "ant -f release.xml %s checker-framework-website-docs " % ant_props
+        ant_cmd   = "ant %s -f release.xml %s checker-framework-website-docs " % (ant_debug, ant_props)
         execute( ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE )
 
         # clean no longer necessary files left over from building the checker framework tutorial
