@@ -281,9 +281,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * So setting this to false is not equivalent to setting shouldReadCache to false. */
     public boolean shouldCache;
 
-    /** Should the cached result be used, or should it be freshly computed? */
-    public boolean shouldReadCache;
-
     /** Size of LRU cache if one isn't specified using the atfCacheSize option. */
     private final static int DEFAULT_CACHE_SIZE = 300;
 
@@ -334,13 +331,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.cacheDeclAnnos = new HashMap<Element, Set<AnnotationMirror>>();
 
-        int cacheSize = getCacheSize();
+        this.shouldCache = !checker.hasOption("atfDoNotCache");
+        int cacheSize = shouldCache ? getCacheSize() : 0;
         this.treeCache = CollectionUtils.createLRUCache(cacheSize);
         this.fromTreeCache = CollectionUtils.createLRUCache(cacheSize);
         this.elementCache = CollectionUtils.createLRUCache(cacheSize);
         this.elementToTreeCache = CollectionUtils.createLRUCache(cacheSize);
-        this.shouldReadCache = !checker.hasOption("atfDoNotReadCache");
-        this.shouldCache = !checker.hasOption("atfDoNotCache");
 
         this.typeFormatter = createAnnotatedTypeFormatter();
         this.annotationFormatter = createAnnotationFormatter();
@@ -888,7 +884,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.getAnnotatedType: null tree");
             return null; // dead code
         }
-        if (treeCache.containsKey(tree) && shouldReadCache) {
+        if (shouldCache && treeCache.containsKey(tree)) {
             return treeCache.get(tree).deepCopy();
         }
 
@@ -973,7 +969,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the annotated type of the element
      */
     public AnnotatedTypeMirror fromElement(Element elt) {
-        if (elementCache.containsKey(elt) && shouldReadCache) {
+        if (shouldCache && elementCache.containsKey(elt)) {
             return elementCache.get(elt).deepCopy();
         }
         if (elt.getKind() == ElementKind.PACKAGE)
@@ -1064,7 +1060,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.fromMember: not a method or variable declaration: " + tree);
             return null; // dead code
         }
-        if (fromTreeCache.containsKey(tree) && shouldReadCache) {
+        if (shouldCache && fromTreeCache.containsKey(tree)) {
             return fromTreeCache.get(tree).deepCopy();
         }
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
@@ -1081,7 +1077,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the annotated type of the expression
      */
     public AnnotatedTypeMirror fromExpression(ExpressionTree tree) {
-        if (fromTreeCache.containsKey(tree) && shouldReadCache)
+        if (shouldCache && fromTreeCache.containsKey(tree))
             return fromTreeCache.get(tree).deepCopy();
 
         AnnotatedTypeMirror result = TypeFromTree.fromExpression(this, tree);
@@ -1101,7 +1097,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the annotated type of the type in the AST
      */
     public AnnotatedTypeMirror fromTypeTree(Tree tree) {
-        if (fromTreeCache.containsKey(tree) && shouldReadCache) {
+        if (shouldCache && fromTreeCache.containsKey(tree)) {
             return fromTreeCache.get(tree).deepCopy();
         }
 
@@ -2163,7 +2159,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // if root is null, we cannot find any declaration
         if (root == null)
             return null;
-        if (elementToTreeCache.containsKey(elt) && shouldReadCache) {
+        if (shouldCache && elementToTreeCache.containsKey(elt)) {
             return elementToTreeCache.get(elt);
         }
 

@@ -296,15 +296,16 @@ public class NullnessAnnotatedTypeFactory
     }
 
     protected AnnotatedTypeMirror getDeclaredAndDefaultedAnnotatedType(Tree tree) {
-        HACK_DONT_CALL_POST_AS_MEMBER = true;
+        boolean oldHDCPAM = HACK_DONT_CALL_POST_AS_MEMBER;
         boolean oldShouldCache = shouldCache;
+
+        HACK_DONT_CALL_POST_AS_MEMBER = true;
         shouldCache = false;
 
         AnnotatedTypeMirror type = getAnnotatedType(tree);
 
         shouldCache = oldShouldCache;
-        HACK_DONT_CALL_POST_AS_MEMBER = false;
-
+        HACK_DONT_CALL_POST_AS_MEMBER = oldHDCPAM;
         return type;
     }
 

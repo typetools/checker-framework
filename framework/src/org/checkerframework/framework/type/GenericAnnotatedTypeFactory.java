@@ -945,9 +945,7 @@ public abstract class GenericAnnotatedTypeFactory<
         AnnotatedTypeMirror res = null;
         boolean oldUseFlow = useFlow;
         boolean oldShouldCache = shouldCache;
-        boolean oldShouldReadCache = shouldReadCache;
         useFlow = false;
-        shouldReadCache = false;
         // Don't cache the result because getAnnotatedType(lhsTree) could
         // be called and would expect a different result.
         shouldCache = false;
@@ -964,7 +962,6 @@ public abstract class GenericAnnotatedTypeFactory<
                                      + "lhsTree: "+lhsTree+"\nTree.Kind: "+lhsTree.getKind());
         }
         useFlow = oldUseFlow;
-        shouldReadCache = oldShouldReadCache;
         shouldCache = oldShouldCache;
         return res;
     }
