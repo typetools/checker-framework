@@ -205,6 +205,7 @@ LIVE_CF_LOGO = os.path.join(CHECKER_LIVE_SITE, "CFLogo.png")
 
 CURRENT_DATE=datetime.date.today()
 
+os.environ['JSR308'] = BUILD_DIR
 os.environ['CHECKERFRAMEWORK'] = CHECKER_FRAMEWORK
 perl_libs = TMP_DIR + "/perl_lib:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
 # Environment variables for tools needed during the build
