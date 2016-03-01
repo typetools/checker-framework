@@ -280,9 +280,6 @@ import com.sun.tools.javac.util.Log;
     // Set the cache size for caches in AnnotatedTypeFactory
     "atfCacheSize",
 
-    // Sets AnnotatedTypeFactory shouldReadCache to false
-    "atfDoNotReadCache",
-
     // Sets AnnotatedTypeFactory shouldCache to false
     "atfDoNotCache"
 

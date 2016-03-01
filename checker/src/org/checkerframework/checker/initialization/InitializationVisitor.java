@@ -151,15 +151,12 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
                 // fail when caching is turned on here.  (There maybe other
                 // test cases that fail, too.)
                 // See Issue #601
-                boolean oldShouldReadCache = atypeFactory.shouldReadCache;
-                atypeFactory.shouldReadCache = false;
                 boolean oldShouldCache = atypeFactory.shouldCache;
                 atypeFactory.shouldCache = false;
 
                 AnnotatedTypeMirror var2 = atypeFactory.getAnnotatedType(lhs);
 
                 atypeFactory.HACK_DONT_CALL_POST_AS_MEMBER = oldHackDCPAM;
-                atypeFactory.shouldReadCache = oldShouldReadCache;
                 atypeFactory.shouldCache = oldShouldCache;
 
 

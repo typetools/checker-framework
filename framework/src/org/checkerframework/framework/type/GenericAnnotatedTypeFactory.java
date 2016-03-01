@@ -945,9 +945,7 @@ public abstract class GenericAnnotatedTypeFactory<
         AnnotatedTypeMirror res = null;
         boolean oldUseFlow = useFlow;
         boolean oldShouldCache = shouldCache;
-        boolean oldShouldReadCache = shouldReadCache;
         useFlow = false;
-        shouldReadCache = false;
         // Don't cache the result because getAnnotatedType(lhsTree) could
         // be called from elsewhere and would expect flow-sensitive type refinements.
         shouldCache = false;
@@ -968,7 +966,6 @@ public abstract class GenericAnnotatedTypeFactory<
             }
         }
         useFlow = oldUseFlow;
-        shouldReadCache = oldShouldReadCache;
         shouldCache = oldShouldCache;
         return res;
     }
