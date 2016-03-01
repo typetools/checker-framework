@@ -555,6 +555,7 @@ def clean_repos(repos, prompt):
                 clean_repo(repo, False)
 
 def check_repos(repos, fail_on_error, is_intermediate_repo_list):
+    """Fail if the repository is not clean and up to date."""
     for repo in repos:
         if repo_exists(repo):
             if not is_repo_cleaned_and_updated(repo):
