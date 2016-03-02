@@ -456,9 +456,9 @@ def clone(src_repo, dst_repo, bareflag):
         flags = ""
         if (bareflag):
             flags = "--bare"
-        execute('git clone %s %s %s' % (flags, src_repo, dst_repo))
+        execute('git clone --quiet %s %s %s' % (flags, src_repo, dst_repo))
     else:
-        execute('hg clone %s %s' % (src_repo, dst_repo))
+        execute('hg clone --quiet %s %s' % (src_repo, dst_repo))
 
 def is_repo_cleaned_and_updated(repo):
     if is_git(repo):
@@ -522,7 +522,8 @@ def revert(repo):
         execute('hg -R %s revert --all' % repo)
 
 def purge(repo, all=False):
-    """All means also ignored files"""
+    """Delete untracked files from the working directory, like "hg purge".
+If "all" argument is true, also delete ignored files."""
     if git_bare_repo_exists_at_path(repo):
         raise Exception("purge cannot be called on a bare repo ( %s )" % repo)
     if is_git(repo):
