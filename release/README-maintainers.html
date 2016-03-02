@@ -109,7 +109,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <strong>In a user-specific temporary directory, clone/update the Checker Framework repository (it contains the release scripts).</strong><br/>
       <code>mkdir -p /scratch/$USER/jsr308-release<br/></code>
       <code>cd /scratch/$USER/jsr308-release<br/></code>
-      <code>git -C checker-framework pull || git clone https://github.com/typetools/checker-framework.git<br/></code>
+      <code>git -C checker-framework pull --quiet || git clone --quiet https://github.com/typetools/checker-framework.git<br/></code>
       <code>cd checker-framework/release<br/></code>
   </li>
   <li><strong>Review the changelogs and documentation</strong><br/>
