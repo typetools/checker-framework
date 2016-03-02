@@ -342,18 +342,19 @@ def main(argv):
         stage_maven_artifacts_in_maven_central( new_checker_version )
 
         print_step("4b: Close staged artifacts at Maven central." )
-        continue_or_exit( "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts. " +
-               "To close, log into https://oss.sonatype.org using your " +
-               "Sonatype credentials and follow the 'close' instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + "\n" +
-               "For the close message, enter \"Checker Framework release " + new_checker_version + "\"\n" +
-               "Before proceeding to the next step, click on the Refresh button near the top of the page until the closing operation" +
-               "is reported to have completed succesfully.\n")
+        continue_or_exit( "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n" +
+               " * Browse to https://oss.sonatype.org/\n" +
+               " * Log in using your Sonatype credentials\n" +
+               " * Follow the 'close' instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + "\n" +
+               "    * To find the repository, visit https://oss.sonatype.org/#stagingRepositories then scroll to the end in the top pane\n" +
+               "    * For the close message, enter:  Checker Framework release " + new_checker_version + "\n" +
+               " * Click on the Refresh button near the top of the page until the closing\n" +
+               "   operation is reported to have completed succesfully.\n" +
+               " * Copy the URL of the closed artifacts for use in the next step\n")
 
         print_step("4c: Run Maven sanity test on Maven central artifacts." )
         if auto or prompt_yes_no( "Run Maven sanity test on Maven central artifacts?", True ):
-            repo_url = raw_input( "Please enter the repo URL of the closed artifacts.  To find this URL " +
-                                  "log into https://oss.sonatype.org.  Go to the Staging Repositories.  Find " +
-                                  "the repository you just closed and paste that URL here:\n" )
+            repo_url = raw_input( "Please enter the repo URL of the closed artifacts:\n" )
 
             maven_sanity_check( "maven-staging", repo_url, new_checker_version )
 
