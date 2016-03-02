@@ -191,7 +191,7 @@ public class FormatterTreeUtil {
         }
 
         /**
-         * Returns an error description if the format string cannot be satisfied,
+         * Returns an error description if the format string cannot be satisfied.
          * Returns null if the format string does not contain syntactic errors.
          */
         public final Result<String> isIllegalFormat() {
