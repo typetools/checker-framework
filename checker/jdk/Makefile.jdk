@@ -42,13 +42,13 @@ classes: $(SOURCES)
 	@$(CHECKER_JAVAC) -J-Xmx2500M -XDignore.symbol.file -d build -processor $(JDKDIR) -AprintErrorStack -Awarns $?
 
 build/%.expected: build/%.class
-	$(JAVAP) -cp $(JAVADOCLIB) $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@
+	@$(JAVAP) -cp $(JAVADOCLIB) $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@
 
 build/%.actual: build/%.class
-	$(JAVAP) -Xbootclasspath/p:build $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@
+	@$(JAVAP) -Xbootclasspath/p:build $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@
 
 build/%.diff: build/%.expected build/%.actual
-	echo "validating class:" $(subst /,.,$*)
+	@echo "validating class:" $(subst /,.,$*)
 	diff $? > $@
 
 validate: classes $(DIFFS)
@@ -67,12 +67,12 @@ JAIFS = $(patsubst build/%.class,build/%.jaif, $(BUILD_CLASSES))
 ANNOTATED = $(patsubst build/%.class,annotated/%.class, $(BUILD_CLASSES))
 
 build/%.jaif: build/%.class
-	$(AFU_SCRIPTS)/extract-annotations '$<'
+	@$(AFU_SCRIPTS)/extract-annotations '$<'
 
 jaifs: $(JAIFS)
 
 annotated/%.class: build/%.jaif
-	$(AFU_SCRIPTS)/insert-annotations '../$@' '$<'
+	@$(AFU_SCRIPTS)/insert-annotations '../$@' '$<'
 
 annotated: $(ANNOTATED)
 
