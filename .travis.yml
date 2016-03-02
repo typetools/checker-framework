@@ -62,9 +62,9 @@ after_success:
             ($TRAVIS_PULL_REQUEST == false) &&
             ( (! $TRAVIS_JOB_NUMBER == *.*) || ($TRAVIS_JOB_NUMBER == *.1) ) ]] ; then
         curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
-        sh trigger-travis.sh typetools checker-framework-demos $TRAVISTOKEN
-        sh trigger-travis.sh typetools checker-framework-inference $TRAVISTOKEN
-        sh trigger-travis.sh typetools daikon-typecheck $TRAVISTOKEN
-        sh trigger-travis.sh typetools plume-lib-typecheck $TRAVISTOKEN
-        sh trigger-travis.sh typetools sparta $TRAVISTOKEN
+#        sh trigger-travis.sh typetools checker-framework-demos $TRAVISTOKEN
+        sh trigger-travis.sh eisop checker-framework-inference $TRAVISTOKEN
+#        sh trigger-travis.sh typetools daikon-typecheck $TRAVISTOKEN
+#        sh trigger-travis.sh typetools plume-lib-typecheck $TRAVISTOKEN
+#        sh trigger-travis.sh typetools sparta $TRAVISTOKEN
       fi
