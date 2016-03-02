@@ -162,7 +162,7 @@ def run_link_checker( site, output ):
 
     return output
 
-def check_all_links( jsr308_website, afu_website, checker_website, suffix ):
+def check_all_links( jsr308_website, afu_website, checker_website, suffix, test_mode ):
     jsr308Check  = run_link_checker( jsr308_website,  TMP_DIR + "/jsr308." + suffix + ".check" )
     afuCheck     = run_link_checker( afu_website,     TMP_DIR + "/afu." + suffix + ".check" )
     checkerCheck = run_link_checker( checker_website, TMP_DIR + "/checker-framework." + suffix + ".check" )
@@ -292,7 +292,7 @@ def main(argv):
     print_step( "Push Step 2: Check links on development site" ) # SEMIAUTO
 
     if auto or prompt_yes_no( "Run link checker on DEV site?", True ):
-        check_all_links( dev_jsr308_website, dev_afu_website, dev_checker_website, "dev" )
+        check_all_links( dev_jsr308_website, dev_afu_website, dev_checker_website, "dev", test_mode )
 
     # Runs sanity tests on the development release. Later, we will run a smaller set of sanity
     # tests on the live release to ensure no errors occurred when promoting the release.
@@ -411,7 +411,7 @@ def main(argv):
 
     print_step( "Push Step 8. Check live site links" ) # SEMIAUTO
     if auto or prompt_yes_no( "Run link checker on LIVE site?", True ):
-        check_all_links( live_jsr308_website, live_afu_website, live_checker_website, "live" )
+        check_all_links( live_jsr308_website, live_afu_website, live_checker_website, "live", test_mode )
 
     # This step pushes the changes committed to the interm repositories to the GitHub/Bitbucket
     # repositories. This is the first irreversible change. After this point, you can no longer
