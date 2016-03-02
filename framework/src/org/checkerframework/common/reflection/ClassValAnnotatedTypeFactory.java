@@ -11,7 +11,6 @@ import org.checkerframework.common.reflection.qual.UnknownClass;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.StringVal;
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -24,8 +23,11 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -42,8 +44,6 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.UnionClassType;
 
-@TypeQualifiers({ UnknownClass.class, ClassVal.class, ClassBound.class,
-        ClassValBottom.class })
 public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
 
@@ -56,6 +56,13 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (this.getClass().equals(ClassValAnnotatedTypeFactory.class)) {
             this.postInit();
         }
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return Collections.unmodifiableSet(
+                new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(UnknownClass.class, ClassVal.class, ClassBound.class, ClassValBottom.class)));
     }
 
     private AnnotationMirror createClassVal(List<String> values) {
@@ -131,6 +138,34 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return createClassBound(new ArrayList<>(lubClassNames));
                 } else {
                     return createClassVal(new ArrayList<>(lubClassNames));
+                }
+            }
+        }
+
+        @Override
+        public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (!AnnotationUtils.areSameIgnoringValues(getTopAnnotation(a1),getTopAnnotation(a2))) {
+                return null;
+            } else if (isSubtype(a1, a2)) {
+                return a1;
+            } else if (isSubtype(a2, a1)) {
+                return a2;
+            } else  {
+                List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
+                List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
+                Set<String> glbClassNames = new TreeSet<String>();
+                glbClassNames.addAll(a1ClassNames);
+                glbClassNames.retainAll(a2ClassNames);
+
+                // If either annotation is a ClassVal, the glb must also be a ClassVal.
+                // For example:
+                // GLB( @ClassVal(a,b), @ClassBound(a,c)) is @ClassVal(a)
+                // because @ClassBound(a) is not a subtype of @ClassVal(a,b)
+                if (AnnotationUtils.areSameByClass(a1, ClassVal.class) ||
+                            AnnotationUtils.areSameByClass(a2, ClassVal.class)) {
+                    return createClassVal(new ArrayList<>(glbClassNames));
+                } else {
+                    return createClassBound(new ArrayList<>(glbClassNames));
                 }
             }
         }

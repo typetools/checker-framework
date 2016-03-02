@@ -9,9 +9,10 @@ import java.lang.annotation.Target;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * This type qualifier belongs to the freedom-before-commitment initialization
@@ -27,9 +28,10 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #initialization-checker Initialization Checker
  */
-@TypeQualifier
 @SubtypeOf(UnknownInitialization.class)
 @DefaultQualifierInHierarchy
+@DefaultFor({ DefaultLocation.IMPLICIT_UPPER_BOUNDS, DefaultLocation.IMPLICIT_LOWER_BOUNDS,
+              DefaultLocation.EXCEPTION_PARAMETER })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })

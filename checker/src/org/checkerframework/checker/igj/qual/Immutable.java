@@ -7,7 +7,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 // import static java.lang.annotation.ElementType.*;
 
@@ -20,7 +19,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #igj-checker IGJ Checker
  */
-@TypeQualifier
 @SubtypeOf(ReadOnly.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

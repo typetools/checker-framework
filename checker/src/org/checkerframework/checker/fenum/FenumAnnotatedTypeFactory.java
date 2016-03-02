@@ -13,7 +13,6 @@ import org.checkerframework.checker.fenum.qual.FenumTop;
 import org.checkerframework.checker.fenum.qual.FenumUnqualified;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -32,8 +31,6 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         FENUM_UNQUALIFIED = AnnotationUtils.fromClass(elements, FenumUnqualified.class);
 
         this.postInit();
-        // flow.setDebug(System.err);
-        defaults.addAbsoluteDefault(FENUM_BOTTOM, DefaultLocation.LOWER_BOUNDS);
     }
 
     /** Copied from SubtypingChecker.
@@ -41,32 +38,36 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * we return Fenum as the only qualifier.
      */
     @Override
-    @SuppressWarnings("unchecked")
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        Set<Class<? extends Annotation>> qualSet =
-              new HashSet<Class<? extends Annotation>>();
+        AnnotationClassLoader loader = new AnnotationClassLoader(checker);
 
+        Set<Class<? extends Annotation>> qualSet = new HashSet<Class<? extends Annotation>>();
+
+        // Load externally defined quals given in the -Aquals and/or -AqualDirs options
         String qualNames = checker.getOption("quals");
-        if (qualNames == null) {
-            // maybe issue a warning?
-        } else {
+        String qualDirectories = checker.getOption("qualDirs");
+
+        // load individually named qualifiers
+        if (qualNames != null) {
             for (String qualName : qualNames.split(",")) {
-                try {
-                    final Class<? extends Annotation> q =
-                            (Class<? extends Annotation>) Class.forName(qualName);
-                    qualSet.add(q);
-                } catch (ClassNotFoundException e) {
-                    checker.errorAbort("FenumChecker: could not load class for qualifier: " + qualName + "; ensure that your classpath is correct.");
-                }
+                qualSet.add(loader.loadExternalAnnotationClass(qualName));
             }
         }
+
+        // load directories of qualifiers
+        if (qualDirectories != null) {
+            for (String dirName : qualDirectories.split(":")) {
+                qualSet.addAll(loader.loadExternalAnnotationClassesFromDirectory(dirName));
+            }
+        }
+
+        // Load top, bottom, unqualified, and fake enum
         qualSet.add(FenumTop.class);
         qualSet.add(Fenum.class);
         qualSet.add(FenumUnqualified.class);
         qualSet.add(FenumBottom.class);
 
-        // Also call super. This way a subclass can use the
-        // @TypeQualifiers annotation again.
+        // Also call super to load everything in qual directory
         qualSet.addAll(super.createSupportedTypeQualifiers());
 
         // TODO: warn if no qualifiers given?

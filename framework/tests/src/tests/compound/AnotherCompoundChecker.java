@@ -4,14 +4,9 @@ import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueChecker;
-import org.checkerframework.framework.qual.TypeQualifiers;
 
 import java.util.LinkedHashSet;
 
-import tests.compound.qual.ACCBottom;
-import tests.compound.qual.ACCTop;
-
-@TypeQualifiers({ ACCTop.class, ACCBottom.class })
 public class AnotherCompoundChecker extends BaseTypeChecker {
     @Override
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {

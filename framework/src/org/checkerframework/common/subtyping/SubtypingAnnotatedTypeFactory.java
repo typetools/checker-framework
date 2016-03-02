@@ -9,6 +9,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 
 public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -18,27 +19,34 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        AnnotationClassLoader loader = new AnnotationClassLoader(checker);
+
+        Set<Class<? extends Annotation>> qualSet = new HashSet<Class<? extends Annotation>>();
 
         String qualNames = checker.getOption("quals");
-        if (qualNames == null) {
-            checker.userErrorAbort("SubtypingChecker: missing required option: -Aquals");
+        String qualDirectories = checker.getOption("qualDirs");
+
+        if (qualNames == null && qualDirectories == null) {
+            checker.userErrorAbort("SubtypingChecker: missing required option. Use -Aquals or -AqualDirs");
             throw new Error("This can't happen"); // dead code
         }
 
-        Set<Class<? extends Annotation>> qualSet =
-            new HashSet<Class<? extends Annotation>>();
-        for (String qualName : qualNames.split(",")) {
-            try {
-                final Class<? extends Annotation> q =
-                    (Class<? extends Annotation>)Class.forName(qualName);
-                qualSet.add(q);
-            } catch (ClassNotFoundException e) {
-                checker.userErrorAbort("SubtypingChecker: could not load class for qualifier: " + qualName + "; ensure that your classpath is correct");
+        // load individually named qualifiers
+        if (qualNames != null) {
+            for (String qualName : qualNames.split(",")) {
+                qualSet.add(loader.loadExternalAnnotationClass(qualName));
             }
         }
 
+        // load directories of qualifiers
+        if (qualDirectories != null) {
+            for (String dirName : qualDirectories.split(":")) {
+                qualSet.addAll(loader.loadExternalAnnotationClassesFromDirectory(dirName));
+            }
+        }
+
+        // check for subtype meta-annotation
         for (Class<? extends Annotation> qual : qualSet) {
             Annotation subtypeOfAnnotation = qual.getAnnotation(SubtypeOf.class);
             if (subtypeOfAnnotation != null) {

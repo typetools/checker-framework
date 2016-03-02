@@ -17,7 +17,6 @@ import org.checkerframework.framework.qual.*;
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @Documented
-@TypeQualifier
 @PolymorphicQualifier(Raw.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

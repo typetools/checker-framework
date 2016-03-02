@@ -17,7 +17,6 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultLocation;
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -39,6 +38,7 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -70,8 +70,6 @@ import com.sun.source.tree.UnaryTree;
  *         AnnotatedTypeFactory for the Value type system.
  *
  */
-@TypeQualifiers({ ArrayLen.class, BoolVal.class, DoubleVal.class, IntVal.class,
-        StringVal.class, BottomVal.class, UnknownVal.class })
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final AnnotationMirror  UNKNOWNVAL,BOTTOMVAL;
@@ -116,6 +114,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return getBundledTypeQualifiersWithPolyAll(
+                BottomVal.class);
+    }
+
     public void disableWarnings() {
         reportWarnings = false;
     }
@@ -158,8 +162,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private AnnotatedTypeMirror postFixInt(AnnotatedTypeMirror anno,
             boolean increment) {
-        List<Long> values = getIntValues(
-                anno.getAnnotation(IntVal.class));
+        List<Long> values = getIntValues(anno.getAnnotation(IntVal.class));
         List<? extends Number> castedValues = NumberUtils.castNumbers(
                 anno.getUnderlyingType(), values);
         List<Long> results = new ArrayList<>();
@@ -219,14 +222,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new ValueQualifierHierarchy(factory);
-    }
-    @Override
-    protected QualifierDefaults createQualifierDefaults() {
-        QualifierDefaults defaults = super.createQualifierDefaults();
-        defaults.addAbsoluteDefault(UNKNOWNVAL, DefaultLocation.OTHERWISE);
-        defaults.addAbsoluteDefault(BOTTOMVAL, DefaultLocation.LOWER_BOUNDS);
-
-        return defaults;
     }
 
     @Override

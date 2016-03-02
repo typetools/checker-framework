@@ -9,7 +9,6 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * An expression with this type has no aliases.
@@ -28,8 +27,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE_USE)
-@TypeQualifier
+@Target({ElementType.TYPE_USE})
 @SubtypeOf({MaybeAliased.class})
 @DefaultFor(DefaultLocation.LOWER_BOUNDS)
 public @interface Unique {}

@@ -1,5 +1,8 @@
+package qual;
+
 import java.lang.annotation.*;
 
+import org.checkerframework.checker.units.qual.UnitsRelations;
 import org.checkerframework.checker.units.qual.UnknownUnits;
 import org.checkerframework.framework.qual.*;
 
@@ -10,6 +13,6 @@ import org.checkerframework.framework.qual.*;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TypeQualifier
-@SubtypeOf( { UnknownUnits.class } )
+@SubtypeOf({UnknownUnits.class})
+@UnitsRelations(FrequencyRelations.class)
 public @interface Frequency {}

@@ -7,6 +7,8 @@
 % These currently include
 % % Keep this list in sync with file ../lib/README .
 %   \href{https://commons.apache.org/proper/commons-bcel/}{Apache Commons BCEL}
+%   (versions 5.2 and 6.0 pre-release),
+%   \href{https://github.com/google/guava/}{Google Guava},
 %   and
 %   \href{https://github.com/arenn/java-getopt}{GNU getopt Java port}.
 % %% Todo: this should be done automatically for the user.
@@ -153,14 +155,14 @@ You use \<@AnnotatedFor> to indicate which classes you have annotated.
 
 
 
-\subsection{The \<-AuseSafeDefaultsForUnannotatedSourceCode> command-line
-argument\label{AuseSafeDefaultsForUnannotatedSourceCode}}
+\subsection{The \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line
+argument\label{AuseDefaultsForUncheckedCodesource}}
 
 \begin{sloppypar}
 When compiling a library that is not fully annotated, use command-line
-argument \<-AuseSafeDefaultsForUnannotatedSourceCode>.  This causes
+argument \<-AuseDefaultsForUncheckedCode=source,bytecode>.  This causes
 the checker to behave normally for classes with a relevant \<@AnnotatedFor>
-annotation.  For all other classes, the checker uses conservative defaults
+annotation.  For all other classes, the checker uses unchecked code defaults
 (see Section~\ref{defaults-classfile}) for any type use with no explicit
 user-written annotation, and the checker issues no warnings.
 \end{sloppypar}
@@ -170,7 +172,7 @@ class, indicates that the class has been annotated for certain type
 systems.  For example, \<@AnnotatedFor(\ttlcb"nullness", "regex"\ttrcb)> means that
 the programmer has written annotations for the Nullness and Regular
 Expression type systems.  If one of those two type-checkers is run,
-the \<-AuseSafeDefaultsForUnannotatedSourceCode> command-line argument
+the \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line argument
 has no effect and this class is treated normally:
 unannotated types are defaulted using normal source-code
 defaults and type-checking warnings are issued.
@@ -181,7 +183,7 @@ checkers (see Section~\ref{shorthand-for-checkers}).
 
 \begin{sloppypar}
 Whenever you compile a class using the Checker Framework, including when
-using the \<-AuseSafeDefaultsForUnannotatedSourceCode> command-line
+using the \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line
 argument, the resulting \<.class> files are fully-annotated; each type use
 in the \<.class> file has an explicit type qualifier for any checker that
 is run.
@@ -216,7 +218,7 @@ partially-annotated library.
     Every time the build system runs the compiler, it should:
     \begin{itemize}
     \item
-      passes the \<-AuseSafeDefaultsForUnannotatedSourceCode>
+      passes the \<-AuseDefaultsForUncheckedCode=source,bytecode>
       command-line option and
     \item
       runs every pluggable type-checker for which any
@@ -233,7 +235,7 @@ partially-annotated library.
   You are not adding new build targets, but modifying existing targets.
   The reason to run every type-checker is to verify
   the annotations you wrote, and to use appropriate defaults for all
-  unnanotated type uses.
+  unannotated type uses.
   The reason to include the contents of \<checker-qual.jar> is so that 
   the resulting \<.jar> file can be used whether or not the Checker Framework
   is being run.
@@ -399,7 +401,7 @@ following ways:
   The only required import statements are the ones to import type
   annotations.  Import statements for types are optional.
 
-  Enum constants in annotations need to be either fully qualified
+  Enum constants in annotations need to be either fully-qualified
   or imported.
   For example, one has to either write the enum constant \<ANY> in
   fully-qualified form:
@@ -567,7 +569,7 @@ StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
 
 \subsection{Limitations\label{stub-limitations}}
 
-The stub file reader has several limitations.  We will fix these in a
+The stub file reader has several limitations that are violations of Java 8 syntax.  We will fix these in a
 future release.
 
 \begin{itemize}
@@ -589,18 +591,47 @@ in a stub file one has to write
 
 \item
   The stub file reader
-  does not handle nested classes.  To work around this, it permits a
+  does not handle nested class declarations.  To work around this, it permits a
   top-level class to be written with a \<\$> in its name, and applies the
   annotations to the appropriate nested class.
 
+\begin{Verbatim}
+    class Lib$Inner {
+       // methods
+    }
+\end{Verbatim}
+
 \item
-  Annotations must be written before the package name on a fully qualified
+  Annotations must be written before the package name on a fully-qualified
   types rather than directly on the type it qualifies.  However, it is usually not
-  necessary to write the fully qualified name.
+  necessary to write the fully-qualified name.
 
   \begin{Verbatim}
           void init(@Nullable java.security.SecureRandom random);
    \end{Verbatim}
+\item
+   Annotations on types that are inner classes must be written before the
+   package if the type is written as a
+   fully-qualified type, or before the inner class name if the type is
+   written as a simple type. For example,
+
+\begin{Verbatim}
+        ProcessBuilder redirectError(@NonNull java.lang.ProcessBuilder.Redirect destination);
+\end{Verbatim}
+ or
+\begin{Verbatim}
+        ProcessBuilder redirectError(@NonNull Redirect destination);
+\end{Verbatim}
+   The code below will cause an error.
+\begin{Verbatim}
+        // error
+        ProcessBuilder redirectError(@NonNull ProcessBuilder.Redirect destination);
+\end{Verbatim}
+ or
+\begin{Verbatim}
+        // error
+        ProcessBuilder redirectError(ProcessBuilder.@NonNull Redirect destination);
+\end{Verbatim}
 
 \item
   Annotations can only use string, boolean, or integer literals; other literals are not
@@ -685,5 +716,7 @@ read whether the library's annotations are parsed.
 %  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug jdk6 jdk7
 %  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
 %%  LocalWords:  NoStubParserWarning CHECKERFRAMEWORK AnnotatedFor regex
-%%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile
+%%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual
 %%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs
+%%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1
+%%  LocalWords:  TypeSystem2 TypeSystem3

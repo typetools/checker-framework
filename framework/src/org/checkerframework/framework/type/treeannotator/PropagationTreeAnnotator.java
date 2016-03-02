@@ -6,7 +6,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -40,8 +39,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
     /**
      * Creates a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator} from the given checker, using that checker's
-     * {@link TypeQualifiers} annotation to determine the annotations that are
-     * in the type hierarchy.
+     * type hierarchy.
      */
     public PropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
         super(atypeFactory);

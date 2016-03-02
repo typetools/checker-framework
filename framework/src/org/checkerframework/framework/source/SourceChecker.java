@@ -7,7 +7,6 @@ import org.checkerframework.checker.nullness.qual.*;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.CheckerMain;
@@ -175,18 +174,17 @@ import com.sun.tools.javac.util.Log;
     // org.checkerframework.framework.flow.CFAbstractTransfer.sequentialSemantics
     "concurrentSemantics",
 
-    // Whether to use conservative checks for unannotated bytecode; these are configured
-    // by the specific type checker using @Default[Qualifier]ForUnannotatedCode.
-    // They may require more annotations or stub files.
-    // "unsafeDefaultsForUnannotatedBytecode",
-    // TODO: temporary option to turn on sound behavior.
-    "safeDefaultsForUnannotatedBytecode",
-
-    // Whether to use conservative checks for unannotated source code; these are configured
-    // by the specific type checker using @Default[Qualifier]ForUnannotatedCode
-    // and only apply to source code that is not marked as @AnnotatedFor the checker
-    // that is being executed.
-    "useSafeDefaultsForUnannotatedSourceCode",
+    // Whether to use unchecked code defaults for bytecode and/or source code; these are configured
+    // by the specific type checker using @Default[QualifierInHierarchy]InUncheckedCode[For].
+    // This option takes arguments "source" and/or "bytecode".
+    // The default is "-source,-bytecode" (eventually this will be changed to "-source,bytecode").
+    // Note, if unchecked code defaults are turned on for source code, the unchecked
+    // defaults are not applied to code in scope of an @AnnotatedFor.
+    // See the "Compiling partially-annotated libraries" and
+    // "Default qualifiers for \<.class> files (conservative library defaults)"
+    // sections in the manual for more details
+    // org.checkerframework.framework.source.SourceChecker.useUncheckedCodeDefault
+    "useDefaultsForUncheckedCode",
 
     // Whether to resolve reflective method invocations
     // resolveReflection=debug cause debugging information
@@ -265,11 +263,31 @@ import com.sun.tools.javac.util.Log;
 
     /// Miscellaneous debugging options
 
-    // Directory for .dot files generated from the CFG
-    // org.checkerframework.framework.type.GenericAnnotatedTypeFactory.analyze
+    // Mechanism to visualize the control flow graph (CFG).
+    // The argument is a sequence of values or key-value pairs.
+    // The first argument has to be the fully-qualified name of the
+    // org.checkerframework.dataflow.cfg.CFGVisualizer implementation
+    // that should be used. The remaining values or key-value pairs are
+    // passed to CFGVisualizer.init.
+    // For example:
+    //    -Acfgviz=MyViz,a,b=c,d
+    // instantiates class MyViz and calls CFGVisualizer.init
+    // with {"a" -> true, "b" -> "c", "d" -> true}.
+    "cfgviz",
+
+    // Directory for .dot files generated from the CFG visualization in
+    // org.checkerframework.dataflow.cfg.DOTCFGVisualizer
+    // as initialized by
+    // org.checkerframework.framework.type.GenericAnnotatedTypeFactory.createCFGVisualizer()
+    // -Aflowdotdir=xyz
+    // is short-hand for
+    // -Acfgviz=org.checkerframework.dataflow.cfg.DOTCFGVisualizer,outdir=xyz
     "flowdotdir",
 
-    // Enable additional output in the flow .dot files.
+    // Enable additional output in the CFG visualization.
+    // -Averbosecfg
+    // is short-hand for
+    // -Acfgviz=MyClass,verbose
     "verbosecfg",
 
     // Whether to output resource statistics at JVM shutdown
@@ -1258,7 +1276,7 @@ public abstract class SourceChecker
                 return false; // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements, because they may not have an @AnnotatedFor.
         }
 
-        if (hasOption("useSafeDefaultsForUnannotatedSourceCode")) {
+        if (useUncheckedCodeDefault("source")) {
             // If we got this far without hitting an @AnnotatedFor and returning false, we DO suppress the warning.
             return true;
         }
@@ -1266,6 +1284,33 @@ public abstract class SourceChecker
         return false;
     }
 
+    /**
+     * Should unchecked code defaults be used for the kind of code indicated by the parameter
+     * @param kindOfCode source or bytecode
+     * @return whether unchecked code defaults should be used
+     */
+    public boolean useUncheckedCodeDefault(String kindOfCode) {
+        final boolean useUncheckedDefaultsForSource = false;
+        final boolean useUncheckedDefaultsForByteCode = false;
+        String option = this.getOption("useDefaultsForUncheckedCode");
+
+        String[] args = option != null ? option.split(",") : new String[0];
+        for (String arg : args) {
+            boolean value = arg.indexOf("-") != 0;
+            arg = value ? arg : arg.substring(1);
+            if (arg.equals(kindOfCode)) {
+                return value;
+            }
+        }
+        if (kindOfCode.equals("source")) {
+            return useUncheckedDefaultsForSource;
+        } else if (kindOfCode.equals("bytecode")) {
+            return useUncheckedDefaultsForByteCode;
+        } else {
+            ErrorReporter.errorAbort("SourceChecker: unexpected argument to useUncheckedCodeDefault: " + kindOfCode);
+        }
+        return false;
+    }
     /**
      * Determines whether all the warnings pertaining to a given tree
      * should be suppressed.  Returns true if the element is within the scope
@@ -1296,7 +1341,7 @@ public abstract class SourceChecker
 
     private boolean isAnnotatedForThisCheckerOrUpstreamChecker(/*@Nullable*/ Element elt) {
 
-        if (elt == null || !hasOption("useSafeDefaultsForUnannotatedSourceCode"))
+        if (elt == null || !useUncheckedCodeDefault("source"))
             return false;
 
         /*@Nullable*/ AnnotatedFor anno = elt.getAnnotation(AnnotatedFor.class);
@@ -1684,14 +1729,10 @@ public abstract class SourceChecker
      * annotation.  <p>
      *
      * To specify the annotations that a checker recognizes as type qualifiers,
-     * use the {@link TypeQualifiers} annotation on the declaration of
-     * subclasses of this class or override the
-     * {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()} method.
+     * see {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()}.
      *
      * @throws Error if a subclass is annotated with
      *         {@link SupportedAnnotationTypes}
-     *
-     * @see TypeQualifiers
      */
     @Override
     public final Set<String> getSupportedAnnotationTypes() {

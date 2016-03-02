@@ -4,11 +4,10 @@
 # and that a simple sanity test works.
 # It assumes that environment variables JAVA7_HOME and JAVA8_HOME are defined.
 
-# This script is used by the following Jenkins job:
-# http://tern.cs.washington.edu:8080/job/checker-framework-testinstall/
+# This script is used by the release_push script in the "Run javac sanity tests on the live release" step
 
 rm -rf checker-framework*.zip
-wget -q http://types.cs.washington.edu/checker-framework/current/checker-framework.zip
+wget -q http://types.cs.washington.edu/checker-framework/current/checker-framework-1.9.11.zip
 rm -rf checker-framework-*/
 unzip -q checker-framework*.zip
 

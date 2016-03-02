@@ -29,23 +29,23 @@
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-      <version><!-- checker-framework-version -->1.9.9<!-- /checker-framework-version --></version>
+      <version><!-- checker-framework-version -->1.9.11<!-- /checker-framework-version --></version>
     </dependency>
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker</artifactId>
-      <version><!-- checker-framework-version -->1.9.9<!-- /checker-framework-version --></version>
+      <version><!-- checker-framework-version -->1.9.11<!-- /checker-framework-version --></version>
     </dependency>
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>compiler</artifactId>
-      <version><!-- checker-framework-version -->1.9.9<!-- /checker-framework-version --></version>
+      <version><!-- checker-framework-version -->1.9.11<!-- /checker-framework-version --></version>
     </dependency>
     <!-- The annotated JDK to use (change to jdk7 if using Java 7) -->
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
-      <version><!-- checker-framework-version -->1.9.9<!-- /checker-framework-version --></version>
+      <version><!-- checker-framework-version -->1.9.11<!-- /checker-framework-version --></version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>

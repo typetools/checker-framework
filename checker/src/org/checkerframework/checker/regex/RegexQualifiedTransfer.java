@@ -140,7 +140,7 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
      * @param num Input Node.
      * @return The int value of num. 0 if num is not an int literal.
      */
-    
+
     private int determineIntValue(Node num) {
         int groupCount;
         if (num instanceof IntegerLiteralNode) {
@@ -223,7 +223,7 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
     visitGreaterThanOrEqual(GreaterThanOrEqualNode n,
             TransferInput<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> in) {
         TransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> res;
-        res = super.visitGreaterThanOrEqual(n, in); 
+        res = super.visitGreaterThanOrEqual(n, in);
         res = handleMatcherGroupCount(n.getLeftOperand(), n.getRightOperand(), true, in, res);
         return res;
     }

@@ -9,7 +9,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
 /**
  * Denotes that the representation of an object might not be encrypted.
  */
-@TypeQualifier
 @DefaultQualifierInHierarchy
 @SubtypeOf({})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

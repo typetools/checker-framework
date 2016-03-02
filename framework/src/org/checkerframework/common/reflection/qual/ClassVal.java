@@ -6,7 +6,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * This represents a {@link java.lang.Class Class&lt;T&gt;} object
@@ -16,7 +15,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
  */
-@TypeQualifier
 @SubtypeOf({ UnknownClass.class })
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE })

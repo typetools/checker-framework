@@ -3,7 +3,6 @@ package org.checkerframework.checker.oigj.qual;
 import java.lang.annotation.*;
 
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Indicates that the annotated reference is a ReadOnly reference.
@@ -19,6 +18,5 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TypeQualifier
 @SubtypeOf({})
 public @interface ReadOnly {}

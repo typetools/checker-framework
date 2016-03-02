@@ -36,31 +36,52 @@ extend the framework as discussed in Chapter~\ref{writing-a-checker}.
 The Subtyping Checker is used in the same way as other checkers (using the
 \code{-processor org.checkerframework.common.subtyping.SubtypingChecker} option; see Chapter~\ref{using-a-checker}), except that it
 requires an additional annotation processor argument via the standard
-``\code{-A}'' switch:
+``\code{-A}'' switch. One of the two following arguments must be used with the
+Subtyping Checker:
 \end{sloppypar}
 
 \begin{itemize}
 
 \item
-\code{-Aquals}: this option specifies a comma-no-space-separated list of
-the fully-qualified class
-names of the annotations used as qualifiers in the custom type system.  For
-example,
+Provide the fully-qualified class name(s) of the annotation(s) in the custom
+type system through the \code{-Aquals} option, using a comma-no-space-separated
+notation:
 
 \begin{alltt}
-  javac -processor org.checkerframework.common.subtyping.SubtypingChecker
-        \textit{-Aquals=myproject.qual.MyQual,myproject.qual.OtherQual} MyFile.java ...
+  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+        -processor org.checkerframework.common.subtyping.SubtypingChecker \ttbs
+        -Aquals=\textit{myModule.qual.MyQual},\textit{myModule.qual.OtherQual} MyFile.java ...
 \end{alltt}
-
-It serves the same purpose as the \refqualclass{framework/qual}{TypeQualifiers}
-annotation used by other checkers (see section
-\ref{writing-compiler-interface}).
 
 The annotations listed in \code{-Aquals} must be accessible to
 the compiler during compilation in the classpath.  In other words, they must
 already be compiled (and, typically, be on the javac bootclasspath)
 before you run the Subtyping Checker with \code{javac}.  It
 is not sufficient to supply their source files on the command line.
+
+\item
+Provide the fully-qualified paths to a set of directories that contain the
+annotations in the custom type system through the \code{-AqualDirs} option,
+using a colon-no-space-separated notation. For example:
+
+\begin{alltt}
+  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+        -processor org.checkerframework.common.subtyping.SubtypingChecker \ttbs
+        -AqualDirs=\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} MyFile.java
+\end{alltt}
+
+Note that in these two examples, the compiled class file of the
+\<myModule.qual.MyQual> and \<myModule.qual.OtherQual> annotations must exist
+in either the \<myProject/bin> directory or the \<myLibrary/bin> directory. The
+following placement of the class files will work with the above commands:
+
+\begin{alltt}
+  .../myProject/bin/myModule/qual/MyQual.class
+  .../myLibrary/bin/myModule/qual/OtherQual.class
+\end{alltt}
+
+The two options can be used at the same time to provide groups of annotations
+from directories, and individually named annotations.
 
 \end{itemize}
 
@@ -83,48 +104,51 @@ type system, follow three steps.
 
 \begin{enumerate}
 \item
- Define two annotations for the \code{Encrypted} and \code{PossiblyUnencrypted} qualifiers:
+Define two annotations for the \code{Encrypted} and \code{PossiblyUnencrypted} qualifiers:
 
 \begin{Verbatim}
-package myqual;
+package \textit{myModule}.qual;
 
-import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.*;
 import java.lang.annotation.ElementType;
-import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
+import java.lang.annotation.Target;
+import com.sun.source.tree.Tree.Kind;
 
 /**
  * Denotes that the representation of an object is encrypted.
  */
-@TypeQualifier
 @SubtypeOf(PossiblyUnencrypted.class)
+@ImplicitFor(trees = { Kind.NULL_LITERAL })
+@DefaultFor({DefaultLocation.LOWER_BOUNDS})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Encrypted {}
 \end{Verbatim}
 
 \begin{Verbatim}
-package myqual;
+package \textit{myModule}.qual;
 
-import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
 /**
  * Denotes that the representation of an object might not be encrypted.
  */
-@TypeQualifier
 @DefaultQualifierInHierarchy
 @SubtypeOf({})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface PossiblyUnencrypted {}
 \end{Verbatim}
 
+Note that all custom annotations must have the
+\<@Target({ElementType.TYPE\_USE})> meta-annotation. See section
+\ref{define-type-qualifiers}.
+
 Don't forget to compile these classes:
 
 \begin{Verbatim}
-$ javac myqual/Encrypted.java myqual/PossiblyUnencrypted.java
+$ javac myModule/qual/Encrypted.java myModule/qual/PossiblyUnencrypted.java
 \end{Verbatim}
 
 The resulting \<.class> files should either be on your classpath, or on the
@@ -135,7 +159,7 @@ processor path (set via the \<-processorpath> command-line option to javac).
   \code{YourProgram.java}):
 
 \begin{Verbatim}
-import myqual.Encrypted;
+import \textit{myModule}.qual.Encrypted;
 
 ...
 
@@ -170,28 +194,48 @@ capability of any realistic type system.
   \code{@Encrypted} annotation using the \code{-Aquals} option.
   You should add the \code{Encrypted} classfile to the processor classpath:
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-$ javac -processorpath myqualpath -processor org.checkerframework.common.subtyping.SubtypingChecker \
-        -Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted YourProgram.java
+\begin{alltt}
+  javac -processorpath \textit{myqualpath} -processor org.checkerframework.common.subtyping.SubtypingChecker \
+        -Aquals=\textit{myModule.qual.Encrypted},\textit{myModule.qual.PossiblyUnencrypted} YourProgram.java
 
 YourProgram.java:42: incompatible types.
-found   : @myqual.PossiblyUnencrypted java.lang.String
-required: @myqual.Encrypted java.lang.String
+found   : @myModule.qual.PossiblyUnencrypted java.lang.String
+required: @myModule.qual.Encrypted java.lang.String
     sendOverInternet(password);
                      ^
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
+\end{alltt}
+
+\item
+You can also provide the fully-qualified paths to a set of directories
+that contain the qualifiers using the \code{-AqualDirs} option, and add
+the directories to the boot classpath, for example:
+
+\begin{alltt}
+  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+        -processor org.checkerframework.common.subtyping.SubtypingChecker \ttbs
+        -AqualDirs=\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} YourProgram.java
+\end{alltt}
+
+\begin{sloppypar}
+Note that in these two examples, the compiled class file of the
+\<myModule.qual.Encrypted> and \<myModule.qual.PossiblyUnencrypted> annotations
+must exist in either the \<myProject/bin> directory or the \<myLibrary/bin>
+directory. The following placement of the class files will work with the above
+commands:
+\end{sloppypar}
+
+\begin{alltt}
+  .../myProject/bin/myModule/qual/Encrypted.class
+  .../myProject/bin/myModule/qual/PossiblyUnencrypted.class
+\end{alltt}
 
 \end{enumerate}
 
+Also, see the example project in the \<checker/examples/subtyping-extension> directory.
 
 
-% LocalWords:  TODO ImplicitFor Aquals TypeQualifiers sourcepath java NonNull
+% LocalWords:  TODO ImplicitFor Aquals sourcepath java NonNull AqualDirs
 % LocalWords:  CharSequence classpath nullness quals SuppressWarnings classfile
 % LocalWords:  uncapitalized processorpath Warski MyFile YourProgram
-%%  LocalWords:  bootclasspath PossiblyUnencrypted
+%%  LocalWords:  bootclasspath PossiblyUnencrypted myProject myLibrary
+%%  LocalWords:  ElementType myqualpath sendOverInternet

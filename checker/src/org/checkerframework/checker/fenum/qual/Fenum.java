@@ -15,7 +15,6 @@ import org.checkerframework.framework.qual.*;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TypeQualifier
 @SubtypeOf(FenumTop.class)
 public @interface Fenum {
     String value();

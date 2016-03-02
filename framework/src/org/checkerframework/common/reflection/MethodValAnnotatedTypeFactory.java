@@ -14,7 +14,6 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.StringVal;
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -26,6 +25,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,7 +38,6 @@ import javax.lang.model.element.AnnotationMirror;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 
-@TypeQualifiers({MethodVal.class, MethodValBottom.class, UnknownMethod.class})
 public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror METHODVAL_BOTTOM = AnnotationUtils
             .fromClass(elements, MethodValBottom.class);
@@ -53,6 +52,14 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             this.postInit();
         }
     }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return Collections.unmodifiableSet(
+                new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(MethodVal.class, MethodValBottom.class, UnknownMethod.class)));
+    }
+
     @Override
     protected void initilizeReflectionResolution() {
         boolean debug = "debug".equals(checker.getOption("resolveReflection"));

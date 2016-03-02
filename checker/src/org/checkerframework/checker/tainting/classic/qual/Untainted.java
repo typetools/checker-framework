@@ -15,7 +15,6 @@ import org.checkerframework.framework.qual.*;
  *
  * @checker_framework.manual #tainting-checker Tainting Checker
  */
-@TypeQualifier
 @SubtypeOf(Tainted.class)
 @ImplicitFor(trees = { STRING_LITERAL, NULL_LITERAL })
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

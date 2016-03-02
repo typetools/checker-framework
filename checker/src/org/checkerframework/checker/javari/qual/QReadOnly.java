@@ -4,7 +4,6 @@ import java.lang.annotation.*;
 
 import org.checkerframework.checker.javari.JavariChecker;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Indicates that the annotated type behaves as the most restrictive of
@@ -21,6 +20,5 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TypeQualifier
 @SubtypeOf(ReadOnly.class)
 public @interface QReadOnly {}

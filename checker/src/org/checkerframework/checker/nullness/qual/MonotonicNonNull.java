@@ -13,7 +13,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Indicates that a field (or variable) is lazily initialized to a non-null
@@ -59,7 +58,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @Documented
-@TypeQualifier
 @SubtypeOf(Nullable.class)
 @Target(ElementType.TYPE_USE)
 @MonotonicQualifier(NonNull.class)

@@ -241,4 +241,15 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
         return type;
     }
+
+    @Override
+    public AnnotatedTypeMirror visitIntersectionType(IntersectionTypeTree node,
+                                                     AnnotatedTypeFactory f) {
+        AnnotatedTypeMirror type = f.type(node);
+
+        if (type.getKind() == TypeKind.TYPEVAR)
+            return forTypeVariable(type, f).asUse();
+
+        return type;
+    }
 }

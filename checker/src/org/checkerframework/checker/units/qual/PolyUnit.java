@@ -36,7 +36,6 @@ import org.checkerframework.framework.qual.*;
  * @checker_framework.manual #units-checker Units Checker
  */
 @Documented
-@TypeQualifier
 @PolymorphicQualifier(UnknownUnits.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

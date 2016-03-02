@@ -1,6 +1,6 @@
 #!/bin/sh
-#Ensures that all copies of the PluginUtil are synchronized. See syncPluginUtil.sh
-#diffs the different versions of the PluginUtil.java excluding the package declarations of these files
+# Ensures that all copies of the PluginUtil are synchronized. See syncPluginUtil.sh
+# diffs the different versions of the PluginUtil.java excluding the package declarations of these files
 
 myDir="`dirname $0`"
 case `uname -s` in
@@ -8,7 +8,7 @@ case `uname -s` in
       myDir=`cygpath -m $myDir`
       ;;
 esac
-#Fail on error status
+# Fail on error status
 
 FRAMEWORK_DIR=$myDir"/.."
 MASTER=$FRAMEWORK_DIR"/framework/src/org/checkerframework/framework/util/PluginUtil.java"

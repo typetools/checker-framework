@@ -306,10 +306,12 @@ qualifier for the Nullness Checker is
 writes a type such as \<Date>, the Nullness Checker interprets it as
 \<@NonNull Date>.
 
-We recommend that the type system apply that default qualifier to most but
-not all types.  In particular, we recommend the CLIMB-to-top rule.  This
+The type system applies that default qualifier to most but
+not all types.  In particular, unless otherwise stated, every type system 
+uses the CLIMB-to-top rule.  This
 rule states that the \emph{top} qualifier in the hierarchy is applied to
-the CLIMB locations:  \textbf{C}asts, \textbf{L}ocals, \textbf{I}nstanceof, and i\textbf{M}plicit \textbf{B}ounds.
+the CLIMB locations:  \textbf{C}asts, \textbf{L}ocals, \textbf{I}nstanceof,
+and (some) i\textbf{M}plicit \textbf{B}ounds.
 For example, when the user writes a type such as \<Date> in such a
 location, the Nullness Checker interprets it as \<@Nullable Date> (because
 \refqualclass{checker/nullness/qual}{Nullable} is the top qualifier in the
@@ -331,26 +333,25 @@ Here is the rationale for CLIMB-to-top:
 
 \begin{itemize}
 \item
-Casts and local variables (including resource variables in the
-try-with-resources construct, variables in for statements, exception parameters etc.)
-should be defaulted to top because they are the locations to
-which type refinement (Section~\ref{type-refinement}) is applied.  If they
-start as the top type, then the Checker Framework chooses the best (most
-general) possible type for them.  As a result, a programmer rarely writes
-an explicit annotation on any of those locations.
+Local variables are defaulted to top because type refinement
+(Section~\ref{type-refinement}) is applied to local variables.  If a local
+variable starts as the top type, then the Checker Framework refines it to
+the best (most specific) possible type based on assignments to it.  As a
+result, a programmer rarely writes an explicit annotation on any of those
+locations.
 
-Catch arguments, known as exception parameters in the Java Language Specification,
-should be defaulted to top for most checkers; otherwise, an error will be issued.  This is because
+Variables defaulted to top include local variables, resource variables in the
+try-with-resources construct, variables in for statements, and catch
+arguments (known as exception parameters in the Java Language Specification).
+Exception parameters need to have the top type because
 exceptions of arbitrary qualified types can be thrown and the Checker Framework
 does not provide runtime checks.
 
-
 \item
-Instanceof types are defaulted to top for a similar reason:  so that
-programmers do not need to write annotations on them.  If the
-\<instanceof>'s qualifier is top, then the Checker Framework will never
-issue an error that the \<instanceof> qualifier is not compatible with the
-argument.
+Cast and instanceof types are not really defaulted to top.  Rather, they
+are given the same type as their argument, which is the most specific
+possible type.  That would also have been the effect if they were given the
+top type and then flow-sensitively refined to the type of their argument.
 
 \item
 Implicit upper bounds are defaulted to top to allow them to be instantiated
@@ -385,19 +386,18 @@ Here is how the CLIMB-to-top rule is expressed for the Nullness Checker:
 
 \begin{Verbatim}
 @DefaultQualifierInHierarchy
+@DefaultFor({ DefaultLocation.EXCEPTION_PARAMETER })
 public @interface NonNull { }
 
-@DefaultFor({ DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,
-    DefaultLocation.IMPLICIT_UPPER_BOUNDS })
 public @interface Nullable { }
 \end{Verbatim}
 
 \noindent
-Note that \<DefaultLocation.LOCAL\_VARIABLE> includes casts and instanceof.
  As mentioned above, the exception parameters are always non-null, so
-\<DefaultLocation.EXCEPTION\_PARAMETER> is excluded from the above list.
+\<@DefaultFor(\{ DefaultLocation.EXCEPTION\_PARAMETER \})> on \<@NonNull> overrides 
+the CLIMB-to-top rule.
 
-A type system designer does not have to use the CLIMB-to-top rule.  In
+A type system designer can specify defaults that differ from the CLIMB-to-top rule.  In
 addition, a user may choose a different rule for defaults using the
 \refqualclass{framework/qual}{DefaultQualifier} annotation; see
 Section~\ref{defaults}.
@@ -476,12 +476,10 @@ Note, the upper bound of the wildcard \code{? extends Object} is defaulted to
 \subsection{Default qualifiers for \<.class> files (conservative library defaults)\label{defaults-classfile}}
 
 (\emph{Note:} Currently, the conservative library defaults presented in this section
-are off by default and can be turned on by supplying the \<-AsafeDefaultsForUnannotatedBytecode>
+are off by default and can be turned on by supplying the \<-AuseDefaultsForUncheckedcode=bytecode>
 command-line option.  In a future release, they will be turned on
 by default and it will be possible to turn them off by supplying a
-\<-AunsafeDefaultsForUnannotatedBytecode> command-line option;
-the \<-AsafeDefaultsForUnannotatedBytecode>
-command-line option will no longer exist.)
+\<-AuseDefaultsForUncheckedCode=-byte> command-line option.)
 
 The defaulting rules presented so far apply to source code that is read by
 the compiler.  When the compiler reads a \<.class> file, different
@@ -509,17 +507,23 @@ If the checker was not run during the compiler execution that created the
 that the programmer wrote explicitly.  (Furthermore, there is no guarantee
 that these qualifiers are correct, since they have not been checked.)
 In this case, each checker decides what qualifier to use for the
-locations where the programmer did not write an annotation.  The typical
+locations where the programmer did not write an annotation.  Unless otherwise noted, the 
 choice is:
 
 \begin{itemize}
 \item
-  For method parameters, use the bottom qualifier (see
+  For method parameters and lower bounds, use the bottom qualifier (see
   Section~\ref{bottom-qualifier}).
 \item
-  For method return values, use the top qualifier (see
+  For method return values, fields, and upper bounds, use the top qualifier (see
   Section~\ref{top-qualifier}).
 \end{itemize}
+
+These choices are conservative.  They are likely to cause many
+false-positive type-checking errors, which will help you to know which
+library methods need annotations.  You can then write those library
+annotations (see Chapter~\ref{annotating-libraries}) or alternately
+suppress the warnings (see Section~\ref{suppressing-warnings}).
 
 For example, an unannotated method
 
@@ -549,12 +553,6 @@ improve handling of mutable public fields in unannotated libraries.
 %% TODO: should give rules for other locations, such as type parameters
 %% (which should behave like fields), bounds, etc.
 
-These choices are conservative.  They are likely to cause many
-false-positive type-checking errors, which will help you to know which
-library methods need annotations.  You can then write those library
-annotations (see Chapter~\ref{annotating-libraries}) or alternately
-suppress the warnings (see Section~\ref{suppressing-warnings}).
-
 % If you supply the command-line option
 % \<-AunsafeDefaultsForUnannotatedBytecode>,
 % then the checker does defaulting for unannotated bytecode like it does for
@@ -568,8 +566,8 @@ suppress the warnings (see Section~\ref{suppressing-warnings}).
 % external libraries.
 
 % TODO: document
-% the \refqualclass{framework/qual}{DefaultForUnannotatedCode}
-% and \refqualclass{framework/qual}{DefaultQualifierForUnannotatedCode}
+% the \refqualclass{framework/qual}{DefaultInUncheckedCodeFor}
+% and \refqualclass{framework/qual}{DefaultQualifierInHierarchyInUncheckedCode}
 % annotations for type system designers.
 
 
@@ -1435,3 +1433,4 @@ class @Marsupial-Animal {
 %%  LocalWords:  wildcards guieffect AassumeAssertionsAreDisabled
 %%  LocalWords:  AssumeAssertion AsafeDefaultsForUnannotatedBytecode
 %%  LocalWords:  I18nFormatFor AunsafeDefaultsForUnannotatedBytecode
+%%  LocalWords:  AuseDefaultsForUncheckedCode

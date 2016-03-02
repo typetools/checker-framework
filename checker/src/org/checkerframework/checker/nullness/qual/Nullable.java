@@ -7,16 +7,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.checker.nullness.AbstractNullnessChecker;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultForUnannotatedCode;
+import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
-
 import com.sun.source.tree.Tree;
 
 /**
@@ -32,12 +26,9 @@ import com.sun.source.tree.Tree;
  * @see AbstractNullnessChecker
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
-@TypeQualifier
 @SubtypeOf({})
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
-@DefaultFor({ DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,
-            DefaultLocation.IMPLICIT_UPPER_BOUNDS })
-@DefaultForUnannotatedCode({ DefaultLocation.RETURNS, DefaultLocation.UPPER_BOUNDS })
+@DefaultInUncheckedCodeFor({ DefaultLocation.RETURNS, DefaultLocation.UPPER_BOUNDS })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })

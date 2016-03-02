@@ -10,7 +10,6 @@ import org.checkerframework.framework.qual.*;
  * @checker_framework.manual #tainting-checker Tainting Checker
  */
 @Documented
-@TypeQualifier
 @PolymorphicQualifier
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

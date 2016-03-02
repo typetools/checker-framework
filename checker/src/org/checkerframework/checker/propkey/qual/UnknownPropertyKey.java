@@ -4,7 +4,6 @@ import java.lang.annotation.*;
 
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Indicates that the {@code String} type has an unknown
@@ -12,7 +11,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #propkey-checker Property File Checker
  */
-@TypeQualifier
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
 @Documented

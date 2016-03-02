@@ -8,7 +8,6 @@ import org.checkerframework.checker.interning.qual.*;
 
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.qual.TypeQualifier;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -551,8 +550,8 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Adds an annotation to this type. If the annotation does not have the
-     * {@link TypeQualifier} meta-annotation, this method has no effect.
+     * Adds an annotation to this type. Only annotations supported by the type
+     * factory are added.
      *
      * @param a the annotation to add
      */
@@ -582,8 +581,7 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Adds an annotation to this type. If the annotation does not have the
-     * {@link TypeQualifier} meta-annotation, this method has no effect.
+     * Adds an annotation to this type.
      *
      * @param a the class of the annotation to add
      */

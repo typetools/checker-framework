@@ -12,15 +12,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import com.sun.source.tree.Tree.Kind;
 
 /**
- * An annotation used to represent a place holder immutability type, that is a
+ * An annotation used to represent a placeholder immutability type, that is a
  * subtype of all other types. For example, {@code null} type is a subtype
  * of all immutability types.
- * <p>
- *
- * This annotation may not be written in source code; it is an
- * implementation detail of the checker.
  */
-@TypeQualifier
 @SubtypeOf({Mutable.class, Immutable.class, I.class})
 @ImplicitFor(
         trees = { Kind.NULL_LITERAL },

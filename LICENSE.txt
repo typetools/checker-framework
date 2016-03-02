@@ -1,6 +1,6 @@
-The Checker Framework is licensed under the GNU General Public License,
-version 2 (GPL2), with the classpath exception.  The text of this license
-appears below.  This is the same license used for OpenJDK.
+Most of the Checker Framework is licensed under the GNU General Public
+License, version 2 (GPL2), with the classpath exception.  The text of this
+license appears below.  This is the same license used for OpenJDK.
 
 A few parts of the Checker Framework have more permissive licenses.
 
@@ -31,15 +31,15 @@ different licenses.
    javaparser does not use the GPL.)  See file javaparser/COPYING.LESSER
    and the source code of all its files.
 
- * junit is licensed under the Common Public License v1.0 (see
+ * JUnit is licensed under the Common Public License v1.0 (see
    http://www.junit.org/license), with parts (Hamcrest) licensed under the
-   BSD License (see LICENSE.txt in checkers/tests/junit.jar ).
+   BSD License (see http://hamcrest.org/JavaHamcrest/).
 
  * plume-lib is licensed under the MIT License.
 
 The Checker Framework includes annotations for several libraries, in
-directory checkers/jdk/.  The only one that uses a different license than
-the GPL is Google Guava, which uses Apache2.
+directory checker/jdk/.  Each annotated library uses the same license as
+the unannotated version of the library.
 
 ===========================================================================
 

@@ -114,18 +114,15 @@ miss a step if you only read the paragraph asking you to say 'yes'.
             <code>ssh $USER@buffalo.cs.washington.edu<br/></code>
   </li>
   <li>
-            <strong>In a user-specific temporary directory, clone the Checker Framework repository (it contains the release scripts).</strong><br/>
-            <strong>If the repository exists, update it instead.</strong><br/>
+            <strong>In a user-specific temporary directory, clone/update the Checker Framework repository (it contains the release scripts).</strong><br/>
             <code>mkdir -p /scratch/$USER/jsr308-release<br/></code>
             <code>cd /scratch/$USER/jsr308-release<br/></code>
-            <code>git clone https://github.com/typetools/checker-framework.git<br/></code>
+            <code>git -C checker-framework pull || git clone https://github.com/typetools/checker-framework.git<br/></code>
             <code>cd checker-framework/release<br/></code>
-            or<br/>
-            <code>cd /scratch/$USER/jsr308-release/checker-framework/release<br/></code>
-            <code>git pull<br/></code>
   </li>
   <li><strong>Run release_build</strong><br/>
-            <code>python release_build.py all<br/><br/></code>
+            <code>python release_build.py all</code><br/><br/>
+            For minimal prompting, use the <code>--auto</code> option.<br/><br/>
             <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
             There has been some work done in order to select only specific projects (jsr308, AFU, Checker Framework)
             to be built but more work still needs to be done.  Just pass &quot;all&quot; for now.
@@ -135,10 +132,11 @@ miss a step if you only read the paragraph asking you to say 'yes'.
   <li>
             <strong>Run release_push</strong><br/>
             <code>python release_push.py release</code><br/><br/>
+            For minimal prompting, use the <code>--auto</code> option.<br/><br/>
             <div class="alert alert-danger">
                 <strong>Note:</strong> The &quot;<strong>release</strong>&quot; argument states that you intend
-                to do an actual release.  If you just want to test the script, leave &quot;release&quot;
-                off and the script will run but not update anything.
+                to do an actual release.  If you just want to test the script, leave out &quot;release&quot;
+                and the script will run but not update anything.
             </div>
 
             If you get an obscure error about permissions, try running the release_push script several times
@@ -168,9 +166,8 @@ miss a step if you only read the paragraph asking you to say 'yes'.
                 SSH into Buffalo and run the following command:<br/>
                 <code>gpg --allow-secret-key-import --import /projects/swlab1/checker-framework/release-private.key<br/><br/></code>
                 Note:  The password for this key is located in the file<br/>
-                <code>/projects/swlab1/checker-framework/release-private.password<br/></code><br/>
-                You will need this password when staging the Maven artifacts in the Central Repository.<br/>
-
+                <code>/projects/swlab1/checker-framework/release-private.password<br/></code>
+                and is used by the release_push script to sign Maven artifacts.<br/>
             </td>
         <tr>
             <td>3.</td>
@@ -178,16 +175,20 @@ miss a step if you only read the paragraph asking you to say 'yes'.
                 You will likely want to do this a few days in advance.
                 Directions can be found <a href="http://central.sonatype.org/pages/ossrh-guide.html">here</a>.
                 Remember to be asked to be added to the org.checkerframework repository by creating
-                a ticket (see the note at the bottom of
-                <a href="http://central.sonatype.org/pages/ossrh-guide.html#create-a-ticket-with-sonatype">section 3</a>).
-                You may be able to sign up but then not sign in.  If that happens, instead of creating a ticket, Jonathan Burke or Javier Thaine can add you to the existing ticket.
+                a ticket (see the note
+                <a href="http://central.sonatype.org/pages/ossrh-guide.html#create-a-ticket-with-sonatype">here</a>).
+                If after signing up for a Sonatype JIRA account you are not able to sign in to
+                <a href="https://issues.sonatype.org">https://issues.sonatype.org</a>
+                to create a ticket, there may be a configuration problem with your account. In that case, sign up for a
+                second Sonatype account, and use that account to file a ticket indicating that you cannot sign in
+                with your first account.
             </td>
         </tr>
         <tr>
             <td>4.</td>
             <td><strong>Add your account information to settings.xml in your home directory.</strong><br/>
-                Create a ~/.m2/settings.xml file similar to the one found
-                <a href="http://central.sonatype.org/pages/apache-maven.html">here</a>
+                Create a <code>~/.m2/settings.xml</code> file with the contents specified in
+                <code>/projects/swlab1/checker-framework/release-settings.txt</code>
                 using the information you just created for your Sonatypes Account on Buffalo or other
                 network host.  Since the file contains your password, make it non-readable:  <code>chmod og-rw ~/.m2/settings.xml</code>
             </td>
@@ -208,7 +209,9 @@ miss a step if you only read the paragraph asking you to say 'yes'.
                 developing Rich Client Platform (RCP) applications.<br/>
 		On Ubuntu, run <code>sudo apt-get install eclipse-rcp eclipse-platform</code><br/>
                 Or, download a version of Eclipse that includes RCP at:<br/>
-                <a href="http://www.eclipse.org/downloads/">http://www.eclipse.org/downloads/</a>
+                <a href="http://www.eclipse.org/downloads/">http://www.eclipse.org/downloads/</a><br/>
+                To find out if the version of Eclipse you are running includes support for RCP,
+                go to Help | About Eclipse. The first line will mention RCP support if it is present.
             </td>
         </tr>
         <tr>
@@ -242,7 +245,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         <table class="table table-bordered file_layout_table">
             <tr><th colspan="4">Release Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
             <tr>
-                <td colspan="3" class="top_file">/scratch/jsr308-release</td>
+                <td colspan="3" class="top_file">/scratch/$USER/jsr308-release</td>
                 <td>Contains repositories and scripts to perform a release</td>
             </tr>
             <tr>
@@ -259,7 +262,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
                 <td>Contains repositories for:
                     annotation-tools, checker-framework, jsr308-langtools, plume-bib, plume-lib<br/>
                     The repositories in build are clones of repositories in interm.  The repositories
-                    in interm are clones of the Google code repositories.  This is so that
+                    in interm are clones of the GitHub/Bitbucket repositories.  This is so that
                     we can test and push the release to the interm repositories then check the
                     release before we have made any irreversible changes.  Then, when the release
                     is validated, all we do is run &quot;git push&quot; or &quot;hg push&quot; on all of the repos in interm.
@@ -359,7 +362,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         <table class="table table-bordered">
             <tr>
                 <td>release_build.py</td>
-                <td>Reverts the build/interm repositories to the state of their master repositories in Google code.
+                <td>Reverts the build/interm repositories to the state of their master repositories in GitHub/Bitbucket.
                     It then builds the projects and all their artifacts and then stages a development
                     version of all websites to
                     <a href="http://types.cs.washington.edu/dev/">http://types.cs.washington.edu/dev/</a>
@@ -427,9 +430,9 @@ miss a step if you only read the paragraph asking you to say 'yes'.
             </li>
 	    <li>
 	      Examine the version control logs since the last release tag:<br/>
-	      <code>cd $CHECKERFRAMEWORK && git log checker-framework-1.9.8..</code><br/>
-	      <code>cd $CHECKERFRAMEWORK/../annotation-tools && git log 3.6.22..</code><br/>
-	      <code>cd $CHECKERFRAMEWORK/../jsr308-langtools && hg log -r jsr308-1.9.8:</code><br/>
+	      <code>cd $CHECKERFRAMEWORK && git log --name-status checker-framework-1.9.10..</code><br/>
+	      <code>cd $CHECKERFRAMEWORK/../annotation-tools && git log --name-status 3.6.24..</code><br/>
+	      <code>cd $CHECKERFRAMEWORK/../jsr308-langtools && hg log -r jsr308-1.9.10:</code><br/>
             </li>
 	    <li>
 	      Even if some code has been committed to the repository, don't
@@ -460,7 +463,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     <h2>Backing Out an Uncommitted Release</h2>
     <p>At the time of this writing, there are 2 steps that cannot be reverted.</p>
     <ol>
-        <li>The push from the interm repositories to the Google Code (release) repositories</li>
+        <li>The push from the interm repositories to the GitHub/Bitbucket (release) repositories</li>
         <li>The release of the staged Maven artifacts</li>
     </ol>
     <p> If you have executed either of these steps and then realized there is a breaking error, you should do another

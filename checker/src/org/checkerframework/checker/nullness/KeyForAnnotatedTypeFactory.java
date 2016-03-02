@@ -14,13 +14,10 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.cfg.node.*;
-import org.checkerframework.framework.flow.CFAbstractStore;
-import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.DefaultLocation;
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -68,7 +65,6 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 
-@TypeQualifiers({ KeyFor.class, UnknownKeyFor.class, KeyForBottom.class, PolyKeyFor.class, PolyAll.class})
 public class KeyForAnnotatedTypeFactory extends
     GenericAnnotatedTypeFactory<CFValue, CFStore, KeyForTransfer, KeyForAnalysis> {
 
@@ -93,13 +89,19 @@ public class KeyForAnnotatedTypeFactory extends
         UNKNOWNKEYFOR = AnnotationUtils.fromClass(elements, UnknownKeyFor.class);
         keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
-        this.postInit();
-
-        this.defaults.addAbsoluteDefault(UNKNOWNKEYFOR, DefaultLocation.ALL);
-
         // Add compatibility annotations:
         addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.KeyForDecl.class, KEYFOR);
         addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.KeyForType.class, KEYFOR);
+
+        this.postInit();
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return Collections.unmodifiableSet(
+                new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(KeyFor.class, UnknownKeyFor.class, KeyForBottom.class,
+                                PolyKeyFor.class, PolyAll.class)));
     }
 
     @Override
@@ -163,13 +165,12 @@ public class KeyForAnnotatedTypeFactory extends
           AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(this, getPath(tree));
 
           if (assignedTo != null) {
-
               //array types and boxed primitives etc don't require propagation
               if (assignedTo.getKind() == TypeKind.DECLARED) {
                   final AnnotatedDeclaredType newClassType = (AnnotatedDeclaredType) returnType;
-                  keyForPropagator.propagate(newClassType, (AnnotatedDeclaredType) assignedTo, PropagationDirection.TO_SUBTYPE, this);
+                  keyForPropagator.propagate(newClassType, (AnnotatedDeclaredType) assignedTo,
+                          PropagationDirection.TO_SUBTYPE, this);
               }
-
           }
       }
 
@@ -213,37 +214,39 @@ public class KeyForAnnotatedTypeFactory extends
     return Pair.of(method, mfuPair.second);
   }
 
- /* TODO: doc
-  * This pattern and the logic how to use it is copied from NullnessFlow.
-  * NullnessFlow already contains four exact copies of the logic for handling this
-  * pattern and should really be refactored.
-  */
- private static final Pattern parameterPtn = Pattern.compile("#(\\d+)");
+  /* TODO: doc
+   * This pattern and the logic how to use it is copied from NullnessFlow.
+   * NullnessFlow already contains four exact copies of the logic for handling this
+   * pattern and should really be refactored.
+   */
+  private static final Pattern parameterPtn = Pattern.compile("#(\\d+)");
 
- // TODO: copied from NullnessFlow, but without the "." at the end.
- private String receiver(MethodInvocationTree node) {
-     ExpressionTree sel = node.getMethodSelect();
-     if (sel.getKind() == Tree.Kind.IDENTIFIER)
-         return "";
-     else if (sel.getKind() == Tree.Kind.MEMBER_SELECT)
+  // TODO: copied from NullnessFlow, but without the "." at the end.
+  private String receiver(MethodInvocationTree node) {
+      ExpressionTree sel = node.getMethodSelect();
+      if (sel.getKind() == Tree.Kind.IDENTIFIER) {
+          return "";
+      } else if (sel.getKind() == Tree.Kind.MEMBER_SELECT) {
          return ((MemberSelectTree)sel).getExpression().toString();
-     ErrorReporter.errorAbort("KeyForAnnotatedTypeFactory.receiver: cannot be here");
-     return null; // dead code
- }
+      }
+      ErrorReporter.errorAbort("KeyForAnnotatedTypeFactory.receiver: cannot be here");
+      return null; // dead code
+  }
 
-    // TODO: doc
- // TODO: "this" should be implicitly prepended
- // TODO: substitutions also need to be applied to argument types
- private AnnotatedTypeMirror substituteCall(MethodInvocationTree call, AnnotatedTypeMirror declInType, AnnotatedTypeMirror inType) {
+  // TODO: doc
+  // TODO: "this" should be implicitly prepended
+  // TODO: substitutions also need to be applied to argument types
+  private AnnotatedTypeMirror substituteCall(MethodInvocationTree call,
+          AnnotatedTypeMirror declInType, AnnotatedTypeMirror inType) {
 
-     // System.out.println("input type: " + inType);
-     AnnotatedTypeMirror outType = inType.shallowCopy();
+      // System.out.println("input type: " + inType);
+      AnnotatedTypeMirror outType = inType.shallowCopy();
 
-     AnnotationMirror anno = declInType.getAnnotation(KeyFor.class);
-     if (anno != null) {
+      AnnotationMirror anno = declInType.getAnnotation(KeyFor.class);
+      if (anno != null) {
 
-         List<String> inMaps = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
-         List<String> outMaps = new ArrayList<String>();
+          List<String> inMaps = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+          List<String> outMaps = new ArrayList<String>();
 
          String receiver = receiver(call);
 
@@ -278,51 +281,51 @@ public class KeyForAnnotatedTypeFactory extends
 
          outType.removeAnnotation(KeyFor.class);
          outType.addAnnotation(newAnno);
-     }
+      }
 
-     if (declInType.getKind() == TypeKind.DECLARED &&
-             outType.getKind() == TypeKind.DECLARED) {
-         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) outType;
-         AnnotatedDeclaredType declDeclaredType = (AnnotatedDeclaredType) declInType;
-         Map<AnnotatedTypeMirror, AnnotatedTypeMirror> mapping = new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>();
+      if (declInType.getKind() == TypeKind.DECLARED &&
+              outType.getKind() == TypeKind.DECLARED) {
+          AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) outType;
+          AnnotatedDeclaredType declDeclaredType = (AnnotatedDeclaredType) declInType;
+          Map<AnnotatedTypeMirror, AnnotatedTypeMirror> mapping = new HashMap<>();
 
-         List<AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
-         List<AnnotatedTypeMirror> declTypeArgs = declDeclaredType.getTypeArguments();
+          List<AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
+          List<AnnotatedTypeMirror> declTypeArgs = declDeclaredType.getTypeArguments();
 
-         assert typeArgs.size() == declTypeArgs.size();
+          assert typeArgs.size() == declTypeArgs.size();
 
-         // Get the substituted type arguments
-         for (int i = 0; i < typeArgs.size(); ++i) {
-             AnnotatedTypeMirror typeArgument = typeArgs.get(i);
-             AnnotatedTypeMirror substTypeArgument = substituteCall(call, declTypeArgs.get(i), typeArgument);
-             mapping.put(typeArgument, substTypeArgument);
-         }
+          // Get the substituted type arguments
+          for (int i = 0; i < typeArgs.size(); ++i) {
+              AnnotatedTypeMirror typeArgument = typeArgs.get(i);
+              AnnotatedTypeMirror substTypeArgument = substituteCall(call, declTypeArgs.get(i), typeArgument);
+              mapping.put(typeArgument, substTypeArgument);
+          }
 
-         outType = AnnotatedTypeReplacer.replace(declaredType, mapping);
-     } else if (declInType.getKind() == TypeKind.ARRAY &
-             outType.getKind() == TypeKind.ARRAY) {
-         AnnotatedArrayType arrayType = (AnnotatedArrayType) outType;
-         AnnotatedArrayType declArrayType = (AnnotatedArrayType) declInType;
+          outType = AnnotatedTypeReplacer.replace(declaredType, mapping);
+      } else if (declInType.getKind() == TypeKind.ARRAY &
+              outType.getKind() == TypeKind.ARRAY) {
+          AnnotatedArrayType arrayType = (AnnotatedArrayType) outType;
+          AnnotatedArrayType declArrayType = (AnnotatedArrayType) declInType;
 
-         // Get the substituted component type
-         AnnotatedTypeMirror elemType = arrayType.getComponentType();
-         AnnotatedTypeMirror substElemType = substituteCall(call, declArrayType.getComponentType(), elemType);
+          // Get the substituted component type
+          AnnotatedTypeMirror elemType = arrayType.getComponentType();
+          AnnotatedTypeMirror substElemType = substituteCall(call, declArrayType.getComponentType(), elemType);
 
-         arrayType.setComponentType(substElemType);
-         // outType aliases arrayType
-     } else if (outType.getKind().isPrimitive() ||
-             outType.getKind() == TypeKind.WILDCARD ||
-             outType.getKind() == TypeKind.TYPEVAR) {
-         // TODO: for which of these should we also recursively substitute?
-         // System.out.println("KeyForATF: Intentionally unhandled Kind: " + outType.getKind());
-     } else {
-         // System.err.println("KeyForATF: Unknown getKind(): " + outType.getKind());
-         // assert false;
-     }
+          arrayType.setComponentType(substElemType);
+          // outType aliases arrayType
+      } else if (outType.getKind().isPrimitive() ||
+              outType.getKind() == TypeKind.WILDCARD ||
+              outType.getKind() == TypeKind.TYPEVAR) {
+          // TODO: for which of these should we also recursively substitute?
+          // System.out.println("KeyForATF: Intentionally unhandled Kind: " + outType.getKind());
+      } else {
+          // System.err.println("KeyForATF: Unknown getKind(): " + outType.getKind());
+          // assert false;
+      }
 
-     // System.out.println("result type: " + outType);
-     return outType;
- }
+      // System.out.println("result type: " + outType);
+      return outType;
+  }
 
   @Override
   protected TypeHierarchy createTypeHierarchy() {
@@ -379,6 +382,7 @@ public class KeyForAnnotatedTypeFactory extends
 
           return false;
       }
+
       @Override
       public Boolean visitTypeArgs(AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype,
                                       VisitHistory visited,  boolean subtypeIsRaw, boolean supertypeIsRaw) {
@@ -408,7 +412,8 @@ public class KeyForAnnotatedTypeFactory extends
                       if (subtypeIsRaw || supertypeIsRaw) {
                           rawnessComparer.isValidInHierarchy(subtype, supertype, currentTop, visited);
                       } else {
-                          if (!isContainedBy(subTypeArg, superTypeArg, visited, isCovariant(i, covariantArgIndexes))) {
+                          if (!isContainedBy(subTypeArg, superTypeArg, visited,
+                                  isCovariant(i, covariantArgIndexes))) {
                               return false;
                           }
                       }
@@ -425,13 +430,11 @@ public class KeyForAnnotatedTypeFactory extends
    */
   public AnnotationMirror createKeyForAnnotationMirrorWithValue(LinkedHashSet<String> values) {
       // Create an AnnotationBuilder with the ArrayList
-
       AnnotationBuilder builder =
               new AnnotationBuilder(getProcessingEnv(), KeyFor.class);
       builder.setValue("value", values.toArray());
 
       // Return the resulting AnnotationMirror
-
       return builder.build();
   }
 
@@ -440,96 +443,90 @@ public class KeyForAnnotatedTypeFactory extends
    */
   public AnnotationMirror createKeyForAnnotationMirrorWithValue(String value) {
       // Create an ArrayList with the value
-
       LinkedHashSet<String> values = new LinkedHashSet<String>();
-
       values.add(value);
-
       return createKeyForAnnotationMirrorWithValue(values);
   }
 
   /*
-   * This method uses FlowExpressionsParseUtil to attempt to recognize the variable names indicated in the values in KeyFor(values).
+   * This method uses FlowExpressionsParseUtil to attempt to recognize the
+   * variable names indicated in the values in KeyFor(values).
    *
-   * This method modifies atm such that the values are replaced with the string representation of the Flow Expression Receiver
-   * returned by FlowExpressionsParseUtil.parse. This ensures that when comparing KeyFor values later when doing subtype checking
-   * that equivalent expressions (such as "field" and "this.field" when there is no local variable "field") are represented by the same
-   * string so that string comparison will succeed.
+   * This method modifies atm such that the values are replaced with the
+   * string representation of the Flow Expression Receiver returned by
+   * FlowExpressionsParseUtil.parse. This ensures that when comparing KeyFor
+   * values later when doing subtype checking that equivalent expressions
+   * (such as "field" and "this.field" when there is no local variable
+   * "field") are represented by the same string so that string comparison
+   * will succeed.
    *
-   * This is necessary because when KeyForTransfer generates KeyFor annotations, it uses FlowExpressions to generate the values in KeyFor(values).
-   * canonicalizeKeyForValues ensures that user-provided KeyFor annotations will contain values that match the format of those in the generated
-   * KeyFor annotations.
+   * This is necessary because when KeyForTransfer generates KeyFor
+   * annotations, it uses FlowExpressions to generate the values in
+   * KeyFor(values). canonicalizeKeyForValues ensures that user-provided
+   * KeyFor annotations will contain values that match the format of those in
+   * the generated KeyFor annotations.
    *
    * Returns null if the values did not change.
    *
    */
-  private LinkedHashSet<String> canonicalizeKeyForValues(AnnotationMirror anno, FlowExpressionContext flowExprContext, TreePath path, Tree t, boolean returnNullIfUnchanged) {
-      Receiver varTypeReceiver = null;
-
-      CFAbstractStore<?, ?> store = null;
-      boolean unknownReceiver = false;
-
-      if (flowExprContext.receiver == null || flowExprContext.receiver.containsUnknown()) {
-          // If the receiver is unknown, we will try local variables
-
-          store = getStoreBefore(t);
-          unknownReceiver = true; // We could use store != null for this check, but this is clearer.
-      }
+  private LinkedHashSet<String> canonicalizeKeyForValues(AnnotationMirror anno,
+          FlowExpressionContext flowExprContext, TreePath path, Tree t,
+          boolean returnNullIfUnchanged) {
 
       if (anno != null) {
+          boolean unknownReceiver = flowExprContext.receiver == null || flowExprContext.receiver.containsUnknown();
           boolean valuesChanged = false; // Indicates that at least one value was changed in the list.
           LinkedHashSet<String> newValues = new LinkedHashSet<String>();
 
           List<String> values = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
           for (String s: values) {
-              boolean localVariableFound = false;
+              Receiver varTypeReceiver = null;
 
-              if (unknownReceiver) {
-                  // If the receiver is unknown, try a local variable
-                  CFAbstractValue<?> val = store.getValueOfLocalVariableByName(s);
+              try {
+                  varTypeReceiver = FlowExpressionParseUtil.parse(s, flowExprContext, path);
+              } catch (FlowExpressionParseException e) {
+                  // Canonicalization is a best-effort approach and it should not cause an exception
+                  // to be thrown if an expression cannot be parsed. If an expression that must be
+                  // canonicalized cannot be because of an inability to parse it, a type checking
+                  // error will be issued later if the expression is compared to its canonical equivalent.
+                  // For example, if @KeyFor("#1") could not be canonicalized to @KeyFor("var1"), and
+                  // it is later compared to a @KeyFor("var1") annotation that was written by the user,
+                  // a type checking error will result.
+              }
 
-                  if (val != null) {
-                      newValues.add(s);
-                      // Don't set valuesChanged to true since local variable names are already canonicalized
-                      localVariableFound = true;
+              if (unknownReceiver // The receiver type was unknown initially, and ...
+                      && (varTypeReceiver == null
+                      || varTypeReceiver.containsUnknown()) // ... the receiver type is still unknown after a call to parse
+                      ) {
+                  // parse did not find a static member field. Try a nonstatic field.
+
+                  try {
+                      // Try a field in the current object. Do not modify s itself since
+                      // it is used in the newValue.equals(s) check below.
+                      varTypeReceiver = FlowExpressionParseUtil.parse("this." + s,
+                              flowExprContext, path);
+                  } catch (FlowExpressionParseException e) {
+                      // See the comment in the "catch (FlowExpressionParseException e)" block above.
                   }
               }
 
-              if (localVariableFound == false) {
-                  try {
-                      varTypeReceiver = FlowExpressionParseUtil.parse(s, flowExprContext, path);
-                  } catch (FlowExpressionParseException e) {
-                  }
+              if (varTypeReceiver != null) {
+                  String newValue = varTypeReceiver.toString();
+                  newValues.add(newValue);
 
-                  if (unknownReceiver // The receiver type was unknown initially, and ...
-                          && (varTypeReceiver == null
-                          || varTypeReceiver.containsUnknown()) // ... the receiver type is still unknown after a call to parse
-                          ) {
-                      // parse did not find a static member field. Try a nonstatic field.
-
-                      try {
-                          varTypeReceiver = FlowExpressionParseUtil.parse("this." + s, // Try a field in the current object. Do not modify s itself since it is used in the newValue.equals(s) check below.
-                                  flowExprContext, path);
-                      } catch (FlowExpressionParseException e) {
-                      }
+                  if (!newValue.equals(s)) {
+                      valuesChanged = true;
                   }
-
-                  if (varTypeReceiver != null) {
-                      String newValue = varTypeReceiver.toString();
-                      newValues.add(newValue);
-
-                      if (!newValue.equals(s)) {
-                          valuesChanged = true;
-                      }
-                  }
-                  else {
-                      newValues.add(s); // This will get ignored if valuesChanged is false after exiting the for loop
-                  }
+              }
+              else {
+                  newValues.add(s); // This will get ignored if valuesChanged is false after exiting the for loop
               }
           }
 
           if (!returnNullIfUnchanged || valuesChanged) {
-              return newValues; // There is no need to sort the resulting array because the subtype check will be a containsAll call, not an equals call.
+              // There is no need to sort the resulting array because the subtype
+              // check will be a containsAll call, not an equals call.
+              return newValues;
           }
       }
 
@@ -537,15 +534,18 @@ public class KeyForAnnotatedTypeFactory extends
   }
 
   // Returns null if the AnnotationMirror did not change.
-  private AnnotationMirror canonicalizeKeyForValuesGetAnnotationMirror(AnnotationMirror anno, FlowExpressionContext flowExprContext, TreePath path, Tree t) {
+  private AnnotationMirror canonicalizeKeyForValuesGetAnnotationMirror(AnnotationMirror anno,
+          FlowExpressionContext flowExprContext, TreePath path, Tree t) {
       LinkedHashSet<String> newValues = canonicalizeKeyForValues(anno, flowExprContext, path, t, true);
 
       return newValues == null ? null : createKeyForAnnotationMirrorWithValue(newValues);
   }
 
-  private void canonicalizeKeyForValues(AnnotatedTypeMirror atm, FlowExpressionContext flowExprContext, TreePath path, Tree t) {
+  private void canonicalizeKeyForValues(AnnotatedTypeMirror atm, FlowExpressionContext flowExprContext,
+          TreePath path, Tree t) {
 
-      AnnotationMirror anno = canonicalizeKeyForValuesGetAnnotationMirror(atm.getAnnotation(KeyFor.class), flowExprContext, path, t);
+      AnnotationMirror anno = canonicalizeKeyForValuesGetAnnotationMirror(atm.getAnnotation(KeyFor.class),
+              flowExprContext, path, t);
 
       if (anno != null) {
           atm.replaceAnnotation(anno);
@@ -646,7 +646,8 @@ public class KeyForAnnotatedTypeFactory extends
 
               List<Receiver> internalArguments = new ArrayList<>();
 
-              // Note that we are not handling varargs as we assume that parameter numbers such as "#2" cannot refer to a vararg expanded argument.
+              // Note that we are not handling varargs as we assume that parameter
+              // numbers such as "#2" cannot refer to a vararg expanded argument.
 
               for (VariableTree vt : enclosingMethod.getParameters()) {
                   internalArguments.add(FlowExpressions.internalReprOf(this,
@@ -675,10 +676,11 @@ public class KeyForAnnotatedTypeFactory extends
   }
 
   /*
-   * Verifies only that the primary @KeyFor annotation on the RHS is a subtype of the primary @KeyFor annotation on the LHS.
-   * Useful for determining if the RHS is a @KeyFor for at least the maps in the LHS.
-   * For a full subtype check, please refer to KeyForQualifierHierarchy.isSubType. If changing the subtyping logic here,
-   * be sure to also change it there.
+   * Verifies only that the primary @KeyFor annotation on the RHS is a subtype
+   * of the primary @KeyFor annotation on the LHS. Useful for determining if
+   * the RHS is a @KeyFor for at least the maps in the LHS. For a full subtype
+   * check, please refer to KeyForQualifierHierarchy.isSubType. If changing
+   * the subtyping logic here, be sure to also change it there.
    */
   public boolean keyForValuesSubtypeCheck(AnnotationMirror varType, // Notice that the varType is an AM while the valueType is an ATM
           AnnotatedTypeMirror valueType,
@@ -740,7 +742,8 @@ public class KeyForAnnotatedTypeFactory extends
 
                   internalArguments = new ArrayList<>();
 
-                  // Note that we are not handling varargs as we assume that parameter numbers such as "#2" cannot refer to a vararg expanded argument.
+                  // Note that we are not handling varargs as we assume that parameter
+                  // numbers such as "#2" cannot refer to a vararg expanded argument.
 
                   for (VariableTree vt : enclosingMethod.getParameters()) {
                       internalArguments.add(FlowExpressions.internalReprOf(this,
@@ -859,7 +862,8 @@ public class KeyForAnnotatedTypeFactory extends
   class KeyForTypeArgumentInference extends DefaultTypeArgumentInference {
 
       @Override
-      public void adaptMethodType(AnnotatedTypeFactory typeFactory, ExpressionTree invocation, AnnotatedExecutableType methodType) {
+      public void adaptMethodType(AnnotatedTypeFactory typeFactory, ExpressionTree invocation,
+              AnnotatedExecutableType methodType) {
           canonicalizeForViewpointAdaptation(invocation, methodType);
       }
 
@@ -903,14 +907,14 @@ public class KeyForAnnotatedTypeFactory extends
   }
 
   /**
-   * Immediately before AnnotatedTypes.findTypeArguments we canonicalize flow expressions using the parameters
-   * for the current method (not the one being invoked but the one in which it is contained) and otherwise
-   * the flow expression context from the invocation expression.
+   * Immediately before AnnotatedTypes.findTypeArguments we canonicalize flow
+   * expressions using the parameters for the current method (not the one
+   * being invoked but the one in which it is contained) and otherwise the
+   * flow expression context from the invocation expression.
    */
   public void canonicalizeForViewpointAdaptation(ExpressionTree invocation, AnnotatedTypeMirror type) {
       final TreePath path = getPath(invocation);
       TreePath enclosingMethodPath = TreeUtils.pathTillOfKind(path, Kind.METHOD);
-
 
       if (path == null || enclosingMethodPath == null) {
           return; //this seems to happen for cases of desugaring from Data Flow

@@ -8,7 +8,6 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Temporary type qualifier:
@@ -29,7 +28,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @DefaultQualifierInHierarchy
 @Retention(RetentionPolicy.RUNTIME)
 @Target({})
-@TypeQualifier
 @SubtypeOf({LeakedToResult.class})
 @InvisibleQualifier
 public @interface MaybeLeaked {}

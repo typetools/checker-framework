@@ -4,6 +4,7 @@ import org.checkerframework.checker.oigj.qual.AssignsFields;
 import org.checkerframework.checker.oigj.qual.I;
 import org.checkerframework.checker.oigj.qual.Immutable;
 import org.checkerframework.checker.oigj.qual.Mutable;
+import org.checkerframework.checker.oigj.qual.OIGJMutabilityBottom;
 import org.checkerframework.checker.oigj.qual.ReadOnly;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -35,6 +36,8 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -148,6 +151,13 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         BOTTOM_QUAL = AnnotationUtils.fromClass(elements, OIGJMutabilityBottom.class);
 
         this.postInit();
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return Collections.unmodifiableSet(
+                new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(ReadOnly.class, Mutable.class, Immutable.class, I.class, AssignsFields.class, OIGJMutabilityBottom.class)));
     }
 
     @Override

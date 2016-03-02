@@ -211,15 +211,15 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework-1.9.9.zip}
+  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework-1.9.11.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
 
 \item
   \label{installation-configure-step}%
-  Configure your IDE, build system, or command shell to use the Checker
-  Framework compiler.  Choose the appropriate section of
+  Configure your IDE, build system, or command shell to include the Checker
+  Framework on the classpath.  Choose the appropriate section of
   Chapter~\ref{external-tools} for
 % Keep this list up to date with the list at the beginning
 % of file external-tools.tex .
@@ -308,16 +308,15 @@ public class GetStarted {
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
-\begin{Verbatim}
-  javac -processor org.checkerframework.checker.nullness.NullnessChecker GetStarted.java
-\end{Verbatim}
+\begin{alltt}
+  \emph{javac} -processor org.checkerframework.checker.nullness.NullnessChecker GetStarted.java
+\end{alltt}
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
 
 \noindent
-where the \code{javac} command refers to the
-Checker Framework compiler (see Section~\ref{javac-installation}).
+where \emph{\code{javac}} is set as in Section~\ref{javac-installation}.
 
 \item
   To compile within your IDE, you must have customized it to use the
@@ -358,36 +357,37 @@ Section~\ref{writing-annotations}.  Here are some examples:
 \end{alltt}
 
 
-\section{What comes with the Checker Framework distribution\label{release-content}}
-
-The Checker Framework distribution contains the following notable
-directories and files:
-
-\begin{itemize}
-\item \<changelog.txt> The changelog.
-\item \<checker/bin/javac> A drop-in replacement for the \<javac> compiler that
-  simplifies use of the Checker Framework.
-\item \<checker/manual/> A local copy of this manual in PDF and HTML formats.
-\item \<tutorial/> The Checker Framework tutorial.
-\item \<checker/dist/> Contains jar files for use by advanced users:
-  \begin{itemize}
-  \item \<javac.jar> A Java 9 javac with additional support for
-  Checker Framework extensions.
-  \item \<checker.jar> The Checker Framework classes.
-  \item \<jdk7.jar> and \<jdk8.jar> Annotations for the JDK classes for
-  Java 7 and Java 8 (but no class bodies).
-  \item \<checker-qual.jar> The annotation types defined by the
-  Checker Framework. This jar file is useful to distribute with code
-  that uses Checker Framework annotations. See Section~\ref{distributing}.
-  \item \<checker-source.jar> The Checker Framework source code for
-  use by IDEs.
-  \item \<checker-javadoc.jar> The Checker Framework Javadoc for use
-  by IDEs.
-  \end{itemize}
-\end{itemize}
-
-% The source distribution contains a superset of these files.
-% See the developer manual for details.
+%% This detail is not helpful so early in the manual, where it feels out of place.
+% \section{What comes with the Checker Framework distribution\label{release-content}}
+%
+% The Checker Framework distribution contains the following notable
+% directories and files:
+%
+% \begin{itemize}
+% \item \<changelog.txt> The changelog.
+% \item \<checker/bin/javac> A drop-in replacement for the \<javac> compiler that
+%   simplifies use of the Checker Framework.
+% \item \<checker/manual/> A local copy of this manual in PDF and HTML formats.
+% \item \<tutorial/> The Checker Framework tutorial.
+% \item \<checker/dist/> Contains jar files for use by advanced users:
+%   \begin{itemize}
+%   \item \<javac.jar> A Java 9 javac with additional support for
+%   Checker Framework extensions.
+%   \item \<checker.jar> The Checker Framework classes.
+%   \item \<jdk7.jar> and \<jdk8.jar> Annotations for the JDK classes for
+%   Java 7 and Java 8 (but no class bodies).
+%   \item \<checker-qual.jar> The annotation types defined by the
+%   Checker Framework. This jar file is useful to distribute with code
+%   that uses Checker Framework annotations. See Section~\ref{distributing}.
+%   \item \<checker-source.jar> The Checker Framework source code for
+%   use by IDEs.
+%   \item \<checker-javadoc.jar> The Checker Framework Javadoc for use
+%   by IDEs.
+%   \end{itemize}
+% \end{itemize}
+%
+% % The source distribution contains a superset of these files.
+% % See the developer manual for details.
 
 
 \htmlhr
@@ -489,8 +489,8 @@ A concrete example (using the Nullness Checker) is:
   javac -processor NullnessChecker MyFile.java
 \end{Verbatim}
 
-Remember that you must be using the
-Type Annotations version of \<javac>, which you already installed (see Section~\ref{installation}).
+\noindent
+where \<javac> is as specified in Section~\ref{javac-installation}.
 
 You can also run a checker from within your favorite IDE or build system.  See
 Chapter~\ref{external-tools} for details about
@@ -584,19 +584,16 @@ Unsound checking: ignore some errors
   Section~\ref{type-refinement-purity}.
 \item \<-AassumeAssertionsAreEnabled>, \<-AassumeAssertionsAreDisabled>
   Whether to assume that assertions are enabled or disabled; see Section~\ref{type-refinement-assertions}.
-\item \<-AsafeDefaultsForUnannotatedBytecode>
-  Whether the checker should use conservative defaults for unannotated
+\item \<-AuseDefaultsForUncheckedCode>
+  Enables/disables unchecked code defualts.  Takes arguments ``source,bytecode''.
+  ``-source,-bytecode'' is the default setting.
+  ``bytecode'' specifies
+  whether the checker should apply unchecked code defaults to
   bytecode; see
   Section~\ref{defaults-classfile}.
-% \item \<-AunsafeDefaultsForUnannotatedBytecode>
-%   Whether unannotated bytecode should use the same defaults as source
-%   code (unsound, but might reduce annotation effort); see
-%   Section~\ref{defaults-classfile}.
-% This item is repeated below:
-\item \<-AuseSafeDefaultsForUnannotatedSourceCode>
   Outside the scope of any relevant
-  \refqualclass{framework/qual}{AnnotatedFor} annotation, use conservative
-  default annotations and suppress all type-checking warnings; see
+  \refqualclass{framework/qual}{AnnotatedFor} annotation, ``source`` specifies whether unchecked code
+  default annotations are applied to source code and suppress all type-checking warnings; see
   Section~\ref{compiling-libraries}.
 \end{itemize}
 
@@ -655,9 +652,9 @@ Partially-annotated libraries
 \item \<-AstubWarnIfNotFound>
   Warn if a stub file entry could not be found; see Section~\ref{stub-using}.
 % This item is repeated above:
-\item \<-AuseSafeDefaultsForUnannotatedSourceCode>
+\item \<-AuseDefaultsForUncheckedCode=source>
   Outside the scope of any relevant
-  \refqualclass{framework/qual}{AnnotatedFor} annotation, use conservative
+  \refqualclass{framework/qual}{AnnotatedFor} annotation, use unchecked code
   default annotations and suppress all type-checking warnings; see
   Section~\ref{compiling-libraries}.
 \end{itemize}
@@ -709,7 +706,7 @@ the Subtyping Checker (see Chapter~\ref{subtyping-checker}) and the Fenum Checke
 
 Here are some standard javac command-line options that you may find useful.
 Many of them contain the word ``processor'', because in javac jargon, a
-checker is a type of ``annotation processor''.
+checker is an ``annotation processor''.
 
 \begin{itemize}
 \item \<-processor> Names the checker to be
@@ -732,7 +729,8 @@ checker is a type of ``annotation processor''.
   to turn on parsing annotation comments even when they
   contain spaces; applicable only to the Checker Framework compiler;
   see Section~\ref{annotations-in-comments}
-\item \<-J> Supply an argument to the JVM that is running javac
+\item \<-J> Supply an argument to the JVM that is running javac;
+  for example, \<-J-Xmx2500m> to increase its maximum heap size
 \item \<-doe> To ``dump on error'', that is, output a stack trace
   whenever a compiler warning/error is produced. Useful when debugging
   the compiler or a checker.
@@ -1212,4 +1210,6 @@ Also see Chapter~\ref{troubleshooting}, Troubleshooting.
 %  LocalWords:  AinvariantArrays AcheckCastElementType formatter pathname
 %  LocalWords:  typedef guieffect Gradle jdk7 jdk8 javadoc MyFile argfiles
 %%  LocalWords:  AshowSuppressWarningKeys AoutputArgsToFile RegexChecker
-%%  LocalWords:  NullnessChecker commandlineargfile
+%%  LocalWords:  NullnessChecker commandlineargfile AnnotatedFor Xmx2500m
+%%  LocalWords:  AsafeDefaultsForUnannotatedBytecode
+%%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode

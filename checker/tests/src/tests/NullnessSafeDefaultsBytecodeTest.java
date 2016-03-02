@@ -15,7 +15,7 @@ public class NullnessSafeDefaultsBytecodeTest extends CheckerFrameworkTest {
         super(testFile,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
-                "-AsafeDefaultsForUnannotatedBytecode",
+                "-AuseDefaultsForUncheckedCode=bytecode",
                 "-Anomsgtext");
     }
 

@@ -14,7 +14,6 @@ import org.checkerframework.framework.qual.*;
  *
  * @checker_framework.manual #map-key-checker Map Key Checker
  */
-@TypeQualifier
 @InvisibleQualifier
 @SubtypeOf({})
 @DefaultQualifierInHierarchy

@@ -6,7 +6,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * This represents a set of {@link java.lang.reflect.Method Method} or
@@ -21,7 +20,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #methodval-and-classval-checkers MethodVal Checker
  */
-@TypeQualifier
 @SubtypeOf({ UnknownMethod.class })
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE })

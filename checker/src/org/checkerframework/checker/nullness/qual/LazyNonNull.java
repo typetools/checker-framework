@@ -8,7 +8,6 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * This annotation is deprecated.  {@link MonotonicNonNull} should be used
@@ -58,6 +57,5 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE_USE) // not applicable to ElementType.TYPE_PARAMETER
-@TypeQualifier
 @SubtypeOf(Nullable.class)
 public @interface LazyNonNull {}

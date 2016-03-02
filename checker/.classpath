@@ -4,6 +4,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="tests/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/framework/tests/junit.jar"/>
+	<classpathentry kind="lib" path="/framework/tests/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="/framework/tests/hamcrest-core-1.3.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

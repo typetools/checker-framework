@@ -1,7 +1,6 @@
 package org.checkerframework.qualframework.base;
 
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -91,7 +90,6 @@ public class TypeMirrorConverter<Q> {
          }
     };
 
-    @TypeQualifier
     @SubtypeOf({})
     public static @interface Key {
         /** An index into the lookup table. */

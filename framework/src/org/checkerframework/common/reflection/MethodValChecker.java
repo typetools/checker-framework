@@ -4,12 +4,8 @@ import java.util.LinkedHashSet;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.common.reflection.qual.MethodVal;
-import org.checkerframework.common.reflection.qual.MethodValBottom;
-import org.checkerframework.common.reflection.qual.UnknownMethod;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.StubFiles;
-import org.checkerframework.framework.qual.TypeQualifiers;
 
 /**
  * The MethodVal Checker provides a sound estimate of the signature of Method
@@ -18,7 +14,6 @@ import org.checkerframework.framework.qual.TypeQualifiers;
  * @checker_framework.manual #methodval-and-classval-checkers MethodVal Checker
  */
 @StubFiles({"reflection.astub"})
-@TypeQualifiers({MethodVal.class, MethodValBottom.class, UnknownMethod.class})
 public class MethodValChecker extends BaseTypeChecker {
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {

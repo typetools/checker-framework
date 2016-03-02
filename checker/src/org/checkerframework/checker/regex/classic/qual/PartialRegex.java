@@ -4,7 +4,6 @@ import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Indicates a String that is not a syntactically valid regular expression.
@@ -18,7 +17,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #regex-checker Regex Checker
  */
-@TypeQualifier
 @InvisibleQualifier
 @SubtypeOf(UnknownRegex.class)
 @Target({}) // empty target prevents programmers from writing this in a program

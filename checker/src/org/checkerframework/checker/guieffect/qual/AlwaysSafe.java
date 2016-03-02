@@ -16,7 +16,6 @@ import com.sun.source.tree.Tree;
  *
  * @checker_framework.manual #guieffect-checker GUI Effect Checker
  */
-@TypeQualifier
 @SubtypeOf({UI.class})
 @DefaultQualifierInHierarchy
 @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})

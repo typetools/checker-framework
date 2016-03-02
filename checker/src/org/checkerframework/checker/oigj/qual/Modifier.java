@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.*;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TypeQualifier
 @SubtypeOf(Dominator.class)
 @DefaultQualifierInHierarchy
+@DefaultFor({DefaultLocation.IMPLICIT_UPPER_BOUNDS, DefaultLocation.EXCEPTION_PARAMETER})
 public @interface Modifier {}

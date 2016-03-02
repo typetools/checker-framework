@@ -19,7 +19,6 @@ Writing a simple checker is easy!  For example, here is a complete, useful
 type-checker:
 
 \begin{Verbatim}
-@TypeQualifier
 @SubtypeOf(Unqualified.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Encrypted {}
@@ -139,7 +138,7 @@ the components of a type system as written using the Checker Framework:
   programmer did not explicitly write it.  For example, in the Nullness
   type system every literal
   other than \<null> has a \refqualclass{checker/nullness/qual}{NonNull} type;
-  examples of literals include \<"some string"> and \<java.util.Date.class>.
+  examples of literals include \code{"some string"} and \<java.util.Date.class>.
 
   Optionally, write dataflow rules to enhance flow-sensitive type qualifier
   inference (Section~\ref{dataflow}).
@@ -194,27 +193,40 @@ For example:
 
 \begin{Verbatim}
   // Define an annotation for the @NonNull type qualifier.
-  @TypeQualifier
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface NonNull { }
 \end{Verbatim}
 
 \noindent
-Write the \refqualclass{framework/qual}{TypeQualifier} meta-annotation on the annotation definition
-to indicate that the annotation represents a type qualifier
-and should be processed by the checker.
-Also write a \sunjavadocanno{java/lang/annotation/Target.html}{Target}
-meta-annotation to indicate where the annotation may be written.
-(An annotation that is written on an annotation
-definition, such as \refqualclass{framework/qual}{TypeQualifier}, is called a \emph{meta-annotation}.)
+
+Write a \sunjavadocanno{java/lang/annotation/Target.html}{Target}
+meta-annotation on the annotation definition to indicate where the annotation
+may be written. All type qualifiers that users can write in source code should
+have the value \<ElementType.TYPE\_USE> (and optionally with the additional value of
+\<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values).
+(An annotation that is written on an annotation definition, such as
+\sunjavadocanno{java/lang/annotation/Target.html}{Target}, is called a
+\emph{meta-annotation}.)
+
+The annotations should be placed within a directory called \<qual>, and this
+directory should be placed in the same directory as your Checker's source file.
+
+For example, the Nullness Checker's source file is located at
+\<.../nullness/NullnessChecker.java>. The \<NonNull> qualifier is located in the
+directory \<.../nullness/qual>.
+
+The Checker Framework automatically treats any annotation that has this value
+and is declared in the qual package as a type qualifier.
+(See Section \ref{indicating-supported-annotations} for more details.)
 
 % \noindent
-% The \<@TypeQualifier> meta-annotation
+% The \<@Target({ElementType.TYPE\_USE})> meta-annotation
 % distinguishes it from an ordinary
 % annotation that applies to a declaration (e.g., \<@Deprecated> or
 % \<@Override>).
 % The framework ignores any annotation whose
-% declaration does not bear the \<@TypeQualifier> meta-annotation (with minor
+% declaration does not bear the \<@Target({ElementType.TYPE\_USE})>
+% meta-annotation (with minor
 % exceptions, such as \<@SuppressWarnings>).
 
 Your type system should include a top qualifier and a bottom qualifier
@@ -237,7 +249,6 @@ hierarchy.
   \refqualclass{checker/nullness/qual}{NonNull} $T$ is a subtype of \refqualclass{checker/nullness/qual}{Nullable} $T$:
 
   \begin{Verbatim}
-    @TypeQualifier
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @SubtypeOf( { Nullable.class } )
     public @interface NonNull { }
@@ -274,7 +285,6 @@ hierarchy.
   is the top qualifier of the Nullness type system, hence is defined as:
 
   \begin{Verbatim}
-    @TypeQualifier
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @SubtypeOf( { } )
     public @interface Nullable { }
@@ -290,7 +300,6 @@ hierarchy.
   polymorphic qualifier.  For example:
 
   \begin{Verbatim}
-    @TypeQualifier
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @PolymorphicQualifier
     public @interface PolyNull { }
@@ -366,7 +375,7 @@ files that the checker reads.
 \begin{sloppypar}
 Alternately, the type system designer may specify a default procedurally,
 by calling the
-\refmethod{framework/util/defaults}{QualifierDefaults}{addAbsoluteDefault}{-javax.lang.model.element.AnnotationMirror-org.checkerframework.framework.qual.DefaultLocation-}
+\refmethod{framework/util/defaults}{QualifierDefaults}{addCheckedCodeDefault}{-javax.lang.model.element.AnnotationMirror-org.checkerframework.framework.qual.DefaultLocation-}
 method.  You may do this even if you have declaratively defined the
 qualifier hierarchy; see the Nullness Checker's implementation for an
 example.
@@ -425,7 +434,6 @@ The actual IGJ hierarchy does contain a (non-user-visible) bottom qualifier,
 defined like this:
 
 \begin{Verbatim}
-  @TypeQualifier
   @SubtypeOf({Mutable.class, Immutable.class, I.class})
   @Target({}) // forbids a programmer from writing it in a program
   @ImplicitFor(trees = { Kind.NULL_LITERAL, Kind.CLASS, Kind.NEW_ARRAY },
@@ -433,6 +441,7 @@ defined like this:
   @interface IGJBottom { }
 \end{Verbatim}
 
+The IGJ Checker adds this qualifier in code in \refclass{checker/igj}{IGJAnnotatedTypeFactory}.
 
 \paragraph{Top qualifier\label{top-qualifier}}
 Your type hierarchy must have a top qualifier
@@ -506,7 +515,6 @@ type qualifiers:
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-  @TypeQualifier
   @SubtypeOf( { Nullable.class } )
   @ImplicitFor(
     types={TypeKind.PACKAGE},
@@ -523,7 +531,6 @@ type qualifiers:
   public @interface NonNull {  }
 
 
-  @TypeQualifier
   @SubtypeOf({})
   @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
@@ -1109,34 +1116,18 @@ checker class has no work to do.  Here are the complete definitions of the
 checker classes for the Interning Checker and the Nullness Checker:
 
 \begin{Verbatim}
-  @TypeQualifiers({ Interned.class, PolyInterned.class, PolyAll.class })
   @SupportedLintOptions({"dotequals"})
   public final class InterningChecker extends BaseTypeChecker { }
 
-  @TypeQualifiers({ Nullable.class, Raw.class, NonNull.class, PolyNull.class, PolyAll.class })
   @SupportedLintOptions({"flow", "cast", "cast:redundant"})
   public class NullnessChecker extends BaseTypeChecker { }
 \end{Verbatim}
 
-
-The checker class must indicate the annotations
-that make up the type hierarchy for this checker (including
-polymorphic qualifiers), either via a
-\refqualclass{framework/qual}{TypeQualifiers} annotation or by overriding
-the
-\refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{--}
-method.  Each argument to \<@TypeQualifiers> or value returned by
-\<createSupportedTypeQualifiers> is a class literal for a type qualifier
-whose definition bears the
-\refqualclass{framework/qual}{TypeQualifier} meta-annotation.
-An aggregate checker (which extends
-\refclass{framework/source}{AggregateChecker}) does not need to specify its
-type qualifiers, but each of its component checkers should do so.
-
-
 The checker class bridges between the compiler and the rest of the checker.  It
 invokes the type-rule check visitor on every Java source file being
-compiled, and provides a simple API, \refmethod{framework/source}{SourceChecker}{report}{-org.checkerframework.framework.source.Result-java.lang.Object-}, to issue
+compiled, and provides a simple API,
+\refmethod{framework/source}{SourceChecker}{report}
+{-org.checkerframework.framework.source.Result-java.lang.Object-}, to issue
 errors using the compiler error reporting mechanism.
 
 Also, the checker class follows the factory method pattern to
@@ -1162,6 +1153,32 @@ It is also allowed to override messages defined in superclasses, but this
 is rarely needed.
 For more details about message keys, see Section~\refwithpageparen{compiler-message-keys}.
 \end{sloppypar}
+
+\subsection{Indicating supported annotations\label{indicating-supported-annotations}}
+
+A checker must indicate the annotations that it supports (make up its type
+hierarchy), including whether it supports the polymorphic qualifier
+\refqualclass{framework/qual}{PolyAll}.
+
+By default, a checker supports \<PolyAll>, and all annotations located in a
+subdirectory called \<qual> that's located in the same directory as the checker.
+Note that only annotations defined with the \<@Target({ElementType.TYPE\_USE})>
+meta-annotation (and optionally with the additional value of
+\<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values)
+are automatically considered as supported annotations.
+
+To indicate support for annotations that are located outside of the \<qual>
+subdirectory, annotations that have other \<ElementType> values, or to indicate
+whether a checker supports the polymorphic qualifier
+\refqualclass{framework/qual}{PolyAll}, checker writers can override the
+\refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{--}
+method (open the link for details).
+
+An aggregate checker (which extends
+\refclass{framework/source}{AggregateChecker}) does not need to specify its
+type qualifiers, but each of its component checkers should do so.
+
+
 
 
 \subsection{Bundling multiple checkers\label{bundling-multiple-checkers}}
@@ -1515,34 +1532,6 @@ java -jar $CHECKERFRAMEWORK/framework/dist/framework.jar \
 
 
 
-%%% Rather out of date!
-%% Not relevant to most readers.  Can go in a README file in our repository.
-% \section{Putting your checker in the repository\label{writing-repository}}
-%
-% This section is relevant only if you wish to add your checker to the source code
-% repository for the Checker Framework --- for example, to include your
-% checker in the Checker Framework distribution.
-%
-% The checkers appear in directory \code{annotations/checkers/} of
-% the \code{annotations} repository.  It contains the following relevant
-% subdirectories:
-% \begin{itemize}
-% \item
-%   \code{manual/}: Documentation for your checker goes here.
-% \item
-%   \code{src/checkers/\emph{annotation\_name}/}: Code for the checker,
-%   in a directory that is a sibling of \code{quals/}, \code{nonnull/},
-%   etc.
-% \item
-%   \code{jdk/\emph{annotation\_name}/}: Annotated ``skeleton class''
-%   versions of the JDK and other libraries (see Section~\ref{skeleton}).
-% \item
-%   \code{tests/\emph{annotation\_name}/}: Inputs and outputs for the test
-%   suite for the checker.  A single top-level test suite class goes in
-%   \code{tests/src/tests/}.
-% \end{itemize}
-
-
 \section{Documenting the checker\label{documenting-a-checker}}
 
 This section describes how to write a chapter for this manual that
@@ -1810,11 +1799,11 @@ without warnings or errors.
 % LocalWords:  Aqual Anqual java CharSequence getAnnotatedType UseLovely IGJ
 % LocalWords:  AnnotatedTypeMirror LovelyChecker Anomsgtext Ashowchecks enums
 % LocalWords:  Afilenames dereferenced SuppressWarnings declaratively SubtypeOf
-% LocalWords:  TypeQualifier TypeHierarchy GraphQualifierHierarchy ReadOnly Foo
+% LocalWords:  TypeHierarchy GraphQualifierHierarchy ReadOnly Foo qual
 % LocalWords:  QualifierHierarchy QualifierRoot createQualifierHierarchy util
 % LocalWords:  createTypeHierarchy QReadOnly ImplicitFor treeClasses TypeMirror
 % LocalWords:  LiteralTree ExpressionTree typeClasses annotateImplicit nullable
-% LocalWords:  TypeQualifiers createSupportedTypeQualifiers FooChecker nullness
+% LocalWords:  createSupportedTypeQualifiers FooChecker nullness PolyAll
 % LocalWords:  FooVisitor FooAnnotatedTypeFactory basicstyle InterningVisitor
 % LocalWords:  InterningAnnotatedTypeFactory QualifierDefaults TypeKind getKind
 % LocalWords:  setAbsoluteDefaults PolymorphicQualifier TreeVisitor subnodes
@@ -1846,4 +1835,5 @@ without warnings or errors.
 %%  LocalWords:  Hevea Hitchhiker's compilermsgs args Poly MyTypeSystem
 %%  LocalWords:  I18nChecker i18n I18nSubchecker LocalizableKeyChecker
 %%  LocalWords:  MyChecker MyHelperChecker getImmediateSubcheckerClasses
-%%  LocalWords:  MyChecker's subchecker plugins
+%%  LocalWords:  MyChecker's subchecker plugins ElementType
+%%  LocalWords:  IGJAnnotatedTypeFactory CheckerFrameworkTest

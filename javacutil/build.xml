@@ -37,11 +37,12 @@
             description="Set properties: filesets and build.uptodate">
         <fileset id="src.files" dir="${src}">
             <include name="**/*.java"/>
+            <exclude name="**/package-info.java"/>
         </fileset>
 
-        <uptodate property="src.files.uptodate" targetfile="${build}">
+        <uptodate property="build.uptodate" targetfile="${build}">
             <srcfiles refid="src.files"/>
-            <mapper type="glob" from="*.java" to="${build}/*.class"/>
+            <mapper type="glob" from="*.java" to="../${build}/*.class"/>
         </uptodate>
     </target>
 

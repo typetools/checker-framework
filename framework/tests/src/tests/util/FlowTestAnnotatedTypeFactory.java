@@ -1,11 +1,18 @@
 package tests.util;
 
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.lang.model.element.AnnotationMirror;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.Bottom;
 import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -26,7 +33,14 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
 
         addTypeNameImplicit(java.lang.Void.class, BOTTOM);
-        this.defaults.addAbsoluteDefault(BOTTOM, DefaultLocation.LOWER_BOUNDS);
+        this.defaults.addCheckedCodeDefault(BOTTOM, DefaultLocation.LOWER_BOUNDS);
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return Collections.unmodifiableSet(
+                new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(Value.class, Odd.class, MonotonicOdd.class, Unqualified.class, Bottom.class)));
     }
 
     @Override

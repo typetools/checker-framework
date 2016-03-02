@@ -95,7 +95,7 @@
             description="Set properties: filesets and build.uptodate">
         <fileset id="src.files" dir="${src}">
             <include name="**/*.java"/>
-            <exclude name=""/>
+            <exclude name="**/package-info.java"/>
         </fileset>
 
         <fileset id="src.astub.files" dir="${src}" includes="**/*.properties,**/*.astub"/>
@@ -106,7 +106,7 @@
             <!-- Probably should depend on a file rather than a directory. -->
         <uptodate property="src.files.uptodate" targetfile="${build}">
           <srcfiles refid="src.files"/>
-          <mapper type="glob" from="*.java" to="${build}/*.class"/>
+          <mapper type="glob" from="*.java" to="../${build}/*.class"/>
         </uptodate>
 
         <uptodate property="src.astub.files.uptodate" targetfile="${build}">
@@ -156,7 +156,7 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-framework.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${stubparser.lib}:${javacutil.lib}:${dataflow.lib}:${junit.lib}"
+              classpath="${javac.lib}:${stubparser.lib}:${javacutil.lib}:${dataflow.lib}:${junit.lib}:${hamcrest.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -206,7 +206,7 @@
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${javac.lib}:${javadoc.lib}:${junit.lib}"
+                 classpath="${build}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
             <package name="org.checkerframework.javacutil.*"/>
@@ -257,7 +257,7 @@
 
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${junit.lib}:${build}:${javacutil.lib}:${dataflow.lib}"
+              classpath="${javac.lib}:${junit.lib}:${hamcrest.lib}:${build}:${javacutil.lib}:${dataflow.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -293,6 +293,7 @@
                 <pathelement path="${framework.lib}"/>
                 <pathelement path="${tests.build}"/>
                 <pathelement path="${junit.lib}"/>
+                <pathelement path="${hamcrest.lib}"/>
             </classpath>
 
             <formatter type="xml"/>
@@ -314,6 +315,11 @@
     <target name="all-tests-nojtreg-nobuild" depends="build-tests"
             description="Run tests, except jtreg tests, WITHOUT building anything">
 
+      <!-- Delete directory because we will rerun all tests -->
+      <delete dir="${build.reports}"/>
+
+      <antcall target="loader-tests"/>
+
       <!-- Copied from -run-tests target -->
       <mkdir dir="${build.reports}"/>
 
@@ -330,6 +336,7 @@
               <pathelement path="${framework.lib}"/>
               <pathelement path="${tests.build}"/>
               <pathelement path="${junit.lib}"/>
+              <pathelement path="${hamcrest.lib}"/>
           </classpath>
 
           <formatter type="xml"/>
@@ -346,6 +353,29 @@
               </fileset>
           </batchtest>
       </junit>
+    </target>
+
+    <target name="loader-tests" depends="loader-dir-test,loader-jar-test"
+                description="Run tests for the annotation class loader"/>
+
+    <target name="loader-dir-test" depends="build-tests"
+            description="Run tests for the annotation class loader by loading from build directories">
+        <exec executable="make" failonerror="${halt.on.test.failure}">
+            <env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
+            <env key="JAVACJAR" value="${jsr308.langtools.dist}/lib/javac.jar"/>
+            <arg line="-C tests/annotationclassloader/"/>
+            <arg line="load-from-dir-test"/>
+        </exec>
+    </target>
+
+    <target name="loader-jar-test" depends="jar"
+            description="Run tests for the annotation class loader by loading from jar file">
+        <exec executable="make" failonerror="${halt.on.test.failure}">
+            <env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
+            <env key="JAVACJAR" value="${jsr308.langtools.dist}/lib/javac.jar"/>
+            <arg line="-C tests/annotationclassloader/"/>
+            <arg line="load-from-jar-test"/>
+        </exec>
     </target>
 
     <target name="aliasing-tests" depends="jar,build-tests"
@@ -481,14 +511,23 @@
         </antcall>
     </target>
 
-    <!-- TODO: re-enable -->
-    <target name="jtreg-tests" depends="-def-jtreg,jar,build-tests"
-            description="Run jtreg tests">
-        <echo message="framework jtreg-tests are currently disabled because they are failing"/>
+    <target name="jtreg.check">
+      <condition property="jtreg.exists">
+        <available file="${jtreg.home}" type="dir"/>
+      </condition>
     </target>
 
-    <!-- TODO: re-enable -->
-    <target name="jtreg-tests-FAILING" depends="-def-jtreg,jar,build-tests"
+    <target name="-jtreg.download" depends="jtreg.check" unless="jtreg.exists">
+      <get
+        src="https://adopt-openjdk.ci.cloudbees.com/view/OpenJDK/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.1-b12.tar.gz"
+        dest="${jtreg.home}/.." />
+      <untar src="${jtreg.home}/../jtreg-4.1-b12.tar.gz"
+        dest="${jtreg.home}/../"
+        compression="gzip" />
+    </target>
+
+
+    <target name="jtreg-tests" depends="-def-jtreg,jar,build-tests"
             description="Run jtreg tests">
         <jtreg-tool2 name="all" tests="."/>
     </target>
@@ -591,7 +630,7 @@
         <echo message="${src.files}" file="${tmpdir}/srcfiles-framework.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>

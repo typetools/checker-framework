@@ -1,0 +1,8 @@
+This directory shows how to create:
+ * a specialized fenum annotation, @MyFenum
+
+The make file shows how to invoke the Fenum Checker to utilize the specialized annotation.
+
+You can model your own new fenum annotations and fenum checkers after it.
+
+To see the demo, run: make demo

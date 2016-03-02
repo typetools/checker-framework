@@ -5,7 +5,6 @@ import java.lang.annotation.ElementType;
 
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Represents a fully-qualified name as defined in the <a href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-6.html#jls-6.7">Java Language Specification, section 6.7</a>.
@@ -27,7 +26,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
-@TypeQualifier
 @SubtypeOf(UnannotatedString.class)
 @ImplicitFor(stringPatterns="^[A-Za-z_][A-Za-z_0-9]*(\\.[A-Za-z_][A-Za-z_0-9]*)*(\\[\\])*$")
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

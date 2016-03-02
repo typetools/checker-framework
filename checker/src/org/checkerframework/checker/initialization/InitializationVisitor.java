@@ -18,11 +18,13 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -38,6 +40,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -146,6 +149,19 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
                 atypeFactory.shouldReadCache = old2;
 
                 final AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
+
+                // AnnotatedTypeMerger.merge requires that the first two arguments have the
+                // same TypeKind.
+                if (var.getKind() != var2.getKind() &&
+                        var2.getKind() == TypeKind.DECLARED) {
+                    switch (var.getKind()) {
+                    case WILDCARD:
+                        var = ((AnnotatedWildcardType) var).getExtendsBound();
+                        break;
+                    default:
+                        ErrorReporter.errorAbort("Unexpected comparison between " + var + " and " + var2);
+                    }
+                }
                 AnnotatedTypeMerger.merge(var2, var, invariantAnno);
 
                 checkAssignability(var, varTree);

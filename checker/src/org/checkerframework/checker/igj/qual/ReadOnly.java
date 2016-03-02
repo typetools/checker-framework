@@ -9,7 +9,6 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Indicates that the annotated reference is a ReadOnly reference.
@@ -21,7 +20,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #igj-checker IGJ Checker
  */
-@TypeQualifier
 @SubtypeOf({})
 // TODO: Would these make sense? Some tests break with them.
 // @ImplicitFor(types={TypeKind.BOOLEAN, TypeKind.BYTE, TypeKind.CHAR,

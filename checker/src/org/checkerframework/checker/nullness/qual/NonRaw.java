@@ -9,9 +9,10 @@ import java.lang.annotation.Target;
 import org.checkerframework.checker.nullness.NullnessRawnessChecker;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Raw;
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * This type qualifier belongs to the rawness initialization tracking
@@ -27,9 +28,10 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
-@TypeQualifier
 @SubtypeOf(Raw.class)
 @DefaultQualifierInHierarchy
+@DefaultFor({DefaultLocation.IMPLICIT_UPPER_BOUNDS, DefaultLocation.IMPLICIT_LOWER_BOUNDS,
+             DefaultLocation.EXCEPTION_PARAMETER})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })

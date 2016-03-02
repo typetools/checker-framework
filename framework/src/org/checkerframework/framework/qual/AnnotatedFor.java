@@ -1,9 +1,12 @@
 package org.checkerframework.framework.qual;
 
+import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.CONSTRUCTOR;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
@@ -11,14 +14,14 @@ import java.lang.annotation.Target;
  * For example, <code>@AnnotatedFor({"nullness", "regex"})</code> indicates
  * that the class has been annotated with annotations such as
  * <tt>@Nullable</tt> and <tt>@Regex</tt>.  Has no effect unless the
- * <tt>-AuseSafeDefaultsForUnannotatedSourceCode</tt> command-line argument
+ * <tt>-AuseDefaultsForUncheckedCode=source</tt> command-line argument
  * is supplied.
  * <p>
  *
- * Ordinarily, the <tt>-AuseSafeDefaultsForUnannotatedSourceCode</tt> command-line argument
- * causes unannotated locations to be defaulted using conservative library
- * annotations, and it suppresses all warnings.  The
- * <tt>-AuseSafeDefaultsForUnannotatedSourceCode</tt> command-line argument has no effect on
+ * Ordinarily, the <tt>-AuseDefaultsForUncheckedCode=source</tt> command-line argument
+ * causes unannotated locations to be defaulted using unchecked code defaults,
+ * and it suppresses all warnings. However, the
+ * <tt>-AuseDefaultsForUncheckedCode=source</tt> command-line argument has no effect on
  * classes with a relevant <tt>@AnnotatedFor</tt> annotation:  any
  * unannotated location is defaulted normally (typically using the
  * CLIMB-to-top rule), and typechecking warnings are issued.
@@ -32,7 +35,8 @@ import java.lang.annotation.Target;
  *
  * @checker_framework.manual #compiling-libraries Compiling partially-annotated libraries
  */
-@Target({TYPE, METHOD, CONSTRUCTOR}) // permitting on PACKAGE would be too error-prone
+@Target({TYPE, METHOD, CONSTRUCTOR, PACKAGE})
+@Retention(RetentionPolicy.SOURCE)
 public @interface AnnotatedFor {
     /**
      * @return the type systems for which the class has been annotated.

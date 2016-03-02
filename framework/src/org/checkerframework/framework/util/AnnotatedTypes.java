@@ -6,7 +6,6 @@ import org.checkerframework.checker.nullness.qual.*;
 
 import org.checkerframework.framework.flow.util.LubTypeVariableAnnotator;
 import org.checkerframework.framework.qual.PolyAll;
-import org.checkerframework.framework.qual.TypeQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -26,6 +25,8 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1400,13 +1401,38 @@ public class AnnotatedTypes {
         if (isTypeAnnotationCache.containsKey(elem))
             return isTypeAnnotationCache.get(elem);
 
-        boolean result = isTypeAnnotationImpl(elem);
+        // the annotation is a type annotation if it has the proper ElementTypes in the @Target meta-annotation
+        boolean result = hasTypeQualifierElementTypes(elem.getAnnotation(Target.class).value());
         isTypeAnnotationCache.put(elem, result);
         return result;
     }
 
-    private static boolean isTypeAnnotationImpl(TypeElement type) {
-        return type.getAnnotation(TypeQualifier.class) != null;
+    /**
+     * Sees if the passed in array of {@link ElementType} values have the correct set of
+     * values which defines a type qualifier
+     *
+     * @param elements
+     *            an array of {@link ElementType} values
+     * @return true if the array only has {@link ElementType#TYPE_USE} (and
+     *         optionally {@link ElementType#TYPE_PARAMETER}), false if it
+     *         contains anything else
+     */
+    public static boolean hasTypeQualifierElementTypes(ElementType[] elements) {
+        boolean hasTypeUse = false;
+        boolean hasOtherElementTypes = false;
+
+        for (ElementType element : elements) {
+            if (element.equals(ElementType.TYPE_USE)) {
+                // valid annotations have to have TYPE_USE
+                hasTypeUse = true;
+            } else if (!element.equals(ElementType.TYPE_PARAMETER)) {
+                // if there's an ElementType with a enumerated value of something other than
+                // TYPE_USE or TYPE_PARAMETER then it isn't a valid annotation
+                hasOtherElementTypes = true;
+            }
+        }
+
+        return (hasTypeUse && !hasOtherElementTypes);
     }
 
     public static boolean containsTypeAnnotation(Collection<? extends AnnotationMirror> annos) {

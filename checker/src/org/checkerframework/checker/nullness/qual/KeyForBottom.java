@@ -16,7 +16,6 @@ import com.sun.source.tree.Tree;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TypeQualifier
 @InvisibleQualifier
 @SubtypeOf(KeyFor.class)
 @DefaultFor({DefaultLocation.LOWER_BOUNDS})

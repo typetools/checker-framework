@@ -1,9 +1,12 @@
 package org.checkerframework.checker.units;
 
-import org.checkerframework.checker.units.qual.*;
+import org.checkerframework.checker.units.qual.MixedUnits;
+import org.checkerframework.checker.units.qual.Prefix;
+import org.checkerframework.checker.units.qual.UnitsBottom;
+import org.checkerframework.checker.units.qual.UnitsMultiple;
+import org.checkerframework.checker.units.qual.UnknownUnits;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -46,6 +49,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * as "mPERs", the correct unit for the result.
  */
 public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+    private static final Class<org.checkerframework.checker.units.qual.UnitsRelations> unitsRelationsAnnoClass =
+            org.checkerframework.checker.units.qual.UnitsRelations.class;
 
     protected final AnnotationMirror mixedUnits = AnnotationUtils.fromClass(elements, MixedUnits.class);
     protected final AnnotationMirror TOP = AnnotationUtils.fromClass(elements, UnknownUnits.class);
@@ -64,8 +69,6 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker, false);
 
         this.postInit();
-
-        addTypeNameImplicit(java.lang.Void.class, BOTTOM);
     }
 
     // In Units Checker, we always want to print out the Invisible Qualifiers
@@ -81,6 +84,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror aliasedAnnotation(AnnotationMirror anno) {
         // Get the name of the aliased annotation
         String aname = anno.getAnnotationType().toString();
+
         // See if we already have a map from this aliased annotation to its corresponding base unit annotation
         if (aliasMap.containsKey(aname)) {
             // if so return it
@@ -93,9 +97,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         for (AnnotationMirror metaAnno : anno.getAnnotationType().asElement().getAnnotationMirrors() ) {
             // see if the meta annotation is UnitsMultiple
             if (isUnitsMultiple(metaAnno)) {
-                @SuppressWarnings("unchecked")
                 // retrieve the Class of the base unit annotation
-                Class<? extends Annotation> baseUnitAnnoClass = (Class<? extends Annotation>) AnnotationUtils.getElementValueClass(metaAnno, "quantity", true);
+                Class<? extends Annotation> baseUnitAnnoClass =
+                        AnnotationUtils.getElementValueClass(metaAnno, "quantity", true).asSubclass(Annotation.class);
 
                 // retrieve the SI Prefix of the aliased annotation
                 Prefix prefix = AnnotationUtils.getElementValueEnum(metaAnno, "prefix", Prefix.class, true);
@@ -129,135 +133,99 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected Map<String, UnitsRelations> getUnitsRel() {
         if (unitsRel == null) {
             unitsRel = new HashMap<String, UnitsRelations>();
+            // Always add the default units relations, for the standard units.
+            unitsRel.put(UnitsRelationsDefault.class.getCanonicalName(),
+                    new UnitsRelationsDefault().init(processingEnv));
         }
         return unitsRel;
     }
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        Set<Class<? extends Annotation>> qualSet =
-                new HashSet<Class<? extends Annotation>>();
+        // Use the Units Annotated Type Loader instead of the default one
+        loader = new UnitsAnnotationClassLoader(checker);
 
-        // Load all the external units
+        // get all the loaded annotations
+        Set<Class<? extends Annotation>> qualSet = new HashSet<Class<? extends Annotation>>();
+        qualSet.addAll(getBundledTypeQualifiersWithPolyAll());
+
+        // load all the external units
         loadAllExternalUnits();
 
         // copy all loaded external Units to qual set
         qualSet.addAll(externalQualsMap.values());
 
-        // Always add the default units relations.
-        // TODO: we assume that all the standard units only use this. For absolute correctness,
-        // go through each and look for a UnitsRelations annotation.
-        getUnitsRel().put(UnitsRelationsDefault.class.getCanonicalName(),
-                new UnitsRelationsDefault().init(processingEnv));
-
-        // Explicitly add the top type.
-        qualSet.add(UnknownUnits.class);
-        qualSet.add(PolyUnit.class);
-        qualSet.add(PolyAll.class);
-
-        // Only add the directly supported units. Shorthands like kg are
-        // handled automatically by aliases.
-
-        qualSet.add(Length.class);
-        // qualSet.add(mm.class);
-        qualSet.add(m.class);
-        // qualSet.add(km.class);
-
-        qualSet.add(Time.class);
-        qualSet.add(s.class);
-        qualSet.add(min.class);
-        qualSet.add(h.class);
-
-        qualSet.add(Speed.class);
-        qualSet.add(mPERs.class);
-        qualSet.add(kmPERh.class);
-
-        qualSet.add(Area.class);
-        qualSet.add(mm2.class);
-        qualSet.add(m2.class);
-        qualSet.add(km2.class);
-
-        qualSet.add(Current.class);
-        qualSet.add(A.class);
-
-        qualSet.add(Mass.class);
-        qualSet.add(g.class);
-        // qualSet.add(kg.class);
-
-        qualSet.add(Substance.class);
-        qualSet.add(mol.class);
-
-        qualSet.add(Luminance.class);
-        qualSet.add(cd.class);
-
-        qualSet.add(Temperature.class);
-        qualSet.add(C.class);
-        qualSet.add(K.class);
-
-        qualSet.add(Acceleration.class);
-        qualSet.add(mPERs2.class);
-
-        qualSet.add(Angle.class);
-        qualSet.add(degrees.class);
-        qualSet.add(radians.class);
-
-        // Use the framework-provided bottom qualifier. It will automatically be
-        // at the bottom of the qualifier hierarchy.
-        qualSet.add(UnitsBottom.class);
-
         return Collections.unmodifiableSet(qualSet);
     }
 
     private void loadAllExternalUnits() {
-        // load external units
+        // load external individually named units
         String qualNames = checker.getOption("units");
         if (qualNames != null) {
             for (String qualName : qualNames.split(",")) {
                 loadExternalUnit(qualName);
             }
         }
+
+        // load external directories of units
+        String qualDirectories = checker.getOption("unitsDirs");
+        if (qualDirectories != null) {
+            for (String directoryName : qualDirectories.split(":")) {
+                loadExternalDirectory(directoryName);
+            }
+        }
     }
 
-    private void loadExternalUnit(String qualName) {
-        try {
-            @SuppressWarnings("unchecked")
-            final Class<? extends Annotation> q = (Class<? extends Annotation>) Class.forName(qualName);
+    // loads and processes a single external units qualifier
+    private void loadExternalUnit(String annoName) {
+        Class<? extends Annotation> annoClass = loader.loadExternalAnnotationClass(annoName);
 
-            // add the annotation class to the qualifier set if it is not an alias annotation
-            AnnotationMirror mirror = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(processingEnv, q);
+        addUnitToExternalQualMap(annoClass);
+    }
 
-            // if it is not an aliased annotation, add to external quals map if it isn't already in map
-            if (!isAliasedAnnotation(mirror)) {
-                if (!externalQualsMap.containsKey(q.toString())) {
-                    externalQualsMap.put(q.toString(), q);
-                }
-            }
-            // if it is an aliased annotation
-            else {
-                // ensure it has a base unit
-                Class<? extends Annotation> baseUnitClass = getBaseUnitAnnoClass(mirror);
-                if (baseUnitClass != null) {
-                    // if the base unit isn't already added, add that first
-                    String baseUnitClassName = baseUnitClass.toString();
-                    if (!externalQualsMap.containsKey(baseUnitClassName)) {
-                        loadExternalUnit(baseUnitClassName);
-                    }
+    // loads and processes the units qualifiers from a single external directory
+    private void loadExternalDirectory(String directoryName) {
+        Set<Class<? extends Annotation>> annoClassSet = loader.loadExternalAnnotationClassesFromDirectory(directoryName);
 
-                    // then load the aliased annotation
-                    aliasedAnnotation(mirror);
-                }
-                else {
-                    // error: somehow the aliased annotation has @UnitsMultiple meta annotation, but no base class defined in that meta annotation
-                    // TODO: error abort
-                }
-            }
-
-            // process the units annotation and add its corresponding units relations class
-            addUnitsRelations(q);
-        } catch (ClassNotFoundException e) {
-            checker.message(javax.tools.Diagnostic.Kind.WARNING,
-                    "Could not find class for unit: " + qualName + ". Ignoring unit.");
+        for (Class<? extends Annotation> annoClass : annoClassSet) {
+            addUnitToExternalQualMap(annoClass);
         }
+    }
+
+    // adds the annotation class to the external qualifier map if it is not an alias annotation
+    private void addUnitToExternalQualMap(final Class<? extends Annotation> annoClass) {
+        AnnotationMirror mirror = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(processingEnv, annoClass);
+
+        // if it is not an aliased annotation, add to external quals map if it isn't already in map
+        if (!isAliasedAnnotation(mirror)) {
+            String unitClassName = annoClass.getCanonicalName();
+            if (!externalQualsMap.containsKey(unitClassName)) {
+                externalQualsMap.put(unitClassName, annoClass);
+            }
+        }
+        // if it is an aliased annotation
+        else {
+            // ensure it has a base unit
+            Class<? extends Annotation> baseUnitClass = getBaseUnitAnnoClass(mirror);
+            if (baseUnitClass != null) {
+                // if the base unit isn't already added, add that first
+                String baseUnitClassName = baseUnitClass.getCanonicalName();
+                if (!externalQualsMap.containsKey(baseUnitClassName)) {
+                    loadExternalUnit(baseUnitClassName);
+                }
+
+                // then add the aliased annotation to the alias map
+                // TODO: refactor so we can directly add to alias map, skipping the assert check in aliasedAnnotation
+                aliasedAnnotation(mirror);
+            }
+            else {
+                // error: somehow the aliased annotation has @UnitsMultiple meta annotation, but no base class defined in that meta annotation
+                // TODO: error abort
+            }
+        }
+
+        // process the units annotation and add its corresponding units relations class
+        addUnitsRelations(annoClass);
     }
 
     private boolean isAliasedAnnotation(AnnotationMirror anno) {
@@ -281,8 +249,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (isUnitsMultiple(metaAnno)) {
                 // TODO: does every alias have to have Prefix?
                 // retrieve the Class of the base unit annotation
-                @SuppressWarnings("unchecked")
-                Class<? extends Annotation> baseUnitAnnoClass = (Class<? extends Annotation>) AnnotationUtils.getElementValueClass(metaAnno, "quantity", true);
+                Class<? extends Annotation> baseUnitAnnoClass =
+                        AnnotationUtils.getElementValueClass(metaAnno, "quantity", true).asSubclass(Annotation.class);
 
                 return baseUnitAnnoClass;
             }
@@ -291,8 +259,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     private boolean isUnitsMultiple(AnnotationMirror metaAnno) {
-        // TODO: Is using toString the best way to go?
-        return metaAnno.getAnnotationType().toString().equals(UnitsMultiple.class.getCanonicalName());
+        return AnnotationUtils.areSameByClass(metaAnno, UnitsMultiple.class);
     }
 
     /**
@@ -303,14 +270,11 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private void addUnitsRelations(Class<? extends Annotation> qual) {
         AnnotationMirror am = AnnotationUtils.fromClass(elements, qual);
-        Class<org.checkerframework.checker.units.qual.UnitsRelations> unitsRelationsAnnoClass =
-                org.checkerframework.checker.units.qual.UnitsRelations.class;
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors() ) {
-            if (ama.getAnnotationType().toString().equals(unitsRelationsAnnoClass.getCanonicalName())) {
-                @SuppressWarnings("unchecked")
-                Class<? extends UnitsRelations> theclass = (Class<? extends UnitsRelations>)
-                AnnotationUtils.getElementValueClass(ama, "value", true);
+            if (AnnotationUtils.areSameByClass(ama, unitsRelationsAnnoClass)) {
+                Class<? extends UnitsRelations> theclass =
+                        AnnotationUtils.getElementValueClass(ama, "value", true).asSubclass(UnitsRelations.class);
                 String classname = theclass.getCanonicalName();
 
                 if (!getUnitsRel().containsKey(classname)) {
@@ -495,9 +459,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected class UnitsQualifierHierarchy extends GraphQualifierHierarchy {
 
-        public UnitsQualifierHierarchy(MultiGraphFactory f,
+        public UnitsQualifierHierarchy(MultiGraphFactory mgf,
                 AnnotationMirror bottom) {
-            super(f, bottom);
+            super(mgf, bottom);
         }
 
         @Override

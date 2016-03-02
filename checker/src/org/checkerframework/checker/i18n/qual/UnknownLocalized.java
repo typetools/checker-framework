@@ -9,14 +9,12 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Indicates that the {@code String} type has unknown localization properties.
  *
  * @checker_framework.manual #i18n-checker Internationalization Checker
  */
-@TypeQualifier
 @InvisibleQualifier
 @SubtypeOf({})
 @DefaultQualifierInHierarchy

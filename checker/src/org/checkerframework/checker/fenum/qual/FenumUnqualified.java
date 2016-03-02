@@ -5,9 +5,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * An unqualified type.  Such a type is incomparable to (that is, neither a
@@ -19,9 +20,10 @@ import org.checkerframework.framework.qual.TypeQualifier;
  *
  * @checker_framework.manual #fenum-checker Fake Enum Checker
  */
-@TypeQualifier
 @SubtypeOf( { FenumTop.class } )
 @DefaultQualifierInHierarchy
+@DefaultFor({ DefaultLocation.IMPLICIT_UPPER_BOUNDS, DefaultLocation.IMPLICIT_LOWER_BOUNDS,
+              DefaultLocation.EXCEPTION_PARAMETER })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({}) // empty target prevents programmers from writing this in a program

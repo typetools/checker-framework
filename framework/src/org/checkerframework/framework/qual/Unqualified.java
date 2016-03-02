@@ -20,7 +20,6 @@ import java.lang.annotation.Target;
  * For realistic systems, introduce a top and bottom qualifier
  * that gets stored in bytecode.
  */
-@TypeQualifier
 @InvisibleQualifier
 @SubtypeOf({})
 @Target({}) // empty target prevents programmers from writing this in a program

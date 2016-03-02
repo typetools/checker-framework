@@ -31,14 +31,24 @@
         <fail unless="release.ver" message="release.ver property is not set!"/>
         <fail unless="afu.properties"      message="afu.properties property is not set!"/>
         <fail unless="afu.release.date"    message="afu.release.date property is not set!"/>
+        <fail unless="afu.version"    message="afu.version not set"/>
 
-        <property name="jsr308WebPage"   value="${langtools}/doc/jsr308-webpage.html" />
         <property name="jsr308WebPage"   value="${langtools}/doc/jsr308-webpage.html" />
         <property name="jsr308Readme"    value="${langtools}/doc/README-jsr308.html"  />
         <property name="langtools.make"  value="${langtools}/make"                    />
+        <property name="release.version.regexp" value="\d\.\d\.\d+(?:\.\d)"                   />
 
         <!-- for afu.date.0 and afu.date.1 -->
         <loadproperties srcFile="${afu.properties}"/>
+
+        <replaceregexp file="${jsr308WebPage}" byline="true"
+                       match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
+
+        <replaceregexp file="${jsr308WebPage}" byline="true"
+                       match="annotation-tools-${release.version.regexp}{0,1}.zip" replace="annotation-tools-${afu.version}.zip"/>
+
+        <replaceregexp file="${jsr308WebPage}" byline="true"
+                       match="jsr308-langtools-${release.version.regexp}{0,1}.zip" replace="jsr308-langtools-${release.ver}.zip"/>
 
         <update file="${jsr308WebPage}"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
@@ -80,6 +90,7 @@
         <fail unless="release.ver"         message="release.ver property is not set!"/>
         <fail unless="afu.properties"      message="afu.properties property is not set!"/>
         <fail unless="afu.release.date"    message="afu.release.date property is not set!"/>
+        <fail unless="afu.version"    message="afu.version not set"/>
 
         <property name="checker.manual"      value="${checker}/manual"                       />
         <property name="checker.examples"    value="${checker}/examples"                     />
@@ -90,10 +101,20 @@
         <property name="maven.plugin"         value="${checker}/../maven-plugin"             />
         <property name="checker.binary.poms"  value="${maven.plugin}/poms"                   />
         <property name="checker.release.poms" value="${maven.plugin}/release/"               />
-        <property name="release.version.regexp" value="\d\.\d\.\d(?:\.\d)"                   />
+        <property name="release.version.regexp" value="\d\.\d\.\d+(?:\.\d)"                   />
 
         <!-- for afu.date.0 and afu.date.1 -->
         <loadproperties srcFile="${afu.properties}"/>
+
+        <replaceregexp file="${checkerWebPage}" byline="true"
+                       match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
+
+        <replaceregexp file="${checkerWebPage}" byline="true"
+                       match="annotation-tools-${release.version.regexp}{0,1}.zip" replace="annotation-tools-${afu.version}.zip"/>
+
+        <update file="${checkerWebPage}"
+                start="${checkers.zip.ver.0}" end="${checkers.zip.ver.1}"
+                with="checker-framework-${release.ver}.zip"/>
 
         <update file="${checkerWebPage}"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
@@ -113,6 +134,9 @@
 
         <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
                        match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
+                       match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
                        match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>

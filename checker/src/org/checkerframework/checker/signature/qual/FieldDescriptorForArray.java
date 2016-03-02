@@ -5,7 +5,6 @@ import java.lang.annotation.ElementType;
 
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Represents a {@link FieldDescriptor field descriptor} (JVM type format)
@@ -15,13 +14,8 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * array types:  only for an array type whose base type is either a
  * primitive or in the unnamed package.
  *
- * <p>
- * This annotation may not be written in source code; it is an
- * implementation detail of the checker.
- *
  * @checker_framework.manual #signature-checker Signature Checker
  */
-@TypeQualifier
 @SubtypeOf({ClassGetName.class, FieldDescriptor.class})
 @ImplicitFor(stringPatterns="^\\[+([BCDFIJSZ]|L[A-Za-z_][A-Za-z_0-9]*;)$")
 // A @Target meta-annotation with an empty argument would prevent programmers

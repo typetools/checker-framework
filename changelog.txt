@@ -1,11 +1,51 @@
 ---------------------------------------------------------------------------
 
-Version ??, ?? ?? 2016
+Version 1.9.11, 1 February 2016
 
-The Checker Framework distribution files now contain a version number:  for
-example, checker-framework-1.9.9.zip rather than checker-framework.zip.
+Renamed and merged -AuseSafeDefaultsForUnannotatedSourceCode and
+-AsafeDefaultsForUnannotatedBytecode command-line options to
+-AuseDefaultsForUncheckedCode that takes arguments source and bytecode.
 
-Documented how to initialize circular data structures in the Initialization type system.
+For type-system developers:
+
+* The previously deprecated
+  org.checkerframework.framework.qual.TypeQualifier{s} annotations
+  were removed.
+* Every type system uses the CLIMB-to-top defaulting scheme, unless it
+  explicitly specifies a different one.  Previously a type system needed
+  to explicitly request CLIMB-to-top, but now it is the default.
+
+Closed issues: 524, 563, 568.
+
+---------------------------------------------------------------------------
+
+Version 1.9.10, 4 January 2016
+
+The Checker Framework distribution files now contain a version number:
+for example, checker-framework-1.9.9.zip rather than checker-framework.zip.
+
+Nullness Checker supports org.eclipse.jgit.annotations.Nullable and NonNull
+annotations.
+
+Buildfiles do less unnecessary recomputation.
+
+Documentation:
+ * Documented how to initialize circular data structures in the
+   Initialization type system.
+ * Linked to David Bürgin's Nullness Checker tutorial at
+   https://github.com/glts/safer-spring-petclinic/wiki
+ * Acknowledged more contributors in the manual.
+
+For type-system developers:
+ * The org.checkerframework.framework.qual.TypeQualifier{s} annotations are
+   now deprecated.  To indicate which annotations a checker supports, see
+   http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#indicating-supported-annotations .
+   Support for TypeQualifier{s} will be removed in the next release.
+ * Renamed
+   org.checkerframework.framework.qual.Default{,Qualifier}ForUnannotatedCode to
+   DefaultInUncheckedCodeFor and DefaultQualifierInHierarchyInUncheckedCode.
+
+Closed issues: 169, 363, 448, 478, 496, 516, 529.
 
 ---------------------------------------------------------------------------
 

@@ -3,11 +3,7 @@ package org.checkerframework.checker.propkey;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.checkerframework.checker.propkey.qual.PropertyKey;
-import org.checkerframework.checker.propkey.qual.UnknownPropertyKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.Bottom;
-import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
@@ -39,7 +35,6 @@ import org.checkerframework.framework.source.SupportedOptions;
  * @checker_framework.manual #propkey-checker Property File Checker
  */
 // Subclasses need something similar to this:
-@TypeQualifiers({ PropertyKey.class, UnknownPropertyKey.class, Bottom.class })
 @SupportedOptions( {"propfiles", "bundlenames"} )
 public class PropertyKeyChecker extends BaseTypeChecker {
 }

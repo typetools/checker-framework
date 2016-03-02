@@ -33,7 +33,7 @@ BaseTypeVisitor assumes that.
 [Defer this because it is being rewritten.]
 
 Basic* is gone.
-Base* (in checker-framework/checkers/src/checkers/basetype) does:
+Base* (in checker-framework/framework/src/org/checkerframework/common/basetype) does:
  * subtype tests
  * type validation
  * default annotations

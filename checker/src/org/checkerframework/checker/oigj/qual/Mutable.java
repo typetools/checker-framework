@@ -4,11 +4,11 @@ import java.lang.annotation.*;
 
 import javax.lang.model.type.TypeKind;
 
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
-
 import com.sun.source.tree.Tree;
 
 /**
@@ -24,11 +24,13 @@ import com.sun.source.tree.Tree;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TypeQualifier
 @SubtypeOf(AssignsFields.class)
 @ImplicitFor(
         trees = { Tree.Kind.NEW_CLASS },
         types = { TypeKind.ARRAY }
 )
 @DefaultQualifierInHierarchy
+@DefaultFor({ DefaultLocation.IMPLICIT_UPPER_BOUNDS,
+              DefaultLocation.IMPLICIT_LOWER_BOUNDS,
+              DefaultLocation.EXCEPTION_PARAMETER})
 public @interface Mutable {}

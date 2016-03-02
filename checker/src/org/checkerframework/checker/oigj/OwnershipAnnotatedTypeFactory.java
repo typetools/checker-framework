@@ -1,5 +1,10 @@
 package org.checkerframework.checker.oigj;
 
+import org.checkerframework.checker.oigj.qual.Dominator;
+import org.checkerframework.checker.oigj.qual.Modifier;
+import org.checkerframework.checker.oigj.qual.O;
+import org.checkerframework.checker.oigj.qual.OIGJMutabilityBottom;
+import org.checkerframework.checker.oigj.qual.World;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -11,7 +16,12 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
@@ -26,6 +36,13 @@ public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
         BOTTOM_QUAL = AnnotationUtils.fromClass(elements, OIGJMutabilityBottom.class);
         this.postInit();
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return Collections.unmodifiableSet(
+                new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(World.class, Dominator.class, Modifier.class, O.class, OIGJMutabilityBottom.class)));
     }
 
     @Override

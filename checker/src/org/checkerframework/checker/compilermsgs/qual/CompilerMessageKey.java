@@ -8,7 +8,6 @@ import java.lang.annotation.ElementType;
 
 import org.checkerframework.checker.propkey.qual.PropertyKey;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * The annotation to distinguish compiler message Strings from
@@ -18,7 +17,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * @author wmdietl
  * @checker_framework.manual #compilermsgs-checker Compiler Message Key Checker
  */
-@TypeQualifier
 @SubtypeOf(PropertyKey.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

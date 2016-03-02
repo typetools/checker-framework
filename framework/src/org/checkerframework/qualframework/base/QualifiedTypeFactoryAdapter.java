@@ -16,7 +16,10 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExec
 import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
 import org.checkerframework.qualframework.base.dataflow.QualTransferAdapter;
 
+import java.lang.annotation.Annotation;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -53,11 +56,17 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         this.postInit();
     }
 
+    // in the qualifier framework, type qualifiers are handled through the @AnnotationConverter
+    // createSupportedTypeQualifiers() must return an empty set, otherwise it will try to reflectively load qualifier framework annotations
+    // and process them in a classical manner
     @Override
-    protected QualifierDefaults createQualifierDefaults() {
-        QualifierDefaults result = super.createQualifierDefaults();
-        getCheckerAdapter().setupDefaults(result);
-        return result;
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    protected void addCheckedCodeDefaults(QualifierDefaults defs) {
+        getCheckerAdapter().setupDefaults(defs);
     }
 
     /** Returns the underlying {@link QualifiedTypeFactory}. */
