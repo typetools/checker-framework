@@ -188,19 +188,21 @@ LIVE_TO_INTERM_REPOS = (
   ( LIVE_ANNO_REPO,    INTERM_ANNO_REPO    )
 )
 
-JSR308_INTERM_RELEASES_DIR  = os.path.join( FILE_PATH_TO_DEV_SITE, "jsr308",                    "releases" )
-AFU_INTERM_RELEASES_DIR     = os.path.join( FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", "releases" )
-CHECKER_INTERM_RELEASES_DIR = os.path.join( FILE_PATH_TO_DEV_SITE, "checker-framework",         "releases" )
+RELEASES_SUBDIR = "releases"
+CURRENT_SUBDIR = "current"
 
+JSR308_INTERM_RELEASES_DIR  = os.path.join( FILE_PATH_TO_DEV_SITE, "jsr308",                    RELEASES_SUBDIR )
+AFU_INTERM_RELEASES_DIR     = os.path.join( FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", RELEASES_SUBDIR )
+CHECKER_INTERM_RELEASES_DIR = os.path.join( FILE_PATH_TO_DEV_SITE, "checker-framework",         RELEASES_SUBDIR )
 
 JSR308_LIVE_SITE = os.path.join( FILE_PATH_TO_LIVE_SITE, "jsr308" )
-JSR308_LIVE_RELEASES_DIR = os.path.join( JSR308_LIVE_SITE, "releases" )
+JSR308_LIVE_RELEASES_DIR = os.path.join( JSR308_LIVE_SITE, RELEASES_SUBDIR )
 
 AFU_LIVE_SITE = os.path.join( FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities" )
-AFU_LIVE_RELEASES_DIR = os.path.join( AFU_LIVE_SITE,  "releases" )
+AFU_LIVE_RELEASES_DIR = os.path.join( AFU_LIVE_SITE,  RELEASES_SUBDIR )
 
 CHECKER_LIVE_SITE = os.path.join( FILE_PATH_TO_LIVE_SITE, "checker-framework" )
-CHECKER_LIVE_RELEASES_DIR = os.path.join( CHECKER_LIVE_SITE, "releases" )
+CHECKER_LIVE_RELEASES_DIR = os.path.join( CHECKER_LIVE_SITE, RELEASES_SUBDIR )
 LIVE_CF_LOGO = os.path.join(CHECKER_LIVE_SITE, "CFLogo.png")
 
 CURRENT_DATE=datetime.date.today()

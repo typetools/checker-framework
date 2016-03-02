@@ -33,10 +33,10 @@ def copy_release_dir( path_to_dev, path_to_live, release_version ):
     if os.path.exists( dest_location ):
         raise Exception( "Destination location exists: " + dest_location )
 
-    # The / at the end of the destination location is necessary so that
+    # The / at the end of the source location is necessary so that
     # rsync copies the files in the source directory to the destination directory
     # rather than a subdirectory of the destination directory.
-    cmd = "rsync --omit-dir-times --recursive --links --quiet %s %s/" % ( source_location, dest_location )
+    cmd = "rsync --omit-dir-times --recursive --links --quiet %s/ %s" % ( source_location, dest_location )
     execute( cmd )
 
     return dest_location
@@ -51,16 +51,12 @@ def copy_releases_to_live_site( checker_version, afu_version):
     copy_release_dir( AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, afu_version )
 
 def update_release_symlinks( checker_version, afu_version ):
-    afu_latest_release_dir = os.path.join( AFU_LIVE_RELEASES_DIR,  afu_version )
-    checker_latest_release_dir = os.path.join( CHECKER_LIVE_RELEASES_DIR, checker_version )
+    afu_relative_latest_release_dir = os.path.join( RELEASES_DIR,  afu_version )
+    checker_and_jsr308_relative_latest_release_dir = os.path.join( RELEASES_DIR, checker_version )
 
-    force_symlink( os.path.join( JSR308_LIVE_RELEASES_DIR,  checker_version ), os.path.join( JSR308_LIVE_SITE,  "current" ) )
-    force_symlink( checker_latest_release_dir, os.path.join( CHECKER_LIVE_SITE, "current" ) )
-    force_symlink( afu_latest_release_dir,     os.path.join( AFU_LIVE_SITE,     "current" ) )
-
-    # After the copy operations the index.htmls will point into the dev directory
-    force_symlink( os.path.join( afu_latest_release_dir,  "annotation-file-utilities.html" ), os.path.join( afu_latest_release_dir, "index.html" ) )
-    force_symlink( os.path.join( checker_latest_release_dir, "checker-framework-webpage.html" ), os.path.join( checker_latest_release_dir, "index.html" ) )
+    force_symlink( checker_and_jsr308_relative_latest_release_dir, os.path.join( JSR308_LIVE_SITE,  CURRENT_SUBDIR ) )
+    force_symlink( checker_and_jsr308_relative_latest_release_dir, os.path.join( CHECKER_LIVE_SITE, CURRENT_SUBDIR ) )
+    force_symlink( afu_relative_latest_release_dir,     os.path.join( AFU_LIVE_SITE,     CURRENT_SUBDIR ) )
 
 def ensure_group_access_to_releases():
     ensure_group_access( JSR308_LIVE_RELEASES_DIR )
