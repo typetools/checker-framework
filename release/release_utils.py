@@ -219,8 +219,8 @@ def check_tools(tools):
     print("\nChecking to make sure the following programs are installed:")
     print(', '.join(tools))
     print('Note: If you are NOT working on buffalo.cs.washington.edu then you ' +
-        'likely need to change the variables that are set in release.py \n'   +
-        'search for "Set environment variables"')
+        'likely need to change the variables that are set in release.py\n' +
+        'Search for "Set environment variables".')
     map(check_command, tools)
     print ''
 
