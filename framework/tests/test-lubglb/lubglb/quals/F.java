@@ -8,13 +8,13 @@ import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 @SubtypeOf({D.class, E.class})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@DefaultFor({DefaultLocation.LOWER_BOUNDS})
-@DefaultInUncheckedCodeFor({DefaultLocation.RETURNS})
+@DefaultFor({ TypeUseLocation.LOWER_BOUND })
+@DefaultInUncheckedCodeFor({ TypeUseLocation.RETURN })
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface F { }

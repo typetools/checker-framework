@@ -106,25 +106,26 @@ type system, follow three steps.
 \item
 Define two annotations for the \code{Encrypted} and \code{PossiblyUnencrypted} qualifiers:
 
-\begin{Verbatim}
+% alltt because it uses \textit
+\begin{alltt}
 package \textit{myModule}.qual;
 
 import org.checkerframework.framework.qual.*;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import com.sun.source.tree.Tree.Kind;
 
 /**
  * Denotes that the representation of an object is encrypted.
  */
 @SubtypeOf(PossiblyUnencrypted.class)
-@ImplicitFor(trees = { Kind.NULL_LITERAL })
-@DefaultFor({DefaultLocation.LOWER_BOUNDS})
+@ImplicitFor(literal= { LiteralKind.NULL })
+@DefaultFor({TypeUseLocation.LOWER_BOUND})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Encrypted {}
-\end{Verbatim}
+\end{alltt}
 
-\begin{Verbatim}
+% alltt because it uses \textit
+\begin{alltt}
 package \textit{myModule}.qual;
 
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
@@ -139,7 +140,7 @@ import java.lang.annotation.Target;
 @SubtypeOf({})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface PossiblyUnencrypted {}
-\end{Verbatim}
+\end{alltt}
 
 Note that all custom annotations must have the
 \<@Target({ElementType.TYPE\_USE})> meta-annotation. See section
@@ -158,7 +159,7 @@ processor path (set via the \<-processorpath> command-line option to javac).
   Write \code{@Encrypted} annotations in your program (say, in file
   \code{YourProgram.java}):
 
-\begin{Verbatim}
+\begin{alltt}
 import \textit{myModule}.qual.Encrypted;
 
 ...
@@ -183,7 +184,7 @@ void sendPassword() {
     String password = getUserPassword();
     sendOverInternet(password);
 }
-\end{Verbatim}
+\end{alltt}
 
 You may also need to add \code{@SuppressWarnings} annotations to the
 \code{encrypt} and \code{decrypt} methods.  Analyzing them is beyond the

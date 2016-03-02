@@ -399,7 +399,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return leastUpperBound(a1, a2);
     }
 
-    // For caching results of glbs
+    /**
+     * A cache of the results of glb computations.
+     * Maps from a pair of annotations to their glb.
+     */
     private Map<AnnotationPair, AnnotationMirror> glbs = null;
 
     @Override
@@ -743,7 +746,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     }
 
 
-    private Map<AnnotationPair, AnnotationMirror>  calculateGlbs() {
+    /**
+     * Returns a map from each possible pair of annotations to their glb.
+     */
+    private Map<AnnotationPair, AnnotationMirror> calculateGlbs() {
         Map<AnnotationPair, AnnotationMirror> newglbs = new HashMap<AnnotationPair, AnnotationMirror>();
         for (AnnotationMirror a1 : supertypesGraph.keySet()) {
             for (AnnotationMirror a2 : supertypesGraph.keySet()) {
@@ -785,7 +791,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         }
         if (outset.size() > 1) {
             outset = findGreatestTypes(outset);
-            // TODO: more than one, incomparable subtypes. Pick the first one.
+            // More than one, incomparable greatest subtypes. Pick the first one.
+            // TODO: Is that the right approach?
             // if (outset.size()>1) { System.out.println("Still more than one GLB!"); }
             return outset.iterator().next();
         }

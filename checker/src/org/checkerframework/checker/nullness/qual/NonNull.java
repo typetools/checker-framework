@@ -1,5 +1,15 @@
 package org.checkerframework.checker.nullness.qual;
 
+import org.checkerframework.checker.initialization.InitializationChecker;
+import org.checkerframework.checker.nullness.AbstractNullnessChecker;
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeUseLocation;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,19 +17,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import javax.lang.model.type.TypeKind;
-
-import org.checkerframework.checker.initialization.InitializationChecker;
-import org.checkerframework.checker.nullness.AbstractNullnessChecker;
-import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
-import org.checkerframework.framework.qual.DefaultLocation;
-import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
-import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-
-import com.sun.source.tree.Tree;
 
 /**
  * {@link NonNull} is a type annotation that indicates that an expression is
@@ -48,19 +45,15 @@ import com.sun.source.tree.Tree;
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @SubtypeOf(MonotonicNonNull.class)
-@ImplicitFor(types = { TypeKind.PACKAGE },
-    typeClasses = { AnnotatedPrimitiveType.class, AnnotatedNoType.class },
-    trees = {
-        Tree.Kind.NEW_CLASS,
-        Tree.Kind.NEW_ARRAY,
-        Tree.Kind.PLUS, // for String concatenation
-        // All literals except NULL_LITERAL:
-        Tree.Kind.BOOLEAN_LITERAL, Tree.Kind.CHAR_LITERAL,
-        Tree.Kind.DOUBLE_LITERAL, Tree.Kind.FLOAT_LITERAL,
-        Tree.Kind.INT_LITERAL, Tree.Kind.LONG_LITERAL, Tree.Kind.STRING_LITERAL })
+@ImplicitFor(types = { TypeKind.PACKAGE,
+                       TypeKind.INT, TypeKind.BOOLEAN, TypeKind.CHAR,
+                       TypeKind.DOUBLE, TypeKind.FLOAT, TypeKind.LONG,
+                       TypeKind.SHORT, TypeKind.BYTE },
+    // All literals except NULL_LITERAL:
+    literals = { LiteralKind.STRING })
 @DefaultQualifierInHierarchy
-@DefaultFor({ DefaultLocation.EXCEPTION_PARAMETER })
-@DefaultInUncheckedCodeFor({ DefaultLocation.PARAMETERS, DefaultLocation.LOWER_BOUNDS })
+@DefaultFor({ TypeUseLocation.EXCEPTION_PARAMETER })
+@DefaultInUncheckedCodeFor({ TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })

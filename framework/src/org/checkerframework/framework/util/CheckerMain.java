@@ -412,7 +412,7 @@ public class CheckerMain {
                 }
                 writer.close();
             }
-            catch(IOException e) {
+            catch (IOException e) {
                 errorMessage = e.toString();
             }
 
@@ -444,7 +444,7 @@ public class CheckerMain {
         for (final File latest : args) {
             try {
                 actualArgs.addAll(PluginUtil.readArgFile(latest));
-            } catch(final IOException exc) {
+            } catch (final IOException exc) {
                 throw new RuntimeException("Could not open file: " + latest.getAbsolutePath(), exc);
             }
         }
@@ -613,7 +613,7 @@ public class CheckerMain {
     }
 
     private static String fullyQualifyProcessor(final String processor, List<String> fullyQualifiedCheckerNames, boolean allowSubcheckers) {
-        for(final String name : fullyQualifiedCheckerNames) {
+        for (final String name : fullyQualifiedCheckerNames) {
             boolean tryMatch = false;
             String [] checkerPath = name.substring(0, name.length() - "Checker".length()).split("\\.");
             String checkerNameShort = checkerPath[checkerPath.length - 1];
@@ -658,7 +658,7 @@ public class CheckerMain {
      * @param allowSubcheckers Whether to match against fully qualified checker names ending with "Subchecker".
      */
     public static boolean matchesFullyQualifiedProcessor(final String processor, List<String> fullyQualifiedCheckerNames, boolean allowSubcheckers) {
-        for(final String name : fullyQualifiedCheckerNames) {
+        for (final String name : fullyQualifiedCheckerNames) {
             boolean tryMatch = false;
             String [] checkerPath = name.substring(0, name.length() - "Checker".length()).split("\\.");
             String checkerNameShort = checkerPath[checkerPath.length - 1];

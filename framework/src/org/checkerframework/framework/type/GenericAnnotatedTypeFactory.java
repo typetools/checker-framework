@@ -29,7 +29,7 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUncheckedCode;
@@ -248,8 +248,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * Returns a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator} that adds annotations to a type based
-     * on the content of the type itself.
+     * Returns a
+     * {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}
+     * that adds annotations to a type based on the content of the type itself.
      *
      * @return a type annotator
      */
@@ -427,29 +428,28 @@ public abstract class GenericAnnotatedTypeFactory<
         for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
             if (defaultFor != null) {
-                final DefaultLocation[] locations = defaultFor.value();
+                final TypeUseLocation[] locations = defaultFor.value();
                 defs.addCheckedCodeDefaults(AnnotationUtils.fromClass(elements, qual), locations);
                 foundOtherwise = foundOtherwise
-                                         ||  Arrays.asList(locations).contains(DefaultLocation.OTHERWISE);
+                                         ||  Arrays.asList(locations).contains(TypeUseLocation.OTHERWISE);
             }
 
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
-                defs.addCheckedCodeDefault(AnnotationUtils.fromClass(elements, qual), DefaultLocation.OTHERWISE);
+                defs.addCheckedCodeDefault(AnnotationUtils.fromClass(elements, qual), TypeUseLocation.OTHERWISE);
                 foundOtherwise = true;
             }
         }
         // If Unqualified is a supported qualifier, make it the default.
         AnnotationMirror unqualified = AnnotationUtils.fromClass(elements, Unqualified.class);
         if (!foundOtherwise && this.isSupportedQualifier(unqualified)) {
-            defs.addCheckedCodeDefault(unqualified, DefaultLocation.OTHERWISE);
+            defs.addCheckedCodeDefault(unqualified, TypeUseLocation.OTHERWISE);
             foundOtherwise = true;
         }
 
         if (!foundOtherwise) {
-            ErrorReporter
-                    .errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: "
-                                        + "@DefaultQualifierInHierarchy or @DefaultFor(DefaultLocation.OTHERWISE) not found. "
-                                        + "Every checker must specify a default qualifier. " + getSortedQualifierNames());
+            ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: "
+                    + "@DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE) not found. "
+                    + "Every checker must specify a default qualifier. " + getSortedQualifierNames());
         }
 
         if (this.everUseFlow) {
@@ -466,11 +466,11 @@ public abstract class GenericAnnotatedTypeFactory<
      * unchecked code defaults, if a default was not specified for a particular location.
      * <p>
      * Standard unchecked code default are: <br>
-     * top: {@code DefaultLocation.RETURNS,DefaultLocation.FIELD,DefaultLocation.UPPER_BOUNDS}<br>
-     * bottom: {@code DefaultLocation.PARAMETERS, DefaultLocation.LOWER_BOUNDS}<br>
+     * top: {@code TypeUseLocation.RETURN,TypeUseLocation.FIELD,TypeUseLocation.UPPER_BOUND}<br>
+     * bottom: {@code TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND}<br>
      * <p>
      * If {@code @DefaultQualifierInHierarchyInUncheckedCode} code is not found or a default for
-     * {@code DefaultLocation.Otherwise} is not used, the defaults for checked code will be applied to
+     * {@code TypeUseLocation.Otherwise} is not used, the defaults for checked code will be applied to
      * locations without a default for unchecked code.
      * <p>
      * Subclasses may override this method to add defaults that cannot be specified with
@@ -484,20 +484,22 @@ public abstract class GenericAnnotatedTypeFactory<
             DefaultInUncheckedCodeFor defaultInUncheckedCodeFor = annotation.getAnnotation(DefaultInUncheckedCodeFor.class);
 
             if (defaultInUncheckedCodeFor != null) {
-                final DefaultLocation[] locations = defaultInUncheckedCodeFor.value();
+                final TypeUseLocation[] locations = defaultInUncheckedCodeFor.value();
                 defs.addUncheckedCodeDefaults(AnnotationUtils.fromClass(elements, annotation), locations);
             }
 
             if (annotation.getAnnotation(DefaultQualifierInHierarchyInUncheckedCode.class) != null) {
-                defs.addUncheckedCodeDefault(AnnotationUtils.fromClass(elements, annotation), DefaultLocation.OTHERWISE);
+                defs.addUncheckedCodeDefault(AnnotationUtils.fromClass(elements, annotation), TypeUseLocation.OTHERWISE);
             }
         }
         Set<? extends AnnotationMirror> tops = this.qualHierarchy.getTopAnnotations();
         Set<? extends AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
         defs.addUncheckedStandardDefaults(tops, bottoms);
 
-        // Don't require @DefaultQualifierInHierarchyInUncheckedCode or an unchecked default for DefaultLocation.OTHERWISE.
-        // if a default unchecked code qualifier isn't specified, the defaults for checked code will be used.
+        // Don't require @DefaultQualifierInHierarchyInUncheckedCode or an
+        // unchecked default for TypeUseLocation.OTHERWISE.
+        // If a default unchecked code qualifier isn't specified, the defaults
+        // for checked code will be used.
     }
 
     /**
@@ -750,7 +752,6 @@ public abstract class GenericAnnotatedTypeFactory<
                     Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
                     analyze(queue, lambdaQueue,
                             new CFGLambda(lambdaPair.first), fieldValues, classTree, false, false, false, lambdaPair.second);
-
                 }
 
                 // by convention we store the static initialization store as the regular exit
@@ -844,8 +845,7 @@ public abstract class GenericAnnotatedTypeFactory<
             if (regularExitStore != null) {
                 regularExitStores.put(method, regularExitStore);
             }
-            returnStatementStores.put(method, analyses.getFirst()
-                    .getReturnStatementStores());
+            returnStatementStores.put(method, analyses.getFirst().getReturnStatementStores());
         } else if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
             CFGStatement block = (CFGStatement) ast;
             Store regularExitStore = analyses.getFirst().getRegularExitStore();
@@ -925,8 +925,8 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
             NewClassTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super
-                .constructorFromUse(tree);
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
+                super.constructorFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
         poly.annotate(tree, method);
         return mfuPair;

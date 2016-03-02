@@ -37,5 +37,5 @@ public @interface DefaultInUncheckedCodeFor {
     /**
      * @return the locations to which the annotation should be applied
      */
-    DefaultLocation[] value();
+    TypeUseLocation[] value();
 }

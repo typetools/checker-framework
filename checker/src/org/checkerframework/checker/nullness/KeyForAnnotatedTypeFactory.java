@@ -17,7 +17,6 @@ import org.checkerframework.dataflow.cfg.node.*;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.PolyAll;
-import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -99,7 +98,7 @@ public class KeyForAnnotatedTypeFactory extends
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
+                new LinkedHashSet<Class<? extends Annotation>>(
                         Arrays.asList(KeyFor.class, UnknownKeyFor.class, KeyForBottom.class,
                                 PolyKeyFor.class, PolyAll.class)));
     }

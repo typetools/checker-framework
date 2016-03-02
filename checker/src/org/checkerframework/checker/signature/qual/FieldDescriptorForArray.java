@@ -12,13 +12,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.2">Java
  * Virtual Machine Specification, section 4.3.2</a>, but <b>not</b> for all
  * array types:  only for an array type whose base type is either a
- * primitive or in the unnamed package.
+ * primitive or in the unnamed package.  Also non-array primitives.
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
 @SubtypeOf({ClassGetName.class, FieldDescriptor.class})
-@ImplicitFor(stringPatterns="^\\[+([BCDFIJSZ]|L[A-Za-z_][A-Za-z_0-9]*;)$")
-// A @Target meta-annotation with an empty argument would prevent programmers
-// from writing this in a program, but it might sometimes be useful.
+@ImplicitFor(stringPatterns="^([BCDFIJSZ]|\\[+[BCDFIJSZ]|\\[L[A-Za-z_][A-Za-z_0-9]*;)$")
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface FieldDescriptorForArray {}

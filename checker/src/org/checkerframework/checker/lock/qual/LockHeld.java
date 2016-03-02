@@ -1,7 +1,7 @@
 package org.checkerframework.checker.lock.qual;
 
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
 @SubtypeOf(LockPossiblyHeld.class) // This is the bottom type in this hierarchy
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@DefaultFor({DefaultLocation.LOWER_BOUNDS})
+@DefaultFor({ TypeUseLocation.LOWER_BOUND })
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 public @interface LockHeld {
 }

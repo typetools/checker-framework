@@ -326,7 +326,8 @@
       <junit fork="${run.tests.should.fork}"
              dir="${basedir}"
              printsummary="false"
-             haltonfailure="${halt.on.test.failure}">
+             haltonfailure="${halt.on.test.failure}"
+	     showoutput="true">
           <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
           <jvmarg line="-ea"/>
 
@@ -350,6 +351,9 @@
                   <!-- Framework classes -->
                   <exclude name="**/CheckerTest.java"/>
                   <exclude name="**/ParameterizedCheckerTest.java"/>
+
+                  <!-- Tests that fail by design -->
+                  <exclude name="**/SubtypingStringPatternsPartialTest.java"/>
               </fileset>
           </batchtest>
       </junit>
@@ -495,13 +499,23 @@
     </target>
 
     <target name="subtyping-tests" depends="jar,build-tests"
-            description="Run tests for the Checker Framework">
+            description="Run tests for the Subtyping Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.SubtypingEncryptedTest"/>
         </antcall>
+    </target>
+
+    <!-- Comes after subtyping-tests because it uses the Subtyping Checker -->
+    <target name="stringpatterns-tests" depends="jar,build-tests"
+            description="Run tests for the @ImplicitFor(stringpatterns=...) feature">
         <antcall target="-run-tests">
-            <param name="param" value="tests.SubtypingSuperSubTest"/>
+            <param name="param" value="tests.SubtypingStringPatternsFullTest"/>
         </antcall>
+	<!-- This fails by design.
+        <antcall target="-run-tests">
+            <param name="param" value="tests.SubtypingStringPatternsPartialTest"/>
+        </antcall>
+	-->
     </target>
 
     <target name="value-tests" depends="jar,build-tests"

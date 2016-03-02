@@ -173,7 +173,7 @@ def prompt_yes_no( msg, default=False ):
 
 def prompt_yn(msg):
     y_or_n = 'z'
-    while(y_or_n != 'y' and y_or_n != 'n'):
+    while (y_or_n != 'y' and y_or_n != 'n'):
         print(msg + " [y|n]")
         y_or_n = raw_input().lower()
 
@@ -186,7 +186,7 @@ def maybe_prompt_yn(msg, prompt):
     return prompt_yn(msg)
 
 def prompt_until_yes():
-    while( not prompt_yes_no("Continue?" ) ):
+    while ( not prompt_yes_no("Continue?" ) ):
         pass
 
 def prompt_w_suggestion(msg, suggestion, validRegex=None):
@@ -219,8 +219,8 @@ def check_tools(tools):
     print("\nChecking to make sure the following programs are installed:")
     print(', '.join(tools))
     print('Note: If you are NOT working on buffalo.cs.washington.edu then you ' +
-        'likely need to change the variables that are set in release.py \n'   +
-        'search for "Set environment variables"')
+        'likely need to change the variables that are set in release.py\n' +
+        'Search for "Set environment variables".')
     map(check_command, tools)
     print ''
 
@@ -362,18 +362,24 @@ def is_git_not_bare( repo_root ):
     return is_git_private(repo_root, False)
 
 def is_git_private( repo_root, return_value_on_bare ):
-    if is_git_bare(repo_root):
+    if git_bare_repo_exists_at_path(repo_root):
         return return_value_on_bare
-    if os.path.isdir(repo_root + "/.git"):
+    if git_repo_exists_at_path(repo_root):
         return True
-    if os.path.isdir(repo_root + "/.hg"):
+    if hg_repo_exists_at_path(repo_root):
         return False
     raise Exception(repo_root + " is not recognized as a git, git bare, or hg repository")
 
-def is_git_bare( repo_root ): # Bare git repos have no .git directory but they have a refs directory
+def git_bare_repo_exists_at_path( repo_root ): # Bare git repos have no .git directory but they have a refs directory
     if os.path.isdir(repo_root + "/refs"):
         return True
     return False
+
+def git_repo_exists_at_path( repo_root ):
+    return os.path.isdir(repo_root + "/.git") or git_bare_repo_exists_at_path(repo_root)
+
+def hg_repo_exists_at_path( repo_root ):
+    return os.path.isdir(repo_root + "/.hg")
 
 def hg_push_or_fail( repo_root ):
     if is_git(repo_root):
@@ -398,7 +404,7 @@ def hg_push( repo_root ):
 
 # Pull the latest changes and update
 def update_project(path):
-    if is_git_bare(path):
+    if git_bare_repo_exists_at_path(path):
         execute('git -C %s fetch' % path)
     elif is_git(path):
         execute('git -C %s pull' % path)
@@ -450,34 +456,39 @@ def clone(src_repo, dst_repo, bareflag):
         flags = ""
         if (bareflag):
             flags = "--bare"
-        execute('git clone %s %s %s' % (flags, src_repo, dst_repo))
+        execute('git clone --quiet %s %s %s' % (flags, src_repo, dst_repo))
     else:
-        execute('hg clone %s %s' % (src_repo, dst_repo))
+        execute('hg clone --quiet %s %s' % (src_repo, dst_repo))
 
 def is_repo_cleaned_and_updated(repo):
     if is_git(repo):
-        # Could add "--untracked-files=no" to this command
-        is_clean = not execute("git -C %s status --porcelain" % (repo), capture_output=True)
-        is_updated = not execute("git -C %s log ..FETCH_HEAD" % (repo), capture_output=True)
-        return is_clean and is_updated
+        # The idiom "not execute(..., capture_output=True)" evaluates to True when the captured output is empty.
+        if (git_bare_repo_exists_at_path(repo)):
+            execute("git -C %s fetch origin" % (repo))
+            is_updated = not execute("git -C %s diff master..FETCH_HEAD" % (repo), capture_output=True)
+            return is_updated
+        else:
+            # Could add "--untracked-files=no" to this command
+            is_clean = not execute("git -C %s status --porcelain" % (repo), capture_output=True)
+            execute("git -C %s fetch origin" % (repo))
+            is_updated = not execute("git -C %s diff origin/master..master" % (repo), capture_output=True)
+            return is_clean and is_updated
     else:
-        summary = execute('hg -R %s summary' % (repo), capture_output=True)
+        summary = execute('hg -R %s summary --remote' % (repo), capture_output=True)
         if "commit: (clean)" not in summary:
             return False
         if "update: (current)" not in summary:
             return False
+        if "remote: (synced)" not in summary:
+            return False
         return True
 
-def repo_exists(repo):
-    print ('Does repo exist: %s' % repo)
-    hg_failed = execute('git -C %s rev-parse --show-toplevel' % (repo), False, False)
-    git_failed = execute('hg -R %s root' % (repo), False, False)
-    print ''
-    return not (hg_failed and git_failed)
+def repo_exists(repo_root):
+    return git_repo_exists_at_path(repo_root) or hg_repo_exists_at_path(repo_root)
 
 def strip(repo):
     """Deletes all outgoing changesets"""
-    if is_git_bare(repo):
+    if git_bare_repo_exists_at_path(repo):
         raise Exception("strip cannot be called on a bare repo ( %s )" % repo)
     elif is_git(repo):
         execute("git -C %s reset --hard origin/master" % repo)
@@ -503,7 +514,7 @@ def strip(repo):
     print ""
 
 def revert(repo):
-    if is_git_bare(repo):
+    if git_bare_repo_exists_at_path(repo):
         raise Exception("revert cannot be called on a bare repo ( %s )" % repo)
     if is_git(repo):
         execute('git -C %s reset --hard' % repo)
@@ -511,8 +522,9 @@ def revert(repo):
         execute('hg -R %s revert --all' % repo)
 
 def purge(repo, all=False):
-    """All means also ignored files"""
-    if is_git_bare(repo):
+    """Delete untracked files from the working directory, like "hg purge".
+If "all" argument is true, also delete ignored files."""
+    if git_bare_repo_exists_at_path(repo):
         raise Exception("purge cannot be called on a bare repo ( %s )" % repo)
     if is_git(repo):
         if all:
@@ -529,7 +541,7 @@ def purge(repo, all=False):
 def clean_repo(repo, prompt):
     if maybe_prompt_yn( 'Remove all modified files, untracked files and outgoing commits from %s ?' % repo, prompt ):
         ensure_group_access(repo)
-        if is_git_bare(repo):
+        if git_bare_repo_exists_at_path(repo):
             return
         revert(repo)
         strip(repo)
@@ -543,10 +555,14 @@ def clean_repos(repos, prompt):
             if repo_exists(repo):
                 clean_repo(repo, False)
 
-def check_repos(repos, fail_on_error):
+def check_repos(repos, fail_on_error, is_intermediate_repo_list):
+    """Fail if the repository is not clean and up to date."""
     for repo in repos:
         if repo_exists(repo):
             if not is_repo_cleaned_and_updated(repo):
+                if (is_intermediate_repo_list):
+                    print( "\nWARNING: Intermediate repository " + repo + " is not up to date with respect to the live repository.\n" +
+                           "A separate warning will not be issued for a build repository that is cloned off of the intermediate repository.")
                 if (fail_on_error):
                     raise Exception('repo %s is not cleaned and updated!' % repo)
                 else:
@@ -975,18 +991,6 @@ def mvn_sign_and_deploy_all(url, repo_id, pom_file, artifact_jar, source_jar, ja
 
 #=========================================================================================
 # Misc. Utils
-
-def update_htaccess( releaseDir, cfLtVersion, afuVersion, htAccessTemplate, htAccessToReplace, auto ):
-    if not auto:
-        msg = """Would you like to overwrite %s?""" % htAccessToReplace;
-
-        if not prompt_yn( msg ):
-            raise Exception( '%s file not written!' % htAccessToReplace )
-
-    cmd = "ant -f release.xml update-htaccess-versions -Dhtaccess.file=%s -Dcflt.version=%s -Dafu.version=%s" % (htAccessTemplate, cfLtVersion, afuVersion)
-    execute(cmd, True, False, releaseDir)
-    # Not "cp -p" because that does not work across filesystems whereas rsync does
-    execute("rsync --times %s %s" % (htAccessTemplate, htAccessToReplace))
 
 def print_step( step ):
     print( "\n" )

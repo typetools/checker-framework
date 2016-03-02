@@ -150,7 +150,7 @@ class MyClass {
     private @KeyFor("m") String km;
 
     public void myMethod() {
-        if (m.containsKey(k)){
+        if (m.containsKey(k)) {
             km = k;   // OK: the type of k is refined to @KeyFor("m") String
 
             sideEffectFreeMethod();

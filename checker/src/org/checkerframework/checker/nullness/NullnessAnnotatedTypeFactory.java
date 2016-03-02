@@ -24,7 +24,9 @@ import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.DependentTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -40,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -98,7 +101,7 @@ public class NullnessAnnotatedTypeFactory
         POLYNULL = AnnotationUtils.fromClass(elements, PolyNull.class);
         MONOTONIC_NONNULL = AnnotationUtils.fromClass(elements, MonotonicNonNull.class);
 
-        Set<Class<? extends Annotation>> tempNullnessAnnos = new HashSet<>();
+        Set<Class<? extends Annotation>> tempNullnessAnnos = new LinkedHashSet<>();
         tempNullnessAnnos.add(NonNull.class);
         tempNullnessAnnos.add(MonotonicNonNull.class);
         tempNullnessAnnos.add(Nullable.class);
@@ -172,14 +175,14 @@ public class NullnessAnnotatedTypeFactory
         // if useFbc is true, then it is the NullnessChecker
         if (ckr.useFbc) {
             return Collections.unmodifiableSet(
-                    new HashSet<Class<? extends Annotation>>(
+                    new LinkedHashSet<Class<? extends Annotation>>(
                             Arrays.asList(Nullable.class, MonotonicNonNull.class, NonNull.class, UnderInitialization.class,
                                     Initialized.class, UnknownInitialization.class, FBCBottom.class, PolyNull.class, PolyAll.class)));
         }
         // otherwise, it is the NullnessRawnessChecker
         else {
             return Collections.unmodifiableSet(
-                    new HashSet<Class<? extends Annotation>>(
+                    new LinkedHashSet<Class<? extends Annotation>>(
                             Arrays.asList(Nullable.class, MonotonicNonNull.class, NonNull.class, NonRaw.class, Raw.class,
                                     // PolyRaw.class, //TODO: support PolyRaw in the future
                                     PolyNull.class, PolyAll.class)));
@@ -290,11 +293,12 @@ public class NullnessAnnotatedTypeFactory
 
     protected AnnotatedTypeMirror getDeclaredAndDefaultedAnnotatedType(Tree tree) {
         HACK_DONT_CALL_POST_AS_MEMBER = true;
+        boolean oldShouldCache = shouldCache;
         shouldCache = false;
 
         AnnotatedTypeMirror type = getAnnotatedType(tree);
 
-        shouldCache = true;
+        shouldCache = oldShouldCache;
         HACK_DONT_CALL_POST_AS_MEMBER = false;
 
         return type;
@@ -302,17 +306,26 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
+        ImplicitsTypeAnnotator implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
+        implicitsTypeAnnotator.addTypeClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
+        implicitsTypeAnnotator.addTypeClass(AnnotatedTypeMirror.AnnotatedPrimitiveType.class, NONNULL);
         return new ListTypeAnnotator(
-                super.createTypeAnnotator(),
-                new NullnessTypeAnnotator(this)
+                new PropagationTypeAnnotator(this),
+                implicitsTypeAnnotator,
+                new NullnessTypeAnnotator(this),
+                new CommitmentTypeAnnotator(this)
         );
     }
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
+        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_CLASS, NONNULL);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY, NONNULL);
+
         return new ListTreeAnnotator( // DebugListTreeAnnotator(new Tree.Kind[] {Tree.Kind.CONDITIONAL_EXPRESSION},
                 new NullnessPropagationAnnotator(this),
-                new ImplicitsTreeAnnotator(this),
+                implicitsTreeAnnotator,
                 new NullnessTreeAnnotator(this),
                 new CommitmentTreeAnnotator(this)
         );

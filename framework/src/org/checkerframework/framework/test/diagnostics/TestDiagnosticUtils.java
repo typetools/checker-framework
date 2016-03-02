@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -238,7 +239,7 @@ public class TestDiagnosticUtils {
 
     public static Set<TestDiagnostic> fromJavaxDiagnosticList(List<Diagnostic<? extends JavaFileObject>> javaxDiagnostics,
                                                               boolean noMsgText) {
-        Set<TestDiagnostic> diagnostics = new HashSet<>(javaxDiagnostics.size());
+        Set<TestDiagnostic> diagnostics = new LinkedHashSet<>(javaxDiagnostics.size());
 
         for (Diagnostic<? extends JavaFileObject> diagnostic : javaxDiagnostics) {
             //See TestDiagnosticUtils as to why we use diagnostic.toString rather
@@ -272,7 +273,7 @@ public class TestDiagnosticUtils {
     private static final List<TestDiagnostic> EMPTY = Collections.unmodifiableList(new ArrayList<TestDiagnostic>());
 
     public static void removeDiagnosticsOfKind(DiagnosticKind kind, List<TestDiagnostic> expectedDiagnostics) {
-        for(int i = 0; i < expectedDiagnostics.size(); /*no-increment*/) {
+        for (int i = 0; i < expectedDiagnostics.size(); /*no-increment*/) {
             if (expectedDiagnostics.get(i).getKind() == kind) {
                 expectedDiagnostics.remove(i);
             } else {

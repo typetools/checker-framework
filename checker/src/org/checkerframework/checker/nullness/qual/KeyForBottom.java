@@ -1,12 +1,17 @@
 package org.checkerframework.checker.nullness.qual;
 
-import org.checkerframework.checker.nullness.qual.KeyFor;
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.InvisibleQualifier;
+import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
-import java.lang.annotation.*;
-
-import org.checkerframework.framework.qual.*;
-
-import com.sun.source.tree.Tree;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Used internally by the type system; should never be written by a programmer.
@@ -18,7 +23,7 @@ import com.sun.source.tree.Tree;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @InvisibleQualifier
 @SubtypeOf(KeyFor.class)
-@DefaultFor({DefaultLocation.LOWER_BOUNDS})
-@ImplicitFor(trees = {Tree.Kind.NULL_LITERAL},
+@DefaultFor({ TypeUseLocation.LOWER_BOUND })
+@ImplicitFor(literals = {LiteralKind.NULL},
   typeNames = {java.lang.Void.class})
 public @interface KeyForBottom {}

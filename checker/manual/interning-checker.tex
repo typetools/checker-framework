@@ -243,15 +243,11 @@ To try the Interning Checker on a source file that uses the \refqualclass{checke
 use the following command (where \code{javac} is the Checker Framework compiler that
 is distributed with the Checker Framework):
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
+\begin{mysmall}
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.interning.InterningChecker examples/InterningExample.java
 \end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
+\end{mysmall}
 
 \noindent
 Compilation will complete without errors or warnings.
@@ -259,15 +255,11 @@ Compilation will complete without errors or warnings.
 To see the checker warn about incorrect usage of annotations, use the following
 command:
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
+\begin{mysmall}
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.interning.InterningChecker examples/InterningExampleWithWarnings.java
 \end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
+\end{mysmall}
 
 \noindent
 The compiler will issue an error regarding violation of the semantics of

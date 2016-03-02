@@ -359,11 +359,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     Set<AnnotationMirror> annotationMirrors = atm.getAnnotations();
 
                     if (annotationMirrors != null) {
-                        for(AnnotationMirror anno : annotationMirrors) {
+                        for (AnnotationMirror anno : annotationMirrors) {
                             if (isFieldIsExpressionQualifier(anno) && atypeFactory.isSupportedQualifier(anno)) {
                                 List<String> expressions = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
 
-                                for(String expression : expressions) {
+                                for (String expression : expressions) {
                                     if (formalParamNames.contains(expression)) {
                                         checker.report(Result.warning("method.declaration.expression.parameter.name", param.getName().toString(),
                                                 node.getName().toString(), expression, formalParamNames.indexOf(expression) + 1, expression), node);

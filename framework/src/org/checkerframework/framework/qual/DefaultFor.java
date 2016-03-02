@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * TODO: Document use relative to the other annotations.
  * This qualifier is for type system developers, not end-users.
  *
- * @see DefaultLocation
+ * @see TypeUseLocation
  * @see DefaultQualifier
  * @see DefaultQualifierInHierarchy
  * @see ImplicitFor
@@ -25,5 +25,5 @@ public @interface DefaultFor {
     /**
      * @return the locations to which the annotation should be applied
      */
-    DefaultLocation[] value();
+    TypeUseLocation[] value();
 }

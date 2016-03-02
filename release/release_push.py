@@ -33,7 +33,10 @@ def copy_release_dir( path_to_dev, path_to_live, release_version ):
     if os.path.exists( dest_location ):
         raise Exception( "Destination location exists: " + dest_location )
 
-    cmd = "rsync --omit-dir-times --recursive --links --quiet %s %s" % ( source_location, dest_location )
+    # The / at the end of the source location is necessary so that
+    # rsync copies the files in the source directory to the destination directory
+    # rather than a subdirectory of the destination directory.
+    cmd = "rsync --omit-dir-times --recursive --links --quiet %s/ %s" % ( source_location, dest_location )
     execute( cmd )
 
     return dest_location
@@ -48,16 +51,12 @@ def copy_releases_to_live_site( checker_version, afu_version):
     copy_release_dir( AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, afu_version )
 
 def update_release_symlinks( checker_version, afu_version ):
-    afu_latest_release_dir = os.path.join( AFU_LIVE_RELEASES_DIR,  afu_version )
-    checker_latest_release_dir = os.path.join( CHECKER_LIVE_RELEASES_DIR, checker_version )
+    afu_relative_latest_release_dir = os.path.join( RELEASES_DIR,  afu_version )
+    checker_and_jsr308_relative_latest_release_dir = os.path.join( RELEASES_DIR, checker_version )
 
-    force_symlink( os.path.join( JSR308_LIVE_RELEASES_DIR,  checker_version ), os.path.join( JSR308_LIVE_SITE,  "current" ) )
-    force_symlink( checker_latest_release_dir, os.path.join( CHECKER_LIVE_SITE, "current" ) )
-    force_symlink( afu_latest_release_dir,     os.path.join( AFU_LIVE_SITE,     "current" ) )
-
-    # After the copy operations the index.htmls will point into the dev directory
-    force_symlink( os.path.join( afu_latest_release_dir,  "annotation-file-utilities.html" ), os.path.join( afu_latest_release_dir, "index.html" ) )
-    force_symlink( os.path.join( checker_latest_release_dir, "checker-framework-webpage.html" ), os.path.join( checker_latest_release_dir, "index.html" ) )
+    force_symlink( checker_and_jsr308_relative_latest_release_dir, os.path.join( JSR308_LIVE_SITE,  CURRENT_SUBDIR ) )
+    force_symlink( checker_and_jsr308_relative_latest_release_dir, os.path.join( CHECKER_LIVE_SITE, CURRENT_SUBDIR ) )
+    force_symlink( afu_relative_latest_release_dir,     os.path.join( AFU_LIVE_SITE,     CURRENT_SUBDIR ) )
 
 def ensure_group_access_to_releases():
     ensure_group_access( JSR308_LIVE_RELEASES_DIR )
@@ -159,7 +158,7 @@ def run_link_checker( site, output ):
 
     return output
 
-def check_all_links( jsr308_website, afu_website, checker_website, suffix ):
+def check_all_links( jsr308_website, afu_website, checker_website, suffix, test_mode ):
     jsr308Check  = run_link_checker( jsr308_website,  TMP_DIR + "/jsr308." + suffix + ".check" )
     afuCheck     = run_link_checker( afu_website,     TMP_DIR + "/afu." + suffix + ".check" )
     checkerCheck = run_link_checker( checker_website, TMP_DIR + "/checker-framework." + suffix + ".check" )
@@ -178,7 +177,12 @@ def check_all_links( jsr308_website, afu_website, checker_website, suffix ):
     if (not is_checkerCheck_empty):
            print( "\t" + checkerCheck + "\n" )
     if (errors_reported):
-        raise Exception("The link checker reported errors.  Please fix them and run release_push again.")
+        release_option = ""
+        if not test_mode:
+            release_option = " release"
+        raise Exception("The link checker reported errors.  Please fix them by committing changes to the mainline\n" +
+                        "repository and pushing them to GitHub/Bitbucket, running \"python release_build.py all\" again\n" +
+                        "(in order to update the development site), and running \"python release_push" + release_option + "\" again.")
 
 def push_interm_to_release_repos():
     hg_push_or_fail( INTERM_JSR308_REPO )
@@ -244,7 +248,7 @@ def main(argv):
 
     if not os.path.exists( RELEASE_BUILD_COMPLETED_FLAG_FILE ):
         continue_or_exit("It appears that release_build.py has not been run since the last push to " +
-                         "the JSR308, AFU, or Checker Framework repositories.  Please ensure it has" +
+                         "the JSR308, AFU, or Checker Framework repositories.  Please ensure it has " +
                          "been run." )
 
     # The release script checks that the new release version is greater than the previous release version.
@@ -284,7 +288,7 @@ def main(argv):
     print_step( "Push Step 2: Check links on development site" ) # SEMIAUTO
 
     if auto or prompt_yes_no( "Run link checker on DEV site?", True ):
-        check_all_links( dev_jsr308_website, dev_afu_website, dev_checker_website, "dev" )
+        check_all_links( dev_jsr308_website, dev_afu_website, dev_checker_website, "dev", test_mode )
 
     # Runs sanity tests on the development release. Later, we will run a smaller set of sanity
     # tests on the live release to ensure no errors occurred when promoting the release.
@@ -334,18 +338,19 @@ def main(argv):
         stage_maven_artifacts_in_maven_central( new_checker_version )
 
         print_step("4b: Close staged artifacts at Maven central." )
-        continue_or_exit( "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts. " +
-               "To close, log into https://oss.sonatype.org using your " +
-               "Sonatype credentials and follow the 'close' instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + "\n" +
-               "For the close message, enter \"Checker Framework release " + new_checker_version + "\"\n" +
-               "Before proceeding to the next step, click on the Refresh button near the top of the page until the closing operation" +
-               "is reported to have completed succesfully.\n")
+        continue_or_exit( "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n" +
+               " * Browse to https://oss.sonatype.org/\n" +
+               " * Log in using your Sonatype credentials\n" +
+               " * Follow the 'close' instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + "\n" +
+               "    * To find the repository, visit https://oss.sonatype.org/#stagingRepositories then scroll to the end in the top pane\n" +
+               "    * For the close message, enter:  Checker Framework release " + new_checker_version + "\n" +
+               " * Click on the Refresh button near the top of the page until the closing\n" +
+               "   operation is reported to have completed succesfully.\n" +
+               " * Copy the URL of the closed artifacts for use in the next step\n")
 
         print_step("4c: Run Maven sanity test on Maven central artifacts." )
         if auto or prompt_yes_no( "Run Maven sanity test on Maven central artifacts?", True ):
-            repo_url = raw_input( "Please enter the repo URL of the closed artifacts.  To find this URL " +
-                                  "log into https://oss.sonatype.org.  Go to the Staging Repositories.  Find " +
-                                  "the repository you just closed and paste that URL here:\n" )
+            repo_url = raw_input( "Please enter the repo URL of the closed artifacts:\n" )
 
             maven_sanity_check( "maven-staging", repo_url, new_checker_version )
 
@@ -374,7 +379,7 @@ def main(argv):
         javac_sanity_check( live_checker_website, new_checker_version )
         if not os.path.isdir( SANITY_TEST_CHECKER_FRAMEWORK_DIR ):
             execute( "mkdir -p " + SANITY_TEST_CHECKER_FRAMEWORK_DIR )
-        execute("sh ../../checker-framework/release/test-checker-framework.sh", True, False, SANITY_TEST_CHECKER_FRAMEWORK_DIR)
+        execute("sh ../../checker-framework/release/test-checker-framework.sh " + new_checker_version, True, False, SANITY_TEST_CHECKER_FRAMEWORK_DIR)
         # Ensure that the jsr308-langtools javac works with the system-wide java launcher
         if not os.path.isdir( SANITY_TEST_JSR308_LANGTOOLS_DIR ):
             execute( "mkdir -p " + SANITY_TEST_JSR308_LANGTOOLS_DIR )
@@ -403,7 +408,7 @@ def main(argv):
 
     print_step( "Push Step 8. Check live site links" ) # SEMIAUTO
     if auto or prompt_yes_no( "Run link checker on LIVE site?", True ):
-        check_all_links( live_jsr308_website, live_afu_website, live_checker_website, "live" )
+        check_all_links( live_jsr308_website, live_afu_website, live_checker_website, "live", test_mode )
 
     # This step pushes the changes committed to the interm repositories to the GitHub/Bitbucket
     # repositories. This is the first irreversible change. After this point, you can no longer
@@ -432,7 +437,7 @@ def main(argv):
         msg = ( "Please 'release' the artifacts, but IMPORTANTLY first ensure that the Checker Framework maven plug-in directory " +
                 "(and only that directory) is removed from the artifacts.\n" +
                 "First log into https://oss.sonatype.org using your Sonatype credentials. Go to Staging Repositories and " +
-                "locate the orgcheckerframework repository and click on it." +
+                "locate the orgcheckerframework repository and click on it.\n" +
                 "Then, in the view for the orgcheckerframework staging repository at the bottom of the page, click on the Content tab. " +
                 "Expand the subdirectories until you find the one called checker-framework-plugin. Right-click on it, and choose delete.\n"
                 "Finally, click on the Release button at the top of the page.  For the description, write " +
@@ -469,10 +474,10 @@ def main(argv):
         print_step( "Push Step 13. Post the Checker Framework and Annotation File Utilities releases on GitHub." ) # MANUAL
 
         msg = ( "\n" +
-                "* Download the following files to your local machine. They will be saved as checker-framework-" + new_checker_version + ".zip and annotation-tools-" + new_afu_version + ".zip.\n" +
+                "* Download the following files to your local machine." +
                 "\n" +
-                "http://types.cs.washington.edu/checker-framework/current/checker-framework.zip\n" +
-                "http://types.cs.washington.edu/annotation-file-utilities/annotation-tools.zip\n" +
+                "http://types.cs.washington.edu/checker-framework/current/checker-framework-" + new_checker_version + ".zip\n" +
+                "http://types.cs.washington.edu/annotation-file-utilities/current/annotation-tools-" + new_afu_version + ".zip\n" +
                 "\n" +
                 "To post the Checker Framework release on GitHub:\n" +
                 "\n" +

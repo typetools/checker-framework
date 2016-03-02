@@ -16,7 +16,7 @@ public class TestTreeKinds {
     lock.lock();
   }
 
-  @EnsuresLockHeldIf(expression="lock",result=true)
+  @EnsuresLockHeldIf(expression="lock", result=true)
   boolean tryToLockTheLock() {
     return lock.tryLock();
   }
@@ -237,7 +237,7 @@ void testTreeTypes() {
     // The following test cases were inspired from annotator.find.ASTPathCriterion.isSatisfiedBy in the Annotation File Utilities
 
 // Hits a bug in dataflow:    do { break; } while (foo != null); // access to guarded object in while condition of do/while loop
-// Hits a bug in dataflow:    for(foo = new Object(); foo != null; foo = new Object()) { break; } // access to guarded object in condition of for loop
+// Hits a bug in dataflow:    for (foo = new Object(); foo != null; foo = new Object()) { break; } // access to guarded object in condition of for loop
     //:: error: (contracts.precondition.not.satisfied.field)
     foo = new Object(); // assignment to guarded object
     //:: error: (contracts.precondition.not.satisfied.field)
@@ -275,7 +275,7 @@ void testTreeTypes() {
     s = i == 5 ? f.toString() : foo.toString(); // access to guarded object in conditional expression tree
     // Testing of 'return' is done in getFoo()
     //:: error: (contracts.precondition.not.satisfied.field)
-    try { throw exception; } catch(Exception e) {} // throwing a guarded object
+    try { throw exception; } catch (Exception e) {} // throwing a guarded object
     //:: error: (contracts.precondition.not.satisfied.field)
     Object e = (Object) exception; // casting of a guarded object
     //:: error: (contracts.precondition.not.satisfied.field)

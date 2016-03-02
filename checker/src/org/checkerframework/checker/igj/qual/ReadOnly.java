@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.DefaultLocation;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
@@ -25,8 +25,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 // @ImplicitFor(types={TypeKind.BOOLEAN, TypeKind.BYTE, TypeKind.CHAR,
 //        TypeKind.DOUBLE, TypeKind.FLOAT, TypeKind.INT, TypeKind.LONG,
 //        TypeKind.SHORT})
-@DefaultFor({ DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,
-    DefaultLocation.IMPLICIT_UPPER_BOUNDS })
+@DefaultFor({ TypeUseLocation.LOCAL_VARIABLE, TypeUseLocation.RESOURCE_VARIABLE,
+    TypeUseLocation.IMPLICIT_UPPER_BOUND })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
