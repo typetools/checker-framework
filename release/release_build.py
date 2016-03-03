@@ -18,7 +18,7 @@ antdebug=""
 # For debugging
 debug=1
 ant_debug="-debug"
-    
+
 
 def print_usage():
     print( "Usage:    python release_build.py [projects] [options]" )
@@ -98,7 +98,7 @@ def create_dev_website_release_version_dir( project_name, version, auto ):
     execute("mkdir -p %s" % interm_dir, True, False)
     return interm_dir
 
-def create_dev_website_release_version_dirs( jsr308_version, afu_version, auto ):
+def create_dirs_for_dev_website_release_versions( jsr308_version, afu_version, auto ):
     # these directories correspond to the /cse/www2/types/dev/<project_name>/releases/<version> dirs
     jsr308_interm_dir = create_dev_website_release_version_dir("jsr308", jsr308_version, auto )
     afu_interm_dir    = create_dev_website_release_version_dir("annotation-file-utilities", afu_version, auto )
@@ -430,7 +430,7 @@ def main(argv):
 
     print_step("Build Step 5: Create directories for the current release on the dev site.") # SEMIAUTO
 
-    version_dirs = create_dev_website_release_version_dir( jsr308_version, afu_version, auto )
+    version_dirs = create_dirs_for_dev_website_release_versions( jsr308_version, afu_version, auto )
     jsr308_interm_dir            = version_dirs[0]
     afu_interm_dir               = version_dirs[1]
     checker_framework_interm_dir = version_dirs[2]
