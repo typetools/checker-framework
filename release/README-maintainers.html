@@ -120,13 +120,13 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       that this be done the work morning after Feature Freeze.
   </li>
   <li><strong>Run release_build</strong><br/>
-      <code>python release_build.py all</code><br/><br/>
-      For minimal prompting, use the <code>--auto</code> option.<br/><br/>
+      <code>python release_build.py all --auto</code><br/><br/>
       <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
       There has been some work done in order to select only specific projects (JSR 308 compiler, AFU, Checker Framework)
       to be built but more work still needs to be done.  Just pass &quot;all&quot; for now.
       See also <a href="#fi_buffalo_integeration">Buffalo Integration</a> for more information
-      on the option &quot;--auto&quot;
+      on the option &quot;--auto&quot;, which you can omit in order to
+      be asked more questions during the build.
   </li>
   <li>
       <strong>Run release_push</strong><br/>
