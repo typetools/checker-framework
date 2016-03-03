@@ -18,7 +18,7 @@ antdebug=""
 # For debugging
 debug=1
 ant_debug="-debug"
-    
+
 
 def print_usage():
     print( "Usage:    python release_build.py [projects] [options]" )
@@ -91,27 +91,29 @@ def get_new_version( project_name, curr_version, auto ):
 
     return (curr_version, new_version)
 
-def create_interm_dir( project_name, version, auto ):
+def create_dev_website_release_version_dir( project_name, version, auto ):
     interm_dir = os.path.join(FILE_PATH_TO_DEV_SITE, project_name, "releases", version )
     prompt_or_auto_delete( interm_dir, auto )
 
     execute("mkdir -p %s" % interm_dir, True, False)
     return interm_dir
 
-def create_interm_version_dirs( jsr308_version, afu_version, auto ):
+def create_dirs_for_dev_website_release_versions( jsr308_version, afu_version, auto ):
     # these directories correspond to the /cse/www2/types/dev/<project_name>/releases/<version> dirs
-    jsr308_interm_dir = create_interm_dir("jsr308", jsr308_version, auto )
-    afu_interm_dir    = create_interm_dir("annotation-file-utilities", afu_version, auto )
-    checker_framework_interm_dir = create_interm_dir("checker-framework", jsr308_version, auto )
+    jsr308_interm_dir = create_dev_website_release_version_dir("jsr308", jsr308_version, auto )
+    afu_interm_dir    = create_dev_website_release_version_dir("annotation-file-utilities", afu_version, auto )
+    checker_framework_interm_dir = create_dev_website_release_version_dir("checker-framework", jsr308_version, auto )
 
     return ( jsr308_interm_dir, afu_interm_dir, checker_framework_interm_dir )
 
-def update_project_symlink( project_name, interm_dir ):
+def update_project_dev_website_symlink( project_name, release_version ):
     project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
     link_path   = os.path.join( project_dev_site, "current" )
 
-    print( "Writing symlink: " + link_path + "\nto directory: " + interm_dir )
-    force_symlink( interm_dir, link_path )
+    dev_website_relative_dir = os.path.join(RELEASES_SUBDIR, release_version)
+
+    print( "Writing symlink: " + link_path + "\nto point to relative directory: " + dev_website_relative_dir )
+    force_symlink( dev_website_relative_dir, link_path )
 
 def build_jsr308_langtools_release(auto, version, afu_version, afu_release_date, checker_framework_interm_dir, jsr308_interm_dir):
 
@@ -146,7 +148,7 @@ def build_jsr308_langtools_release(auto, version, afu_version, afu_release_date,
     ant_cmd   = "ant %s -f release.xml %s langtools-website-docs " % (ant_debug, ant_props)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    update_project_symlink( "jsr308", jsr308_interm_dir )
+    update_project_dev_website_symlink( "jsr308", version )
 
     return
 
@@ -167,7 +169,7 @@ def build_annotation_tools_release( auto, version, afu_interm_dir ):
     ant_cmd   = "ant %s -buildfile %s -e web-no-checks -Dafu.version=%s -Ddeploy-dir=%s" % ( ant_debug, build, version, afu_interm_dir )
     execute( ant_cmd )
 
-    update_project_symlink( "annotation-file-utilities", afu_interm_dir )
+    update_project_dev_website_symlink( "annotation-file-utilities", version )
 
 def build_and_locally_deploy_maven(version, checker_framework_interm_dir):
     protocol_length = len("file://")
@@ -250,7 +252,7 @@ def build_checker_framework_release(auto, version, afu_version, afu_release_date
 
         build_and_locally_deploy_maven(version, checker_framework_interm_dir)
 
-        update_project_symlink( "checker-framework", checker_framework_interm_dir )
+        update_project_dev_website_symlink( "checker-framework", version )
 
     return
 
@@ -428,7 +430,7 @@ def main(argv):
 
     print_step("Build Step 5: Create directories for the current release on the dev site.") # SEMIAUTO
 
-    version_dirs = create_interm_version_dirs( jsr308_version, afu_version, auto )
+    version_dirs = create_dirs_for_dev_website_release_versions( jsr308_version, afu_version, auto )
     jsr308_interm_dir            = version_dirs[0]
     afu_interm_dir               = version_dirs[1]
     checker_framework_interm_dir = version_dirs[2]

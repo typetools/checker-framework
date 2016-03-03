@@ -219,8 +219,8 @@ def check_tools(tools):
     print("\nChecking to make sure the following programs are installed:")
     print(', '.join(tools))
     print('Note: If you are NOT working on buffalo.cs.washington.edu then you ' +
-        'likely need to change the variables that are set in release.py \n'   +
-        'search for "Set environment variables"')
+        'likely need to change the variables that are set in release.py\n' +
+        'Search for "Set environment variables".')
     map(check_command, tools)
     print ''
 
@@ -456,9 +456,9 @@ def clone(src_repo, dst_repo, bareflag):
         flags = ""
         if (bareflag):
             flags = "--bare"
-        execute('git clone %s %s %s' % (flags, src_repo, dst_repo))
+        execute('git clone --quiet %s %s %s' % (flags, src_repo, dst_repo))
     else:
-        execute('hg clone %s %s' % (src_repo, dst_repo))
+        execute('hg clone --quiet %s %s' % (src_repo, dst_repo))
 
 def is_repo_cleaned_and_updated(repo):
     if is_git(repo):
@@ -522,7 +522,8 @@ def revert(repo):
         execute('hg -R %s revert --all' % repo)
 
 def purge(repo, all=False):
-    """All means also ignored files"""
+    """Delete untracked files from the working directory, like "hg purge".
+If "all" argument is true, also delete ignored files."""
     if git_bare_repo_exists_at_path(repo):
         raise Exception("purge cannot be called on a bare repo ( %s )" % repo)
     if is_git(repo):
@@ -758,11 +759,12 @@ def delete_if_exists( file ):
         os.remove(file)
 
 def delete_path( path ):
+    ensure_group_access(path)
     shutil.rmtree(path)
 
 def delete_path_if_exists( path ):
     if os.path.exists(path):
-        shutil.rmtree(path)
+        delete_path(path)
 
 def prompt_or_auto_delete( path, auto ):
     if not auto:
@@ -786,7 +788,7 @@ def prompt_to_delete(path):
     if os.path.exists(path):
         result = prompt_w_suggestion("Delete the following file:\n %s [Yes|No]" % path, "no", "^(Yes|yes|No|no)$")
         if result == "Yes" or result == "yes":
-            shutil.rmtree(path)
+            delete_path(path)
 
 def force_symlink( target_of_link, path_to_symlink ):
     try:

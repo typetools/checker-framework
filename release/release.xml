@@ -425,9 +425,9 @@
         <copy todir="${dest.dir}" file="${langtools.doc}/Makefile-jsr308-install" />
         <copy todir="${dest.dir}" file="${langtools.doc}/changelog-jsr308.txt"    />
 
-        <symlink overwrite="true" link="${web.root}/index.html" resource="${dest.dir}/jsr308-webpage.html"/>
+        <symlink overwrite="true" link="${web.root}/index.html" resource="current/jsr308-webpage.html"/>
         <symlink overwrite="true"
-                 link="${web.root}/favicon-jsr308.png" resource="${web.root}/current/favicon-jsr308.png"/>
+                 link="${web.root}/favicon-jsr308.png" resource="current/favicon-jsr308.png"/>
 
     </target>
 
@@ -484,9 +484,7 @@
             </fileset>
         </copy>
 
-        <symlink overwrite="true" link="${dest.dir}/index.html" resource="${dest.dir}/${checker.webpage}" />
-        <symlink overwrite="true"
-                 link="${web.root}/current/favicon-jsr308.png" resource="${web.root}/favicon-jsr308.png"/>
+        <symlink overwrite="true" link="${dest.dir}/index.html" resource="${checker.webpage}" />
 
     </target>
 
