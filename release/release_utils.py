@@ -39,8 +39,6 @@ def read_projects(argv, error_call_back):
         CF_OPT  : False
     }
 
-    auto = False
-
     arg_length = len(sys.argv)
 
     if arg_length < 2:
@@ -735,7 +733,6 @@ def find_first_instance(regex, infile, delim=""):
             m = pattern.match(line)
             if m is not None:
                 if pattern.groups > 0:
-                    groups = m.groups()
                     useDel = False
                     res = ""
                     for g in m.groups():

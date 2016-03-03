@@ -49,8 +49,8 @@ def copy_releases_to_live_site(checker_version, afu_version):
     copy_release_dir(AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, afu_version)
 
 def update_release_symlinks(checker_version, afu_version):
-    afu_relative_latest_release_dir = os.path.join(RELEASES_DIR, afu_version)
-    checker_and_jsr308_relative_latest_release_dir = os.path.join(RELEASES_DIR, checker_version)
+    afu_relative_latest_release_dir = os.path.join(RELEASES_SUBDIR, afu_version)
+    checker_and_jsr308_relative_latest_release_dir = os.path.join(RELEASES_SUBDIR, checker_version)
 
     force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(JSR308_LIVE_SITE, CURRENT_SUBDIR))
     force_symlink(checker_and_jsr308_relative_latest_release_dir, os.path.join(CHECKER_LIVE_SITE, CURRENT_SUBDIR))

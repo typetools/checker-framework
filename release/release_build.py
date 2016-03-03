@@ -116,7 +116,7 @@ def update_project_dev_website_symlink(project_name, release_version):
     print "Writing symlink: " + link_path + "\nto point to relative directory: " + dev_website_relative_dir
     force_symlink(dev_website_relative_dir, link_path)
 
-def build_jsr308_langtools_release(auto, version, afu_version, afu_release_date, checker_framework_interm_dir, jsr308_interm_dir):
+def build_jsr308_langtools_release(version, afu_version, afu_release_date, jsr308_interm_dir):
 
     afu_build_properties = os.path.join(ANNO_FILE_UTILITIES, "build.properties")
 
@@ -157,7 +157,7 @@ def get_current_date():
     return CURRENT_DATE.strftime("%d %b %Y")
 
 
-def build_annotation_tools_release(auto, version, afu_interm_dir):
+def build_annotation_tools_release(version, afu_interm_dir):
     execute('java -version', True)
 
     date = get_current_date()
@@ -172,7 +172,7 @@ def build_annotation_tools_release(auto, version, afu_interm_dir):
 
     update_project_dev_website_symlink("annotation-file-utilities", version)
 
-def build_and_locally_deploy_maven(version, checker_framework_interm_dir):
+def build_and_locally_deploy_maven(version):
     protocol_length = len("file://")
     maven_dev_repo_without_protocol = MAVEN_DEV_REPO[protocol_length:]
 
@@ -191,7 +191,7 @@ def build_and_locally_deploy_maven(version, checker_framework_interm_dir):
 
     return
 
-def build_checker_framework_release(auto, version, afu_version, afu_release_date, checker_framework_interm_dir, jsr308_interm_dir, manual_only=False):
+def build_checker_framework_release(version, afu_version, afu_release_date, checker_framework_interm_dir, manual_only=False):
     checker_dir = os.path.join(CHECKER_FRAMEWORK, "checker")
 
     afu_build_properties = os.path.join(ANNO_FILE_UTILITIES, "build.properties")
@@ -251,7 +251,7 @@ def build_checker_framework_release(auto, version, afu_version, afu_release_date
         checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
         execute("make clean", True, False, checker_tutorial_dir)
 
-        build_and_locally_deploy_maven(version, checker_framework_interm_dir)
+        build_and_locally_deploy_maven(version)
 
         update_project_dev_website_symlink("checker-framework", version)
 
@@ -398,7 +398,7 @@ def main(argv):
                                   AFU_TAG_PREFIXES, AFU_MANUAL, TMP_DIR + "/afu.manual")
 
         if projects_to_release[CF_OPT]:
-            build_checker_framework_release(False, jsr308_version, afu_version, afu_date, "", "", manual_only=True)
+            build_checker_framework_release(jsr308_version, afu_version, afu_date, "", manual_only=True)
 
             print ""
             print "The built Checker Framework manual (HTML and PDF) can be found at " + CHECKER_MANUAL
@@ -446,15 +446,15 @@ def main(argv):
     print projects_to_release
     if projects_to_release[LT_OPT]:
         print_step("6a: Build Type Annotations Compiler.")
-        build_jsr308_langtools_release(auto, jsr308_version, afu_version, afu_date, checker_framework_interm_dir, jsr308_interm_dir)
+        build_jsr308_langtools_release(jsr308_version, afu_version, afu_date, jsr308_interm_dir)
 
     if projects_to_release[AFU_OPT]:
         print_step("6b: Build Annotation File Utilities.")
-        build_annotation_tools_release(auto, afu_version, afu_interm_dir)
+        build_annotation_tools_release(afu_version, afu_interm_dir)
 
     if projects_to_release[CF_OPT]:
         print_step("6c: Build Checker Framework.")
-        build_checker_framework_release(auto, jsr308_version, afu_version, afu_date, checker_framework_interm_dir, jsr308_interm_dir)
+        build_checker_framework_release(jsr308_version, afu_version, afu_date, checker_framework_interm_dir)
 
 
     print_step("Build Step 7: Overwrite .htaccess.") # SEMIAUTO
