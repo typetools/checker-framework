@@ -5,7 +5,7 @@ release_push.py
 
 Created by Jonathan Burke on 2013-12-30.
 
-Copyright (c) 2015 University of Washington. All rights reserved.
+Copyright (c) 2013-2016 University of Washington. All rights reserved.
 """
 
 # See README-maintainers.html for more information
@@ -341,12 +341,17 @@ def main(argv):
         continue_or_exit( "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n" +
                " * Browse to https://oss.sonatype.org/\n" +
                " * Log in using your Sonatype credentials\n" +
-               " * Follow the 'close' instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + "\n" +
-               "    * To find the repository, visit https://oss.sonatype.org/#stagingRepositories then scroll to the end in the top pane\n" +
-               "    * For the close message, enter:  Checker Framework release " + new_checker_version + "\n" +
+               " * Click \"Staging Repositories\" or browse to https://oss.sonatype.org/#stagingRepositories\n" +
+               " * Scroll to the end in the top pane, click on orgcheckerframework-XXXX\n" +
+               " * Click \"close\" at the top\n" +
+               " * For the close message, enter:  Checker Framework release " + new_checker_version + "\n" +
                " * Click on the Refresh button near the top of the page until the closing\n" +
                "   operation is reported to have completed succesfully.\n" +
-               " * Copy the URL of the closed artifacts for use in the next step\n")
+               " * Copy the URL of the closed artifacts for use in the next step\n"
+               "(You can also see the instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + ")\n" +
+
+        )
+
 
         print_step("4c: Run Maven sanity test on Maven central artifacts." )
         if auto or prompt_yes_no( "Run Maven sanity test on Maven central artifacts?", True ):
