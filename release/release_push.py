@@ -10,18 +10,16 @@ Copyright (c) 2013-2016 University of Washington. All rights reserved.
 
 # See README-maintainers.html for more information
 
+import os
 from release_vars  import *
 from release_utils import *
 from sanity_checks import *
-import os
-import urllib
-import zipfile
 
 # ensure that the latest built version is
 def check_release_version(previous_release, new_release):
     if compare_version_numbers(previous_release, new_release) >= 0:
         raise Exception("Previous release version (" + previous_release + ") should be less than " +
-                         "the new release version(" + new_release + ")")
+                        "the new release version(" + new_release + ")")
 
 def copy_release_dir(path_to_dev, path_to_live, release_version):
     source_location = os.path.join(path_to_dev, release_version)
@@ -75,7 +73,7 @@ def push_maven_artifacts_to_release_repo(version):
 
 def stage_maven_artifacts_in_maven_central(new_checker_version):
 
-    pgp_user="checker-framework-dev@googlegroups.com"
+    pgp_user = "checker-framework-dev@googlegroups.com"
     pgp_passphrase = read_first_line(PGP_PASSPHRASE_FILE)
 
     mvn_dist = os.path.join(MAVEN_PLUGIN_DIR, "dist")
@@ -87,49 +85,49 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
 
     # At the moment, checker.jar is the only artifact with legitimate accompanying source/javadoc jars
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_BINARY_RELEASE_POM, CHECKER_BINARY,
-                             CHECKER_SOURCE, CHECKER_JAVADOC,
-                             pgp_user, pgp_passphrase)
+                            CHECKER_SOURCE, CHECKER_JAVADOC,
+                            pgp_user, pgp_passphrase)
 
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL_RELEASE_POM, CHECKER_QUAL,
-                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-source.jar"),
-                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-javadoc.jar"),
-                             pgp_user, pgp_passphrase)
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-source.jar"),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-javadoc.jar"),
+                            pgp_user, pgp_passphrase)
 
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_COMPAT_QUAL_RELEASE_POM,
-                             CHECKER_COMPAT_QUAL,
-                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-compat-qual-source.jar"),
-                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-compat-qual-javadoc.jar"),
-                             pgp_user, pgp_passphrase)
+                            CHECKER_COMPAT_QUAL,
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-compat-qual-source.jar"),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-compat-qual-javadoc.jar"),
+                            pgp_user, pgp_passphrase)
 
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JAVAC_BINARY_RELEASE_POM, JAVAC_BINARY,
-                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-source.jar"),
-                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-javadoc.jar"),
-                             pgp_user, pgp_passphrase)
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-source.jar"),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-javadoc.jar"),
+                            pgp_user, pgp_passphrase)
 
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JDK7_BINARY_RELEASE_POM, JDK7_BINARY,
-                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk7-source.jar"),
-                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk7-javadoc.jar"),
-                             pgp_user, pgp_passphrase)
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk7-source.jar"),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk7-javadoc.jar"),
+                            pgp_user, pgp_passphrase)
 
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JDK8_BINARY_RELEASE_POM, JDK8_BINARY,
-                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-source.jar"),
-                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-javadoc.jar"),
-                             pgp_user, pgp_passphrase)
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-source.jar"),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-javadoc.jar"),
+                            pgp_user, pgp_passphrase)
 
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JAVACUTIL_BINARY_RELEASE_POM, JAVACUTIL_BINARY,
-                             JAVACUTIL_SOURCE_JAR, JAVACUTIL_JAVADOC_JAR,
-                             pgp_user, pgp_passphrase)
+                            JAVACUTIL_SOURCE_JAR, JAVACUTIL_JAVADOC_JAR,
+                            pgp_user, pgp_passphrase)
 
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, DATAFLOW_BINARY_RELEASE_POM, DATAFLOW_BINARY,
-                             DATAFLOW_SOURCE_JAR, DATAFLOW_JAVADOC_JAR,
-                             pgp_user, pgp_passphrase)
+                            DATAFLOW_SOURCE_JAR, DATAFLOW_JAVADOC_JAR,
+                            pgp_user, pgp_passphrase)
 
     plugin_jar = find_mvn_plugin_jar(MAVEN_PLUGIN_DIR, new_checker_version)
-    plugin_source_jar  = find_mvn_plugin_jar(MAVEN_PLUGIN_DIR, new_checker_version, "sources")
+    plugin_source_jar = find_mvn_plugin_jar(MAVEN_PLUGIN_DIR, new_checker_version, "sources")
     plugin_javadoc_jar = os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checkerframework-maven-plugin-javadoc.jar")
 
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, MAVEN_PLUGIN_RELEASE_POM, plugin_jar,
-                             plugin_source_jar, plugin_javadoc_jar, pgp_user, pgp_passphrase)
+                            plugin_source_jar, plugin_javadoc_jar, pgp_user, pgp_passphrase)
 
     delete_path(mvn_dist)
 
@@ -145,7 +143,7 @@ def run_link_checker(site, output):
     out_file = open(output, 'w+')
 
     print("Executing: "
-          + ' '.join("%s=%r" % (key2,val2) for (key2,val2) in env.items())
+          + ' '.join("%s=%r" % (key2, val2) for (key2, val2) in env.items())
           + " "
           + " ".join(cmd))
     process = subprocess.Popen(cmd, env=env, stdout=out_file, stderr=out_file)
@@ -159,8 +157,8 @@ def run_link_checker(site, output):
     return output
 
 def check_all_links(jsr308_website, afu_website, checker_website, suffix, test_mode):
-    jsr308Check  = run_link_checker(jsr308_website, TMP_DIR + "/jsr308." + suffix + ".check")
-    afuCheck     = run_link_checker(afu_website, TMP_DIR + "/afu." + suffix + ".check")
+    jsr308Check = run_link_checker(jsr308_website, TMP_DIR + "/jsr308." + suffix + ".check")
+    afuCheck = run_link_checker(afu_website, TMP_DIR + "/afu." + suffix + ".check")
     checkerCheck = run_link_checker(checker_website, TMP_DIR + "/checker-framework." + suffix + ".check")
 
     is_jsr308Check_empty = is_file_empty(jsr308Check)
@@ -168,15 +166,15 @@ def check_all_links(jsr308_website, afu_website, checker_website, suffix, test_m
     is_checkerCheck_empty = is_file_empty(checkerCheck)
 
     errors_reported = not (is_jsr308Check_empty and is_afuCheck_empty and is_checkerCheck_empty)
-    if (errors_reported):
+    if errors_reported:
         print  "Link checker results can be found at:\n"
-    if (not is_jsr308Check_empty):
-           print  "\t" + jsr308Check  + "\n"
-    if (not is_afuCheck_empty):
-           print  "\t" + afuCheck     + "\n"
-    if (not is_checkerCheck_empty):
-           print  "\t" + checkerCheck + "\n"
-    if (errors_reported):
+    if not is_jsr308Check_empty:
+        print  "\t" + jsr308Check  + "\n"
+    if not is_afuCheck_empty:
+        print  "\t" + afuCheck     + "\n"
+    if not is_checkerCheck_empty:
+        print  "\t" + checkerCheck + "\n"
+    if errors_reported:
         release_option = ""
         if not test_mode:
             release_option = " release"
@@ -192,7 +190,7 @@ def push_interm_to_release_repos():
 def continue_or_exit(msg):
     continue_script = prompt_w_suggestion(msg + " Continue ('no' will exit the script)?", "yes", "^(Yes|yes|No|no)$")
     if continue_script == "no" or continue_script == "No":
-                raise Exception("User elected NOT to continue at prompt: " + msg)
+        raise Exception("User elected NOT to continue at prompt: " + msg)
 
 def read_args(argv):
     test = True
@@ -210,9 +208,9 @@ def read_args(argv):
 
 def print_usage():
     print ("Usage: python release_build.py [release]\n" +
-            "The only argument this script takes is \"release\".  If this argument is " +
-            "NOT specified then the script will execute all steps that checking and prompting " +
-            "steps but will NOT actually perform a release.  This is for testing the script.")
+           "The only argument this script takes is \"release\".  If this argument is " +
+           "NOT specified then the script will execute all steps that checking and prompting " +
+           "steps but will NOT actually perform a release.  This is for testing the script.")
 
 def main(argv):
     # MANUAL Indicates a manual step
@@ -225,10 +223,10 @@ def main(argv):
     test_mode = read_args(argv)
 
     msg = ("You have chosen test_mode.  \nThis means that this script will execute all build steps that " +
-            "do not have side-effects.  That is, this is a test run of the script.  All checks and user prompts "  +
-            "will be shown but no steps will be executed that will cause the release to be deployed or partially " +
-            "deployed.\n" +
-            "If you meant to do an actual release, re-run this script with one argument, \"release\".")
+           "do not have side-effects.  That is, this is a test run of the script.  All checks and user prompts "  +
+           "will be shown but no steps will be executed that will cause the release to be deployed or partially " +
+           "deployed.\n" +
+           "If you meant to do an actual release, re-run this script with one argument, \"release\".")
 
     if not test_mode:
         msg = "You have chosen release_mode.  Please follow the prompts to run a full Checker Framework release"
@@ -241,8 +239,8 @@ def main(argv):
 
     if not auto:
         print_step("Push Step 0: Verify Requirements\n") # MANUAL
-        print(" If this is your first time running the release_push script, please verify that you have met " +
-               "all the requirements specified in README-maintainers.html \"Pre-release Checklist\"\n")
+        print("If this is your first time running the release_push script, please verify that you have met " +
+              "all the requirements specified in README-maintainers.html \"Pre-release Checklist\"\n")
 
         continue_or_exit("")
 
@@ -254,22 +252,22 @@ def main(argv):
     # The release script checks that the new release version is greater than the previous release version.
 
     print_step("Push Step 1: Checking release versions") # SEMIAUTO
-    dev_jsr308_website  = os.path.join(HTTP_PATH_TO_DEV_SITE, "jsr308")
+    dev_jsr308_website = os.path.join(HTTP_PATH_TO_DEV_SITE, "jsr308")
     live_jsr308_website = os.path.join(HTTP_PATH_TO_LIVE_SITE, "jsr308")
-    dev_afu_website  = os.path.join(HTTP_PATH_TO_DEV_SITE, "annotation-file-utilities")
+    dev_afu_website = os.path.join(HTTP_PATH_TO_DEV_SITE, "annotation-file-utilities")
     live_afu_website = os.path.join(HTTP_PATH_TO_LIVE_SITE, "annotation-file-utilities")
 
-    dev_checker_website  = os.path.join(HTTP_PATH_TO_DEV_SITE, "checker-framework")
+    dev_checker_website = os.path.join(HTTP_PATH_TO_DEV_SITE, "checker-framework")
     live_checker_website = os.path.join(HTTP_PATH_TO_LIVE_SITE, "checker-framework")
     current_checker_version = current_distribution_by_website(live_checker_website)
-    new_checker_version     = current_distribution(CHECKER_FRAMEWORK)
+    new_checker_version = current_distribution(CHECKER_FRAMEWORK)
     check_release_version(current_checker_version, new_checker_version)
 
     # note, get_afu_version_from_html uses the file path not the web url
-    dev_afu_website_file  = os.path.join(FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", "index.html")
+    dev_afu_website_file = os.path.join(FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", "index.html")
     live_afu_website_file = os.path.join(FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities", "index.html")
     current_afu_version = get_afu_version_from_html(live_afu_website_file)
-    new_afu_version     = get_afu_version_from_html(dev_afu_website_file)
+    new_afu_version = get_afu_version_from_html(dev_afu_website_file)
     check_release_version(current_afu_version, new_afu_version)
 
     print "Checker Framework/JSR308:  current-version=%s    new-version=%s" % (current_checker_version, new_checker_version)
@@ -296,10 +294,7 @@ def main(argv):
     # NOTE: In this step you will also be prompted to build and manually test the Eclipse plugin.
 
     print_step("Push Step 3: Run development sanity tests") # SEMIAUTO
-    if auto or prompt_yes_no(
-           "Later in this step you will build and install the Eclipse plugin using the latest artifacts. See\n" +
-           "README-developers.html under the checker-framework/release directory\n" +
-           "Perform this step?", True):
+    if auto or prompt_yes_no("Perform this step?", True):
 
         print_step(" 3a: Run javac sanity test on development release.")
         if auto or prompt_yes_no("Run javac sanity test on development release?", True):
@@ -338,17 +333,18 @@ def main(argv):
         stage_maven_artifacts_in_maven_central(new_checker_version)
 
         print_step("4b: Close staged artifacts at Maven central.")
-        continue_or_exit("Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n" +
-               " * Browse to https://oss.sonatype.org/\n" +
-               " * Log in using your Sonatype credentials\n" +
-               " * Click \"Staging Repositories\" or browse to https://oss.sonatype.org/#stagingRepositories\n" +
-               " * Scroll to the end in the top pane, click on orgcheckerframework-XXXX\n" +
-               " * Click \"close\" at the top\n" +
-               " * For the close message, enter:  Checker Framework release " + new_checker_version + "\n" +
-               " * Click on the Refresh button near the top of the page until the closing\n" +
-               "   operation is reported to have completed succesfully.\n" +
-               " * Copy the URL of the closed artifacts for use in the next step\n"
-               "(You can also see the instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + ")\n"
+        continue_or_exit(
+            "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n" +
+            " * Browse to https://oss.sonatype.org/\n" +
+            " * Log in using your Sonatype credentials\n" +
+            " * Click \"Staging Repositories\" or browse to https://oss.sonatype.org/#stagingRepositories\n" +
+            " * Scroll to the end in the top pane, click on orgcheckerframework-XXXX\n" +
+            " * Click \"close\" at the top\n" +
+            " * For the close message, enter:  Checker Framework release " + new_checker_version + "\n" +
+            " * Click on the Refresh button near the top of the page until the closing\n" +
+            "   operation is reported to have completed succesfully.\n" +
+            " * Copy the URL of the closed artifacts for use in the next step\n"
+            "(You can also see the instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + ")\n"
         )
 
 
@@ -395,9 +391,9 @@ def main(argv):
 
     print_step("Push Step 7: Deploy the Eclipse Plugin to the live site.") # MANUAL
     continue_or_exit("Follow the instruction under 'Releasing the Plugin' in checker-framework/eclipse/README-developers.html to " +
-                      "deploy the Eclipse plugin to the live website.  Please install the plugin from the new " +
-                      "live repository and run it on a file in which you expect a type error.  If you run into errors, " +
-                      "back out the release!\n")
+                     "deploy the Eclipse plugin to the live website.  Please install the plugin from the new " +
+                     "live repository and run it on a file in which you expect a type error.  If you run into errors, " +
+                     "back out the release!\n")
 
     # Runs the link the checker on all websites at:
     # http://types.cs.washington.edu/
@@ -435,17 +431,17 @@ def main(argv):
     print_step("Push Step 10. Release staged artifacts in Central repository.") # MANUAL
     if test_mode:
         msg = ("Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "   +
-                "To drop, log into https://oss.sonatype.org using your " +
-                "Sonatype credentials and follow the 'DROP' instructions at: " + SONATYPE_DROPPING_DIRECTIONS_URL)
+               "To drop, log into https://oss.sonatype.org using your " +
+               "Sonatype credentials and follow the 'DROP' instructions at: " + SONATYPE_DROPPING_DIRECTIONS_URL)
     else:
         msg = ("Please 'release' the artifacts, but IMPORTANTLY first ensure that the Checker Framework maven plug-in directory " +
-                "(and only that directory) is removed from the artifacts.\n" +
-                "First log into https://oss.sonatype.org using your Sonatype credentials. Go to Staging Repositories and " +
-                "locate the orgcheckerframework repository and click on it.\n" +
-                "Then, in the view for the orgcheckerframework staging repository at the bottom of the page, click on the Content tab. " +
-                "Expand the subdirectories until you find the one called checker-framework-plugin. Right-click on it, and choose delete.\n"
-                "Finally, click on the Release button at the top of the page.  For the description, write " +
-                "Checker Framework release " + new_checker_version + "\n\n")
+               "(and only that directory) is removed from the artifacts.\n" +
+               "First log into https://oss.sonatype.org using your Sonatype credentials. Go to Staging Repositories and " +
+               "locate the orgcheckerframework repository and click on it.\n" +
+               "Then, in the view for the orgcheckerframework staging repository at the bottom of the page, click on the Content tab. " +
+               "Expand the subdirectories until you find the one called checker-framework-plugin. Right-click on it, and choose delete.\n"
+               "Finally, click on the Release button at the top of the page.  For the description, write " +
+               "Checker Framework release " + new_checker_version + "\n\n")
 
     # TODO: fix this so that the maven plug-in directory directory is not included in the first place.
 
@@ -454,23 +450,23 @@ def main(argv):
 
     if test_mode:
         msg = ("Test Mode: You are in test_mode.  If you built the Eclipse plugin on "   +
-                "your local machine, you may want to revert any files that were modified.")
+               "your local machine, you may want to revert any files that were modified.")
     else:
         # A prompt describes the email you should send to all relevant mailing lists.
         # Please fill out the email and announce the release.
 
         print_step("Push Step 11. Announce the release.") # MANUAL
         continue_or_exit("Please announce the release using the email structure below.\n" +
-                          "Note that this text may have changed since the last time a release was performed.\n" +
-                           get_announcement_email(new_checker_version))
+                         "Note that this text may have changed since the last time a release was performed.\n" +
+                         get_announcement_email(new_checker_version))
 
         print_step("Push Step 12. Push Eclipse plugin files.") # MANUAL
         msg = ("If you built the Eclipse plugin on your local machine, there are a few " +
-                "changed files with version number changes that need to be pushed.\n" +
-                "Do not push the .classpath file. The following files should be pushed:\n" +
-                "checker-framework-eclipse-feature/feature.xml\n" +
-                "checker-framework-eclipse-plugin/META-INF/MANIFEST.MF\n" +
-                "checker-framework-eclipse-update-site/site.xml")
+               "changed files with version number changes that need to be pushed.\n" +
+               "Do not push the .classpath file. The following files should be pushed:\n" +
+               "checker-framework-eclipse-feature/feature.xml\n" +
+               "checker-framework-eclipse-plugin/META-INF/MANIFEST.MF\n" +
+               "checker-framework-eclipse-update-site/site.xml")
 
         print  msg
         prompt_until_yes()
@@ -478,26 +474,26 @@ def main(argv):
         print_step("Push Step 13. Post the Checker Framework and Annotation File Utilities releases on GitHub.") # MANUAL
 
         msg = ("\n" +
-                "* Download the following files to your local machine." +
-                "\n" +
-                "http://types.cs.washington.edu/checker-framework/current/checker-framework-" + new_checker_version + ".zip\n" +
-                "http://types.cs.washington.edu/annotation-file-utilities/current/annotation-tools-" + new_afu_version + ".zip\n" +
-                "\n" +
-                "To post the Checker Framework release on GitHub:\n" +
-                "\n" +
-                "* Go to https://github.com/typetools/checker-framework/releases/new?tag=checker-framework-" + new_checker_version + "\n" +
-                "* For the release title, enter: Checker Framework " + new_checker_version + "\n" +
-                "* For the description, insert the latest Checker Framework changelog entry (available at http://types.cs.washington.edu/checker-framework/current/changelog.txt). Please include the first line with the release version and date.\n" +
-                "* Find the link below \"Attach binaries by dropping them here or selecting them.\" Click on \"selecting them\" and upload checker-framework-" + new_checker_version + ".zip from your machine.\n" +
-                "* Click on the green \"Publish release\" button.\n" +
-                "\n" +
-                "To post the Annotation File Utilities release on GitHub:\n" +
-                "\n" +
-                "* Go to https://github.com/typetools/annotation-tools/releases/new?tag=" + new_afu_version + "\n" +
-                "* For the release title, enter: Annotation File Utilities " + new_afu_version + "\n" +
-                "* For the description, insert the latest Annotation File Utilities changelog entry (available at http://types.cs.washington.edu/annotation-file-utilities/changelog.html). Please include the first line with the release version and date. For bullet points, use the * Markdown character.\n" +
-                "* Find the link below \"Attach binaries by dropping them here or selecting them.\" Click on \"selecting them\" and upload annotation-tools-" + new_afu_version + ".zip from your machine.\n" +
-                "* Click on the green \"Publish release\" button.\n")
+               "* Download the following files to your local machine." +
+               "\n" +
+               "http://types.cs.washington.edu/checker-framework/current/checker-framework-" + new_checker_version + ".zip\n" +
+               "http://types.cs.washington.edu/annotation-file-utilities/current/annotation-tools-" + new_afu_version + ".zip\n" +
+               "\n" +
+               "To post the Checker Framework release on GitHub:\n" +
+               "\n" +
+               "* Go to https://github.com/typetools/checker-framework/releases/new?tag=checker-framework-" + new_checker_version + "\n" +
+               "* For the release title, enter: Checker Framework " + new_checker_version + "\n" +
+               "* For the description, insert the latest Checker Framework changelog entry (available at http://types.cs.washington.edu/checker-framework/current/changelog.txt). Please include the first line with the release version and date.\n" +
+               "* Find the link below \"Attach binaries by dropping them here or selecting them.\" Click on \"selecting them\" and upload checker-framework-" + new_checker_version + ".zip from your machine.\n" +
+               "* Click on the green \"Publish release\" button.\n" +
+               "\n" +
+               "To post the Annotation File Utilities release on GitHub:\n" +
+               "\n" +
+               "* Go to https://github.com/typetools/annotation-tools/releases/new?tag=" + new_afu_version + "\n" +
+               "* For the release title, enter: Annotation File Utilities " + new_afu_version + "\n" +
+               "* For the description, insert the latest Annotation File Utilities changelog entry (available at http://types.cs.washington.edu/annotation-file-utilities/changelog.html). Please include the first line with the release version and date. For bullet points, use the * Markdown character.\n" +
+               "* Find the link below \"Attach binaries by dropping them here or selecting them.\" Click on \"selecting them\" and upload annotation-tools-" + new_afu_version + ".zip from your machine.\n" +
+               "* Click on the green \"Publish release\" button.\n")
 
     print  msg
 

@@ -21,13 +21,14 @@ ant_debug = "-debug"
 
 
 def print_usage():
+    """Print usage information."""
     print "Usage:    python release_build.py [projects] [options]"
     print_projects(True, 1, 4)
     print "\n  --auto  accepts or chooses the default for all prompts"
     print "\n  --review-manual  review the documentation changes only; don't perform a full build"
 
-# If the relevant repos do not exist, clone them, otherwise, update them.
 def delete_and_clone_repos(auto):
+    """If the relevant repos do not exist, clone them, otherwise, update them."""
     message = """Before building the release, we delete any old release repositories and then
 clone them again.  However, if you have had to run the script multiple times
 and no files have changed, you may skip this test.
@@ -157,7 +158,7 @@ def get_current_date():
 
 
 def build_annotation_tools_release(auto, version, afu_interm_dir):
-    jv = execute('java -version', True)
+    execute('java -version', True)
 
     date = get_current_date()
 
@@ -343,7 +344,7 @@ def main(argv):
     old_jsr308_version = current_distribution(CHECKER_FRAMEWORK)
     (old_jsr308_version, jsr308_version) = get_new_version("JSR308/Checker Framework", old_jsr308_version, auto)
 
-    if (old_jsr308_version == jsr308_version):
+    if old_jsr308_version == jsr308_version:
         print("It is *strongly discouraged* to not update the release version numbers for the Checker Framework " +
               "and jsr308-langtools even if no changes were made to these in a month. This would break so much " +
               "in the release scripts that they would become unusable.\n")
@@ -353,7 +354,7 @@ def main(argv):
     old_afu_version = get_afu_version_from_html(anno_html)
     (old_afu_version, afu_version) = get_new_version("Annotation File Utilities", old_afu_version, auto)
 
-    if (old_afu_version == afu_version):
+    if old_afu_version == afu_version:
         print("The AFU version has not changed. It is recommended to include a small bug fix or doc update in every " +
               "AFU release so the version number can be updated, but when that is not possible, before and after running " +
               "release_build, you must:\n" +

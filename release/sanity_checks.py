@@ -10,10 +10,9 @@ Created by Jonathan Burke 11/21/2012
 Copyright (c) 2012 University of Washington
 """
 
+import zipfile
 from release_vars  import *
 from release_utils import *
-import urllib
-import zipfile
 
 def javac_sanity_check(checker_framework_website, release_version):
     """

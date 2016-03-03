@@ -221,7 +221,7 @@ os.environ['JAVA_8_HOME'] = '/scratch/secs-jenkins/java/jdk1.8.0'
 os.environ['JAVA_HOME'] = os.environ['JAVA_7_HOME']
 
 EDITOR = os.getenv('EDITOR')
-if EDITOR == None:
+if EDITOR is None:
     EDITOR = 'emacs'
 
 PATH = os.environ['JAVA_HOME'] + "/bin:/scratch/secs-jenkins/tools/hevea-1.10/bin/:" + os.environ['PATH']

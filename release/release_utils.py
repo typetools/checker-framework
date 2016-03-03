@@ -10,20 +10,18 @@ Created by Jonathan Burke 11/21/2012
 Copyright (c) 2012 University of Washington
 """
 
-from release_vars  import *
 from xml.dom import minidom
 import sys
-import getopt
 import urllib2
 import re
 import subprocess
 from subprocess import Popen, PIPE
 import os
 import os.path
-import pwd
-import re
 import shutil
 import errno
+import datetime
+from release_vars  import *
 
 #=========================================================================================
 # Parse Args Utils # TODO: Perhaps use argparse module
@@ -60,7 +58,7 @@ def read_projects(argv, error_call_back):
             return matched_projects
 
         matched_project = match_arg(argv[index])
-        if matched_project == None:
+        if matched_project is None:
             print  "Unmatched project: " + argv[index]
             error = True
         else:
@@ -85,7 +83,7 @@ def print_projects(print_error_label, indent_level, indent_size):
     indentation = duplicate(duplicate(" ", indent_size), indent_level)
     project_to_short_cols = 27
 
-    if (print_error_label):
+    if print_error_label:
         print "projects:   You must specify at least one of the following projects or \"all\""
 
     print  indentation + pad_to("project", " ", project_to_short_cols) + "short-name"
@@ -95,11 +93,11 @@ def print_projects(print_error_label, indent_level, indent_size):
 
     print indentation + ALL_OPT
 
-def duplicate(str, times):
-    dup_str = ""
-    for index in range(0, times):
-        dup_str += str
-    return dup_str
+def duplicate(string, times):
+    result = ""
+    for dummy in range(0, times):
+        result += string
+    return result
 
 def pad_to(original_str, filler, size):
     missing = size - len(original_str)
@@ -138,10 +136,10 @@ If capture_output is not true, return the return code of the subprocess call."""
         return out
 
     else:
-        r = subprocess.call(args, cwd=working_dir)
-        if halt_if_fail and r:
-            raise Exception('Error %s while executing %s' % (r, command_args))
-        return r
+        result = subprocess.call(args, cwd=working_dir)
+        if halt_if_fail and result:
+            raise Exception('Error %s while executing %s' % (result, command_args))
+        return result
 
 def execute_write_to_file(command_args, output_file_path, halt_if_fail=True, working_dir=None):
     print "Executing: %s" % (command_args)
@@ -173,7 +171,7 @@ def prompt_yes_no(msg, default=False):
 
 def prompt_yn(msg):
     y_or_n = 'z'
-    while (y_or_n != 'y' and y_or_n != 'n'):
+    while y_or_n != 'y' and y_or_n != 'n':
         print msg + " [y|n]"
         y_or_n = raw_input().lower()
 
@@ -186,13 +184,13 @@ def maybe_prompt_yn(msg, prompt):
     return prompt_yn(msg)
 
 def prompt_until_yes():
-    while (not prompt_yes_no("Continue?")):
+    while not prompt_yes_no("Continue?"):
         pass
 
-def prompt_w_suggestion(msg, suggestion, validRegex=None):
-    "Only accepts answers that match validRegex."
+def prompt_w_suggestion(msg, suggestion, valid_regex=None):
+    "Only accepts answers that match valid_regex."
     answer = None
-    while (answer is None):
+    while answer is None:
         answer = raw_input(msg + " (%s): " % suggestion)
 
         if answer is None or answer == "":
@@ -200,20 +198,20 @@ def prompt_w_suggestion(msg, suggestion, validRegex=None):
         else:
             answer = answer.strip()
 
-            if validRegex is not None:
-                m = re.match(validRegex, answer)
+            if valid_regex is not None:
+                m = re.match(valid_regex, answer)
                 if m is None:
                     answer = None
-                    print "Invalid answer.  Validating regex: " + validRegex
+                    print "Invalid answer.  Validating regex: " + valid_regex
             else:
                 answer = suggestion
 
     return answer
 
-def maybe_prompt_w_suggestion(msg, suggestion, validRegex, prompt):
+def maybe_prompt_w_suggestion(msg, suggestion, valid_regex, prompt):
     if not prompt:
         return True
-    return prompt_w_suggestion(msg, suggestion, validRegex, prompt)
+    return prompt_w_suggestion(msg, suggestion, valid_regex, prompt)
 
 def check_tools(tools):
     print "\nChecking to make sure the following programs are installed:"
@@ -224,11 +222,11 @@ def check_tools(tools):
     map(check_command, tools)
     print ''
 
-def match_one(toTest, patternStrings):
-    for patternStr in patternStrings:
-        isMatch = re.match(patternStr, toTest)
-        if isMatch is not None:
-            return patternStr
+def match_one(to_test, pattern_strings):
+    for pattern_string in pattern_strings:
+        is_match = re.match(pattern_string, to_test)
+        if is_match is not None:
+            return pattern_string
 
     return None
 
@@ -236,12 +234,12 @@ def match_one(toTest, patternStrings):
 # Version Utils
 
 # From http://stackoverflow.com/a/1714190/173852, but doesn't strip trailing zeroes
-def version_number_to_array(versionNum):
+def version_number_to_array(version_num):
     """Given a version number, return an array of the elements, as integers."""
-    return [int(x) for x in versionNum.split(".")]
+    return [int(x) for x in version_num.split(".")]
 
-def version_array_to_string(versionArray):
-    return ".".join(str(x) for x in versionArray)
+def version_array_to_string(version_array):
+    return ".".join(str(x) for x in version_array)
 
 # From http://stackoverflow.com/a/1714190/173852
 def compare_version_numbers(version1, version2):
@@ -255,17 +253,17 @@ def test_max_version():
     assert max_version(["3.1.4", "4.2"]) == '4.2'
     assert max_version(["3.1.4", "14.2"]) == '14.2'
 
-def increment_version(versionNum, single_digits=False):
+def increment_version(version_num, single_digits=False):
     """
     Returns the next incremental version after the argument.
     If single_digits is true, do not permit any part to grow greater than 9.
     """
     # Drop the fourth and subsequent parts if present
-    versionArray = version_number_to_array(versionNum)[:3]
-    versionArray[-1] = versionArray[-1] + 1
-    if single_digits and versionArray[-1] > 9:
-        return increment_version(version_array_to_string(versionArray[0:-1]), single_digits) + ".0"
-    return version_array_to_string(versionArray)
+    version_array = version_number_to_array(version_num)[:3]
+    version_array[-1] = version_array[-1] + 1
+    if single_digits and version_array[-1] > 9:
+        return increment_version(version_array_to_string(version_array[0:-1]), single_digits) + ".0"
+    return version_array_to_string(version_array)
 
 def test_increment_version():
     assert increment_version('1.0.3') == '1.0.4'
@@ -446,15 +444,15 @@ def delete_and_clone(src_repo, dst_repo, bareflag):
 
 def clone(src_repo, dst_repo, bareflag):
     isGitRepo = False
-    if ("http" in src_repo):
-        if ("git" in src_repo):
+    if "http" in src_repo:
+        if "git" in src_repo:
             isGitRepo = True
     elif is_git(src_repo):
         isGitRepo = True
 
-    if (isGitRepo):
+    if isGitRepo:
         flags = ""
-        if (bareflag):
+        if bareflag:
             flags = "--bare"
         execute('git clone --quiet %s %s %s' % (flags, src_repo, dst_repo))
     else:
@@ -463,7 +461,7 @@ def clone(src_repo, dst_repo, bareflag):
 def is_repo_cleaned_and_updated(repo):
     if is_git(repo):
         # The idiom "not execute(..., capture_output=True)" evaluates to True when the captured output is empty.
-        if (git_bare_repo_exists_at_path(repo)):
+        if git_bare_repo_exists_at_path(repo):
             execute("git -C %s fetch origin" % (repo))
             is_updated = not execute("git -C %s diff master..FETCH_HEAD" % (repo), capture_output=True)
             return is_updated
@@ -501,7 +499,7 @@ def strip(repo):
     process.wait()
 
     if out:
-        match = re.search("\d+ files updated, \d+ files merged, \d+ files removed, \d+ files unresolved", out)
+        match = re.search(r"\d+ files updated, \d+ files merged, \d+ files removed, \d+ files unresolved", out)
         if match is None:
             match = re.search("empty revision set", err)
             if match is None:
@@ -521,18 +519,18 @@ def revert(repo):
     else:
         execute('hg -R %s revert --all' % repo)
 
-def purge(repo, all=False):
+def purge(repo, ignored_files=False):
     """Delete untracked files from the working directory, like "hg purge".
-If "all" argument is true, also delete ignored files."""
+If "ignored_files" argument is true, also delete ignored files."""
     if git_bare_repo_exists_at_path(repo):
         raise Exception("purge cannot be called on a bare repo (%s)" % repo)
     if is_git(repo):
-        if all:
+        if ignored_files:
             cmd = 'git -C %s clean -f -x' % repo
         else:
             cmd = 'git -C %s clean -f' % repo
     else:
-        if all:
+        if ignored_files:
             cmd = 'hg -R %s purge  --all' % repo
         else:
             cmd = 'hg -R %s purge' % repo
@@ -560,10 +558,10 @@ def check_repos(repos, fail_on_error, is_intermediate_repo_list):
     for repo in repos:
         if repo_exists(repo):
             if not is_repo_cleaned_and_updated(repo):
-                if (is_intermediate_repo_list):
+                if is_intermediate_repo_list:
                     print("\nWARNING: Intermediate repository " + repo + " is not up to date with respect to the live repository.\n" +
                           "A separate warning will not be issued for a build repository that is cloned off of the intermediate repository.")
-                if (fail_on_error):
+                if fail_on_error:
                     raise Exception('repo %s is not cleaned and updated!' % repo)
                 else:
                     if not prompt_yn('%s is not clean and up to date! Continue?' % repo):
@@ -581,7 +579,7 @@ def get_commit_line_for_tag(lines, revision, tag_prefixes):
     last_commit = None
 
     for line in lines:
-        if (line.startswith("commit ")):
+        if line.startswith("commit "):
             last_commit = line.split(" ")[1]
         else:
             for prefix in tag_prefixes:
@@ -618,13 +616,13 @@ def get_hash_for_tag(revision, repo_file_path, tag_prefixes):
         raise Exception(msg)
 
     tokens = target.split()
-    hash = tokens[1].split(":")[1]
-    return hash
+    result = tokens[1].split(":")[1]
+    return result
 
 def get_tip_hash(repository):
     return get_hash_for_tag("tip", repository, [""])
 
-def write_changesets_since(old_version, repository, tag_prefixes, file):
+def write_changesets_since(old_version, repository, tag_prefixes, outfile):
     if is_git(repository):
         old_tag = get_commit_for_tag(old_version, repository, tag_prefixes)
         cmd = "git -C %s log %s.." % (repository, old_tag)
@@ -634,9 +632,9 @@ def write_changesets_since(old_version, repository, tag_prefixes, file):
 
         cmd = "hg -R %s log -r%s:%s" % (repository, old_tag, tip_tag)
 
-    execute_write_to_file(cmd, file)
+    execute_write_to_file(cmd, outfile)
 
-def write_diff_to_file(old_version, repository, tag_prefixes, dir_path, file):
+def write_diff_to_file(old_version, repository, tag_prefixes, dir_path, outfile):
     if is_git(repository):
         old_tag = get_commit_for_tag(old_version, repository, tag_prefixes)
         cmd = "git -C %s diff -w %s.. %s" % (repository, old_tag, dir_path)
@@ -644,7 +642,7 @@ def write_diff_to_file(old_version, repository, tag_prefixes, dir_path, file):
         old_tag = get_hash_for_tag(old_version, repository, tag_prefixes)
         tip_tag = get_tip_hash(repository)
         cmd = "hg -R %s diff -w -r%s:%s %s" % (repository, old_tag, tip_tag, dir_path)
-    execute_write_to_file(cmd, file)
+    execute_write_to_file(cmd, outfile)
 
 def propose_change_review(dir_title, old_version, repository_path, tag_prefixes,
                           dir_path, diff_output_file):
@@ -676,7 +674,7 @@ def wget_file(source_url, destination_dir):
 def wget_dir(source_url, destination_dir):
     execute("wget -r -l1 --no-parent %s" % source_url, True, False, destination_dir)
 
-def wget_dir_flat(source_url, desination_dir):
+def wget_dir_flat(source_url, destination_dir):
     execute("wget -r -l1 --no-parent -nd %s" % source_url, True, False, destination_dir)
 
 def download_binary(source_url, destination, max_size):
@@ -694,9 +692,9 @@ def download_binary(source_url, destination, max_size):
     dest_file.close()
 
 def read_first_line(file_path):
-    file = open(file_path, 'r')
-    first_line = file.readline()
-    file.close()
+    infile = open(file_path, 'r')
+    first_line = infile.readline()
+    infile.close()
     return first_line
 
 def file_contains(path, text):
@@ -715,8 +713,8 @@ def file_prepend(path, text):
     f.write(contents)
     f.close()
 
-def first_line_containing(value, file):
-    p1 = Popen(["grep", "-m", "1", "-n", value, file], stdout=PIPE)
+def first_line_containing(value, infile):
+    p1 = Popen(["grep", "-m", "1", "-n", value, infile], stdout=PIPE)
     p2 = Popen(["sed", "-n", 's/^\\([0-9]*\\)[:].*/\\1/p'], stdin=p1.stdout, stdout=PIPE)
     return int(p2.communicate()[0])
 
@@ -730,8 +728,8 @@ def set_umask():
     # umask g+rw
     os.umask(os.umask(0) & 0b001111)
 
-def find_first_instance(regex, file, delim=""):
-    with open(file, 'r') as f:
+def find_first_instance(regex, infile, delim=""):
+    with open(infile, 'r') as f:
         pattern = re.compile(regex)
         for line in f:
             m = pattern.match(line)
@@ -751,12 +749,12 @@ def find_first_instance(regex, file, delim=""):
                     return m.group(0)
     return None
 
-def delete(file):
-    os.remove(file)
+def delete(file_to_delete):
+    os.remove(file_to_delete)
 
-def delete_if_exists(file):
-    if os.path.exists(file):
-        os.remove(file)
+def delete_if_exists(file_to_delete):
+    if os.path.exists(file_to_delete):
+        delete(file_to_delete)
 
 def delete_path(path):
     ensure_group_access(path)
@@ -800,9 +798,9 @@ def force_symlink(target_of_link, path_to_symlink):
 
 # note strs to find is mutated
 def are_in_file(file_path, strs_to_find):
-    file = open(file_path)
+    infile = open(file_path)
 
-    for line in file:
+    for line in infile:
         if len(strs_to_find) == 0:
             return True
 
@@ -818,8 +816,8 @@ def are_in_file(file_path, strs_to_find):
 def insert_before_line(to_insert, file_path, line):
     mid_line = line - 1
 
-    with open(file_path) as file:
-        content = file.readlines()
+    with open(file_path) as infile:
+        content = infile.readlines()
 
     output = open(file_path, "w")
     for i in range(0, mid_line):
@@ -852,33 +850,32 @@ def changelog_header(filename):
     return ''.join(header)
 
 def get_changelog_date():
-    import datetime
     return datetime.datetime.now().strftime("%d %b %Y")
 
 # Ask the user whether they want to edit the changelog
 # Prepend a changelog message to the changelog and then open the passed in editor
 def edit_changelog(projectName, path, version, description, editor):
     edit = raw_input("Edit the %s changelog? [Y/n]" % projectName)
-    if not (edit == "n"):
+    if not edit == "n":
         if not file_contains(path, version):
             file_prepend(path, description)
             execute([editor, path])
 
 
-# Create a message to add to the current checker framework change log
 def make_checkers_change_desc(version, changes):
-    """Version %s, %s
+    """Create a message to add to the current checker framework change log."""
+    return """Version %s, %s
 
 
 %s
 
 ----------------------------------------------------------------------
-"""  % (version, get_changelog_date(), changes)
+""" % (version, get_changelog_date(), changes)
 
 
-# Create a message to add to the current JSR308 change log
 def make_jsr308_change_desc(version, changes, latest_jdk):
-    """Version %s, %s
+    """Create a message to add to the current JSR308 change log."""
+    return """Version %s, %s
 
 Base build
   Updated to OpenJDK langtools build b%s
@@ -888,7 +885,7 @@ Base build
 ----------------------------------------------------------------------
 """ % (version, get_changelog_date(), latest_jdk, changes)
 
-# Checker Framework Specific Change log method
+# Checker-Framework-specific changelog method.
 # Queries whether or not the user wants to update the checker framework changelog
 # then opens the changelog in the supplied editor
 def edit_checkers_changelog(version, path, editor, changes=""):
@@ -976,8 +973,8 @@ def mvn_deploy_mvn_plugin(pluginDir, pom, version, mavenRepo):
     jarFile = find_mvn_plugin_jar(pluginDir, version)
     return mvn_deploy(jarFile, pom, mavenRepo)
 
-def mvn_sign_and_deploy(url, repo_id, pom_file, file, classifier, pgp_user, pgp_passphrase):
-    cmd = "mvn gpg:sign-and-deploy-file -Durl=%s -DrepositoryId=%s -DpomFile=%s -Dfile=%s" % (url, repo_id, pom_file, file)
+def mvn_sign_and_deploy(url, repo_id, pom_file, file_property, classifier, pgp_user, pgp_passphrase):
+    cmd = "mvn gpg:sign-and-deploy-file -Durl=%s -DrepositoryId=%s -DpomFile=%s -Dfile=%s" % (url, repo_id, pom_file, file_property)
     if classifier is not None:
         cmd += " -Dclassifier=" + classifier
 
@@ -998,7 +995,7 @@ def print_step(step):
     print  step
 
     dashStr = ""
-    for i in range(0, len(step)):
+    for dummy in range(0, len(step)):
         dashStr += "-"
     print  dashStr
 
