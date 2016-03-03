@@ -27,14 +27,14 @@ import errno
 
 #=========================================================================================
 # Parse Args Utils # TODO: Perhaps use argparse module
-def match_arg( arg ):
+def match_arg(arg):
     matched_project = None
     for project in PROJECTS_TO_SHORTNAMES:
         if arg == project[0] or arg == project[1]:
             matched_project = project
     return matched_project
 
-def read_projects( argv, error_call_back ):
+def read_projects(argv, error_call_back):
     matched_projects = {
         LT_OPT  : False,
         AFU_OPT : False,
@@ -46,12 +46,12 @@ def read_projects( argv, error_call_back ):
     arg_length = len(sys.argv)
 
     if arg_length < 2:
-        print("You  must select at least one project!")
+        print "You  must select at least one project!"
         error_call_back()
         sys.exit(1)
 
     error = False
-    for index in range( 1, arg_length ):
+    for index in range(1, arg_length):
         arg = argv[index]
 
         if arg == ALL_OPT:
@@ -59,12 +59,12 @@ def read_projects( argv, error_call_back ):
                 matched_projects[project[0]] = True
             return matched_projects
 
-        matched_project = match_arg( argv[index] )
+        matched_project = match_arg(argv[index])
         if matched_project == None:
-            print( "Unmatched project: " + argv[index] )
+            print  "Unmatched project: " + argv[index]
             error = True
         else:
-            matched_projects[ matched_project[0] ] = True
+            matched_projects[matched_project[0]] = True
 
     if error:
         error_call_back()
@@ -72,48 +72,48 @@ def read_projects( argv, error_call_back ):
 
     return matched_projects
 
-def add_project_dependencies( matched_projects ):
+def add_project_dependencies(matched_projects):
     if matched_projects[CF_OPT]:
         matched_projects[AFU_OPT] = True
-        matched_projects[LT_OPT]  = True
+        matched_projects[LT_OPT] = True
     else:
         if matched_projects[AFU_OPT]:
             matched_projects[LT_OPT] = True
 
 
-def print_projects( print_error_label, indent_level, indent_size ):
-    indentation = duplicate( duplicate( " ", indent_size ), indent_level )
+def print_projects(print_error_label, indent_level, indent_size):
+    indentation = duplicate(duplicate(" ", indent_size), indent_level)
     project_to_short_cols = 27
 
-    if ( print_error_label ):
-        print("projects:   You must specify at least one of the following projects or \"all\"")
+    if (print_error_label):
+        print "projects:   You must specify at least one of the following projects or \"all\""
 
-    print( indentation + pad_to( "project", " ", project_to_short_cols ) + "short-name" )
+    print  indentation + pad_to("project", " ", project_to_short_cols) + "short-name"
 
     for project in PROJECTS_TO_SHORTNAMES:
-        print(indentation + pad_to( project[0], " ", project_to_short_cols ) + project[1])
+        print indentation + pad_to(project[0], " ", project_to_short_cols) + project[1]
 
-    print(indentation + ALL_OPT)
+    print indentation + ALL_OPT
 
-def duplicate( str, times ):
+def duplicate(str, times):
     dup_str = ""
     for index in range(0, times):
         dup_str += str
     return dup_str
 
-def pad_to( original_str, filler, size ):
+def pad_to(original_str, filler, size):
     missing = size - len(original_str)
-    return original_str + duplicate( filler, missing )
+    return original_str + duplicate(filler, missing)
 
-def read_auto( argv ):
-    for index in range( 1, len( argv ) ):
+def read_auto(argv):
+    for index in range(1, len(argv)):
         if argv[index] == "--auto":
             return True
 
     return False
 
-def read_review_manual( argv ):
-    for index in range( 1, len( argv ) ):
+def read_review_manual(argv):
+    for index in range(1, len(argv)):
         if argv[index] == "--review-manual":
             return True
 
@@ -127,7 +127,7 @@ def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=N
 If capture_output is true, then return the output (and ignore the halt_if_fail argument).
 If capture_output is not true, return the return code of the subprocess call."""
 
-    print("Executing: %s" % (command_args))
+    print "Executing: %s" % (command_args)
     import shlex
     args = shlex.split(command_args) if isinstance(command_args, str) else command_args
 
@@ -144,11 +144,11 @@ If capture_output is not true, return the return code of the subprocess call."""
         return r
 
 def execute_write_to_file(command_args, output_file_path, halt_if_fail=True, working_dir=None):
-    print("Executing: %s" % (command_args))
+    print "Executing: %s" % (command_args)
     import shlex
     args = shlex.split(command_args) if isinstance(command_args, str) else command_args
 
-    output_file = open( output_file_path, 'w+' )
+    output_file = open(output_file_path, 'w+')
     process = subprocess.Popen(args, stdout=output_file, stderr=output_file, cwd=working_dir)
     process.communicate()
     process.wait()
@@ -163,18 +163,18 @@ def check_command(command):
         raise AssertionError('command not found: %s' % command)
     print ''
 
-def prompt_yes_no( msg, default=False ):
+def prompt_yes_no(msg, default=False):
     default_str = "no"
     if default:
-        default_str="yes"
+        default_str = "yes"
 
     result = prompt_w_suggestion(msg, default_str, "^(Yes|yes|No|no)$")
-    return is_yes( result )
+    return is_yes(result)
 
 def prompt_yn(msg):
     y_or_n = 'z'
     while (y_or_n != 'y' and y_or_n != 'n'):
-        print(msg + " [y|n]")
+        print msg + " [y|n]"
         y_or_n = raw_input().lower()
 
     return y_or_n == 'y'
@@ -186,7 +186,7 @@ def maybe_prompt_yn(msg, prompt):
     return prompt_yn(msg)
 
 def prompt_until_yes():
-    while ( not prompt_yes_no("Continue?" ) ):
+    while (not prompt_yes_no("Continue?")):
         pass
 
 def prompt_w_suggestion(msg, suggestion, validRegex=None):
@@ -216,11 +216,11 @@ def maybe_prompt_w_suggestion(msg, suggestion, validRegex, prompt):
     return prompt_w_suggestion(msg, suggestion, validRegex, prompt)
 
 def check_tools(tools):
-    print("\nChecking to make sure the following programs are installed:")
-    print(', '.join(tools))
+    print "\nChecking to make sure the following programs are installed:"
+    print ', '.join(tools)
     print('Note: If you are NOT working on buffalo.cs.washington.edu then you ' +
-        'likely need to change the variables that are set in release.py\n' +
-        'Search for "Set environment variables".')
+          'likely need to change the variables that are set in release.py\n' +
+          'Search for "Set environment variables".')
     map(check_command, tools)
     print ''
 
@@ -247,9 +247,9 @@ def version_array_to_string(versionArray):
 def compare_version_numbers(version1, version2):
     return cmp(version_number_to_array(version1), version_number_to_array(version2))
 
-def max_version( strs ):
+def max_version(strs):
     """Given a list of version number strings, returns the largest one."""
-    return max(strs, key = version_number_to_array)
+    return max(strs, key=version_number_to_array)
 
 def test_max_version():
     assert max_version(["3.1.4", "4.2"]) == '4.2'
@@ -310,19 +310,19 @@ def current_distribution(checker_framework_dir):
     Reads the checker framework version from build-common.properties
     returns the version of the current release
     """
-    ver_re = re.compile( r"""build.version = (\d+\.\d+\.\d+(?:\.\d+){0,1})""" )
-    build_props_location = os.path.join( checker_framework_dir, "build-common.properties" )
-    build_props = open( build_props_location )
+    ver_re = re.compile(r"""build.version = (\d+\.\d+\.\d+(?:\.\d+){0,1})""")
+    build_props_location = os.path.join(checker_framework_dir, "build-common.properties")
+    build_props = open(build_props_location)
 
     for line in build_props:
         match = ver_re.search(line)
         if match:
             return match.group(1)
 
-    print( "Couldn't find checker framework version in file: " + build_props_location )
+    print  "Couldn't find checker framework version in file: " + build_props_location
     sys.exit(1)
 
-def extract_from_site( site, open_tag, close_tag ):
+def extract_from_site(site, open_tag, close_tag):
     """
     Reads a string from between open and close tag at the given url
     """
@@ -341,27 +341,27 @@ def latest_openjdk(site):
     return result.group(1)
 
 
-def find_latest_version( version_dir ):
-    return max_version( filter( os.path.isdir, os.listdir(version_dir) ) )
+def find_latest_version(version_dir):
+    return max_version(filter(os.path.isdir, os.listdir(version_dir)))
 
-def get_afu_version_from_html( html_file_path ):
+def get_afu_version_from_html(html_file_path):
     version_regex = "<!-- afu-version -->(\\d+\\.\\d+\\.?\\d*),.*<!-- /afu-version -->"
-    version   = find_first_instance(version_regex, html_file_path, "")
+    version = find_first_instance(version_regex, html_file_path, "")
     if version is None:
-        raise Exception( "Could not detect Annotation File Utilities version in file " + html_file_path )
+        raise Exception("Could not detect Annotation File Utilities version in file " + html_file_path)
 
     return version
 
 #=========================================================================================
 # Mercurial Utils
 
-def is_git( repo_root ):
+def is_git(repo_root):
     return is_git_private(repo_root, True)
 
-def is_git_not_bare( repo_root ):
+def is_git_not_bare(repo_root):
     return is_git_private(repo_root, False)
 
-def is_git_private( repo_root, return_value_on_bare ):
+def is_git_private(repo_root, return_value_on_bare):
     if git_bare_repo_exists_at_path(repo_root):
         return return_value_on_bare
     if git_repo_exists_at_path(repo_root):
@@ -370,18 +370,18 @@ def is_git_private( repo_root, return_value_on_bare ):
         return False
     raise Exception(repo_root + " is not recognized as a git, git bare, or hg repository")
 
-def git_bare_repo_exists_at_path( repo_root ): # Bare git repos have no .git directory but they have a refs directory
+def git_bare_repo_exists_at_path(repo_root): # Bare git repos have no .git directory but they have a refs directory
     if os.path.isdir(repo_root + "/refs"):
         return True
     return False
 
-def git_repo_exists_at_path( repo_root ):
+def git_repo_exists_at_path(repo_root):
     return os.path.isdir(repo_root + "/.git") or git_bare_repo_exists_at_path(repo_root)
 
-def hg_repo_exists_at_path( repo_root ):
+def hg_repo_exists_at_path(repo_root):
     return os.path.isdir(repo_root + "/.hg")
 
-def hg_push_or_fail( repo_root ):
+def hg_push_or_fail(repo_root):
     if is_git(repo_root):
         cmd = 'git -C %s push --tags' % repo_root
         result = os.system(cmd)
@@ -395,7 +395,7 @@ def hg_push_or_fail( repo_root ):
     if result is not 0:
         raise Exception("Could not push to: " + repo_root)
 
-def hg_push( repo_root ):
+def hg_push(repo_root):
     if is_git(repo_root):
         execute('git -C %s push --tags' % repo_root)
         execute('git -C %s push' % repo_root)
@@ -413,8 +413,8 @@ def update_project(path):
 
 def update_projects(paths):
     for path in paths:
-        update_project( path )
-        # print("Checking changes")
+        update_project(path)
+        # print "Checking changes"
         # execute('hg -R %s outgoing' % path)
 
 # Commit the changes we made for this release
@@ -489,7 +489,7 @@ def repo_exists(repo_root):
 def strip(repo):
     """Deletes all outgoing changesets"""
     if git_bare_repo_exists_at_path(repo):
-        raise Exception("strip cannot be called on a bare repo ( %s )" % repo)
+        raise Exception("strip cannot be called on a bare repo (%s)" % repo)
     elif is_git(repo):
         execute("git -C %s reset --hard origin/master" % repo)
         return
@@ -506,7 +506,7 @@ def strip(repo):
             match = re.search("empty revision set", err)
             if match is None:
                 raise Exception("Could not recognize strip output: (%s, %s, %s)"
-                        % (process.returncode, out, err))
+                                % (process.returncode, out, err))
             else:
                 print err
         else:
@@ -515,7 +515,7 @@ def strip(repo):
 
 def revert(repo):
     if git_bare_repo_exists_at_path(repo):
-        raise Exception("revert cannot be called on a bare repo ( %s )" % repo)
+        raise Exception("revert cannot be called on a bare repo (%s)" % repo)
     if is_git(repo):
         execute('git -C %s reset --hard' % repo)
     else:
@@ -525,7 +525,7 @@ def purge(repo, all=False):
     """Delete untracked files from the working directory, like "hg purge".
 If "all" argument is true, also delete ignored files."""
     if git_bare_repo_exists_at_path(repo):
-        raise Exception("purge cannot be called on a bare repo ( %s )" % repo)
+        raise Exception("purge cannot be called on a bare repo (%s)" % repo)
     if is_git(repo):
         if all:
             cmd = 'git -C %s clean -f -x' % repo
@@ -539,7 +539,7 @@ If "all" argument is true, also delete ignored files."""
     execute(cmd)
 
 def clean_repo(repo, prompt):
-    if maybe_prompt_yn( 'Remove all modified files, untracked files and outgoing commits from %s ?' % repo, prompt ):
+    if maybe_prompt_yn('Remove all modified files, untracked files and outgoing commits from %s ?' % repo, prompt):
         ensure_group_access(repo)
         if git_bare_repo_exists_at_path(repo):
             return
@@ -550,7 +550,7 @@ def clean_repo(repo, prompt):
     print ''
 
 def clean_repos(repos, prompt):
-    if maybe_prompt_yn( 'Remove all modified files, untracked files and outgoing commits from:\n%s ?' % '\n'.join(repos), prompt ):
+    if maybe_prompt_yn('Remove all modified files, untracked files and outgoing commits from:\n%s ?' % '\n'.join(repos), prompt):
         for repo in repos:
             if repo_exists(repo):
                 clean_repo(repo, False)
@@ -561,27 +561,27 @@ def check_repos(repos, fail_on_error, is_intermediate_repo_list):
         if repo_exists(repo):
             if not is_repo_cleaned_and_updated(repo):
                 if (is_intermediate_repo_list):
-                    print( "\nWARNING: Intermediate repository " + repo + " is not up to date with respect to the live repository.\n" +
-                           "A separate warning will not be issued for a build repository that is cloned off of the intermediate repository.")
+                    print("\nWARNING: Intermediate repository " + repo + " is not up to date with respect to the live repository.\n" +
+                          "A separate warning will not be issued for a build repository that is cloned off of the intermediate repository.")
                 if (fail_on_error):
                     raise Exception('repo %s is not cleaned and updated!' % repo)
                 else:
-                    if not prompt_yn( '%s is not clean and up to date! Continue?' % repo):
-                        raise Exception( '%s is not clean and up to date! Halting!' % repo )
+                    if not prompt_yn('%s is not clean and up to date! Continue?' % repo):
+                        raise Exception('%s is not clean and up to date! Halting!' % repo)
 
-def get_tag_line( lines, revision, tag_prefixes ):
+def get_tag_line(lines, revision, tag_prefixes):
     for line in lines:
         for prefix in tag_prefixes:
             full_tag = prefix + revision
-            if line.startswith( full_tag ):
+            if line.startswith(full_tag):
                 return line
     return None
 
-def get_commit_line_for_tag( lines, revision, tag_prefixes ):
+def get_commit_line_for_tag(lines, revision, tag_prefixes):
     last_commit = None
 
     for line in lines:
-        if (line.startswith( "commit " )):
+        if (line.startswith("commit ")):
             last_commit = line.split(" ")[1]
         else:
             for prefix in tag_prefixes:
@@ -590,7 +590,7 @@ def get_commit_line_for_tag( lines, revision, tag_prefixes ):
                     return last_commit
     return None
 
-def get_commit_for_tag( revision, repo_file_path, tag_prefixes ):
+def get_commit_for_tag(revision, repo_file_path, tag_prefixes):
     if not is_git(repo_file_path):
         raise Exception("get_commit_for_tag is only defined for git repositories")
 
@@ -600,101 +600,101 @@ def get_commit_for_tag( revision, repo_file_path, tag_prefixes ):
 
     commit = lines[0]
     if commit is None:
-        msg = "Could not find revision %s in repo %s using tags %s " %  ( revision, repo_file_path, ",".join( tag_prefixes ) )
-        raise Exception( msg )
+        msg = "Could not find revision %s in repo %s using tags %s " %  (revision, repo_file_path, ",".join(tag_prefixes))
+        raise Exception(msg)
 
     return commit
 
 
-def get_hash_for_tag( revision, repo_file_path, tag_prefixes ):
+def get_hash_for_tag(revision, repo_file_path, tag_prefixes):
     if is_git(repo_file_path):
         raise Exception("get_hash_for_tag is not defined for git repositories")
     tags = execute("hg tags -R " + repo_file_path, True, True)
-    lines = tags.split( "\n" )
+    lines = tags.split("\n")
 
-    target = get_tag_line( lines, revision, tag_prefixes )
+    target = get_tag_line(lines, revision, tag_prefixes)
     if target is None:
-        msg = "Could not find revision %s in repo %s using tags %s " %  ( revision, repo_file_path, ",".join( tag_prefixes ) )
-        raise Exception( msg )
+        msg = "Could not find revision %s in repo %s using tags %s " %  (revision, repo_file_path, ",".join(tag_prefixes))
+        raise Exception(msg)
 
     tokens = target.split()
     hash = tokens[1].split(":")[1]
     return hash
 
-def get_tip_hash( repository ):
-    return get_hash_for_tag( "tip", repository, [""] )
+def get_tip_hash(repository):
+    return get_hash_for_tag("tip", repository, [""])
 
-def write_changesets_since( old_version, repository, tag_prefixes, file ):
+def write_changesets_since(old_version, repository, tag_prefixes, file):
     if is_git(repository):
-        old_tag = get_commit_for_tag( old_version, repository, tag_prefixes )
-        cmd = "git -C %s log %s.." % ( repository, old_tag )
+        old_tag = get_commit_for_tag(old_version, repository, tag_prefixes)
+        cmd = "git -C %s log %s.." % (repository, old_tag)
     else:
-        old_tag = get_hash_for_tag( old_version, repository, tag_prefixes )
-        tip_tag = get_tip_hash( repository )
+        old_tag = get_hash_for_tag(old_version, repository, tag_prefixes)
+        tip_tag = get_tip_hash(repository)
 
-        cmd = "hg -R %s log -r%s:%s" % ( repository, old_tag, tip_tag )
+        cmd = "hg -R %s log -r%s:%s" % (repository, old_tag, tip_tag)
 
-    execute_write_to_file( cmd, file)
+    execute_write_to_file(cmd, file)
 
-def write_diff_to_file( old_version, repository, tag_prefixes, dir_path, file ):
+def write_diff_to_file(old_version, repository, tag_prefixes, dir_path, file):
     if is_git(repository):
-        old_tag = get_commit_for_tag( old_version, repository, tag_prefixes )
-        cmd = "git -C %s diff -w %s.. %s" % (repository, old_tag, dir_path )
+        old_tag = get_commit_for_tag(old_version, repository, tag_prefixes)
+        cmd = "git -C %s diff -w %s.. %s" % (repository, old_tag, dir_path)
     else:
-         old_tag = get_hash_for_tag( old_version, repository, tag_prefixes )
-         tip_tag = get_tip_hash( repository )
-         cmd = "hg -R %s diff -w -r%s:%s %s" % (repository, old_tag, tip_tag, dir_path )
-    execute_write_to_file( cmd, file )
+        old_tag = get_hash_for_tag(old_version, repository, tag_prefixes)
+        tip_tag = get_tip_hash(repository)
+        cmd = "hg -R %s diff -w -r%s:%s %s" % (repository, old_tag, tip_tag, dir_path)
+    execute_write_to_file(cmd, file)
 
-def propose_change_review( dir_title, old_version, repository_path, tag_prefixes,
-                              dir_path, diff_output_file ):
-    if prompt_yes_no( "Review %s?" %dir_title, True ):
-        write_diff_to_file( old_version, repository_path, tag_prefixes, dir_path, diff_output_file )
+def propose_change_review(dir_title, old_version, repository_path, tag_prefixes,
+                          dir_path, diff_output_file):
+    if prompt_yes_no("Review %s?" %dir_title, True):
+        write_diff_to_file(old_version, repository_path, tag_prefixes, dir_path, diff_output_file)
         # A side effect here is that the user will see updated version numbers in this diff that won't
         # be reflected in their local repository.  I think that is OK.  The version numbers will be updated
         # when the actual release is made anyway.
         # Alternatively the process could be modified such that the version number updates are not made
         # before the user sees the diff. However that would mean the user never gets a chance to review
         # those updates.
-        print( "Please review " + dir_title + " and make any edits you deem necessary in your local clone of the repository." )
-        print( "Diff file: " + diff_output_file )
+        print  "Please review " + dir_title + " and make any edits you deem necessary in your local clone of the repository."
+        print  "Diff file: " + diff_output_file
         prompt_until_yes()
 
 #=========================================================================================
 # File Utils
 
 # since download_binary does not seem to work on source files
-def wget_file( source_url, destination_dir ):
-    print("DEST DIR: " + destination_dir)
-    execute( "wget %s" % source_url, True, False, destination_dir )
+def wget_file(source_url, destination_dir):
+    print "DEST DIR: " + destination_dir
+    execute("wget %s" % source_url, True, False, destination_dir)
 
 # Note:  This will download the directory into a directory location as follow:
 # Suppose we have a url:  http://level0/level1/target
 # It will download the files into the following directory
 # destination_dir/level0/level1/target
 # use wget_dir_flat if you'd like all files to be just output to destination_dir
-def wget_dir( source_url, destination_dir ):
-    execute( "wget -r -l1 --no-parent %s" % source_url, True, False, destination_dir )
+def wget_dir(source_url, destination_dir):
+    execute("wget -r -l1 --no-parent %s" % source_url, True, False, destination_dir)
 
-def wget_dir_flat( source_url, desination_dir ):
-    execute( "wget -r -l1 --no-parent -nd %s" % source_url, True, False, destination_dir )
+def wget_dir_flat(source_url, desination_dir):
+    execute("wget -r -l1 --no-parent -nd %s" % source_url, True, False, destination_dir)
 
-def download_binary( source_url, destination, max_size ):
+def download_binary(source_url, destination, max_size):
     http_response = urllib2.urlopen(url=source_url)
     content_length = http_response.headers['content-length']
 
     if content_length is None:
-        raise Exception( "No content-length when downloading: " + source_url )
+        raise Exception("No content-length when downloading: " + source_url)
 
-    if int( content_length ) > max_size:
-        raise Exception( "Content-length ( " + content_length + " ) greater than max_size ( " + max_size + " ) " )
+    if int(content_length) > max_size:
+        raise Exception("Content-length (" + content_length + ") greater than max_size (" + max_size + ") ")
 
-    dest_file = open(destination,'wb')
+    dest_file = open(destination, 'wb')
     dest_file.write(http_response.read())
     dest_file.close()
 
-def read_first_line( file_path ):
-    file = open( file_path, 'r' )
+def read_first_line(file_path):
+    file = open(file_path, 'r')
     first_line = file.readline()
     file.close()
     return first_line
@@ -751,27 +751,27 @@ def find_first_instance(regex, file, delim=""):
                     return m.group(0)
     return None
 
-def delete( file ):
+def delete(file):
     os.remove(file)
 
-def delete_if_exists( file ):
+def delete_if_exists(file):
     if os.path.exists(file):
         os.remove(file)
 
-def delete_path( path ):
+def delete_path(path):
     ensure_group_access(path)
     shutil.rmtree(path)
 
-def delete_path_if_exists( path ):
+def delete_path_if_exists(path):
     if os.path.exists(path):
         delete_path(path)
 
-def prompt_or_auto_delete( path, auto ):
+def prompt_or_auto_delete(path, auto):
     if not auto:
         prompt_to_delete(path)
     else:
         print
-        delete_path_if_exists( path )
+        delete_path_if_exists(path)
 
 def is_yes(prompt_results):
     if prompt_results == "yes" or prompt_results == "Yes":
@@ -790,50 +790,50 @@ def prompt_to_delete(path):
         if result == "Yes" or result == "yes":
             delete_path(path)
 
-def force_symlink( target_of_link, path_to_symlink ):
+def force_symlink(target_of_link, path_to_symlink):
     try:
-        os.symlink( target_of_link, path_to_symlink )
+        os.symlink(target_of_link, path_to_symlink)
     except OSError, e:
         if e.errno == errno.EEXIST:
-            os.remove( path_to_symlink )
-            os.symlink( target_of_link, path_to_symlink )
+            os.remove(path_to_symlink)
+            os.symlink(target_of_link, path_to_symlink)
 
 # note strs to find is mutated
-def are_in_file( file_path, strs_to_find ):
-    file = open( file_path )
+def are_in_file(file_path, strs_to_find):
+    file = open(file_path)
 
     for line in file:
-        if len( strs_to_find ) == 0:
-                    return True
+        if len(strs_to_find) == 0:
+            return True
 
         index = 0
-        while index < len( strs_to_find ):
+        while index < len(strs_to_find):
             if strs_to_find[index] in line:
                 del strs_to_find[index]
             else:
                 index = index + 1
 
-    return len( strs_to_find ) == 0
+    return len(strs_to_find) == 0
 
-def insert_before_line( to_insert, file_path, line ):
+def insert_before_line(to_insert, file_path, line):
     mid_line = line - 1
 
-    with open( file_path ) as file:
+    with open(file_path) as file:
         content = file.readlines()
 
     output = open(file_path, "w")
-    for i in range(0, mid_line ):
-        output.write( content[i] )
+    for i in range(0, mid_line):
+        output.write(content[i])
 
-    output.write( to_insert )
+    output.write(to_insert)
 
-    for i in range( mid_line, len(content) ):
-        output.write( content[i] )
+    for i in range(mid_line, len(content)):
+        output.write(content[i])
 
     output.close()
 
-def create_empty_file( file_path ):
-    dest_file = open(file_path,'wb')
+def create_empty_file(file_path):
+    dest_file = open(file_path, 'wb')
     dest_file.close()
 
 #=========================================================================================
@@ -901,7 +901,7 @@ def edit_checkers_changelog(version, path, editor, changes=""):
 # then opens the changelog in the supplied editor
 def edit_langtools_changelog(version, openJdkReleaseSite, path, editor, changes=""):
     latest_jdk = latest_openjdk(openJdkReleaseSite)
-    print("Latest OpenJDK release is b%s" % latest_jdk)
+    print "Latest OpenJDK release is b%s" % latest_jdk
     desc = make_jsr308_change_desc(version, changes, latest_jdk)
     edit_changelog("JSR308 Langtools", path, version, desc, editor)
 
@@ -911,9 +911,9 @@ def edit_langtools_changelog(version, openJdkReleaseSite, path, editor, changes=
 def mvn_deploy_file(name, binary, version, dest_repo, group_id, pom=None):
     pomOps = ""
     if pom is None:
-        pomOps= "-DgeneratePom=True"
+        pomOps = "-DgeneratePom=True"
     else:
-        pomOps="""-DgeneratePom=false -DpomFile=%s""" % (pom)
+        pomOps = """-DgeneratePom=false -DpomFile=%s""" % (pom)
 
     command = """
     mvn deploy:deploy-file
@@ -937,7 +937,7 @@ def mvn_deploy(binary, pom, url):
     return execute(command)
 
 def mvn_install(pluginDir):
-    pom=pluginDirToPom(pluginDir)
+    pom = pluginDirToPom(pluginDir)
     execute("mvn -f %s clean package" % pom)
     execute("mvn -f %s install" % pom)
 
@@ -950,7 +950,7 @@ def mvn_plugin_version(pluginDir):
     dom = minidom.parse(pomLoc)
     version = ""
     project = dom.getElementsByTagName("project").item(0)
-    for i in range( 0, project.childNodes.length):
+    for i in range(0, project.childNodes.length):
         childNode = project.childNodes.item(i)
         if childNode.nodeName == 'version':
             if childNode.hasChildNodes():
@@ -976,35 +976,35 @@ def mvn_deploy_mvn_plugin(pluginDir, pom, version, mavenRepo):
     jarFile = find_mvn_plugin_jar(pluginDir, version)
     return mvn_deploy(jarFile, pom, mavenRepo)
 
-def mvn_sign_and_deploy( url, repo_id, pom_file, file, classifier, pgp_user, pgp_passphrase ):
+def mvn_sign_and_deploy(url, repo_id, pom_file, file, classifier, pgp_user, pgp_passphrase):
     cmd = "mvn gpg:sign-and-deploy-file -Durl=%s -DrepositoryId=%s -DpomFile=%s -Dfile=%s" % (url, repo_id, pom_file, file)
     if classifier is not None:
         cmd += " -Dclassifier=" + classifier
 
-    cmd += ( " -Dgpg.keyname=%s '-Dgpg.passphrase=%s'" % ( pgp_user, pgp_passphrase ) )
+    cmd += (" -Dgpg.keyname=%s '-Dgpg.passphrase=%s'" % (pgp_user, pgp_passphrase))
 
     execute(cmd)
 
 def mvn_sign_and_deploy_all(url, repo_id, pom_file, artifact_jar, source_jar, javadoc_jar, pgp_user, pgp_passphrase):
-    mvn_sign_and_deploy(url, repo_id, pom_file, artifact_jar, None,     pgp_user, pgp_passphrase)
-    mvn_sign_and_deploy(url, repo_id, pom_file, source_jar,  "sources", pgp_user, pgp_passphrase)
+    mvn_sign_and_deploy(url, repo_id, pom_file, artifact_jar, None, pgp_user, pgp_passphrase)
+    mvn_sign_and_deploy(url, repo_id, pom_file, source_jar, "sources", pgp_user, pgp_passphrase)
     mvn_sign_and_deploy(url, repo_id, pom_file, javadoc_jar, "javadoc", pgp_user, pgp_passphrase)
 
 #=========================================================================================
 # Misc. Utils
 
-def print_step( step ):
-    print( "\n" )
-    print( step )
+def print_step(step):
+    print  "\n"
+    print  step
 
     dashStr = ""
-    for i in range(0, len(step) ):
+    for i in range(0, len(step)):
         dashStr += "-"
-    print( dashStr )
+    print  dashStr
 
-#def find_project_locations( ):
-#    afu_version       = max_version( AFU_INTERM_RELEASES_DIR    )
-#    jsr308_cf_version = max_version( JSR308_INTERM_RELEASES_DIR )
+#def find_project_locations():
+#    afu_version       = max_version(AFU_INTERM_RELEASES_DIR)
+#    jsr308_cf_version = max_version(JSR308_INTERM_RELEASES_DIR)
 #
 #    return {
 #        LT_OPT : {
@@ -1013,8 +1013,8 @@ def print_step( step ):
 #            repo_source  : INTERM_JSR308_REPO,
 #            repo_dest    : LIVE_JSR308_REPO,
 #
-#            deployment_source : os.path.join( JSR308_INTERM_RELEASES_DIR, jsr308_cf_version )
-#            deployment_dest   : os.path.join( JSR308_LIVE_RELEASES_DIR,   jsr308_cf_version )
+#            deployment_source : os.path.join(JSR308_INTERM_RELEASES_DIR, jsr308_cf_version)
+#            deployment_dest   : os.path.join(JSR308_LIVE_RELEASES_DIR, jsr308_cf_version)
 #        },
 #
 #        AFU_OPT : {
@@ -1023,8 +1023,8 @@ def print_step( step ):
 #            repo_source  : INTERM_AFU_REPO,
 #            repo_dest    : LIVE_AFU_REPO,
 #
-#            deployment_source : os.path.join( AFU_INTERM_RELEASES_DIR, afu_version )
-#            deployment_dest   : os.path.join( AFU_LIVE_RELEASES_DIR,   afu_version )
+#            deployment_source : os.path.join(AFU_INTERM_RELEASES_DIR, afu_version)
+#            deployment_dest   : os.path.join(AFU_LIVE_RELEASES_DIR, afu_version)
 #        },
 #
 #        CF_OPT : {
@@ -1033,13 +1033,13 @@ def print_step( step ):
 #            repo_source : INTERM_CHECKER_REPO,
 #            repo_dest   : LIVE_CHECKER_REPO,
 #
-#            deployment_source : os.path.join( CHECKER_INTERM_RELEASES_DIR, jsr308_cf_version )
-#            deployment_dest   : os.path.join( CHECKER_LIVE_RELEASES_DIR,   jsr308_cf_version )
+#            deployment_source : os.path.join(CHECKER_INTERM_RELEASES_DIR, jsr308_cf_version)
+#            deployment_dest   : os.path.join(CHECKER_LIVE_RELEASES_DIR, jsr308_cf_version)
 #        }
 #    }
      #project_name, repo_source, repo_dest, deployment_source, deployment_dest
 
-def get_announcement_email( version ):
+def get_announcement_email(version):
     return """
     To:  checker-framework-discuss@googlegroups.com
     Subject: Release %s of the Checker Framework
@@ -1055,7 +1055,7 @@ def get_announcement_email( version ):
     Changes for the Checker Framework
 
     <<Insert latest Checker Framework changelog entry, omitting the first line with the release version and date, and with hard line breaks removed>>
-    """ % ( version )
+    """ % (version)
 
 #=========================================================================================
 # Testing
