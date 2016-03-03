@@ -759,11 +759,12 @@ def delete_if_exists( file ):
         os.remove(file)
 
 def delete_path( path ):
+    ensure_group_access(path)
     shutil.rmtree(path)
 
 def delete_path_if_exists( path ):
     if os.path.exists(path):
-        shutil.rmtree(path)
+        delete_path(path)
 
 def prompt_or_auto_delete( path, auto ):
     if not auto:
@@ -787,7 +788,7 @@ def prompt_to_delete(path):
     if os.path.exists(path):
         result = prompt_w_suggestion("Delete the following file:\n %s [Yes|No]" % path, "no", "^(Yes|yes|No|no)$")
         if result == "Yes" or result == "yes":
-            shutil.rmtree(path)
+            delete_path(path)
 
 def force_symlink( target_of_link, path_to_symlink ):
     try:
