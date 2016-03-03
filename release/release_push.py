@@ -348,9 +348,8 @@ def main(argv):
                " * Click on the Refresh button near the top of the page until the closing\n" +
                "   operation is reported to have completed succesfully.\n" +
                " * Copy the URL of the closed artifacts for use in the next step\n"
-               "(You can also see the instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + ")\n" +
-
-       )
+               "(You can also see the instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + ")\n"
+        )
 
 
         print_step("4c: Run Maven sanity test on Maven central artifacts.")
