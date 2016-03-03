@@ -9,8 +9,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 
 import org.checkerframework.checker.signature.qual.SignatureBottom;
-import org.checkerframework.checker.signature.qual.UnannotatedString;
-import org.checkerframework.checker.signature.qual.UnannotatedString;
+import org.checkerframework.checker.signature.qual.SignatureUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -32,14 +31,14 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public SignatureAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        SIGNATURE_UNKNOWN = AnnotationUtils.fromClass(elements, UnannotatedString.class);
+        SIGNATURE_UNKNOWN = AnnotationUtils.fromClass(elements, SignatureUnknown.class);
         this.postInit();
     }
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return getBundledTypeQualifiersWithPolyAll(
-                UnannotatedString.class, SignatureBottom.class);
+                SignatureUnknown.class, SignatureBottom.class);
     }
 
     @Override
@@ -61,7 +60,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (TreeUtils.isStringConcatenation(tree)) {
                 type.removeAnnotationInHierarchy(SIGNATURE_UNKNOWN);
                 // This could be made more precise, when desired.
-                type.addAnnotation(UnannotatedString.class);
+                type.addAnnotation(SignatureUnknown.class);
             }
             return null; // super.visitBinary(tree, type);
         }
@@ -71,7 +70,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (TreeUtils.isStringCompoundConcatenation(node)) {
                 type.removeAnnotationInHierarchy(SIGNATURE_UNKNOWN);
                 // This could be made more precise, when desired.
-                type.addAnnotation(UnannotatedString.class);
+                type.addAnnotation(SignatureUnknown.class);
             }
             return null; // super.visitCompoundAssignment(node, type);
         }
