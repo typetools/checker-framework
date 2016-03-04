@@ -124,10 +124,14 @@ public abstract class GenericAnnotatedTypeFactory<
 
     // Flow related fields
 
-    /** Should use flow-sensitive type refinement analysis?
+    /**
+     * Should use flow-sensitive type refinement analysis?
      * This value can be changed when an AnnotatedTypeMirror
-     * without annotations from data flow is required. */
-    protected boolean useFlow;
+     * without annotations from data flow is required.
+     *
+     * @see #getAnnotatedTypeLhs(Tree)
+     */
+    private boolean useFlow;
 
     /** Is this type factory configured to use flow-sensitive type refinement? */
     private final boolean everUseFlow;
@@ -1080,14 +1084,6 @@ public abstract class GenericAnnotatedTypeFactory<
 
     public Store getEmptyStore() {
         return emptyStore;
-    }
-
-    public boolean getUseFlow() {
-        return useFlow;
-    }
-
-    public void setUseFlow(boolean useFlow) {
-        this.useFlow = useFlow;
     }
 
     /**
