@@ -19,7 +19,9 @@ import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.StructuralEqualityComparer;
 import org.checkerframework.framework.type.TypeHierarchy;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
@@ -43,6 +45,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -156,14 +159,21 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
+                new LinkedHashSet<Class<? extends Annotation>>(
                         Arrays.asList(ReadOnly.class, Mutable.class, Immutable.class, I.class, AssignsFields.class, OIGJMutabilityBottom.class)));
     }
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
+        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.CLASS, BOTTOM_QUAL);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.ENUM, BOTTOM_QUAL);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.INTERFACE, BOTTOM_QUAL);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY, BOTTOM_QUAL);
+
         return new ListTreeAnnotator(
-                super.createTreeAnnotator(),
+                new PropagationTreeAnnotator(this),
+                implicitsTreeAnnotator,
                 new IGJTreePreAnnotator(this)
         );
     }

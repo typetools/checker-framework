@@ -32,7 +32,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     public static List<TestDiagnosticLine> readDiagnostics(File toRead, DiagnosticCodec codec, boolean omitEmptyDiagnostics) {
         List<TestDiagnosticLine> lines = new ArrayList<>();
         JavaDiagnosticReader reader = new JavaDiagnosticReader(toRead, codec);
-        while(reader.hasNext()) {
+        while (reader.hasNext()) {
             TestDiagnosticLine line = reader.next();
             if (!omitEmptyDiagnostics || line.hasDiagnostics()) {
                 lines.add(line);
@@ -96,7 +96,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     public static List<TestDiagnosticLine> readDiagnosticsJfo(JavaFileObject toRead, boolean omitEmptyDiagnostics) {
         List<TestDiagnosticLine> lines = new ArrayList<>();
         JavaDiagnosticReader reader = new JavaDiagnosticReader(toRead, JAVA_COMMENT_CODEC);
-        while(reader.hasNext()) {
+        while (reader.hasNext()) {
             TestDiagnosticLine line = reader.next();
             if (!omitEmptyDiagnostics || line.hasDiagnostics()) {
                 lines.add(line);

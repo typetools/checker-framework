@@ -157,7 +157,7 @@ public class ConstraintMapBuilder {
         }
     }
 
-    public void addToTypeRelationship(TypeVariable target, AnnotatedTypeMirror type,ConstraintMap result,
+    public void addToTypeRelationship(TypeVariable target, AnnotatedTypeMirror type, ConstraintMap result,
                                       TUConstraint constraint, Set<AnnotationMirror> hierarchies) {
         if (constraint instanceof TIsU) {
             result.addTypeEqualities(target, type, hierarchies);

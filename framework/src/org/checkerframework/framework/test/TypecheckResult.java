@@ -79,9 +79,11 @@ public class TypecheckResult {
 
             List<Diagnostic<? extends JavaFileObject>> actualDiagnostics = getActualDiagnostics();
             if (!unexpectedDiagnostics.isEmpty() || !missingDiagnostics.isEmpty()) {
+                int numExpected = expectedDiagnostics.size();
+                int numFound = numExpected - missingDiagnostics.size();
                 errorHeaders.add(
-                    actualDiagnostics.size() + " out of " + expectedDiagnostics.size() + " expected diagnostics "
-                  + (actualDiagnostics.size() == 1 ? "was" : "were") + " found."
+                    numFound + " out of " + numExpected + " expected diagnostics "
+                  + (numFound == 1 ? "was" : "were") + " found."
                 );
             }
 

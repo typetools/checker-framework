@@ -44,24 +44,24 @@ public abstract class CheckerHandler extends AbstractHandler {
         final List<IJavaElement> javaElements = new ArrayList<IJavaElement>();
 
         IJavaProject project = null;
-        for(final Object element : elements) {
-            if(element instanceof IJavaProject) {
+        for (final Object element : elements) {
+            if (element instanceof IJavaProject) {
                 //If the project is in the selection return only it
-                if(project == null || element.equals(project)) {
+                if (project == null || element.equals(project)) {
                     javaElements.clear();
                     javaElements.add((IJavaProject) element);
                     break;
                 }
 
-            } else if(element instanceof IJavaElement) {
+            } else if (element instanceof IJavaElement) {
                 final IJavaElement jEl = (IJavaElement) element;
 
-                if(project == null) {
+                if (project == null) {
                     project = jEl.getJavaProject();
                     javaElements.add(jEl);
 
                 //Only add those elements that are in project
-                } else if(!projectsEqual(jEl.getJavaProject(), project)) {
+                } else if (!projectsEqual(jEl.getJavaProject(), project)) {
                     javaElements.add(jEl);
                 }
             }

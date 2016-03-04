@@ -56,12 +56,12 @@ public class CustomCheckersMenu extends ContributionItem {
 			}
 		});*/
 		
-		if(customClasses == null || customClasses.equals("")) {
+		if (customClasses == null || customClasses.equals("")) {
 			menuItem.setEnabled(false);
 		} else {
 			Menu checkersMenu = new Menu(menuItem);
 			final String [] customCheckers = customClasses.split(",");
-			for(int i = 0; i < customCheckers.length; i++) {
+			for (int i = 0; i < customCheckers.length; i++) {
 				//final String text = customCheckers[i];
 				final CheckerInfo checkerInfo = CheckerInfo.fromClassPath(customCheckers[i], null);
 				MenuItem runCustomChecker = new MenuItem(checkersMenu, SWT.CHECK, i);

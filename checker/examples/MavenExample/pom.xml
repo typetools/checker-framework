@@ -15,7 +15,10 @@
     <!-- These properties will be set by the Maven Dependency plugin -->
     <!-- Change to jdk7 if using Java 7 -->
     <annotatedJdk>${org.checkerframework:jdk8:jar}</annotatedJdk>
-    <typeAnnotationsJavac>${org.checkerframework:compiler:jar}</typeAnnotationsJavac>
+    <checkerFrameworkVersion><!-- checker-framework-version -->1.9.12<!-- /checker-framework-version --></checkerFrameworkVersion>
+     <!-- The type annotations compiler is required if using Java 7. -->
+     <!-- Uncomment the following line if using Java 7. -->
+     <!--<typeAnnotationsJavac>${org.checkerframework:compiler:jar}</typeAnnotationsJavac>-->
   </properties>
 
   <dependencies>
@@ -29,23 +32,24 @@
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-      <version><!-- checker-framework-version -->1.9.11<!-- /checker-framework-version --></version>
+      <version>${checkerFrameworkVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker</artifactId>
-      <version><!-- checker-framework-version -->1.9.11<!-- /checker-framework-version --></version>
+      <version>${checkerFrameworkVersion}</version>
     </dependency>
-    <dependency>
+    <!-- The type annotations compiler - uncomment if using Java 7 -->
+    <!--<dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>compiler</artifactId>
-      <version><!-- checker-framework-version -->1.9.11<!-- /checker-framework-version --></version>
-    </dependency>
+      <version>${checkerFrameworkVersion}</version>
+    </dependency>-->
     <!-- The annotated JDK to use (change to jdk7 if using Java 7) -->
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk8</artifactId>
-      <version><!-- checker-framework-version -->1.9.11<!-- /checker-framework-version --></version>
+      <version>${checkerFrameworkVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -83,8 +87,7 @@
               <source>1.8</source>
               <target>1.8</target>
               <fork>true</fork>
-              <!-- should an error reported by a checker cause a build failure, or only be logged as a warning; defaults to true -->
-              <failOnError>false</failOnError>
+              <showWarnings>true</showWarnings>
               <annotationProcessors>
                   <!-- Add all the checkers you want to enable here -->
                   <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
@@ -92,7 +95,10 @@
               <compilerArgs>
                   <!-- location of the annotated JDK, which comes from a Maven dependency -->
                   <arg>-Xbootclasspath/p:${annotatedJdk}</arg>
-                  <arg>-J-Xbootclasspath/p:${typeAnnotationsJavac}</arg>
+                  <!--treat Checker Framework errors as warnings-->
+                  <!-- <arg>-Awarns</arg> -->
+                  <!-- Uncomment the following line if using Java 7. -->
+                  <!--<arg>-J-Xbootclasspath/p:${typeAnnotationsJavac}</arg>-->
                   <arg>-Alint</arg>
               </compilerArgs>
           </configuration>

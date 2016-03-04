@@ -2,6 +2,7 @@ package org.checkerframework.checker.igj;
 
 import org.checkerframework.checker.igj.qual.AssignsFields;
 import org.checkerframework.checker.igj.qual.I;
+import org.checkerframework.checker.igj.qual.IGJBottom;
 import org.checkerframework.checker.igj.qual.Immutable;
 import org.checkerframework.checker.igj.qual.Mutable;
 import org.checkerframework.checker.igj.qual.ReadOnly;
@@ -177,12 +178,6 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // this.addAliasedDeclAnnotation(org.jmlspecs.annotation.Pure.class, Pure.class, annotationToUse);
 
         this.postInit();
-    }
-
-    @Override
-    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithoutPolyAll(
-                IGJBottom.class);
     }
 
     @Override

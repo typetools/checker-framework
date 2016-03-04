@@ -121,7 +121,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         }
 
         checker.report(Result.failure("bound.type.incompatible", label,
-                       type.toString(),upperBound.toString(true), lowerBound.toString(true)),
+                       type.toString(), upperBound.toString(true), lowerBound.toString(true)),
                 tree
         );
         isValid = false;

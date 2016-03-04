@@ -83,7 +83,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
@@ -359,11 +358,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     Set<AnnotationMirror> annotationMirrors = atm.getAnnotations();
 
                     if (annotationMirrors != null) {
-                        for(AnnotationMirror anno : annotationMirrors) {
+                        for (AnnotationMirror anno : annotationMirrors) {
                             if (isFieldIsExpressionQualifier(anno) && atypeFactory.isSupportedQualifier(anno)) {
                                 List<String> expressions = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
 
-                                for(String expression : expressions) {
+                                for (String expression : expressions) {
                                     if (formalParamNames.contains(expression)) {
                                         checker.report(Result.warning("method.declaration.expression.parameter.name", param.getName().toString(),
                                                 node.getName().toString(), expression, formalParamNames.indexOf(expression) + 1, expression), node);
@@ -1813,7 +1812,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        AnnotatedTypeMirror var = atypeFactory.getDefaultedAnnotatedType(varTree, valueExp);
+        AnnotatedTypeMirror var = atypeFactory.getDefaultedAnnotatedType(varTree);
         assert var != null : "no variable found for tree: " + varTree;
 
         checkAssignability(var, varTree);

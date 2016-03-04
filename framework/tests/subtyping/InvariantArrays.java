@@ -11,6 +11,8 @@ class InvariantArrays {
     void tests() {
         //TODOINVARR:: error: (assignment.type.incompatible)
         oa = eoa;
+        // This error only occurs with the Encrypted type system;
+        // other type systems don't suffer an error here.
         //:: error: (assignment.type.incompatible)
         eoa = oa;
         //TODOINVARR:: error: (assignment.type.incompatible)

@@ -57,7 +57,7 @@ public class ClassValInferenceTest {
         @ClassBound("java.lang.Object") Class<?> c12 = intersect.getClass();
 
         try {
-        } catch(NullPointerException|ArrayIndexOutOfBoundsException ex) {
+        } catch (NullPointerException|ArrayIndexOutOfBoundsException ex) {
             @ClassBound("java.lang.RuntimeException") Class<?> c = ex.getClass();
         }
     }

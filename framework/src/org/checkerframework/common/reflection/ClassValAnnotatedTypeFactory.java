@@ -144,7 +144,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (!AnnotationUtils.areSameIgnoringValues(getTopAnnotation(a1),getTopAnnotation(a2))) {
+            if (!AnnotationUtils.areSameIgnoringValues(getTopAnnotation(a1), getTopAnnotation(a2))) {
                 return null;
             } else if (isSubtype(a1, a2)) {
                 return a1;
@@ -281,7 +281,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         private List<String> getStringValues(ExpressionTree arg) {
             ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
-            AnnotationMirror annotation = valueATF.getAnnotationMirror(arg,StringVal.class);
+            AnnotationMirror annotation = valueATF.getAnnotationMirror(arg, StringVal.class);
             if (annotation == null) {
                 return null;
             }

@@ -81,7 +81,7 @@ public class Flow {
     }
 
     public static void call(Formatter f,@Format({ConversionCategory.TIME}) String s) {
-        f.format(s,new Date());
+        f.format(s, new Date());
         //:: error: (argument.type.incompatible)
         f.format(s,"Wrong");
     }

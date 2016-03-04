@@ -49,7 +49,7 @@ public class JavacRunner implements CheckersRunner
     private final DiagnosticCollector<JavaFileObject> collector;
     private final boolean hasQuals;
 
-    public JavacRunner(String[] fileNames, String[] processors, String classpath,boolean hasQuals)
+    public JavacRunner(String[] fileNames, String[] processors, String classpath, boolean hasQuals)
     {
         this.collector = new DiagnosticCollector<JavaFileObject>();
         this.fileNames = Arrays.asList(fileNames);
@@ -105,7 +105,7 @@ public class JavacRunner implements CheckersRunner
         {
             opts.add("-Xbootclasspath/p:" + getLocation(JAVAC_LOCATION) + ":"
                     + getLocation(JDK_LOCATION) + ":");
-        }catch (IOException e)
+        } catch (IOException e)
         {
             CheckerPlugin.logException(e, e.getMessage());
         }
@@ -210,7 +210,7 @@ public class JavacRunner implements CheckersRunner
         List<JavacError> javacErrors = new ArrayList<JavacError>();
         for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics)
         {
-        	if(diagnostic.getSource() != null) {
+        	if (diagnostic.getSource() != null) {
         		javacErrors.add(new JavacError(diagnostic));
         	} else {//TODO: TEST PRINTING THIS TO THE CONSOLE
         		System.out.println("No source for diagnostic at: " + diagnostic.getLineNumber() + " Message " + diagnostic.getMessage(null));

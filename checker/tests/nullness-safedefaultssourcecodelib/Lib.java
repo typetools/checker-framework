@@ -1,4 +1,4 @@
-// A library to be compiled with 
+// A library to be compiled with
 //   -AuseDefaultsForUncheckedCode=source,bytecode
 // and then to be read from bytecode.
 

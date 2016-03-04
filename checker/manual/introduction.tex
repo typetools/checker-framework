@@ -211,7 +211,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework-1.9.11.zip}
+  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework-1.9.12.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -651,6 +651,9 @@ Partially-annotated libraries
   List of stub files or directories; see Section~\ref{stub-using}.
 \item \<-AstubWarnIfNotFound>
   Warn if a stub file entry could not be found; see Section~\ref{stub-using}.
+\item \<-AstubWarnIfOverwritesBytecode>
+  Warn if a stub file entry overwrite bytecode information; see
+  Section~\ref{stub-using}.
 % This item is repeated above:
 \item \<-AuseDefaultsForUncheckedCode=source>
   Outside the scope of any relevant
@@ -931,7 +934,7 @@ annotated.
 For each class, read its Javadoc.  For instance, if you are adding
 annotations for the Nullness Checker (Section~\ref{nullness-checker}), then
 you can search the documentation for ``null'' and then add \<@Nullable>
-anywhere appropriate.  Then annotate signatures and fields; there is no
+anywhere appropriate.  For now, just annotate signatures and fields; there is no
 need to annotate method bodies.  The only reason to even
 \emph{read} the method bodies yet is to determine signature annotations for
 undocumented methods ---
@@ -1042,8 +1045,8 @@ if a method does \emph{not} accept \code{null} as an argument, then an
 overriding definition is permitted to accept \code{null}.
 
 \begin{sloppypar}
-As a bad example, consider an erroneous \code{@Nullable} annotation at
-line 141 of \href{http://code.google.com/p/google-collections/source/browse/trunk/src/com/google/common/collect/Multiset.java}{\code{com/google/common/collect/Multiset.java}}, version r78:
+As a bad example, consider an erroneous \code{@Nullable} annotation in
+\href{https://github.com/google/guava/blob/master/guava/src/com/google/common/collect/Multiset.java\#L129}{\code{com/google/common/collect/Multiset.java}}:
 \end{sloppypar}
 
 \begin{Verbatim}

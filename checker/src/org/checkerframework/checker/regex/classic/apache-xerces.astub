@@ -1,0 +1,20 @@
+import org.checkerframework.checker.regex.qual.*;
+
+package com.sun.org.apache.xerces.internal.impl.xpath.regex;
+
+public class RegularExpression implements java.io.Serializable {
+    public RegularExpression(@Regex String regex) throws ParseException;
+    public RegularExpression(@Regex String regex, String options) throws ParseException;
+    RegularExpression(@Regex String regex, Token tok, int parens, boolean hasBackReferences, int options);
+}
+
+public final class REUtil {
+    static String stripExtendedComment(String regex);  // no @Regex annotation needed
+    public static boolean matches(@Regex String regex, String target) throws ParseException;
+    public static boolean matches(@Regex String regex, String options, String target) throws ParseException;
+}
+
+class RegexParser {
+    synchronized Token parse(@Regex String regex, int options) throws ParseException;
+    public RegularExpression createRegex(@Regex String regex, int options) throws ParseException;
+}

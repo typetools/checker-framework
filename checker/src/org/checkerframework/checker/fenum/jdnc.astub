@@ -1,0 +1,7 @@
+import org.checkerframework.checker.fenum.qual.*;
+
+package org.jdesktop.jdnc;
+
+class JNTable {
+  void setColumnHorizontalAlignment(String columnName, @SwingHorizontalOrientation int alignment);
+}

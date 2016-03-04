@@ -1,7 +1,6 @@
 // Test case for Issue 376:
 // https://github.com/typetools/checker-framework/issues/376
 
-// @skip-test
 class Test {
 
     interface I {}

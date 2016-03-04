@@ -77,11 +77,11 @@ class ThrowsTest {
 // GuiEffectChecker throws an exception on this code.  When issue 384 is fixed, uncomment these lines.
 //https://github.com/typetools/checker-framework/issues/384
 //        try {
-//        } catch(@AlwaysSafe NullPointerPolyUIException | @AlwaysSafe ArrayStorePolyUIException unionParam) {
+//        } catch (@AlwaysSafe NullPointerPolyUIException | @AlwaysSafe ArrayStorePolyUIException unionParam) {
 //
 //        }
 //        try {
-//        } catch(@UI NullPointerPolyUIException | @UI ArrayStorePolyUIException unionParam) {
+//        } catch (@UI NullPointerPolyUIException | @UI ArrayStorePolyUIException unionParam) {
 //
 //        }
     }
@@ -89,7 +89,7 @@ class ThrowsTest {
     void defaults() {
         try {
             throw new PolyUIException();
-        } catch(PolyUIException e) {
+        } catch (PolyUIException e) {
 
         }
     }

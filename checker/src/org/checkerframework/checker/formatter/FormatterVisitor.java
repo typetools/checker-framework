@@ -42,11 +42,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                     int formatl = formatCats.length;
                     if (paraml < formatl) {
                         // II.1
-                        tu.failure(invc, "format.missing.arguments", formatl,paraml);
+                        tu.failure(invc, "format.missing.arguments", formatl, paraml);
                     } else {
                         if (paraml > formatl) {
                             // II.2
-                            tu.warning(invc, "format.excess.arguments", formatl,paraml);
+                            tu.warning(invc, "format.excess.arguments", formatl, paraml);
                         }
                         for (int i = 0; i < formatl; ++i) {
                             ConversionCategory formatCat = formatCats[i];
@@ -65,7 +65,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                             case GENERAL:
                                 break;
                             default:
-                                if (!fc.isValidParameter(formatCat,paramType)) {
+                                if (!fc.isValidParameter(formatCat, paramType)) {
                                     // II.3
                                     tu.failure(param, "argument.type.incompatible", paramType,
                                             formatCat);
