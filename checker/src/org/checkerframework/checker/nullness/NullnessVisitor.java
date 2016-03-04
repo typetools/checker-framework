@@ -216,11 +216,15 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
     }
 
     @Override
-    protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-                                         ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey,
+    protected void commonAssignmentCheck(AnnotatedTypeMirror varType, ExpressionTree valueExp,
+                                         /*@CompilerMessageKey*/ String errorKey,
                                          boolean isLocalVariableAssignment) {
-        varType = atypeFactory.handlePolyNull(varType,valueExp);
-        super.commonAssignmentCheck(varType,valueExp,errorKey,isLocalVariableAssignment);
+        // Use the valueExp as the context because data flow will have a value for that tree.
+        // It might not have a value for the var tree.  This is sound because if
+        // if data flow has determined @PolyNull is @Nullable at the RHS, then
+        // it is also @Nullable for the LHS.
+        varType = atypeFactory.replacePolyQualifier(varType, valueExp);
+        super.commonAssignmentCheck(varType, valueExp, errorKey, isLocalVariableAssignment);
     }
     /** Case 1: Check for null dereferencing */
     @Override
