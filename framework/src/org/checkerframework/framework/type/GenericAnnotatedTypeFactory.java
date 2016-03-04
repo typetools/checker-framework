@@ -124,13 +124,26 @@ public abstract class GenericAnnotatedTypeFactory<
 
     // Flow related fields
 
-    /** Should use flow-sensitive type refinement analysis?
+    /**
+     * Should use flow-sensitive type refinement analysis?
      * This value can be changed when an AnnotatedTypeMirror
-     * without annotations from data flow is required. */
-    protected boolean useFlow;
+     * without annotations from data flow is required.
+     *
+     * @see #getAnnotatedTypeLhs(Tree)
+     */
+    private boolean useFlow;
 
     /** Is this type factory configured to use flow-sensitive type refinement? */
     private final boolean everUseFlow;
+
+    /**
+     * Should the local variable default annotation be applied to type variables?<p>
+     * It is initialized to true if data flow is used by the checker.
+     * It is set to false when getting the assignment context for type argument inference.
+     *
+     * @see GenericAnnotatedTypeFactory#getAnnotatedTypeLhsNoTypeVarDefault
+     */
+    private boolean shouldDefaultTypeVarLocals;
 
     /** An empty store. */
     private Store emptyStore;
@@ -146,6 +159,7 @@ public abstract class GenericAnnotatedTypeFactory<
         super(checker);
 
         this.everUseFlow = useFlow;
+        this.shouldDefaultTypeVarLocals = useFlow;
         this.useFlow = useFlow;
         this.analyses = new LinkedList<>();
         this.scannedClasses = new HashMap<>();
@@ -896,31 +910,59 @@ public abstract class GenericAnnotatedTypeFactory<
         return null;
     }
 
+    /**
+     * Returns the type of the left-hand side of an assignment without
+     * applying local variable defaults to type variables.
+     *
+     * The type variables that are types of local variables are defaulted to
+     * top so that they can be refined by dataflow.  When these types are used
+     * as context during type argument inference, this default is too conservative.
+     * So this method is used instead of
+     * {@link GenericAnnotatedTypeFactory#getAnnotatedTypeLhs(Tree)}.
+     *
+     * @param lhsTree left-hand side of an assignment
+     * @return AnnotatedTypeMirror of {@code lhsTree}
+     */
+    public AnnotatedTypeMirror getAnnotatedTypeLhsNoTypeVarDefault(Tree lhsTree) {
+        boolean old = this.shouldDefaultTypeVarLocals;
+        shouldDefaultTypeVarLocals = false;
+        AnnotatedTypeMirror type = getAnnotatedTypeLhs(lhsTree);
+        this.shouldDefaultTypeVarLocals = old;
+        return type;
+    }
 
     /**
-     * Get the defaulted type of a variable, without considering
-     * flow inference from the initializer expression.
-     * This is needed to determine the type of the assignment context,
-     * which should have the "default" meaning, without flow inference.
-     * TODO: describe and generalize
+     * Returns the type of the left-hand side of an assignment which is the
+     * type without dataflow type refinement.
+     *
+     * @param lhsTree left-hand side of an assignment
+     * @return AnnotatedTypeMirror of {@code lhsTree}
      */
-    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree tree) {
+    public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree lhsTree) {
         AnnotatedTypeMirror res = null;
-        if (tree instanceof VariableTree) {
-            res = fromMember(tree);
-            annotateImplicit(tree, res, false);
-        } else if (tree instanceof AssignmentTree) {
-            res = fromExpression(((AssignmentTree) tree).getVariable());
-            annotateImplicit(tree, res, false);
-        } else if (tree instanceof CompoundAssignmentTree) {
-            res = fromExpression(((CompoundAssignmentTree) tree).getVariable());
-            annotateImplicit(tree, res, false);
-        } else if (TreeUtils.isExpressionTree(tree)) {
-            res = fromExpression((ExpressionTree) tree);
-            annotateImplicit(tree, res, false);
+        boolean oldUseFlow = useFlow;
+        boolean oldShouldCache = shouldCache;
+        boolean oldShouldReadCache = shouldReadCache;
+        useFlow = false;
+        shouldReadCache = false;
+        // Don't cache the result because getAnnotatedType(lhsTree) could
+        // be called and would expect a different result.
+        shouldCache = false;
+        if (lhsTree instanceof VariableTree) {
+            res = getAnnotatedType(lhsTree);
+        } else if (lhsTree instanceof AssignmentTree) {
+            res = getAnnotatedType(((AssignmentTree) lhsTree).getVariable());
+        } else if (lhsTree instanceof CompoundAssignmentTree) {
+            res = getAnnotatedType(((CompoundAssignmentTree) lhsTree).getVariable());
+        } else if (TreeUtils.isExpressionTree(lhsTree)) {
+            res = getAnnotatedType(lhsTree);
         } else {
-            assert false;
+            ErrorReporter.errorAbort("GenericAnnotatedTypeFactory: Unexpected tree passed to getAnnotatedTypeLhs.\n"
+                                     + "lhsTree: "+lhsTree+"\nTree.Kind: "+lhsTree.getKind());
         }
+        useFlow = oldUseFlow;
+        shouldReadCache = oldShouldReadCache;
+        shouldCache = oldShouldCache;
         return res;
     }
 
@@ -1041,18 +1083,22 @@ public abstract class GenericAnnotatedTypeFactory<
         return emptyStore;
     }
 
-    public boolean getUseFlow() {
-        return useFlow;
-    }
-
-    public void setUseFlow(boolean useFlow) {
-        this.useFlow = useFlow;
-    }
-
     /**
      * @see BaseTypeChecker#getTypeFactoryOfSubchecker(Class)
      */
     public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker> T getTypeFactoryOfSubchecker(Class<U> checkerClass) {
         return checker.getTypeFactoryOfSubchecker(checkerClass);
+    }
+
+    /**
+     * Should the local variable default annotation be applied to type variables?<p>
+     * It is initialized to true if data flow is used by the checker.
+     * It is set to false when getting the assignment context for type argument inference.
+     *
+     * @see GenericAnnotatedTypeFactory#getAnnotatedTypeLhsNoTypeVarDefault
+     * @return shouldDefaultTypeVarLocals
+     */
+    public boolean getShouldDefaultTypeVarLocals() {
+        return shouldDefaultTypeVarLocals;
     }
 }
