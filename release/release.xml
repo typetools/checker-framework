@@ -508,4 +508,14 @@
                 with="${version}"/>
     </target>
 
+    <!-- Run from parent directory as: ant -e -file release/release.xml pylint -->
+    <target name="pylint" description="Run pylint on Python code">
+        <apply executable="pylint">
+            <arg value="--output-format=parseable"/>
+            <arg value="--rcfile=release/.pylintrc"/>
+            <srcfile/>
+            <fileset dir="." includes="release/*.py"/>
+        </apply>
+    </target>
+
 </project>
