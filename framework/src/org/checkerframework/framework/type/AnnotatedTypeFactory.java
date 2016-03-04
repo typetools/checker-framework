@@ -2431,7 +2431,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Parses the stub files in the following order: <br>
-     * 1. jdk.astub in the same directory as the checker, if it exist and ignorejdkastub option is not supplied <br>
+     * 1. jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is not supplied <br>
      * 2. flow.astub in the same directory as BaseTypeChecker <br>
      * 3. Stub files provide via stubs compiler option <br>
      * 4. Stub files provide via stubs system property <br>
@@ -2470,27 +2470,29 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         // Stub files specified via stubs compiler option, stubs system property,
         // stubs env. variable, or @Stubfiles
-        String allStubFiles = "";
+        List<String> allStubFiles = new ArrayList<>();
 
         // 3. Stub files provide via stubs option
         String stubsOption = checker.getOption("stubs");
-        allStubFiles += stubsOption != null ? File.pathSeparator + stubsOption : "";
+        if (stubsOption != null) {
+            Collections.addAll(allStubFiles, stubsOption.split(File.pathSeparator));
+        }
 
         // 4. Stub files provide via stubs system property
         String stubsProperty = System.getProperty("stubs");
-        allStubFiles += stubsProperty != null ? File.pathSeparator + stubsProperty : "";
-
+        if (stubsProperty != null) {
+            Collections.addAll(allStubFiles, stubsProperty.split(File.pathSeparator));
+        }
         // 5. Stub files provide via stubs environment variable
         String stubEnvVar = System.getenv("stubs");
-        allStubFiles += stubEnvVar != null ? File.pathSeparator + stubEnvVar : "";
+        if (stubEnvVar != null) {
+            Collections.addAll(allStubFiles, stubEnvVar.split(File.pathSeparator));
+        }
 
         // 6. Stub files listed in @Stubfiles annotation on the checker
         StubFiles stubFilesAnnotation = checker.getClass().getAnnotation(StubFiles.class);
         if (stubFilesAnnotation != null) {
-            String[] sfarr = stubFilesAnnotation.value();
-            for (String sf : sfarr) {
-                allStubFiles += File.pathSeparator + sf;
-            }
+            Collections.addAll(allStubFiles, stubFilesAnnotation.value());
         }
 
         if (allStubFiles.isEmpty()) {
@@ -2501,8 +2503,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         // Parse stub files specified via stubs compiler option, stubs system property,
         // stubs env. variable, or @Stubfiles
-        String[] stubArray = allStubFiles.split(File.pathSeparator);
-        for (String stubPath : stubArray) {
+        for (String stubPath : allStubFiles) {
             if (stubPath == null || stubPath.isEmpty()) {
                 continue;
             }
