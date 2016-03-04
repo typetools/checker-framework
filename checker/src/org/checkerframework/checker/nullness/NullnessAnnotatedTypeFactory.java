@@ -203,7 +203,7 @@ public class NullnessAnnotatedTypeFactory
 
     /**
      * For types of left-hand side of an assignment, this method replaces {@link PolyNull} or
-     * {@link PolyAll} with  {@link Nullable} if the org.checkerframework.dataflow analysis
+     * {@link PolyAll} with {@link Nullable} if the org.checkerframework.dataflow analysis
      * has determined that this is allowed soundly.
      * For example:
      *
@@ -217,12 +217,10 @@ public class NullnessAnnotatedTypeFactory
      * }
      * </pre>
      *
-     * @param lhsType  Type to replace
+     * @param lhsType  Type to replace whose polymorphic qualifier will be replaced
      * @param context Tree used to get dataflow value
-     * @return altered lhsType
      */
-    protected AnnotatedTypeMirror replacePolyQualifier(AnnotatedTypeMirror lhsType,
-            Tree context) {
+    protected void replacePolyQualifier(AnnotatedTypeMirror lhsType, Tree context) {
         if (lhsType.hasAnnotation(PolyNull.class)
                 || lhsType.hasAnnotation(PolyAll.class)) {
             NullnessValue inferred = getInferredValueFor(context);
@@ -230,7 +228,6 @@ public class NullnessAnnotatedTypeFactory
                 lhsType.replaceAnnotation(NULLABLE);
             }
         }
-        return lhsType;
     }
 
     // handle dependent types
@@ -293,7 +290,9 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
-        return replacePolyQualifier(super.getMethodReturnType(m, r), r);
+        AnnotatedTypeMirror result = super.getMethodReturnType(m, r);
+        replacePolyQualifier(result, r);
+        return result;
     }
 
     protected AnnotatedTypeMirror getDeclaredAndDefaultedAnnotatedType(Tree tree) {
