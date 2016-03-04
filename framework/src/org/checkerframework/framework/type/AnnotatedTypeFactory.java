@@ -2433,10 +2433,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Parses the stub files in the following order: <br>
      * 1. jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is not supplied <br>
      * 2. flow.astub in the same directory as BaseTypeChecker <br>
-     * 3. Stub files provide via stubs compiler option <br>
-     * 4. Stub files provide via stubs system property <br>
-     * 5. Stub files provide via stubs environment variable <br>
-     * 6. Stub files listed in @Stubfiles annotation on the checker; must be in same directory as the checker
+     * 3. Stub files listed in @Stubfiles annotation on the checker; must be in same directory as the checker<br?
+     * 4. Stub files provide via stubs compiler option <br>
+     * 5. Stub files provide via stubs system property <br>
+     * 6. Stub files provide via stubs environment variable
+     * <p>
+     *  If a type is annotated with a qualifier from the same hierarchy in more than one stub file, the qualifier
+     *  in the last stub file is applied.
      * <p>
      * Sets typesFromStubFiles and declAnnosFromStubFiles by side effect, just before returning.
      */
@@ -2472,27 +2475,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // stubs env. variable, or @Stubfiles
         List<String> allStubFiles = new ArrayList<>();
 
-        // 3. Stub files provide via stubs option
+        // 3. Stub files listed in @Stubfiles annotation on the checker
+        StubFiles stubFilesAnnotation = checker.getClass().getAnnotation(StubFiles.class);
+        if (stubFilesAnnotation != null) {
+            Collections.addAll(allStubFiles, stubFilesAnnotation.value());
+        }
+
+        // 4. Stub files provide via stubs option
         String stubsOption = checker.getOption("stubs");
         if (stubsOption != null) {
             Collections.addAll(allStubFiles, stubsOption.split(File.pathSeparator));
         }
 
-        // 4. Stub files provide via stubs system property
+        // 5. Stub files provide via stubs system property
         String stubsProperty = System.getProperty("stubs");
         if (stubsProperty != null) {
             Collections.addAll(allStubFiles, stubsProperty.split(File.pathSeparator));
         }
-        // 5. Stub files provide via stubs environment variable
+        // 6. Stub files provide via stubs environment variable
         String stubEnvVar = System.getenv("stubs");
         if (stubEnvVar != null) {
             Collections.addAll(allStubFiles, stubEnvVar.split(File.pathSeparator));
-        }
-
-        // 6. Stub files listed in @Stubfiles annotation on the checker
-        StubFiles stubFilesAnnotation = checker.getClass().getAnnotation(StubFiles.class);
-        if (stubFilesAnnotation != null) {
-            Collections.addAll(allStubFiles, stubFilesAnnotation.value());
         }
 
         if (allStubFiles.isEmpty()) {
