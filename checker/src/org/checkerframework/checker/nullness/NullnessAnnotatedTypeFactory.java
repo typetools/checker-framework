@@ -55,7 +55,6 @@ import javax.lang.model.util.Elements;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -200,14 +199,6 @@ public class NullnessAnnotatedTypeFactory
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
         super.annotateImplicit(tree, type, useFlow);
         dependentTypes.handle(tree, type);
-    }
-
-
-    @Override
-    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree varTree,
-            ExpressionTree valueTree) {
-        AnnotatedTypeMirror result = super.getDefaultedAnnotatedType(varTree, valueTree);
-        return handlePolyNull(result, valueTree);
     }
 
     /**

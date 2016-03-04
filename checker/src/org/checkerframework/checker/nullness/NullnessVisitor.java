@@ -215,6 +215,13 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
 
+    @Override
+    protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
+                                         ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey,
+                                         boolean isLocalVariableAssignment) {
+        varType = atypeFactory.handlePolyNull(varType,valueExp);
+        super.commonAssignmentCheck(varType,valueExp,errorKey,isLocalVariableAssignment);
+    }
     /** Case 1: Check for null dereferencing */
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
