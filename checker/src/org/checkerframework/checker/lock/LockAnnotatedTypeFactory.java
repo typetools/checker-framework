@@ -22,6 +22,7 @@ import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
@@ -39,7 +40,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -48,28 +49,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-
-// TODO: Here is a list of nice-to-have features/tests but not critical to release the Lock Checker:
-
-// Add an enhancement so that implicit .toString() calls are recognized, i.e. when a non-String object
-// is pseudo-assigned to a String variable.
-
-// Add a warning if a user annotates a static field with @GuardedBy("this") instead of @GuardedBy("<class name>.class")
-
-// Add a test that @GuardedBy("<class name>.class") is never ambiguous given two classes with the same name in two different packages.
-
-// Calling a method annotated with @MayReleaseLocks should not always cause local variables' refinement to be reset to @GuardedByUnknown.
-// The current workaround is to explicitly annotate the local variable with the appropriate annotation in the @GuardedBy hierarchy.
-
-// Would it be a useful feature for the Lock Checker to warn about missing unlock calls when there is a call to .lock() in a method?
-// Or is this a common pattern to lock in one method and unlock in a different one?
-
-// Issue an error if @GuardSatisfied is written on a location other than a primary annotation.
-
-// TODO: The following bugs are important to fix before the March 1 release of the Checker Framework:
-// TODO: Issue a warning if a lock is not final or effectively final. Document in the manual.
-//       Nice to have: consider whether @Pure methods make this warning unnecessary in some scenarios.
-// TODO: Make sure "itself" is not handled by the flow expression parser for type hierarchies other than @GuardedBy.
 
 /**
  * LockAnnotatedTypeFactory builds types with LockHeld and LockPossiblyHeld annotations.
@@ -121,7 +100,7 @@ public class LockAnnotatedTypeFactory
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
+                new LinkedHashSet<Class<? extends Annotation>>(
                         Arrays.asList(LockHeld.class, LockPossiblyHeld.class,
                                 GuardedBy.class, GuardedByUnknown.class,
                                 GuardSatisfied.class, GuardedByBottom.class)));
@@ -152,6 +131,10 @@ public class LockAnnotatedTypeFactory
             return AnnotationUtils.areSameIgnoringValues(am, GUARDEDBY);
         }
 
+        boolean isGuardSatisfied(AnnotationMirror am) {
+            return AnnotationUtils.areSameIgnoringValues(am, GUARDSATISFIED);
+        }
+
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
 
@@ -169,8 +152,8 @@ public class LockAnnotatedTypeFactory
                 return rhsValues.containsAll(lhsValues) && lhsValues.containsAll(rhsValues);
             }
 
-            boolean lhsIsGuardSatisfied = AnnotationUtils.areSameIgnoringValues(lhs, GUARDSATISFIED);
-            boolean rhsIsGuardSatisfied = AnnotationUtils.areSameIgnoringValues(rhs, GUARDSATISFIED);
+            boolean lhsIsGuardSatisfied = isGuardSatisfied(lhs);
+            boolean rhsIsGuardSatisfied = isGuardSatisfied(rhs);
 
             if (lhsIsGuardSatisfied && rhsIsGuardSatisfied) {
                 // Two @GuardSatisfied annotations are considered subtypes of each other if and only if their indices match exactly.
@@ -193,14 +176,14 @@ public class LockAnnotatedTypeFactory
             if (lhsIsGuardedBy) {
                 lhs = GUARDEDBY;
             }
-            else if (AnnotationUtils.areSameIgnoringValues(lhs, GUARDSATISFIED)) {
+            else if (lhsIsGuardSatisfied) {
                 lhs = GUARDSATISFIED;
             }
 
             if (rhsIsGuardedBy) {
                 rhs = GUARDEDBY;
             }
-            else if (AnnotationUtils.areSameIgnoringValues(rhs, GUARDSATISFIED)) {
+            else if (rhsIsGuardSatisfied) {
                 rhs = GUARDSATISFIED;
             }
 
@@ -232,19 +215,17 @@ public class LockAnnotatedTypeFactory
                 return a1;
             }
 
-            if (isGuardedBy(a1) && isGuardedBy(a2)) {
-                // Two @GuardedBy annotations are considered subtypes of each other if and only if their values match exactly.
+            if ((isGuardedBy(a1) && isGuardedBy(a2)) ||
+                (isGuardSatisfied(a1) && isGuardSatisfied(a2))) {
+                // isSubtype(a1, a2) is symmetrical to isSubtype(a2, a1) since two
+                // @GuardedBy annotations are considered subtypes of each other
+                // if and only if their values match exactly, and two @GuardSatisfied
+                // annotations are considered subtypes of each other if and only if
+                // their indices match exactly.
 
-                List<String> a1Values =
-                    AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
-                List<String> a2Values =
-                    AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
-
-                if (a2Values.containsAll(a1Values) && a1Values.containsAll(a2Values)) {
+                if (isSubtype(a1, a2)) {
                     return a1;
                 }
-            } else if (AnnotationUtils.areSame(a1, a2)) {
-                return a1;
             }
 
             return GUARDEDBYBOTTOM;
@@ -352,15 +333,20 @@ public class LockAnnotatedTypeFactory
         }
     }
 
-    // Indicates which side effect annotation is present on the given method.
-    // If more than one annotation is present, this method issues an error (if issueErrorIfMoreThanOnePresent is true)
-    // and returns the annotation providing the weakest guarantee.
-    // Only call with issueErrorIfMoreThanOnePresent == true when visiting a method definition.
-    // This prevents multiple errors being issued for the same method (as would occur if
-    // issueErrorIfMoreThanOnePresent were set to true when visiting method invocations).
-    // If no annotation is present, return RELEASESNOLOCKS as the default, and MAYRELEASELOCKS
-    // as the default for unannotated code.
-
+    /**
+     * Indicates which side effect annotation is present on the given method.
+     * If more than one annotation is present, this method issues an error (if issueErrorIfMoreThanOnePresent is true)
+     * and returns the annotation providing the weakest guarantee.
+     * Only call with issueErrorIfMoreThanOnePresent == true when visiting a method definition.
+     * This prevents multiple errors being issued for the same method (as would occur if
+     * issueErrorIfMoreThanOnePresent were set to true when visiting method invocations).
+     * If no annotation is present, return RELEASESNOLOCKS as the default, and MAYRELEASELOCKS
+     * as the default for unchecked code.
+     * 
+     * @param element The method element.
+     * @param issueErrorIfMoreThanOnePresent Whether to issue an error if more than one side effect annotation is present on the method.
+     * @return
+     */
     // package-private
     SideEffectAnnotation methodSideEffectAnnotation(Element element, boolean issueErrorIfMoreThanOnePresent) {
         if (element != null) {
@@ -399,6 +385,31 @@ public class LockAnnotatedTypeFactory
         return SideEffectAnnotation.weakest();
     }
 
+    /**
+     * Returns the index on the GuardSatisfied annotation in the given AnnotatedTypeMirror.
+     * Assumes atm is non-null and contains a GuardSatisfied annotation.
+     *
+     * @param atm AnnotatedTypeMirror containing a GuardSatisfied annotation.
+     * @return The index on the GuardSatisfied annotation.
+     */
+    // package-private
+    int getGuardSatisfiedIndex(AnnotatedTypeMirror atm) {
+        return getGuardSatisfiedIndex(atm.getAnnotation(GuardSatisfied.class));
+    }
+
+    /**
+     * Returns the index on the given GuardSatisfied annotation.
+     * Assumes am is non-null and is a GuardSatisfied annotation.
+     *
+     * @param atm AnnotationMirror for a GuardSatisfied annotation.
+     * @return The index on the GuardSatisfied annotation.
+     */
+    // package-private
+    int getGuardSatisfiedIndex(AnnotationMirror am) {
+        return AnnotationUtils.
+                getElementValue(am, "value", Integer.class, true);
+    }
+
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
             ExpressionTree tree, ExecutableElement methodElt,
@@ -418,8 +429,7 @@ public class LockAnnotatedTypeFactory
                 AnnotatedTypeMirror methodDefinitionReturn = invokedMethod.getReturnType().getErased();
 
                 if (methodDefinitionReturn != null && methodDefinitionReturn.hasAnnotation(GuardSatisfied.class)) {
-                    int returnGuardSatisfiedIndex = AnnotationUtils.
-                            getElementValue(methodDefinitionReturn.getAnnotation(GuardSatisfied.class), "value", Integer.class, true);
+                    int returnGuardSatisfiedIndex = getGuardSatisfiedIndex(methodDefinitionReturn);
 
                     // @GuardSatisfied with no index defaults to index -1. Ignore instances of @GuardSatisfied with no index.
                     // If a method is defined with a return type of @GuardSatisfied with no index, an error is reported by LockVisitor.visitMethod.
@@ -432,8 +442,7 @@ public class LockAnnotatedTypeFactory
                         if (!ElementUtils.isStatic(invokedMethodElement) && !TreeUtils.isSuperCall(methodInvocationTree)) {
                             AnnotatedTypeMirror methodDefinitionReceiver = invokedMethod.getReceiverType().getErased();
                             if (methodDefinitionReceiver != null && methodDefinitionReceiver.hasAnnotation(GuardSatisfied.class)) {
-                                int receiverGuardSatisfiedIndex = AnnotationUtils.
-                                        getElementValue(methodDefinitionReceiver.getAnnotation(GuardSatisfied.class), "value", Integer.class, true);
+                                int receiverGuardSatisfiedIndex = getGuardSatisfiedIndex(methodDefinitionReceiver);
 
                                 if (receiverGuardSatisfiedIndex == returnGuardSatisfiedIndex) {
                                     mfuPair.first.getReturnType().replaceAnnotation(receiverType.getAnnotationInHierarchy(GUARDEDBYUNKNOWN));
@@ -448,7 +457,7 @@ public class LockAnnotatedTypeFactory
                             AnnotatedTypeMirror arg = requiredArgs.get(i);
 
                             if (arg.hasAnnotation(GuardSatisfied.class)) {
-                                int paramGuardSatisfiedIndex = AnnotationUtils.getElementValue(arg.getAnnotation(GuardSatisfied.class), "value", Integer.class, true);
+                                int paramGuardSatisfiedIndex = getGuardSatisfiedIndex(arg);
 
                                 if (paramGuardSatisfiedIndex == returnGuardSatisfiedIndex) {
                                     ExpressionTree argument = methodInvocationTree.getArguments().get(i);
@@ -469,26 +478,9 @@ public class LockAnnotatedTypeFactory
     @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-               new LockPropagationTreeAnnotator(this),
+               new LockTreeAnnotator(this),
+               new PropagationTreeAnnotator(this),
                new ImplicitsTreeAnnotator(this)
         );
     }
-
-    // Indicates that the result of the operation is a boolean value.
-    boolean isBinaryComparisonOperator(Kind opKind) {
-        switch(opKind){
-            case EQUAL_TO:
-            case NOT_EQUAL_TO:
-            case LESS_THAN:
-            case LESS_THAN_EQUAL:
-            case GREATER_THAN:
-            case GREATER_THAN_EQUAL:
-                return true;
-            default:
-        }
-
-        return false;
-    }
-
-
 }

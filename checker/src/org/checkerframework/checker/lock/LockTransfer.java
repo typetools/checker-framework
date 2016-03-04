@@ -205,6 +205,14 @@ public class LockTransfer extends
         // Strings are always @GuardedBy({})
 
         if (result.getResultValue().getType().hasAnnotation(GUARDEDBYUNKNOWN)) {
+            // This covers the case when one operand in the string concatenation
+            // has type @GuardSatisfied(...) and another has type @GuardedBy({})
+            // (the LUB of @GS and @GB({}) is @GuardedByUnknown). This is the case
+            // when a @GS parameter is not de-sugared, e.g.:
+            //     void StringConcat(@GuardSatisfied MyClass param) {
+            //         String s = "a" + param;
+            //     }
+
             result.getResultValue().getType().replaceAnnotation(GUARDEDBY);
         }
 

@@ -156,8 +156,9 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         AnnotatedTypeMirror type = value.getType();
         if (type != null) {
             AnnotationMirror anno = type.getAnnotationInHierarchy(LOCKPOSSIBLYHELD);
-            if (anno != null)
+            if (anno != null) {
                 return anno.equals(LOCKHELD);
+            }
         }
 
         return false;
@@ -168,8 +169,9 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         AnnotatedTypeMirror type = value.getType();
         if (type != null) {
             AnnotationMirror anno = type.getAnnotationInHierarchy(LOCKPOSSIBLYHELD);
-            if (anno != null)
+            if (anno != null) {
                 return anno.equals(LOCKPOSSIBLYHELD);
+            }
         }
 
         return false;
@@ -182,71 +184,29 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
             // top and top is also the default value.
             return;
         }
-        if (r.containsUnknown()) {
-            // Expressions containing unknown expressions are not stored.
-            return;
-        }
-        if (r instanceof FlowExpressions.LocalVariable) {
-            FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) r;
-            CFValue oldValue = localVariableValues.get(localVar);
-            CFValue newValue = value.mostSpecific(oldValue, null);
-            if (newValue != null) {
-                localVariableValues.put(localVar, newValue);
-            }
-        } else if (r instanceof FlowExpressions.FieldAccess) {
-            FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
-            // Only store information about final fields (where the receiver is
-            // also fixed) if concurrent semantics are enabled.
-            boolean isMonotonic = isMonotonicUpdate(fieldAcc, value);
-            //CFValue oldValue = fieldValues.get(fieldAcc);
-            if (hasLockHeld(value) ||
-                sequentialSemantics || isMonotonic || fieldAcc.isUnmodifiableByOtherCode()) {
+        // Even with concurrent semantics enabled, a @LockHeld value must always be
+        // stored for fields and @Pure method calls. This is sound because:
+        // -Another thread can never release the lock on the current thread, and
+        // -Locks are assumed to be effectively final, hence another thread will not
+        // side effect the lock expression that has value @LockHeld.
+        if (hasLockHeld(value)) {
+            if (r instanceof FlowExpressions.FieldAccess) {
+                FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
                 CFValue oldValue = fieldValues.get(fieldAcc);
                 CFValue newValue = value.mostSpecific(oldValue, null);
                 if (newValue != null) {
                     fieldValues.put(fieldAcc, newValue);
                 }
-            }
-        } else if (r instanceof FlowExpressions.PureMethodCall) {
-            FlowExpressions.PureMethodCall method = (FlowExpressions.PureMethodCall) r;
-            // Don't store any information if concurrent semantics are enabled.
-            if (hasLockHeld(value)) {
+            } else if (r instanceof FlowExpressions.PureMethodCall) {
+                FlowExpressions.PureMethodCall method = (FlowExpressions.PureMethodCall) r;
                 CFValue oldValue = methodValues.get(method);
                 CFValue newValue = value.mostSpecific(oldValue, null);
                 if (newValue != null) {
                     methodValues.put(method, newValue);
                 }
             }
-        } else if (r instanceof FlowExpressions.ArrayAccess) {
-            FlowExpressions.ArrayAccess arrayAccess = (ArrayAccess) r;
-            if (sequentialSemantics) {
-                CFValue oldValue = arrayValues.get(arrayAccess);
-                CFValue newValue = value.mostSpecific(oldValue, null);
-                if (newValue != null) {
-                    arrayValues.put(arrayAccess, newValue);
-                }
-            }
-        } else if (r instanceof FlowExpressions.ThisReference) {
-            FlowExpressions.ThisReference thisRef = (FlowExpressions.ThisReference) r;
-            if (sequentialSemantics || thisRef.isUnmodifiableByOtherCode()) {
-                CFValue oldValue = thisValue;
-                CFValue newValue = value.mostSpecific(oldValue, null);
-                if (newValue != null) {
-                    thisValue = newValue;
-                }
-            }
-        } else if (r instanceof FlowExpressions.ClassName) {
-            FlowExpressions.ClassName className = (FlowExpressions.ClassName) r;
-            if (sequentialSemantics || className.isUnmodifiableByOtherCode()) {
-                CFValue oldValue = classValues.get(className);
-                CFValue newValue = value.mostSpecific(oldValue, null);
-                if (newValue != null) {
-                    classValues.put(className, newValue);
-                }
-            }
         }
-        else {
-            // No other types of expressions need to be stored.
-        }
+
+        super.insertValue(r, value);
     }
 }
