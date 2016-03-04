@@ -195,23 +195,6 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
                 return;
             }
         }
-
-        if (TreeUtils.isFieldAccess(varTree)) {
-            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExp);
-            // special case writing to NonNull field for free/unc receivers
-            AnnotatedTypeMirror annos = atypeFactory.getDeclaredAndDefaultedAnnotatedType(varTree);
-            // receiverType is null for static field accesses
-            AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType((ExpressionTree) varTree);
-            if (receiverType != null
-                    && (atypeFactory.isFree(receiverType) || atypeFactory.isUnclassified(receiverType))) {
-                if (annos.hasEffectiveAnnotation(NONNULL)
-                        && !valueType.hasEffectiveAnnotation(NONNULL)) {
-                    checker.report(Result.failure(ASSIGNMENT_TYPE_INCOMPATIBLE,
-                            valueType.toString(),
-                            annos.toString()), varTree);
-                }
-            }
-        }
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
 
