@@ -220,10 +220,10 @@ public class ResourceUtils {
     public static Set<String> sourceFilesOf(List<IJavaElement> elements)
             throws CoreException {
         final Set<String> fileNames = new LinkedHashSet<String>();
-        for(final IJavaElement element : elements) {
+        for (final IJavaElement element : elements) {
             final Set<String> files = sourceFilesOf(element);
-            for(String file : files ) {
-                if( file.endsWith(".java") ) {
+            for (String file : files ) {
+                if ( file.endsWith(".java") ) {
                     fileNames.add(file);
                 }
             }
@@ -252,12 +252,12 @@ public class ResourceUtils {
 
         IPath out = cp.getOutputLocation();
 
-        if(out == null) {
+        if (out == null) {
             try {
                 out = project.getOutputLocation();
 
                 //TODO: THERE HAS TO BE A BETTER WAY TO DO THIS BECAUSE THIS IS KLUDGERIFFIC
-                if( out != null ) {
+                if ( out != null ) {
 
                     String path = project.getProject().getLocation().toOSString() +
                                   File.separator + ".." + File.separator +
@@ -266,7 +266,7 @@ public class ResourceUtils {
                     return new File(path).getCanonicalPath();
                 }
 
-            } catch(final Exception exc) {
+            } catch (final Exception exc) {
                 throw new RuntimeException(exc);
             }
         } else {

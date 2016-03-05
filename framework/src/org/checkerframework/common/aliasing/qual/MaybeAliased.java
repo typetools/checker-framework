@@ -1,15 +1,15 @@
 package org.checkerframework.common.aliasing.qual;
 
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.qual.SubtypeOf;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
-import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.qual.SubtypeOf;
-import com.sun.source.tree.Tree;
 
 /**
  * An expression with this type might have an alias.  In other words, some
@@ -24,6 +24,6 @@ import com.sun.source.tree.Tree;
 @DefaultQualifierInHierarchy
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_PARAMETER, ElementType.TYPE_USE })
-@ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
+@ImplicitFor(literals = { LiteralKind.NULL }, typeNames = { java.lang.Void.class })
 @SubtypeOf({})
 public @interface MaybeAliased {}

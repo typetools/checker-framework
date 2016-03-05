@@ -18,7 +18,7 @@ public class Issue500<M> {
         }
     }
 
-    // Tests LUB 
+    // Tests LUB
     void foo(@Nullable AbstractList<M> l1, ArrayList<?> l2,
              @Nullable AbstractList<?> list, boolean b) {
         list = b ? l1 : l2;

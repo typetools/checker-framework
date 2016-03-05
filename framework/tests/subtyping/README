@@ -6,5 +6,4 @@ To run the tests, do
 
 Target "subtyping-tests" in file ../../build.xml indicates which type systems
 are tested -- currently SubtypingEncryptedTest (from
-../src/tests/SubtypingEncryptedTest.java) and SubtypingSuperSubTest (from
-../src/tests/SubtypingSuperSubTest.java).
+../src/tests/SubtypingEncryptedTest.java).

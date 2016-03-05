@@ -36,7 +36,7 @@ public class NullnessStubfileMerge {
 
        char[] nonNullChars = {'1','1'};
        char[] nullChars = null;
-       nonNull.getChars(1, 1,nonNullChars, 1);
+       nonNull.getChars(1, 1, nonNullChars, 1);
 
        //:: error: (argument.type.incompatible)
        nonNull.getChars(1, 1, nullChars, 1);

@@ -26,7 +26,10 @@ How to run just one test for the Checker Framework
 ==================================================
 
 To run an individual test (check one source code file) without rebuilding
-the JDK, do something like:
+the JDK, do something like the following, assuming that the source code
+file to be checked is AssertNonNullTest.java in directory
+$CHECKERFRAMEWORK/checker/tests/nullness/ and the checker is
+org.checkerframework.checker.nullness.NullnessChecker.
 
   cd $CHECKERFRAMEWORK/checker/tests/nullness
   (cd $CHECKERFRAMEWORK && ant -e build) && $CHECKERFRAMEWORK/checker/bin-devel/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class AssertNonNullTest.java
@@ -44,6 +47,7 @@ or, less commonly (to rebuild the JDK):
 where the specific checker and command-line arguments are often clear from
 the directory name but can also be determined from a file such as
   checker-framework/checker/tests/src/tests/MyTypeSystemTest.java
+which is the source code for the test itself.
 
 
 Writing new tests for an existing checker

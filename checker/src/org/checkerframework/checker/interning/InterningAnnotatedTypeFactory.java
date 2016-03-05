@@ -17,6 +17,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -87,9 +88,19 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public void annotateImplicit(Element element, AnnotatedTypeMirror type) {
-        if (!type.isAnnotatedInHierarchy(INTERNED) && ElementUtils.isCompileTimeConstant(element))
+    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+        Element element = InternalUtils.symbol(tree);
+        if (!type.isAnnotatedInHierarchy(INTERNED) && ElementUtils.isCompileTimeConstant(element)) {
             type.addAnnotation(INTERNED);
+        }
+        super.annotateImplicit(tree, type, useFlow);
+    }
+
+    @Override
+    public void annotateImplicit(Element element, AnnotatedTypeMirror type) {
+        if (!type.isAnnotatedInHierarchy(INTERNED) && ElementUtils.isCompileTimeConstant(element)) {
+            type.addAnnotation(INTERNED);
+        }
         super.annotateImplicit(element, type);
     }
 

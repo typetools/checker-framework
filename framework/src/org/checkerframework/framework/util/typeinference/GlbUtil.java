@@ -121,7 +121,7 @@ public class GlbUtil {
     }
 
     /**
-     * Sort the lsit of type mirrors, placing supertypes first and subtypes last.
+     * Sort the list of type mirrors, placing supertypes first and subtypes last.
      *
      * E.g.
      * the list:  {@code ArrayList<String>, List<String>, AbstractList<String>}

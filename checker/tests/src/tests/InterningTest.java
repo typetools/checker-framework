@@ -1,9 +1,9 @@
 package tests;
 
-import java.io.File;
-
 import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
+
+import java.io.File;
 
 /**
  * JUnit tests for the Interning Checker, which tests the Interned annotation.

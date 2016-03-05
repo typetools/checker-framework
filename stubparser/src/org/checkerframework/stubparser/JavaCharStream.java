@@ -168,7 +168,7 @@ class JavaCharStream
          maxNextCharInd += i;
       return;
     }
-    catch(java.io.IOException e) {
+    catch (java.io.IOException e) {
       if (bufpos != 0)
       {
         --bufpos;
@@ -318,7 +318,7 @@ class JavaCharStream
             return '\\';
           }
         }
-        catch(java.io.IOException e)
+        catch (java.io.IOException e)
         {
           // We are returning one backslash so we should only backup (count-1)
           if (backSlashCnt > 1)
@@ -344,7 +344,7 @@ class JavaCharStream
 
         column += 4;
       }
-      catch(java.io.IOException e)
+      catch (java.io.IOException e)
       {
         throw new Error("Invalid escape character at line " + line +
                                          " column " + column + ".");

@@ -342,7 +342,7 @@ public class LockAnnotatedTypeFactory
      * issueErrorIfMoreThanOnePresent were set to true when visiting method invocations).
      * If no annotation is present, return RELEASESNOLOCKS as the default, and MAYRELEASELOCKS
      * as the default for unchecked code.
-     * 
+     *
      * @param element The method element.
      * @param issueErrorIfMoreThanOnePresent Whether to issue an error if more than one side effect annotation is present on the method.
      * @return

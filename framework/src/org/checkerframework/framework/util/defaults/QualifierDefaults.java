@@ -34,6 +34,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
@@ -49,7 +50,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Symbol;
+
 import com.sun.tools.javac.code.Type.WildcardType;
 
 /**
@@ -106,8 +107,10 @@ public class QualifierDefaults {
     /**
      * CLIMB locations whose standard default is top for a given type system.
      */
-    public static final TypeUseLocation[] standardClimbDefaultsTop = { TypeUseLocation.LOCAL_VARIABLE, TypeUseLocation.RESOURCE_VARIABLE,
-                                                                       TypeUseLocation.EXCEPTION_PARAMETER, TypeUseLocation.IMPLICIT_UPPER_BOUND };
+    public static final TypeUseLocation[] standardClimbDefaultsTop = { TypeUseLocation.LOCAL_VARIABLE,
+            TypeUseLocation.RESOURCE_VARIABLE, TypeUseLocation.EXCEPTION_PARAMETER,
+            TypeUseLocation.IMPLICIT_UPPER_BOUND };
+
     /**
      * CLIMB locations whose standard default is bottom for a given type system.
      */
@@ -134,13 +137,15 @@ public class QualifierDefaults {
     // than field writes. Future work is to specify different defaults for field reads and field writes.
     // (When a field is written to, its type should be bottom.)
     public static final TypeUseLocation[] standardUncheckedDefaultsTop = { TypeUseLocation.RETURN,
-                                                                                 TypeUseLocation.FIELD,
-                                                                                 TypeUseLocation.UPPER_BOUND };
+            TypeUseLocation.FIELD,
+            TypeUseLocation.UPPER_BOUND };
+
     /**
      * Standard unchecked default locations that should be bottom
      */
     public static final TypeUseLocation[] standardUncheckedDefaultsBottom = { TypeUseLocation.PARAMETER,
-                                                                                    TypeUseLocation.LOWER_BOUND };
+            TypeUseLocation.LOWER_BOUND };
+
     private final boolean useUncheckedCodeDefaultsSource;
     private final boolean useUncheckedCodeDefaultsBytecode;
 
@@ -170,7 +175,8 @@ public class QualifierDefaults {
      * @param tops AnnotationMirrors that are top
      * @param bottoms AnnotationMirrors that are bottom
      */
-    public void addUncheckedStandardDefaults(Iterable<? extends AnnotationMirror> tops, Iterable<? extends AnnotationMirror> bottoms){
+    public void addUncheckedStandardDefaults(Iterable<? extends AnnotationMirror> tops,
+            Iterable<? extends AnnotationMirror> bottoms) {
         for (TypeUseLocation loc : standardUncheckedDefaultsTop) {
             // Only add standard defaults in locations where a default has not be specified
             for (AnnotationMirror top : tops) {
@@ -196,7 +202,8 @@ public class QualifierDefaults {
      * @param tops    AnnotationMirrors that are top
      * @param bottoms AnnotationMirrors that are bottom
      */
-    public void addClimbStandardDefaults(Iterable<? extends AnnotationMirror> tops, Iterable<? extends AnnotationMirror> bottoms) {
+    public void addClimbStandardDefaults(Iterable<? extends AnnotationMirror> tops,
+            Iterable<? extends AnnotationMirror> bottoms) {
         for (TypeUseLocation loc : standardClimbDefaultsTop) {
             for (AnnotationMirror top : tops) {
                 if (!conflictsWithExistingDefaults(checkedCodeDefaults, top, loc)) {
@@ -281,14 +288,15 @@ public class QualifierDefaults {
     }
 
     private void checkDuplicates(DefaultSet previousDefaults, AnnotationMirror newAnno, TypeUseLocation newLoc ) {
-        if (conflictsWithExistingDefaults(previousDefaults,newAnno,newLoc)) {
+        if (conflictsWithExistingDefaults(previousDefaults, newAnno, newLoc)) {
             ErrorReporter.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
                                              + previousDefaults + " and new: "
                                              + (new Default(newAnno, newLoc)));
         }
     }
 
-    private boolean conflictsWithExistingDefaults(DefaultSet previousDefaults, AnnotationMirror newAnno, TypeUseLocation newLoc ) {
+    private boolean conflictsWithExistingDefaults(DefaultSet previousDefaults, AnnotationMirror newAnno,
+            TypeUseLocation newLoc ) {
         final QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
 
         for (Default previous : previousDefaults ) {
@@ -449,10 +457,11 @@ public class QualifierDefaults {
         Class<? extends Annotation> cls;
         try {
             cls = dq.value();
-        } catch( MirroredTypeException mte ) {
+        } catch ( MirroredTypeException mte ) {
             try {
                 @SuppressWarnings("unchecked")
-                Class<? extends Annotation> clscast = (Class<? extends Annotation>) Class.forName(mte.getTypeMirror().toString());
+                Class<? extends Annotation> clscast =
+                    (Class<? extends Annotation>) Class.forName(mte.getTypeMirror().toString());
                 cls = clscast;
             } catch (ClassNotFoundException e) {
                 ErrorReporter.errorAbort("Could not load qualifier: " + e.getMessage(), e);
@@ -486,6 +495,7 @@ public class QualifierDefaults {
         boolean elementAnnotatedForThisChecker = false;
 
         if (elt == null) {
+            ErrorReporter.errorAbort("Call of QualifierDefaults.isElementAnnotatedForThisChecker with null");
             return false;
         }
 
@@ -493,18 +503,16 @@ public class QualifierDefaults {
             return elementAnnotatedFors.get(elt);
         }
 
-        {
-            AnnotationMirror af = atypeFactory.getDeclAnnotation(elt, AnnotatedFor.class);
+        final AnnotationMirror af = atypeFactory.getDeclAnnotation(elt, AnnotatedFor.class);
 
-            if (af != null) {
-                List<String> checkers = AnnotationUtils.getElementValueArray(af, "value", String.class, false);
+        if (af != null) {
+            List<String> checkers = AnnotationUtils.getElementValueArray(af, "value", String.class, false);
 
-                if (checkers != null) {
-                    for (String checker : checkers) {
-                        if (CheckerMain.matchesFullyQualifiedProcessor(checker, upstreamCheckerNames, true)) {
-                            elementAnnotatedForThisChecker = true;
-                            break;
-                        }
+            if (checkers != null) {
+                for (String checker : checkers) {
+                    if (CheckerMain.matchesFullyQualifiedProcessor(checker, upstreamCheckerNames, true)) {
+                        elementAnnotatedForThisChecker = true;
+                        break;
                     }
                 }
             }
@@ -513,13 +521,15 @@ public class QualifierDefaults {
         if (!elementAnnotatedForThisChecker) {
             Element parent;
             if (elt.getKind() == ElementKind.PACKAGE) {
-                // elt.getEnclosingElement() on a package is null
-                parent = ((Symbol) elt).owner;
+                // elt.getEnclosingElement() on a package is null; therefore,
+                // use the dedicated method.
+                parent = ElementUtils.parentPackage(elements, (PackageElement) elt);
             } else {
                 parent = elt.getEnclosingElement();
             }
 
-            if (isElementAnnotatedForThisChecker(parent)) {
+            if (parent != null &&
+                    isElementAnnotatedForThisChecker(parent)) {
                 elementAnnotatedForThisChecker = true;
             }
         }
@@ -569,16 +579,18 @@ public class QualifierDefaults {
         }
 
         Element parent;
-        if (elt.getKind() == ElementKind.PACKAGE)
-            parent = ((Symbol) elt).owner;
-        else
+        if (elt.getKind() == ElementKind.PACKAGE) {
+            parent = ElementUtils.parentPackage(elements, (PackageElement) elt);
+        } else {
             parent = elt.getEnclosingElement();
+        }
 
         DefaultSet parentDefaults = defaultsAt(parent);
-        if (qualifiers == null || qualifiers.isEmpty())
+        if (qualifiers == null || qualifiers.isEmpty()) {
             qualifiers = parentDefaults;
-        else
+        } else {
             qualifiers.addAll(parentDefaults);
+        }
 
         if (qualifiers != null && !qualifiers.isEmpty()) {
             elementDefaults.put(elt, qualifiers);
@@ -611,7 +623,7 @@ public class QualifierDefaults {
                            !isFromStubFile;
             if (isBytecode) {
                 return useUncheckedCodeDefaultsBytecode;
-            } else if (isFromStubFile){
+            } else if (isFromStubFile) {
                 //TODO: Types in stub files not annotated for a particular checker should be
                 // treated as unchecked bytecode.   For now, all types in stub files are treated as
                 // checked code. Eventually, @AnnotateFor(checker) will be programmatically added

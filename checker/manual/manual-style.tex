@@ -40,6 +40,22 @@
 \RecustomVerbatimEnvironment{Verbatim}{Verbatim}{fontsize=\codesize}
 %END LATEX
 
+\newenvironment{mysmall}
+  {\ifhevea\makeatletter\@open{DIV}{style="font-size:small;"}\makeatother
+   \else\begin{smaller}\fi}
+  {\ifhevea\makeatletter\@close{DIV}\makeatother
+   \else\end{smaller}\fi}
+\newenvironment{myxsmall}
+  {\ifhevea\makeatletter\@open{DIV}{style="font-size:x-small;"}\makeatother
+   \else\begin{smaller}\begin{smaller}\fi}
+  {\ifhevea\makeatletter\@close{DIV}\makeatother
+   \else\end{smaller}\end{smaller}\fi}
+\newenvironment{myxxsmall}
+  {\ifhevea\makeatletter\@open{DIV}{style="font-size:xx-small;"}\makeatother
+   \else\begin{smaller}\begin{smaller}\begin{smaller}\fi}
+  {\ifhevea\makeatletter\@close{DIV}\makeatother
+   \else\end{smaller}\end{smaller}\end{smaller}\fi}
+
 %HEVEA \footerfalse    % Disable hevea advertisement in footer
 
 \newcommand{\htmlhr}{\relax}

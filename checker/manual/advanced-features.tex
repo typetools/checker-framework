@@ -307,7 +307,7 @@ writes a type such as \<Date>, the Nullness Checker interprets it as
 \<@NonNull Date>.
 
 The type system applies that default qualifier to most but
-not all types.  In particular, unless otherwise stated, every type system 
+not all types.  In particular, unless otherwise stated, every type system
 uses the CLIMB-to-top rule.  This
 rule states that the \emph{top} qualifier in the hierarchy is applied to
 the CLIMB locations:  \textbf{C}asts, \textbf{L}ocals, \textbf{I}nstanceof,
@@ -507,7 +507,7 @@ If the checker was not run during the compiler execution that created the
 that the programmer wrote explicitly.  (Furthermore, there is no guarantee
 that these qualifiers are correct, since they have not been checked.)
 In this case, each checker decides what qualifier to use for the
-locations where the programmer did not write an annotation.  Unless otherwise noted, the 
+locations where the programmer did not write an annotation.  Unless otherwise noted, the
 choice is:
 
 \begin{itemize}
@@ -660,7 +660,7 @@ checkers that you write.  Here is an example for the Regex Checker
 \end{Verbatim}
 
 
-As a further example, 
+As a further example,
 consider this code, along with comments indicating whether the
 Nullness Checker (Chapter~\ref{nullness-checker}) issues a warning.  Note that the same expression may yield a
 warning or not depending on its context.
@@ -882,7 +882,7 @@ class DBObject {
 Here the call to \code{persistData()} invalidates the inferred non-null type
 of \code{updatedAt}.
 
-A method call may invalidate inferences about field types; see 
+A method call may invalidate inferences about field types; see
 Section~\ref{type-refinement-purity}.
 
 \end{itemize}
@@ -1031,9 +1031,7 @@ exist of the given type.
 
 A common error is:
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
+\begin{mysmall}
 \begin{Verbatim}
 MyClass.java:1465: error: int hashCode() in MyClass cannot override int hashCode(Object this) in java.lang.Object;
 attempting to use an incompatible purity declaration
@@ -1042,9 +1040,7 @@ attempting to use an incompatible purity declaration
   found   : []
   required: [SIDE_EFFECT_FREE, DETERMINISTIC]
 \end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
+\end{mysmall}
 
 \noindent
 The reason for the error is that the \<Object> class is annotated as:

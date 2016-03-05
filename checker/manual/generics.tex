@@ -455,6 +455,7 @@ This uses Java's existing syntax for specifying a method call's type arguments.
 This section describes the original Checker Framework scheme for qualifier
 polymorphism.  Section~\ref{qualifier-parameters} describes an alternative
 scheme that uses qualifier parameters.
+Most type systems still use the original scheme described in this section.
 
 The Checker Framework supports type \emph{qualifier} polymorphism for
 methods, which permits a single method to have multiple different qualified
@@ -465,11 +466,11 @@ you typically do not need to use a polymorphic qualifier such as \<@PolyNull>.
 To \emph{use} a polymorphic qualifier, just write it on a type.
 For example, you can write \<@PolyNull> anywhere in a method that you would write
 \<@NonNull> or \<@Nullable>.
-A polymorphic qualifier can be used on a method signature or body.
+A polymorphic qualifier can be used in a method signature or body.
 It may not be used on a class or field.
 
 A method written using a polymorphic qualifier conceptually has multiple
-versions, somewhat like a template in C++ or the generics feature of Java.
+versions, somewhat like the generics feature of Java or a template in C++.
 In each version, each instance of the polymorphic qualifier has been
 replaced by the same other qualifier from the hierarchy.  See the examples
 below in Section~\ref{qualifier-polymorphism-examples}.
@@ -575,107 +576,6 @@ elements.  Another example is when you want two different formal parameters
 to be of the same type, without constraining them to be one specific type.
 
 
-\subsection{Using multiple polymorphic qualifiers in a method signature\label{qualifier-polymorphism-multiple-qualifiers}}
-
-%% I can't think of a non-clumsy way to say this.
-% Each method containing a polymorphic qualifier is (conceptually) expanded
-% into multiple versions completely independently.
-
-Usually, it does not make sense to write only a single instance of a polymorphic
-qualifier in a method definition:  if you write one instance of (say)
-\<@PolyNull>, then you should use at least two.  (An exception is a
-polymorphic qualifier on an array element type; this section ignores that
-case, but see below for further details.)
-
-For example, there is no point to writing
-
-\begin{Verbatim}
-  void m(@PolyNull Object obj)
-\end{Verbatim}
-
-\noindent
-which expands to
-
-\begin{Verbatim}
-  void m(@NonNull Object obj)
-  void m(@Nullable Object obj)
-\end{Verbatim}
-
-This is no different (in terms of which calls to the method will
-type-check) than writing just
-
-\begin{Verbatim}
-  void m(@Nullable Object obj)
-\end{Verbatim}
-
-The benefit of polymorphic qualifiers comes when one is used multiple times
-in a method, since then each instance turns into the same type qualifier.
-Most frequently, the polymorphic qualifier appears on at least one formal
-parameter and also on the return type.  It can also be useful to have
-polymorphic qualifiers on (only) multiple formal parameters, especially if
-the method side-effects one of its arguments.
-For example, consider
-
-\begin{Verbatim}
-void moveBetweenStacks(Stack<@PolyNull Object> s1, Stack<@PolyNull Object> s2) {
-  s1.push(s2.pop());
-}
-\end{Verbatim}
-
-\noindent
-In this example, if it is acceptable to rewrite your code to use Java
-generics, the code can be even cleaner:
-
-\begin{Verbatim}
-<T> void moveBetweenStacks(Stack<T> s1, Stack<T> s2) {
-  s1.push(s2.pop());
-}
-\end{Verbatim}
-
-
-%% It would be nice to give an example that isn't too contrived.
-
-
-\subsection{Using a single polymorphic qualifier on an element type\label{qualifier-polymorphism-element-types}}
-
-There is an exception to the general rule that a polymorphic qualifier
-should be used multiple times in a signature.  It can make sense to use a
-polymorphic qualifier just once, if it is on an array or generic element
-type.
-
-For example, consider a routine that returns the index, in an array, of a
-given element:
-
-\begin{Verbatim}
-  public static int indexOf(@PolyNull Object[] a, @Nullable Object elt) { ... }
-\end{Verbatim}
-
-If \<@PolyNull> were replaced with either \<@Nullable> or \<@NonNull>, then
-one of these safe client calls would be rejected:
-
-\begin{Verbatim}
-  @Nullable Object[] a1;
-  @NonNull Object[] a2;
-
-  indexOf(a1, someObject);
-  indexOf(a2, someObject);
-\end{Verbatim}
-
-Of course, it would be better style to use a generic method, as in either
-of these signatures:
-
-\begin{Verbatim}
- public static <T extends @Nullable Object> int indexOf(T[] a, @Nullable Object elt) { ... }
- public static <T extends @Nullable Object> int indexOf(T[] a, T elt) { ... }
-\end{Verbatim}
-
-The examples in this section use arrays, but analogous collection examples exist.
-
-These examples show that use of a single polymorphic qualifier may be
-necessary in legacy code, but can often be avoided by use of better code
-style.
-
-
 \subsection{The \code{@PolyAll} qualifier applies to every type system\label{polyall}}
 
 Each type system has its own polymorphic type qualifier.
@@ -687,8 +587,10 @@ For example, a method that only performs \<==> on array elements will work
 no matter what the array's element types are:
 
 \begin{Verbatim}
-  /** Searches for the first occurrence of the given element in the array,
-   *  testing for equality using == (not the equals method). */
+  /**
+   * Searches for the first occurrence of the given element in the array,
+   * testing for equality using == (not the equals method).
+   */
   public static int indexOfEq(@PolyAll Object[] a, @Nullable Object elt) {
     for (int i=0; i<a.length; i++)
       if (elt == a[i])
@@ -697,16 +599,21 @@ no matter what the array's element types are:
   }
 \end{Verbatim}
 
-% TODO: As of June 2015, @PolyAll does not take an optional argument.
 
-The \refqualclass{framework/qual}{PolyAll} qualifier takes an optional argument so that you can
+\subsection{Multiple instances of polymorphic qualifiers (the index argument)\label{qualifier-polymorphism-multiple-instances}}
+
+% TODO: Polymorphic qualifiers such as @PolyAll do not yet take an optional argument.
+
+Each polymorphic qualifier such as \refqualclass{framework/qual}{PolyAll}
+takes an optional argument so that you can
 specify multiple, independent polymorphic type qualifiers.  For example,
-the method also works no matter what the type argument on the second
-argument is.  This signature is overly restrictive:
+this signature is overly restrictive:
 
 \begin{Verbatim}
-  /** Returns true if the arrays are elementwise equal,
-   *  testing for equality using == (not the equals method). */
+  /**
+   * Returns true if the arrays are elementwise equal,
+   * testing for equality using == (not the equals method).
+   */
   public static int eltwiseEqualUsingEq(@PolyAll Object[] a, @PolyAll Object elt) {
     for (int i=0; i<a.length; i++)
       if (elt != a[i])
@@ -753,11 +660,212 @@ had used \<elt.equals(a[i])> instead of \<elt == a[i]>.
 % which every instance of \<@PolyNull> has been replaced by
 % \<@Nullable>.
 
+If a method signature contains only indexless versions of a polymorphic
+qualifier such as \refqualclass{framework/qual}{PolyAll} or
+\refqualclass{checker/nullness/qual}{PolyNull}, then all of them refer to
+the same type as described in
+Section~\ref{qualifier-polymorphism-multiple-qualifiers}.  If any indexed
+version appears, then every occurrence of the polymorphic qualifier without
+an index is considered to use a fresh index.  For example, the following
+two declarations are equivalent (where \<@PA> means \<@PolyAll>, for brevity):
+
+\begin{smaller}
+\begin{Verbatim}
+  @PA(1) foo(@PA(1) Object a, @PA(2) Object b, @PA(2) Object c, @PA    Object d, @PA    Object e) {...}
+
+  @PA(1) foo(@PA(1) Object a, @PA(2) Object b, @PA(2) Object c, @PA(3) Object d, @PA(4) Object e) {...}
+\end{Verbatim}
+\end{smaller}
+
+As described in Section~\ref{qualifier-polymorphism-return-type}, the
+qualifier on a return type must be the same as that on some formal parameter.
+Therefore, the first of these declarations is legal because it is
+equivalent to the second, but the third is illegal because it it
+equivalent to the fourth.
+
+\begin{Verbatim}
+  @PolyAll    m1(@PolyAll    Object a, @PolyAll    Object b) { ... } // OK
+  @PolyAll(1) m2(@PolyAll(1) Object a, @PolyAll(1) Object b) { ... } // OK (same as m1)
+
+  @PolyAll    m3(@PolyAll    Object a, @PolyAll(1) Object b) { ... } // illegal
+  @PolyAll(2) m4(@PolyAll(3) Object a, @PolyAll(1) Object b) { ... } // illegal (same as m3)
+\end{Verbatim}
+
+
+\subsection{Using multiple polymorphic qualifiers in a method signature\label{qualifier-polymorphism-multiple-qualifiers}}
+
+%% I can't think of a non-clumsy way to say this.
+% Each method containing a polymorphic qualifier is (conceptually) expanded
+% into multiple versions completely independently.
+
+Usually, it does not make sense to write only a single instance of a polymorphic
+qualifier in a method definition:  if you write one instance of (say)
+\<@PolyNull>, then you should use at least two.
+(Section~\ref{qualifier-polymorphism-single-qualifier} describes some
+exceptions to this rule:  times when it makes sense to write a single
+polymorphic qualifier in a signature.)
+
+For example, there is no point to writing
+
+\begin{Verbatim}
+  void m(@PolyNull Object obj)
+\end{Verbatim}
+
+\noindent
+which expands to
+
+\begin{Verbatim}
+  void m(@NonNull Object obj)
+  void m(@Nullable Object obj)
+\end{Verbatim}
+
+This is no different (in terms of which calls to the method will
+type-check) than writing just
+
+\begin{Verbatim}
+  void m(@Nullable Object obj)
+\end{Verbatim}
+
+The main benefit of polymorphic qualifiers comes when one is used multiple times
+in a method, since then each instance turns into the same type qualifier.
+Most frequently, the polymorphic qualifier appears on at least one formal
+parameter and also on the return type.  It can also be useful to have
+polymorphic qualifiers on (only) multiple formal parameters, especially if
+the method side-effects one of its arguments.
+For example, consider
+
+\begin{Verbatim}
+void moveBetweenStacks(Stack<@PolyNull Object> s1, Stack<@PolyNull Object> s2) {
+  s1.push(s2.pop());
+}
+\end{Verbatim}
+
+\noindent
+In this example, if it is acceptable to rewrite your code to use Java
+generics, the code can be even cleaner:
+
+\begin{Verbatim}
+<T> void moveBetweenStacks(Stack<T> s1, Stack<T> s2) {
+  s1.push(s2.pop());
+}
+\end{Verbatim}
+
+\label{qualifier-polymorphism-return-type}
+It is permitted to write a polymorphic qualifier on a return type only if
+that polymorphic qualifier appeared elsewhere in the signature, on some
+formal parameter.
+
+%% It would be nice to give an example that isn't too contrived.
+
+
+\subsection{Using a single polymorphic qualifier in a method signature\label{qualifier-polymorphism-single-qualifier}}
+
+As explained in Section~\ref{qualifier-polymorphism-multiple-qualifiers},
+you will usually use a polymorphic qualifier
+multiple times in a signature.
+This section describes situations when it makes sense to write just one
+polymorphic qualifier in a method signature.
+Some of these situations can be avoided by writing a generic method,
+but in legacy code it may not be possible for you to change a method to be
+generic.
+
+
+\subsubsection{Using a single polymorphic qualifier on an element type\label{qualifier-polymorphism-element-types}}
+
+It can make sense to use a polymorphic qualifier just once, on an array or
+generic element type.
+
+For example, consider a routine that returns the index, in an array, of a
+given element:
+
+\begin{Verbatim}
+  public static int indexOf(@PolyNull Object[] a, @Nullable Object elt) { ... }
+\end{Verbatim}
+
+If \<@PolyNull> were replaced with either \<@Nullable> or \<@NonNull>, then
+one of these safe client calls would be rejected:
+
+\begin{Verbatim}
+  @Nullable Object[] a1;
+  @NonNull Object[] a2;
+
+  indexOf(a1, someObject);
+  indexOf(a2, someObject);
+\end{Verbatim}
+
+Of course, it would be better style to use a generic method, as in either
+of these signatures:
+
+\begin{Verbatim}
+ public static <T extends @Nullable Object> int indexOf(T[] a, @Nullable Object elt) { ... }
+ public static <T extends @Nullable Object> int indexOf(T[] a, T elt) { ... }
+\end{Verbatim}
+
+The examples in this section use arrays, but analogous examples exist that
+use collections.
+
+
+\subsubsection{Using a single polymorphic qualifier to indicate all
+  arguments are legal\label{qualifier-polymorphism-top-type}}
+
+A single \<@PolyAll> annotation can indicate that any possible value is
+permitted to be passed.  For example:
+
+\begin{Verbatim}
+  boolean eq(@PolyAll Object other) {
+    return this == other;
+  }
+\end{Verbatim}
+
+\noindent
+The \<@PolyAll> annotation applies to all type systems.
+It would be infeasible to write the top qualifier for every possible type
+system and to update this method's annotation whenever a new type system is
+defined.
+
+By contrast, a declaration of \<eq> without \<@PolyAll>:
+
+\begin{Verbatim}
+  boolean eq(Object other) {
+    return this == other;
+  }
+\end{Verbatim}
+
+\noindent
+would reject some calls, in type systems where the default type qualifier
+applied to \<Object> is not the top type.
+
+A related use of a single polymorphic qualifier is to override a generic
+type.  For example, the annotation on
+\sunjavadoc{java/lang/Comparable.html\#compareTo-T-}{Comparable.compareTo()}
+is:
+
+\begin{Verbatim}
+  public interface Comparable<T extends @NonNull Object> {
+    @Pure int compareTo(@PolyAll @NonNull T a1);
+  }
+\end{Verbatim}
+
+\noindent
+which indicates that, for every type system other than the nullness type
+system, every value is permitted as an argument, regardless of how the
+\<Comparable> type was instantiated.  For example, this call is legal:
+
+\begin{Verbatim}
+  Comparable<@MyBottom String> cble;
+  @MyTop String s;
+  ...
+  cble.compareTo(s);
+\end{Verbatim}
+
 
 \section{Qualifier parameters\label{qualifier-parameters}}
 
 This section describes qualifier parameters which is the new, more-powerful
-qualifier polymorphism scheme.  As of February 2015, only the
+qualifier polymorphism scheme.
+% Last updated in February 2016
+As of the current release,
+only the
 Tainting Checker (Chapter~\ref{tainting-checker}) and the Regex Checker
 (Chapter~\ref{regex-checker}) support qualifier parameters.
 Other checkers with
@@ -792,9 +900,7 @@ that is consistent with all uses is \code{@Tainted String}, which is a supertype
 of \<@Untainted String>.  When an \code{@Untainted String} value is put in a \code{Holder},
 a cast is required when the value is later retrieved.
 
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
+\begin{mysmall}
 \begin{Verbatim}
     class Holder {
         @Tainted String item;   // overly-general declaration, leads to casts
@@ -813,9 +919,7 @@ a cast is required when the value is later retrieved.
     String untaintedString = (@Untainted untaintedString) untaintedHolder.item;
     taintedHolder.item = getTaintedValue(); // An error that we would like the type sysetm to catch
 \end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
+\end{mysmall}
 
 Qualifier parameters allow sound type-checking of this
 code without the use of casts.
@@ -961,13 +1065,15 @@ have annotations for both the Regex and the Tainting checker, there must be a
 different copy of each annotation so that the Checker Framework can determine
 the checker that an annotation belongs to.
 
+% Hevea doesn't find the \newstyle comamnd.  Why?
+% \newstyle{.xsmalltabular}{font-size:smaller;}
+% then later use: \begin{divstyle}{xsmalltabular}
+
 \begin{figure}
-\begin{smaller}
 %BEGIN LATEX
 \setlength{\tabcolsep}{.5\tabcolsep}
-\begin{smaller}
-\begin{smaller}
 %END LATEX
+\begin{myxxsmall}
 \begin{tabular}{|l|c|c|c|c|} \hline
                         & Generic Equivalent & Idealized Syntax
                         & Actual Syntax \\ \hline
@@ -1045,11 +1151,7 @@ the checker that an annotation belongs to.
   \\ \hline
 
 \end{tabular}
-%BEGIN LATEX
-\end{smaller}
-\end{smaller}
-%END LATEX
-\end{smaller}
+\end{myxxsmall}
 \caption{Comparison of the syntax of Java generics, the idealized syntax
   used in
   Sections~\ref{qualifier-parameters-overview}--\ref{qualifier-parameters-wildcards},

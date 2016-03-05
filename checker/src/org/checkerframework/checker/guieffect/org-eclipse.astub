@@ -1,0 +1,567 @@
+import org.checkerframework.checker.guieffect.qual.*;
+
+package org.eclipse.compare;
+@UIType public abstract class CompareEditorInput extends PlatformObject implements IEditorInput, IPropertyChangeNotifier, IRunnableWithProgress, ICompareContainer {
+    @SafeEffect public CompareConfiguration getCompareConfiguration();
+    @SafeEffect public void setTitle(String title);
+    @SafeEffect public boolean isSaveNeeded();
+    @SafeEffect public void save(IProgressMonitor pm);
+    @SafeEffect public void saveChanges(IProgressMonitor monitor) throws CoreException;
+    @SafeEffect protected void setMessage(String message);
+    @SafeEFfect public String getMessage();
+}
+
+package org.eclipse.core.commands;
+@PolyUIType public interface IHandler {
+    @SafeEffect void addHandlerListener(IHandlerListener handlerListener);
+    @SafeEffect void dispose();
+    @PolyUIEffect Object execute(ExecutionEvent event) @PolyUI;
+    @SafeEffect boolean isEnabled();
+    @SafeEffect boolean isHandled();
+    @SafeEffect void removeHandlerListener(IHandlerListener handlerListener);
+
+}
+
+package org.eclipse.core.expression;
+public interface IPropertyTester {
+    // XXX Not sure if this should be UIEffect or poly
+    @UIEffect boolean test(Object receiver, String property, Object[] args, Object expectedValue);
+}
+public abstract class PropertyTester implements IPropertyTester {
+    // XXX Not sure if this should be UIEffect or poly
+    @UIEffect boolean test(Object receiver, String property, Object[] args, Object expectedValue);
+}
+
+package org.eclipse.core.runtime;
+@PolyUIType public interface IProgressMonitor {
+    @PolyUIEffect void beginTask(String name, int totalWork) @PolyUI;
+    @PolyUIEffect void done() @PolyUI;
+    @PolyUIEffect void internalWorked(double work) @PolyUI;
+    @PolyUIEffect boolean isCanceled() @PolyUI;
+    @PolyUIEffect void setCanceled(boolean value) @PolyUI;
+    @PolyUIEffect void setTaskName(String name) @PolyUI;
+    @PolyUIEffect void subTask(String name) @PolyUI;
+    @PolyUIEffect void worked(int work) @PolyUI;
+}
+@PolyUIType
+public abstract class Plugin implements BundleActivator {
+    // These methods are present on all plugins, UI or not
+    @PolyUIEffect void start(BundleContext context) @PolyUI;
+    @PolyUIEffect void stop(BundleContext context) @PolyUI;
+    @SafeEffect public final Preferences getPluginPreferences();
+}
+public static interface Preferences$IPropertyChangeListener extends EventListener {
+    @PolyUIEffect public void propertyChange(Preferences.PropertyChangeEvent event) @PolyUI;
+}
+package org.eclipse.core.runtime.jobs;
+@PolyUIType
+public abstract class Job extends org.eclipse.core.internal.jobs.InternalJob implements IAdaptable {
+    @PolyUIEffect protected abstract IStatus run(IProgressMonitor monitor) @PolyUI;
+}
+
+@UIPackage package org.eclipse.debug.ui;
+@UIPackage package org.eclipse.debug.ui.actions;
+@UIPackage package org.eclipse.debug.ui.console;
+@UIPackage package org.eclipse.debug.ui.contexts;
+@UIPackage package org.eclipse.debug.ui.memory;
+@UIPackage package org.eclipse.debug.ui.sourcelookup;
+@UIPackage package org.eclipse.draw2d;
+@UIPackage package org.eclipse.draw2d.geometry;
+@UIPackage package org.eclipse.draw2d.parts;
+@UIPackage package org.eclipse.gef;
+@UIPackage package org.eclipse.gef.editparts;
+@UIPackage package org.eclipse.gef.editpolicies;
+@UIPackage package org.eclipse.gef.tools;
+@UIPackage package org.eclipse.gef.ui;
+@UIPackage package org.eclipse.gef.ui.actions;
+@UIPackage package org.eclipse.gef.ui.parts;
+@UIPackage package org.eclipse.help.ui;
+@UIPackage package org.eclipse.help.ui.browser;
+@UIPackage package org.eclipse.jface.action;
+//@PolyUIType
+//public interface IAction {
+//    // TODO: IAction and Action are all-safe interfaces!
+//    @PolyUIEffect public void run();
+//    @PolyUIEffect public void runWithEvent(Event event);
+//}
+//@PolyUIType
+//public abstract class Action extends AbstractAction implements IAction {
+//    // TODO: IAction and Action are all-safe interfaces!
+//    @PolyUIEffect public void run();
+//    @PolyUIEffect public void runWithEvent(Event event);
+//}
+//public interface IContributionManager {
+//    @UIEffect public void add(@UI IAction action);
+//}
+@SafeType interface IAction {
+    @UIEffect public void run();
+    @UIEffect public void runWithEvent(Event event);
+}
+@SafeType class Action extends AbstractAction implements IAction {
+    @UIEffect public void run();
+    @UIEffect public void runWithEvent(Event event);
+}
+public interface IContributionManager {
+    @SafeEffect public void add(IAction action);
+    @SafeEffect public void add(IContributionItem item);
+}
+public interface IMenuManager extends IContributionManager, IContributionItem {
+    @SafeEffect public void addMenuListener(IMenuListener listener);
+    @SafeEffect public void setRemoveAllWhenShown(boolean removeAll);
+}
+
+@UIPackage package org.eclipse.jface.bindings;
+@UIPackage package org.eclipse.jface.bindings.keys;
+@UIPackage package org.eclipse.jface.bindings.keys.formatting;
+@UIPackage package org.eclipse.jface.commands;
+@UIPackage package org.eclipse.jface.contentassist;
+@UIPackage package org.eclipse.jface.contexts;
+@UIPackage package org.eclipse.jface.databinding.dialog;
+@UIPackage package org.eclipse.jface.databinding.preference;
+@UIPackage package org.eclipse.jface.databinding.swt;
+@UIPackage package org.eclipse.jface.databinding.util;
+@UIPackage package org.eclipse.jface.databinding.viewers;
+@UIPackage package org.eclipse.jface.databinding.wizard;
+@UIPackage package org.eclipse.jface.dialogs;
+public abstract class Dialog extends Window {
+    // XXX: Not 100% sure about this
+    // XXX: Reproduced here because if Window is annotated @UIType, it doesn't inherit the weaker override!
+    @SafeEffect void getShell();
+}
+// XXX: Not 100% sure about this
+@SafeType public interface IDialogSettings {}
+
+@UIPackage package org.eclipse.jface.fieldassist;
+@UIPackage package org.eclipse.jface.layout;
+@UIPackage package org.eclipse.jface.menus;
+@UIPackage package org.eclipse.jface.operation;
+@UIPackage package org.eclipse.jface.preference;
+public interface IPreferenceStore {
+    @SafeEffect void addPropertyChangeListener(IPropertyChangeListener listener);
+    // TODO: ALL methods of this type should be safe!
+    @SafeEffect boolean contains(String name);
+    @SafeEffect void firePropertyChangeEvent(String name, Object oldValue, Object newValue);
+    @SafeEffect boolean getBoolean(String name);
+    @SafeEffect boolean getDefaultBoolean(String name);
+    @SafeEffect double getDefaultDouble(String name);
+    @SafeEffect float getDefaultFloat(String name);
+    @SafeEffect int getDefaultInt(String name);
+    @SafeEffect long getDefaultLong(String name);
+    @SafeEffect String getDefaultString(String name);
+    @SafeEffect double getDouble(String name);
+    @SafeEffect float getFloat(String name);
+    @SafeEffect int getInt(String name);
+    @SafeEffect long getLong(String name);
+    @SafeEffect String getString(String name);
+    @SafeEffect boolean isDefault(String name);
+    @SafeEffect boolean needsSaving();
+    @SafeEffect void putValue(String name, String value);
+    @SafeEffect void removePropertyChangeListener(IPropertyChangeListener listener);
+    @SafeEffect void setDefault(String name, boolean value);
+    @SafeEffect void setDefault(String name, double value);
+    @SafeEffect void setDefault(String name, float value);
+    @SafeEffect void setDefault(String name, int value);
+    @SafeEffect void setDefault(String name, long value);
+    @SafeEffect void setDefault(String name, String defaultObject);
+    @SafeEffect void setToDefault(String name);
+    @SafeEffect void setValue(String name, boolean value);
+    @SafeEffect void setValue(String name, double value);
+    @SafeEffect void setValue(String name, float value);
+    @SafeEffect void setValue(String name, int value);
+    @SafeEffect void setValue(String name, long value);
+    @SafeEffect void setValue(String name, String value);
+}
+public abstract class PreferencePage extends DialogPage implements IPreferencePage {
+    @SafeEffect protected IPreferenceStore doGetPreferenceStore();
+}
+public class ColorSelector extends EventManager {
+    void addListener(@UI IPropertyChangeListener listener);
+    void removeListener(@UI IPropertyChangeListener listener);
+}
+public abstract class FieldEditor {
+    public void setPropertyChangeListener(@UI IPropertyChangeListener listener);
+}
+// XXX: Not 100% on this
+@SafeType public class PreferenceConverter {}
+@UIPackage package org.eclipse.jface.resource;
+// XXX: Not 100% on this
+@SafeType public class JFaceResources {
+    // This method is explicitly documented as UI-only
+    @UIEffect public static ResourceManager getResources();
+    // This method is NOT doc'ed as ui-only, but the above does something safe and then calls this... might just be a nullness issue, though (Display.getCurrent())
+    @UIEffect public static ResourceManager getResources(Display toQuery);
+}
+@SafeType public class StringConverter {}
+public class ImageRegistry {
+    @SafeEffect ImageDescriptor getDescriptor(String key);
+    @SafeEffect public Image get(String key);
+}
+public abstract class ImageDescriptor extends DeviceResourceDescriptor {
+    @SafeEffect public static ImageDescriptor createFromURL(URL url);
+}
+public class FontRegistry extends ResourceRegistry {
+    @SafeEffect public Font get(String symbolicName);
+}
+public abstract class ResourceRegistry extends EventManager {
+    @SafeEffect public void addListener(IPropertyChangeListener listener);
+    @SafeEffect public void removeListener(IPropertyChangeListener listener);
+}
+
+@UIPackage package org.eclipse.jface.text;
+@SafeType public class DocumentEvent{}
+
+// XXX: Not 100% on this
+@SafeType public interface IDocument{}
+@SafeType public abstract class AbstractDocument implements IDocument, IDocumentExtension, IDocumentExtension2, IDocumentExtension3, IDocumentExtension4, IRepairableDocument, IRepairableDocumentExtension {}
+@SafeType public interface ITextStore{}
+@SafeType public class GapTextStore implements ITextStore {}
+@SafeType public class CopyOnWriteTextStore implements ITextStore {}
+@SafeType public interface ILineTracker {}
+@SafeType public class DefaultLineTracker extends AbstractLineTracker {}
+@SafeType public class ConfigurableLineTracker extends AbstractLineTracker {}
+@SafeType public abstract class AbstractLineTracker implements ILineTracker, ILineTrackerExtension {}
+public interface ITextViewer {
+    @SafeEffect public ITextOperationTarget getTextOperationTarget();
+    @SafeEffect public IDocument getDocument();
+}
+
+
+@UIPackage package org.eclipse.jface.text.contentassist;
+@UIPackage package org.eclipse.jface.text.formatter;
+@UIPackage package org.eclipse.jface.text.hyperlink;
+@UIPackage package org.eclipse.jface.text.information;
+@UIPackage package org.eclipse.jface.text.link;
+@UIPackage package org.eclipse.jface.text.presentation;
+@UIPackage package org.eclipse.jface.text.projection;
+@UIPackage package org.eclipse.jface.text.quickassist;
+@UIPackage package org.eclipse.jface.text.reconciler;
+@UIPackage package org.eclipse.jface.text.revisions;
+// XXX: Not 100%, but everything in jface.text.rules seems to be safe
+//@UIPackage package org.eclipse.jface.text.rules;
+@UIPackage package org.eclipse.jface.text.source;
+@UIPackage package org.eclipse.jface.text.source.projection;
+@UIPackage package org.eclipse.jface.text.templates;
+@UIPackage package org.eclipse.jface.text.templates.persistence;
+@UIPackage package org.eclipse.jface.util;
+public class PropertyChangeEvent extends EventObject {
+    @SafeEffect PropertyChangeEvent(Object source, String property, Object oldValue, Object newValue);
+    @SafeEffect Object getNewValue();
+    @SafeEffect Object getOldValue();
+    @SafeEffect String getProperty();
+}
+@PolyUIType public interface IPropertyChangeListener extends EventListener {
+    @PolyUIEffect void propertyChange(PropertyChangeEvent event) @PolyUI;
+}
+@UIPackage package org.eclipse.jface.viewers;
+public abstract class ContentViewer extends Viewer {
+    @SafeEffect public Object getInput();
+}
+public abstract class StructuredViewer extends ContentViewer implements IPostSelectionProvider {
+    /*@SafeEffect void refresh(); -- Why the hell did I ever mark this safe??? */
+}
+public class TreeViewer extends AbstractTreeViewer {
+    @SafeEffect Tree getTree();
+    @SafeEffect Control getControl();
+}
+@SafeType public interface IStructuredSelection extends ISelection {
+}
+@UIPackage package org.eclipse.jface.viewers.deferred;
+@UIPackage package org.eclipse.jface.window;
+public interface IShellProvider {
+    // XXX: Not 100% sure about this
+    @SafeEffect void getShell();
+}
+public abstract class Window implements IShellProvider {
+    // XXX: Not 100% sure about this
+    // XXX: Reproduced here because if Window is annotated @UIType, it doesn't inherit the weaker override!
+    @SafeEffect void getShell();
+}
+@UIPackage package org.eclipse.jface.wizard;
+@UIPackage package org.eclipse.jsch.ui;
+@UIPackage package org.eclipse.ltk.ui.refactoring;
+@UIPackage package org.eclipse.ltk.ui.refactoring.actions;
+@UIPackage package org.eclipse.ltk.ui.refactoring.history;
+@UIPackage package org.eclipse.ltk.ui.refactoring.model;
+@UIPackage package org.eclipse.ltk.ui.refactoring.resource;
+@UIPackage package org.eclipse.search.ui;
+@UIPackage package org.eclipse.search.ui.actions;
+@UIPackage package org.eclipse.search.ui.text;
+
+/*
+ * SWT
+ */
+@UIPackage package org.eclipse.swt;
+@UIPackage package org.eclipse.swt.accessibility;
+@UIPackage package org.eclipse.swt.awt;
+@UIPackage package org.eclipse.swt.browser;
+@UIPackage package org.eclipse.swt.custom;
+
+public class BusyIndicator {
+    @UIEffect public static void showWhile(Display display, @UI Runnable runnable);
+}
+
+@UIPackage package org.eclipse.swt.dnd;
+@SafeType public abstract class Transfer {}
+@SafeType public abstract class ByteArrayTransfer extends Transfer {}
+
+@UIPackage package org.eclipse.swt.events;
+@UIPackage package org.eclipse.swt.graphics;
+// XXX: Not 100%, but this seems safe.  At least the .equals(), which is what my case study needs
+public final class RGB extends Object implements org.eclipse.swt.internal.SerializableCompatibility {
+    @SafeEffect public boolean equals(Object object);
+}
+public final class Font extends Resource {
+    // Another SWT class that happens to work on other threads... (https://bugs.eclipse.org/bugs/show_bug.cgi?id=241062)
+    @SafeEffect FontData[] getFontData();
+}
+public abstract class Resource {
+    // XXX not 100% - the impl appears safe, but this is probably not the intended model
+    @SafeEffect public void dispose();
+}
+public final class Image extends Resource implements Drawable {
+    @SafeEffect public boolean equals(Object object);
+    @SafeEffect public int hashCode();
+}
+
+@UIPackage package org.eclipse.swt.layout;
+@UIPackage package org.eclipse.swt.ole.win32;
+@UIPackage package org.eclipse.swt.opengl;
+@UIPackage package org.eclipse.swt.printing;
+@UIPackage package org.eclipse.swt.program;
+@UIPackage package org.eclipse.swt.widgets;
+// These are the only two safe methods in all of SWT according to the docs
+@UIType class Display extends Device {
+    @SafeEffect public void syncExec(@UI Runnable runnable);
+    @SafeEffect public void asyncExec(@UI Runnable runnable);
+    // Not 100% sure about this one
+    @SafeEffect public static Display getDefault();
+    @SafeEffect public static Display getCurrent();
+}
+public class Shell extends Decorations {
+    // XXX: Actually inherited, as @SafeEffect, from Widget
+    @SafeEffect public Display getDisplay();
+}
+public abstract class Widget {
+    // XXX: Not 100% on this
+    @SafeEffect public Display getDisplay();
+    @SafeEffect public boolean isDisposed();
+}
+
+// XXX Not 100% on these internal packages
+@UIPackage package org.eclipse.team.internal.ui;
+@UIPackage package org.eclipse.team.internal.ui.synchronize;
+public abstract class SyncInfoSetChangeSetCollector extends ChangeSetManager {
+    @SafeEffect protected final void performUpdate(IWorkspaceRunnable runnable, boolean preserveExpansion, IProgressMonitor monitor);
+}
+
+
+@UIPackage package org.eclipse.team.ui;
+// XXX This TeamOperation class is messy for us: canRunAsJob() determines whether the class has UI
+// effects or safe effects.  Some of these methods need to be marked safe because they're to be used
+// by both variants.  Because there are issues with valid types, I'm making this type safe for now,
+// and I'll suffer the extra warnings until I decide whether or not I want to go polymorphic.
+@SafeType public abstract class TeamOperation extends JobChangeAdapter implements IRunnableWithProgress {
+}
+@SafeType public class TeamImages {}
+
+@UIPackage package org.eclipse.team.ui.history;
+public abstract class HistoryPage extends Page implements IHistoryPage, IAdaptable {
+    @SafeEffect public Object getInput();
+}
+
+@UIPackage package org.eclipse.team.ui.synchronize;
+public interface ISynchronizeModelElement extends IDiffContainer, ITypedElement, ICompareInput {
+    @SafeEffect IResource getResource();
+}
+public abstract class SubscriberParticipant extends AbstractSynchronizeParticipant implements IPropertyChangeListener {
+    @SafeEffect public final IStatus refreshNow(IResource[] resources, String taskName, IProgressMonitor monitor);
+    @SafeEffect public final void refresh(IResource[] resources, String shortTaskName, String longTaskName, IWorkbenchSite site);
+    @SafeEffect protected String getLongTaskName(IResource[] resources);
+    @SafeEffect public IResource[] getResources();
+    @SafeEffect public void reset();
+}
+public abstract class SynchronizeModelOperation extends TeamOperation {
+    @SafeEffect protected SyncInfoSet getSyncInfoSet();
+}
+
+@UIPackage package org.eclipse.ui;
+public final class PlatformUI {
+    // XXX Not 100%
+    @SafeEffect public static IWorkbench getWorkbench();
+    @SafeEffect public static boolean isWorkbenchRunning();
+}
+// XXX Not 100% about these "safe" types
+@SafeType public interface IWorkbench extends IAdaptable, IServiceLocator {}
+public interface IWorkbenchPart extends IAdaptable {
+    @SafeEffect IWorkbenchPartSite getSite();
+}
+public interface IWorkbenchPartSite extends IWorkbenchSite {
+    @SafeEffect IWorkbenchPart getPart();
+}
+@SafeType public interface IWorkbenchWindow extends IPageService, IRunnableContext, IServiceLocator, IShellProvider {}
+public interface IWorkbenchSite extends IAdaptable, IShellProvider, IServiceLocator {
+    @SafeEffect public Shell getShell(); // XXX: This is specified by IShellProvider, but the docs for IWorkbenchSite say this is ui safe only for compat, and the result may be wrong
+    @SafeEffect IWorkbenchPage getPage();
+}
+public interface IFileEditorInput extends IStorageEditorInput {
+    // XXX Not 100%
+    @SafeEffect IFile getFile();
+}
+public interface IPathEditorInput extends IEditorInput {
+    @SafeEffect IPath getPath();
+}
+@SafeType public interface IEditorRegistry {}
+@SafeType public interface IEditorDescriptor extends IWorkbenchPartDescriptor {}
+public interface IEditorPart extends IWorkbenchPart, ISaveablePart {
+    // XXX not 100% sure
+    @SafeEffect public IEditorInput getEditorInput();
+}
+public interface IPartService {
+    @SafeEffect IWorkbenchPart getActivePart();
+}
+
+
+@UIPackage package org.eclipse.ui.about;
+@UIPackage package org.eclipse.ui.actions;
+public abstract class BaseSelectionListenerAction extends Action implements ISelectionChangedListener {
+    // XXX every impl of this simply returns a member, but I can't tell if this is actually (race) safe
+    @SafeEffect public IStructuredSelection getStructuredSelection();
+}
+
+@UIPackage package org.eclipse.ui.activities;
+@UIPackage package org.eclipse.ui.application;
+@UIPackage package org.eclipse.ui.branding;
+@UIPackage package org.eclipse.ui.browser;
+@UIPackage package org.eclipse.ui.cheatsheets;
+@UIPackage package org.eclipse.ui.commands;
+@UIPackage package org.eclipse.ui.console;
+// XXX: Not 100% on these console types
+@SafeType public interface IConsole {}
+@SafeType public interface IConsoleManager {}
+@SafeType public abstract class TextConsole extends AbstractConsole {
+    @UIEffect public Font getFont();
+}
+@SafeType public class ConsolePlugin extends AbstractUIPlugin {}
+@SafeType public class IOConsole extends TextConsole{}
+@SafeType public class IOConsoleInputStream extends InputStream{}
+@SafeType public class IOConsoleOutputStream extends OutputStream{}
+
+@UIPackage package org.eclipse.ui.console.actions;
+@UIPackage package org.eclipse.ui.contentassist;
+@UIPackage package org.eclipse.ui.contexts;
+@UIPackage package org.eclipse.ui.databinding;
+@UIPackage package org.eclipse.ui.dialogs;
+public class FilteredTree extends Composite {
+    // XXX Not 100%
+    @SafeEffect TreeViewer getViewer();
+}
+@UIPackage package org.eclipse.ui.editors.text;
+// XXX not 100%
+@SafeType public interface IStorageDocumentProvider {}
+
+@UIPackage package org.eclipse.ui.editors.text.templates;
+@UIPackage package org.eclipse.ui.fieldassist;
+@UIPackage package org.eclipse.ui.forms;
+@UIPackage package org.eclipse.ui.forms.editor;
+@UIPackage package org.eclipse.ui.forms.events;
+@UIPackage package org.eclipse.ui.forms.widgets;
+@UIPackage package org.eclipse.ui.handlers;
+@UIPackage package org.eclipse.ui.help;
+public interface IWorkbenchHelpSystem {
+    // XXX not 100%
+    @SafeEffect void setHelp(IAction action, String contextId);
+}
+
+@UIPackage package org.eclipse.ui.ide;
+@UIPackage package org.eclipse.ui.ide.dialogs;
+@UIPackage package org.eclipse.ui.ide.fileSystem;
+@UIPackage package org.eclipse.ui.ide.undo;
+@UIPackage package org.eclipse.ui.intro;
+@UIPackage package org.eclipse.ui.intro.config;
+@UIPackage package org.eclipse.ui.intro.contentproviders;
+@UIPackage package org.eclipse.ui.intro.universal;
+@UIPackage package org.eclipse.ui.keys;
+@UIPackage package org.eclipse.ui.menus;
+@UIPackage package org.eclipse.ui.model;
+public interface IWorkbenchAdapter {
+    @SafeEffect ImageDescriptor getImageDescriptor(Object object);
+}
+
+@UIPackage package org.eclipse.ui.navigator;
+@UIPackage package org.eclipse.ui.navigator.resources;
+@UIPackage package org.eclipse.ui.operations;
+@UIPackage package org.eclipse.ui.part;
+public abstract class EditorPart extends WorkbenchPart implements IEditorPart {
+    // XXX Again, not 100%
+    @SafeEffect public IEditorInput getEditorInput();
+}
+public abstract class Page implements IPageBookViewPage {
+    @SafeEffect public IPageSite getSite();
+}
+@SafeType public class PluginTransfer extends ByteArrayTransfer {}
+
+@UIPackage package org.eclipse.ui.plugin;
+@UI public abstract class AbstractUIPlugin extends @UI Plugin {
+    // XXX: These methods are present on all plugins, UI or not, and I'm reproducing them explicitly here because inheritance from a *particular* polymorphic instantiation doesn't work yet
+    @SafeEffect public AbstractUIPlugin();
+    @SafeEffect public AbstractUIPlugin(IPluginDescriptor descriptor);
+    @SafeEffect void start(BundleContext context);
+    @SafeEffect void stop(BundleContext context);
+    @SafeEffect public static ImageDescriptor imageDescriptorFromPlugin(String pluginId, String imageFilePath);
+    @SafeEffect public IDialogSettings getDialogSettings();
+    // XXX Not 100%
+    @SafeEffect public IWorkbench getWorkbench();
+    @SafeEffect public Preferences getPluginPreferences();
+    @SafeEffect public IPreferenceStore getPreferenceStore();
+    @SafeEffect public ImageRegistry getImageRegistry(); // Technically only safe after the workbench is running, but no plugins will ever call this before then...
+}
+public final class PlatformUI {
+    // XXX Not 100%
+    @SafeEffect public static IWorkbench getWorkbench();
+}
+public abstract class Page implements IPageBookViewPage {
+    @SafeEffect public IPageSite getSite();
+}
+
+@UIPackage package org.eclipse.ui.preferences;
+@UIPackage package org.eclipse.ui.presentations;
+@UIPackage package org.eclipse.ui.progress;
+@SafeType public interface IWorkbenchSiteProgressService extends IProgressService {}
+
+@UIPackage package org.eclipse.ui.services;
+@UIPackage package org.eclipse.ui.splash;
+@UIPackage package org.eclipse.ui.statushandlers;
+@UIPackage package org.eclipse.ui.swt;
+@UIPackage package org.eclipse.ui.testing;
+@UIPackage package org.eclipse.ui.texteditor;
+@UIType public class StatusLineContributionItem extends ContributionItem implements IStatusField, IStatusFieldExtension {
+    @UIEffect public void setActionHandler(@UI IAction actionHandler);
+}
+public interface ITextEditor extends IEditorPart {
+    // XXX not 100% sure
+    @SafeEffect public IEditorInput getEditorInput();
+    @SafeEffect public IDocumentProvider getDocumentProvider();
+}
+@SafeType public interface IDocumentProvider {}
+
+
+@UIPackage package org.eclipse.ui.texteditor.link;
+@UIPackage package org.eclipse.ui.texteditor.quickdiff;
+@UIPackage package org.eclipse.ui.texteditor.rulers;
+@UIPackage package org.eclipse.ui.texteditor.spelling;
+@UIPackage package org.eclipse.ui.texteditor.templates;
+@UIPackage package org.eclipse.ui.themes;
+@UIPackage package org.eclipse.ui.views;
+@UIPackage package org.eclipse.ui.views.bookmarkexplorer;
+@UIPackage package org.eclipse.ui.views.contentoutline;
+@UIPackage package org.eclipse.ui.views.framelist;
+@UIPackage package org.eclipse.ui.views.markers;
+@UIPackage package org.eclipse.ui.views.navigator;
+@UIPackage package org.eclipse.ui.views.properties;
+@SafeType public class PropertySheet extends PageBookView implements ISelectionListener, IShowInTarget, IShowInSource, IRegistryEventListener {
+}
+@UIPackage package org.eclipse.ui.views.properties.tabbed;
+@UIPackage package org.eclipse.ui.views.tasklist;
+@UIPackage package org.eclipse.ui.wizards;
+@UIPackage package org.eclipse.ui.wizards.datatransfer;
+@UIPackage package org.eclipse.ui.wizards.newresource;

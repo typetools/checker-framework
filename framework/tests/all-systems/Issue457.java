@@ -5,7 +5,7 @@ class Issue457<T extends Number> {
     @SuppressWarnings({"unused", "javari"})
     public void f(T t) {
         final T obj = t;
-      
+
         Float objFloat = (obj instanceof Float) ? (Float) obj : null;
 
         //An error will be emitted on this line before the fix for Issue457

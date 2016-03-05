@@ -203,6 +203,9 @@ import com.sun.tools.javac.util.Log;
     // that were not found on the class path
     // org.checkerframework.framework.stub.StubParser.warnIfNotFound
     "stubWarnIfNotFound",
+    // Whether to print warnings about stub files that overwrite annotations
+    // from bytecode.
+    "stubWarnIfOverwritesBytecode",
 
     ///
     /// Debugging
@@ -273,6 +276,15 @@ import com.sun.tools.javac.util.Log;
     // Whether to output resource statistics at JVM shutdown
     // org.checkerframework.framework.source.SourceChecker.shutdownHook()
     "resourceStats",
+
+    // Set the cache size for caches in AnnotatedTypeFactory
+    "atfCacheSize",
+
+    // Sets AnnotatedTypeFactory shouldReadCache to false
+    "atfDoNotReadCache",
+
+    // Sets AnnotatedTypeFactory shouldCache to false
+    "atfDoNotCache"
 
 })
 public abstract class SourceChecker
@@ -1304,7 +1316,7 @@ public abstract class SourceChecker
             }
         }
 
-        if (hasOption("useSafeDefaultsForUnannotatedSourceCode")) {
+        if (useUncheckedCodeDefault("source")) {
             // If we got this far without hitting an @AnnotatedFor and returning
             // false, we DO suppress the warning.
             return true;

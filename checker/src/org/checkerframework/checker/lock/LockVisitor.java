@@ -42,7 +42,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -245,7 +245,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     // specified in all the @GuardedBy annotations in the set.
     // Returns an empty set if no such expressions are found.
     private Set<Pair<String, String>> generatePreconditionsBasedOnGuards(Set<AnnotationMirror> amList, boolean translateItselfToThis) {
-        Set<Pair<String, String>> preconditions = new HashSet<>();
+        Set<Pair<String, String>> preconditions = new LinkedHashSet<>();
 
         if (amList != null) {
             for (AnnotationMirror annotationMirror : amList) {
@@ -337,7 +337,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     // is issued if the parameters do not match exactly.
                     // Do nothing here, since there is no precondition to be checked on a @GuardSatisfied parameter.
                     // Note: this matching of a @GS(index) to a @GS(differentIndex) is *only* allowed when matching method formal parameters to actual parameters.
-    
+
                     return;
                 }
             } else if (!atypeFactory.getTypeHierarchy().isSubtype(valueType, varType)) {
@@ -766,7 +766,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             Element invokedElement, boolean methodCall, Set<Pair<String, String>> additionalPreconditions,
             boolean itselfIsTheReceiverNode) {
         Set<Pair<String, String>> preconditions = invokedElement == null ?
-                new HashSet<Pair<String, String>>() :
+                new LinkedHashSet<Pair<String, String>>() :
                 contractsUtils.getPreconditions(invokedElement);
 
         if (additionalPreconditions != null) {

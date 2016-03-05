@@ -14,6 +14,7 @@
 package org.checkerframework.checker.lock.qual;
 
 import java.lang.annotation.*;
+import javax.lang.model.type.TypeKind;
 
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
@@ -21,7 +22,6 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
 /**
  * Indicates that a thread may dereference the value referred to by the
@@ -56,7 +56,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 @DefaultQualifierInHierarchy
 @DefaultFor({TypeUseLocation.EXCEPTION_PARAMETER, TypeUseLocation.UPPER_BOUND})
 @DefaultInUncheckedCodeFor({TypeUseLocation.PARAMETER})
-@ImplicitFor(typeClasses = { AnnotatedPrimitiveType.class }, typeNames = { java.lang.String.class })
+@ImplicitFor(types = { TypeKind.BOOLEAN, TypeKind.BYTE,
+                       TypeKind.CHAR, TypeKind.DOUBLE,
+                       TypeKind.FLOAT, TypeKind.INT,
+                       TypeKind.LONG, TypeKind.SHORT },
+             typeNames = { java.lang.String.class })
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 public @interface GuardedBy {

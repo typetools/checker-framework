@@ -3,9 +3,8 @@ package org.checkerframework.checker.lock.qual;
 import java.lang.annotation.*;
 
 import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
-
-import com.sun.source.tree.Tree;
 
 /**
  * The bottom of the GuardedBy qualifier hierarchy.
@@ -17,7 +16,7 @@ import com.sun.source.tree.Tree;
  * @checker_framework.manual #lock-checker Lock Checker
  */
 @SubtypeOf({GuardedBy.class, GuardSatisfied.class})
-@ImplicitFor(trees = {Tree.Kind.NULL_LITERAL})
+@ImplicitFor(literals = { LiteralKind.NULL })
 @Documented
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)

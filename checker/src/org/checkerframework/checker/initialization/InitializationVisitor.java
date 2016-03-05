@@ -140,13 +140,28 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
                 // (var2). Then, we take the child annotation from var2 and use it
                 // for var.
                 AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(lhs);
-                boolean old = atypeFactory.HACK_DONT_CALL_POST_AS_MEMBER;
+
+                boolean oldHackDCPAM = atypeFactory.HACK_DONT_CALL_POST_AS_MEMBER;
                 atypeFactory.HACK_DONT_CALL_POST_AS_MEMBER = true;
-                boolean old2 = atypeFactory.shouldReadCache;
+
+                //TODO: turning off caching to get correct results is masking
+                // a larger problem with caching fields.
+                // checker/tests/nullness/Issue345.java and
+                // checker/tests/nullness/AssignmentDuringInitialization.java
+                // fail when caching is turned on here.  (There maybe other
+                // test cases that fail, too.)
+                // See Issue #601
+                boolean oldShouldReadCache = atypeFactory.shouldReadCache;
                 atypeFactory.shouldReadCache = false;
+                boolean oldShouldCache = atypeFactory.shouldCache;
+                atypeFactory.shouldCache = false;
+
                 AnnotatedTypeMirror var2 = atypeFactory.getAnnotatedType(lhs);
-                atypeFactory.HACK_DONT_CALL_POST_AS_MEMBER = old;
-                atypeFactory.shouldReadCache = old2;
+
+                atypeFactory.HACK_DONT_CALL_POST_AS_MEMBER = oldHackDCPAM;
+                atypeFactory.shouldReadCache = oldShouldReadCache;
+                atypeFactory.shouldCache = oldShouldCache;
+
 
                 final AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
 

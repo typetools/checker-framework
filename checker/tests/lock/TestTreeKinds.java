@@ -36,7 +36,7 @@ public class TestTreeKinds {
     lock2.lock();
   }
 
-  @EnsuresLockHeldIf(expression="lock",result=true)
+  @EnsuresLockHeldIf(expression="lock", result=true)
   boolean tryToLockTheLock() {
     return lock.tryLock();
   }
@@ -313,7 +313,7 @@ void testTreeTypes() {
     // The following test cases were inspired from annotator.find.ASTPathCriterion.isSatisfiedBy in the Annotation File Utilities
 
     // TODO: File a bug for the dataflow issue mentioned in the line below.
-    // TODO: uncomment: Hits a bug in dataflow:    do { break; } while(foo.field != null); // access to guarded object in while condition of do/while loop
+    // TODO: uncomment: Hits a bug in dataflow:    do { break; } while (foo.field != null); // access to guarded object in while condition of do/while loop
     //:: error: (contracts.precondition.not.satisfied.field)
     for(foo = new MyClass(); foo.field != null; foo = new MyClass()){ break; } // access to guarded object in condition of for loop
     foo = new MyClass(); // assignment to guarded object (OK) --- foo is still refined to @GuardedBy("lock") after this point, though.
@@ -421,7 +421,7 @@ void testTreeTypes() {
     s = i == 5 ? f.field.toString() : foo.field.toString(); // dereference of guarded object in conditional expression tree
     // Testing of 'return' is done in getFooWithWrongReturnType()
     //:: error: (throw.type.invalid)
-    try{ throw exception; } catch(Exception e){} // throwing a guarded object - when throwing an exception, it must be @GuardedBy({}). Even @GuardedByUnknown is not allowed.
+    try { throw exception; } catch (Exception e) {} // throwing a guarded object - when throwing an exception, it must be @GuardedBy({}). Even @GuardedByUnknown is not allowed.
     //:: error: (assignment.type.incompatible)
     @GuardedBy({}) Object e1 = (Object) exception; // casting of a guarded object to an unguarded object
     Object e2 = (Object) exception; // OK, since the local variable's type gets refined to @GuardedBy("lock")
