@@ -66,7 +66,9 @@ Section~\ref{type-refinement}.
 
 As a separate step before type-checking, a type inference tool takes the
 program as input, and outputs a set of type qualifiers that would
-make the program type-check.
+make the program type-check.  (If no such set exists, for example because
+the program is not type-correct, then the inference tool does its best but
+makes no guarantees.)
 These qualifiers are inserted into the source code or the
 class file.  They can be viewed and adjusted by the programmer, and can
 be used by tools such as the type-checker.
@@ -87,13 +89,12 @@ Advantages of this variety of type inference include:
 
 This section lists tools that take a program and output a set of
 annotations for it.
+It first lists tools that work only for a single type system (but may do a
+more accurate job for that type system)
+then lists general tools that work for any type system.
 
 
 \subsubsection{Type inference for specific type systems\label{type-inference-tools-specialized}}
-
-This section lists type inference tools that work for only a single type system.
-Also see Section~\ref{type-inference-tools-general}, for type inference
-tools that work for any type system.
 
 Section~\ref{nullness-inference} lists several tools that infer
 annotations for the Nullness Checker.
@@ -108,10 +109,6 @@ Section~\ref{type-refinement-purity}.
 
 
 \subsubsection{Type inference for any type system\label{type-inference-tools-general}}
-
-This section lists type inference tools that work for any type system.
-Also see Section~\ref{type-inference-tools-specialized}, for type inference
-tools that work for only a single type system.
 
 By supplying the \<-AinferSignatures> command-line option,
 any type-checker can infer annotations. See Section~\ref{signature-inference}.
