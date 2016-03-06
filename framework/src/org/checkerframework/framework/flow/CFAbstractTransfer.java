@@ -798,6 +798,19 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         S info = result.getRegularStore();
         // ResultValue is the type of LHS + RHS
         V resultValue = result.getResultValue();
+
+        Receiver expr = FlowExpressions.internalReprOf(
+                analysis.getTypeFactory(), lhs);
+        if (inferSignatures && expr instanceof FieldAccess &&
+                !analysis.checker.shouldSuppressWarnings(n.getTree(), null) &&
+                !analysis.checker.shouldSuppressWarnings(
+                        InternalUtils.symbol(lhs.getTree()), null)) {
+            // Updates inferred field type
+            SignatureInferenceScenes.updateInferredFieldType(
+                    lhs, rhs, analysis.getContainingClass(n.getTree()),
+                    analysis.getTypeFactory());
+        }
+
         processCommonAssignment(in, lhs, rhs, info, resultValue);
 
         return new RegularTransferResult<>(finishValue(resultValue, info), info);
