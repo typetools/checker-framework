@@ -29,10 +29,9 @@ import tests.signatureinference.qual.Sibling1;
 import tests.signatureinference.qual.Sibling2;
 import tests.signatureinference.qual.SiblingWithFields;
 import tests.signatureinference.qual.SignatureInferenceBottom;
-import tests.signatureinference.qual.ToIgnore;
 import tests.signatureinference.qual.Top;
 /**
- * AnnotatedTypeFactory to test signaature inference using .jaif
+ * AnnotatedTypeFactory to test signature inference using .jaif
  * files.
  * <p>
  * The used qualifier hierarchy is straightforward and only intended for test
@@ -60,7 +59,7 @@ public class SignatureInferenceTestAnnotatedTypeFactory
         return Collections.unmodifiableSet(
                 new HashSet<Class<? extends Annotation>>(Arrays.asList(
                     Parent.class, DefaultType.class, Top.class, Sibling1.class,
-                    ToIgnore.class, Sibling2.class, SignatureInferenceBottom.class,
+                    Sibling2.class, SignatureInferenceBottom.class,
                     SiblingWithFields.class, ImplicitAnno.class)));
     }
     @Override
@@ -134,13 +133,7 @@ public class SignatureInferenceTestAnnotatedTypeFactory
                 return false;
             }
 
-            if (AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
-                && AnnotationUtils.areSameByClass(sup, ToIgnore.class)) {
-                return true;
-            }
-
-            if ((AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
-                 || AnnotationUtils.areSameByClass(sub, ToIgnore.class))
+            if ((AnnotationUtils.areSameByClass(sub, ImplicitAnno.class))
                 && (AnnotationUtils.areSameByClass(sup, Sibling1.class)
                     || AnnotationUtils.areSameByClass(sup, Sibling2.class)
                     || AnnotationUtils.areSameByClass(sup, SiblingWithFields.class))) {
@@ -150,7 +143,6 @@ public class SignatureInferenceTestAnnotatedTypeFactory
             if ((AnnotationUtils.areSameByClass(sub, Sibling1.class)
                  || AnnotationUtils.areSameByClass(sub, Sibling2.class)
                  || AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
-                 || AnnotationUtils.areSameByClass(sub, ToIgnore.class)
                  || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class))
                 && AnnotationUtils.areSameByClass(sup, Parent.class)) {
                 return true;
@@ -158,7 +150,6 @@ public class SignatureInferenceTestAnnotatedTypeFactory
 
             if ((AnnotationUtils.areSameByClass(sub, Sibling1.class)
                  || AnnotationUtils.areSameByClass(sub, Sibling2.class)
-                 || AnnotationUtils.areSameByClass(sub, ToIgnore.class)
                  || AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
                  || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class)
                  || AnnotationUtils.areSameByClass(sub, Parent.class)) 

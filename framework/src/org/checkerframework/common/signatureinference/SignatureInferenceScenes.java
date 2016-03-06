@@ -321,7 +321,9 @@ public class SignatureInferenceScenes {
 
     /**
      * Updates the type of the field lhs in the Scene of the class with
-     * tree classTree.
+     * tree classTree. If the field has a declaration annotation with the
+     * {@link IgnoreInSignatureInference} meta-annotation, no type annotation
+     * will be inferred for that field.
      * <p>
      * If the Scene contains no entry for the field lhs,
      * the entry will be created and its type will be the type of rhs. If the
@@ -342,6 +344,16 @@ public class SignatureInferenceScenes {
         // TODO: We must handle cases where the field is declared on a superclass.
         // Currently we are ignoring them. See ElementUtils#getSuperTypes.
         if (!classSymbol.getEnclosedElements().contains(lhsFieldNode.getElement())) return;
+
+        // If the inferred field has a declaration annotation with the
+        // @IgnoreInSignatureInference meta-annotation, exit this routine.
+        for (AnnotationMirror declAnno : atf.getDeclAnnotations(
+                InternalUtils.symbol(lhs.getTree()))) {
+            Element elt = declAnno.getAnnotationType().asElement();
+            if (elt.getAnnotation(IgnoreInSignatureInference.class) != null) {
+                return;
+            }
+        }
 
         String className = classSymbol.flatname.toString();
         String jaifPath = getJaifPath(className);
@@ -497,9 +509,6 @@ public class SignatureInferenceScenes {
             return true;
         }
         Element elt = am.getAnnotationType().asElement();
-        if (elt.getAnnotation(IgnoreInSignatureInference.class) != null) {
-            return true;
-        }
         // Checks if am is an implementation detail (a type qualifier used
         // internally by the type system and not meant to be seen by the user.)
         Target target = elt.getAnnotation(Target.class);

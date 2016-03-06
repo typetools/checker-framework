@@ -13,15 +13,15 @@ public class ExpectedErrors {
     // The type of both privateDeclaredField and publicDeclaredField are
     // not refined to @SignatureInferenceBottom.
     void assignFieldsToBottom() {
-        privateDeclaredField = getBottom();
-        publicDeclaredField = getBottom();
+        privateDeclaredField = getSibling1();
+        publicDeclaredField = getSibling1();
     }
 
     void testFields() {
         //:: error: (argument.type.incompatible)
-        expectsBottom(privateDeclaredField);
+        expectsSibling1(privateDeclaredField);
         //:: error: (argument.type.incompatible)
-        expectsBottom(publicDeclaredField);
+        expectsSibling1(publicDeclaredField);
     }
 
     // Case where the declared type is a subtype of the refined type.
@@ -49,7 +49,7 @@ public class ExpectedErrors {
     }
 
     // LUB TEST
- // The default type for fields is @Top.
+    // The default type for fields is @Top.
     private static int lubPrivateField;
     public static int lubPublicField;
 
@@ -64,12 +64,12 @@ public class ExpectedErrors {
     }
 
     // TODO: Add support to static blocks. The static block below should replace
-// the method above. Problem: It returns null when retrieving the class of the
-// elements in the static block below.
-//    static {
-//        lubPrivateField = getSibling2();
-//        lubPublicField = getSibling2();
-//    }
+    // the method above. Problem: It returns null when retrieving the class of the
+    // elements in the static block below.
+    //    static {
+    //        lubPrivateField = getSibling2();
+    //        lubPublicField = getSibling2();
+    //    }
 
     void testLUBFields1() {
         //:: error: (argument.type.incompatible)
@@ -118,7 +118,7 @@ public class ExpectedErrors {
     static @Sibling2 int getSibling2() {
         return 0;
     }
-    
+
     @SignatureInferenceBottom int getBottom() {
         return 0;
     }
@@ -182,51 +182,44 @@ public class ExpectedErrors {
         public void suppressWarningsMethodParams(int param) {
         }
     }
-}
 
-@SuppressWarnings("")
-class SuppressWarningsInner {
-    public static int i;
-    public static int i2;
-}
-
-class TopBottomTest {
-    // The default type for fields is @DefaultType.
-    private int privateField;
-    public int publicField;
-
-    // The types of both fields are not refined to @SignatureInferenceBottom,
-    // as signature inference never refines to the bottom type.
-    void assignFieldsToBottom() {
-        privateField = getBottom();
-        publicField = getBottom();
+    @SuppressWarnings("")
+    static class SuppressWarningsInner {
+        public static int i;
+        public static int i2;
     }
 
-    // Testing the refinement above.
-    void testFields() {
-        //:: error: (argument.type.incompatible)
-        expectsBottom(privateField);
-        //:: error: (argument.type.incompatible)
-        expectsBottom(publicField);
+    class TopBottomTest {
+        // The default type for fields is @DefaultType.
+        private int privateField;
+        public int publicField;
+
+        // The types of both fields are not refined to @SignatureInferenceBottom,
+        // as signature inference never refines to the bottom type.
+        void assignFieldsToBottom() {
+            privateField = getBottom();
+            publicField = getBottom();
+        }
+
+        // Testing the refinement above.
+        void testFields() {
+            //:: error: (argument.type.incompatible)
+            expectsBottom(privateField);
+            //:: error: (argument.type.incompatible)
+            expectsBottom(publicField);
+        }
     }
 
-    void expectsBottom(@SignatureInferenceBottom int t) {}
-    @SignatureInferenceBottom int getBottom() {
-        return 0;
+    class IgnoreMetaAnnotationTest2 {
+        @ToIgnore int field;
+        void foo() {
+            field = getSibling1();
+        }
+
+        void test() {
+            //:: error: (argument.type.incompatible)
+            expectsSibling1(field);
+        }
     }
-}
-
-class IgnoreMetaAnnotationTest {
-
-    int field;
-    void foo() {
-        field = (@ToIgnore int) 0;
-    }
-
-    void test() {
-        //:: error: (assignment.type.incompatible)
-        @ToIgnore int i = field;
-    }
-
 }
 
