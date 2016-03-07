@@ -55,7 +55,6 @@ import javax.lang.model.util.Elements;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -202,29 +201,33 @@ public class NullnessAnnotatedTypeFactory
         dependentTypes.handle(tree, type);
     }
 
-
-    @Override
-    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree varTree,
-            ExpressionTree valueTree) {
-        AnnotatedTypeMirror result = super.getDefaultedAnnotatedType(varTree, valueTree);
-        return handlePolyNull(result, valueTree);
-    }
-
     /**
-     * Replaces {@link PolyNull} with {@link Nullable} to be more permissive
-     * (because {@code type} is usually a left-hand side) if the org.checkerframework.dataflow
-     * analysis has determined that this is allowed soundly.
+     * For types of left-hand side of an assignment, this method replaces {@link PolyNull} or
+     * {@link PolyAll} with {@link Nullable} if the org.checkerframework.dataflow analysis
+     * has determined that this is allowed soundly.
+     * For example:
+     *
+     * <pre> @PolyNull String foo(@PolyNull String param) {
+     *    if (param == null) {
+     *        //  @PolyNull is really @Nullable, so change
+     *        // the type of param to @Nullable.
+     *        param = null;
+     *    }
+     *    return param;
+     * }
+     * </pre>
+     *
+     * @param lhsType  Type to replace whose polymorphic qualifier will be replaced
+     * @param context Tree used to get dataflow value
      */
-    protected AnnotatedTypeMirror handlePolyNull(AnnotatedTypeMirror type,
-            Tree context) {
-        if (type.hasAnnotation(PolyNull.class)
-                || type.hasAnnotation(PolyAll.class)) {
+    protected void replacePolyQualifier(AnnotatedTypeMirror lhsType, Tree context) {
+        if (lhsType.hasAnnotation(PolyNull.class)
+                || lhsType.hasAnnotation(PolyAll.class)) {
             NullnessValue inferred = getInferredValueFor(context);
             if (inferred != null && inferred.isPolyNullNull) {
-                type.replaceAnnotation(NULLABLE);
+                lhsType.replaceAnnotation(NULLABLE);
             }
         }
-        return type;
     }
 
     // handle dependent types
@@ -242,8 +245,7 @@ public class NullnessAnnotatedTypeFactory
     public List<VariableTree> getUninitializedInvariantFields(
             NullnessStore store, TreePath path, boolean isStatic,
             List<? extends AnnotationMirror> receiverAnnotations) {
-        List<VariableTree> candidates = super.getUninitializedInvariantFields(
-                store, path, isStatic, receiverAnnotations);
+        List<VariableTree> candidates = super.getUninitializedInvariantFields(store, path, isStatic, receiverAnnotations);
         List<VariableTree> result = new ArrayList<>();
         for (VariableTree c : candidates) {
             AnnotatedTypeMirror type = getAnnotatedType(c);
@@ -288,7 +290,9 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
-        return handlePolyNull(super.getMethodReturnType(m, r), r);
+        AnnotatedTypeMirror result = super.getMethodReturnType(m, r);
+        replacePolyQualifier(result, r);
+        return result;
     }
 
     protected AnnotatedTypeMirror getDeclaredAndDefaultedAnnotatedType(Tree tree) {
