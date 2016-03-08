@@ -96,7 +96,7 @@ This section describes the lock annotations you can write on types and methods.
   \<@GuardedBy(\{\})>, which means the value is always allowed to be
   dereferenced, is the default type qualifier that is used for all locations
   where the programmer does not
-  write an explicit locking type qualifier.
+  write an explicit locking type qualifier (except CLIMB-to-top locations, see Section~\ref{climb-to-top}).
   (Section~\ref{lock-checker-default-qualifier} discusses this choice.)
   It is also the conservative
   default type qualifier for method parameters in unannotated libraries
@@ -176,6 +176,9 @@ of a problem that would occur if this rule were relaxed.
   It may not be written on fields.  Also, it is a limitation of the
   current design that \code{@GuardSatisfied} may not be written on
   array elements or on local variables.
+
+  A return type can only be annotated with \<@GuardSatisfied(index)>,
+  not \<@GuardSatisfied>.
 
   See Section~\ref{lock-checker-polymorphism-example}
   for an example of a use of \code{@GuardSatisfied}.
@@ -265,7 +268,7 @@ described in Figure~\ref{fig-lock-guardedby-hierarchy}, the Lock Checker enforce
 the following additional rules.
 
 
-\subsection{Polymorphic assignments\label{lock-type-checking-rules-polymorphic-assignments}}
+\subsection{Polymorphic qualifiers\label{lock-type-checking-rules-polymorphic-qualifiers}}
 
 \begin{description}
 
@@ -290,19 +293,9 @@ the following additional rules.
     identical \<@GuardSatisfied(\emph{index})> type.
   \end{itemize}
 
-  Suppose that a method signature has multiple formal parameters with the
-  same \<@GuardSatisfied(index)> type.
-  As a consequence of the flat type hierarchy and the fact that
-  \<@GuardedByUnknown> is not assignable to \<@GuardSatisfied>,
-  at any call, all the corresponding actual arguments have the same
-  \<@GuardedBy> type or \<@GuardedByBottom>.
-
-  A return type can only be annotated with \<@GuardSatisfied(index)>,
-  not \<@GuardSatisfied>.
-
   If a formal parameter type is
   annotated with \<@GuardSatisfied> without an index, then that formal parameter
-  types are unrelated to every other type in the \<@GuardedBy> hierarchy,
+  type is unrelated to every other type in the \<@GuardedBy> hierarchy,
   including other occurrences of \<@GuardSatisfied> without an index.
 
   \<@GuardSatisfied> may not be used on formal parameters, receivers, or
@@ -801,7 +794,7 @@ The default qualifier for unannotated types is \<@GuardedBy(\{\})>.
 This default forces you to write explicit \<@GuardSatisfied> in method
 signatures in the common case that clients ensure that all locks are held.
 
-It might seem that \<@GuardSatisfied> is would be a better default for
+It might seem that \<@GuardSatisfied> would be a better default for
 method signatures, but such a default would require even more annotations.
 The reason is that \<@GuardSatisfied> cannot be used on fields.  If
 \<@GuardedBy(\{\})> is the default for fields but \<@GuardSatisfied> is the
