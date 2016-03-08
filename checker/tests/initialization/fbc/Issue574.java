@@ -1,14 +1,15 @@
 // Test case for issue #574: https://github.com/typetools/checker-framework/issues/574
 
-import java.util.*;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 
-// A warning is issued that fields are not initialized in the constructor. That is expected and it is not what is being verified in this test.
-@SuppressWarnings({"initialization.fields.uninitialized",
-// Normally @UnknownInitialization is the only initialization annotation allowed on fields.
-// However, for the purposes of this test, fields must be annotated with @UnderInitialization.
+@SuppressWarnings({
+    // A warning is issued that fields are not initialized in the constructor.
+    // That is expected and it is not what is being verified in this test.
+                   "initialization.fields.uninitialized",
+    // Normally @UnknownInitialization is the only initialization annotation allowed on fields.
+    // However, for the purposes of this test, fields must be annotated with @UnderInitialization.
                    "initialization.invalid.field.type"})
-class Lub<T> {
+class Issue574<T> {
     @UnderInitialization(Object.class) Object o1;
     @UnderInitialization(String.class) Object o2;
     @UnderInitialization(Character.class) Object o3;
