@@ -527,7 +527,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     // to "this". However once checkPreconditions is called, that
                     // knowledge is lost and it will regard "itself" as referring to
                     // the variable the precondition we are about to add is attached to.
-                    checkPreconditions(expr, invokedElement, false,
+                    checkPreconditions(expr, invokedElement, expr.getKind() == Tree.Kind.METHOD_INVOCATION,
                         generatePreconditionsBasedOnGuards(atmOfReceiver,
                                 receiverIsThatOfEnclosingMethod /* See comment above. This corresponds to formal parameter translateItselfToThis. */),
                                 false);
@@ -770,7 +770,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * Additionally, a synchronized block may not be present in a method that has a @LockingFree
      * guarantee or stronger. An error is issued in this case.
      *
-     * @param the SynchronizedTree for the synchronized block being visited. 
+     * @param node the SynchronizedTree for the synchronized block being visited. 
      */
     @Override
     public Void visitSynchronized(SynchronizedTree node, Void p) {

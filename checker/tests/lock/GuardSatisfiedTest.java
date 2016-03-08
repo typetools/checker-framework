@@ -5,11 +5,6 @@ import org.checkerframework.checker.lock.qual.Holding;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class GuardSatisfiedTest {
-    void testMethodCall346436(@GuardSatisfied GuardSatisfiedTest this, @GuardedBy("lock1") Object o, @GuardedBy("lock2") Object p, @GuardSatisfied Object q) {
-        methodToCall4();
-    }
-
-
     void testGuardSatisfiedIndexMatching(@GuardSatisfied GuardSatisfiedTest this, @GuardSatisfied(1) Object o, @GuardSatisfied(2) Object p, @GuardSatisfied Object q) {
       methodToCall1(o, o);
       methodToCall1(p, p);
@@ -227,9 +222,4 @@ class Foo
   void m5(Foo f) {
       m3(f);
   }
-
-  /*@MayReleaseLocks
-  void m6(@GuardSatisfied Foo f) {
-      m2_2(f);
-  }*/
 }
