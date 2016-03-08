@@ -16,7 +16,7 @@ public class Package implements java.lang.reflect.AnnotatedElement{
   public String getImplementationVersion() { throw new RuntimeException("skeleton method"); }
   public String getImplementationVendor() { throw new RuntimeException("skeleton method"); }
    public boolean isSealed(@GuardSatisfied Package this) { throw new RuntimeException("skeleton method"); }
-   public boolean isSealed(@GuardSatisfied Package this,@GuardSatisfied java.net.URL a1) { throw new RuntimeException("skeleton method"); }
+   public boolean isSealed(@GuardSatisfied Package this, java.net.@GuardSatisfied URL a1) { throw new RuntimeException("skeleton method"); }
    public boolean isCompatibleWith(@GuardSatisfied Package this,String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
    public static Package getPackage(String a1) { throw new RuntimeException("skeleton method"); }
    public static Package[] getPackages() { throw new RuntimeException("skeleton method"); }
