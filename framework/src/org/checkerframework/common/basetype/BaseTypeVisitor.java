@@ -1025,12 +1025,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     flowExprContext = new FlowExpressionContext(
                             internalReceiver, null, checker.getContext());
                 } else if (nodeNode instanceof ExplicitThisLiteralNode ||
-                        nodeNode instanceof ImplicitThisLiteralNode ||
-                        nodeNode instanceof ThisLiteralNode) {
-                        Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory, nodeNode, false);
+                           nodeNode instanceof ImplicitThisLiteralNode ||
+                           nodeNode instanceof ThisLiteralNode) {
+                    Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory, nodeNode, false);
 
-                        flowExprContext = new FlowExpressionContext(
-                                internalReceiver, null, checker.getContext());
+                    flowExprContext = new FlowExpressionContext(
+                            internalReceiver, null, checker.getContext());
                 }
             }
 

@@ -3,7 +3,7 @@
 // and contains other miscellaneous Lock Checker testing.
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.*;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
@@ -699,6 +699,62 @@ void innerClassTest() {
 	  @GuardedBy("a") Object myObject1 = null;
 	  //:: error: (assignment.type.incompatible)
 	  @GuardedBy("b") Object myObject2 = myObject1;
+  }
+
+  @MayReleaseLocks
+  synchronized void mayReleaseLocksSynchronizedMethod() {
+  }
+
+  @ReleasesNoLocks
+  synchronized void releasesNoLocksSynchronizedMethod() {
+  }
+
+  @LockingFree
+  //:: error: (lockingfree.synchronized.method)
+  synchronized void lockingFreeSynchronizedMethod() {
+  }
+
+  @SideEffectFree
+  //:: error: (lockingfree.synchronized.method)
+  synchronized void sideEffectFreeSynchronizedMethod() {
+  }
+
+  @Pure
+  //:: error: (lockingfree.synchronized.method)
+  synchronized void pureSynchronizedMethod() {
+  }
+
+  @MayReleaseLocks
+  void mayReleaseLocksMethodWithSynchronizedBlock() {
+      synchronized(this){
+      }
+  }
+
+  @ReleasesNoLocks
+  void releasesNoLocksMethodWithSynchronizedBlock() {
+      synchronized(this){
+      }
+  }
+
+  @LockingFree
+  void lockingFreeMethodWithSynchronizedBlock() {
+      //:: error: (synchronized.block.in.lockingfree.method)
+      synchronized(this){
+      }
+  }
+
+  @SideEffectFree
+  void sideEffectFreeMethodWithSynchronizedBlock() {
+      //:: error: (synchronized.block.in.lockingfree.method)
+      synchronized(this){
+      }
+  }
+
+  @Pure
+  void pureMethodWithSynchronizedBlock() {
+      //:: error: (synchronized.block.in.lockingfree.method)
+      synchronized(this){
+      }
   }
 
 }

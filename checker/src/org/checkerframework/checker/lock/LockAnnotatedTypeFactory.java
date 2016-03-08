@@ -156,15 +156,17 @@ public class LockAnnotatedTypeFactory
             boolean rhsIsGuardSatisfied = isGuardSatisfied(rhs);
 
             if (lhsIsGuardSatisfied && rhsIsGuardSatisfied) {
-                // Two @GuardSatisfied annotations are considered subtypes of each other if and only if their indices match exactly.
-                // IMPORTANT: Two @GuardSatisfied annotations (without an index) are sometimes not subtypes of each other.
+                // There are cases in which two expressions with identical @GuardSatisfied(...) annotations are not
+                // assignable. Those are handled elsewhere.
+
+                // Two expressions with @GuardSatisfied annotations (without an index) are sometimes not assignable.
                 // For example, two method actual parameters with @GuardSatisfied annotations are assumed to refer to different guards.
 
                 // This is largely handled in methodFromUse and in LockVisitor.visitMethodInvocation.
                 // Related behavior is handled in LockVisitor.visitMethod (issuing an error if a non-constructor method
                 // definition has a return type of @GuardSatisfied without an index).
 
-                // Two @GuardSatisfied() annotations are subtypes of each other when comparing a formal receiver
+                // Two expressions with @GuardSatisfied() annotations are assignable when comparing a formal receiver
                 // to an actual receiver (see LockVisitor.skipReceiverSubtypeCheck) or a formal parameter to an
                 // actual parameter (see LockVisitor.commonAssignmentCheck for the details on this rule).
 
@@ -426,7 +428,7 @@ public class LockAnnotatedTypeFactory
             AnnotatedExecutableType invokedMethod = mfuPair.first;
 
             if (invokedMethod.getElement().getKind() != ElementKind.CONSTRUCTOR) {
-                AnnotatedTypeMirror methodDefinitionReturn = invokedMethod.getReturnType().getErased();
+                AnnotatedTypeMirror methodDefinitionReturn = invokedMethod.getReturnType();
 
                 if (methodDefinitionReturn != null && methodDefinitionReturn.hasAnnotation(GuardSatisfied.class)) {
                     int returnGuardSatisfiedIndex = getGuardSatisfiedIndex(methodDefinitionReturn);
@@ -439,8 +441,8 @@ public class LockAnnotatedTypeFactory
                         // Ensuring that the type annotations on distinct @GS parameters with the same index match at the call site is handled in LockVisitor.visitMethodInvocation
 
                         ExecutableElement invokedMethodElement = invokedMethod.getElement();
-                        if (!ElementUtils.isStatic(invokedMethodElement) && !TreeUtils.isSuperCall(methodInvocationTree)) {
-                            AnnotatedTypeMirror methodDefinitionReceiver = invokedMethod.getReceiverType().getErased();
+                        if (!ElementUtils.isStatic(invokedMethodElement)) {
+                            AnnotatedTypeMirror methodDefinitionReceiver = invokedMethod.getReceiverType();
                             if (methodDefinitionReceiver != null && methodDefinitionReceiver.hasAnnotation(GuardSatisfied.class)) {
                                 int receiverGuardSatisfiedIndex = getGuardSatisfiedIndex(methodDefinitionReceiver);
 

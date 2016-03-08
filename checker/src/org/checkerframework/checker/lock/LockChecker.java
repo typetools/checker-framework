@@ -20,7 +20,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 
 //Issue an error if @GuardSatisfied is written on a location other than a primary annotation.
 
-//TODO: The following bugs are important to fix before the March 1 release of the Checker Framework:
+//TODO: The following bugs are important to fix before the April 1 release of the Checker Framework:
 //TODO: Issue a warning if a lock is not final or effectively final. Document in the manual.
 //    Nice to have: consider whether @Pure methods make this warning unnecessary in some scenarios.
 //TODO: Make sure "itself" is not handled by the flow expression parser for type hierarchies other than @GuardedBy.
