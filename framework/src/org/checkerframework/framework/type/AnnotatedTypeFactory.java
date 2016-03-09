@@ -2433,10 +2433,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Parses the stub files in the following order: <br>
      * 1. jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is not supplied <br>
      * 2. flow.astub in the same directory as BaseTypeChecker <br>
-     * 3. Stub files listed in @Stubfiles annotation on the checker; must be in same directory as the checker<br?
+     * 3. Stub files listed in @Stubfiles annotation on the checker; must be in same directory as the checker<br>
      * 4. Stub files provide via stubs system property <br>
-     * 5. Stub files provide via stubs environment variable
-     * 6. Stub files provide via stubs compiler option <br>
+     * 5. Stub files provide via stubs environment variable <br>
+     * 6. Stub files provide via stubs compiler option
      * <p>
      *  If a type is annotated with a qualifier from the same hierarchy in more than one stub file, the qualifier
      *  in the last stub file is applied.
