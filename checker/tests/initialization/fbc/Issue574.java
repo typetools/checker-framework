@@ -5,11 +5,11 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
 @SuppressWarnings({
     // A warning is issued that fields are not initialized in the constructor.
     // That is expected and it is not what is being verified in this test.
-                   "initialization.fields.uninitialized",
+    "initialization.fields.uninitialized",
     // Normally @UnknownInitialization is the only initialization annotation allowed on fields.
     // However, for the purposes of this test, fields must be annotated with @UnderInitialization.
-                   "initialization.invalid.field.type"})
-class Issue574<T> {
+    "initialization.invalid.field.type"})
+class Issue574 {
     @UnderInitialization(Object.class) Object o1;
     @UnderInitialization(String.class) Object o2;
     @UnderInitialization(Character.class) Object o3;
@@ -20,7 +20,7 @@ class Issue574<T> {
 
     @UnderInitialization(CharSequence.class) Object i1; // CharSequence is an interface
 
-    void testLubOfClasses(boolean flag){
+    void testLubOfClasses(boolean flag) {
         @UnderInitialization(Object.class) Object l1 = flag ? o2 : o3;
         @UnderInitialization(Number.class) Object l2 = flag ? o5 : o6;
 
@@ -36,7 +36,7 @@ class Issue574<T> {
         @UnderInitialization(Integer.class) Object l8 = flag ? o4 : o5;
     }
 
-    void testLubOfClassesAndInterfaces(boolean flag){
+    void testLubOfClassesAndInterfaces(boolean flag) {
         @UnderInitialization(Object.class) Object l1 = flag ? i1 : o3;
 
         @UnderInitialization(Object.class) Object l2 = flag ? o1 : i1;
