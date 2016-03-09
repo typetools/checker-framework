@@ -2434,9 +2434,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * 1. jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is not supplied <br>
      * 2. flow.astub in the same directory as BaseTypeChecker <br>
      * 3. Stub files listed in @Stubfiles annotation on the checker; must be in same directory as the checker<br?
-     * 4. Stub files provide via stubs compiler option <br>
-     * 5. Stub files provide via stubs system property <br>
-     * 6. Stub files provide via stubs environment variable
+     * 4. Stub files provide via stubs system property <br>
+     * 5. Stub files provide via stubs environment variable
+     * 6. Stub files provide via stubs compiler option <br>
      * <p>
      *  If a type is annotated with a qualifier from the same hierarchy in more than one stub file, the qualifier
      *  in the last stub file is applied.
@@ -2481,21 +2481,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Collections.addAll(allStubFiles, stubFilesAnnotation.value());
         }
 
-        // 4. Stub files provide via stubs option
-        String stubsOption = checker.getOption("stubs");
-        if (stubsOption != null) {
-            Collections.addAll(allStubFiles, stubsOption.split(File.pathSeparator));
-        }
-
-        // 5. Stub files provide via stubs system property
+        // 4. Stub files provide via stubs system property
         String stubsProperty = System.getProperty("stubs");
         if (stubsProperty != null) {
             Collections.addAll(allStubFiles, stubsProperty.split(File.pathSeparator));
         }
-        // 6. Stub files provide via stubs environment variable
+
+        // 5. Stub files provide via stubs environment variable
         String stubEnvVar = System.getenv("stubs");
         if (stubEnvVar != null) {
             Collections.addAll(allStubFiles, stubEnvVar.split(File.pathSeparator));
+        }
+
+        // 6. Stub files provide via stubs option
+        String stubsOption = checker.getOption("stubs");
+        if (stubsOption != null) {
+            Collections.addAll(allStubFiles, stubsOption.split(File.pathSeparator));
         }
 
         if (allStubFiles.isEmpty()) {
