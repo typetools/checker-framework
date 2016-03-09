@@ -32,20 +32,26 @@ class TestBounded {
     void useBoundedWildCard(){
         BoundedGeneric rawLocal = new BoundedGeneric<String>();
         BoundedGeneric<? extends Object> generic1 = rawReturn();
+        //:: error: (assignment.type.incompatible)
         BoundedGeneric<? extends Object> generic2 = rawField;
+        //:: error: (assignment.type.incompatible)
         BoundedGeneric<? extends Object> generic3 = rawLocal;
     }
     void useBoundedWildCard2(){
         BoundedGeneric rawLocal = new BoundedGeneric<String>();
         BoundedGeneric<? extends CharSequence> generic1 = rawReturn();
+        //:: error: (assignment.type.incompatible)
         BoundedGeneric<? extends CharSequence> generic2 = rawField;
+        //:: error: (assignment.type.incompatible)
         BoundedGeneric<? extends CharSequence> generic3 = rawLocal;
     }
 
     void useTypeArg(){
         BoundedGeneric rawLocal = new BoundedGeneric<String>();
         BoundedGeneric<String> generic1 = rawReturn();
+        //:: error: (assignment.type.incompatible)
         BoundedGeneric<String> generic2 = rawField;
+        //:: error: (assignment.type.incompatible)
         BoundedGeneric<String> generic3 = rawLocal;
     }
 

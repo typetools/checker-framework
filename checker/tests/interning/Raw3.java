@@ -54,7 +54,7 @@ class Raw3 {
   // with raw types
   List<@Interned String> foo6() {
     List<String> sl = new ArrayList<>();
-    //:: warning: [unchecked] unchecked conversion
+    //:: warning: [unchecked] unchecked conversion :: error: (return.type.incompatible)
     return (List) sl;
   }
 
