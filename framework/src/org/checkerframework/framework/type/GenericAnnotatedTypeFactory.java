@@ -175,7 +175,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         this.poly = createQualifierPolymorphism();
 
-        this.buildIndexTypes();
+        this.parseStubFiles();
     }
 
     /**
