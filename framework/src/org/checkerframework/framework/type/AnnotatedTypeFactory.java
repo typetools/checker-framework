@@ -1140,7 +1140,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         annotateInheritedFromClass(result);
         // Don't cache rawTypes, because during dataflow, the assignment context is null
-        // And that that type shouldn't be cached.
+        // And that type shouldn't be cached.
         if (shouldCache && !rawType)
             fromTreeCache.put(tree, result.deepCopy());
         return result;
