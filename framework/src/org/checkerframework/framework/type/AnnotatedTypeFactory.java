@@ -1107,12 +1107,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(this, tree);
 
+        boolean rawType = false;
         // treat Raw as generic!
         // TODO: This doesn't handle recursive type parameter
         // e.g. class Pair<Y extends List<Y>> { ... }
         if (result.getKind() == TypeKind.DECLARED) {
             AnnotatedDeclaredType dt = (AnnotatedDeclaredType)result;
             if (dt.wasRaw()) {
+                rawType = true;
                 List<AnnotatedTypeMirror> typeArgs;
                 Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
                 if (ctx != null) {
@@ -1137,7 +1139,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
         annotateInheritedFromClass(result);
-        if (shouldCache)
+        // Don't cache rawTypes, because during dataflow, the assignment context is null
+        // And that type shouldn't be cached.
+        if (shouldCache && !rawType)
             fromTreeCache.put(tree, result.deepCopy());
         return result;
     }
