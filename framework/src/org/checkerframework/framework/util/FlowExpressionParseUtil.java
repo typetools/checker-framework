@@ -108,8 +108,6 @@ public class FlowExpressionParseUtil {
      * Parse a string and return its representation as a {@link Receiver}, or
      * throw an {@link FlowExpressionParseException}. The expression is assumed
      * to be used in the context of a method.
-     * Returns null if 'itself' is passed in as the string to parse
-     * and no receiver named 'itself' could be found.
      *
      * @param s
      *            The string to parse.
@@ -121,14 +119,34 @@ public class FlowExpressionParseUtil {
     public static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
             FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
-        return parse(s, context, path, false);
+        return parse(s, context, path, false, false);
+    }
+
+    /**
+     * Parse a string and return its representation as a {@link Receiver}, or
+     * throw an {@link FlowExpressionParseException}. The expression is assumed
+     * to be used in the context of a method.
+     * Returns null if 'itself' is passed in as the string to parse
+     * and no receiver named 'itself' could be found.
+     *
+     * @param s
+     *            The string to parse.
+     * @param context
+     *            information about any receiver and arguments
+     * @param path
+     *            The current tree path.
+     */
+    public static FlowExpressions. /*@Nullable*/ Receiver parseAllowingItself(String s,
+            FlowExpressionContext context, TreePath path)
+            throws FlowExpressionParseException {
+        return parse(s, context, path, true, false);
     }
 
     private static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
-            FlowExpressionContext context, TreePath path, boolean recursiveCall)
+            FlowExpressionContext context, TreePath path, boolean allowItself, boolean recursiveCall)
             throws FlowExpressionParseException {
         Receiver result = parse(s, context, path, true, true, true, true, true, true,
-                true, true, recursiveCall);
+                true, true, allowItself, recursiveCall);
         return result;
     }
 
@@ -140,7 +158,7 @@ public class FlowExpressionParseUtil {
             FlowExpressionContext context, TreePath path, boolean allowSelf,
             boolean allowIdentifier, boolean allowParameter, boolean allowDot,
             boolean allowMethods, boolean allowArrays, boolean allowLiterals,
-            boolean allowLocalVariables, boolean recursiveCall)
+            boolean allowLocalVariables, boolean allowItself, boolean recursiveCall)
             throws FlowExpressionParseException {
         s = s.trim();
 
@@ -284,7 +302,7 @@ public class FlowExpressionParseUtil {
                     return new ClassName(classType);
                 } catch (Throwable t2) {
 
-                    if (!recursiveCall && itselfMatcher.matches()) {
+                    if (allowItself && !recursiveCall && itselfMatcher.matches()) {
                         return null; // Don't throw an exception if 'itself' does not match an identifier.
                         // The callee knows that it passed in 'itself' and will handle the null return value.
                         // DO however throw an exception below if the call is recursive and 'itself' matches,
@@ -402,7 +420,7 @@ public class FlowExpressionParseUtil {
             String remainingString = dotMatcher.group(2);
 
             // Parse the receiver first.
-            Receiver receiver = parse(receiverString, context, path, true);
+            Receiver receiver = parse(receiverString, context, path, allowItself, true);
 
             if (receiver instanceof FlowExpressions.ClassName && remainingString.equals("class")) {
                 return receiver;
@@ -411,14 +429,14 @@ public class FlowExpressionParseUtil {
             // Parse the rest, with a new receiver.
             FlowExpressionContext newContext = context.changeReceiver(receiver);
             return parse(remainingString, newContext, path, false, true, false,
-                    true, true, false, false, false, true);
+                    true, true, false, false, false, allowItself, true);
         } else if (parenthesesMatcher.matches()) {
             String expressionString = parenthesesMatcher.group(1);
             // Do not modify the value of recursiveCall, since a parenthesis match is essentially a match to a no-op and should not semantically affect the parsing.
             return parse(expressionString, context, path, allowSelf,
                     allowIdentifier, allowParameter, allowDot,
                     allowMethods, allowArrays, allowLiterals,
-                    allowLocalVariables, recursiveCall);
+                    allowLocalVariables, allowItself, recursiveCall);
         } else {
             throw constructParserException(s);
         }
