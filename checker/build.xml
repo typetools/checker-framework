@@ -696,7 +696,7 @@
     </target>
 
     <target name="nullness-tests-nobuildjdk"
-            depends="jar,jdk.jar.exists,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-assume-assertions-are-enabled-tests,nullness-extra-tests-nobuildjdk,nullness-reflection-tests,nullness-invariantarrays-tests,nullness-safedefaultsbytecode-tests,nullness-safedefaultssourcecode-tests"
+            depends="jar,jdk.jar.exists,build-tests,nullness-base-tests,nullness-base-tests-with-asserts,nullness-concurrent-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-uninit-tests-with-asserts,nullness-assume-assertions-are-enabled-tests,nullness-extra-tests-nobuildjdk,nullness-reflection-tests,nullness-invariantarrays-tests,nullness-safedefaultsbytecode-tests,nullness-safedefaultssourcecode-tests,nullness-rawtypes-tests"
             description="Run tests for the Nullness Checker, WITHOUT updating jdkX.jar">
     </target>
 
@@ -786,6 +786,15 @@
             description="Run tests for the Nullness Checker using reflection resolution">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessReflectionTest"/>
+        </antcall>
+    </target>
+    <target name="nullness-rawtypes-tests" depends="jar,build-tests"
+            description="Run tests for the Nullness Checker on raw types">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessRawTypesTest"/>
+        </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NullnessRawTypesNoCachingTest"/>
         </antcall>
     </target>
 
