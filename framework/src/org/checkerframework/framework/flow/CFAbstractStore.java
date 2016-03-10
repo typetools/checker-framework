@@ -983,13 +983,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         return "Use a CFGVisualizer to see the Store: " + this.hashCode();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
 	public void visualize(CFGVisualizer<?, S, ?> viz) {
-        ((CFGVisualizer<V, S, ?> ) viz).visualizeStoreHeader(
+        /*This cast is guaranteed be safe, as long as the CFGVisualizer is created by 
+         * CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of GenericAnnotatedTypeFactory*/
+        @SuppressWarnings("unchecked")
+        CFGVisualizer<V, S, ?> casted_viz = (CFGVisualizer<V, S, ?> ) viz;
+        casted_viz.visualizeStoreHeader(
             this.getClass().getCanonicalName());
-        internalVisualize((CFGVisualizer<V, S, ?>) viz);
-        ((CFGVisualizer<V, S, ?> ) viz).visualizeStoreFooter();
+        internalVisualize(casted_viz);
+        casted_viz.visualizeStoreFooter();
     }
 
     /**
@@ -998,22 +1001,22 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     protected void internalVisualize(CFGVisualizer<V, S, ?> viz) {
         for (Entry<FlowExpressions.LocalVariable, V> entry : localVariableValues.entrySet()) {
-            viz.visualizeLocalVariable(entry.getKey(), entry.getValue());
+            viz.visualizeStoreLocalVar(entry.getKey(), entry.getValue());
         }
         if (thisValue != null) {
-            viz.visualizeThisValue(thisValue);
+            viz.visualizeStoreThisVal(thisValue);
         }
         for (Entry<FlowExpressions.FieldAccess, V> entry : fieldValues.entrySet()) {
-            viz.visualizeFieldValues(entry.getKey(), entry.getValue());
+            viz.visualizeStoreFieldVals(entry.getKey(), entry.getValue());
         }
         for (Entry<FlowExpressions.ArrayAccess, V> entry : arrayValues.entrySet()) {
-            viz.visualizeArrayValue(entry.getKey(), entry.getValue());
+            viz.visualizeStoreArrayVal(entry.getKey(), entry.getValue());
         }
         for (Entry<PureMethodCall, V> entry : methodValues.entrySet()) {
-            viz.visualizeMethodValues(entry.getKey(), entry.getValue());
+            viz.visualizeStoreMethodVals(entry.getKey(), entry.getValue());
         }
         for (Entry<FlowExpressions.ClassName, V> entry : classValues.entrySet()) {
-            viz.visualizeClassValues(entry.getKey(), entry.getValue());
+            viz.visualizeStoreClassVals(entry.getKey(), entry.getValue());
         }
     }
 }

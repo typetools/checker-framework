@@ -43,7 +43,7 @@ public class QualStore<Q> implements Store<QualStore<Q>> {
         adapter.insertValue(r, analysis.getConverter().getAnnotation(regexAnnotation));
     }
 
-	public void visualize(CFGVisualizer<?, QualStore<Q>, ?> viz) {
+    public void visualize(CFGVisualizer<?, QualStore<Q>, ?> viz) {
         // TODO: this method currently isn't called. The corresponding
         // method on the adapter is called by the AnnotatedTypeFactory.
         // In the future, the QualifiedTypeFactory should call this method

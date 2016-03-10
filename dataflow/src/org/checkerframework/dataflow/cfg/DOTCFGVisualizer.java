@@ -54,9 +54,11 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
     protected String outdir;
     protected boolean verbose;
     protected String checkerName;
+    protected StringBuilder sbDigraph;
     //sbStore is for visualizing store
     protected StringBuilder sbStore;
     // Mapping from class/method representation to generated dot file.
+    protected StringBuilder sbBlock;
     protected Map<String, String> generated;
 
     public void init(Map<String, Object> args) {
@@ -71,7 +73,11 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
 
         this.generated = new HashMap<>();
 
+        this.sbDigraph = new StringBuilder();
+
         this.sbStore = new StringBuilder();
+
+        this.sbBlock = new StringBuilder();
     }
 
     /**
@@ -102,7 +108,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
     }
 
     /**
-     * generate the dot string write to dot file
+     * Generate the dot representation as String.
      * @param cfg
      * @param entry
      * @param analysis
@@ -110,49 +116,15 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
      */
     protected String generateDotGraph(ControlFlowGraph cfg, Block entry,
         /*@Nullable*/ Analysis<A, S, T> analysis) {
-        StringBuilder sbDigraph = new StringBuilder();
+        this.sbDigraph.setLength(0);
         Set<Block> visited = new HashSet<>();
 
         // header
-        sbDigraph.append("digraph {\n");
+        this.sbDigraph.append("digraph {\n");
 
         /*generateDotEdges must called BEFORE generateDotNodes,
          * since DoteNodes needs the information in 'Set<Block> visited' that created in generateDotEdges()  */
-        generateDotEdges(sbDigraph, visited, entry);
-
-        generateDotNodes(sbDigraph, visited, cfg, analysis);
-
-        // footer
-        sbDigraph.append("}\n");
-
-        return sbDigraph.toString();
-    }
-
-    private void generateDotNodes(StringBuilder sbDigraph, Set<Block> visited,
-    ControlFlowGraph cfg, Analysis<A, S, T> analysis) {
-        IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
-
-        sbDigraph.append("    node [shape=rectangle];\n\n");
-        // definition of all nodes including their labels
-        for (Block v : visited) {
-            sbDigraph.append("    " + v.getId() + " [");
-            if (v.getType() == BlockType.CONDITIONAL_BLOCK) {
-                sbDigraph.append("shape=polygon sides=8 ");
-            } else if (v.getType() == BlockType.SPECIAL_BLOCK) {
-                sbDigraph.append("shape=oval ");
-            }
-            sbDigraph.append("label=\"");
-            if (verbose) {
-                sbDigraph.append("Process order: " + processOrder.get(v).toString().replaceAll("[\\[\\]]", "") + "\\n");
-            }
-            sbDigraph.append(visualizeBlock(v, analysis).replace("\\n", "\\l")
-            + " \",];\n");
-        }
-
-        sbDigraph.append("\n");
-	}
-
-	protected void generateDotEdges(StringBuilder sbDigraph, Set<Block> visited, Block entry) {
+//        generateDotEdges(sbDigraph, visited, entry);
         Block cur = entry;
         Queue<Block> worklist = new LinkedList<>();
         visited.add(entry);
@@ -164,13 +136,13 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
             if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
                 ConditionalBlock ccur = ((ConditionalBlock) cur);
                 Block thenSuccessor = ccur.getThenSuccessor();
-                addDotEdge(sbDigraph, ccur.getId(), thenSuccessor.getId(), "then\\n" + ccur.getThenFlowRule());
+                addDotEdge(ccur.getId(), thenSuccessor.getId(), "then\\n" + ccur.getThenFlowRule());
                 if (!visited.contains(thenSuccessor)) {
                     visited.add(thenSuccessor);
                     worklist.add(thenSuccessor);
                 }
                 Block elseSuccessor = ccur.getElseSuccessor();
-                addDotEdge(sbDigraph, ccur.getId(), elseSuccessor.getId(), "else\\n" + ccur.getElseFlowRule());
+                addDotEdge(ccur.getId(), elseSuccessor.getId(), "else\\n" + ccur.getElseFlowRule());
                 if (!visited.contains(elseSuccessor)) {
                     visited.add(elseSuccessor);
                     worklist.add(elseSuccessor);
@@ -179,7 +151,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
                 assert cur instanceof SingleSuccessorBlock;
                 Block b = ((SingleSuccessorBlock) cur).getSuccessor();
                 if (b != null) {
-                    addDotEdge(sbDigraph, cur.getId(), b.getId(), ((SingleSuccessorBlock) cur).getFlowRule().name());
+                    addDotEdge(cur.getId(), b.getId(), ((SingleSuccessorBlock) cur).getFlowRule().name());
                     if (!visited.contains(b)) {
                         visited.add(b);
                         worklist.add(b);
@@ -200,7 +172,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
                     }
 
                     for (Block b : blocks) {
-                        addDotEdge(sbDigraph, cur.getId(), b.getId(), exception);
+                        addDotEdge(cur.getId(), b.getId(), exception);
                         if (!visited.contains(b)) {
                             visited.add(b);
                             worklist.add(b);
@@ -211,7 +183,34 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
 
             cur = worklist.poll();
         }
+        generateDotNodes(visited, cfg, analysis);
+
+        // footer
+        this.sbDigraph.append("}\n");
+
+        return this.sbDigraph.toString();
     }
+
+    protected void generateDotNodes(Set<Block> visited, ControlFlowGraph cfg, Analysis<A, S, T> analysis) {
+        IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
+        this.sbDigraph.append("    node [shape=rectangle];\n\n");
+        // definition of all nodes including their labels
+        for (Block v : visited) {
+            this.sbDigraph.append("    " + v.getId() + " [");
+            if (v.getType() == BlockType.CONDITIONAL_BLOCK) {
+                this.sbDigraph.append("shape=polygon sides=8 ");
+            } else if (v.getType() == BlockType.SPECIAL_BLOCK) {
+                this.sbDigraph.append("shape=oval ");
+            }
+            this.sbDigraph.append("label=\"");
+            if (verbose) {
+                this.sbDigraph.append("Process order: " + processOrder.get(v).toString().replaceAll("[\\[\\]]", "") + "\\n");
+            }
+            visualizeBlock(v, analysis);
+        }
+
+        this.sbDigraph.append("\n");
+	}
 
     /** @return The file name used for DOT output. */
     protected String dotOutputFileName(UnderlyingAST ast) {
@@ -284,11 +283,11 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
      *            Basic block to visualize.
      * @return String representation.
      */
-    protected String visualizeBlock(
-            Block bb,
+    @Override
+    public void visualizeBlock(Block bb,
             /*@Nullable*/ Analysis<A, S, T> analysis) {
 
-        StringBuilder sbBlock = new StringBuilder();
+        this.sbBlock.setLength(0);
 
         // loop over contents
         List<Node> contents = new LinkedList<>();
@@ -309,49 +308,54 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
         boolean notFirst = false;
         for (Node t : contents) {
             if (notFirst) {
-                sbBlock.append("\\n");
+                this.sbBlock.append("\\n");
             }
             notFirst = true;
-            sbBlock.append(visualizeBlockNode(t, analysis));
+            visualizeBlockNode(t, analysis);
         }
 
         // handle case where no contents are present
         boolean centered = false;
-        if (sbBlock.length() == 0) {
+        if (this.sbBlock.length() == 0) {
             centered = true;
             if (bb.getType() == BlockType.SPECIAL_BLOCK) {
-                visualizeSpecialBlock((SpecialBlock) bb, sbBlock);
+//                visualizeSpecialBlock((SpecialBlock) bb, sbBlock);
+                visualizeSpecialBlock((SpecialBlock) bb);
             } else if (bb.getType() == BlockType.CONDITIONAL_BLOCK) {
-                return "";
+                this.sbDigraph.append(" \",];\n");
+                return;
             } else {
-                return "?? empty ??";
+                this.sbDigraph.append("?? empty ?? \",];\n");
+                return;
             }
         }
 
         // visualize transfer input if necessary
         if (analysis != null) {
-            visualizeBlockTransferInput(bb, analysis, sbBlock);
+//            visualizeBlockTransferInput(bb, analysis, sbBlock);
+            visualizeBlockTransferInput(bb, analysis);
         }
 
-        return sbBlock.toString() + (centered ? "" : "\\n");
+        this.sbDigraph.append((this.sbBlock.toString() + (centered ? "" : "\\n")).replace("\\n", "\\l") + " \",];\n");
     }
 
-    protected void visualizeSpecialBlock(SpecialBlock sbb, StringBuilder sbBlock) {
+    @Override
+    public void visualizeSpecialBlock(SpecialBlock sbb) {
         switch (sbb.getSpecialType()) {
         case ENTRY:
-            sbBlock.append("<entry>");
+            this.sbBlock.append("<entry>");
             break;
         case EXIT:
-            sbBlock.append("<exit>");
+            this.sbBlock.append("<exit>");
             break;
         case EXCEPTIONAL_EXIT:
-            sbBlock.append("<exceptional-exit>");
+            this.sbBlock.append("<exceptional-exit>");
             break;
         }
     }
 
-    protected void visualizeBlockTransferInput(Block bb, Analysis<A, S, T> analysis,
-    StringBuilder sbBlockContent) {
+    @Override
+    public void visualizeBlockTransferInput(Block bb, Analysis<A, S, T> analysis) {
         TransferInput<A, S> input = analysis.getInput(bb);
         this.sbStore.setLength(0);
 
@@ -375,7 +379,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
         this.sbStore.append("\\n~~~~~~~~~\\n");
 
         //the transfer input before this block should add before this block content
-        sbBlockContent.insert(0, this.sbStore);
+        this.sbBlock.insert(0, this.sbStore);
 
         if (verbose) {
             Node lastNode;
@@ -395,21 +399,22 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
                 this.sbStore.append("\\n~~~~~~~~~\\n");
                 this.sbStore.append("After:");
                 visualizeStore(analysis.getResult().getStoreAfter(lastNode.getTree()));
-                sbBlockContent.append(this.sbStore);
+                this.sbBlock.append(this.sbStore);
             }
         }
     }
 
-	protected String visualizeBlockNode(Node t, /*@Nullable*/ Analysis<A, S, T> analysis) {
+    @Override
+	public void visualizeBlockNode(Node t, /*@Nullable*/ Analysis<A, S, T> analysis) {
         A value = analysis.getValue(t);
         String valueInfo = "";
         if (value != null) {
             valueInfo = "    > " + prepareString(value.toString());
         }
-        return prepareString(t.toString()) + "   [ " + visualizeType(t) + " ]" + valueInfo;
+        this.sbBlock.append(prepareString(t.toString()) + "   [ " + prepareNodeType(t) + " ]" + valueInfo);
     }
 
-    protected String visualizeType(Node t) {
+    protected String prepareNodeType(Node t) {
         String name = t.getClass().getSimpleName();
         return name.replace("Node", "");
     }
@@ -424,8 +429,8 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
      * @param labelContent
      * @return
      */
-    protected void addDotEdge(StringBuilder sbDigraph, long sId, long eId, String labelContent) {
-    	sbDigraph.append("    " + sId + " -> "+ eId + " [label=\""+ labelContent + "\"];\n");
+    protected void addDotEdge(long sId, long eId, String labelContent) {
+        this.sbDigraph.append("    " + sId + " -> "+ eId + " [label=\""+ labelContent + "\"];\n");
     }
 
     /** Write a file methods.txt that contains a mapping from
@@ -449,72 +454,69 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
         }
     }
 
-	@Override
-	public void visualizeStore(S store) {
-		store.visualize(this);
-	}
+    @Override
+    public void visualizeStore(S store) {
+        store.visualize(this);
+    }
 
-	@Override
-	public void visualizeThisValue(A value) {
-		this.sbStore.append("  this > " + value
+    @Override
+    public void visualizeStoreThisVal(A value) {
+        this.sbStore.append("  this > " + value
                 + "\\n");
-	}
+    }
 
-	@Override
-	public void visualizeLocalVariable(FlowExpressions.LocalVariable localVar, A value) {
+    @Override
+    public void visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, A value) {
         this.sbStore.append("  " + localVar + " > " +
             toStringEscapeDoubleQuotes(value)
             + "\\n");
-	}
+    }
 
-	@Override
-	public void visualizeFieldValues(FlowExpressions.FieldAccess fieldAccess, A value) {
-		this.sbStore.append("  " + fieldAccess + " > " +
-            toStringEscapeDoubleQuotes(value)
-            + "\\n");
-	}
-
-	@Override
-	public void visualizeArrayValue(FlowExpressions.ArrayAccess arrayValue, A value) {
-		this.sbStore.append("  " + arrayValue + " > " +
+    @Override
+    public void visualizeStoreFieldVals(FlowExpressions.FieldAccess fieldAccess, A value) {
+        this.sbStore.append("  " + fieldAccess + " > " +
             toStringEscapeDoubleQuotes(value)
             + "\\n");
     }
 
-	@Override
-	public void visualizeMethodValues(FlowExpressions.PureMethodCall methodCall, A value) {
-		this.sbStore.append("  " + methodCall.toString().replace("\"", "\\\"")
-                + " > " + value + "\\n");
-	}
+    @Override
+    public void visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, A value) {
+        this.sbStore.append("  " + arrayValue + " > " +
+            toStringEscapeDoubleQuotes(value) + "\\n");
+    }
 
-	@Override
-	public void visualizeClassValues(FlowExpressions.ClassName className, A value) {
-		this.sbStore.append("  " + className + " > " + toStringEscapeDoubleQuotes(value)
-                + "\\n");
-	}
+    @Override
+    public void visualizeStoreMethodVals(FlowExpressions.PureMethodCall methodCall, A value) {
+        this.sbStore.append("  " + methodCall.toString().replace("\"", "\\\"") + " > " + 
+                value + "\\n");
+    }
 
-	@Override
-	public void visualizeKeyValue(String keyName, Object value) {
-		this.sbStore.append("  "+keyName+" = "+value+"\\n");
-	}
+    @Override
+    public void visualizeStoreClassVals(FlowExpressions.ClassName className, A value) {
+        this.sbStore.append("  " + className + " > " + toStringEscapeDoubleQuotes(value) + "\\n");
+    }
 
-	protected String escapeDoubleQuotes(final String str) {
+    @Override
+    public void visualizeStoreKeyVal(String keyName, Object value) {
+        this.sbStore.append("  "+keyName+" = "+value+"\\n");
+    }
+
+    protected String escapeDoubleQuotes(final String str) {
         return str.replace("\"", "\\\"");
     }
-
 
     protected String toStringEscapeDoubleQuotes(final Object obj) {
         return escapeDoubleQuotes(String.valueOf(obj));
     }
 
-	@Override
-	public void visualizeStoreHeader(String classCanonicalName) {
-		this.sbStore.append(classCanonicalName + " (\\n");
-	}
+    @Override
+    public void visualizeStoreHeader(String classCanonicalName) {
+        this.sbStore.append(classCanonicalName + " (\\n");
+    }
 
-	@Override
-	public void visualizeStoreFooter() {
-		this.sbStore.append(")");
-	}
+    @Override
+    public void visualizeStoreFooter() {
+        this.sbStore.append(")");
+    }
 
 }
