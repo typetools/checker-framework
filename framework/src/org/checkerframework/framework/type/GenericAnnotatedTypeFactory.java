@@ -598,6 +598,17 @@ public abstract class GenericAnnotatedTypeFactory<
             // be the best possible.
             return null;
         }
+        return getStoreBefore(node);
+    }
+
+    /**
+     * @return The store immediately before a given {@link Node}.
+     */
+    public Store getStoreBefore(Node node) {
+        if (analyses == null || analyses.isEmpty()) {
+            return flowResult.getStoreBefore(node);
+        }
+        FlowAnalysis analysis = analyses.getFirst();
         TransferInput<Value, Store> prevStore = analysis.getInput(node.getBlock());
         if (prevStore == null) {
             return null;

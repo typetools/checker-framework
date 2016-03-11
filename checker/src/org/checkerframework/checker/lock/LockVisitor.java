@@ -205,7 +205,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             Set<AnnotationMirror> annos = methodDefinitionReceiver.getAnnotations();
             for(AnnotationMirror anno : annos) {
                 if (AnnotationUtils.areSameByClass(anno, checkerGuardSatisfiedClass)) {
-                    Element invokedElement = TreeUtils.elementFromUse(node);
 
                     boolean receiverIsThatOfEnclosingMethod = false;
 
@@ -216,13 +215,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                         receiverIsThatOfEnclosingMethod = true;
                     }
 
-                    if (invokedElement != null) {
-                        checkPreconditions(node,
-                                invokedElement,
-                                new LockCheckPreconditionInfo(true, /* 'node' represents a method call */
-                                                              true /* itself refers to the receiver of the method call, e.g. "a" in "a.b()" */),
-                                generatePreconditionsBasedOnGuards(methodCallReceiver, receiverIsThatOfEnclosingMethod));
-                    }
+                    checkPreconditions(node, receiverNode,
+                            generatePreconditionsBasedOnGuards(methodCallReceiver, receiverIsThatOfEnclosingMethod));
 
                     return true;
                 }
@@ -258,7 +252,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      *
      * @param amList the set of AnnotationMirrors containing the lock expression preconditions
      * @param translateItselfToThis whether lock expressions matching the literal "itself" should be changed to the literal "this"
-     * @return a set of lock expression preconditions that can be processed by LockVisitor.checkPreconditions
+     * @return a set of lock expression preconditions that can be processed by checkPreconditions
      */
     private Set<Pair<String, String>> generatePreconditionsBasedOnGuards(Set<AnnotationMirror> amList, boolean translateItselfToThis) {
         Set<Pair<String, String>> preconditions = new LinkedHashSet<>();
@@ -323,11 +317,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         if (varType.hasAnnotation(GuardSatisfied.class)) {
             if (valueType.hasAnnotation(GuardedBy.class)) {
-                ExpressionTree tree = (ExpressionTree) valueTree;
-
-                checkPreconditions(tree,
-                        TreeUtils.elementFromUse(tree),
-                        new LockCheckPreconditionInfo(tree.getKind() == Tree.Kind.METHOD_INVOCATION, false),
+                checkPreconditions((ExpressionTree) valueTree,
                         generatePreconditionsBasedOnGuards(valueType, false));
 
                 return;
@@ -464,22 +454,22 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         ExpressionTree expr = null;
+        AnnotatedTypeMirror atmOfReceiver = null;
 
         switch(treeKind) {
             case ARRAY_ACCESS:
                 expr = ((ArrayAccessTree) tree).getExpression();
+                atmOfReceiver = atypeFactory.getAnnotatedType(expr);
                 break;
             case MEMBER_SELECT:
                 expr = ((MemberSelectTree) tree).getExpression();
+                atmOfReceiver = atypeFactory.getAnnotatedType(expr);
                 break;
-            default:
+            default: // treeKind == Kind.IDENTIFIER
                 expr = tree;
+                atmOfReceiver = atypeFactory.getReceiverType(expr);
                 break;
         }
-
-        Element invokedElement = TreeUtils.elementFromUse(expr);
-
-        AnnotatedTypeMirror atmOfReceiver = atypeFactory.getReceiverType(tree);
 
         if (expr != null && atmOfReceiver != null) {
             AnnotationMirror gb = atmOfReceiver.getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN);
@@ -498,29 +488,27 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             }
 
             if (AnnotationUtils.areSameByClass( gb, checkerGuardedByClass)) {
-                if (invokedElement != null) {
-                    // Is the receiver of the expression being accessed the same as the receiver of the enclosing method?
-                    boolean receiverIsThatOfEnclosingMethod = false;
+                // Is the receiver of the expression being accessed the same as the receiver of the enclosing method?
+                boolean receiverIsThatOfEnclosingMethod = false;
 
-                    if (node instanceof FieldAccessNode) {
-                        Node receiverNode = ((FieldAccessNode) node).getReceiver();
-                        if (receiverNode instanceof ThisLiteralNode) {
-                            receiverIsThatOfEnclosingMethod = true;
-                        }
+                if (node instanceof FieldAccessNode) {
+                    Node receiverNode = ((FieldAccessNode) node).getReceiver();
+                    if (receiverNode instanceof ThisLiteralNode) {
+                        receiverIsThatOfEnclosingMethod = true;
                     }
-
-                    // It is critical that if receiverIsThatOfEnclosingMethod is true,
-                    // generatePreconditionsBasedOnGuards translate the expression
-                    // "itself" to "this". That's because right now we know that, since
-                    // we are dealing with the receiver of the method, "itself" corresponds
-                    // to "this". However once checkPreconditions is called, that
-                    // knowledge is lost and it will regard "itself" as referring to
-                    // the variable the precondition we are about to add is attached to.
-                    checkPreconditions(expr, invokedElement,
-                        new LockCheckPreconditionInfo(expr.getKind() == Tree.Kind.METHOD_INVOCATION, false),
-                        generatePreconditionsBasedOnGuards(atmOfReceiver,
-                                receiverIsThatOfEnclosingMethod /* See comment above. This corresponds to formal parameter translateItselfToThis. */));
                 }
+
+                // It is critical that if receiverIsThatOfEnclosingMethod is true,
+                // generatePreconditionsBasedOnGuards translate the expression
+                // "itself" to "this". That's because right now we know that, since
+                // we are dealing with the receiver of the method, "itself" corresponds
+                // to "this". However once checkPreconditions is called, that
+                // knowledge is lost and it will regard "itself" as referring to
+                // the variable the precondition we are about to add is attached to.
+
+                checkPreconditions(expr,
+                    generatePreconditionsBasedOnGuards(atmOfReceiver,
+                            receiverIsThatOfEnclosingMethod /* See comment above. This corresponds to formal parameter translateItselfToThis. */));
             } else if (AnnotationUtils.areSameByClass(gb, checkerGuardSatisfiedClass)){
                 // Can always dereference if type is @GuardSatisfied
             } else {
@@ -544,29 +532,27 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     /**
      * Whether to skip a contract check based on whether the @GuardedBy
-     * expression {@code expr} is valid for the tree {@code tree}
+     * expression {@code expr} is valid for the node {@code node}
      * under the context {@code flowExprContext}
      * if the current path is within the expression
      * of a synchronized block (e.g. bar in
      * synchronized(bar) { ... }
      *
-     *  @param tree The tree that is @GuardedBy.
+     *  @param node The node that is @GuardedBy.
      *  @param expr The expression of the @GuardedBy annotation.
      *  @param flowExprContext The current context.
      *
      *  @return Whether to skip the contract check.
      */
     @Override
-    protected boolean skipContractCheck(Tree tree, FlowExpressions.Receiver expr, FlowExpressionContext flowExprContext) {
+    protected boolean skipContractCheck(Node node, FlowExpressions.Receiver expr, FlowExpressionContext flowExprContext) {
         String fieldName = null;
 
         try {
 
-            Node nodeNode = atypeFactory.getNodeForTree(tree);
+            if (node instanceof FieldAccessNode) {
 
-            if (nodeNode instanceof FieldAccessNode) {
-
-                fieldName = ((FieldAccessNode) nodeNode).getFieldName();
+                fieldName = ((FieldAccessNode) node).getFieldName();
 
                 if (fieldName != null) {
                     FlowExpressions.Receiver fieldExpr = FlowExpressionParseUtil.parse(fieldName,
@@ -595,7 +581,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 }
             }
         } catch (FlowExpressionParseException e) {
-            checker.report(e.getResult(), tree);
+            checker.report(e.getResult(), node.getTree());
         }
 
         return false;
@@ -801,55 +787,35 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return super.visitIdentifier(node, p);
     }
 
-    class LockCheckPreconditionInfo extends CheckPreconditionInfo {
-        LockCheckPreconditionInfo(boolean methodCall, boolean itselfIsTheMethodCallReceiver) {
-            super(methodCall);
-
-            this.itselfIsTheMethodCallReceiver = itselfIsTheMethodCallReceiver;
-        }
-
-        private boolean itselfIsTheMethodCallReceiver;
-
-        boolean isItselfTheMethodCallReceiver() {
-            return itselfIsTheMethodCallReceiver;
-        }
-    }
-
+    /***
+     * If expression is "itself", and the flow expression parser cannot find a variable,
+     * class, etc. named "itself", a flow expression receiver for {@code node} is returned.
+     * <p>
+     * Returns the result of the super implementation otherwise.
+     */
     @Override
     protected FlowExpressions.Receiver parseExpressionString(String expression,
             FlowExpressionContext flowExprContext,
-            Node node, CheckPreconditionInfo checkPreconditionInfo) throws FlowExpressionParseException {
-        if (checkPreconditionInfo instanceof LockCheckPreconditionInfo) {
-            LockCheckPreconditionInfo lockCheckPreconditionInfo = (LockCheckPreconditionInfo) checkPreconditionInfo;
+            Node node) throws FlowExpressionParseException {
+        expression = expression.trim();
 
-            boolean methodCall = lockCheckPreconditionInfo.isMethodCall();
-            boolean itselfIsTheMethodCallReceiver = lockCheckPreconditionInfo.isItselfTheMethodCallReceiver();
+        /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
+        Pattern itselfPattern = Pattern.compile("^itself$");
+        Matcher itselfMatcher = itselfPattern.matcher(expression);
 
-            /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
-            Pattern itselfPattern = Pattern.compile("^itself$");
-            Matcher itselfMatcher = itselfPattern.matcher(expression);
+        if (itselfMatcher.matches()) {
+            FlowExpressions.Receiver expr = FlowExpressionParseUtil.parseAllowingItself(expression, flowExprContext, getCurrentPath());
 
-            if (itselfMatcher.matches()) {
-                TreePath thepath = getCurrentPath();
-                FlowExpressions.Receiver expr = FlowExpressionParseUtil.parseAllowingItself(expression, flowExprContext, thepath);
-
-                if (expr == null) { // There is no variable, class, etc. named "itself". Hence "itself" actually means itself.
-                    // When methodCall is true:
-                    //  -If itselfIsTheMethodCallReceiver is true, a precondition expression "itself" refers to the receiver of the method call, e.g. if 'tree' is "a.b()", then "itself" refers to "a"
-                    //  -If itselfIsTheMethodCallReceiver is false, a precondition expression "itself" refers to the method call, e.g. if 'tree' is "a()" then "itself" refers to "a()"
-
-                    if (methodCall && itselfIsTheMethodCallReceiver) {
-                        expr = flowExprContext.receiver;
-                    } else {
-                        expr = FlowExpressions.internalReprOf(atypeFactory,
-                                node);
-                    }
-                }
-
-                return expr;
+            if (expr == null) {
+                // No variable, class, etc. named "itself" could be found.
+                // Hence "itself" is interpreted to actually mean itself.
+                expr = FlowExpressions.internalReprOf(atypeFactory,
+                        node);
             }
+
+            return expr;
         }
 
-        return super.parseExpressionString(expression, flowExprContext, node, checkPreconditionInfo);
+        return super.parseExpressionString(expression, flowExprContext, node);
     }
 }

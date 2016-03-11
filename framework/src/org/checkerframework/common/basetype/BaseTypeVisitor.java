@@ -942,7 +942,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         // check precondition annotations
-        checkPreconditions(node, invokedMethodElement, true);
+        checkMethodInvocationPreconditions(node, invokedMethodElement);
 
         // Do not call super, as that would observe the arguments without
         // a set assignment context.
@@ -950,46 +950,43 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return null; // super.visitMethodInvocation(node, p);
     }
 
-    public class CheckPreconditionInfo {
-        private boolean methodCall;
-
-        protected CheckPreconditionInfo(boolean methodCall) {
-            this.methodCall = methodCall;
+    /**
+     * Checks all the preconditions of the method invocation {@code tree} with
+     * element {@code invokedMethodElement}.
+     */
+    protected void checkMethodInvocationPreconditions(Tree tree,
+            ExecutableElement invokedMethodElement) {
+        if (invokedMethodElement == null) {
+            return;
         }
 
-        public boolean isMethodCall() {
-            return methodCall;
+        checkPreconditions(tree, contractsUtils.getPreconditions(invokedMethodElement));
+    }
+    
+    /**
+     * Checks that all the given {@code preconditions} hold true immediately prior to
+     * the method invocation or variable access at {@code tree}.
+     */
+    protected void checkPreconditions(Tree tree, Set<Pair<String, String>> preconditions) {
+        if (preconditions.isEmpty()) {
+            return;
         }
+
+        checkPreconditions(tree, atypeFactory.getNodeForTree(tree), preconditions);
     }
 
     /**
-     * Checks all the preconditions of the method invocation or variable access {@code tree} with
-     * element {@code invokedElement}.
+     * Checks that all the given {@code preconditions} hold true immediately prior to
+     * the method invocation or variable access at {@code node}.  Errors are reported
+     * with respect to {@code tree}, which does not need to correspond to {@code node}.
      */
-    protected void checkPreconditions(Tree tree,
-            Element invokedElement, boolean methodCall) {
-        checkPreconditions(tree, invokedElement, new CheckPreconditionInfo(methodCall), null);
-    }
-
-    /**
-     * Checks all the preconditions of the method invocation or variable access {@code tree} with
-     * element {@code invokedElement}.
-     */
-    protected void checkPreconditions(Tree tree,
-            Element invokedElement, CheckPreconditionInfo checkPreconditionInfo, Set<Pair<String, String>> additionalPreconditions) {
-        Set<Pair<String, String>> preconditions = invokedElement == null ?
-                new HashSet<Pair<String, String>>() :
-                contractsUtils.getPreconditions(invokedElement);
-
-        if (additionalPreconditions != null) {
-            preconditions.addAll(additionalPreconditions);
+    protected void checkPreconditions(Tree tree /* IMPORTANT: use for error reporting only*/,
+            Node node, Set<Pair<String, String>> preconditions) {
+        if (preconditions.isEmpty()) {
+            return;
         }
 
-        boolean methodCall = checkPreconditionInfo.isMethodCall();
-
-        Node nodeNode = atypeFactory.getNodeForTree(tree);
-
-        FlowExpressionContext flowExprContext = getFlowExpressionContextFromNode(nodeNode, methodCall);
+        FlowExpressionContext flowExprContext = getFlowExpressionContextFromNode(node);
 
         if (flowExprContext == null) {
             return;
@@ -1005,19 +1002,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             try {
-                FlowExpressions.Receiver expr = parseExpressionString(expression.trim(), flowExprContext, nodeNode, checkPreconditionInfo);
+                FlowExpressions.Receiver expr = parseExpressionString(expression, flowExprContext, node);
 
-                CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
+                CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(node);
 
                 CFAbstractValue<?> value = store.getValue(expr);
 
-                AnnotationMirror inferredAnno = value == null ? null : value
-                        .getType().getAnnotationInHierarchy(anno);
-                if (!skipContractCheck(tree, expr, flowExprContext) &&
+                AnnotationMirror inferredAnno = null;
+
+                if (value != null) {
+                    inferredAnno = value.getType().getAnnotationInHierarchy(anno);
+                }
+                
+                if (!skipContractCheck(node, expr, flowExprContext) &&
                     !checkContract(expr, anno, inferredAnno, store)) {
 
                     checker.report(Result.failure(
-                            methodCall ? "contracts.precondition.not.satisfied" : "contracts.precondition.not.satisfied.field",
+                            tree.getKind() == Tree.Kind.METHOD_INVOCATION
+                                ? "contracts.precondition.not.satisfied"
+                                : "contracts.precondition.not.satisfied.field",
                             tree.toString(),
                             expr == null ? expression : expr.toString()), tree);
                 }
@@ -1027,10 +1030,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    private FlowExpressionContext getFlowExpressionContextFromNode(Node node, boolean methodCall) {
+    private FlowExpressionContext getFlowExpressionContextFromNode(Node node) {
         FlowExpressionContext flowExprContext = null;
 
-        if (methodCall) {
+        if (node instanceof MethodInvocationNode) {
             flowExprContext = FlowExpressionParseUtil
                     .buildFlowExprContextForUse(
                             (MethodInvocationNode) node, checker.getContext());
@@ -1079,15 +1082,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return flowExprContext;
     }
 
+    /***
+     * Returns the flow expression receiver for the {@code expression} given the
+     * {@code flowExprContext}. The expression "this" is allowed and is handled.
+     * {@code node} refers to the method invocation or variable access being analyzed.
+     * It can be used by an overriding method for special handling of expressions
+     * such as "itself" which may indicate a reference to {@code node}.
+     */
     protected FlowExpressions.Receiver parseExpressionString(String expression,
-            FlowExpressionContext flowExprContext, Node node,
-            CheckPreconditionInfo checkPreconditionInfo) throws FlowExpressionParseException {
+            FlowExpressionContext flowExprContext, Node node) throws FlowExpressionParseException {
+        expression = expression.trim();
 
         Pattern selfPattern = Pattern.compile("^(this)$");
         Matcher selfMatcher = selfPattern.matcher(expression);
         if (selfMatcher.matches()) {
-            expression = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
-            expression = expression.trim();
+            expression = flowExprContext.receiver.toString().trim(); // it is possible that s == "this" after this call
         }
 
         return FlowExpressionParseUtil.parse(expression, flowExprContext, getCurrentPath());
@@ -1096,15 +1105,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Whether to skip a contract check based on whether the condition with
      * given expression {@code expr} is valid for the
-     * tree {@code tree} under the context {@code flowExprContext}.
+     * node {@code node} under the context {@code flowExprContext}.
      *
-     *  @param tree The tree that is being analyzed.
+     *  @param node The node that is being analyzed.
      *  @param expr The expression condition to consider.
      *  @param flowExprContext The current context.
      *
      *  @return Whether to skip the contract check.
      */
-    protected boolean skipContractCheck(Tree tree, FlowExpressions.Receiver expr, FlowExpressionContext flowExprContext) {
+    protected boolean skipContractCheck(Node node, FlowExpressions.Receiver expr, FlowExpressionContext flowExprContext) {
         // Do not add code here. Overridden versions of this method
         // will always have a weaker condition than simply 'return false',
         // so calling super.skipContractCheck is not useful.
@@ -2971,19 +2980,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     protected void checkAccess(IdentifierTree node, Void p) {
-        // Do not add functionality to this method body.
-        // Add it in the method called below instead.
-        checkAccess(node, p, true);
-    }
-
-    protected void checkAccess(IdentifierTree node, Void p, boolean doCheckPreconditions) {
         MemberSelectTree memberSel = enclosingMemberSelect();
         ExpressionTree tree;
         Element elem;
-
-        if (doCheckPreconditions) {
-            checkPreconditions(node, TreeUtils.elementFromUse(node), false);
-        }
 
         if (memberSel == null) {
             tree = node;
@@ -2997,10 +2996,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
 
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(tree);
-
-        if (doCheckPreconditions) {
-            checkPreconditions(tree, elem, false);
-        }
 
         if (!isAccessAllowed(elem, receiver, tree)) {
             checker.report(Result.failure("unallowed.access", elem, receiver), node);
