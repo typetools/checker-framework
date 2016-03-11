@@ -3,7 +3,8 @@
 // and contains other miscellaneous Lock Checker testing.
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.dataflow.qual.*;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
@@ -514,7 +515,7 @@ void boxingUnboxing() {
     @GuardedBy({}) int d;
     synchronized(lock) {
         // TODO re-enable this error (assignment.type.incompatible)
-        d = b; // TODO: This should not result in assignment.type.incompatible because 'b' is actually syntactic sugar for b.intValue(). See the explanation in LockVisitor.checkAccess for more information.
+        d = b; // TODO: This should not result in assignment.type.incompatible because 'b' is actually syntactic sugar for b.intValue().
         d = b.intValue(); // The de-sugared version does not issue an error.
     }
 
@@ -529,7 +530,7 @@ void boxingUnboxing() {
     }
 
     // TODO re-enable this error (contracts.precondition.not.satisfied.field)
-    a = b; // TODO: This assignment between two reference types should not require a lock to be held. See the explanation in LockVisitor.checkAccess for more information.
+    a = b; // TODO: This assignment between two reference types should not require a lock to be held.
 }*/
 
 

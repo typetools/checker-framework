@@ -1,7 +1,7 @@
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.dataflow.qual.Pure;
 
-class BlockedByteArrayInputStream {
+class FlowExpressions {
     class MyClass {
         public Object field;
     }
