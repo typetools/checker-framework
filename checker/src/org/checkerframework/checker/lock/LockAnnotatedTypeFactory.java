@@ -30,7 +30,6 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.TreeUtils;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -403,7 +402,7 @@ public class LockAnnotatedTypeFactory
      * Returns the index on the given GuardSatisfied annotation.
      * Assumes am is non-null and is a GuardSatisfied annotation.
      *
-     * @param atm AnnotationMirror for a GuardSatisfied annotation.
+     * @param am AnnotationMirror for a GuardSatisfied annotation.
      * @return The index on the GuardSatisfied annotation.
      */
     // package-private
