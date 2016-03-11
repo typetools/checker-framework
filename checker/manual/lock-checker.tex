@@ -228,7 +228,7 @@ method itself rather than to some particular type.
 
 \begin{description}
 
-\item[\refqualclass{dataflow/qual}{LockingFree}]
+\item[\refqualclass{checker/lock/qual}{LockingFree}]
   The method does not acquire or release locks,
   directly or indirectly.  The method is not \<synchronized>, it contains
   no \<synchronized> blocks, it contains no calls to \<lock> or \<unlock>
@@ -238,7 +238,7 @@ method itself rather than to some particular type.
   \code{@SideEffectFree} implies \code{@LockingFree}, if both are applicable
   then you only need to write \code{@SideEffectFree}.
 
-\item[\refqualclass{dataflow/qual}{ReleasesNoLocks}]
+\item[\refqualclass{checker/lock/qual}{ReleasesNoLocks}]
   The method maintains a strictly nondecreasing lock hold count on the
   current thread for any locks that were held prior
   to the method call.  The method might acquire locks but then release
@@ -251,7 +251,7 @@ method itself rather than to some particular type.
   \<@MayReleaseLocks>, \code{@SideEffectFree}, or \code{@Pure}
   annotation.
 
-\item[\refqualclass{dataflow/qual}{MayReleaseLocks}]
+\item[\refqualclass{checker/lock/qual}{MayReleaseLocks}]
   The method may release locks that were held prior to the method being called.
   You can write this when you are certain the method releases locks, or
   when you don't know whether the method releases locks.
