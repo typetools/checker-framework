@@ -5,19 +5,18 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 */
 
 import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByBottom;
 import org.checkerframework.checker.lock.qual.GuardedByUnknown;
-import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
+import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -44,11 +43,9 @@ import java.util.regex.Pattern;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.tree.ArrayAccessTree;
@@ -59,8 +56,8 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 
 /**
@@ -205,18 +202,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             Set<AnnotationMirror> annos = methodDefinitionReceiver.getAnnotations();
             for(AnnotationMirror anno : annos) {
                 if (AnnotationUtils.areSameByClass(anno, checkerGuardSatisfiedClass)) {
-
-                    boolean receiverIsThatOfEnclosingMethod = false;
-
                     MethodInvocationNode nodeNode = (MethodInvocationNode) atypeFactory.getNodeForTree(node);
-
                     Node receiverNode = nodeNode.getTarget().getReceiver();
-                    if (receiverNode instanceof ThisLiteralNode) {
-                        receiverIsThatOfEnclosingMethod = true;
-                    }
-
                     checkPreconditions(node, receiverNode,
-                            generatePreconditionsBasedOnGuards(methodCallReceiver, receiverIsThatOfEnclosingMethod));
+                            generatePreconditionsBasedOnGuards(methodCallReceiver));
 
                     return true;
                 }
@@ -241,33 +230,19 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return annotationSet;
     }
 
-    private Set<Pair<String, String>> generatePreconditionsBasedOnGuards(AnnotatedTypeMirror atm, boolean translateItselfToThis) {
-        return generatePreconditionsBasedOnGuards(atm.getAnnotations(), translateItselfToThis);
-    }
-
-    /***
-     * Given a set of AnnotationMirrors, returns the set of lock expression preconditions
-     * specified in all the @GuardedBy annotations in the set.
-     * Returns an empty set if no such expressions are found.
-     *
-     * @param amList the set of AnnotationMirrors containing the lock expression preconditions
-     * @param translateItselfToThis whether lock expressions matching the literal "itself" should be changed to the literal "this"
-     * @return a set of lock expression preconditions that can be processed by checkPreconditions
-     */
-    private Set<Pair<String, String>> generatePreconditionsBasedOnGuards(Set<AnnotationMirror> amList, boolean translateItselfToThis) {
+    private Set<Pair<String, String>> generatePreconditionsBasedOnGuards(AnnotatedTypeMirror atm) {
+        Set<AnnotationMirror> amList = atm.getAnnotations();
         Set<Pair<String, String>> preconditions = new LinkedHashSet<>();
 
         if (amList != null) {
             for (AnnotationMirror annotationMirror : amList) {
 
-                if (AnnotationUtils.areSameByClass( annotationMirror, checkerGuardedByClass)) {
+                if (AnnotationUtils.areSameByClass(annotationMirror, checkerGuardedByClass)) {
                     if (AnnotationUtils.hasElementValue(annotationMirror, "value")) {
                         List<String> guardedByValue = AnnotationUtils.getElementValueArray(annotationMirror, "value", String.class, false);
 
                         for (String lockExpression : guardedByValue) {
-                            if (translateItselfToThis && lockExpression.equals("itself")) {
-                                lockExpression = "this";
-                            }
+
                             preconditions.add(Pair.of(lockExpression, LockHeld.class.toString().substring(10 /* "interface " */)));
                         }
                     }
@@ -318,7 +293,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         if (varType.hasAnnotation(GuardSatisfied.class)) {
             if (valueType.hasAnnotation(GuardedBy.class)) {
                 checkPreconditions((ExpressionTree) valueTree,
-                        generatePreconditionsBasedOnGuards(valueType, false));
+                        generatePreconditionsBasedOnGuards(valueType));
 
                 return;
             } else if (valueType.hasAnnotation(GuardSatisfied.class)) {
@@ -361,10 +336,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     @Override
-    public Void visitMemberSelect(MemberSelectTree node, Void p) {
-        checkAccessOfExpression(node);
+    public Void visitMemberSelect(MemberSelectTree tree, Void p) {
+        if(atypeFactory.getNodeForTree(tree) instanceof  FieldAccessNode) {
+            Tree treeOfExpression = tree.getExpression();
+            Node nodeOfExpression = atypeFactory.getNodeForTree(treeOfExpression);
+            checkFieldOrArrayAccess(tree, treeOfExpression, nodeOfExpression);
+        }
 
-        return super.visitMemberSelect(node, p);
+        return super.visitMemberSelect(tree, p);
     }
 
     private void reportFailure(/*@CompilerMessageKey*/ String messageKey,
@@ -425,90 +404,27 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return super.checkOverride(overriderTree, enclosingType, overridden, overriddenType, p) && isValid;
     }
 
-    /***
-     * Check the access of the expression of an ArrayAccessTree or
-     * a MemberSelectTree, both of which happen to implement ExpressionTree.
-     * The 'Expression' in checkAccessOfExpression is not the same as that in
-     * 'Expression'Tree - the naming is a coincidence.
+
+
+    /**
+     * Checks that the field or array access is legal by checking that the locks
+     * in the access's expression are held.
      *
-     * @param tree the ExpressionTree of the expression to check the access for
+     * @param accessTree field or array access tree to check (may be an identifier tree of a field)
+     * @param treeToReportErrorAt Tree whose location is used to report the error
+     * @param exrpessionNode Node of the field or array access's expression
      */
-    protected void checkAccessOfExpression(ExpressionTree tree) {
-        Kind treeKind = tree.getKind();
-        assert(treeKind == Kind.ARRAY_ACCESS ||
-               treeKind == Kind.MEMBER_SELECT ||
-               treeKind == Kind.IDENTIFIER);
-
-        Node node = atypeFactory.getNodeForTree(tree);
-
-        if (node instanceof MethodAccessNode) {
-            return; // Method calls are not dereferences.
-        }
-
-        if (treeKind == Kind.MEMBER_SELECT) {
-            Element treeElement = TreeUtils.elementFromUse(tree);
-
-            if (treeElement != null && treeElement.getKind() == ElementKind.METHOD) {
-                return; // Method calls are not dereferences.
-            }
-        }
-
-        ExpressionTree expr = null;
-        AnnotatedTypeMirror atmOfReceiver = null;
-
-        switch(treeKind) {
-            case ARRAY_ACCESS:
-                expr = ((ArrayAccessTree) tree).getExpression();
-                atmOfReceiver = atypeFactory.getAnnotatedType(expr);
-                break;
-            case MEMBER_SELECT:
-                expr = ((MemberSelectTree) tree).getExpression();
-                atmOfReceiver = atypeFactory.getAnnotatedType(expr);
-                break;
-            default: // treeKind == Kind.IDENTIFIER
-                expr = tree;
-                atmOfReceiver = atypeFactory.getReceiverType(expr);
-                break;
-        }
-
-        if (expr != null && atmOfReceiver != null) {
+    private void checkFieldOrArrayAccess(ExpressionTree accessTree, Tree treeToReportErrorAt, Node exrpessionNode) {
+        AnnotatedTypeMirror atmOfReceiver = atypeFactory.getReceiverType(accessTree);
+        if (treeToReportErrorAt != null && atmOfReceiver != null) {
             AnnotationMirror gb = atmOfReceiver.getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN);
-            // IMPORTANT: The code that follows relies on getEffectiveAnnotationInHierarchy being sound in the sense that
-            // it never returns null if an effective annotation in the @GuardedByUnknown hierarchy was present.
-            // It is critical to the soundness of the Lock Checker that an effective primary @GuardedBy(...) annotation
-            // never go unnoticed when checking the access of an expression.
-            // However, gb is expected to be null if atmOfReceiver's underlying type is a package pseudo-type (e.g. java.lang.reflect),
-            // in which case there is no need to check the access of the expression since a package cannot be protected by a lock.
             if (gb == null) {
-                if (atmOfReceiver.getUnderlyingType().getKind() == TypeKind.PACKAGE) {
-                    return;
-                }
-
                 ErrorReporter.errorAbort("LockVisitor.checkAccessOfExpression: gb cannot be null");
             }
 
-            if (AnnotationUtils.areSameByClass( gb, checkerGuardedByClass)) {
-                // Is the receiver of the expression being accessed the same as the receiver of the enclosing method?
-                boolean receiverIsThatOfEnclosingMethod = false;
-
-                if (node instanceof FieldAccessNode) {
-                    Node receiverNode = ((FieldAccessNode) node).getReceiver();
-                    if (receiverNode instanceof ThisLiteralNode) {
-                        receiverIsThatOfEnclosingMethod = true;
-                    }
-                }
-
-                // It is critical that if receiverIsThatOfEnclosingMethod is true,
-                // generatePreconditionsBasedOnGuards translate the expression
-                // "itself" to "this". That's because right now we know that, since
-                // we are dealing with the receiver of the method, "itself" corresponds
-                // to "this". However once checkPreconditions is called, that
-                // knowledge is lost and it will regard "itself" as referring to
-                // the variable the precondition we are about to add is attached to.
-
-                checkPreconditions(expr,
-                    generatePreconditionsBasedOnGuards(atmOfReceiver,
-                            receiverIsThatOfEnclosingMethod /* See comment above. This corresponds to formal parameter translateItselfToThis. */));
+            if (AnnotationUtils.areSameByClass(gb, checkerGuardedByClass)) {
+                Set<Pair<String, String>> precondtions = generatePreconditionsBasedOnGuards(atmOfReceiver);
+                checkPreconditions(treeToReportErrorAt, exrpessionNode, precondtions);
             } else if (AnnotationUtils.areSameByClass(gb, checkerGuardSatisfiedClass)){
                 // Can always dereference if type is @GuardSatisfied
             } else {
@@ -517,17 +433,18 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 annotationName = annotationName.substring(annotationName.lastIndexOf('.') + 1 /* +1 to skip the last . as well */);
                 checker.report(Result.failure(
                         "cannot.dereference",
-                        tree.toString(),
-                        "annotation @" + annotationName), tree);
+                        accessTree.toString(),
+                        "annotation @" + annotationName), accessTree);
             }
         }
     }
 
     @Override
-    public Void visitArrayAccess(ArrayAccessTree node, Void p) {
-        checkAccessOfExpression(node);
-
-        return super.visitArrayAccess(node, p);
+    public Void visitArrayAccess(ArrayAccessTree tree, Void p) {
+        Tree treeOfExpression = tree.getExpression();
+        Node nodeOfExpression = atypeFactory.getNodeForTree(treeOfExpression);
+        checkFieldOrArrayAccess(tree, treeOfExpression, nodeOfExpression);
+        return super.visitArrayAccess(tree, p);
     }
 
     /**
@@ -780,11 +697,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     @Override
-    public Void visitIdentifier(IdentifierTree node, Void p) {
-
-        checkAccessOfExpression(node);
-
-        return super.visitIdentifier(node, p);
+    public Void visitIdentifier(IdentifierTree tree, Void p) {
+        Node node = atypeFactory.getNodeForTree(tree);
+        if (node instanceof FieldAccessNode) {
+            Node receiverNode = ((FieldAccessNode) node).getReceiver();
+            if (receiverNode instanceof ImplicitThisLiteralNode) {
+                // All other field access are handle via visitMemberSelect
+                checkFieldOrArrayAccess(tree, tree, receiverNode);            }
+        }
+        return super.visitIdentifier(tree, p);
     }
 
     /***
