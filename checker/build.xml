@@ -1297,8 +1297,26 @@
 
     </target>
 
-    <target name="jdk.jar" depends="jar"
+    <target name="jdk.jar" depends="jar, -jdk.is8, -jdk.8, -jdk.other"
             description="Create the instrumented jdkX.jar using the JDK specified by JAVA_HOME">
+    </target>
+
+    <target name="-jdk.is8">
+        <condition property="is8">
+            <equals arg1="${jdkName}" arg2="jdk8.jar" trim="true"/>
+        </condition>
+    </target>
+
+    <target name="-jdk.8" if="is8">
+      <property name="afu.jar" value="${annotation.tools}/annotation-file-utilities/annotation-file-utilities.jar"/>
+      <available property="afu.exist" file="${afu.jar}" />
+      <fail unless="afu.exist" message="Could not find annotation-file-utilities.jar: ${afu.jar}.  You must build Annotation Tools; see http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#build-source" />
+
+      <exec executable="bash" failonerror="true">
+         <arg value="jdk/build.sh"/>
+         <env key="LT_BIN" value="${LT_BIN}"/>
+      </exec>
+    </target>
 
       <property name="afu.jar" value="${annotation.tools}/annotation-file-utilities/annotation-file-utilities.jar"/>
       <available property="afu.exist" file="${afu.jar}" />
