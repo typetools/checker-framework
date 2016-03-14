@@ -111,7 +111,7 @@ Section~\ref{type-refinement-purity}.
 \subsubsection{Type inference for any type system\label{type-inference-tools-general}}
 
 By supplying the \<-AinferSignatures> command-line option,
-any type-checker can infer annotations. See Section~\ref{signature-inference}.
+any type-checker can infer annotations. See Section~\ref{whole-program-inference}.
 
 \href{https://github.com/reprogrammer/cascade/}{Cascade}~\cite{VakilianPEJ2014}
 is an Eclipse plugin that implements interactive type qualifier inference.
@@ -124,9 +124,9 @@ Framework.
 You can find installation instructions and a video tutorial at \url{https://github.com/reprogrammer/cascade}.
 
 
-\subsection{Signature inference\label{signature-inference}}
+\subsection{Whole-program inference\label{whole-program-inference}}
 
-Signature inference is an interprocedural inference that
+Whole-program inference is an interprocedural inference that
 infers types for fields, method parameters, and method return types that do not
 have a user-written annotation (for the given type system).
 The inferred types are inserted into
@@ -136,7 +136,7 @@ uses in the program.  For example, the inferred type for a field is the
 least upper bound of the types of all the expressions that are assigned
 into the field.
 
-To use signature inference,
+To use whole-program inference,
 set the \<\$CHECKERFRAMEWORK> variable to the Checker Framework's
 directory (if you haven't already), and make sure that
 \<insert-annotations-to-source>, from the Annotation File Utilities project,
@@ -176,55 +176,51 @@ code, so that you can see what changes it made and so that it does not
 change your only copy.  One way to do this is to work in a clone of your
 repository that has no uncommitted changes.
 
-Signature inference differs from type refinement (Section~\ref{type-refinement})
+Whole-program inference differs from type refinement (Section~\ref{type-refinement})
 in three ways.  First, type refinement only works within a method body.
 Second, type refinement always
 refines the current type, regardless of whether the value already has an
 annotation in the source code.
-Third, signature inference can infer a subtype
+Third, whole-program inference can infer a subtype
 or a supertype of the default type, by contrast with type refinement which
 always refines the current type to a subtype.
 
-% TODO: we need a better name than "signature inference".
-The name ``signature inference'' indicates that it infers types for method
-signatures.  It is not related to the Signature String Checker (see \chapterpageref{signature-checker}).
 
+\subsubsection{Whole-program inference ignores some code\label{whole-program-inference-ignores-some-code}}
 
-\subsubsection{Signature inference ignores some code\label{signature-inference-ignores-some-code}}
-
-Signature inference ignores code within the the scope of a
+Whole-program inference ignores code within the the scope of a
 \<@SuppressWarnings> annotation with an appropriate key
 (Section~\ref{suppresswarnings-annotation}).  In particular, uses within
 the scope do not contribute to the inferred type, and declarations within
 the scope are not changed.  You should remove \<@SuppressWarnings> annotations
 from the class declaration of any class you wish to infer types for.
 
-As noted below, signature inference requires invocations of your code, or
+As noted below, whole-program inference requires invocations of your code, or
 assignments to your methods, to generalize from.  If a field is set via
-reflection (such as via injection), then signature inference would produce
+reflection (such as via injection), then whole-program inference would produce
 an inaccurate result.  You probably have an annotation such as
 \javaeejavadocanno{javax/inject/Inject.html}{Inject}
 or
 \href{http://types.cs.washington.edu/plume-lib/api/plume/Option.html}{\<@Option>}
 that indicates such fields.  Meta-annotate the declaration of the \<Inject>
 or \<Option> annotation with
-\refqualclass{framework/qual}{IgnoreInSignatureInference} and signature
+\refqualclass{framework/qual}{IgnoreInWholeProgramInference} and whole-program
 inference will not produce any inference results for fields annotated with
 \<@Inject> or \<@Option>.
 
-Signature inference never refines a type to the bottom type of a type
+Whole-program inference never refines a type to the bottom type of a type
 hierarchy, because doing so usually indicates that there were not enough
 uses to yield a good inference result.
 
 
-\subsubsection{Manually checking signature inference results\label{signature-inference-manual-checking}}
+\subsubsection{Manually checking whole-program inference results\label{whole-program-inference-manual-checking}}
 
 As with any type inference tool, it is a good idea to manually examine the
 results.
 
 \begin{itemize}
 \item
-Signature inference can produce undesired results when your code has
+Whole-program inference can produce undesired results when your code has
 non-representative calls to a particular method or assignments to a
 particular field, as explained below.
 This is especially noticeable when the arguments or assignments are literals.
@@ -237,9 +233,9 @@ to the corresponding upper bounds of the type variable declaration.
 \end{itemize}
 
 
-\paragraph{Poor signature inference results due to non-representative uses}
+\paragraph{Poor whole-program inference results due to non-representative uses}
 
-Signature inference determines a method parameter's type
+Whole-program inference determines a method parameter's type
 annotation based on what arguments are passed to the method, but not on how the
 parameter is used within the method body.  If the program contains
 no errors, the tool's annotations are legal for the program as
@@ -263,7 +259,7 @@ to \<m2> passes \<null> as the argument.  Then the tool will infer that
 You can fix the inference problem by correcting the bug.
 
 
-\subsubsection{How signature inference works\label{how-signature-inference-works}}
+\subsubsection{How whole-program inference works\label{how-whole-program-inference-works}}
 
 This section explains how the \<infer-and-annotate.sh> script works.  If you
 merely want to run the script and you are not encountering trouble, you can
@@ -272,7 +268,7 @@ skip this section.
 If you
 supply to javac the command-line option \code{-AinferSignatures}, then the
 checker outputs \<.jaif> files with refined types for fields and method signatures.
-The output .jaif files are located in the folder \code{build/signature-inference},
+The output .jaif files are located in the folder \code{build/whole-program-inference},
 relative to where you executed the javac command.
 
 You can use the Annotation File Utilities
@@ -302,7 +298,7 @@ it makes type-checking fast.  However, it has some disadvantages:
 \begin{itemize}
 \item
   The first run of the type-checker cannot take advantage
-  of signature inference results because signature inference is only complete at the
+  of whole-program inference results because whole-program inference is only complete at the
   end of type-checking, and modular type-checking does not revisit any
   already-processed classes.
 \item

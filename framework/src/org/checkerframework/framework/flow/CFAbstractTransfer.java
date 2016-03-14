@@ -1,7 +1,7 @@
 package org.checkerframework.framework.flow;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.signatureinference.SignatureInferenceScenes;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -115,7 +115,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     protected final boolean sequentialSemantics;
 
     /**
-     * Indicates that the signature inference is on.
+     * Indicates that the whole-program inference is on.
      */
     private final boolean inferSignatures;
 
@@ -124,21 +124,21 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
         this.inferSignatures = analysis.checker.hasOption("inferSignatures");
         if (inferSignatures) {
-            checkInvalidOptionsInferSignature(
+            checkInvalidOptionsInferSignatures(
                     new String[]{"useDefaultsForUncheckedCode"});
         }
     }
         
     /**
-     * This method is called only when -AinferSignature is passed as an option.
+     * This method is called only when -AinferSignatures is passed as an option.
      * It checks if another option that should not occur simultaneously with
-     * the signature inference is also passed as argument, and
-     * aborts the process if that is the case. For example, the signature
+     * the whole-program inference is also passed as argument, and
+     * aborts the process if that is the case. For example, the whole-program
      * inference process was not designed to work with safe defaults.
      * @param invalidOptions an array containing all options that cannot occur
      * simultaneously with -AinferSignatures.
      */
-    private void checkInvalidOptionsInferSignature(String[] invalidOptions) {
+    private void checkInvalidOptionsInferSignatures(String[] invalidOptions) {
         for (String option : invalidOptions) {
             if (analysis.checker.hasOption(option)) {
                 ErrorReporter.errorAbort("The option -AinferSignatures cannot be" +
@@ -757,7 +757,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 !analysis.checker.shouldSuppressWarnings(
                         InternalUtils.symbol(lhs.getTree()), null)) {
             // Updates inferred field type
-            SignatureInferenceScenes.updateInferredFieldType(
+            WholeProgramInferenceScenes.updateInferredFieldType(
                     lhs, rhs, analysis.getContainingClass(n.getTree()),
                     analysis.getTypeFactory());
         }
@@ -776,7 +776,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
                     classTree);
             // Updates the inferred return type of the method
-            SignatureInferenceScenes.updateInferredMethodReturnType(
+            WholeProgramInferenceScenes.updateInferredMethodReturnType(
                     n, classSymbol,
                     analysis.getContainingMethod(n.getTree()),
                     analysis.getTypeFactory());
@@ -806,7 +806,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 !analysis.checker.shouldSuppressWarnings(
                         InternalUtils.symbol(lhs.getTree()), null)) {
             // Updates inferred field type
-            SignatureInferenceScenes.updateInferredFieldType(
+            WholeProgramInferenceScenes.updateInferredFieldType(
                     lhs, rhs, analysis.getContainingClass(n.getTree()),
                     analysis.getTypeFactory());
         }
@@ -869,7 +869,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 // happens when the method is called from a static context.
             }
             // Updates the inferred parameter type of the invoked method
-            SignatureInferenceScenes.updateInferredMethodParametersTypes(
+            WholeProgramInferenceScenes.updateInferredMethodParametersTypes(
                     n, receiverTree, method, analysis.getTypeFactory());
         }
 

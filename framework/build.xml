@@ -84,8 +84,8 @@
         <delete dir="${tests.build}" />
 
         <delete file="${framework.lib}"/>
-         <!-- Signature-inference generated tests -->
-        <delete dir="tests/signature-inference/annotated"/>
+         <!-- whole-program-inference generated tests -->
+        <delete dir="tests/whole-program-inference/annotated"/>
 
     </target>
 
@@ -316,7 +316,7 @@
     <target name="all-tests-nojtreg" depends="jar, all-tests-nojtreg-nobuild"
             description="Run tests, except jtreg tests"/>
 
-    <target name="all-tests-nojtreg-nobuild" depends="build-tests, signature-inference-tests"
+    <target name="all-tests-nojtreg-nobuild" depends="build-tests, whole-program-inference-tests"
             description="Run tests, except jtreg tests, WITHOUT building anything">
 
       <!-- Delete directory because we will rerun all tests -->
@@ -359,10 +359,10 @@
 
                   <!-- Tests that fail by design -->
                   <exclude name="**/SubtypingStringPatternsPartialTest.java"/>
-                  <!-- Signature inference tests depends on the
-                       signature-inference-tests target, so we added that target
+                  <!-- Whole-Program inference tests depends on the
+                       whole-program-inference-tests target, so we added that target
                        to the depends group and excluded it here.-->
-                  <exclude name="**/SignatureInference*.java"/>
+                  <exclude name="**/WholeProgramInference*.java"/>
 
               </fileset>
           </batchtest>
@@ -494,22 +494,22 @@
         </antcall>
     </target>
 
-    <target name="signature-inference-tests" depends="jar,build-tests"
-            description="Run tests for signature inference using .jaif files">
-        <delete dir="build/signature-inference"/>
-        <!--Runs the checker on test files with the signature inference on
+    <target name="whole-program-inference-tests" depends="jar,build-tests"
+            description="Run tests for whole-program inference using .jaif files">
+        <delete dir="build/whole-program-inference"/>
+        <!--Runs the checker on test files with the whole-program inference on
              to generate .jaif files.-->
         <antcall target="-run-tests">
-            <param name="param" value="tests.SignatureInferenceTest"/>
+            <param name="param" value="tests.WholeProgramInferenceTest"/>
         </antcall>
 
-        <delete dir="tests/signature-inference/annotated"/>
+        <delete dir="tests/whole-program-inference/annotated"/>
 
         <!-- Copying all test files to another directory, removing all
              expected errors that should not occur after inserting inferred
              annotations from .jaif files. -->
-        <copy todir="tests/signature-inference/annotated">
-            <fileset dir="tests/signature-inference/non-annotated"/>
+        <copy todir="tests/whole-program-inference/annotated">
+            <fileset dir="tests/whole-program-inference/non-annotated"/>
             <filterchain>
                 <linecontains negate="true">
                     <contains value="//:: error:"/>
@@ -519,21 +519,21 @@
 
         <!-- The only file for which expected errors are maintained is
              ExpectedErrors.java, so we copy it over. -->
-        <delete file="tests/signature-inference/annotated/ExpectedErrors.java"/>
-        <copy file="tests/signature-inference/non-annotated/ExpectedErrors.java"
-            todir="tests/signature-inference/annotated"/>
+        <delete file="tests/whole-program-inference/annotated/ExpectedErrors.java"/>
+        <copy file="tests/whole-program-inference/non-annotated/ExpectedErrors.java"
+            todir="tests/whole-program-inference/annotated"/>
 
         <!-- Inserting annotations from .jaif files in-place. -->
         <apply executable="${annotation.tools}/annotation-file-utilities/scripts/insert-annotations-to-source" parallel="true">
             <srcfile/>
-            <fileset dir="build/signature-inference/" includes="*.jaif"/>
-            <fileset dir="tests/signature-inference/annotated/" includes="*.java"/>
-            <arg value="--outdir=tests/signature-inference/annotated/"/>
+            <fileset dir="build/whole-program-inference/" includes="*.jaif"/>
+            <fileset dir="tests/whole-program-inference/annotated/" includes="*.java"/>
+            <arg value="--outdir=tests/whole-program-inference/annotated/"/>
         </apply>
 
         <!-- Running the checker again on the final .java files. -->
         <antcall target="-run-tests">
-            <param name="param" value="tests.SignatureInferenceValidationTest"/>
+            <param name="param" value="tests.WholeProgramInferenceValidationTest"/>
         </antcall>
 
     </target>

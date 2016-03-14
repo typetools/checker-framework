@@ -355,7 +355,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return the QualifierDefaults object
      */
     // TODO: When changing this method, also look into
-    // {@link org.checkerframework.common.signatureinference.SignatureInferenceScenes#shouldIgnore}.
+    // {@link org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes#shouldIgnore}.
     // Both methods should have some functionality merged into a single location.
     protected final QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defs = new QualifierDefaults(elements, this);
