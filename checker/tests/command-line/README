@@ -1,0 +1,3 @@
+This directory contains tests that do not fit into our standard testing
+framework and must be run from the command line rather than by extending
+CheckerFrameworkTest.
