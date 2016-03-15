@@ -16,7 +16,7 @@ public class NullnessRawTypesNoCachingTest extends CheckerFrameworkTest {
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
                 "-Anomsgtext",
-              "-AatfDoNotCache" ,"-AatfDoNotReadCache");
+              "-AatfDoNotCache");
     }
 
     @Parameters
