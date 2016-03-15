@@ -58,7 +58,6 @@ import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
 
 /**
  * The LockVisitor enforces the special type-checking rules described in the Lock Checker manual chapter.
@@ -91,16 +90,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // A user may not annotate a primitive type, a boxed primitive type or a String
         // with any qualifier from the @GuardedBy hierarchy.
 
-        // TODO: Note that there is currently no way to reliably retrieve user-written
-        // qualifiers (i.e. there is no way to know whether the qualifier was defaulted by
-        // the Checker Framework) without using the node.toString() hack below.
-
-        TypeMirror nodeType = atypeFactory.getAnnotatedType(node).getUnderlyingType();
-        if ((TypesUtils.isBoxedPrimitive(nodeType) ||
-             TypesUtils.isPrimitive(nodeType) ||
-             TypesUtils.isString(nodeType)) &&
-            (node.toString().contains("GuardSatisfied") ||
-             node.toString().contains("GuardedBy"))){ // HACK!!! TODO: Fix once there is a way to reliably retrieve user-written qualifiers.
+        AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(node);
+        TypeMirror tm = atm.getUnderlyingType();
+        if ((TypesUtils.isBoxedPrimitive(tm) ||
+             TypesUtils.isPrimitive(tm) ||
+             TypesUtils.isString(tm)) &&
+            (atm.hasExplicitAnnotationRelaxed(GUARDSATISFIED) ||
+             atm.hasExplicitAnnotationRelaxed(GUARDEDBY) ||
+             atm.hasExplicitAnnotation(GUARDEDBYUNKNOWN) ||
+             atm.hasExplicitAnnotation(GUARDEDBYBOTTOM))){
             checker.report(Result.failure("primitive.type.guardedby"), node);
         }
         return super.visitVariable(node, p);
@@ -202,8 +200,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             Set<AnnotationMirror> annos = methodDefinitionReceiver.getAnnotations();
             for(AnnotationMirror anno : annos) {
                 if (AnnotationUtils.areSameByClass(anno, checkerGuardSatisfiedClass)) {
-                    MethodInvocationNode nodeNode = (MethodInvocationNode) atypeFactory.getNodeForTree(node);
-                    Node receiverNode = nodeNode.getTarget().getReceiver();
+                    MethodInvocationNode methodInvocationNode = (MethodInvocationNode) atypeFactory.getNodeForTree(node);
+                    Node receiverNode = methodInvocationNode.getTarget().getReceiver();
                     checkPreconditions(node, receiverNode,
                             generatePreconditionsBasedOnGuards(methodCallReceiver));
 
@@ -222,14 +220,21 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         for (AnnotationMirror anno : tops) {
             if (anno.equals(GUARDEDBYUNKNOWN)) {
                 annotationSet.add(GUARDEDBY);
-            }
-            else {
+            } else {
                 annotationSet.add(anno);
             }
         }
         return annotationSet;
     }
 
+    /***
+     * Given an AnnotatedTypeMirror containing a @GuardedBy annotation, returns the set of lock expression preconditions
+     * specified in the @GuardedBy annotation.
+     * Returns an empty set if no such expressions are found.
+     *
+     * @param atm the AnnotatedTypeMirror containing the @GuardedBy annotation with the lock expression preconditions.
+     * @return a set of lock expression preconditions that can be processed by checkPreconditions.
+     */
     private Set<Pair<String, String>> generatePreconditionsBasedOnGuards(AnnotatedTypeMirror atm) {
         Set<AnnotationMirror> amList = atm.getAnnotations();
         Set<Pair<String, String>> preconditions = new LinkedHashSet<>();
@@ -330,6 +335,22 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     return;
                 }
             }
+        } else if (errorKey.equals("compound.assignment.type.incompatible") &&
+            TypesUtils.isString(varType.getUnderlyingType()) &&
+            valueType.hasAnnotation(GuardSatisfied.class)) {
+            // TODO: Find a cleaner, non-abstraction-breaking way to know whether a string compound assignment is being visited,
+            // i.e. one that does not check the value of errorKey.
+
+            // This covers the case when the RHS in the string compound assignment
+            // has type @GuardSatisfied(...) (the LHS has type @GuardedBy({}) since it is a String).
+            // Such a string compound assignment is always legal.
+            // This is the case when a @GS parameter is not de-sugared, e.g.:
+            //     void StringCompoundAssignment(@GuardSatisfied MyClass param) {
+            //         String s = "a";
+            //         s += param;
+            //     }
+
+            return;
         }
 
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, isLocalVariableAssignment);
@@ -337,7 +358,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     public Void visitMemberSelect(MemberSelectTree tree, Void p) {
-        if(atypeFactory.getNodeForTree(tree) instanceof  FieldAccessNode) {
+        if (atypeFactory.getNodeForTree(tree) instanceof FieldAccessNode) {
             Tree treeOfExpression = tree.getExpression();
             Node nodeOfExpression = atypeFactory.getNodeForTree(treeOfExpression);
             checkFieldOrArrayAccess(tree, treeOfExpression, nodeOfExpression);
@@ -371,8 +392,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             checker.report(Result.failure(messageKey,
                     overriderMeth, overriderTyp,
                     overriddenMeth, overriddenTyp), overriderTree);
-        }
-        else {
+        } else {
             checker.report(Result.failure(messageKey,
                     overriderMeth, overriderTyp,
                     overriddenMeth, overriddenTyp,
@@ -412,19 +432,19 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      *
      * @param accessTree field or array access tree to check (may be an identifier tree of a field)
      * @param treeToReportErrorAt Tree whose location is used to report the error
-     * @param exrpessionNode Node of the field or array access's expression
+     * @param expressionNode Node of the field or array access's expression
      */
-    private void checkFieldOrArrayAccess(ExpressionTree accessTree, Tree treeToReportErrorAt, Node exrpessionNode) {
+    private void checkFieldOrArrayAccess(ExpressionTree accessTree, Tree treeToReportErrorAt, Node expressionNode) {
         AnnotatedTypeMirror atmOfReceiver = atypeFactory.getReceiverType(accessTree);
         if (treeToReportErrorAt != null && atmOfReceiver != null) {
             AnnotationMirror gb = atmOfReceiver.getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN);
             if (gb == null) {
-                ErrorReporter.errorAbort("LockVisitor.checkAccessOfExpression: gb cannot be null");
+                ErrorReporter.errorAbort("LockVisitor.checkFieldOrArrayAccess: gb cannot be null");
             }
 
             if (AnnotationUtils.areSameByClass(gb, checkerGuardedByClass)) {
-                Set<Pair<String, String>> precondtions = generatePreconditionsBasedOnGuards(atmOfReceiver);
-                checkPreconditions(treeToReportErrorAt, exrpessionNode, precondtions);
+                Set<Pair<String, String>> preconditions = generatePreconditionsBasedOnGuards(atmOfReceiver);
+                checkPreconditions(treeToReportErrorAt, expressionNode, preconditions);
             } else if (AnnotationUtils.areSameByClass(gb, checkerGuardSatisfiedClass)){
                 // Can always dereference if type is @GuardSatisfied
             } else {
@@ -445,63 +465,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         Node nodeOfExpression = atypeFactory.getNodeForTree(treeOfExpression);
         checkFieldOrArrayAccess(tree, treeOfExpression, nodeOfExpression);
         return super.visitArrayAccess(tree, p);
-    }
-
-    /**
-     * Whether to skip a contract check based on whether the @GuardedBy
-     * expression {@code expr} is valid for the node {@code node}
-     * under the context {@code flowExprContext}
-     * if the current path is within the expression
-     * of a synchronized block (e.g. bar in
-     * synchronized(bar) { ... }
-     *
-     *  @param node The node that is @GuardedBy.
-     *  @param expr The expression of the @GuardedBy annotation.
-     *  @param flowExprContext The current context.
-     *
-     *  @return Whether to skip the contract check.
-     */
-    @Override
-    protected boolean skipContractCheck(Node node, FlowExpressions.Receiver expr, FlowExpressionContext flowExprContext) {
-        String fieldName = null;
-
-        try {
-
-            if (node instanceof FieldAccessNode) {
-
-                fieldName = ((FieldAccessNode) node).getFieldName();
-
-                if (fieldName != null) {
-                    FlowExpressions.Receiver fieldExpr = FlowExpressionParseUtil.parse(fieldName,
-                            flowExprContext, getCurrentPath());
-
-                    if (fieldExpr.equals(expr)) {
-                        // Avoid issuing warnings when accessing the field that is guarding the receiver.
-                        // e.g. avoid issuing a warning when accessing bar below:
-                        // void foo(@GuardedBy("bar") myClass this) { synchronized(bar) { ... }}
-
-                        // Cover only the most common case: synchronized(variableName).
-                        // If the expression in the synchronized statement is more complex,
-                        // we do want a warning to be issued so the user can take a closer look
-                        // and see if the variable is safe to be used this way.
-
-                        TreePath path = getCurrentPath().getParentPath();
-
-                        if (path != null) {
-                            path = path.getParentPath();
-
-                            if (path != null && path.getLeaf().getKind() == Tree.Kind.SYNCHRONIZED) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (FlowExpressionParseException e) {
-            checker.report(e.getResult(), node.getTree());
-        }
-
-        return false;
     }
 
     @Override
@@ -703,7 +666,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             Node receiverNode = ((FieldAccessNode) node).getReceiver();
             if (receiverNode instanceof ImplicitThisLiteralNode) {
                 // All other field access are handle via visitMemberSelect
-                checkFieldOrArrayAccess(tree, tree, receiverNode);            }
+                checkFieldOrArrayAccess(tree, tree, receiverNode);
+            }
         }
         return super.visitIdentifier(tree, p);
     }

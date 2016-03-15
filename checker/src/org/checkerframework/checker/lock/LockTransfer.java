@@ -33,7 +33,6 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.SynchronizedNode;
 
 /*
@@ -163,16 +162,13 @@ public class LockTransfer extends
 
                 if (methodElement.getModifiers().contains(Modifier.STATIC)) {
                     store.insertValue(new FlowExpressions.ClassName(classType), LOCKHELD);
-                }
-                else {
+                } else {
                     store.insertThisValue(LOCKHELD, classType);
                 }
-            }
-            else if (methodElement.getKind() == ElementKind.CONSTRUCTOR) {
+            } else if (methodElement.getKind() == ElementKind.CONSTRUCTOR) {
                 store.setInConstructorOrInitializer();
             }
-        }
-        else if (astKind == Kind.ARBITRARY_CODE) { // Handle initializers
+        } else if (astKind == Kind.ARBITRARY_CODE) { // Handle initializers
             store.setInConstructorOrInitializer();
         }
 
@@ -189,31 +185,8 @@ public class LockTransfer extends
         // Handle the entering and leaving of the synchronized block
         if (n.getIsStartOfBlock()) {
             makeLockHeld(result, n.getExpression());
-        }
-        else {
+        } else {
             makeLockPossiblyHeld(result, n.getExpression());
-        }
-
-        return result;
-    }
-
-    @Override
-    public TransferResult<CFValue, LockStore> visitStringConcatenate(
-            StringConcatenateNode n, TransferInput<CFValue, LockStore> p) {
-        TransferResult<CFValue, LockStore> result = super.visitStringConcatenate(n, p);
-
-        // Strings are always @GuardedBy({})
-
-        if (result.getResultValue().getType().hasAnnotation(GUARDEDBYUNKNOWN)) {
-            // This covers the case when one operand in the string concatenation
-            // has type @GuardSatisfied(...) and another has type @GuardedBy({})
-            // (the LUB of @GS and @GB({}) is @GuardedByUnknown). This is the case
-            // when a @GS parameter is not de-sugared, e.g.:
-            //     void StringConcat(@GuardSatisfied MyClass param) {
-            //         String s = "a" + param;
-            //     }
-
-            result.getResultValue().getType().replaceAnnotation(GUARDEDBY);
         }
 
         return result;

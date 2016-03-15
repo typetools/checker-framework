@@ -953,21 +953,29 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Checks all the preconditions of the method invocation {@code tree} with
      * element {@code invokedMethodElement}.
+     *
+     * @param methodInvocationTree the MethodInvocationTree to check preconditions for.
+     * @param invokedMethodElement the ExecutableElement to retrieve the method preconditions from.
      */
-    protected void checkMethodInvocationPreconditions(Tree tree,
+    protected void checkMethodInvocationPreconditions(MethodInvocationTree methodInvocationTree,
             ExecutableElement invokedMethodElement) {
         if (invokedMethodElement == null) {
             return;
         }
 
-        checkPreconditions(tree, contractsUtils.getPreconditions(invokedMethodElement));
+        checkPreconditions(methodInvocationTree, contractsUtils.getPreconditions(invokedMethodElement));
     }
     
     /**
      * Checks that all the given {@code preconditions} hold true immediately prior to
      * the method invocation or variable access at {@code tree}.
+     *
+     * @param tree the Tree immediately prior to which the preconditions must hold true.
+     * @param preconditions the preconditions to be checked.
      */
     protected void checkPreconditions(Tree tree, Set<Pair<String, String>> preconditions) {
+        // This check is needed for the GUI effects and Units Checkers tests to pass.
+        // TODO: Remove this check and investigate the root cause.
         if (preconditions.isEmpty()) {
             return;
         }
@@ -979,8 +987,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Checks that all the given {@code preconditions} hold true immediately prior to
      * the method invocation or variable access at {@code node}.  Errors are reported
      * with respect to {@code tree}, which does not need to correspond to {@code node}.
+     *
+     * @param treeForErrorReporting the Tree used to report the error via checker.report.
+     * @param node the Node immediately prior to which the preconditions must hold true.
+     * @param preconditions the preconditions to be checked.
      */
-    protected void checkPreconditions(Tree tree /* IMPORTANT: use for error reporting only*/,
+    protected void checkPreconditions(Tree treeForErrorReporting,
             Node node, Set<Pair<String, String>> preconditions) {
         if (preconditions.isEmpty()) {
             return;
@@ -1013,16 +1025,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 if (value != null) {
                     inferredAnno = value.getType().getAnnotationInHierarchy(anno);
                 }
-                
-                if (!skipContractCheck(node, expr, flowExprContext) &&
-                    !checkContract(expr, anno, inferredAnno, store)) {
 
+                if (!checkContract(expr, anno, inferredAnno, store)) {
                     checker.report(Result.failure(
-                            tree.getKind() == Tree.Kind.METHOD_INVOCATION
+                            treeForErrorReporting.getKind() == Tree.Kind.METHOD_INVOCATION
                                 ? "contracts.precondition.not.satisfied"
                                 : "contracts.precondition.not.satisfied.field",
-                            tree.toString(),
-                            expr == null ? expression : expr.toString()), tree);
+                            treeForErrorReporting.toString(),
+                            expr == null ? expression : expr.toString()), treeForErrorReporting);
                 }
             } catch (FlowExpressionParseException e) {
                 // errors are reported at declaration site
@@ -1088,6 +1098,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * {@code node} refers to the method invocation or variable access being analyzed.
      * It can be used by an overriding method for special handling of expressions
      * such as "itself" which may indicate a reference to {@code node}.
+     *
+     * @param expression the flow expression string to be parsed.
+     * @param flowExprContext the flow expression context with respect to which the expression string is to be evaluated.
+     * @param node the Node immediately prior to which the preconditions checked by the calling method must hold true.
+     * Used by overriding implementations. 
      */
     protected FlowExpressions.Receiver parseExpressionString(String expression,
             FlowExpressionContext flowExprContext, Node node) throws FlowExpressionParseException {
@@ -1100,25 +1115,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         return FlowExpressionParseUtil.parse(expression, flowExprContext, getCurrentPath());
-    }
-
-    /**
-     * Whether to skip a contract check based on whether the condition with
-     * given expression {@code expr} is valid for the
-     * node {@code node} under the context {@code flowExprContext}.
-     *
-     *  @param node The node that is being analyzed.
-     *  @param expr The expression condition to consider.
-     *  @param flowExprContext The current context.
-     *
-     *  @return Whether to skip the contract check.
-     */
-    protected boolean skipContractCheck(Node node, FlowExpressions.Receiver expr, FlowExpressionContext flowExprContext) {
-        // Do not add code here. Overridden versions of this method
-        // will always have a weaker condition than simply 'return false',
-        // so calling super.skipContractCheck is not useful.
-
-        return false;
     }
 
     /**

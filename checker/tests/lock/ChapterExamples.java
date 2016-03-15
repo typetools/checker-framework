@@ -183,6 +183,11 @@ void testDereferenceOfReceiverAndParameter(@GuardedBy("lock") ChapterExamples th
   m.field = new Object();
   //:: error: (contracts.precondition.not.satisfied.field)
   m.field.toString();
+  // The following error is due to the fact that you cannot access "this.lock" without first having acquired "lock".
+  // The right fix in a user scenario would be to not guard "this" with "this.lock". The current object could instead
+  // be guarded by "itself" or by some other lock expression that is not one of its fields. We are keeping this test
+  // case here to make sure this scenario issues a warning.
+  //:: error: (contracts.precondition.not.satisfied.field)
   synchronized(lock) {
     myField = new MyClass();
     myField.toString();
@@ -631,6 +636,12 @@ void innerClassTest() {
   // string literal "a") and @GuardSatisfied (the type of param))
   void StringConcat(/*@GuardSatisfied*/ MyClass param) {
       String s = "a" + param;
+
+      String s2 = "a";
+      s2 += param;
+
+      String s3 = "a";
+      String s4 = s3 += param; // Tests that the result of a string concatenation has type @GuardedBy({}).
   }
 
   public void assignmentOfGSWithNoIndex(@GuardSatisfied Object a, @GuardSatisfied Object b) {

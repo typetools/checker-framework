@@ -176,15 +176,13 @@ public class LockAnnotatedTypeFactory
 
             if (lhsIsGuardedBy) {
                 lhs = GUARDEDBY;
-            }
-            else if (lhsIsGuardSatisfied) {
+            } else if (lhsIsGuardSatisfied) {
                 lhs = GUARDSATISFIED;
             }
 
             if (rhsIsGuardedBy) {
                 rhs = GUARDEDBY;
-            }
-            else if (rhsIsGuardSatisfied) {
+            } else if (rhsIsGuardSatisfied) {
                 rhs = GUARDSATISFIED;
             }
 

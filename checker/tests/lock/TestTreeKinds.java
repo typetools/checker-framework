@@ -617,6 +617,20 @@ public void testMethodAnnotations() {
       //:: error: (primitive.type.guardedby) :: error: (assignment.type.incompatible)
       @GuardedByBottom int g = 0;
   }
+  
+  void testBinaryOperatorBooleanResultIsAlwaysGuardedByNothing() {
+      @GuardedBy("lock") Object o1 = new Object();
+      Object o2 = new Object();
+      // boolean variables are implicitly @GuardedBy({}).
+      boolean b1 = o1 == o2;
+      boolean b2 = o2 == o1;
+      boolean b3 = o1 != o2;
+      boolean b4 = o2 != o1;
+      boolean b5 = o1 instanceof Object;
+      boolean b6 = o2 instanceof Object;
+      boolean b7 = o1 instanceof @GuardedBy("lock") Object;
+      boolean b8 = o2 instanceof @GuardedBy("lock") Object;
+  }
 
   // TODO: Once @TargetLocations are enforced, @GuardSatisfied on all three of these locations should issue warnings:
   @GuardSatisfied Object field;
