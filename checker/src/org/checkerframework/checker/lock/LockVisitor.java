@@ -28,6 +28,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -49,6 +50,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -710,5 +712,25 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         return super.parseExpressionString(expression, flowExprContext, node);
+    }
+
+    /***
+     * Disallows annotations from the @GuardedBy hierarchy on class declarations (other than @GuardedBy({}).
+     */
+    @Override
+    public Void visitClass(ClassTree node, Void p) {
+        List<AnnotationMirror> annos = InternalUtils.annotationsFromTypeAnnotationTrees(node.getModifiers().getAnnotations());
+
+        for(AnnotationMirror anno : annos) {
+            if (!AnnotationUtils.areSame(anno, GUARDEDBY) &&
+                (AnnotationUtils.areSameIgnoringValues(anno, GUARDEDBYUNKNOWN) ||
+                 AnnotationUtils.areSameIgnoringValues(anno, GUARDEDBY) ||
+                 AnnotationUtils.areSameIgnoringValues(anno, GUARDSATISFIED) ||
+                 AnnotationUtils.areSameIgnoringValues(anno, GUARDEDBYBOTTOM))) {
+                checker.report(Result.failure("class.declaration.guardedby.annotation.invalid"), node);
+            }
+        }
+
+        return super.visitClass(node, p);
     }
 }

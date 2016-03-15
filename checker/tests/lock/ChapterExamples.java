@@ -771,4 +771,14 @@ void innerClassTest() {
       }
   }
 
+  //:: error: (class.declaration.guardedby.annotation.invalid)
+  @GuardedByUnknown class MyClass2 {}
+  //:: error: (class.declaration.guardedby.annotation.invalid)
+  @GuardedBy("lock") class MyClass3 {}
+  @GuardedBy({}) class MyClass4 {}
+  //:: error: (class.declaration.guardedby.annotation.invalid)
+  @GuardSatisfied class MyClass5 {}
+  //:: error: (class.declaration.guardedby.annotation.invalid)
+  @GuardedByBottom class MyClass6 {}
+
 }
