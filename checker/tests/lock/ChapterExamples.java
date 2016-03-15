@@ -71,9 +71,11 @@ class ChapterExamples {
     }
 
     //  The following code type checks (as expected):
-    void bar2(@LockHeld Object heldlock1, boolean b) {
-        @LockPossiblyHeld Object heldlock2 = method1(heldlock1, b);
-        @LockPossiblyHeld Object heldlock3 = method2(heldlock1, b);
+    void bar2(@GuardedByBottom Object bottomParam, boolean b) {
+        @GuardedByUnknown Object refinedToBottom1 = method1(bottomParam, b);
+        @GuardedByUnknown Object refinedToBottom2 = method2(bottomParam, b);
+        @GuardedByBottom Object bottom1 = method1(bottomParam, b);
+        @GuardedByBottom Object bottom2 = method2(bottomParam, b);
     }
 
    //MyClass2<@NonNull Object> m;

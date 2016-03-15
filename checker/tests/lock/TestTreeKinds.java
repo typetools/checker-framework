@@ -490,32 +490,22 @@ public void testMethodAnnotations() {
 
   if (r.nextBoolean()) {
     lockTheLock();
-    // Yes, lock reassignments are bad, but for the purposes of this
-    // experiment they are useful.
-    @LockHeld ReentrantLock heldLock = lock;
     foo.field.toString();
 
     unlockTheLock();
 
-    //:: error: (assignment.type.incompatible)
-    @LockHeld ReentrantLock heldLock2 = lock;
     //:: error: (contracts.precondition.not.satisfied.field)
     foo.field.toString();
   }
   else {
-    //:: error: (assignment.type.incompatible)
-    @LockHeld ReentrantLock heldLock = lock;
     //:: error: (contracts.precondition.not.satisfied.field)
     foo.field.toString();
   }
 
   if (tryToLockTheLock()) {
-    @LockHeld ReentrantLock heldLock = lock;
     foo.field.toString();
   }
   else {
-    //:: error: (assignment.type.incompatible)
-    @LockHeld ReentrantLock heldLock = lock;
     //:: error: (contracts.precondition.not.satisfied.field)
     foo.field.toString();
   }
@@ -529,14 +519,11 @@ public void testMethodAnnotations() {
   if (r.nextBoolean()) {
     lockTheLock();
     sideEffectFreeMethod();
-    @LockHeld ReentrantLock heldLock = lock;
     foo.field.toString();
   }
   else {
     lockTheLock();
     nonSideEffectFreeMethod();
-    //:: error: (assignment.type.incompatible)
-    @LockHeld ReentrantLock heldLock = lock;
     //:: error: (contracts.precondition.not.satisfied.field)
     foo.field.toString();
   }
@@ -550,14 +537,11 @@ public void testMethodAnnotations() {
   if (r.nextBoolean()) {
     lockTheLock();
     lockingFreeMethod();
-    @LockHeld ReentrantLock heldLock = lock;
     foo.field.toString();
   }
   else {
     lockTheLock();
     nonSideEffectFreeMethod();
-    //:: error: (assignment.type.incompatible)
-    @LockHeld ReentrantLock heldLock = lock;
     //:: error: (contracts.precondition.not.satisfied.field)
     foo.field.toString();
   }
@@ -617,7 +601,7 @@ public void testMethodAnnotations() {
       //:: error: (primitive.type.guardedby) :: error: (assignment.type.incompatible)
       @GuardedByBottom int g = 0;
   }
-  
+
   void testBinaryOperatorBooleanResultIsAlwaysGuardedByNothing() {
       @GuardedBy("lock") Object o1 = new Object();
       Object o2 = new Object();

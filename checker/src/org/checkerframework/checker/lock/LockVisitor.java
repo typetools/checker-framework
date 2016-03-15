@@ -467,13 +467,21 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return super.visitArrayAccess(tree, p);
     }
 
+    /***
+     * Skips the call to super and returns true.
+     */
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType, Tree tree) {
-        declarationType.replaceAnnotation(GUARDEDBY);
-        useType.replaceAnnotation(GUARDEDBY);
 
-        return super.isValidUse(declarationType, useType, tree);
+        // @GuardedBy({}) is the default type on class declarations, which is a subtype of the top annotation @GuardedByUnknown.
+        // However, it is valid to declare an instance of a class with any annotation from the @GuardedBy hierarchy.
+        // Hence, this method returns true for annotations in the @GuardedBy hierarchy.
+
+        // Also returns true for annotations in the @LockPossiblyHeld hierarchy since the default for that hierarchy is the top type and
+        // annotations from that hierarchy cannot be explicitly written in code.
+
+        return true;
     }
 
     /***
