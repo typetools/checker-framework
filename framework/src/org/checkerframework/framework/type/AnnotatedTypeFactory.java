@@ -11,7 +11,7 @@ import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.common.reflection.ReflectionResolver;
-import org.checkerframework.common.signatureinference.SignatureInferenceScenes;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.FromByteCode;
 import org.checkerframework.framework.qual.FromStubFile;
@@ -915,7 +915,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // Write scenes into .jaif files. In order to perform the write
             // operation only once for each .jaif file, the best location to
             // do so is here.
-            SignatureInferenceScenes.writeScenesToJaif();
+            WholeProgramInferenceScenes.writeScenesToJaif();
         }
 
     }

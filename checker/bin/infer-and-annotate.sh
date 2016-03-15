@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# This script runs the Checker Framework's signature inference
+# This script runs the Checker Framework's whole-program inference
 # iteratively on a program, adding type annotations to the program, until the
 # .jaif files from one iteration are the same as the .jaif files from the
 # previous iteration (which means there is nothing new to infer anymore).
@@ -36,14 +36,14 @@ set -e
 
 # Path to directory that will contain .jaif files after running the CF
 # with -AinferSignatures
-SIGNATURE_INFERENCE_DIR=build/signature-inference
+WHOLE_PROGRAM_INFERENCE_DIR=build/whole-program-inference
 
 # Path that will contain .class files after running CF's javac. This dir will
 # be deleted after executing this script.
-TEMP_DIR=build/temp-signature-inference-output
+TEMP_DIR=build/temp-whole-program-inference-output
 
 # Path to directory that will contain .jaif files from the previous iteration.
-PREV_ITERATION_DIR=build/prev-signature-inference
+PREV_ITERATION_DIR=build/prev-whole-program-inference
 
 # Path to annotation-file-utilities.jar
 AFU_JAR="${CHECKERFRAMEWORK}/../annotation-tools/annotation-file-utilities/annotation-file-utilities.jar"
@@ -89,22 +89,22 @@ read_input() {
 infer_and_annotate() {
     mkdir -p $TEMP_DIR
     DIFF_JAIF=firstdiff
-    # Create/clean signature-inference directory.
-    rm -rf $SIGNATURE_INFERENCE_DIR
-    mkdir -p $SIGNATURE_INFERENCE_DIR
+    # Create/clean whole-program-inference directory.
+    rm -rf $WHOLE_PROGRAM_INFERENCE_DIR
+    mkdir -p $WHOLE_PROGRAM_INFERENCE_DIR
     # If there are .jaif files as input, copy them.
     for file in $jaif_files;
     do
-        cp $file $SIGNATURE_INFERENCE_DIR/
+        cp $file $WHOLE_PROGRAM_INFERENCE_DIR/
     done
 
     # Perform inference and add annotations from .jaif to .java files until
-    # $PREV_ITERATION_DIR has the same contents as $SIGNATURE_INFERENCE_DIR.
+    # $PREV_ITERATION_DIR has the same contents as $WHOLE_PROGRAM_INFERENCE_DIR.
     while [ "$DIFF_JAIF" != "" ]
     do
         # Updates $PREV_ITERATION_DIR folder
         rm -rf $PREV_ITERATION_DIR
-        mv $SIGNATURE_INFERENCE_DIR $PREV_ITERATION_DIR
+        mv $WHOLE_PROGRAM_INFERENCE_DIR $PREV_ITERATION_DIR
 
         # Runs CF's javac
         command="${CHECKERFRAMEWORK}/checker/bin/javac -d $TEMP_DIR/ -cp $cp -processor $processor -AinferSignatures -Awarns -Xmaxwarns 10000 $extra_args $java_files"
@@ -122,23 +122,23 @@ infer_and_annotate() {
         do
             rm -f "${file}.unannotated"
         done
-        if [ ! `find $SIGNATURE_INFERENCE_DIR -prune -empty` ]
+        if [ ! `find $WHOLE_PROGRAM_INFERENCE_DIR -prune -empty` ]
         then
             # Only insert annotations if there is at least one .jaif file.
-            insert-annotations-to-source -i `find $SIGNATURE_INFERENCE_DIR -name "*.jaif"` $java_files
+            insert-annotations-to-source -i `find $WHOLE_PROGRAM_INFERENCE_DIR -name "*.jaif"` $java_files
         fi
         # Updates DIFF_JAIF variable.
         # diff returns exit-value 1 when there are differences between files.
         # When this happens, this script halts due to the "set -e"
         # in its header. To avoid this problem, we add the "|| true" below.
-        DIFF_JAIF="$(diff -qr $PREV_ITERATION_DIR $SIGNATURE_INFERENCE_DIR || true)"
+        DIFF_JAIF="$(diff -qr $PREV_ITERATION_DIR $WHOLE_PROGRAM_INFERENCE_DIR || true)"
     done
     clean
 }
 
 clean() {
     # It might be good to keep the final .jaif files.
-    # rm -rf $SIGNATURE_INFERENCE_DIR
+    # rm -rf $WHOLE_PROGRAM_INFERENCE_DIR
     rm -rf $PREV_ITERATION_DIR
     rm -rf $TEMP_DIR
     # See TODO about .unannotated file at the top of this file.
