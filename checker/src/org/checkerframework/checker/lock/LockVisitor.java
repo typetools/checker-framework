@@ -135,7 +135,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             }
 
             if (!issueGSwithMRLWarning) { // Skip this loop if it is already known that the warning must be issued.
-                for(VariableTree vt : node.getParameters()) {
+                for (VariableTree vt : node.getParameters()) {
                     if (atypeFactory.getAnnotatedType(vt).hasAnnotation(checkerGuardSatisfiedClass)) {
                         issueGSwithMRLWarning = true;
                         break;
@@ -200,7 +200,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         if (AnnotationUtils.areSameByClass(effectiveGb, checkerGuardedByClass)) {
             Set<AnnotationMirror> annos = methodDefinitionReceiver.getAnnotations();
-            for(AnnotationMirror anno : annos) {
+            for (AnnotationMirror anno : annos) {
                 if (AnnotationUtils.areSameByClass(anno, checkerGuardSatisfiedClass)) {
                     MethodInvocationNode methodInvocationNode = (MethodInvocationNode) atypeFactory.getNodeForTree(node);
                     Node receiverNode = methodInvocationNode.getTarget().getReceiver();
@@ -567,7 +567,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         ArrayList<AnnotationMirror> passedArgAnnotations = new ArrayList<AnnotationMirror>(guardSatisfiedIndex.length);
         passedArgAnnotations.add(methodCallReceiver == null ? null : methodCallReceiver.getAnnotationInHierarchy(GUARDEDBYUNKNOWN));
-        for(ExpressionTree tree : node.getArguments()) {
+        for (ExpressionTree tree : node.getArguments()) {
             passedArgAnnotations.add(atypeFactory.getAnnotatedType(tree).getAnnotationInHierarchy(GUARDEDBYUNKNOWN));
         }
 
@@ -721,7 +721,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     public Void visitClass(ClassTree node, Void p) {
         List<AnnotationMirror> annos = InternalUtils.annotationsFromTypeAnnotationTrees(node.getModifiers().getAnnotations());
 
-        for(AnnotationMirror anno : annos) {
+        for (AnnotationMirror anno : annos) {
             if (!AnnotationUtils.areSame(anno, GUARDEDBY) &&
                 (AnnotationUtils.areSameIgnoringValues(anno, GUARDEDBYUNKNOWN) ||
                  AnnotationUtils.areSameIgnoringValues(anno, GUARDEDBY) ||

@@ -315,7 +315,7 @@ void testTreeTypes() {
     // TODO: File a bug for the dataflow issue mentioned in the line below.
     // TODO: uncomment: Hits a bug in dataflow:    do { break; } while (foo.field != null); // access to guarded object in while condition of do/while loop
     //:: error: (contracts.precondition.not.satisfied.field)
-    for(foo = new MyClass(); foo.field != null; foo = new MyClass()){ break; } // access to guarded object in condition of for loop
+    for (foo = new MyClass(); foo.field != null; foo = new MyClass()) { break; } // access to guarded object in condition of for loop
     foo = new MyClass(); // assignment to guarded object (OK) --- foo is still refined to @GuardedBy("lock") after this point, though.
     unguardedFoo.method2(); // A simple method call to a guarded object is not considered a dereference (only field accesses are considered dereferences).
     //:: error: (contracts.precondition.not.satisfied)
