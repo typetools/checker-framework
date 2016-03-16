@@ -15,7 +15,7 @@ BOOTC="${JSR308}/jsr308-langtools/dist/bin/javac"
 JFLAGS="-source 8 -target 8 -encoding ascii \
         -cp "${BINDIR}:${BOOTDIR}:${TOOLDIR}:${TOOLJAR}:${CHECKERFRAMEWORK}/checker/build:${CHECKERFRAMEWORK}/checker/dist/checker.jar" \
         -XDignore.symbol.file=true -Xmaxerrs 20000 -Xmaxwarns 20000"
-PFLAGS="-AuseDefaultsForUncheckedCode=source -AprintErrorStack -Awarns"
+PFLAGS="-Aignorejdkastub -AuseDefaultsForUncheckedCode=source -AprintErrorStack -Awarns"
 CT="${JAVA_HOME}/lib/ct.sym"
 RET=0
 
@@ -45,11 +45,9 @@ finish() {
 }
 
 checkfordone() {
-    if [ ${RET} -eq 0 && `echo ${ANN} | wc -w` -eq 0 ] ; then
-        echo "succeeded!"
-        finish
-    else
-        (echo -- -- ; echo ${ANN})
+    #if no files remain to be compiled, call finish
+    if [ ${RET} -eq 0 ] && [ `echo ${ANN} | wc -w` -eq 0 ] ; then
+        echo "succeeded!" && finish
     fi
 }
 
@@ -79,7 +77,6 @@ fi
 
 echo "phase 0 (bootstrap)" | tee ${CHKDIR}/LOG0
 (${BOOTC} -g -d ${BOOTDIR} ${JFLAGS} ${SRC} || exit $?) | tee -a ${CHKDIR}/LOG0
-(echo -- -- ; echo ${ANN}) >> ${CHKDIR}/LOG0
 
 echo "phase 1" | tee ${CHKDIR}/LOG1
 if [ ! -r ${DISTDIR} ] ; then
@@ -91,22 +88,24 @@ if [ ! -r ${DISTDIR}/javac.jar ] ; then
     cp ${JSR308}/jsr308-langtools/dist/lib/javac.jar ${DISTDIR}
 fi
 if [ ! -r ${DISTDIR}/jdk8.jar ] ; then
-    echo creating JDK 8 JAR
+    echo creating bootstrap JDK 8 JAR
     (cd ${BOOTDIR} && jar cf ${CHKDIR}/jdk8.jar * && \
-     cp ${CHKDIR}/jdk8.jar ${DISTDIR}) || exit $?
+             cp ${CHKDIR}/jdk8.jar ${DISTDIR}) || exit $?
 fi
 
-(${JAVAC} -g -d ${BINDIR} ${JFLAGS} -processor ${PROCS} ${PFLAGS}
- ${ANN} 2>&1 || RET=1) | tee -a ${CHKDIR}/LOG1
+(${JAVAC} -g -d ${BINDIR} ${JFLAGS} -processor ${PROCS} ${PFLAGS} ${ANN} 2>&1 \
+        || RET=$?) | tee -a ${CHKDIR}/LOG1
+[ ${RET} -eq 0 ] || exit ${RET}
 
 #hack: scrape log file to find which source files crashed
+#TODO: check for corresponding class files instead
 ANN=`grep 'Compilation unit: ' ${CHKDIR}/LOG1 | awk '{print$3}' | sort -u`
 checkfordone | tee -a ${CHKDIR}/LOG1
 
 #retry (annotated) failures w/ processors on
 echo "phase 2" | tee ${CHKDIR}/LOG2
 (${JAVAC} -g -d ${BINDIR} ${JFLAGS} -processor ${PROCS} ${PFLAGS} \
- ${ANN} 2>&1 || true) | tee -a ${CHKDIR}/LOG2
+ ${ANN} 2>&1 || RET=$?) | tee -a ${CHKDIR}/LOG2
 
 ANN=`grep 'Compilation unit: ' ${CHKDIR}/LOG2 | awk '{print$3}' | sort -u`
 checkfordone | tee -a ${CHKDIR}/LOG2
@@ -132,10 +131,11 @@ for f in $ANN ; do
     #extract
     mkdir -p jaifs
     for p in `echo ${PROCS} | tr , '\012'` ; do
-        (${JAVAC} -g -d ${BINDIR} ${JFLAGS} -processor $p ${PFLAGS}
-         $f 2>&1 || RET=1) | tee -a ${CHKDIR}/LOG4
+        (${JAVAC} -g -d ${BINDIR} ${JFLAGS} -processor $p ${PFLAGS} \
+         $f 2>&1 || RET=$?) | tee -a ${CHKDIR}/LOG4
         if [ -r $J.class ] ; then
-            (extract-annotations $J.class 2>&1 || RET=1) | tee -a ${CHKDIR}/LOG4
+            (extract-annotations $J.class 2>&1 || RET=$?) | \
+                    tee -a ${CHKDIR}/LOG4
             if [ $? -eq 0 ] ; then
                 mkdir -p jaifs/$p
                 mv ${JAIF} jaifs/$p
@@ -144,7 +144,7 @@ for f in $ANN ; do
     done
 
     #recompile/insert
-    (${JAVAC} -g -d ${BINDIR} ${JFLAGS} $f 2>&1 || RET=1) | \
+    (${JAVAC} -g -d ${BINDIR} ${JFLAGS} $f 2>&1 || RET=$?) | \
             tee -a ${CHKDIR}/LOG4
     if [ -r $J.class ] ; then
         for p in `echo ${PROCS} | tr , '\012'` ; do
@@ -155,7 +155,5 @@ for f in $ANN ; do
         done
     fi
 done
-
-ANN=`grep 'Compilation unit: ' ${CHKDIR}/LOG4 | awk '{print$3}' | sort -u`
-checkfordone
+checkfordone | tee -a ${CHKDIR}/LOG4
 
