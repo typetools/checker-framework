@@ -175,6 +175,27 @@ public class ValueTransfer extends CFTransfer {
     }
 
     @Override
+    public TransferResult<CFValue, CFStore> visitStringConcatenateAssignment(
+            StringConcatenateAssignmentNode n, TransferInput<CFValue, CFStore> p) {
+        TransferResult<CFValue, CFStore> result = super.visitStringConcatenateAssignment(
+                n, p);
+        List<String> lefts = getStringValues(n.getLeftOperand(), p);
+        List<String> rights = getStringValues(n.getRightOperand(), p);
+        List<String> concat = new ArrayList<>();
+        for (String left : lefts) {
+            for (String right : rights) {
+                concat.add(left + right);
+            }
+        }
+        AnnotationMirror stringVal = createStringValAnnotationMirror(concat);
+        CFValue newResultValue = analysis.createSingleAnnotationValue(
+                stringVal, result.getResultValue().getType()
+                                 .getUnderlyingType());
+        return new RegularTransferResult<>(newResultValue,
+                                           result.getRegularStore());
+    }
+
+    @Override
     public TransferResult<CFValue, CFStore> visitStringConcatenate(
             StringConcatenateNode n, TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> result = super.visitStringConcatenate(
