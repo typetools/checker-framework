@@ -2,10 +2,10 @@
 .PHONY: all skipped Bug109 multiple-errors package-anno issue265 issue309 compat shorthand issue502 issue559 issue594 issue607
 
 # Tests that are currently passing
-all: Bug109 compat issue265 issue309 issue502 multiple-errors package-anno shorthand
+all: Bug109 compat issue265 issue309 issue502 multiple-errors package-anno shorthand issue607
 
 # Tests that are currently not passing
-skipped: issue559 issue594 issue607
+skipped: issue559 issue594
 
 
 Bug109:

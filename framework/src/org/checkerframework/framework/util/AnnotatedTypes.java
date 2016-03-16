@@ -1259,19 +1259,20 @@ public class AnnotatedTypes {
      * Given a list of types representing the formal parameters to a method, get the parameter type
      * expect at the indexth position (unwrapping var args if necessary).
      *
+     * @param hasVarArg whether or not that last parameter is a vararg
      * @param parameterTypes The list of formal parameters to a method
      * @param index The index into parameterTypes of the parameter we want
      * @return If that parameter is a varArgs, return the component of the var args and NOT the array type.
      *         Otherwise, return the exact type of the parameter in the index position
      */
-    public static AnnotatedTypeMirror unwrapVarargs(List<AnnotatedTypeMirror> parameterTypes, int index) {
+    public static AnnotatedTypeMirror unwrapVarargs(boolean hasVarArg,List<AnnotatedTypeMirror> parameterTypes, int index) {
         final int lastIndex = parameterTypes.size() - 1;
         final AnnotatedTypeMirror lastType = parameterTypes.get(lastIndex);
         final boolean parameterBeforeVarargs = index < lastIndex;
         if (!parameterBeforeVarargs && lastType instanceof AnnotatedArrayType) {
             final AnnotatedArrayType arrayType = (AnnotatedArrayType) lastType;
             final Type.ArrayType underlyingType = (Type.ArrayType) arrayType.getUnderlyingType();
-            if (underlyingType.isVarargs()) {
+            if (hasVarArg) {
                 return arrayType.getComponentType();
             }
         }
