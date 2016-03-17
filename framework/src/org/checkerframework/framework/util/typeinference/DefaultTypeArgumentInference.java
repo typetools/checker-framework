@@ -45,7 +45,6 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 
@@ -543,8 +542,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     /**
      * For any types we have not inferred, use a wildcard with the bounds from the original type parameter.
-     * For any types we have inferred to be an AnnotatedNullType, create a wildcard but apply the primary
-     * annotations from that AnnotatedNullType.
      */
     private void handleUninferredTypeVariables(AnnotatedTypeFactory typeFactory, AnnotatedExecutableType methodType,
                                                Set<TypeVariable> targets, Map<TypeVariable, AnnotatedTypeMirror> inferredArgs) {
@@ -554,13 +551,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             if (targets.contains(typeVar)) {
                 final AnnotatedTypeMirror inferredType = inferredArgs.get(typeVar);
 
-                if (inferredType == null || inferredType.getKind() == TypeKind.NULL) {
+                if (inferredType == null) {
                     AnnotatedTypeMirror dummy = typeFactory.getUninferredWildcardType(atv);
                     inferredArgs.put(atv.getUnderlyingType(), dummy);
-
-                    if (inferredType != null) { //then the type kind must be TypeKind.NULL
-                        dummy.replaceAnnotations(inferredType.getAnnotations());
-                    }
                 }
             }
         }
