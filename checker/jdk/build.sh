@@ -22,6 +22,7 @@ RET=0
 finish() {
     #extract annotations from classfiles and insert them into ct.sym
     echo "building JAR"
+    rm -rf ${CHKDIR}/sym
     mkdir -p ${CHKDIR}/sym
     rsync -a ${BINDIR}/* ${BOOTDIR}
     cd ${CHKDIR}/sym
@@ -40,7 +41,6 @@ finish() {
     done
     jar cf ${CHKDIR}/ct.sym *
     cd ${CHKDIR}
-    rm -rf sym
     exit 0
 }
 
