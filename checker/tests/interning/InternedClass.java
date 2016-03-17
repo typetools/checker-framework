@@ -70,7 +70,6 @@ public @Interned class InternedClass {
         return this;
     }
 
-    @SuppressWarnings("unchecked")
     public InternedClass[] returnArray() {
         return new InternedClass[] { };
     }
@@ -121,6 +120,7 @@ public @Interned class InternedClass {
     }
 
     // java.lang.Class is interned
+    @SuppressWarnings("unchecked")
     public static void arrayOfClass() throws Exception {
         Class<?> c = String.class;
         Class[] parameterTypes = new Class[1];
