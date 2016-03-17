@@ -70,6 +70,7 @@ public @Interned class InternedClass {
         return this;
     }
 
+    @SuppressWarnings("unchecked")
     public InternedClass[] returnArray() {
         return new InternedClass[] { };
     }
