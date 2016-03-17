@@ -1265,7 +1265,7 @@ public class AnnotatedTypes {
      * @return If that parameter is a varArgs, return the component of the var args and NOT the array type.
      *         Otherwise, return the exact type of the parameter in the index position
      */
-    public static AnnotatedTypeMirror unwrapVarargs(boolean hasVarArg,List<AnnotatedTypeMirror> parameterTypes, int index) {
+    public static AnnotatedTypeMirror unwrapVarargs(boolean hasVarArg, List<AnnotatedTypeMirror> parameterTypes, int index) {
         final int lastIndex = parameterTypes.size() - 1;
         final AnnotatedTypeMirror lastType = parameterTypes.get(lastIndex);
         final boolean parameterBeforeVarargs = index < lastIndex;
