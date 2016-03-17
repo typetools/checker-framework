@@ -1150,7 +1150,7 @@
             <arg value="7"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
-            <arg line="-sourcepath ${src}:${checker-jdk}"/>
+            <arg line="-sourcepath ${src}"/>
             <arg line="-d ${build}"/>
             <arg line="@${tmpdir}/srcfiles-checker.txt"/>
             <arg line="-version"/>
@@ -1165,7 +1165,6 @@
             description="Run the Nullness Checker on the Checker Framework source code">
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.checker.nullness.NullnessChecker"/>
-            <param name="checker-jdk" value="jdk/nullness/src"/>
             <param name="checker-args" value="-Awarns"/>
         </antcall>
     </target>
@@ -1174,7 +1173,6 @@
             description="Run the IGJ Checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.checker.igj.IGJChecker"/>
-            <param name="checker-jdk" value="jdk/igj/src"/>
             <param name="checker-args" value="-Awarns"/>
         </antcall>
     </target>
