@@ -1480,15 +1480,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * {@link #checkAssignability(AnnotatedTypeMirror, Tree)}.
      */
     @Override
-    public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+    public Void visitCompoundAssignment(CompoundAssignmentTree compoundAssignmentTree, Void p) {
         // Given a compound assignment:
         // s += expr;
         // Should be whether s + expr can be assigned to s,
         // but the "s + expr" tree does not exist.  So instead, check that
         // s += expr can be assigned to s.
-        commonAssignmentCheck(node.getVariable(), node,
+        commonAssignmentCheck(compoundAssignmentTree.getVariable(), compoundAssignmentTree,
                 "compound.assignment.type.incompatible");
-        return super.visitCompoundAssignment(node, p);
+        return super.visitCompoundAssignment(compoundAssignmentTree, p);
     }
 
     // **********************************************************************
