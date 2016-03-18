@@ -169,39 +169,27 @@ public class ValueTransfer extends CFTransfer {
         AnnotationMirror stringVal = createBooleanAnnotationMirror(resultValues);
         CFValue newResultValue = analysis.createSingleAnnotationValue(
                 stringVal, result.getResultValue().getType()
-                        .getUnderlyingType());
-        return new RegularTransferResult<>(newResultValue,
-                result.getRegularStore());
-    }
-
-    @Override
-    public TransferResult<CFValue, CFStore> visitStringConcatenateAssignment(
-            StringConcatenateAssignmentNode n, TransferInput<CFValue, CFStore> p) {
-        TransferResult<CFValue, CFStore> result = super.visitStringConcatenateAssignment(
-                n, p);
-        List<String> lefts = getStringValues(n.getLeftOperand(), p);
-        List<String> rights = getStringValues(n.getRightOperand(), p);
-        List<String> concat = new ArrayList<>();
-        for (String left : lefts) {
-            for (String right : rights) {
-                concat.add(left + right);
-            }
-        }
-        AnnotationMirror stringVal = createStringValAnnotationMirror(concat);
-        CFValue newResultValue = analysis.createSingleAnnotationValue(
-                stringVal, result.getResultValue().getType()
                                  .getUnderlyingType());
         return new RegularTransferResult<>(newResultValue,
-                                           result.getRegularStore());
+                result.getRegularStore());
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitStringConcatenate(
-            StringConcatenateNode n, TransferInput<CFValue, CFStore> p) {
-        TransferResult<CFValue, CFStore> result = super.visitStringConcatenate(
-                n, p);
-        List<String> lefts = getStringValues(n.getLeftOperand(), p);
-        List<String> rights = getStringValues(n.getRightOperand(), p);
+    public TransferResult<CFValue, CFStore> visitStringConcatenateAssignment(StringConcatenateAssignmentNode n, TransferInput<CFValue, CFStore> p) {
+        TransferResult<CFValue, CFStore> result = super.visitStringConcatenateAssignment(n, p);
+        return stringConcatenation(n.getLeftOperand(), n.getRightOperand(), p, result);
+    }
+
+    @Override
+    public TransferResult<CFValue, CFStore> visitStringConcatenate(StringConcatenateNode n, TransferInput<CFValue, CFStore> p) {
+        TransferResult<CFValue, CFStore> result = super.visitStringConcatenate(n, p);
+        return stringConcatenation(n.getLeftOperand(), n.getRightOperand(), p, result);
+    }
+
+    public TransferResult<CFValue, CFStore> stringConcatenation(Node leftOperand, Node rightOperand, TransferInput<CFValue, CFStore> p,
+                                                                TransferResult<CFValue, CFStore> result) {
+        List<String> lefts = getStringValues(leftOperand, p);
+        List<String> rights = getStringValues(rightOperand, p);
         List<String> concat = new ArrayList<>();
         for (String left : lefts) {
             for (String right : rights) {
@@ -209,11 +197,8 @@ public class ValueTransfer extends CFTransfer {
             }
         }
         AnnotationMirror stringVal = createStringValAnnotationMirror(concat);
-        CFValue newResultValue = analysis.createSingleAnnotationValue(
-                stringVal, result.getResultValue().getType()
-                        .getUnderlyingType());
-        return new RegularTransferResult<>(newResultValue,
-                result.getRegularStore());
+        CFValue newResultValue = analysis.createSingleAnnotationValue(stringVal, result.getResultValue().getType().getUnderlyingType());
+        return new RegularTransferResult<>(newResultValue, result.getRegularStore());
     }
 
     enum NumbericalBinaryOps {
